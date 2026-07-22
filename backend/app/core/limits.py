@@ -27,23 +27,21 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 
+# v1.2.3 — variáveis KLT_* com valor inválido registram falha em vez de
+# cair silenciosamente para o default. `validate_limits()` transforma em
+# LimitsInvalidError no startup.
+_ENV_ERRORS: list[str] = []
+
+
 def _env_int(name: str, default: int) -> int:
-    raw = os.getenv(name, "").strip()
-    if not raw:
+    raw = os.getenv(name)
+    if raw is None or raw.strip() == "":
         return default
     try:
-        return int(raw)
+        return int(raw.strip())
     except ValueError:
-        return default
-
-
-def _env_float(name: str, default: float) -> float:
-    raw = os.getenv(name, "").strip()
-    if not raw:
-        return default
-    try:
-        return float(raw)
-    except ValueError:
+        # NÃO expor o valor recebido — apenas o nome da variável
+        _ENV_ERRORS.append(name)
         return default
 
 
@@ -74,10 +72,13 @@ class Limits:
     max_pages: int = field(
         default_factory=lambda: _env_int("KLT_MAX_PAGES", 3_000)
     )
+    # v1.2.3 — default conservador (100 MP). Cobre A4 @ 600 DPI (~35 MP) e
+    # scan tabloide @ 600 DPI (~72 MP) com folga. Comparação exata contra
+    # width × height em `ocr_page` antes de decodificar. O default anterior
+    # (~576 MP) aumentava a superfície de memória sem representar limite
+    # efetivo — dependia da regra "erro só em 2× MAX_IMAGE_PIXELS" do Pillow.
     image_max_pixels: int = field(
-        # 24000² ≈ 576 MP: cobre scans A4 @ 1200 DPI com folga e ainda
-        # aciona o guard do Pillow em imagens verdadeiramente absurdas.
-        default_factory=lambda: _env_int("KLT_IMAGE_MAX_PIXELS", 24_000 * 24_000)
+        default_factory=lambda: _env_int("KLT_IMAGE_MAX_PIXELS", 100_000_000)
     )
 
     # ---- Timeouts de subprocess (segundos) ---------------------------
@@ -112,7 +113,17 @@ def validate_limits(current: Optional[Limits] = None) -> Limits:
     """
     Rejeita zeros/negativos, incoerências óbvias e valores estruturalmente
     perigosos. Chamado no startup do app.
+
+    v1.2.3 — Também falha se alguma variável KLT_* foi lida com valor
+    inválido (ver `_ENV_ERRORS`); a mensagem só lista NOMES de variáveis,
+    nunca o conteúdo recebido.
     """
+    if _ENV_ERRORS:
+        names = ", ".join(sorted(set(_ENV_ERRORS)))
+        raise LimitsInvalidError(
+            f"Variáveis de ambiente com valor inválido: {names}. "
+            "Corrija o .env (use inteiros positivos) e reinicie."
+        )
     L = current or limits
     checks: list[tuple[str, bool, str]] = [
         ("upload_max_mb", L.upload_max_mb > 0, "> 0"),

@@ -83,7 +83,14 @@ def test_ocr_page_returns_blocks(tmp_path: Path) -> None:
     mock_pyte = MagicMock()
     mock_pyte.image_to_string.return_value = fake_output
     mock_pil = MagicMock()
-    mock_pil.open.return_value = MagicMock()
+    _img = MagicMock()
+    _img.size = (100, 100)   # v1.2.3: (w, h) validado antes de load()
+    mock_pil.open.return_value = _img
+    # DecompressionBombError/Warning precisam ser classes reais para
+    # aparecer em cláusulas except do serviço.
+    from PIL import Image as _RealPIL
+    mock_pil.DecompressionBombError = _RealPIL.DecompressionBombError
+    mock_pil.DecompressionBombWarning = _RealPIL.DecompressionBombWarning
 
     with (
         patch.object(svc, "_pytesseract", mock_pyte),
@@ -121,7 +128,12 @@ def test_pipeline_creates_json_and_html(tmp_path: Path) -> None:
     fake_pyte = MagicMock()
     fake_pyte.image_to_string.return_value = "Texto original\n\nOutro bloco"
     fake_pil = MagicMock()
-    fake_pil.open.return_value = MagicMock()
+    _img = MagicMock()
+    _img.size = (100, 100)
+    fake_pil.open.return_value = _img
+    from PIL import Image as _RealPIL
+    fake_pil.DecompressionBombError = _RealPIL.DecompressionBombError
+    fake_pil.DecompressionBombWarning = _RealPIL.DecompressionBombWarning
 
     with (
         patch.object(svc, "_pytesseract", fake_pyte),
@@ -202,7 +214,12 @@ def test_pipeline_propagates_engine_error(tmp_path: Path) -> None:
     fake_pyte = MagicMock()
     fake_pyte.image_to_string.return_value = "texto"
     fake_pil = MagicMock()
-    fake_pil.open.return_value = MagicMock()
+    _img = MagicMock()
+    _img.size = (100, 100)
+    fake_pil.open.return_value = _img
+    from PIL import Image as _RealPIL
+    fake_pil.DecompressionBombError = _RealPIL.DecompressionBombError
+    fake_pil.DecompressionBombWarning = _RealPIL.DecompressionBombWarning
 
     with (
         patch.object(svc, "_pytesseract", fake_pyte),

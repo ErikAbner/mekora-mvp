@@ -155,63 +155,103 @@ def inspect_rar_members(rar_file: Any) -> None:
             )
 
 
-def safe_extract_7z(seven_zip_file: Any, dest_dir: Path) -> None:
-    """
-    Extração segura para py7zr: aborta ao exceder o limite total contando
-    bytes efetivamente escritos e valida cada destino resolvido para
-    permanecer dentro de `dest_dir`. Remove parciais em caso de erro.
+def _reset_dir(dest_dir: Path) -> None:
+    shutil.rmtree(dest_dir, ignore_errors=True)
+    dest_dir.mkdir(parents=True, exist_ok=True)
 
-    py7zr < 0.20 não expõe manifest confiável antes da extração; por isso
-    a estratégia é extrair e monitorar. Um limite de entradas grosso é
-    aplicado pelo tamanho total.
-    """
-    max_entry, max_total = _limits_bytes()
-    dest_dir = dest_dir.resolve(strict=True)
 
-    # Extrai entrada por entrada com `extract(targets=...)` quando possível,
-    # senão cai para extractall + validação pós-extração.
+def inspect_7z_members(seven_zip_file: Any) -> list[dict]:
+    """
+    v1.2.3 — Preflight REAL de 7z usando `SevenZipFile.list()` (py7zr >= 0.20).
+    Valida nº entradas, nomes, tamanho declarado por entrada e soma total
+    DESCOMPRIMIDA antes de qualquer escrita em disco. Diretórios não contam
+    para a soma. Retorna lista dos FileInfo aprovados (para o extractor).
+    """
     try:
-        names = seven_zip_file.getnames()
+        infos = seven_zip_file.list()
     except Exception as exc:
         raise ArchiveSafetyError(
             "ARCHIVE_METADATA_FAILURE",
             f"Metadata do arquivo 7z ilegível: {type(exc).__name__}",
         )
 
-    if len(names) > limits.archive_max_entries:
+    max_entry, max_total = _limits_bytes()
+    if len(infos) > limits.archive_max_entries:
         raise ArchiveSafetyError(
             "ARCHIVE_TOO_MANY_ENTRIES",
-            f"Arquivo tem {len(names)} entradas; limite é "
+            f"Arquivo tem {len(infos)} entradas; limite é "
             f"{limits.archive_max_entries}.",
         )
-    for n in names:
-        err = _safe_member_name(n)
+
+    approved: list[dict] = []
+    total = 0
+    for info in infos:
+        name = getattr(info, "filename", "") or ""
+        err = _safe_member_name(name)
         if err:
             raise ArchiveSafetyError(
                 err, f"Entrada do arquivo com nome inválido ({err})."
             )
+        is_dir = bool(getattr(info, "is_directory", False))
+        archivable = bool(getattr(info, "archivable", True))
+        if not is_dir and not archivable:
+            raise ArchiveSafetyError(
+                "ARCHIVE_NON_REGULAR_ENTRY",
+                "Arquivo contém entrada não regular — rejeitado.",
+            )
+        size = int(getattr(info, "uncompressed", 0) or 0)
+        if is_dir:
+            approved.append({"filename": name, "is_directory": True, "size": 0})
+            continue
+        if size > max_entry:
+            raise ArchiveSafetyError(
+                "ARCHIVE_ENTRY_TOO_LARGE",
+                f"Entrada excede {limits.archive_max_entry_mb} MB.",
+            )
+        total += size
+        if total > max_total:
+            raise ArchiveSafetyError(
+                "ARCHIVE_TOTAL_TOO_LARGE",
+                f"Soma descomprimida excede "
+                f"{limits.archive_max_total_mb} MB.",
+            )
+        approved.append({"filename": name, "is_directory": False, "size": size})
+    return approved
+
+
+def safe_extract_7z(seven_zip_file: Any, dest_dir: Path) -> None:
+    """
+    v1.2.3 — Preflight declarado + extração + validação pós-escrita.
+
+    1. `inspect_7z_members` valida ANTES de escrever (metadata do arquivo).
+    2. `extractall` no `dest_dir` já resolvido.
+    3. Enquanto varre o disco, confirma containment (rejeita symlinks e
+       destinos fora), soma tamanhos EFETIVAMENTE escritos e aborta se
+       exceder os limites (defesa contra tamanho declarado mentiroso).
+    4. Qualquer erro remove parciais e recria diretório limpo.
+    """
+    max_entry, max_total = _limits_bytes()
+    dest_dir = dest_dir.resolve(strict=True)
+
+    inspect_7z_members(seven_zip_file)
 
     try:
         seven_zip_file.extractall(path=str(dest_dir))
     except ArchiveSafetyError:
         raise
     except Exception as exc:
-        shutil.rmtree(dest_dir, ignore_errors=True)
-        dest_dir.mkdir(parents=True, exist_ok=True)
+        _reset_dir(dest_dir)
         raise ArchiveSafetyError(
             "ARCHIVE_EXTRACT_FAILED",
             f"Falha ao extrair arquivo 7z: {type(exc).__name__}",
         )
 
-    # Validação pós-extração: destino contido + tamanhos reais em disco.
     total_written = 0
     for root, dirs, files in os.walk(dest_dir):
         for name in files:
             path = Path(root) / name
-            # Symlink no disco → fora do permitido
             if path.is_symlink():
-                shutil.rmtree(dest_dir, ignore_errors=True)
-                dest_dir.mkdir(parents=True, exist_ok=True)
+                _reset_dir(dest_dir)
                 raise ArchiveSafetyError(
                     "ARCHIVE_NON_REGULAR_ENTRY",
                     "Extração produziu link simbólico — rejeitado.",
@@ -220,24 +260,21 @@ def safe_extract_7z(seven_zip_file: Any, dest_dir: Path) -> None:
                 resolved = path.resolve(strict=True)
                 resolved.relative_to(dest_dir)
             except (OSError, ValueError):
-                shutil.rmtree(dest_dir, ignore_errors=True)
-                dest_dir.mkdir(parents=True, exist_ok=True)
+                _reset_dir(dest_dir)
                 raise ArchiveSafetyError(
                     "PATH_TRAVERSAL",
                     "Extração produziu destino fora do diretório permitido.",
                 )
             size = path.stat().st_size
             if size > max_entry:
-                shutil.rmtree(dest_dir, ignore_errors=True)
-                dest_dir.mkdir(parents=True, exist_ok=True)
+                _reset_dir(dest_dir)
                 raise ArchiveSafetyError(
                     "ARCHIVE_ENTRY_TOO_LARGE",
                     f"Entrada excede {limits.archive_max_entry_mb} MB.",
                 )
             total_written += size
             if total_written > max_total:
-                shutil.rmtree(dest_dir, ignore_errors=True)
-                dest_dir.mkdir(parents=True, exist_ok=True)
+                _reset_dir(dest_dir)
                 raise ArchiveSafetyError(
                     "ARCHIVE_TOTAL_TOO_LARGE",
                     f"Extração excede {limits.archive_max_total_mb} MB.",

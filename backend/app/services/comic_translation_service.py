@@ -171,16 +171,38 @@ def ocr_page(img_bytes: bytes, lang: str) -> list[str]:
     Aplica OCR em uma imagem e retorna lista de blocos de texto.
     Levanta RuntimeError se pytesseract não estiver instalado.
     Levanta ImageBombError se a imagem exceder `limits.image_max_pixels`.
+
+    v1.2.3 — a checagem de pixels é EXATA (`width × height > max_pixels`)
+    e roda ANTES de `img.load()`, para rejeitar imagens gigantes sem
+    depender da semântica "erro só em 2× MAX_IMAGE_PIXELS" do Pillow.
+    Também trata `DecompressionBombWarning` como erro no escopo controlado
+    da abertura, e continua capturando `DecompressionBombError`.
     """
     if not _OCR_AVAILABLE:
         raise RuntimeError(
             "pytesseract não está instalado. Execute: pip install pytesseract Pillow"
         )
     tess_lang = _LANG_MAP.get(lang, lang)
+
+    import warnings as _warnings
     try:
-        img = _PILImage.open(io.BytesIO(img_bytes))
-        img.load()  # força decodificação → aciona MAX_IMAGE_PIXELS já
+        with _warnings.catch_warnings():
+            _warnings.simplefilter(
+                "error", _PILImage.DecompressionBombWarning
+            )
+            img = _PILImage.open(io.BytesIO(img_bytes))
+            # Comparação exata antes de decodificar
+            w, h = img.size
+            if w * h > limits.image_max_pixels:
+                raise ImageBombError(
+                    "Imagem com dimensões acima do limite permitido."
+                )
+            img.load()
     except _PILImage.DecompressionBombError:
+        raise ImageBombError(
+            "Imagem com dimensões acima do limite permitido."
+        )
+    except _PILImage.DecompressionBombWarning:
         raise ImageBombError(
             "Imagem com dimensões acima do limite permitido."
         )
