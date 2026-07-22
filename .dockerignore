@@ -1,0 +1,25 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+*.egg-info/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Storage (montado como volume em runtime)
+storage/
+
+# Ambiente e segredos
+.env
+.env.local
+.env.*.local
+
+# Ferramentas de desenvolvimento
+.git/
+.gitignore
+*.md
