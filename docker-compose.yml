@@ -2,7 +2,9 @@ services:
   kindle-tool:
     build: .
     ports:
-      - "8000:8000"
+      # v1.2.1 — bind restrito ao localhost do host (ferramenta local,
+      # sem autenticação; não expor na rede)
+      - "127.0.0.1:8000:8000"
     volumes:
       - ./storage:/app/storage
     env_file:

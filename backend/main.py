@@ -69,13 +69,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve arquivos estáticos: thumbnails, EPUBs, capas
-app.mount(
-    "/storage",
-    StaticFiles(directory=str(PROJECT_ROOT / "storage")),
-    name="storage",
-)
+# v1.2.1 — SEM mount amplo de /storage (expunha banco, config, inputs,
+# backups e manifests internos). Artefatos são servidos por rotas
+# controladas com allowlist em app/api/files.py.
+from app.api.files import router as files_router  # noqa: E402
 
+app.include_router(files_router)
 app.include_router(health_router)
 app.include_router(config_router)
 app.include_router(jobs_router)
