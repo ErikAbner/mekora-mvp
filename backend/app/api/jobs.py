@@ -572,19 +572,34 @@ async def upload_file(
     Aceita PDF, DOCX, ODT, RTF, TXT, HTML, EPUB, CBZ, CBR, CB7 e CBC.
     Retorna o upload_id para uso nos endpoints seguintes.
     """
-    if not file.filename or not is_accepted(file.filename):
-        ext = Path(file.filename or "").suffix.lower() if file.filename else ""
+    from app.services.upload_safety import (
+        UploadRejectedError,
+        sanitize_original_filename,
+        server_controlled_path,
+        stream_to_disk,
+    )
+
+    # 1. Sanitização do filename (rejeita vazio/oculto/traversal/controle)
+    try:
+        safe_name = sanitize_original_filename(file.filename)
+    except UploadRejectedError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    # 2. Allowlist de extensão
+    if not is_accepted(safe_name):
+        ext = Path(safe_name).suffix.lower()
         raise HTTPException(
             status_code=400,
             detail=f"Formato '{ext or 'desconhecido'}' não suportado. "
                    "Formatos aceitos: PDF, DOCX, ODT, RTF, TXT, HTML, EPUB, CBZ, CBR, CB7, CBC.",
         )
 
-    fmt = detect_input_format(file.filename)
-    mode = detect_processing_mode(file.filename)
+    fmt = detect_input_format(safe_name)
+    mode = detect_processing_mode(safe_name)
 
+    # 3. Cria o job (original_filename = nome exibível; nome no disco é derivado)
     job = ProcessingJob(
-        original_filename=file.filename,
+        original_filename=safe_name,
         status="uploaded",
         input_format=fmt,
         processing_mode=mode,
@@ -596,10 +611,29 @@ async def upload_file(
     db.commit()
     db.refresh(job)
 
-    STORAGE_INPUT.mkdir(parents=True, exist_ok=True)
-    dest = STORAGE_INPUT / f"{job.id}_{file.filename}"
-    content = await file.read()
-    dest.write_bytes(content)
+    # Lazy access — testes fazem monkeypatch em app.core.config.STORAGE_INPUT,
+    # e importar aqui garante que o valor corrente é usado a cada request
+    from app.core.config import STORAGE_INPUT as _STORAGE_INPUT
+    _STORAGE_INPUT.mkdir(parents=True, exist_ok=True)
+    dest = server_controlled_path(_STORAGE_INPUT, job.id, safe_name)
+
+    # 4. Streaming write com limite + magic bytes + cleanup em falha
+    try:
+        await stream_to_disk(file, dest, fmt)
+    except UploadRejectedError as exc:
+        # Não deixar registro fantasma no banco
+        db.delete(job)
+        db.commit()
+        code_to_http = {
+            "UPLOAD_TOO_LARGE": 413,
+            "FORMAT_MISMATCH": 400,
+            "UPLOAD_EMPTY": 400,
+            "UPLOAD_DEST_EXISTS": 409,
+        }
+        raise HTTPException(
+            status_code=code_to_http.get(exc.code, 400),
+            detail=str(exc),
+        )
 
     job.input_path = str(dest)
     job.updated_at = datetime.utcnow()

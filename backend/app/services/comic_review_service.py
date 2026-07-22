@@ -137,10 +137,24 @@ def compute_stats(data: ReviewSidecar) -> dict[str, int]:
 # Exportação
 # ---------------------------------------------------------------------------
 
+def _e(text: Any) -> str:
+    """Escape HTML consistente para texto dinâmico (P6)."""
+    import html as _html
+    return _html.escape(str(text or ""), quote=True)
+
+
+_STATUS_ALLOWED = {"pending", "approved", "edited", "skipped"}
+
+
+def _safe_status(status: Any) -> str:
+    s = str(status or "pending")
+    return s if s in _STATUS_ALLOWED else "pending"
+
+
 def export_html(data: ReviewSidecar) -> str:
-    job_id = data.get("job_id", "?")
-    src = data.get("source_language", "")
-    tgt = data.get("target_language", "")
+    job_id = _e(data.get("job_id", "?"))
+    src = _e(data.get("source_language", ""))
+    tgt = _e(data.get("target_language", ""))
 
     parts = [
         "<!DOCTYPE html>",
@@ -159,9 +173,9 @@ def export_html(data: ReviewSidecar) -> str:
         ".skipped{border-color:#9ca3af;opacity:.7}",
         ".pending{border-color:#f59e0b}",
         ".label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;margin-bottom:.25rem}",
-        ".original{color:#6b7280;font-size:.875rem}",
-        ".translated{color:#374151;font-size:.875rem}",
-        ".reviewed{color:#15803d;font-size:.875rem;font-weight:500}",
+        ".original{color:#6b7280;font-size:.875rem;white-space:pre-wrap}",
+        ".translated{color:#374151;font-size:.875rem;white-space:pre-wrap}",
+        ".reviewed{color:#15803d;font-size:.875rem;font-weight:500;white-space:pre-wrap}",
         ".error{color:#dc2626;font-size:.875rem}",
         ".meta{font-size:.7rem;color:#9ca3af;margin-top:.25rem}",
         "</style></head><body>",
@@ -171,26 +185,26 @@ def export_html(data: ReviewSidecar) -> str:
         "<nav>",
     ]
     for page in data["pages"]:
-        pn = page["page_number"]
+        pn = int(page["page_number"])
         parts.append(f"<a href='#page-{pn}'>Página {pn}</a>")
     parts.append("</nav>")
 
     for page in data["pages"]:
-        pn = page["page_number"]
+        pn = int(page["page_number"])
         parts.append(f"<section id='page-{pn}'><h2>Página {pn}</h2>")
         if page.get("error"):
-            parts.append(f"<p class='error'>Erro OCR: {page['error']}</p>")
+            parts.append(f"<p class='error'>Erro OCR: {_e(page['error'])}</p>")
         for block in page.get("blocks", []):
-            status = block.get("review_status", "pending")
+            status = _safe_status(block.get("review_status", "pending"))
             parts.append(f"<div class='block {status}'>")
-            parts.append(f"<div class='label'>Original</div>")
-            parts.append(f"<div class='original'>{block.get('original_text', '')}</div>")
-            parts.append(f"<div class='label' style='margin-top:.5rem'>Tradução automática</div>")
-            parts.append(f"<div class='translated'>{block.get('translated_text', '')}</div>")
+            parts.append("<div class='label'>Original</div>")
+            parts.append(f"<div class='original'>{_e(block.get('original_text', ''))}</div>")
+            parts.append("<div class='label' style='margin-top:.5rem'>Tradução automática</div>")
+            parts.append(f"<div class='translated'>{_e(block.get('translated_text', ''))}</div>")
             if block.get("reviewed_text"):
-                parts.append(f"<div class='label' style='margin-top:.5rem'>Revisado ✓</div>")
-                parts.append(f"<div class='reviewed'>{block['reviewed_text']}</div>")
-            parts.append(f"<div class='meta'>{status} · {block.get('block_id', '')}</div>")
+                parts.append("<div class='label' style='margin-top:.5rem'>Revisado ✓</div>")
+                parts.append(f"<div class='reviewed'>{_e(block['reviewed_text'])}</div>")
+            parts.append(f"<div class='meta'>{status} · {_e(block.get('block_id', ''))}</div>")
             parts.append("</div>")
         parts.append("</section>")
 

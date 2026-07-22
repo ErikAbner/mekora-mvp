@@ -101,11 +101,16 @@ app.include_router(comic_quick_router)
 def run_startup_cleanup() -> None:
     """Remove arquivos de jobs antigos, inicializa presets e recupera jobs presos."""
     from datetime import datetime as _dt
+    from app.core.limits import validate_limits
     from app.db.database import SessionLocal as _SessionLocal
     from app.models.processing_job import ProcessingJob as _ProcessingJob
     from app.services.app_config_service import load_app_config
     from app.services.cleanup_service import cleanup_old_jobs
     from app.services.preset_service import ensure_system_presets
+
+    # v1.2.2 — valida limites de processamento (zeros/negativos/incoerentes
+    # abortam o startup com mensagem explícita)
+    validate_limits()
 
     # Recovery: qualquer job que ficou em in_progress quando o servidor reiniciou
     # nunca vai completar — o background task foi morto. Marcar como failed agora

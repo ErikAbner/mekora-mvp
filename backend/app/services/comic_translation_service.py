@@ -6,6 +6,7 @@ Gera um sidecar JSON/HTML com o texto OCR traduzido de cada página.
 """
 from __future__ import annotations
 
+import html as _html
 import io
 import json
 import tempfile
@@ -13,15 +14,36 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
+from app.core.limits import limits
+from app.services.archive_safety import (
+    ArchiveSafetyError,
+    inspect_rar_members,
+    inspect_zip_members,
+    safe_extract_7z,
+    safe_iter_image_names,
+)
+
 # Importações opcionais — evita falha em CI sem as dependências
 try:
     import pytesseract as _pytesseract
     from PIL import Image as _PILImage
     _OCR_AVAILABLE = True
+    # P5 — proteção nativa contra decompression bomb do Pillow
+    # (converte imagens absurdamente grandes em DecompressionBombError
+    # em vez de alocar memória sem limite)
+    _PILImage.MAX_IMAGE_PIXELS = limits.image_max_pixels
 except ImportError:
     _pytesseract = None  # type: ignore[assignment]
     _PILImage = None  # type: ignore[assignment]
     _OCR_AVAILABLE = False
+
+
+class PageLimitExceededError(Exception):
+    """Total de páginas excede `limits.max_pages`."""
+
+
+class ImageBombError(Exception):
+    """Imagem excede `limits.image_max_pixels` — provável decompression bomb."""
 
 # Tipo de dados: resultado por página
 PageResult = dict[str, Any]  # {page: int, blocks: [{text, translated}], error?: str}
@@ -67,9 +89,11 @@ def extract_comic_pages(job_path: str, input_format: str) -> list[bytes]:
 def _extract_cbz(path: str) -> list[bytes]:
     pages: list[tuple[str, bytes]] = []
     with zipfile.ZipFile(path, "r") as zf:
-        for name in zf.namelist():
-            if Path(name).suffix.lower() in _IMAGE_EXTS:
-                pages.append((name, zf.read(name)))
+        # P3 — validação estrutural ANTES de qualquer .read()
+        inspect_zip_members(zf)
+        allowed = safe_iter_image_names(zf.namelist(), _IMAGE_EXTS)
+        for name in allowed:
+            pages.append((name, zf.read(name)))
     pages.sort(key=lambda x: x[0])
     return [data for _, data in pages]
 
@@ -79,9 +103,12 @@ def _extract_cbr(path: str) -> list[bytes]:
 
     pages: list[tuple[str, bytes]] = []
     with rarfile.RarFile(path, "r") as rf:
-        for info in rf.infolist():
-            if Path(info.filename).suffix.lower() in _IMAGE_EXTS:
-                pages.append((info.filename, rf.read(info.filename)))
+        inspect_rar_members(rf)  # P3
+        allowed = safe_iter_image_names(
+            (info.filename for info in rf.infolist()), _IMAGE_EXTS,
+        )
+        for name in allowed:
+            pages.append((name, rf.read(name)))
     pages.sort(key=lambda x: x[0])
     return [data for _, data in pages]
 
@@ -91,10 +118,12 @@ def _extract_cb7(path: str) -> list[bytes]:
 
     pages: list[tuple[str, bytes]] = []
     with tempfile.TemporaryDirectory() as tmpdir:
+        tmp_root = Path(tmpdir)
         with py7zr.SevenZipFile(path, mode="r") as zf:
-            zf.extractall(path=tmpdir)
-        for img_path in sorted(Path(tmpdir).rglob("*")):
-            if img_path.suffix.lower() in _IMAGE_EXTS:
+            # P3 — extração segura: valida nomes, aplica limite total pós-extração
+            safe_extract_7z(zf, tmp_root)
+        for img_path in sorted(tmp_root.rglob("*")):
+            if img_path.is_file() and img_path.suffix.lower() in _IMAGE_EXTS:
                 pages.append((str(img_path), img_path.read_bytes()))
     pages.sort(key=lambda x: x[0])
     return [data for _, data in pages]
@@ -103,7 +132,10 @@ def _extract_cb7(path: str) -> list[bytes]:
 def _extract_cbc(path: str) -> list[bytes]:
     """CBC é um ZIP de CBZs — usa o primeiro CBZ encontrado."""
     with zipfile.ZipFile(path, "r") as zf:
-        cbz_names = sorted(n for n in zf.namelist() if n.lower().endswith(".cbz"))
+        inspect_zip_members(zf)  # P3
+        cbz_names = sorted(
+            n for n in safe_iter_image_names(zf.namelist(), {".cbz"})
+        )
         if not cbz_names:
             raise ValueError("Arquivo CBC não contém nenhum CBZ interno.")
         cbz_data = zf.read(cbz_names[0])
@@ -138,13 +170,20 @@ def ocr_page(img_bytes: bytes, lang: str) -> list[str]:
     """
     Aplica OCR em uma imagem e retorna lista de blocos de texto.
     Levanta RuntimeError se pytesseract não estiver instalado.
+    Levanta ImageBombError se a imagem exceder `limits.image_max_pixels`.
     """
     if not _OCR_AVAILABLE:
         raise RuntimeError(
             "pytesseract não está instalado. Execute: pip install pytesseract Pillow"
         )
     tess_lang = _LANG_MAP.get(lang, lang)
-    img = _PILImage.open(io.BytesIO(img_bytes))
+    try:
+        img = _PILImage.open(io.BytesIO(img_bytes))
+        img.load()  # força decodificação → aciona MAX_IMAGE_PIXELS já
+    except _PILImage.DecompressionBombError:
+        raise ImageBombError(
+            "Imagem com dimensões acima do limite permitido."
+        )
     raw: str = _pytesseract.image_to_string(img, lang=tess_lang)
     blocks = [b.strip() for b in raw.split("\n\n") if b.strip()]
     return blocks
@@ -178,6 +217,13 @@ def run_comic_translation_pipeline(
     pages_bytes = extract_comic_pages(input_path, input_format)
     total_pages = len(pages_bytes)
 
+    # P5 — proteção de páginas ANTES de iniciar tradução/render
+    if total_pages > limits.max_pages:
+        raise PageLimitExceededError(
+            f"O arquivo tem {total_pages} páginas; o limite é "
+            f"{limits.max_pages}."
+        )
+
     results: list[PageResult] = []
     for idx, img_bytes in enumerate(pages_bytes):
         page_num = idx + 1
@@ -193,6 +239,9 @@ def run_comic_translation_pipeline(
         except RuntimeError:
             # pytesseract ausente — abortar (erro de configuração)
             raise
+        except ImageBombError as exc:
+            # Página inválida por tamanho absurdo — registrar mas não abortar
+            results.append({"page": page_num, "blocks": [], "error": str(exc)})
         except Exception as exc:  # noqa: BLE001
             # Erros de engine (EngineNotInstalledError, LanguagePairNotAvailableError)
             # devem abortar o pipeline — verificar pelo nome da classe para evitar
@@ -234,25 +283,32 @@ def _translate_blocks(
     return result
 
 
+def _e(text: Any) -> str:
+    """Escape HTML consistente para texto dinâmico (OCR/tradução/erros)."""
+    return _html.escape(str(text or ""), quote=True)
+
+
 def _build_html_sidecar(pages: list[PageResult], title: str) -> str:
+    safe_title = _e(title)
     parts = [
         "<!DOCTYPE html>",
         "<html lang='pt'>",
         "<head><meta charset='utf-8'>",
-        f"<title>{title}</title>",
+        f"<title>{safe_title}</title>",
         "</head>",
         "<body>",
-        f"<h1>{title}</h1>",
+        f"<h1>{safe_title}</h1>",
     ]
     for page in pages:
-        parts.append(f"<section id='page-{page['page']}'>")
-        parts.append(f"<h2>Página {page['page']}</h2>")
+        pn = int(page.get("page", 0))
+        parts.append(f"<section id='page-{pn}'>")
+        parts.append(f"<h2>Página {pn}</h2>")
         if page.get("error"):
-            parts.append(f"<p class='error'>Erro: {page['error']}</p>")
+            parts.append(f"<p class='error'>Erro: {_e(page['error'])}</p>")
         for block in page.get("blocks", []):
             parts.append("<p>")
-            parts.append(f"<span class='original'>{block['text']}</span><br>")
-            parts.append(f"<span class='translated'>{block['translated']}</span>")
+            parts.append(f"<span class='original'>{_e(block.get('text', ''))}</span><br>")
+            parts.append(f"<span class='translated'>{_e(block.get('translated', ''))}</span>")
             parts.append("</p>")
         parts.append("</section>")
     parts.append("</body></html>")

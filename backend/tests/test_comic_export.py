@@ -382,22 +382,18 @@ def test_validate_export_artifact_rejects_outside_paths(tmp_path: Path) -> None:
 # ---------------------------------------------------------------------------
 
 def test_convert_comic_passes_title_author(monkeypatch, tmp_path) -> None:
+    """v1.2.2 — mocka run_external (novo layer) e verifica -t/-a no cmd."""
+    import subprocess as _sp
     import app.services.kcc_service as kcc
 
     captured: dict = {}
 
-    class FakeResult:
-        returncode = 0
-        stdout = ""
-        stderr = ""
-
-    def fake_run(cmd, **kwargs):
-        captured["cmd"] = cmd
-        return FakeResult()
+    def fake_runner(cmd, **kwargs):
+        captured["cmd"] = list(cmd)
+        return _sp.CompletedProcess(args=cmd, returncode=0, stdout="", stderr="")
 
     monkeypatch.setattr(kcc, "_check_kcc", lambda: None)
-    monkeypatch.setattr(kcc.subprocess, "run", fake_run)
-    # cria o EPUB esperado para o retorno
+    monkeypatch.setattr(kcc, "run_external", fake_runner)
     (tmp_path / "livro.epub").write_bytes(b"x")
 
     kcc.convert_comic(
@@ -409,19 +405,16 @@ def test_convert_comic_passes_title_author(monkeypatch, tmp_path) -> None:
 
 
 def test_convert_comic_omits_title_author_by_default(monkeypatch, tmp_path) -> None:
+    """v1.2.2 — sem título/autor, -t/-a não devem aparecer no cmd."""
+    import subprocess as _sp
     import app.services.kcc_service as kcc
 
     captured: dict = {}
-
-    class FakeResult:
-        returncode = 0
-        stdout = ""
-        stderr = ""
-
     monkeypatch.setattr(kcc, "_check_kcc", lambda: None)
     monkeypatch.setattr(
-        kcc.subprocess, "run",
-        lambda cmd, **kw: captured.update(cmd=cmd) or FakeResult(),
+        kcc, "run_external",
+        lambda cmd, **kw: captured.update(cmd=list(cmd))
+        or _sp.CompletedProcess(args=cmd, returncode=0, stdout="", stderr=""),
     )
     (tmp_path / "livro.epub").write_bytes(b"x")
 

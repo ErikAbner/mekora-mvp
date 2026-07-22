@@ -323,10 +323,61 @@ def compute_overlay_stats(data: OverlaySidecar) -> dict[str, int]:
 # Exportação HTML visual
 # ---------------------------------------------------------------------------
 
+import html as _html_mod
+import re as _re_mod
+
+
+def _e(text: Any) -> str:
+    """Escape HTML de texto dinâmico (P6)."""
+    return _html_mod.escape(str(text or ""), quote=True)
+
+
+_STATUS_ALLOWED = {"pending", "approved", "edited", "skipped"}
+_HEX_COLOR_RE = _re_mod.compile(r"^#[0-9a-fA-F]{3,8}$")
+_ALIGN_ALLOWED = {"left", "center", "right", "justify"}
+
+
+def _safe_status(status: Any) -> str:
+    s = str(status or "pending")
+    return s if s in _STATUS_ALLOWED else "pending"
+
+
+def _safe_color(value: Any, fallback: str) -> str:
+    """Aceita apenas hex #RGB/#RRGGBB(AA); demais → fallback."""
+    if isinstance(value, str) and _HEX_COLOR_RE.match(value):
+        return value
+    return fallback
+
+
+def _safe_align(value: Any) -> str:
+    return value if value in _ALIGN_ALLOWED else "left"
+
+
+def _safe_unit_float(value: Any, low: float, high: float, default: float) -> float:
+    try:
+        f = float(value)
+    except (TypeError, ValueError):
+        return default
+    if f < low or f > high:
+        return default
+    return f
+
+
+def _safe_img_src(value: Any) -> str:
+    """
+    Só permite src relativo dentro do storage servido pelo backend
+    (`/storage/output/…`). Bloqueia javascript:, data:, absoluto externo etc.
+    """
+    if not isinstance(value, str) or not value.startswith("/storage/output/"):
+        return ""
+    # Escape para atributo (evita fechar aspas ou inserir handler)
+    return _e(value)
+
+
 def export_overlay_html(data: OverlaySidecar) -> str:
-    job_id = data.get("job_id", "?")
-    src = data.get("source_language", "")
-    tgt = data.get("target_language", "")
+    job_id = _e(data.get("job_id", "?"))
+    src = _e(data.get("source_language", ""))
+    tgt = _e(data.get("target_language", ""))
 
     parts = [
         "<!DOCTYPE html>",
@@ -345,14 +396,14 @@ def export_overlay_html(data: OverlaySidecar) -> str:
         ".pi{display:block;width:100%}",
         ".ob{position:absolute;cursor:default;overflow:hidden;padding:1px}",
         ".ot{line-height:1.2;word-break:break-word;"
-        "background:rgba(255,255,255,.85);padding:1px}",
+        "background:rgba(255,255,255,.85);padding:1px;white-space:pre-wrap}",
         ".nl{background:#f9fafb;border:1px solid #e5e7eb;border-radius:.5rem;padding:1rem;margin-top:.5rem}",
         ".bi{border-left:3px solid #d1d5db;padding:.5rem .75rem;margin-bottom:.5rem}",
         ".bi.approved{border-color:#16a34a}.bi.edited{border-color:#2563eb}",
         ".bi.skipped{border-color:#9ca3af;opacity:.7}.bi.pending{border-color:#f59e0b}",
         ".lbl{font-size:.65rem;font-weight:600;text-transform:uppercase;color:#6b7280;margin-bottom:.2rem}",
-        ".orig{color:#6b7280;font-size:.8rem}.trans{color:#374151;font-size:.8rem}",
-        ".rev{color:#15803d;font-size:.8rem;font-weight:500}",
+        ".orig{color:#6b7280;font-size:.8rem;white-space:pre-wrap}.trans{color:#374151;font-size:.8rem;white-space:pre-wrap}",
+        ".rev{color:#15803d;font-size:.8rem;font-weight:500;white-space:pre-wrap}",
         "</style></head><body>",
         f"<h1>Overlay Visual — Job {job_id}</h1>",
         f"<p style='color:#6b7280;font-size:.875rem'>{src} → {tgt}</p>",
@@ -362,8 +413,8 @@ def export_overlay_html(data: OverlaySidecar) -> str:
     ]
 
     for page in data["pages"]:
-        pn = page["page_number"]
-        img_path = page.get("image_path")
+        pn = int(page.get("page_number", 0))
+        img_path = _safe_img_src(page.get("image_path"))
         blocks = page.get("blocks", [])
         parts.append(f"<div class='ps'><h2>Página {pn}</h2>")
 
@@ -376,18 +427,24 @@ def export_overlay_html(data: OverlaySidecar) -> str:
                 pos = block.get("overlay_position") or block.get("bbox")
                 if not pos or len(pos) < 4:
                     continue
-                status = block.get("review_status", "pending")
-                x_pct = pos[0] * 100
-                y_pct = pos[1] * 100
-                w_pct = pos[2] * 100
-                h_pct = pos[3] * 100
+                try:
+                    x_pct = float(pos[0]) * 100
+                    y_pct = float(pos[1]) * 100
+                    w_pct = float(pos[2]) * 100
+                    h_pct = float(pos[3]) * 100
+                except (TypeError, ValueError):
+                    continue
+                status = _safe_status(block.get("review_status", "pending"))
                 text = block.get("reviewed_text") or block.get("translated_text", "")
                 sty = block.get("overlay_style") or {}
-                border_color = sty.get("border_color") or _STATUS_BORDER.get(status, "#9ca3af")
-                bg_opacity   = sty.get("bg_opacity", 0.15)
-                font_size    = sty.get("font_size", 0.6)
-                text_color   = sty.get("text_color", "#1a1a1a")
-                text_align   = sty.get("text_align", "left")
+                border_color = _safe_color(
+                    sty.get("border_color"),
+                    _STATUS_BORDER.get(status, "#9ca3af"),
+                )
+                bg_opacity = _safe_unit_float(sty.get("bg_opacity", 0.15), 0.0, 1.0, 0.15)
+                font_size = _safe_unit_float(sty.get("font_size", 0.6), 0.3, 3.0, 0.6)
+                text_color = _safe_color(sty.get("text_color", "#1a1a1a"), "#1a1a1a")
+                text_align = _safe_align(sty.get("text_align", "left"))
                 parts.append(
                     f"<div class='ob' style='"
                     f"left:{x_pct:.2f}%;top:{y_pct:.2f}%;"
@@ -397,7 +454,7 @@ def export_overlay_html(data: OverlaySidecar) -> str:
                 )
                 parts.append(
                     f"<div class='ot' style='font-size:{font_size:.2f}rem;"
-                    f"color:{text_color};text-align:{text_align}'>{text}</div>"
+                    f"color:{text_color};text-align:{text_align}'>{_e(text)}</div>"
                 )
                 parts.append("</div>")
             parts.append("</div>")
@@ -411,21 +468,21 @@ def export_overlay_html(data: OverlaySidecar) -> str:
                 "Blocos sem posição detectada:</p>"
             )
             for block in no_pos:
-                status = block.get("review_status", "pending")
+                status = _safe_status(block.get("review_status", "pending"))
                 parts.append(f"<div class='bi {status}'>")
                 parts.append(
-                    f"<div class='lbl'>Original</div>"
-                    f"<div class='orig'>{block.get('original_text', '')}</div>"
+                    "<div class='lbl'>Original</div>"
+                    f"<div class='orig'>{_e(block.get('original_text', ''))}</div>"
                 )
                 parts.append(
-                    f"<div class='lbl' style='margin-top:.25rem'>Tradução</div>"
-                    f"<div class='trans'>{block.get('translated_text', '')}</div>"
+                    "<div class='lbl' style='margin-top:.25rem'>Tradução</div>"
+                    f"<div class='trans'>{_e(block.get('translated_text', ''))}</div>"
                 )
                 rev = block.get("reviewed_text", "")
                 if rev:
                     parts.append(
-                        f"<div class='lbl' style='margin-top:.25rem'>Revisado</div>"
-                        f"<div class='rev'>{rev}</div>"
+                        "<div class='lbl' style='margin-top:.25rem'>Revisado</div>"
+                        f"<div class='rev'>{_e(rev)}</div>"
                     )
                 parts.append("</div>")
             parts.append("</div>")

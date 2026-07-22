@@ -56,7 +56,28 @@ async def test_email() -> TestEmailResponse:
     except smtplib.SMTPConnectError:
         raise HTTPException(
             status_code=502,
-            detail=f"Não foi possível conectar ao servidor {settings.smtp_host}:{settings.smtp_port}.",
+            detail="Não foi possível conectar ao servidor SMTP configurado.",
         )
-    except Exception as exc:
-        raise HTTPException(status_code=400, detail=f"Erro SMTP: {exc}")
+    except (smtplib.SMTPHeloError, smtplib.SMTPNotSupportedError):
+        raise HTTPException(
+            status_code=502,
+            detail="Servidor SMTP recusou o handshake inicial.",
+        )
+    except smtplib.SMTPException:
+        raise HTTPException(
+            status_code=502,
+            detail="Falha na comunicação com o servidor SMTP.",
+        )
+    except OSError:
+        # DNS/rede — não vazar host, porta, IP, path do resolver
+        raise HTTPException(
+            status_code=503,
+            detail="Servidor SMTP inacessível.",
+        )
+    except Exception:
+        # Último recurso: mensagem fixa, sem str(exc) — evita vazamento
+        # de senha/host/user que possam estar em __str__ da exceção
+        raise HTTPException(
+            status_code=400,
+            detail="Erro inesperado ao testar SMTP.",
+        )

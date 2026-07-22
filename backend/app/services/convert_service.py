@@ -15,9 +15,13 @@ Pré-requisito no macOS:
 
 from __future__ import annotations
 
-import subprocess
+import subprocess  # noqa: F401  # mantido para compatibilidade com testes que fazem monkeypatch
 from pathlib import Path
 from typing import Optional
+
+from app.core.config import STORAGE_INPUT, STORAGE_OUTPUT, STORAGE_TEMP
+from app.core.limits import limits
+from app.services.subprocess_runner import ExternalToolError, run_external
 
 
 class ConversionFailedError(Exception):
@@ -60,7 +64,13 @@ def convert_to_epub(
     if cover and cover.exists():
         cmd += ["--cover", str(cover)]
 
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    if result.returncode != 0:
-        detail = result.stderr.strip() or result.stdout.strip() or "ebook-convert falhou sem mensagem de erro."
-        raise ConversionFailedError(detail)
+    try:
+        run_external(
+            cmd,
+            timeout_seconds=limits.calibre_timeout_seconds,
+            tool_label="ebook-convert",
+            input_path=input_path,
+            allowed_roots=(STORAGE_INPUT, STORAGE_OUTPUT, STORAGE_TEMP),
+        )
+    except ExternalToolError as exc:
+        raise ConversionFailedError(exc.public_message)

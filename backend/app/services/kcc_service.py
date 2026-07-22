@@ -1,4 +1,8 @@
-"""Integração com Kindle Comic Converter (kcc-c2e CLI) — Fase A."""
+"""Integração com Kindle Comic Converter (kcc-c2e CLI) — Fase A.
+
+v1.2.2 — subprocess de conversão migrado para `subprocess_runner.run_external`
+(timeout, captura limitada, mensagens redigidas).
+"""
 
 from __future__ import annotations
 
@@ -7,6 +11,10 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+from app.core.config import STORAGE_INPUT, STORAGE_OUTPUT, STORAGE_TEMP
+from app.core.limits import limits
+from app.services.subprocess_runner import ExternalToolError, run_external
 
 KCC_PROFILES: dict[str, str] = {
     'KV':   'Kindle Voyage / PW 3 (1448×1072)',
@@ -140,19 +148,21 @@ def convert_comic(
         cmd.extend(['-a', author])
 
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True)
-    except FileNotFoundError:
-        raise KccNotInstalledError(
-            "kcc-c2e não encontrado ao tentar converter. "
-            "Instale com: pip install git+https://github.com/ciromattia/kcc.git"
+        run_external(
+            cmd,
+            timeout_seconds=limits.kcc_timeout_seconds,
+            tool_label="KCC",
+            input_path=input_path,
+            allowed_roots=(STORAGE_INPUT, STORAGE_OUTPUT, STORAGE_TEMP),
         )
-    if result.returncode != 0:
-        # KCC writes errors to stdout; fall back to stderr if stdout is empty
-        output = (result.stdout.strip() or result.stderr.strip())[:400]
-        raise KccConversionFailedError(
-            f"KCC falhou ao processar o arquivo (código {result.returncode})"
-            + (f": {output}" if output else "")
-        )
+    except ExternalToolError as exc:
+        if exc.code == "TOOL_NOT_FOUND":
+            raise KccNotInstalledError(
+                "kcc-c2e não encontrado ao tentar converter. "
+                "Instale com: pip install git+https://github.com/ciromattia/kcc.git"
+            )
+        # Preserva a interface do serviço; mensagem já vem curta e sem paths
+        raise KccConversionFailedError(exc.public_message)
 
     # KCC pode adicionar sufixo ao nome — buscar o EPUB gerado
     stem = input_path.stem

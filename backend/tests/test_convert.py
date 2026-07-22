@@ -1,53 +1,73 @@
 """
-Testes unitários do convert_service (subprocess mockado).
+Testes unitários do convert_service.
+
+v1.2.2 — o subprocess é executado via `subprocess_runner.run_external`;
+os testes mockam esse helper para preservar as asserções semânticas
+(retorno sem exceção / ConversionFailedError com mensagem pública curta /
+comando com --cover quando aplicável).
 """
 
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
-from unittest.mock import MagicMock
 
 import pytest
 
 
+def _fake_ok(**kw):
+    import subprocess as _sp
+    return _sp.CompletedProcess(args=[], returncode=0, stdout="", stderr="")
+
+
 def test_convert_success(tmp_path, monkeypatch):
-    """subprocess.run com returncode=0 → converte sem exceção."""
-    from app.services.convert_service import convert_to_epub
+    """run_external com retorno OK → converte sem exceção."""
+    from app.services import convert_service as cs
 
     input_pdf = tmp_path / "input.pdf"
     input_pdf.write_bytes(b"%PDF-1.4 fake")
     output_epub = tmp_path / "out" / "book.epub"
 
-    mock_result = MagicMock()
-    mock_result.returncode = 0
-    monkeypatch.setattr(subprocess, "run", lambda *a, **kw: mock_result)
+    monkeypatch.setattr(cs, "run_external", lambda *a, **kw: _fake_ok())
 
-    # Deve completar sem lançar exceção
-    convert_to_epub(input_pdf, output_epub, title="Título", author="Autor", language="por")
+    cs.convert_to_epub(
+        input_pdf, output_epub, title="Título", author="Autor", language="por"
+    )
 
 
 def test_convert_failure_raises(tmp_path, monkeypatch):
-    """subprocess.run com returncode=1 → ConversionFailedError."""
-    from app.services.convert_service import ConversionFailedError, convert_to_epub
+    """run_external levanta ExternalToolError → ConversionFailedError.
+
+    A mensagem pública NÃO deve incluir detalhes técnicos brutos: o
+    helper já produz "ebook-convert falhou ao processar o arquivo …".
+    """
+    from app.services import convert_service as cs
+    from app.services.subprocess_runner import ExternalToolError
 
     input_pdf = tmp_path / "input.pdf"
     input_pdf.write_bytes(b"%PDF-1.4 fake")
     output_epub = tmp_path / "out" / "book.epub"
 
-    mock_result = MagicMock()
-    mock_result.returncode = 1
-    mock_result.stderr = "ebook-convert error detail"
-    mock_result.stdout = ""
-    monkeypatch.setattr(subprocess, "run", lambda *a, **kw: mock_result)
+    def _raise(*a, **kw):
+        raise ExternalToolError(
+            "TOOL_FAILED",
+            "ebook-convert falhou ao processar o arquivo (código 1).",
+            redacted_detail="detalhe interno com <project>",
+        )
 
-    with pytest.raises(ConversionFailedError, match="ebook-convert error detail"):
-        convert_to_epub(input_pdf, output_epub, title="Título", author="Autor", language="por")
+    monkeypatch.setattr(cs, "run_external", _raise)
+
+    with pytest.raises(cs.ConversionFailedError) as exc_info:
+        cs.convert_to_epub(
+            input_pdf, output_epub, title="T", author="A", language="por"
+        )
+    # Mensagem pública curta, sem detalhe redigido
+    assert "ebook-convert falhou" in str(exc_info.value)
+    assert "detalhe interno" not in str(exc_info.value)
 
 
 def test_convert_with_cover(tmp_path, monkeypatch):
-    """Quando cover existe, --cover é incluído no comando."""
-    from app.services.convert_service import convert_to_epub
+    """Quando cover existe, --cover é incluído no comando enviado ao runner."""
+    from app.services import convert_service as cs
 
     input_pdf = tmp_path / "input.pdf"
     input_pdf.write_bytes(b"%PDF-1.4 fake")
@@ -55,16 +75,18 @@ def test_convert_with_cover(tmp_path, monkeypatch):
     cover.write_bytes(b"fake image")
     output_epub = tmp_path / "out" / "book.epub"
 
-    captured_cmd: list = []
-    mock_result = MagicMock()
-    mock_result.returncode = 0
+    captured: dict = {}
 
-    def fake_run(cmd, **kw):
-        captured_cmd.extend(cmd)
-        return mock_result
+    def _capture(cmd, **kwargs):
+        captured["cmd"] = list(cmd)
+        captured["timeout"] = kwargs.get("timeout_seconds")
+        return _fake_ok()
 
-    monkeypatch.setattr(subprocess, "run", fake_run)
+    monkeypatch.setattr(cs, "run_external", _capture)
 
-    convert_to_epub(input_pdf, output_epub, title="T", author="A", language="eng", cover=cover)
+    cs.convert_to_epub(
+        input_pdf, output_epub, title="T", author="A", language="eng", cover=cover
+    )
 
-    assert "--cover" in captured_cmd
+    assert "--cover" in captured["cmd"]
+    assert captured["timeout"] and captured["timeout"] > 0
