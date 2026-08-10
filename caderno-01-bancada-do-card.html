@@ -1,0 +1,1077 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>*,*::before,*::after{box-sizing:border-box}body{margin:0}</style>
+</head>
+<body>
+<title>Bancada do card · Mekora</title>
+
+<style>
+/* ============================================================
+   TOKENS
+   Três vozes tipográficas com significado:
+   serif  = o argumento   |  mono = o instrumento  |  helvetica = o produto
+   ============================================================ */
+:root{
+  --bench:#DDD8CC;      /* bancada (fundo da página) */
+  --bench-2:#E7E3D9;    /* painéis do instrumento   */
+  --bench-3:#D2CCBE;    /* sulcos, trilhos          */
+  --canvas:#F1EEE8;     /* superfície do produto    */
+  --card:#FCFBF8;
+  --ink:#141311;
+  --ink-2:#55504A;
+  --ink-3:#8A857C;
+  --rule:#C6C0B1;
+  --rule-2:#E4E0D6;
+  --accent:#C33B1E;
+  --good:#4A6B45;
+  --warn:#A8791F;
+  --crit:#C33B1E;
+  --shadow:20,19,17;
+  --sig-bg:#141311;   /* aba e marcas: vivem FORA da capa, então seguem o tema */
+  --sig-fg:#F1EEE8;
+  --typo-bg:#141311;  /* capa tipográfica gerada */
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Mono","Liberation Mono",monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bench:#121110;--bench-2:#1B1917;--bench-3:#0C0B0A;--canvas:#201E1B;--card:#2A2724;
+    --ink:#F1EEE8;--ink-2:#B9B2A6;--ink-3:#867F74;--rule:#3B372F;--rule-2:#332F29;
+    --accent:#E4613D;--good:#84A878;--warn:#D3A448;--crit:#E4613D;--shadow:0,0,0;
+    --sig-bg:#EDE8DE;--sig-fg:#1A1917;--typo-bg:#3A352E;
+  }
+}
+:root[data-theme="dark"]{
+  --bench:#121110;--bench-2:#1B1917;--bench-3:#0C0B0A;--canvas:#201E1B;--card:#2A2724;
+  --ink:#F1EEE8;--ink-2:#B9B2A6;--ink-3:#867F74;--rule:#3B372F;--rule-2:#332F29;
+  --accent:#E4613D;--good:#84A878;--warn:#D3A448;--crit:#E4613D;--shadow:0,0,0;
+    --sig-bg:#EDE8DE;--sig-fg:#1A1917;--typo-bg:#3A352E;
+}
+:root[data-theme="light"]{
+  --bench:#DDD8CC;--bench-2:#E7E3D9;--bench-3:#D2CCBE;--canvas:#F1EEE8;--card:#FCFBF8;
+  --ink:#141311;--ink-2:#55504A;--ink-3:#8A857C;--rule:#C6C0B1;--rule-2:#E4E0D6;
+  --accent:#C33B1E;--good:#4A6B45;--warn:#A8791F;--crit:#C33B1E;--shadow:20,19,17;
+  --sig-bg:#141311;--sig-fg:#F1EEE8;--typo-bg:#141311;
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bench);color:var(--ink);font-family:var(--serif);
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.page{max-width:1180px;margin:0 auto;padding:56px 28px 96px;display:flex;flex-direction:column;gap:76px}
+h1,h2,h3{margin:0;text-wrap:balance}
+p{margin:0}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+
+/* --- vocabulário do instrumento --- */
+.lbl{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* ============================================================ HERO */
+.s-hero{display:flex;flex-direction:column;gap:20px;max-width:760px}
+.s-hero .eyebrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.s-hero .eyebrow span:not(:last-child)::after{content:"";display:inline-block;width:1px;height:9px;
+  background:var(--rule);margin-left:10px;vertical-align:-1px}
+.s-hero h1{font-size:clamp(34px,5.2vw,52px);font-weight:400;line-height:1.04;letter-spacing:-.015em}
+.s-hero h1 em{font-style:italic;color:var(--accent)}
+.s-hero .q{font-size:19px;line-height:1.5;font-style:italic;color:var(--ink-2);
+  border-left:2px solid var(--accent);padding-left:18px;max-width:600px}
+.s-hero .lede{font-size:16px;line-height:1.62;color:var(--ink-2);max-width:600px}
+.s-hero .lede strong{color:var(--ink);font-weight:600}
+.tallies{display:flex;gap:0;flex-wrap:wrap;border-top:1px solid var(--rule);padding-top:14px;margin-top:4px}
+.tally{padding:0 22px 0 0;margin-right:22px;border-right:1px solid var(--rule);
+  display:flex;flex-direction:column;gap:3px}
+.tally:last-child{border-right:none;margin-right:0;padding-right:0}
+.tally b{font-family:var(--mono);font-size:20px;font-weight:500;letter-spacing:-.02em}
+
+/* ============================================================ SEÇÕES */
+.s-head{display:flex;flex-direction:column;gap:9px;margin-bottom:26px}
+.s-head .rule{height:1px;background:var(--ink);opacity:.85}
+.s-head .top{display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap}
+.s-head h2{font-size:27px;font-weight:400;letter-spacing:-.01em}
+.s-head p{font-size:14.5px;line-height:1.6;color:var(--ink-2);max-width:640px}
+
+/* ============================================================ BANCADA */
+.bench{display:grid;grid-template-columns:216px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.bench{grid-template-columns:1fr}}
+
+.rail{display:flex;flex-direction:column;gap:20px;background:var(--bench-2);
+  border:1px solid var(--rule);border-radius:4px;padding:16px 14px}
+.rail-grp{display:flex;flex-direction:column;gap:8px}
+.rail-grp>.lbl{display:flex;justify-content:space-between;align-items:baseline}
+
+.mbtn{display:flex;flex-direction:column;gap:1px;padding:7px 9px;border-radius:3px;
+  border:1px solid transparent;text-align:left;transition:background .12s,border-color .12s}
+.mbtn .code{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--ink-3)}
+.mbtn .nm{font-family:var(--sans);font-size:12.5px;font-weight:500;line-height:1.2}
+.mbtn:hover{background:var(--bench-3)}
+.mbtn[aria-pressed="true"]{background:var(--ink);border-color:var(--ink)}
+.mbtn[aria-pressed="true"] .nm{color:var(--canvas)}
+.mbtn[aria-pressed="true"] .code{color:var(--accent)}
+.mbtn.base{border-color:var(--rule);border-style:dashed}
+.mlist{display:flex;flex-direction:column;gap:2px}
+
+.seg{display:flex;border:1px solid var(--rule);border-radius:3px;overflow:hidden}
+.seg button{flex:1;padding:6px 2px;font-family:var(--mono);font-size:11px;
+  border-right:1px solid var(--rule);transition:background .12s}
+.seg button:last-child{border-right:none}
+.seg button:hover{background:var(--bench-3)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--canvas)}
+
+.log{display:flex;flex-direction:column;gap:3px;border-top:1px solid var(--rule);padding-top:12px}
+.log ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px;
+  height:82px;overflow:hidden}
+.log li{font-family:var(--mono);font-size:10px;line-height:1.35;color:var(--ink-2);
+  display:flex;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.log li i{color:var(--ink-3);font-style:normal}
+.log li b{font-weight:500;color:var(--ink)}
+.log li.fresh{color:var(--accent)}
+
+/* --- painel de leitura (métricas) --- */
+.gauges{display:flex;flex-wrap:wrap;gap:0;background:var(--bench-2);border:1px solid var(--rule);
+  border-radius:4px 4px 0 0;border-bottom:none;padding:11px 4px}
+.gauge{padding:0 15px;border-right:1px solid var(--rule);display:flex;flex-direction:column;gap:2px;min-width:78px}
+.gauge:last-child{border-right:none}
+.gauge b{font-family:var(--mono);font-size:17px;font-weight:500;font-variant-numeric:tabular-nums;
+  letter-spacing:-.02em;line-height:1.1}
+.gauge.g-good b{color:var(--good)}.gauge.g-warn b{color:var(--warn)}.gauge.g-crit b{color:var(--crit)}
+.gauge small{font-family:var(--mono);font-size:9.5px;color:var(--ink-3);letter-spacing:.1em;text-transform:uppercase}
+
+/* --- moldura do produto --- */
+.frame{border:1px solid var(--rule);border-radius:0 0 4px 4px;background:var(--canvas);
+  display:flex;overflow:hidden}
+.viewport{flex:1;min-width:0;overflow-y:auto;overflow-x:hidden;height:clamp(430px,58vh,600px);
+  padding:18px;scrollbar-width:thin}
+.viewport::-webkit-scrollbar{width:9px}
+.viewport::-webkit-scrollbar-thumb{background:var(--rule);border-radius:9px}
+.note-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:8px 12px;background:var(--bench-2);border:1px solid var(--rule);border-top:none;
+  border-radius:0 0 4px 4px;font-family:var(--mono);font-size:10.5px;color:var(--ink-2)}
+.note-bar .keys{display:flex;gap:10px;flex-wrap:wrap;color:var(--ink-3)}
+.note-bar kbd{font-family:var(--mono);font-size:10px;border:1px solid var(--rule);
+  border-radius:2px;padding:1px 4px;color:var(--ink)}
+.loss{color:var(--accent)}
+
+/* ============================================================ PRODUTO (canvas Mekora) */
+.p-grid{display:grid;gap:var(--gap);align-items:start;font-family:var(--sans);
+  grid-template-columns:repeat(auto-fill,minmax(min(var(--cell),100%),1fr))}
+.p-cell{position:relative;display:flex;flex-direction:column;gap:7px;cursor:pointer;
+  border-radius:5px;transition:transform .12s ease-out}
+.p-cell:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
+.p-cell[aria-selected="true"] .p-cover-box{outline:2px solid var(--ink);outline-offset:3px}
+
+.p-cover-box{position:relative;width:100%}
+.p-cover{position:absolute;inset:0;background:var(--paper);border-radius:4px;overflow:hidden;
+  display:flex;flex-direction:column;box-shadow:0 4px 12px rgba(var(--shadow),.16);
+  transition:box-shadow .12s ease-out,transform .12s ease-out}
+.p-cover .cv-head{padding:9% 9% 0;display:flex;flex-direction:column;gap:.35em}
+.cv-title{font-size:calc(var(--cw)*.088);font-weight:700;line-height:1.15;color:#141311;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.cv-author{font-size:calc(var(--cw)*.048);letter-spacing:.14em;color:#55504A;text-transform:uppercase}
+.cv-art{flex:1;margin:6% 8% 0;min-height:0}
+.cv-foot{background:#141311;height:6%}
+.p-cover.typo{background:var(--typo-bg);align-items:center;justify-content:center;padding:12%}
+.p-cover.typo .cv-title{color:#EDE8DE;font-size:calc(var(--cw)*.082);-webkit-line-clamp:4;text-align:center}
+
+/* arte de capa gerada */
+.art-0{background-image:radial-gradient(var(--tone) 12%,transparent 13%);background-size:14% 14%;
+  -webkit-mask-image:linear-gradient(to bottom,transparent,#000);mask-image:linear-gradient(to bottom,transparent,#000)}
+.art-1{background-image:repeating-linear-gradient(to bottom,var(--tone) 0 6%,transparent 6% 18%)}
+.art-2{background-image:radial-gradient(circle at 68% 72%,var(--tone) 0 42%,transparent 43%)}
+.art-3{background-image:repeating-linear-gradient(48deg,var(--tone) 0 4%,transparent 4% 13%)}
+.art-4{background-image:linear-gradient(to bottom,var(--tone) 0 38%,transparent 38%)}
+.art-5{background-image:repeating-radial-gradient(circle at 50% 100%,transparent 0 9%,var(--tone) 9% 11%)}
+
+/* elementos de sinal */
+/* o fio corre sobre a faixa escura do pé da capa — precisa ser claro nos dois temas */
+.p-prog{position:absolute;left:0;bottom:0;height:3px;background:#F1EEE8;border-radius:0 2px 0 0}
+.p-tab{position:absolute;top:-11px;right:11%;background:var(--sig-bg);color:var(--sig-fg);font-size:9px;
+  font-weight:700;line-height:1;padding:3px 6px 8px;border-radius:3px 3px 0 0;font-family:var(--sans);
+  transition:background .12s,color .12s,transform .12s}
+.p-tab:hover,.p-cell[aria-selected="true"] .p-tab{background:var(--accent);color:#F1EEE8}
+.p-marks{position:absolute;right:-4px;top:0;bottom:0;pointer-events:none}
+.p-marks i{position:absolute;right:0;width:8px;height:4px;border-radius:1px;background:var(--sig-bg)}
+.p-marks i.hot{background:var(--accent)}
+.p-taglab{position:absolute;left:-6px;bottom:14%;background:var(--card);border:1px solid var(--rule-2);
+  border-radius:2px;padding:2px 6px;font-size:8.5px;font-weight:600;color:var(--ink);
+  box-shadow:0 2px 7px rgba(var(--shadow),.14);white-space:nowrap}
+.p-check{position:absolute;right:5px;bottom:5px;width:15px;height:15px;border-radius:50%;
+  background:#141311;color:#F1EEE8;font-size:9px;display:flex;align-items:center;justify-content:center}
+
+/* meta abaixo da capa */
+.p-meta{display:flex;flex-direction:column;gap:2px;min-width:0}
+.p-t{font-size:12.5px;font-weight:600;line-height:1.25;color:var(--ink);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.p-a{font-size:10.5px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.p-line{display:flex;justify-content:space-between;font-size:9.5px;color:var(--ink-3);gap:6px}
+.p-line b{color:var(--ink);font-weight:600}
+.p-bar{height:2px;background:var(--rule-2);border-radius:1px;overflow:hidden;margin-top:3px}
+.p-bar i{display:block;height:100%;background:var(--ink)}
+
+/* camada de hover (só no modo mouse) */
+.p-hover{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .12s ease-out;
+  border-radius:4px;overflow:hidden}
+.bench[data-input="mouse"] .p-cell:hover .p-hover{opacity:1;pointer-events:auto}
+.bench[data-input="mouse"] .p-cell:hover .p-cover{box-shadow:0 12px 26px rgba(var(--shadow),.26);transform:translateY(-3px)}
+.bench[data-input="mouse"] .p-cell:hover .p-tab{transform:translateY(-3px)}
+.p-hover.veil{background:rgba(20,19,17,.88);color:#F1EEE8;display:flex;flex-direction:column;
+  justify-content:flex-end;gap:4px;padding:10px}
+.p-hover.veil .hv-t{font-size:12px;font-weight:700;line-height:1.2}
+.p-hover.veil .hv-m{font-size:9.5px;opacity:.75}
+.p-acts{position:absolute;left:7px;right:7px;bottom:7px;display:flex;gap:4px}
+.p-btn{flex:1;text-align:center;font-size:10px;font-weight:600;background:#141311;color:#F1EEE8;
+  border-radius:999px;padding:6px 0;box-shadow:0 3px 10px rgba(20,19,17,.34);font-family:var(--sans)}
+.p-btn.ghost{flex:0 0 24px;background:#FCFBF8;color:#141311;letter-spacing:1px}
+.p-btn:hover{background:var(--accent);color:#F1EEE8}
+
+/* M0 — o card atual */
+.p-cell.row{flex-direction:row;gap:14px;background:var(--card);border-radius:12px;padding:13px;
+  box-shadow:0 6px 18px rgba(var(--shadow),.09)}
+.p-cell.row .p-cover-box{width:74px;flex:0 0 74px}
+.p-cell.row .rowbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px}
+.p-cell.row .count{font-size:21px;font-weight:600;line-height:1;letter-spacing:-.02em}
+.p-cell.row .snip{border-left:2px solid var(--ink);padding-left:9px;font-size:10.5px;color:var(--ink-2);
+  line-height:1.4;font-family:var(--serif);font-style:italic}
+.p-cell.row .rowfoot{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;font-size:10px;color:var(--ink-3)}
+.p-cell.row .rowfoot b{font-size:12.5px;font-weight:600;color:var(--ink)}
+.p-cell.row .rowacts{display:flex;gap:9px;align-items:center;margin-top:2px}
+.p-cell.row .rowacts span{border:1px solid var(--rule-2);border-radius:999px;padding:5px 14px;font-size:10.5px}
+.p-cell.row .rowacts span.bare{border:none;padding:5px 0}
+
+/* M3 — expansão inline */
+.p-cell.expanded{grid-column:span 2;flex-direction:row;gap:12px;background:var(--card);
+  border:1px solid var(--rule-2);border-radius:9px;padding:12px;box-shadow:0 12px 26px rgba(var(--shadow),.14)}
+.p-cell.expanded .p-cover-box{width:78px;flex:0 0 78px}
+.p-cell.expanded .exbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.chip{font-size:9px;font-weight:600;background:var(--bench-3);color:var(--ink);border-radius:999px;padding:2px 8px}
+.chips{display:flex;gap:4px;flex-wrap:wrap}
+
+/* M5 — cartão de nota no lugar da capa */
+.p-notecard{background:var(--card);border:1px solid var(--rule-2);border-radius:7px;padding:10px;
+  display:flex;flex-direction:column;gap:6px;box-shadow:0 8px 20px rgba(var(--shadow),.12)}
+.p-notecard .nk{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.p-notecard .nq{font-family:var(--serif);font-style:italic;font-size:11px;line-height:1.45;color:var(--ink)}
+.p-notecard .nl{font-size:9.5px;font-weight:600;text-decoration:underline}
+
+/* M6 — objeto na estante */
+.p-cell.shelf{justify-content:flex-end}
+.p-obj{display:flex;align-items:flex-end}
+.p-obj .body{position:relative;background:var(--paper);border-radius:3px 1px 1px 3px;overflow:hidden;
+  display:flex;flex-direction:column;box-shadow:0 8px 18px rgba(var(--shadow),.2);flex:1}
+.p-obj .edge{width:var(--thick);background:repeating-linear-gradient(to bottom,#EDE8DE 0 2px,#DBD4C4 2px 3px);
+  border-radius:0 2px 2px 0;position:relative;align-self:stretch;margin-bottom:6px;cursor:pointer}
+.p-obj .edge i{position:absolute;left:0;right:2px;height:3px;background:#141311}
+.p-obj .edge i.hot{background:#C33B1E}
+.p-obj .edge:hover{filter:brightness(.94)}
+.p-ribbon{position:absolute;top:-5px;right:14%;width:7px;height:26px;background:#C33B1E;
+  clip-path:polygon(0 0,100% 0,100% 100%,50% 80%,0 100%)}
+.shelfline{height:3px;background:var(--rule);border-radius:2px;margin-top:2px}
+
+/* inspector */
+.inspector{width:262px;flex:0 0 262px;border-left:1px solid var(--rule-2);background:var(--card);
+  display:flex;flex-direction:column;font-family:var(--sans)}
+.insp-tabs{display:flex;border-bottom:1px solid var(--rule-2)}
+.insp-tabs button{flex:1;padding:9px 0;font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-3)}
+.insp-tabs button[aria-selected="true"]{color:var(--ink);box-shadow:inset 0 -2px 0 var(--ink)}
+.insp-body{padding:15px;display:flex;flex-direction:column;gap:10px;overflow-y:auto}
+.insp-body h4{margin:0;font-family:var(--sans);font-size:15px;font-weight:700;line-height:1.2}
+.insp-meta{font-size:10.5px;color:var(--ink-3)}
+.insp-q{border-left:2px solid var(--rule-2);padding-left:9px;font-family:var(--serif);font-style:italic;
+  font-size:11.5px;line-height:1.5;color:var(--ink-2)}
+.insp-acts{display:flex;gap:6px;margin-top:2px}
+.insp-acts button{flex:1;text-align:center;font-size:11px;font-weight:600;background:var(--ink);
+  color:var(--canvas);border-radius:999px;padding:7px 0}
+.insp-acts button.sec{background:none;border:1px solid var(--rule);color:var(--ink)}
+.insp-acts button:hover{background:var(--accent);color:#F1EEE8;border-color:var(--accent)}
+.insp-empty{padding:22px 16px;font-family:var(--mono);font-size:10.5px;line-height:1.6;color:var(--ink-3)}
+.insp-notes{display:flex;flex-direction:column;gap:9px}
+.insp-notes li{list-style:none;border-top:1px solid var(--rule-2);padding-top:8px;
+  font-family:var(--serif);font-size:11.5px;line-height:1.5;color:var(--ink-2)}
+.insp-notes li b{display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-3);margin-bottom:3px;font-weight:400}
+@media (max-width:640px){.inspector{display:none}}
+
+/* ============================================================ PROVAS */
+.claims{display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:1px;
+  background:var(--rule);border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.claim{background:var(--bench-2);padding:18px;display:flex;flex-direction:column;gap:9px}
+.claim h3{font-size:15.5px;font-weight:600;line-height:1.3;font-family:var(--sans);letter-spacing:-.01em}
+.claim p{font-size:13px;line-height:1.6;color:var(--ink-2);flex:1}
+.claim .go{align-self:flex-start;font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;border-bottom:1px solid var(--accent);color:var(--accent);padding-bottom:2px}
+.claim .go:hover{background:var(--accent);color:var(--canvas);border-color:transparent}
+
+/* ============================================================ MATRIZ */
+.mx{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:26px;align-items:start}
+@media (max-width:820px){.mx{grid-template-columns:1fr}}
+.crits{display:flex;flex-direction:column;gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.crit{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:var(--bench-2);
+  padding:7px 12px;text-align:left;width:100%}
+.crit:hover{background:var(--bench-3)}
+.crit span{font-size:12.5px;font-family:var(--sans)}
+.crit .w{display:flex;gap:2px}
+.crit .w i{width:7px;height:7px;border-radius:50%;background:var(--rule);display:block}
+.crit .w i.on{background:var(--accent)}
+.crit[data-w="0"] span{color:var(--ink-3);text-decoration:line-through;text-decoration-color:var(--rule)}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.preset{font-family:var(--mono);font-size:10.5px;border:1px solid var(--rule);border-radius:999px;padding:4px 11px}
+.preset:hover{background:var(--bench-3)}
+.preset[aria-pressed="true"]{background:var(--ink);color:var(--canvas);border-color:var(--ink)}
+.ranks{display:flex;flex-direction:column;gap:5px}
+.rank{display:grid;grid-template-columns:20px 128px minmax(0,1fr) 42px;gap:10px;align-items:center;
+  padding:5px 8px;border-radius:3px;text-align:left;width:100%}
+.rank:hover{background:var(--bench-2)}
+.rank .pos{font-family:var(--mono);font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.rank .who{font-family:var(--sans);font-size:12.5px;display:flex;gap:6px;align-items:baseline;min-width:0}
+.rank .who i{font-family:var(--mono);font-size:10px;font-style:normal;color:var(--ink-3)}
+.rank .who span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank .track{height:9px;background:var(--bench-3);border-radius:2px;overflow:hidden}
+.rank .track i{display:block;height:100%;background:var(--ink-2);border-radius:2px;transition:width .32s ease-out}
+.rank .val{font-family:var(--mono);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
+.rank.top .track i{background:var(--accent)}
+.rank.top .who{font-weight:700}
+.rank.cur{background:var(--bench-2);box-shadow:inset 2px 0 0 var(--ink)}
+.rank.baseline .track i{background:repeating-linear-gradient(45deg,var(--ink-3) 0 3px,transparent 3px 6px)}
+
+/* ============================================================ SINAIS */
+.sig-strip{background:var(--canvas);border:1px solid var(--rule);border-radius:4px;padding:22px 18px 18px;
+  display:flex;gap:var(--gap,16px);flex-wrap:wrap;font-family:var(--sans)}
+.sig-verdict{display:flex;gap:12px;align-items:baseline;margin-top:12px;flex-wrap:wrap}
+.sig-verdict .tag{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  padding:2px 8px;border-radius:999px;border:1px solid currentColor}
+.sig-verdict p{font-size:13.5px;line-height:1.6;color:var(--ink-2);flex:1;min-width:240px}
+.v-forte{color:var(--good)}.v-medio{color:var(--warn)}.v-fraco{color:var(--crit)}
+
+/* ============================================================ SPEC */
+.spec{display:grid;grid-template-columns:repeat(auto-fit,minmax(272px,1fr));gap:1px;
+  background:var(--rule);border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.spec div{background:var(--bench-2);padding:16px 18px;display:flex;flex-direction:column;gap:6px}
+.spec dt{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.spec dd{margin:0;font-size:13px;line-height:1.62;color:var(--ink-2)}
+.spec dd b{color:var(--ink);font-weight:600}
+.edges{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:14px;
+  background:var(--canvas);border:1px solid var(--rule);border-radius:4px;padding:20px 16px;margin-top:20px}
+.edge-case{display:flex;flex-direction:column;gap:8px;align-items:center;text-align:center}
+.edge-case .cap{font-size:10.5px;line-height:1.45;color:var(--ink-2);font-family:var(--sans)}
+.edge-case .cap b{color:var(--ink)}
+
+footer{border-top:1px solid var(--rule);padding-top:18px;display:flex;justify-content:space-between;
+  gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:10.5px;color:var(--ink-3)}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="page">
+
+  <!-- ═══════════════════════════ ABERTURA ═══════════════════════════ -->
+  <header class="s-hero">
+    <div class="eyebrow lbl"><span>Mekora</span><span>Biblioteca</span><span>Bancada de exploração</span></div>
+    <h1>O card de livro como <em>recipiente de conhecimento</em></h1>
+    <p class="q">“Como representar um livro que também funciona como um recipiente de conhecimento sem prejudicar a navegação de uma biblioteca?”</p>
+    <p class="lede">O documento original conclui em prosa. Aqui os nove modelos estão <strong>montados e vivos</strong>: escolha um, empurre o acervo para 200 livros, desligue o hover — e leia o custo medido no próprio DOM, não na argumentação.</p>
+    <div class="tallies">
+      <div class="tally"><b>9</b><span class="lbl">modelos</span></div>
+      <div class="tally"><b>200</b><span class="lbl">livros reais</span></div>
+      <div class="tally"><b>3</b><span class="lbl">densidades</span></div>
+      <div class="tally"><b>11</b><span class="lbl">critérios ponderáveis</span></div>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════ BANCADA ═══════════════════════════ -->
+  <section id="bancada">
+    <div class="s-head">
+      <div class="rule"></div>
+      <div class="top">
+        <h2>A bancada</h2>
+        <span class="lbl" id="bench-state">M8 · 20 livros · comfortable</span>
+      </div>
+      <p>Tudo abaixo é o mesmo acervo renderizado por arquiteturas diferentes. As ações são reais: clique, aba de notas, seleção, teclado. As métricas são medidas depois de cada render.</p>
+    </div>
+
+    <div class="bench" id="bench" data-input="mouse">
+      <div class="rail">
+        <div class="rail-grp">
+          <div class="lbl"><span>Modelo</span></div>
+          <div class="mlist" id="model-list"></div>
+        </div>
+        <div class="rail-grp">
+          <div class="lbl"><span>Acervo</span></div>
+          <div class="seg" id="seg-n"></div>
+        </div>
+        <div class="rail-grp">
+          <div class="lbl"><span>Densidade</span></div>
+          <div class="seg" id="seg-d"></div>
+        </div>
+        <div class="rail-grp">
+          <div class="lbl"><span>Entrada</span></div>
+          <div class="seg" id="seg-i"></div>
+        </div>
+        <div class="log">
+          <div class="lbl">Registro de ações</div>
+          <ol id="log"></ol>
+        </div>
+      </div>
+
+      <div>
+        <div class="gauges" id="gauges"></div>
+        <div class="frame">
+          <div class="viewport" id="viewport">
+            <div class="p-grid" id="grid" role="grid" aria-label="Estante"></div>
+          </div>
+          <aside class="inspector" id="inspector" hidden></aside>
+        </div>
+        <div class="note-bar">
+          <span id="behavior"></span>
+          <span class="keys">
+            <span><kbd>↑↓←→</kbd> navegar</span><span><kbd>Enter</kbd> abrir</span>
+            <span><kbd>Espaço</kbd> selecionar</span><span><kbd>N</kbd> notas</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ PROVAS ═══════════════════════════ -->
+  <section>
+    <div class="s-head">
+      <div class="rule"></div>
+      <div class="top"><h2>Cinco coisas que só aparecem na bancada</h2></div>
+      <p>Cada afirmação abaixo configura a bancada no estado que a torna verificável. Não é ilustração: é o mesmo componente sob outra carga.</p>
+    </div>
+    <div class="claims" id="claims"></div>
+  </section>
+
+  <!-- ═══════════════════════════ MATRIZ ═══════════════════════════ -->
+  <section>
+    <div class="s-head">
+      <div class="rule"></div>
+      <div class="top"><h2>A matriz, ponderada</h2><span class="lbl" id="mx-note"></span></div>
+      <p>A tabela original soma todos os critérios com peso igual — e nenhum produto pesa assim. Clique num critério para ciclar seu peso (0–3) ou escolha um perfil de produto. A ordem se reorganiza: a vitória do M8 é <em>condicional</em>, e vale ver sob quais condições ela some.</p>
+    </div>
+    <div class="mx">
+      <div>
+        <div class="lbl" style="margin-bottom:8px">Critérios e pesos</div>
+        <div class="crits" id="crits"></div>
+      </div>
+      <div>
+        <div class="presets" id="presets"></div>
+        <div class="ranks" id="ranks"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ SINAIS ═══════════════════════════ -->
+  <section>
+    <div class="s-head">
+      <div class="rule"></div>
+      <div class="top"><h2>Vocabulário de sinal, testado em escala</h2><div class="seg" id="seg-sig" style="max-width:340px"></div></div>
+      <p>Seis maneiras de dizer o mesmo fato — “este livro tem 24 notas”. A pergunta não é qual é mais bonita num card, e sim qual continua legível em dezesseis.</p>
+    </div>
+    <div class="sig-strip" id="sig-strip"></div>
+    <div class="sig-verdict" id="sig-verdict"></div>
+  </section>
+
+  <!-- ═══════════════════════════ SPEC ═══════════════════════════ -->
+  <section>
+    <div class="s-head">
+      <div class="rule"></div>
+      <div class="top"><h2>Especificação conceitual — M8</h2><span class="lbl">hipótese para prototipar, não decisão</span></div>
+    </div>
+    <dl class="spec">
+      <div><dt>Estados</dt><dd><b>Default:</b> capa, aba ✳n, fio de progresso, título, autor. <b>Hover/foco:</b> elevação 4px, “Continuar” e menu ··· sobre a capa, aba ganha cor. <b>Selecionado:</b> anel 2px e inspector à direita (drawer inferior abaixo de 900px). <b>Expandido = inspector</b>, nunca a célula.</dd></div>
+      <div><dt>Ações</dt><dd>Primária: clique ou <b>Enter</b> abre o livro no ponto de leitura. Aba ✳: abre as notas. Cmd-clique, <b>Espaço</b> ou setas: seleção com inspector. Menu ··· e clique-direito: editar, mover, conectar, excluir.</dd></div>
+      <div><dt>Camadas</dt><dd>1 sempre (identidade, estado, sinal ✳) · 2 hover/foco (ações, sempre redundantes com o inspector) · 3 seleção (conhecimento) · 4 menu (gestão). <b>Nada essencial vive só no hover.</b></dd></div>
+      <div><dt>Tipografia</dt><dd>Título 13/600 · autor 11/400 esmaecido · aba ✳ 10/700 · inspector 16/700 com corpo 12. Notas em itálico serifado para separar a voz do usuário da voz da interface.</dd></div>
+      <div><dt>Grade e responsivo</dt><dd>Colunas por preset de densidade, altura de célula fixa dentro do preset, inspector 300px no desktop e drawer 60vh no mobile. Touch: primeiro toque seleciona, segundo abre.</dd></div>
+      <div><dt>Teclado e acesso</dt><dd>Setas navegam, Enter abre, Espaço seleciona, N abre notas. A aba ✳ é um botão rotulado “24 notas de Livro x”. Progresso com equivalente textual. Foco visível idêntico ao anel de seleção.</dd></div>
+      <div><dt>Movimento</dt><dd>Elevação 120ms ease-out; inspector desliza em 200ms; a aba pulsa uma vez quando uma nota nova é criada. Nenhuma animação disparada por scroll.</dd></div>
+      <div><dt>Risco aberto</dt><dd>Dois modelos de clique convivendo (abrir × selecionar) exigem convenção consistente em todo o produto. É o item nº 1 a testar com usuários — a bancada não resolve isso, só torna o custo visível.</dd></div>
+    </dl>
+    <div class="lbl" style="margin:26px 0 12px">Casos de borda, renderizados</div>
+    <div class="edges" id="edges"></div>
+  </section>
+
+  <footer>
+    <span>Bancada derivada de “Exploração profunda — card de livro” · Mekora</span>
+    <span>Acervo sintético determinístico · métricas medidas no DOM</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ══════════════════ ACERVO SINTÉTICO (determinístico) ══════════════════ */
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;var t=Math.imul(seed^seed>>>15,1|seed);
+  t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+var A=["Estudo","Ensaio","Notas","Anatomia","Teoria","Manual","Breve História","Cartografia","Elogio",
+"Arquitetura","Gramática","Física","Retórica","Inventário","Fragmentos","Método","Poética","Economia",
+"Psicologia","Ecologia","Crítica","Diário","Atlas","Tratado"];
+var B=["da Viabilidade","do Silêncio","da Forma","do Cotidiano","da Atenção","das Cidades","do Erro",
+"da Memória","do Trabalho","da Leitura","dos Objetos","do Tempo","da Escassez","do Improviso",
+"da Superfície","do Comum","da Repetição","do Vazio","da Escala","do Detalhe","das Margens","do Ritmo",
+"da Matéria","do Hábito"];
+var F=["Ana","Bruno","Clara","Diego","Elisa","Fábio","Gabriela","Henrique","Iara","João","Karina",
+"Lucas","Marina","Nuno","Olívia","Paulo","Renata","Sérgio","Tainá","Vitor"];
+var L=["Duarte","Machado","Rocha","Almeida","Bittencourt","Cardoso","Farias","Guedes","Lousada",
+"Meireles","Nogueira","Pacheco","Queiroz","Ribeiro","Sampaio","Teixeira","Vasques","Xavier"];
+var TAGS=["#Design","#Pesquisa","#Cidades","#Escrita","#Produto","#Filosofia","#Arquivo","#Método"];
+var PAPERS=["#F6F3EC","#EFE7D9","#E9EEE9","#F2E9E4","#E7E9EF","#F4EEE0","#EDEAE2"];
+var TONES=["#141311","#C33B1E","#55504A","#2E4B45","#7A5C1E","#3A3550"];
+var NOTES=["a distinção entre restrição e limitação atravessa o capítulo inteiro",
+"isso contradiz a tese do capítulo 3 — voltar aqui depois",
+"a ideia de que a forma é um resíduo do processo, não um objetivo",
+"guardar para a conversa sobre densidade de interface",
+"o autor confunde escala com quantidade em toda a segunda parte",
+"exemplo perfeito de decisão que parece estética e é estrutural",
+"“o que não é escolhido também é projeto” — anotar a fonte",
+"aplicar isso ao problema do card: a informação não é o custo, a atenção é",
+"três parágrafos que resumem melhor do que o livro inteiro",
+"cheira a argumento circular, mas o exemplo salva",
+"a metáfora do arquivo funciona melhor que a da biblioteca",
+"marcar: base para o ensaio sobre repetição",
+"o argumento inteiro depende de aceitar que a atenção é um recurso finito e que toda interface disputa esse recurso com todas as outras — o que o autor nunca prova, só assume",
+"aqui está o ponto que eu vinha procurando desde o começo: a densidade não é uma propriedade da tela, é uma propriedade da tarefa. duas telas idênticas têm densidades diferentes para duas pessoas diferentes",
+"comparar com o capítulo da Ana sobre repertório visual — as duas leituras se contradizem no exemplo do catálogo, e acho que ela está certa",
+"nota longa de propósito: quando a citação passa de três linhas ela deixa de ser um sinal e vira conteúdo, e é exatamente aí que o card começa a competir com a página do livro",
+"reler devagar — a passagem sobre inventários domésticos é o melhor argumento do livro e está escondida numa nota de rodapé",
+"isso resolve o problema que eu tinha no projeto passado: não era falta de informação, era falta de ordem entre as informações"];
+
+var BOOKS=(function(){
+  var r=rng(20260810),out=[];
+  out.push({id:0,title:"Estudo de Viabilidade",author:"Ana Duarte",notes:24,prog:80,fmt:"Epub",
+    tags:["#Design"],pages:312,art:0,paper:PAPERS[0],tone:TONES[0],typo:false,snip:2});
+  for(var i=1;i<200;i++){
+    var n=r(),p=r(),t=r();
+    out.push({
+      id:i,
+      title:A[Math.floor(r()*A.length)]+" "+B[Math.floor(r()*B.length)],
+      author:F[Math.floor(r()*F.length)]+" "+L[Math.floor(r()*L.length)],
+      notes:n<0.30?0:n<0.74?1+Math.floor(r()*18):n<0.94?19+Math.floor(r()*42):100+Math.floor(r()*240),
+      prog:p<0.13?0:p>0.86?100:4+Math.floor(r()*93),
+      fmt:r()<0.79?"Epub":"PDF",
+      tags:TAGS.slice(Math.floor(r()*5)).slice(0,1+Math.floor(r()*2)),
+      pages:90+Math.floor(r()*560),
+      art:Math.floor(r()*6),
+      paper:PAPERS[Math.floor(r()*PAPERS.length)],
+      tone:TONES[Math.floor(r()*TONES.length)],
+      typo:t>0.92,
+      snip:1+Math.floor(r()*3)
+    });
+  }
+  out.forEach(function(b){
+    b.notesList=[];
+    var k=Math.min(4,b.notes);
+    for(var j=0;j<k;j++)b.notesList.push(NOTES[(b.id*7+j*5)%NOTES.length]);
+    b.last=b.notesList[0]||"";
+  });
+  return out;
+})();
+
+/* ══════════════════ MODELOS ══════════════════ */
+var MODELS=[
+ {k:"M0",n:"Card atual",cell:322,gap:14,clicks:1,targets:3,reflow:false,hover:"nenhum",
+  loss:"nada — tudo já é permanente",depth:"o próprio card",base:true,
+  behave:"Clique abre o livro. Toda a informação é camada 1: nada é revelado, nada é escondido."},
+ {k:"M1",n:"Cover First",cell:112,gap:18,clicks:1,targets:1,reflow:false,hover:"revela meta+ação",
+  loss:"título, progresso, notas e a ação — resta a capa",depth:"página do livro",
+  behave:"Clique abre. Sem hover não existe metadado algum: é o modelo mais frágil em touch."},
+ {k:"M2",n:"Progressive Card",cell:134,gap:20,clicks:1,targets:2,reflow:false,hover:"só ações",
+  loss:"apenas a antecipação do botão Continuar",depth:"página do livro",
+  behave:"Clique abre. Hover só antecipa ações — tudo essencial já está impresso abaixo da capa."},
+ {k:"M3",n:"Expandable Card",cell:118,gap:18,clicks:2,targets:1,reflow:true,hover:"elevação",
+  loss:"nada essencial",depth:"a própria célula (2 colunas)",
+  behave:"Clique expande no lugar e desloca os vizinhos. Ler custa dois cliques."},
+ {k:"M4",n:"Inspector Pattern",cell:104,gap:18,clicks:2,targets:1,reflow:false,hover:"foco",
+  loss:"nada — o painel carrega tudo",depth:"painel lateral fixo",
+  behave:"Clique seleciona e alimenta o painel; Enter ou duplo clique abre. A grade nunca muda de forma."},
+ {k:"M5",n:"Knowledge First",cell:132,gap:20,clicks:1,targets:2,reflow:false,hover:"elevação",
+  loss:"nada essencial",depth:"cartão de nota no lugar da capa",
+  behave:"Clique abre as NOTAS, não a leitura. A ação primária está invertida de propósito."},
+ {k:"M6",n:"Shelf / Espacial",cell:150,gap:22,clicks:1,targets:2,reflow:false,hover:"livro sai 4px",
+  loss:"nada essencial",depth:"página do livro",
+  behave:"Clique abre. Espessura vem das páginas, marcas no corte são as notas — e são clicáveis."},
+ {k:"M7",n:"Contextual Overlay",cell:126,gap:22,clicks:1,targets:2,reflow:false,hover:"eleva a aba",
+  loss:"nada — os dados estão ancorados na capa",depth:"página do livro",
+  behave:"Clique abre; a aba ✳ leva direto às notas. Nada abaixo da capa além do título."},
+ {k:"M8",n:"Hybrid",cell:128,gap:22,clicks:1,targets:3,reflow:false,hover:"antecipa ações",
+  loss:"nada — o hover só antecipa o que o inspector também tem",depth:"inspector lateral",
+  behave:"Clique abre · aba ✳ vai às notas · Espaço ou Cmd-clique seleciona e abre o inspector."}
+];
+var MODEL={};MODELS.forEach(function(m){MODEL[m.k]=m});
+
+var DENS={compact:{mul:0.62,gap:0.7,label:"Compact"},comfortable:{mul:1,gap:1,label:"Comfortable"},rich:{mul:1.42,gap:1.15,label:"Rich"}};
+
+var state={model:"M8",n:20,density:"comfortable",input:"mouse",sel:null,exp:null,tab:"livro",
+  clicks:0,opens:0,focus:0};
+
+/* ══════════════════ FRAGMENTOS DE PRODUTO ══════════════════ */
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function coverInner(b,withText){
+  if(b.typo)return '<div class="p-cover typo" style="--paper:'+b.paper+'"><div class="cv-title">'+esc(b.title)+(b.fmt==="PDF"?".pdf":"")+'</div></div>';
+  return '<div class="p-cover" style="--paper:'+b.paper+';--tone:'+b.tone+'">'+
+   (withText?'<div class="cv-head"><div class="cv-title">'+esc(b.title)+'</div><div class="cv-author">'+esc(b.author)+'</div></div>':'')+
+   '<div class="cv-art art-'+b.art+'"></div><div class="cv-foot"></div></div>';
+}
+function progEl(b){
+  if(b.prog===0)return"";
+  if(b.prog>=100)return'<div class="p-check">✓</div>';
+  return'<div class="p-prog" style="width:'+b.prog+'%"></div>';
+}
+function tabEl(b){
+  if(!b.notes)return"";
+  return'<button class="p-tab" data-act="notes" aria-label="'+b.notes+' notas de '+esc(b.title)+'">✳ '+(b.notes>99?"99+":b.notes)+'</button>';
+}
+function marksEl(b){
+  if(!b.notes)return"";
+  var k=Math.min(8,Math.ceil(b.notes/4)),h="";
+  for(var i=0;i<k;i++)h+='<i class="'+((i%4===2)?"hot":"")+'" style="top:'+(11+i*10)+'%"></i>';
+  return'<div class="p-marks">'+h+'</div>';
+}
+function box(b,inner,withText){
+  return'<div class="p-cover-box" style="padding-bottom:138.9%">'+coverInner(b,withText!==false)+(inner||"")+'</div>';
+}
+function acts(){return'<div class="p-acts"><button class="p-btn" data-act="open">Continuar</button><button class="p-btn ghost" data-act="menu">···</button></div>'}
+
+/* ══════════════════ RENDER POR MODELO ══════════════════ */
+function cellHTML(b){
+  var m=state.model,sel=state.sel===b.id,html="";
+  var attrs='class="p-cell{X}" role="gridcell" data-id="'+b.id+'" tabindex="-1" aria-selected="'+sel+'" aria-label="'+esc(b.title)+', '+esc(b.author)+(b.notes?', '+b.notes+' notas':'')+(b.prog?', '+b.prog+'% lido':'')+'"';
+
+  if(m==="M0"){
+    html='<div '+attrs.replace("{X}"," row")+'>'+
+      '<div class="p-cover-box" style="padding-bottom:0;height:103px">'+coverInner(b,true)+'</div>'+
+      '<div class="rowbody">'+
+        '<div class="count">'+(b.notes||0)+' notas</div>'+
+        (b.notes?'<div class="snip" style="-webkit-line-clamp:4;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden">“'+esc(b.last)+'”</div>':'')+
+        '<div class="rowfoot"><b>'+esc(b.title)+'</b><span>'+(b.prog||0)+'% Lido'+(b.tags[0]?' · Conectado a '+b.tags[0]:'')+'</span></div>'+
+        '<div class="rowacts"><span data-act="open">Ler ↗</span><span class="bare" data-act="notes">Notas ↗</span></div>'+
+      '</div></div>';
+  }
+  else if(m==="M1"){
+    html='<div '+attrs.replace("{X}","")+'>'+box(b,progEl(b)+
+      '<div class="p-hover veil"><div class="hv-t">'+esc(b.title)+'</div><div class="hv-m">'+(b.prog||0)+'% · '+(b.notes||0)+' notas · '+b.fmt+'</div><button class="p-btn" data-act="open" style="margin-top:4px">Continuar</button></div>')+
+      '<div class="p-meta"><div class="p-t">'+esc(b.title)+'</div></div></div>';
+  }
+  else if(m==="M2"){
+    html='<div '+attrs.replace("{X}","")+'>'+box(b,'<div class="p-hover">'+acts()+'</div>')+
+      '<div class="p-meta"><div class="p-t">'+esc(b.title)+'</div><div class="p-a">'+esc(b.author)+'</div>'+
+      '<div class="p-bar"><i style="width:'+b.prog+'%"></i></div>'+
+      '<div class="p-line"><span>'+(b.prog?b.prog+"%":"—")+'</span>'+(b.notes?'<b>✳ '+(b.notes>99?"99+":b.notes)+'</b>':'')+'</div></div></div>';
+  }
+  else if(m==="M3"){
+    if(state.exp===b.id){
+      html='<div '+attrs.replace("{X}"," expanded")+'>'+
+        '<div class="p-cover-box" style="padding-bottom:0;height:108px">'+coverInner(b,true)+'</div>'+
+        '<div class="exbody"><div class="p-t" style="font-size:14px">'+esc(b.title)+'</div>'+
+        '<div class="p-a">'+esc(b.author)+' · '+b.fmt+' · '+(b.prog||0)+'% lido</div>'+
+        (b.notes?'<div class="insp-q" style="font-size:10.5px">“'+esc(b.last)+'”</div>':'')+
+        '<div class="chips">'+(b.notes?'<span class="chip">✳ '+b.notes+' notas</span>':'')+b.tags.map(function(t){return'<span class="chip">'+t+'</span>'}).join("")+'</div>'+
+        '<div class="insp-acts" style="margin-top:auto"><button data-act="open">Continuar</button><button class="sec" data-act="notes">Notas</button></div>'+
+        '</div></div>';
+    }else{
+      html='<div '+attrs.replace("{X}","")+'>'+box(b,"",false)+
+       '<div class="p-meta"><div class="p-t">'+esc(b.title)+'</div>'+
+       '<div class="p-line"><span>'+(b.prog||0)+'%</span>'+(b.notes?'<b>✳'+b.notes+'</b>':'')+'</div></div></div>';
+    }
+  }
+  else if(m==="M4"){
+    html='<div '+attrs.replace("{X}","")+'>'+box(b,progEl(b),false)+
+      '<div class="p-meta"><div class="p-t" style="font-size:11px;font-weight:500">'+esc(b.title)+'</div></div></div>';
+  }
+  else if(m==="M5"){
+    if(sel&&b.notes){
+      html='<div '+attrs.replace("{X}","")+'>'+
+        '<div class="p-notecard"><div class="nk">Última nota · 06 jul</div>'+
+        '<div class="nq">“'+esc(b.last)+'”</div>'+
+        '<button class="nl" data-act="notes">Ver todas as '+b.notes+' →</button></div>'+
+        '<div class="p-meta"><div class="p-t">'+esc(b.title)+'</div></div></div>';
+    }else{
+      html='<div '+attrs.replace("{X}","")+'>'+box(b,marksEl(b))+
+        '<div class="p-meta"><div class="p-t">'+esc(b.title)+'</div>'+
+        '<div class="p-a">'+(b.notes?'✳ '+b.notes+' notas':'sem notas')+(b.prog?' · '+b.prog+'%':'')+'</div></div></div>';
+    }
+  }
+  else if(m==="M6"){
+    var thick=Math.round(7+(b.pages/650)*15),tall=Math.round(78+(b.pages/650)*26),mk="";
+    if(b.notes){var k=Math.min(7,Math.ceil(b.notes/5));
+      for(var i=0;i<k;i++)mk+='<i class="'+((i%3===1)?"hot":"")+'" style="top:'+(12+i*11)+'%"></i>';}
+    html='<div '+attrs.replace("{X}"," shelf")+'>'+
+      '<div class="p-obj" style="--thick:'+thick+'px;height:'+Math.round(tall*1.9)+'px">'+
+        '<div class="body" style="--paper:'+b.paper+';--tone:'+b.tone+'">'+
+          (b.typo?'<div class="p-cover typo" style="position:static;box-shadow:none;flex:1"><div class="cv-title">'+esc(b.title)+'</div></div>':
+           '<div class="cv-head"><div class="cv-title">'+esc(b.title)+'</div><div class="cv-author">'+esc(b.author)+'</div></div><div class="cv-art art-'+b.art+'"></div><div class="cv-foot"></div>')+
+          (b.prog&&b.prog<100?'<div class="p-ribbon"></div>':'')+
+        '</div>'+
+        '<div class="edge" data-act="notes">'+mk+'</div>'+
+      '</div>'+
+      '<div class="shelfline"></div>'+
+      '<div class="p-meta"><div class="p-t" style="font-size:11.5px">'+esc(b.title)+'</div></div></div>';
+  }
+  else if(m==="M7"){
+    html='<div '+attrs.replace("{X}","")+' style="padding-top:12px">'+
+      box(b,tabEl(b)+progEl(b)+(b.tags[0]?'<div class="p-taglab">'+b.tags[0]+'</div>':''))+
+      '<div class="p-meta"><div class="p-t">'+esc(b.title)+'</div></div></div>';
+  }
+  else{ /* M8 */
+    html='<div '+attrs.replace("{X}","")+' style="padding-top:12px">'+
+      box(b,tabEl(b)+progEl(b)+'<div class="p-hover">'+acts()+'</div>')+
+      '<div class="p-meta"><div class="p-t">'+esc(b.title)+'</div><div class="p-a">'+esc(b.author)+'</div></div></div>';
+  }
+  return html;
+}
+
+/* ══════════════════ INSPECTOR ══════════════════ */
+function renderInspector(){
+  var el=document.getElementById("inspector"),m=MODEL[state.model];
+  var uses=(state.model==="M4"||state.model==="M8");
+  if(!uses){el.hidden=true;el.innerHTML="";return}
+  el.hidden=false;
+  var b=state.sel!=null?BOOKS[state.sel]:null;
+  if(!b){el.innerHTML='<div class="insp-empty">Nenhum livro selecionado.<br><br>'+
+    (state.model==="M8"?"Espaço, Cmd-clique ou a aba ✳ alimentam este painel.":"Um clique seleciona; Enter abre.")+
+    '</div>';return}
+  var notes=state.tab==="notas";
+  el.innerHTML='<div class="insp-tabs">'+
+    '<button data-tab="livro" aria-selected="'+(!notes)+'">Livro</button>'+
+    '<button data-tab="notas" aria-selected="'+notes+'">Notas'+(b.notes?" ("+b.notes+")":"")+'</button></div>'+
+   '<div class="insp-body">'+(notes?
+     (b.notes?'<ul class="insp-notes" style="margin:0;padding:0">'+b.notesList.map(function(t,i){
+        return'<li><b>nota '+(i+1)+' · pág. '+(20+i*37)+'</b>“'+esc(t)+'”</li>'}).join("")+
+        (b.notes>b.notesList.length?'<li style="font-family:var(--mono);font-size:10px">+ '+(b.notes-b.notesList.length)+' outras</li>':'')+'</ul>'
+      :'<div class="insp-empty" style="padding:0">Este livro ainda não tem notas. A aba ✳ não aparece — o sinal só existe quando é verdade.</div>')
+     :
+     '<h4>'+esc(b.title)+'</h4>'+
+     '<div class="insp-meta">'+esc(b.author)+' · '+b.fmt+' · '+(b.prog>=100?"concluído":b.prog?b.prog+"% lido":"não iniciado")+'</div>'+
+     '<div class="p-bar"><i style="width:'+b.prog+'%"></i></div>'+
+     (b.notes?'<div style="font-size:12px;font-weight:700;margin-top:4px">✳ '+b.notes+' notas</div>'+
+       '<div class="insp-q">“'+esc(b.last)+'”</div>':'<div class="insp-meta">Sem notas.</div>')+
+     '<div class="chips">'+b.tags.map(function(t){return'<span class="chip">'+t+'</span>'}).join("")+'</div>'+
+     '<div class="insp-acts"><button data-act="open">Continuar</button><button class="sec" data-tab="notas">Notas</button></div>'
+   )+'</div>';
+}
+
+/* ══════════════════ REGISTRO ══════════════════ */
+var logItems=[];
+function logIt(verb,detail){
+  logItems.unshift({v:verb,d:detail});
+  if(logItems.length>5)logItems.pop();
+  document.getElementById("log").innerHTML=logItems.map(function(x,i){
+    return'<li'+(i===0?' class="fresh"':'')+'><b>'+x.v+'</b><i>'+esc(x.d)+'</i></li>'}).join("");
+}
+
+/* ══════════════════ MÉTRICAS ══════════════════ */
+function verdict(el,rows){
+  return rows<=4?"g-good":rows<=12?"g-warn":"g-crit";
+}
+function measure(){
+  var grid=document.getElementById("grid"),vp=document.getElementById("viewport"),m=MODEL[state.model];
+  var cols=getComputedStyle(grid).gridTemplateColumns.split(" ").filter(Boolean).length||1;
+  var rows=Math.ceil(state.n/cols);
+  var first=grid.firstElementChild;
+  var rowH=first?first.getBoundingClientRect().height+parseFloat(getComputedStyle(grid).rowGap||0):120;
+  var screens=Math.max(1,(rows*rowH)/(vp.clientHeight||1));
+  var hoverState=state.input==="touch"
+      ? (m.loss.indexOf("nada")===0?["intacto","g-good"]:["perde","g-crit"])
+      : (m.loss.indexOf("nada")===0?["ok","g-good"]:["frágil","g-warn"]);
+  var cost=state.opens?(state.clicks/state.opens).toFixed(1):"—";
+  var g=[
+    ["por linha",cols,""],
+    ["linhas",rows,verdict(0,rows)],
+    ["telas de scroll",screens.toFixed(1),verdict(0,rows)],
+    ["cliques até ler",m.clicks,m.clicks>1?"g-warn":"g-good"],
+    ["alvos por card",m.targets,m.targets>2?"g-warn":""],
+    ["reflow",m.reflow?"sim":"não",m.reflow?"g-crit":"g-good"],
+    ["sem hover",hoverState[0],hoverState[1]],
+    ["custo medido",cost,""]
+  ];
+  document.getElementById("gauges").innerHTML=g.map(function(x){
+    return'<div class="gauge '+(x[2]||"")+'"><b>'+x[1]+'</b><small>'+x[0]+'</small></div>'}).join("");
+  document.getElementById("bench-state").textContent=state.model+" · "+state.n+" livros · "+DENS[state.density].label.toLowerCase();
+  var beh=m.behave;
+  if(state.input==="touch")beh+=' <span class="loss">Sem hover: '+m.loss+'.</span>';
+  document.getElementById("behavior").innerHTML=beh;
+}
+
+/* ══════════════════ RENDER PRINCIPAL ══════════════════ */
+function render(){
+  var m=MODEL[state.model],d=DENS[state.density],grid=document.getElementById("grid");
+  var cell=Math.round(m.cell*(m.k==="M0"?(state.density==="compact"?0.82:state.density==="rich"?1.12:1):d.mul));
+  grid.style.setProperty("--cell",cell+"px");
+  grid.style.setProperty("--gap",Math.round((m.gap*d.gap))+"px");
+  grid.style.setProperty("--cw",cell+"px");
+  grid.dataset.model=m.k;
+  var html="";
+  for(var i=0;i<state.n;i++)html+=cellHTML(BOOKS[i]);
+  grid.innerHTML=html;
+  Array.prototype.forEach.call(grid.children,function(c,i){
+    c.style.setProperty("--cw",(c.classList.contains("row")?74:cell)+"px");
+    c.tabIndex=(i===state.focus)?0:-1;
+  });
+  renderInspector();
+  requestAnimationFrame(measure);
+  setTimeout(measure,32); /* rAF não dispara em aba oculta */
+}
+
+/* ══════════════════ INTERAÇÃO ══════════════════ */
+function open(b){state.opens++;logIt("abriu",b.title+" · "+(b.prog?b.prog+"%":"início"))}
+function select(b){
+  state.sel=(state.sel===b.id?null:b.id);
+  if(state.model==="M3")state.exp=state.sel;
+  logIt(state.sel==null?"desmarcou":"selecionou",b.title);
+  render();
+}
+function openNotes(b){
+  if(!b.notes){logIt("sem notas",b.title);return}
+  state.sel=b.id;state.tab="notas";
+  if(state.model==="M3")state.exp=b.id;
+  logIt("notas",b.notes+" · "+b.title);
+  render();
+}
+function primary(b,act){
+  var m=state.model;
+  if(act==="notes"){openNotes(b);return}
+  if(act==="open"){open(b);return}
+  if(act==="menu"){logIt("menu","editar · mover · conectar · excluir");return}
+  if(m==="M3"){state.exp=(state.exp===b.id?null:b.id);state.sel=state.exp;
+    logIt(state.exp==null?"recolheu":"expandiu",b.title+(state.exp!=null?" · a grade reflowou":""));render();return}
+  if(m==="M4"){select(b);return}
+  if(m==="M5"){openNotes(b);return}
+  open(b);
+}
+
+var grid=document.getElementById("grid");
+grid.addEventListener("click",function(e){
+  var cell=e.target.closest(".p-cell");if(!cell)return;
+  state.clicks++;
+  var b=BOOKS[+cell.dataset.id];
+  var actEl=e.target.closest("[data-act]");
+  var act=actEl?actEl.dataset.act:null;
+  state.focus=+cell.dataset.id;
+  if(act==="notes")state.tab="notas";else if(act)state.tab="livro";
+  if((e.metaKey||e.ctrlKey)&&!act){select(b);measure();return}
+  primary(b,act);
+  measure();
+});
+grid.addEventListener("keydown",function(e){
+  var cell=e.target.closest(".p-cell");if(!cell)return;
+  var id=+cell.dataset.id,cols=getComputedStyle(grid).gridTemplateColumns.split(" ").filter(Boolean).length||1,nx=null;
+  if(e.key==="ArrowRight")nx=id+1;else if(e.key==="ArrowLeft")nx=id-1;
+  else if(e.key==="ArrowDown")nx=id+cols;else if(e.key==="ArrowUp")nx=id-cols;
+  else if(e.key==="Enter"){e.preventDefault();state.clicks++;open(BOOKS[id]);measure();return}
+  else if(e.key===" "){e.preventDefault();state.tab="livro";select(BOOKS[id]);measure();return}
+  else if(e.key==="n"||e.key==="N"){e.preventDefault();openNotes(BOOKS[id]);measure();return}
+  if(nx!=null){e.preventDefault();
+    if(nx<0||nx>=state.n)return;
+    state.focus=nx;
+    var t=grid.querySelector('[data-id="'+nx+'"]');
+    if(t){Array.prototype.forEach.call(grid.children,function(c){c.tabIndex=-1});t.tabIndex=0;t.focus()}
+  }
+});
+document.getElementById("inspector").addEventListener("click",function(e){
+  var t=e.target.closest("[data-tab]"),a=e.target.closest("[data-act]");
+  if(t){state.tab=t.dataset.tab;renderInspector();return}
+  if(a&&a.dataset.act==="open"&&state.sel!=null){state.clicks++;open(BOOKS[state.sel]);measure()}
+});
+
+/* ══════════════════ CONTROLES ══════════════════ */
+function buildRail(){
+  document.getElementById("model-list").innerHTML=MODELS.map(function(m){
+    return'<button class="mbtn'+(m.base?" base":"")+'" data-m="'+m.k+'" aria-pressed="'+(m.k===state.model)+'">'+
+      '<span class="code">'+m.k+(m.base?" · linha de base":"")+'</span><span class="nm">'+m.n+'</span></button>'}).join("");
+  seg("seg-n",[6,20,50,200].map(function(v){return[v,v]}),state.n,function(v){
+    state.n=+v;if(state.sel!=null&&state.sel>=state.n){state.sel=null;state.exp=null}
+    if(state.focus>=state.n)state.focus=0;render()});
+  seg("seg-d",[["compact","S"],["comfortable","M"],["rich","L"]],state.density,function(v){state.density=v;render()});
+  seg("seg-i",[["mouse","mouse"],["touch","touch"]],state.input,function(v){
+    state.input=v;document.getElementById("bench").dataset.input=v;
+    logIt("entrada",v==="touch"?"hover desativado":"hover ativo");measure()});
+}
+function seg(id,opts,cur,cb){
+  var el=document.getElementById(id);
+  el.innerHTML=opts.map(function(o){return'<button data-v="'+o[0]+'" aria-pressed="'+(String(o[0])===String(cur))+'">'+o[1]+'</button>'}).join("");
+  el.onclick=function(e){var b=e.target.closest("button");if(!b)return;
+    Array.prototype.forEach.call(el.children,function(c){c.setAttribute("aria-pressed",c===b)});cb(b.dataset.v)};
+}
+document.getElementById("model-list").addEventListener("click",function(e){
+  var b=e.target.closest(".mbtn");if(!b)return;
+  setModel(b.dataset.m);
+});
+function setModel(k){
+  state.model=k;state.sel=null;state.exp=null;state.tab="livro";
+  Array.prototype.forEach.call(document.getElementById("model-list").children,function(c){
+    c.setAttribute("aria-pressed",c.dataset.m===k)});
+  logIt("modelo",k+" · "+MODEL[k].n);render();
+}
+
+/* ══════════════════ PROVAS ══════════════════ */
+var CLAIMS=[
+ {h:"Não é excesso de informação — são dois trabalhos no mesmo lugar",
+  p:"O card atual tenta ao mesmo tempo <em>navegar a estante</em> e <em>revisar conhecimento</em>. Nenhuma dosagem resolve isso. Em 50 livros a coluna de “24 notas” chega antes de qualquer título.",
+  s:{model:"M0",n:50,density:"comfortable"},cta:"ver o card atual em 50"},
+ {h:"O trecho de nota tem altura variável",
+  p:"Notas de uma a três linhas desalinham a grade. O custo não aparece no card isolado; aparece quando as bases das células deixam de se encontrar.",
+  s:{model:"M0",n:20,density:"comfortable"},cta:"ver a grade desalinhar"},
+ {h:"Expandir no lugar destrói o mapa espacial",
+  p:"Clique em qualquer capa no M3: a célula ocupa duas colunas e todos os vizinhos se deslocam. O usuário perde exatamente a memória de posição que uma estante deveria preservar.",
+  s:{model:"M3",n:50,density:"comfortable"},cta:"provocar o reflow"},
+ {h:"O minimalismo tem risco simétrico",
+  p:"No M1 a capa faz todo o trabalho e o Mekora vira um leitor comum: nenhum sinal de conhecimento sobrevive. Agora troque a entrada para <b>touch</b> — some também o título.",
+  s:{model:"M1",n:50,density:"compact",input:"touch"},cta:"ver o conhecimento sumir"},
+ {h:"O terceiro nível fica ao lado, não dentro",
+  p:"A hipótese original acerta em ter três níveis. O ajuste é o terceiro: um painel ao lado em vez de uma célula que cresce. Mesma progressão, sem reflow — e a grade nunca muda de forma.",
+  s:{model:"M8",n:50,density:"comfortable"},cta:"ver o M8 em 50"}
+];
+document.getElementById("claims").innerHTML=CLAIMS.map(function(c,i){
+  return'<article class="claim"><h3>'+c.h+'</h3><p>'+c.p+'</p><button class="go" data-i="'+i+'">'+c.cta+' →</button></article>'}).join("");
+document.getElementById("claims").addEventListener("click",function(e){
+  var b=e.target.closest(".go");if(!b)return;
+  var s=CLAIMS[+b.dataset.i].s;
+  state.n=s.n;state.density=s.density;state.sel=null;state.exp=null;state.focus=0;
+  if(s.input){state.input=s.input;document.getElementById("bench").dataset.input=s.input}
+  buildRail();setModel(s.model);
+  document.getElementById("bancada").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth",block:"start"});
+});
+
+/* ══════════════════ MATRIZ PONDERADA ══════════════════ */
+var CRIT=[
+ {c:"Escaneabilidade",       w:2,s:{M0:2,M1:5,M2:4,M3:3,M4:5,M5:3,M6:4,M7:4,M8:5}},
+ {c:"Densidade",             w:2,s:{M0:1,M1:5,M2:4,M3:3,M4:5,M5:3,M6:3,M7:4,M8:4}},
+ {c:"Reconhecimento",        w:2,s:{M0:3,M1:5,M2:5,M3:4,M4:4,M5:3,M6:4,M7:4,M8:5}},
+ {c:"Facilidade de uso",     w:2,s:{M0:4,M1:4,M2:5,M3:3,M4:3,M5:3,M6:3,M7:4,M8:4}},
+ {c:"Descoberta das notas",  w:2,s:{M0:5,M1:1,M2:3,M3:4,M4:4,M5:5,M6:3,M7:5,M8:5}},
+ {c:"Destaque do conhecimento",w:2,s:{M0:5,M1:1,M2:3,M3:4,M4:4,M5:5,M6:4,M7:4,M8:5}},
+ {c:"Escalabilidade (200+)", w:2,s:{M0:1,M1:5,M2:4,M3:2,M4:5,M5:3,M6:3,M7:4,M8:5}},
+ {c:"Implementação",         w:1,s:{M0:5,M1:5,M2:5,M3:3,M4:3,M5:3,M6:2,M7:4,M8:3}},
+ {c:"Acessibilidade",        w:2,s:{M0:3,M1:2,M2:4,M3:3,M4:4,M5:3,M6:2,M7:3,M8:4}},
+ {c:"Diferenciação Mekora",  w:2,s:{M0:4,M1:1,M2:3,M3:3,M4:3,M5:5,M6:5,M7:4,M8:5}},
+ {c:"Robustez sem hover",    w:2,s:{M0:5,M1:2,M2:5,M3:3,M4:5,M5:3,M6:3,M7:5,M8:5}}
+];
+var PRESETS={
+ "Mekora":            [2,2,2,2,2,2,2,1,2,2,2],
+ "Leitor puro":       [3,3,3,2,0,0,3,2,2,0,2],
+ "Ferramenta de pesquisa":[1,1,1,2,3,3,2,1,3,3,2],
+ "Time pequeno":      [2,2,2,2,1,1,2,3,2,1,2],
+ "Peso igual (doc)":  [1,1,1,1,1,1,1,1,1,1,1]
+};
+var curPreset="Mekora";
+function drawCrits(){
+  document.getElementById("crits").innerHTML=CRIT.map(function(r,i){
+    var dots="";for(var k=1;k<=3;k++)dots+='<i class="'+(k<=r.w?"on":"")+'"></i>';
+    return'<button class="crit" data-i="'+i+'" data-w="'+r.w+'"><span>'+r.c+'</span><span class="w">'+dots+'</span></button>'}).join("");
+}
+function drawRanks(){
+  var sumW=CRIT.reduce(function(a,r){return a+r.w},0)||1;
+  var rows=MODELS.map(function(m){
+    var t=CRIT.reduce(function(a,r){return a+r.s[m.k]*r.w},0);
+    return{k:m.k,n:m.n,base:m.base,pct:t/(sumW*5),t:t}
+  }).sort(function(a,b){return b.t-a.t});
+  var max=rows[0].t||1,min=rows[rows.length-1].t,span=(max-min)||1;
+  document.getElementById("ranks").innerHTML=rows.map(function(r,i){
+    return'<button class="rank'+(i===0?" top":"")+(r.k===state.model?" cur":"")+(r.base?" baseline":"")+'" data-m="'+r.k+'">'+
+      '<span class="pos">'+String(i+1).padStart(2,"0")+'</span>'+
+      '<span class="who"><i>'+r.k+'</i><span>'+r.n+'</span></span>'+
+      '<span class="track"><i style="width:'+Math.round(14+86*(r.t-min)/span)+'%"></i></span>'+
+      '<span class="val">'+Math.round(r.pct*100)+'</span></button>'}).join("");
+  document.getElementById("mx-note").textContent="perfil: "+curPreset;
+}
+document.getElementById("crits").addEventListener("click",function(e){
+  var b=e.target.closest(".crit");if(!b)return;
+  var r=CRIT[+b.dataset.i];r.w=(r.w+1)%4;curPreset="ajustado";
+  Array.prototype.forEach.call(document.getElementById("presets").children,function(c){c.setAttribute("aria-pressed",false)});
+  drawCrits();drawRanks();
+});
+document.getElementById("presets").innerHTML=Object.keys(PRESETS).map(function(k){
+  return'<button class="preset" data-p="'+k+'" aria-pressed="'+(k===curPreset)+'">'+k+'</button>'}).join("");
+document.getElementById("presets").addEventListener("click",function(e){
+  var b=e.target.closest(".preset");if(!b)return;
+  curPreset=b.dataset.p;PRESETS[curPreset].forEach(function(w,i){CRIT[i].w=w});
+  Array.prototype.forEach.call(e.currentTarget.children,function(c){c.setAttribute("aria-pressed",c===b)});
+  drawCrits();drawRanks();
+});
+document.getElementById("ranks").addEventListener("click",function(e){
+  var b=e.target.closest(".rank");if(!b)return;
+  setModel(b.dataset.m);drawRanks();
+  document.getElementById("bancada").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth",block:"start"});
+});
+
+/* ══════════════════ SINAIS ══════════════════ */
+var SIGNALS={
+ none:{n:"nenhum",v:"medio",t:"A capa sozinha. O Mekora fica indistinguível de qualquer leitor de epub — o diferencial simplesmente não existe na navegação."},
+ A:{n:"A · marcas na borda",v:"forte",t:"Densidade de anotação lida em silhueta, de longe. Precisa de teto (~8 marcas) e de rótulo acessível, mas sobrevive ao tamanho pequeno."},
+ B:{n:"B · aba-marcador",v:"forte",t:"Preciso, clicável — sinal e atalho no mesmo pixel — e textual, logo acessível. Um por card. É o escolhido."},
+ C:{n:"C · fita marcadora",v:"medio",t:"Comunica “em leitura”, não conhecimento. Excelente para estado, inútil como contagem de notas. Reaproveitar para status."},
+ D:{n:"D · pilha",v:"fraco",t:"“Há camadas atrás do livro.” Poético e ambíguo: em escala lê como coleção, não como anotação — e come espaço horizontal."},
+ E:{n:"E · canto dobrado",v:"fraco",t:"Binário: diz tem/não tem e nada mais. Não comunica quantidade nem convida ao clique."},
+ F:{n:"F · halo",v:"fraco",t:"Bonito num card isolado; em dezesseis vira névoa decorativa. O olho para de atribuir significado ao brilho."}
+};
+var curSig="B";
+seg("seg-sig",Object.keys(SIGNALS).map(function(k){return[k,k==="none"?"—":k]}),curSig,function(v){curSig=v;drawSignals()});
+function drawSignals(){
+  var strip=document.getElementById("sig-strip"),h="",w=96;
+  strip.style.setProperty("--gap","18px");
+  for(var i=0;i<16;i++){
+    var b=BOOKS[i],extra="",pad="";
+    if(curSig==="A")extra=marksEl(b);
+    if(curSig==="B")extra=b.notes?'<div class="p-tab" style="pointer-events:none">✳ '+(b.notes>99?"99+":b.notes)+'</div>':"";
+    if(curSig==="C")extra=b.prog&&b.prog<100?'<div class="p-ribbon"></div>':"";
+    if(curSig==="E")extra=b.notes?'<div style="position:absolute;right:0;top:0;width:16px;height:16px;background:#141311;clip-path:polygon(100% 0,0 0,100% 100%)"></div>':"";
+    var boxStyle='position:relative;width:'+w+'px;padding-bottom:'+Math.round(w*1.389)+'px;';
+    if(curSig==="D"&&b.notes)boxStyle+='filter:drop-shadow(5px 5px 0 rgba(20,19,17,.13)) drop-shadow(10px 10px 0 rgba(20,19,17,.07));';
+    if(curSig==="F"&&b.notes)boxStyle+='box-shadow:0 0 0 '+Math.min(9,2+Math.ceil(b.notes/8))+'px rgba(195,59,30,.16);border-radius:4px;';
+    if(curSig==="B")pad="padding-top:12px;";
+    h+='<div style="'+pad+'width:'+w+'px;--cw:'+w+'px;font-family:var(--sans)">'+
+       '<div class="p-cover-box" style="'+boxStyle+'">'+coverInner(b,true)+extra+'</div></div>';
+  }
+  strip.innerHTML=h;
+  var s=SIGNALS[curSig];
+  document.getElementById("sig-verdict").innerHTML=
+    '<span class="tag v-'+s.v+'">'+(s.v==="forte"?"forte":s.v==="medio"?"parcial":"fraco")+'</span>'+
+    '<p><b>'+s.n+'.</b> '+s.t+'</p>';
+}
+
+/* ══════════════════ CASOS DE BORDA ══════════════════ */
+var EDGES=[
+ {b:{id:900,title:"Ensaio do Comum",author:"Nuno Pacheco",notes:0,prog:42,art:1,paper:PAPERS[3],tone:TONES[2],typo:false},
+  cap:"<b>Sem notas:</b> a aba desaparece — o sinal só existe quando é verdade."},
+ {b:{id:901,title:"Teoria da Atenção",author:"Marina Rocha",notes:342,prog:64,art:0,paper:PAPERS[0],tone:TONES[0],typo:false},
+  cap:"<b>Centenas de notas:</b> teto “99+”; o número exato vive no inspector."},
+ {b:{id:902,title:"Relatório Anual 2026",author:"—",notes:3,prog:0,art:0,paper:PAPERS[0],tone:TONES[0],typo:true,fmt:"PDF"},
+  cap:"<b>Sem capa:</b> capa tipográfica gerada do título."},
+ {b:{id:903,title:"Um título extremamente longo que não cabe em uma linha do card e segue",author:"Tainá Xavier",notes:7,prog:23,art:3,paper:PAPERS[5],tone:TONES[3],typo:false},
+  cap:"<b>Título longo:</b> clamp em 2 linhas; completo no tooltip e no inspector."},
+ {b:{id:904,title:"Poética do Detalhe",author:"Paulo Guedes",notes:12,prog:100,art:2,paper:PAPERS[2],tone:TONES[4],typo:false},
+  cap:"<b>Concluído:</b> selo ✓ substitui o fio; sem porcentagem."},
+ {b:{id:905,title:"Atlas das Margens",author:"Iara Sampaio",notes:0,prog:0,art:5,paper:PAPERS[4],tone:TONES[5],typo:false},
+  cap:"<b>Não iniciado:</b> sem fio, sem selo — a ausência é o estado."}
+];
+document.getElementById("edges").innerHTML=EDGES.map(function(e){
+  var b=e.b;b.tags=[];b.fmt=b.fmt||"Epub";
+  return'<div class="edge-case" style="--cw:88px;font-family:var(--sans)">'+
+    '<div style="width:88px;padding-top:12px"><div class="p-cover-box" style="position:relative;padding-bottom:122px">'+
+    coverInner(b,true)+tabEl(b)+progEl(b)+'</div>'+
+    '<div class="p-t" style="font-size:10px;margin-top:6px;line-height:1.25">'+esc(b.title)+'</div></div>'+
+    '<div class="cap">'+e.cap+'</div></div>'}).join("");
+
+/* ══════════════════ BOOT ══════════════════ */
+buildRail();
+drawCrits();drawRanks();drawSignals();
+logIt("bancada","pronta · M8 · 20 livros");
+render();
+addEventListener("resize",function(){clearTimeout(window.__t);window.__t=setTimeout(measure,140)});
+
+/* Chrome mantém tokens antigos em nós criados antes da troca de tema — redesenha. */
+function repaint(){render();drawSignals()}
+new MutationObserver(repaint).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+var mq=matchMedia("(prefers-color-scheme: dark)");
+if(mq.addEventListener)mq.addEventListener("change",repaint);
+})();
+</script>
+</body>
+</html>

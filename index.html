@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mekora · cadernos de exploração</title>
+<style>
+:root{
+  --bench:#DDD8CC;--bench-2:#E7E3D9;--ink:#141311;--ink-2:#55504A;--ink-3:#8A857C;
+  --rule:#C6C0B1;--accent:#C33B1E;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Mono",monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bench:#121110;--bench-2:#1B1917;--ink:#F1EEE8;--ink-2:#B9B2A6;--ink-3:#867F74;
+    --rule:#3B372F;--accent:#E4613D}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bench);color:var(--ink);font-family:var(--serif);
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:72px 26px 96px;display:flex;flex-direction:column;gap:44px}
+.lbl{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+h1{margin:0;font-size:clamp(30px,5vw,44px);font-weight:400;line-height:1.06;letter-spacing:-.015em}
+h1 em{font-style:italic;color:var(--accent)}
+.lede{font-size:16px;line-height:1.65;color:var(--ink-2);max-width:600px;margin:0}
+.cards{display:flex;flex-direction:column;gap:1px;background:var(--rule);border:1px solid var(--rule);
+  border-radius:4px;overflow:hidden}
+a.card{background:var(--bench-2);padding:22px 24px;display:grid;grid-template-columns:minmax(0,1fr) auto;
+  gap:16px;align-items:center;text-decoration:none;color:inherit}
+a.card:hover{background:var(--bench)}
+a.card h2{margin:0 0 6px;font-family:var(--sans);font-size:17px;font-weight:600;letter-spacing:-.01em}
+a.card p{margin:0;font-size:13.5px;line-height:1.6;color:var(--ink-2)}
+a.card .n{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--ink-3);display:block;margin-bottom:7px}
+a.card .go{font-family:var(--mono);font-size:11px;color:var(--accent);white-space:nowrap}
+footer{border-top:1px solid var(--rule);padding-top:18px;font-family:var(--mono);font-size:10.5px;
+  color:var(--ink-3);line-height:1.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header style="display:flex;flex-direction:column;gap:18px">
+    <span class="lbl">Mekora · exploração de produto</span>
+    <h1>Dois cadernos sobre <em>como um livro vira interface</em></h1>
+    <p class="lede">Explorações de UX, arquitetura de informação e interação. Não são especificações
+      fechadas: são instrumentos para testar hipóteses antes de decidir. Cada caderno funciona sozinho —
+      abra e mexa.</p>
+  </header>
+
+  <div class="cards">
+    <a class="card" href="caderno-01-bancada-do-card.html">
+      <div>
+        <span class="n">CADERNO 01</span>
+        <h2>A bancada do card de livro</h2>
+        <p>Nove modelos de card montados e vivos sobre o mesmo acervo de 200 livros. Troque o modelo,
+          empurre a biblioteca para 200 itens, desligue o hover — e leia o custo medido no próprio DOM.</p>
+      </div>
+      <span class="go">abrir →</span>
+    </a>
+    <a class="card" href="caderno-02-preferencias-e-prototipo.html">
+      <div>
+        <span class="n">CADERNO 02 · REVISÃO A</span>
+        <h2>Preferências, Conta e Perfil</h2>
+        <p>Arquitetura da área de preferências, com inventário de 84 ajustes, quatro arquiteturas
+          comparadas e um protótipo navegável com oito cenários de teste. O seletor de aparelho é o
+          centro: é ele que torna testável o que viaja com você e o que fica no aparelho.</p>
+      </div>
+      <span class="go">abrir →</span>
+    </a>
+  </div>
+
+  <footer>
+    Explorações de arquitetura, não especificação final.<br>
+    Escritos em pt-BR · funcionam offline, sem dependências externas.
+  </footer>
+</div>
+</body>
+</html>
