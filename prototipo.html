@@ -275,6 +275,20 @@ select.sel{height:var(--h1);border:1px solid var(--line);border-radius:var(--r1)
   margin-bottom:5px;line-height:1.4}
 .mgnota{display:block;font-size:12.5px;line-height:1.5;color:var(--ink);
   display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.notamg.ativa{border-color:var(--ink);box-shadow:0 8px 20px rgba(26,25,23,.16);z-index:3;
+  display:flex;flex-direction:column;gap:8px}
+.mgentrada{width:100%;min-width:0;font:inherit;font-size:12.5px;line-height:1.5;color:var(--ink);
+  background:transparent;border:1px solid var(--line);border-radius:var(--r1);padding:8px;resize:vertical}
+.mgentrada:focus{outline:2px solid var(--ink);outline-offset:1px}
+.mgacts{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+/* fio que devolve a nota deslocada ao trecho de origem */
+.fio{position:absolute;left:-13px;width:1px;background:linear-gradient(var(--line),var(--ink-3));
+  opacity:.6;pointer-events:none}
+.notamg:hover .fio,.notamg.ativa .fio{opacity:1;background:var(--ink-3)}
+.mgrupo{position:absolute;left:0;right:0;background:var(--paper-2);border:1px dashed var(--ink-3);
+  border-radius:var(--r1);padding:9px var(--s3);text-align:left;font-family:var(--mono);
+  font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);cursor:pointer}
+.mgrupo:hover{border-style:solid;border-color:var(--ink);color:var(--ink)}
 @media (max-width:1179px){.lbody.commargem{display:block}.margem{display:none}}
 .dst{padding:2px 0;border-radius:2px;cursor:pointer;background:#f7e08a}
 .dst.rosa{background:#f6c9d8}.dst.verde{background:#c8e6bd}
@@ -632,6 +646,22 @@ var CEN=[
  go:function(){st.falhaSalvar=true;st.leitor=true;st.cap=0;st.dst=[];st.nota=null;
   aviso("Modo de falha ligado: a próxima nota não vai salvar")},
  p:[["tentar","Escreva uma nota e tente salvar"],["preservada","Veja se o texto foi preservado"]]},
+/* ── densidade de notas no desktop ── */
+{k:"M1",t:"Margem · 3 notas curtas",e:1,
+ go:function(){st.mNota="M";st.leitor=true;st.cap=0;st.dst=notasDensidade(3,"curta")},
+ p:[["ver","Veja se cada nota aponta para o trecho certo"]]},
+{k:"M2",t:"Margem · 8 notas, tamanhos mistos",e:1,
+ go:function(){st.mNota="M";st.leitor=true;st.cap=0;st.dst=notasDensidade(8,"mista")},
+ p:[["colisao","Veja onde as notas colidem"],["distancia","Meça a distância até a origem"]]},
+{k:"M3",t:"Margem · 12 notas na mesma região",e:1,
+ go:function(){st.mNota="M";st.leitor=true;st.cap=0;st.dst=notasDensidade(12,"mista")},
+ p:[["quebrou","Ainda dá para usar?"]]},
+{k:"M4",t:"Margem · 3 notas longas",e:1,
+ go:function(){st.mNota="M";st.leitor=true;st.cap=0;st.dst=notasDensidade(3,"longa")},
+ p:[["longa","Nota longa cabe na margem?"]]},
+{k:"M5",t:"Inspector com a mesma carga",e:1,
+ go:function(){st.mNota="A";st.leitor=true;st.cap=0;st.dst=notasDensidade(8,"mista");st.painel="notas"},
+ p:[["comparar","Compare com o cenário M2"]]},
 {k:"E8",t:"Voltar a uma nota de capítulos atrás",e:1,
  go:function(){st.dst=[{k:"c8",pid:"0-1",ini:0,fim:56,cor:"amarelo",nota:"a ordem vivida vence a imposta"}];
   st.leitor=true;st.cap=3;st.painel="notas"},
@@ -885,6 +915,27 @@ function gerarAnotacoes(n,juntas){
   if(i%2===0)item.nota=notas[i%notas.length];
   d.push(item)}
  return d}
+/* notas de comprimentos realistas para o teste de densidade na margem */
+var TXT_CURTA=["Rever isso.","Base do ensaio.","Discordo.","Conferir a fonte.","Central."];
+var TXT_MEDIA=["A distinção entre restrição e limitação atravessa o capítulo inteiro e resolve a dúvida que eu tinha sobre densidade.",
+ "Isto contradiz o que ele afirma três páginas antes — ou eu entendi errado da primeira vez.",
+ "O exemplo do inventário é o melhor argumento do livro e está escondido numa passagem lateral."];
+var TXT_LONGA=["Este trecho reorganiza o problema. Eu tratava densidade como propriedade da tela: quantos elementos cabem, qual espaçamento mínimo.\n\nO ponto é outro: densidade é propriedade da tarefa. A mesma tela é densa para quem procura e esparsa para quem revisa, porque as perguntas são diferentes.\n\nIsso muda o que medir — em vez de contar elementos por área, contar quantas perguntas a tela responde sem exigir uma segunda ação."];
+function notasDensidade(n,tipo){
+ var alvos=BLOCOS.filter(function(b){return b.tipo==="p"&&b.ci===0}).map(function(b){return b.id});
+ if(alvos.length<2)alvos=BLOCOS.filter(function(b){return b.tipo==="p"}).slice(0,6).map(function(b){return b.id});
+ var out=[];
+ for(var i=0;i<n;i++){
+  var id=alvos[i%alvos.length],b=blocoPorId(id);
+  var passo=Math.max(20,Math.floor(b.n/Math.ceil(n/alvos.length)));
+  var volta=Math.floor(i/alvos.length);
+  var ini=Math.min(b.n-15,volta*passo),fim=Math.min(b.n,ini+Math.max(22,passo-10));
+  var txt=tipo==="curta"?TXT_CURTA[i%TXT_CURTA.length]
+    :tipo==="longa"?TXT_LONGA[0]
+    :[TXT_CURTA[i%TXT_CURTA.length],TXT_MEDIA[i%TXT_MEDIA.length],TXT_LONGA[0]][i%3];
+  /* a chave preserva "capítulo-parágrafo" — o painel agrupa por ela */
+  out.push({k:id+"-d"+i,pid:id,ini:ini,fim:fim,cor:["amarelo","rosa","verde"][i%3],nota:txt})}
+ return out}
 var NOTA_LONGA="Este trecho resolve uma confusão que eu vinha carregando há semanas. Eu tratava densidade como se fosse uma propriedade da tela — quantos elementos cabem, qual o espaçamento mínimo, quantas colunas.\n\nO ponto do autor é outro e é mais útil: densidade é uma propriedade da tarefa. A mesma tela é densa para quem procura e esparsa para quem revisa, porque as duas pessoas chegam com perguntas diferentes e usam atributos diferentes para responder.\n\nIsso muda o que eu meço. Em vez de contar elementos por área, eu deveria medir quantas perguntas a tela consegue responder sem exigir uma segunda ação. Um card com quinze campos pode ser menos denso que um com três, se os três forem exatamente os que a tarefa pede.\n\nAplicando ao problema do card de livro: a capa responde “qual é este livro?” à distância. O título responde à mesma pergunta, mais devagar e com mais certeza. A contagem de notas responde a outra pergunta inteiramente — e é por isso que ela competia com o título em vez de complementá-lo.\n\nFalta testar se isso se sustenta quando o acervo passa de duzentos itens, que é onde a varredura deixa de ser possível e a busca vira o caminho principal.";
 function estiloLeitura(){
  var t=v("temaleitor");
@@ -976,8 +1027,11 @@ function blocoHTML(id,p){
   var ini=Math.max(pos,d.ini),fim=Math.min(p.length,d.fim);
   if(fim<=ini)return;
   html+=esc(p.slice(pos,ini));
+  /* alcançável por teclado: o destaque é um controle, não só uma cor */
   html+='<mark class="dst '+(d.cor||"amarelo")+(d.cat?" cat":"")+(st.sel===d.k?" ativo":"")+
-   '" data-a="verdestaque" data-k="'+d.k+'" title="'+(d.nota?"Com nota — clique para editar":"Destaque")+'">'+
+   '" data-a="verdestaque" data-k="'+d.k+'" id="mk-'+d.k+'" tabindex="0" role="button"'+
+   ' aria-label="'+(d.nota?"Destaque com nota: ":"Destaque: ")+esc(p.slice(ini,fim).slice(0,50))+
+   '" title="'+(d.nota?"Com nota — clique para editar":"Destaque")+'">'+
    esc(p.slice(ini,fim))+(d.nota?'<span class="temnota" aria-label="tem nota">✎</span>':"")+'</mark>';
   pos=fim});
  html+=esc(p.slice(pos));
@@ -1197,25 +1251,65 @@ function draw(){
    /* throttle por tempo: rAF não dispara em aba oculta e congelaria o progresso */
    lb.addEventListener("scroll",function(){
     if(st.raf)return;
-    st.raf=setTimeout(function(){st.raf=null;calcProgresso();guardarPos()},60)},{passive:true});
-   if(st.pos["livro"])restaurarPos();else calcProgresso()}
-  else calcProgresso();
+    st.raf=setTimeout(function(){st.raf=null;calcProgresso("scroll");guardarPos()},60)},{passive:true});
+   if(st.pos["livro"])restaurarPos();else calcProgresso("scroll")}
+  else if(st.reflow){st.reflow=false;reposicionarPelaAncora()}
+  else calcProgresso("scroll");
   if(st.mNota==="M")desenharMargem()}
  drawLab()}
 /* notas na margem: alinhadas ao parágrafo de origem, sem mexer na coluna de texto */
+var DESVIO_MAX=210;   /* acima disto a nota deixa de apontar para nada */
 function desenharMargem(){
  var m=document.getElementById("margem");if(!m)return;
- var lb=document.getElementById("lbody"),base=lb.getBoundingClientRect().top-lb.scrollTop;
- var usados=[];
- m.innerHTML=st.dst.filter(function(d){return d.nota}).map(function(d){
-  var el=document.querySelector('[data-p="'+d.pid+'"]');if(!el)return"";
-  var y=el.getBoundingClientRect().top-base;
-  /* empilha quando colidem, em vez de sobrepor */
-  usados.forEach(function(u){if(Math.abs(y-u)<86)y=u+90});
-  usados.push(y);
-  return'<button class="notamg" data-a="anotarid" data-id="'+d.k+'" style="top:'+Math.round(y)+'px">'+
-   '<span class="mgtrecho">'+esc(textoDoId(d.k).slice(0,42))+'…</span>'+
-   '<span class="mgnota">'+esc(d.nota)+'</span></button>'}).join("")}
+ var base=m.getBoundingClientRect().top;   /* origem do posicionamento absoluto */
+ var comNota=st.dst.filter(function(d){return d.nota});
+ /* posição ideal de cada nota = topo do trecho de origem */
+ var itens=comNota.map(function(d){
+  var mk=null;document.querySelectorAll("#lcol mark").forEach(function(x){if(x.dataset.k===d.k)mk=x});
+  var el=mk||document.querySelector('[data-p="'+d.pid+'"]');
+  return el?{d:d,ideal:el.getBoundingClientRect().top-base}:null})
+  .filter(Boolean).sort(function(a,b){return a.ideal-b.ideal});
+ /* empilha usando a ALTURA REAL medida, não um passo fixo */
+ var fim=-1e9,grupos=[];
+ itens.forEach(function(it){
+  var y=Math.max(it.ideal,fim+10);
+  it.y=y;it.desvio=y-it.ideal;
+  /* quando o empurrão passa do limite, a nota entra num grupo colapsado */
+  if(it.desvio>DESVIO_MAX){
+   var g=grupos[grupos.length-1];
+   if(g&&it.ideal-g.ideal<260)g.itens.push(it);
+   else grupos.push({ideal:it.ideal,itens:[it]});
+   return}
+  fim=y+alturaEstimada(it.d)});
+ var html=itens.filter(function(it){return it.desvio<=DESVIO_MAX}).map(function(it){
+  var d=it.d,ativa=st.nota===d.k,
+   fio=it.desvio>26?'<span class="fio" style="height:'+Math.round(it.desvio)+'px;top:-'+Math.round(it.desvio)+'px"></span>':'',
+   pos='style="top:'+Math.round(it.y)+'px"',
+   trecho='<span class="mgtrecho">'+esc(textoDoId(d.k).slice(0,42))+'…</span>';
+  /* a nota ativa vira editor no próprio lugar — a margem não é só leitura */
+  if(ativa)return'<div class="notamg ativa" '+pos+'>'+fio+trecho+
+   '<textarea id="notatxt" class="mgentrada" rows="5" placeholder="O que este trecho te fez pensar?">'+
+   esc(d.nota||"")+'</textarea>'+
+   '<div class="mgacts"><button class="btn sm" data-a="salvarnota">Salvar</button>'+
+   '<button class="lnk" data-a="expandirnota">abrir no painel</button>'+
+   '<button class="lnk" data-a="fecharnota">fechar</button></div></div>';
+  return'<button class="notamg" data-a="anotarid" data-id="'+d.k+'" '+
+   'aria-describedby="mk-'+d.k+'" '+pos+'>'+fio+trecho+
+   '<span class="mgnota">'+esc(d.nota)+'</span></button>'}).join("");
+ /* Modelo B como escape: grupo colapsado em marcador */
+ html+=grupos.map(function(g){
+  return'<button class="mgrupo" data-a="grupomg" data-ks="'+g.itens.map(function(i){return i.d.k}).join(",")+
+   '" style="top:'+Math.round(g.ideal)+'px">'+g.itens.length+' notas aqui</button>'}).join("");
+ m.innerHTML=html}
+function alturaEstimada(d){
+ if(st.nota===d.k)return 230;              /* aberta para edição */
+ var n=(d.nota||"").length;
+ return 58+Math.min(3,Math.ceil(n/46))*18}
+/* densidade alta demais: o inspector passa a ser o caminho honesto */
+function margemViavel(){
+ if(larguraTela()<1180)return false;
+ var visiveis=st.dst.filter(function(d){return d.nota}).length;
+ return visiveis<=6}
 
 /* ═════ LAB ═════ */
 var ANOT={lib:["Biblioteca","O controle de usuário no topo direito é o único ponto pessoal persistente. Settings não disputa espaço com as áreas de trabalho.","Ninguém achar o controle em 5 segundos."],
@@ -1226,7 +1320,7 @@ var ANOT={lib:["Biblioteca","O controle de usuário no topo direito é o único 
 /* ═════ LAB — seções navegáveis ═════ */
 var LABSEC=[["visao","Visão"],["chrome","Chrome"],["notas","Notas"],["destaque","Destaque"],
  ["revisao","Revisão"],["conhec","Conhecimento"],["bench","Benchmark"],["acess","Acessib."],
- ["mobile","Mobile"],["decisoes","Decisões"],["cen","Cenários"]];
+ ["mobile","Mobile"],["densid","Densidade"],["decisoes","Decisões"],["cen","Cenários"]];
 function testar(txt,cfg){
  return'<button class="testar" data-teste=\''+JSON.stringify(cfg)+'\'>▸ '+txt+'</button>'}
 function bloco(titulo,status,corpo){
@@ -1292,6 +1386,39 @@ function labConteudo(){
   bloco("Nota lateral vira folha","aceito","<p class='nota'>O painel de 360px não cabe: vira bottom sheet de 74% da altura, deixando o parágrafo visível acima.</p>")+
   bloco("Chrome C no celular","aberto","<p class='nota'>Bordas laterais colidem com o polegar. Provável que o C simplesmente não exista no celular.</p>")+
   testar("Abrir o leitor para testar",{leitor:true});
+ if(s==="densid")return'<p class="nota">A nota de margem só vale se a <b>posição comunicar a origem</b>. '+
+  'Este é o teste que decide se ela merece ser a direção do desktop. Medido em 1600×900, coluna de 640px, margem de 300px.</p>'+
+  bloco("O que quebrou na primeira versão","rejeitado",
+   '<p class="nota">Empilhamento com passo fixo de 90px, menor que a altura real de uma nota (103px). '+
+   'Resultado medido: <b>8 notas → desvio máximo de 586px e 2 sobreposições</b>; '+
+   '<b>12 notas → 856px e a última fora do viewport</b>. '+
+   'Três notas longas já sobrepunham. A 586px do trecho, a nota não aponta para nada — a margem vira uma segunda lista, pior que o painel.</p>')+
+  bloco("Correção 1 — empilhar pela altura medida","aceito",
+   '<p class="nota">A altura passa a vir do conteúdo, não de uma constante. '+
+   'Sobreposições: <b>0 em todos os cenários</b>, inclusive com a nota aberta para edição (207px).</p>')+
+  bloco("Correção 2 — limite de deslocamento de 210px","aceito",
+   '<p class="nota">Acima disso a nota não é empurrada: ela entra num marcador “N notas aqui” ancorado na região. '+
+   'A margem passa a <b>admitir que não cabe</b> em vez de mentir sobre a posição. '+
+   'Notas deslocadas mais de 26px ganham um fio que volta ao trecho.</p>')+
+  '<table class="mtz"><thead><tr><th>Cenário</th><th>Na margem</th><th>Colapsadas</th><th>Desvio máx.</th><th>Sobrepõe</th></tr></thead><tbody>'+
+  [["3 curtas",3,0,"11px",0],["8 mistas",5,3,"183px",0],["12 mistas",5,7,"183px",0],["3 longas",3,0,"47px",0]]
+   .map(function(l){return'<tr><td><b>'+l[0]+'</b></td><td>'+l[1]+'</td><td>'+l[2]+'</td><td>'+l[3]+'</td><td class="n5">'+l[4]+'</td></tr>'}).join("")+
+  '</tbody></table>'+
+  bloco("Margem × painel sob a mesma carga (8 notas)","aberto",
+   '<p class="nota">O achado que muda a discussão: <b>os dois entregam 5 notas sem custo</b>. '+
+   'A margem mostra 5 posicionadas e colapsa 3 num marcador; o painel lista as 8 e mostra 5 — '+
+   'as outras 3 ficam abaixo da dobra (lista de 1.282px em 850px de altura).</p>'+
+   '<p class="nota">A capacidade é a mesma. O que difere é o <b>resto</b>: a margem substitui o excedente por um marcador '+
+   'que ainda diz <i>onde</i>; o painel o empurra para fora da vista, mas mantém <i>todas</i> acessíveis por busca e filtro. '+
+   'Margem responde “o que eu pensei aqui”; painel responde “o que eu pensei neste livro”. Não são o mesmo trabalho.</p>'+
+   testar("Margem com 8 notas",{mNota:"M",leitor:true})+testar("Painel com 8 notas",{mNota:"A",leitor:true,painel:"notas"}))+
+  bloco("Teclado: texto → destaque → nota","aceito",
+   '<p class="nota">Falha encontrada e corrigida: os destaques eram <b>0 de 8 alcançáveis por Tab</b> — a margem era exclusiva do mouse. '+
+   'Agora cada destaque é um controle com rótulo (8/8), <kbd>→</kbd> vai do trecho à nota e <kbd>←</kbd> volta.</p>')+
+  bloco("Breakpoint de 1180px","aberto",
+   '<p class="nota">A 1280px sobram 640px de coluna (≈70 caracteres por linha) e 300px de margem — ainda honesto. '+
+   'Abaixo de 1180 a margem some sem substituto explícito, e o número continua sendo herdado, não derivado. '+
+   'Falta medir onde a coluna cai abaixo de 60 caracteres.</p>');
  if(s==="decisoes")return'<p class="nota">Classificação honesta do estado de cada questão.</p>'+
   [["Nota presa ao trecho, com volta ao parágrafo","aceito","Sobreviveu ao estresse: salto de 3 capítulos de distância continua funcionando."],
    ["Escopo livro × global explícito","aceito","Testado: o valor do livro tem precedência e o global reflete em Configurações."],
@@ -1305,7 +1432,12 @@ function labConteudo(){
    ["Modelo de nota","aberto","C ganha em rapidez, A em conforto. A ponte entre eles é a hipótese a testar."],
    ["Categoria semântica no destaque","aberto","Só se paga com filtro por categoria — que ainda não existe."],
    ["Transição para conhecimento","aberto","Quatro modelos plausíveis, nenhum testado com gente."],
-   ["Ancoragem por parágrafo","rejeitado","<b>Quebrou no estresse.</b> O protótipo prende a anotação ao parágrafo inteiro, então não representa dois destaques no mesmo parágrafo — exatamente o caso que o repositório aponta como o que separa visualizador de leitor. Precisa de âncora por trecho antes de qualquer implementação."]].map(function(d){
+   ["Ancoragem por parágrafo","rejeitado","<b>Quebrou no estresse.</b> Substituída por âncora de trecho (bloco + offsets de caractere), verificada com dois destaques no mesmo parágrafo."],
+   ["Progresso semântico estável","aceito","<b>Reforçado.</b> A causa era conceitual: o scrollTop era a fonte da verdade e a âncora, consequência. Invertido — a âncora {bloco, offset} manda e o pixel obedece. Medido: <b>43% invariante</b> em corpo 18→21, 21→16, entrelinha larga, coluna 760, coluna 560 e viewport 1440→1024."],
+   ["Notas de margem como padrão do desktop","provavel","<b>Sobreviveu à densidade, com limites explícitos.</b> Até 5 notas visíveis funcionam com desvio ≤183px e zero sobreposição; acima disso o excedente colapsa num marcador de região. Não é “melhor que o painel”: entrega a mesma quantidade e troca a lista pela posição."],
+   ["Painel lateral sob densidade","aceito","Continua sendo o único lugar onde <i>todas</i> as anotações são alcançáveis — 8 de 8 com busca e filtro. É o destino do que não cabe na margem."],
+   ["Margem e painel como híbrido","provavel","O marcador colapsado abre o painel filtrado pela região. É a ponte entre os dois; falta testar se a pessoa entende que o marcador é um atalho e não uma perda."],
+   ["Breakpoint de 1180px","aberto","Ainda herdado. A 1280px o layout se sustenta (640px de coluna), mas o número não foi derivado de uma medida de legibilidade."]].map(function(d){
    return bloco(d[0],d[1],'<p class="nota">'+d[2]+'</p>')}).join("");
  return null}
 function matriz(cols,linhas){
@@ -1446,6 +1578,10 @@ $("app").addEventListener("click",function(e){
    aviso("Selecione o trecho certo — o antigo fica marcado até você confirmar")}
  else if(a==="fimcorrige"){st.corrigindo=null;st.sel=null;marcar("pronto");aviso("Trecho ajustado")}
  else if(a==="anotarid"){st.nota=el.dataset.id;st.sel=null}
+ /* grupo colapsado: a margem admite que não cabe e entrega ao painel */
+ else if(a==="grupomg"){var ks=el.dataset.ks.split(",");
+   st.nota=ks[0];st.painel="notas";st.filtroNotas=ks;
+   aviso(ks.length+" notas desta região abertas no painel — não cabiam na margem")}
  else if(a==="expandirnota"){var t0=document.getElementById("notatxt");
    var dn0=dstPorK(st.nota);if(t0&&dn0)dn0.nota=t0.value;
    st.mNota="A";aviso("Aberto no painel lateral — cabe uma nota longa")}
@@ -1481,6 +1617,8 @@ $("app").addEventListener("click",function(e){
  else if(a==="escopo"){st.escopo=el.dataset.v;marcar("escopo")}
  else if(a==="fanot"){st.fanot=el.dataset.v;marcar("achar")}
  else if(a==="set"){var x=SM[el.dataset.k];
+  /* ajuste que reflui o texto: preserva a posição lógica e recalcula o pixel */
+  if(["fonte","corpo","entrelinha","largura","temaleitor"].indexOf(el.dataset.k)>-1)st.reflow=true;
   setv(el.dataset.k,x.t==="sw"?el.dataset.v==="true":el.dataset.v,el.dataset.ctx?"ctx":"cfg");
   if(el.dataset.ctx)marcar("ctx")}
  else if(a==="soeste"){st.ctx=null;aviso("Vale só neste livro")}
@@ -1517,46 +1655,81 @@ $("app").addEventListener("mouseup",function(e){
  st.pendente={pid:p.dataset.p,ini:o.ini,fim:o.fim};st.sel=null;
  marcar("selecionar");draw()});
 /* ── progresso real, por peso de texto lido ── */
-function calcProgresso(){
- var body=document.getElementById("lbody");if(!body)return;
- var topo=body.getBoundingClientRect().top,alvo=topo+body.clientHeight*0.32;
- var atual=null,frac=0;
+/* ════════════════════════════════════════════════════════════
+   POSIÇÃO LÓGICA × POSIÇÃO VISUAL
+   A âncora {bloco, offset de caractere} é a fonte da verdade.
+   O scroll em pixels é consequência dela, nunca o contrário.
+   Só a rolagem do usuário reescreve a âncora; qualquer mudança de
+   layout reposiciona o scroll A PARTIR da âncora preservada.
+   ════════════════════════════════════════════════════════════ */
+var PONTO_LEITURA=0.32; /* onde no viewport consideramos "a linha que se lê" */
+function ancoraDaGeometria(){
+ var body=document.getElementById("lbody");if(!body)return null;
+ var alvo=body.getBoundingClientRect().top+body.clientHeight*PONTO_LEITURA;
  var ps=[].slice.call(document.querySelectorAll("#lcol p[data-p]"));
  for(var i=0;i<ps.length;i++){var r=ps[i].getBoundingClientRect();
-  if(r.bottom>=alvo){atual=ps[i];
-   frac=Math.min(1,Math.max(0,(alvo-r.top)/Math.max(1,r.height)));break}}
- if(!atual&&ps.length){atual=ps[ps.length-1];frac=1}
- if(!atual)return;
- var id=atual.dataset.p,b=blocoPorId(id);
- st.ancora={id:id,frac:frac};
- var lidos,total;
- if(st.algo==="semantico"){lidos=(ACUM[id]||0)+frac*(b?b.n:0);total=TOTAL_CHARS}
- else{lidos=body.scrollTop;total=Math.max(1,body.scrollHeight-body.clientHeight)}
- st.prog=Math.min(1,Math.max(0,lidos/total));
- /* extremidades exatas: topo é 0 e fim é 100, sem depender da âncora */
+  if(r.bottom>=alvo){
+   var b=blocoPorId(ps[i].dataset.p);
+   var frac=Math.min(1,Math.max(0,(alvo-r.top)/Math.max(1,r.height)));
+   /* converte fração geométrica em offset de caractere — este sobrevive ao reflow */
+   return{id:ps[i].dataset.p,off:Math.round(frac*(b?b.n:0))}}}
+ if(ps.length){var ub=blocoPorId(ps[ps.length-1].dataset.p);
+  return{id:ps[ps.length-1].dataset.p,off:ub?ub.n:0}}
+ return null}
+function progressoDaAncora(a){
+ if(!a)return 0;
+ return Math.min(1,Math.max(0,((ACUM[a.id]||0)+a.off)/TOTAL_CHARS))}
+function calcProgresso(origem){
+ var body=document.getElementById("lbody");if(!body)return;
+ /* a âncora só muda quando quem move é o usuário */
+ if(origem!=="layout"||!st.ancora){var nova=ancoraDaGeometria();if(nova)st.ancora=nova}
+ if(!st.ancora)return;
+ if(st.algo==="semantico")st.prog=progressoDaAncora(st.ancora);
+ else{var max0=Math.max(1,body.scrollHeight-body.clientHeight);
+  st.prog=Math.min(1,Math.max(0,body.scrollTop/max0))}
+ /* extremidades: heurística visual deliberada, para o fim do livro marcar 100% */
  var maxScroll=Math.max(1,body.scrollHeight-body.clientHeight);
  if(body.scrollTop<=2)st.prog=0;
  else if(body.scrollTop>=maxScroll-2)st.prog=1;
- st.cap=b?b.ci:0;
+ var b=blocoPorId(st.ancora.id);st.cap=b?b.ci:0;
  var barra=document.getElementById("barra");
  if(barra)barra.style.width=Math.round(st.prog*100)+"%";
  var txt=document.getElementById("progtxt");
  if(txt)txt.textContent=textoProgresso();
  if(st.lab&&st.labSec==="scroll")drawLab()}
+/* recoloca o scroll para que a âncora volte ao ponto de leitura */
+function reposicionarPelaAncora(){
+ var a=st.ancora,body=document.getElementById("lbody");if(!a||!body)return;
+ var el=document.querySelector('[data-p="'+a.id+'"]');if(!el)return;
+ var b=blocoPorId(a.id),frac=b&&b.n?Math.min(1,a.off/b.n):0;
+ body.scrollTop=el.offsetTop+frac*el.offsetHeight-body.clientHeight*PONTO_LEITURA;
+ calcProgresso("layout")}
 /* restaura a posição pela âncora de parágrafo, não por pixels */
 function restaurarPos(){
  var a=st.pos["livro"];if(!a)return;
- var el=document.querySelector('[data-p="'+a.id+'"]'),body=document.getElementById("lbody");
- if(!el||!body)return;
- body.scrollTop=el.offsetTop-body.clientHeight*0.32+a.frac*el.offsetHeight;
- calcProgresso()}
-function guardarPos(){if(st.ancora)st.pos["livro"]={id:st.ancora.id,frac:st.ancora.frac}}
+ st.ancora={id:a.id,off:a.off};
+ reposicionarPelaAncora()}
+function guardarPos(){if(st.ancora)st.pos["livro"]={id:st.ancora.id,off:st.ancora.off}}
 $("app").addEventListener("change",function(e){var s=e.target.closest("select[data-k]");if(!s)return;
  setv(s.dataset.k,s.value,"cfg");draw()});
 addEventListener("keydown",function(e){
+ /* destaque e nota de margem operáveis por teclado, não só por mouse */
+ if((e.key==="Enter"||e.key===" ")&&e.target.matches&&e.target.matches('mark[data-a],.notamg,.mgrupo')){
+  e.preventDefault();e.target.click();return}
+ if(e.key==="ArrowRight"&&e.target.matches&&e.target.matches("mark[data-a]")){
+  var nt=document.querySelector('.notamg[data-id="'+e.target.dataset.k+'"]');
+  if(nt){e.preventDefault();nt.focus()}return}
+ if(e.key==="ArrowLeft"&&e.target.matches&&e.target.matches(".notamg")){
+  var mk=document.getElementById("mk-"+e.target.dataset.id);
+  if(mk){e.preventDefault();mk.focus()}return}
  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();st.pal="";st.palq="";draw()}
  else if(e.key==="Escape"){if(st.pal!==null)st.pal=null;else if(st.ctx)st.ctx=null;
   else if(st.menu)st.menu=false;else if(st.leitor)st.leitor=false;draw()}});
+/* redimensionar também reflui: a âncora manda, o pixel obedece */
+addEventListener("resize",function(){
+ if(!st.leitor)return;
+ clearTimeout(st.rz);st.rz=setTimeout(function(){reposicionarPelaAncora();
+  if(st.mNota==="M")desenharMargem()},140)});
 $("labbtn").addEventListener("click",function(){st.lab=!st.lab;drawLab()});
 $("lab").addEventListener("click",function(e){
  var f=e.target.closest("[data-l]");if(f){st.lab=false;drawLab();return}
