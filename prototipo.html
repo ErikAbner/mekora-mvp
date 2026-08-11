@@ -24,6 +24,12 @@
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
 }
 *{box-sizing:border-box}
+/* a preferência de movimento precisa desligar transição de verdade */
+body[data-motion="Reduzido"] *{transition-duration:.001s!important;animation:none!important;
+  scroll-behavior:auto!important}
+@media (prefers-reduced-motion:reduce){
+  *{transition-duration:.001s!important;animation:none!important}
+}
 html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:14px;
   -webkit-font-smoothing:antialiased;overflow:hidden}
@@ -985,6 +991,13 @@ function draw(){
  if(st.pal!==null)h+=vPal();
  if(st.aviso)h+='<div class="aviso">'+esc(st.aviso)+'</div>';
  $("app").innerHTML=h;
+ document.body.dataset.motion=v("movimento");
+ /* foco vai para o campo ao abrir a nota; volta ao parágrafo ao fechar */
+ if(st.nota&&st.nota!==st.notaFocada){var ta=document.getElementById("notatxt");
+  if(ta){ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);st.notaFocada=st.nota}}
+ if(!st.nota&&st.notaFocada){var alvo=document.querySelector('[data-p="'+st.notaFocada+'"]');
+  if(alvo){alvo.setAttribute("tabindex","-1");alvo.focus({preventScroll:true})}
+  st.notaFocada=null}
  if(st.hit){var el=$("row-"+st.hit);if(el)el.scrollIntoView({block:"center",behavior:"smooth"})}
  var b=$("bs");if(b&&document.activeElement!==b&&st.bs){b.focus();b.setSelectionRange(b.value.length,b.value.length)}
  var p=$("palq");if(p){p.focus();p.setSelectionRange(p.value.length,p.value.length)}
@@ -1114,10 +1127,10 @@ var ACESS=[
 ["Rótulos em ícones","ok","Todo ícone tem aria-label e title: Sumário, Buscar no livro, Anotações, Marcador, Tipografia."],
 ["Alvos de toque","ok","Ícones do leitor a 36px. Acima do mínimo de 24px da WCAG 2.2, abaixo dos 44px do iOS."],
 ["Significado só por cor","parcial","No destaque modelo C o rótulo é textual — correto. Nos modelos A e B a cor é decorativa, o que é aceitável, mas o filtro futuro por cor exigiria rótulo."],
-["Ordem de foco no painel de nota","parcial","O foco não é movido para o campo ao abrir a nota, e não volta ao parágrafo ao fechar. É o defeito de acessibilidade mais concreto que restou."],
-["Movimento reduzido","parcial","Existe a preferência em Aparência, mas as transições do chrome ainda não a consultam."],
-["Leitor de tela","aberto","Não testado com leitor de tela real. Marcar como aprovado sem isso seria falso."],
-["Zoom do navegador a 200%","aberto","Não verificado nesta rodada."]];
+["Ordem de foco na nota","ok","<b>Corrigido.</b> O foco entra no campo ao abrir e volta ao parágrafo de origem ao fechar. Verificado: elemento focado após fechar é o próprio &lt;p&gt; do trecho."],
+["Movimento reduzido","ok","<b>Corrigido.</b> A preferência agora desliga transições de verdade: medido 0,2s → 0,001s. Também respeita prefers-reduced-motion do sistema."],
+["Zoom do navegador a 200%","ok","<b>Verificado</b> a 640×430, equivalente a 200%. Sem transbordo na biblioteca nem no leitor; barra de seleção e nota continuam dentro da tela."],
+["Leitor de tela","aberto","Não testado com leitor de tela real. Marcar como aprovado sem isso seria falso — é o item que resta."]];
 function drawLab(){
  var el=$("lab");el.hidden=!st.lab;if(!st.lab)return;
  var conteudo=labConteudo();
