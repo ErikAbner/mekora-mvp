@@ -439,10 +439,16 @@ select.sel{height:var(--h1);border:1px solid var(--line);border-radius:var(--r1)
   font-size:13px;padding:11px var(--s5);border-radius:999px;box-shadow:0 14px 34px rgba(26,25,23,.3);max-width:82%}
 
 /* ═══ LAB — secundário, fora do produto ═══ */
-#labbtn{position:fixed;right:16px;bottom:16px;z-index:95;height:34px;padding:0 14px;border-radius:999px;
+#labbtn{position:fixed;right:16px;bottom:16px;z-index:95;height:36px;padding:0 12px 0 14px;border-radius:999px;
   background:var(--ink);color:#fff;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;
-  display:flex;align-items:center;gap:7px;box-shadow:0 8px 24px rgba(26,25,23,.28);opacity:.62}
+  display:flex;align-items:center;gap:9px;box-shadow:0 8px 24px rgba(26,25,23,.28);opacity:.92}
 #labbtn:hover{opacity:1}
+#labbtn .bdg{background:var(--acc);color:#fff;border-radius:999px;padding:2px 7px;font-size:9.5px;
+  letter-spacing:.04em}
+.labnav button[data-sec="novo"]{color:var(--acc);border-color:rgba(200,72,31,.45)}
+.labnav button[data-sec="novo"].on{background:var(--acc);color:#fff;border-color:var(--acc)}
+#lab kbd{font-family:var(--mono);font-size:9.5px;background:#2a2721;border:1px solid #3a352c;
+  border-radius:3px;padding:1px 5px;color:#d5cec3}
 /* display num seletor de ID vence o [hidden] do browser — precisa ser explícito */
 #lab[hidden]{display:none}
 #lab{position:fixed;top:0;right:0;bottom:0;width:330px;background:#14130f;color:#b6b0a6;z-index:96;
@@ -512,7 +518,7 @@ select.sel{height:var(--h1);border:1px solid var(--line);border-radius:var(--r1)
 </head>
 <body>
 <div id="app"></div>
-<button id="labbtn">◇ lab</button>
+<button id="labbtn" aria-label="Abrir o laboratório de decisões">◇ lab<span class="bdg">5 novos</span></button>
 <div id="lab" hidden></div>
 
 <script>
@@ -594,7 +600,7 @@ var st={rota:"lib",cat:"geral",menu:false,ctx:null,pal:null,palq:"",bs:"",hit:nu
  prog:0,ancora:null,pos:{},algo:"semantico",corrigindo:null,
  fmtprog:"tempo",escopo:"livro",lq:"",leu:null,valoresLivro:{},
  /* variantes em comparação */
- mNota:"A",mDst:"A",mRev:"A",mConh:"B",mGrid:"A",labSec:"visao",escolhendoCor:null,limiar:null};
+ mNota:"A",mDst:"A",mRev:"A",mConh:"B",mGrid:"A",labSec:"novo",escolhendoCor:null,limiar:null};
 /* preferência do livro atual tem precedência sobre o padrão global */
 function v(k){
  if(st.leitor&&SM[k]&&SM[k].ctx&&st.valoresLivro[k]!==undefined)return st.valoresLivro[k];
@@ -1249,6 +1255,20 @@ function ctxAa(){
   '<p class="notadica" style="margin-top:var(--s2)">'+(st.escopo==="livro"
    ?"Vale só para <b>Organização Espacial</b>. Outros livros continuam como estão."
    :"Passa a valer para <b>todos os livros</b>, inclusive os próximos.")+'</p></div>'+
+  /* em teste: fica no Aa porque é decisão de layout de leitura, mas rotulado como experimento */
+  '<div class="escopo"><div class="lbl">Em teste · grid</div>'+
+  '<div class="seg" style="width:100%"><button data-a="grid" data-v="A" class="'+(st.mGrid!=="B"?"on":"")+'">Coluna única</button>'+
+  '<button data-a="grid" data-v="B" class="'+(st.mGrid==="B"?"on":"")+'">Quatro faixas</button></div>'+
+  '<p class="notadica" style="margin-top:var(--s2)">'+(st.mGrid==="B"
+   ?"Citação escapa da coluna, lista recua, capítulo atravessa a tela. <b>Vá ao capítulo 3</b> para ver os três."
+   :"O texto todo na mesma largura. É o modelo congelado, para comparação.")+'</p></div>'+
+  '<div class="escopo"><div class="lbl">Em teste · notas</div>'+
+  '<div class="seg" style="width:100%">'+[["A","Painel"],["C","Flutuante"],["M","Na margem"]].map(function(m){
+   return'<button data-a="modonota" data-v="'+m[0]+'" class="'+(st.mNota===m[0]?"on":"")+'">'+m[1]+'</button>'}).join("")+'</div>'+
+  '<p class="notadica" style="margin-top:var(--s2)">'+(st.mNota==="M"
+   ?(larguraTela()>=limiarMargem()?"As notas ficam ao lado do trecho. Acima de 5 na mesma região, o excedente colapsa num marcador."
+     :"A tela tem "+larguraTela()+"px e a margem exige "+limiarMargem()+"px — por isso ela está desligada agora.")
+   :"A margem só aparece em tela larga. O limiar sai da tipografia: agora são "+limiarMargem()+"px.")+'</p></div>'+
   '<button class="ponte" data-a="ponte" data-c="leitura">Gerenciar preferências de leitura →</button></div>'}
 
 /* ═════ BUSCA GLOBAL ═════ */
@@ -1388,7 +1408,7 @@ var ANOT={lib:["Biblioteca","O controle de usuário no topo direito é o único 
  canvas:["Canvas","Área de trabalho — existe para provar que dá para sair do produto para Settings e voltar ao mesmo lugar.","Voltar de Settings e cair em outro contexto."],
  conhecimento:["Conhecimento","Mesma função de contexto de saída e retorno.","Voltar de Settings e cair em outro contexto."]};
 /* ═════ LAB — seções navegáveis ═════ */
-var LABSEC=[["visao","Visão"],["chrome","Chrome"],["notas","Notas"],["destaque","Destaque"],
+var LABSEC=[["novo","● Novidades"],["visao","Visão"],["chrome","Chrome"],["notas","Notas"],["destaque","Destaque"],
  ["revisao","Revisão"],["conhec","Conhecimento"],["bench","Benchmark"],["acess","Acessib."],
  ["mobile","Mobile"],["densid","Densidade"],["grid","Grid"],["decisoes","Decisões"],["cen","Cenários"]];
 function testar(txt,cfg){
@@ -1399,6 +1419,33 @@ function bloco(titulo,status,corpo){
  return'<div class="labbloco"><div class="labh"><b>'+titulo+'</b><span class="stt '+cls+'">'+status+'</span></div>'+corpo+'</div>'}
 function labConteudo(){
  var s=st.labSec;
+ if(s==="novo")return'<p class="nota">O que mudou nas duas últimas rodadas, com o caminho para ver cada coisa. '+
+  'Tudo abaixo é <b>alternativa</b> — o modelo congelado continua intacto.</p>'+
+  bloco("Grid de quatro faixas","candidato",
+   '<p class="nota">Vindo do <b>doc.cc</b>, medido e filtrado. A citação escapa da coluna, a lista recua, '+
+   'o capítulo atravessa a tela inteira. As faixas são proporções da coluna, então acompanham a largura de leitura.</p>'+
+   '<p class="nota"><b>Onde mexer sem o lab:</b> abra o <b>Aa</b> no leitor → <i>Em teste · grid</i>.</p>'+
+   testar("Ver no capítulo 3",{mGrid:"B",leitor:true,cap:2,mNota:"A"})+
+   testar("Comparar com o congelado",{mGrid:"A",leitor:true,cap:2}))+
+  bloco("Notas na margem, sob densidade","provavel",
+   '<p class="nota">Empilhamento corrigido: a altura vem do conteúdo medido, não de uma constante. '+
+   'Acima de 210px de deslocamento a nota não é empurrada — o excedente colapsa num marcador de região que abre o painel.</p>'+
+   '<p class="nota"><b>Onde mexer sem o lab:</b> <b>Aa</b> → <i>Em teste · notas</i> → Na margem.</p>'+
+   testar("3 notas",{mNota:"M",leitor:true,cap:0})+testar("8 notas",{mNota:"M",leitor:true,cap:0,cenDens:8})+
+   testar("12 notas",{mNota:"M",leitor:true,cap:0,cenDens:12}))+
+  bloco("Destaque alcançável por teclado","aceito",
+   '<p class="nota">Era 0 de 8 por Tab: a margem inteira era exclusiva do mouse. '+
+   'Agora cada destaque é um controle com rótulo, <kbd>→</kbd> vai do trecho à nota e <kbd>←</kbd> volta.</p>'+
+   '<p class="nota"><b>Como testar:</b> abra o leitor com destaques e use <kbd>Tab</kbd> até chegar num trecho marcado.</p>'+
+   testar("Leitor com destaques",{mNota:"M",leitor:true,cap:0,cenDens:5}))+
+  bloco("Breakpoint derivado da tipografia","aceito",
+   '<p class="nota">Os 1180px eram herdados. Agora o limiar sai da tipografia em uso — '+
+   '<b>'+limiarMargem()+'px</b> no corpo atual. Mude o corpo no Aa e o número muda junto.</p>')+
+  bloco("Progresso que não se mexe","aceito",
+   '<p class="nota">A âncora {bloco, caractere} passou a mandar, e o pixel obedece. '+
+   'O grid novo aumenta a altura do documento em 190px e o mesmo ponto continua marcando 66%.</p>')+
+  '<p class="nota" style="margin-top:var(--s3)">Detalhe e números medidos nas abas '+
+  '<b>Grid</b>, <b>Densidade</b> e <b>Decisões</b>.</p>';
  if(s==="visao")return'<p class="nota">Baseline V1 congelado e preservado. Esta fase compara alternativas em vez de redesenhar.</p>'+
   bloco("Chrome do leitor","provavel","<p class='nota'>A (topo+rodapé) lidera, mas B e C ainda não foram descartados.</p>")+
   bloco("Criação de nota","aberto","<p class='nota'>Três modelos implementados e comparáveis. Nenhum vence em todos os critérios.</p>")+
@@ -1694,6 +1741,11 @@ $("app").addEventListener("click",function(e){
    st.refazendo=st.corrigindo;st.corrigindo=null;st.sel=null;
    aviso("Selecione o trecho certo — o antigo fica marcado até você confirmar")}
  else if(a==="fimcorrige"){st.corrigindo=null;st.sel=null;marcar("pronto");aviso("Trecho ajustado")}
+ else if(a==="grid"){st.mGrid=el.dataset.v;st.reflow=true;
+   aviso(el.dataset.v==="B"?"Grid de quatro faixas — vá ao capítulo 3":"De volta à coluna única")}
+ else if(a==="modonota"){st.mNota=el.dataset.v;st.nota=null;
+   if(el.dataset.v==="M"&&larguraTela()<limiarMargem())
+    aviso("Tela estreita demais para a margem: precisa de "+limiarMargem()+"px")}
  else if(a==="anotarid"){st.nota=el.dataset.id;st.sel=null}
  /* grupo colapsado: a margem admite que não cabe e entrega ao painel */
  else if(a==="grupomg"){var ks=el.dataset.ks.split(",");
@@ -1852,6 +1904,8 @@ $("lab").addEventListener("click",function(e){
  var f=e.target.closest("[data-l]");if(f){st.lab=false;drawLab();return}
  var sec=e.target.closest("[data-sec]");if(sec){st.labSec=sec.dataset.sec;drawLab();return}
  var t=e.target.closest("[data-teste]");if(t){var cfg=JSON.parse(t.dataset.teste);
+  /* cenDens gera a carga de anotações em vez de listá-la no config */
+  if(cfg.cenDens){st.dst=notasDensidade(cfg.cenDens,"mista");delete cfg.cenDens}
   Object.keys(cfg).forEach(function(k){st[k]=cfg[k]});
   st.ctx=null;st.sel=null;st.nota=null;st.chromeVis=true;
   aviso("Configurado para teste — o lab continua aberto para comparar");draw();return}
