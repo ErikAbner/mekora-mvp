@@ -304,6 +304,36 @@ select.sel{height:var(--h1);border:1px solid var(--line);border-radius:var(--r1)
   .selbar button{padding:10px 10px;font-size:12.5px}
 }
 
+/* variantes de nota e destaque */
+.notainline{display:block;margin:0 0 1.05em;padding:var(--s3) var(--s4);background:rgba(26,25,23,.045);
+  border-left:3px solid var(--acc);border-radius:0 var(--r1) var(--r1) 0;font-family:var(--ui)}
+.notainline .acts{margin-top:var(--s2)}
+.notainline.lida{cursor:pointer;border-left-color:#f7e08a}
+.notainline.lida:hover{background:rgba(26,25,23,.07)}
+.notainline.lida p{margin:3px 0 0;font-size:13.5px;line-height:1.5;color:var(--ink-2)}
+.notaflut{position:fixed;left:50%;transform:translateX(-50%);bottom:150px;z-index:78;width:min(420px,90vw);
+  background:#fff;border:1px solid var(--line);border-radius:var(--r2);padding:var(--s4);
+  box-shadow:0 20px 50px rgba(26,25,23,.24);display:flex;flex-direction:column;gap:var(--s2)}
+.notaflut-h{display:flex;align-items:center}
+.notaflut-h .lbl{flex:1}
+.selbar .selrot{color:rgba(255,255,255,.7);font-size:12px;padding:0 var(--s2)}
+.selbar .pt{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px}
+.selbar .pt.amarelo{background:#f7e08a}.selbar .pt.rosa{background:#f6c9d8}.selbar .pt.verde{background:#c8e6bd}
+.catdst{font-size:10.5px;font-weight:650;padding:2px 7px;border-radius:999px;align-self:flex-start;color:#3a3128}
+.catdst.amarelo{background:#f7e08a}.catdst.rosa{background:#f6c9d8}.catdst.verde{background:#c8e6bd}
+.grpcap{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);
+  padding:var(--s3) 0 var(--s1);border-top:1px solid var(--line-2);margin-top:var(--s2)}
+.grpcap:first-child{border:none;margin:0}
+.resumo{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s2)}
+.rnum{background:var(--bg-2);border-radius:var(--r1);padding:var(--s3);text-align:center}
+.rnum b{display:block;font-size:20px;font-weight:650}
+.rnum span{font-size:11px;color:var(--ink-3)}
+.ideia{border:1px solid var(--line-2);border-radius:var(--r1);padding:var(--s3);background:#fff;
+  display:flex;flex-direction:column;gap:var(--s2)}
+.ideia .itxt{margin:0;font-size:14px;line-height:1.5;color:var(--ink)}
+.ideia .ipass{font-family:var(--serif);font-style:italic;font-size:12.5px;color:var(--ink-3);text-align:left}
+.ideia .ipass:hover{color:var(--acc)}
+
 /* ═══ BUSCA GLOBAL ═══ */
 .velo{position:fixed;inset:0;background:rgba(26,25,23,.24);z-index:80}
 .pal{position:fixed;top:12vh;left:50%;transform:translateX(-50%);width:min(560px,92%);z-index:81;background:#fff;
@@ -349,7 +379,30 @@ select.sel{height:var(--h1);border:1px solid var(--line);border-radius:var(--r1)
 #lab .seg{background:#1c1a14;border-color:#2a2620}
 #lab .seg button{color:#b6b0a6;border-color:#2a2620;font-size:11px}
 #lab .seg button.on{background:#f2f0eb;color:#14130f}
-#lab .nota{font-size:11.5px;line-height:1.5;color:#7b7469}
+#lab .nota{font-size:11.5px;line-height:1.5;color:#9a9287}
+#lab .nota b{color:#d5cec3}
+.labnav{display:flex;gap:3px;flex-wrap:wrap;padding-right:70px;margin-bottom:var(--s2)}
+.labnav button{font-family:var(--mono);font-size:9.5px;padding:5px 8px;border-radius:var(--r1);color:#8a8177;
+  border:1px solid #241f19}
+.labnav button:hover{color:#f2f0eb;border-color:#3a332a}
+.labnav button.on{background:#f2f0eb;color:#14130f;border-color:#f2f0eb}
+.labcorpo{display:flex;flex-direction:column;gap:var(--s3)}
+.labbloco{border:1px solid #241f19;border-radius:var(--r1);padding:var(--s3);background:#191712}
+.labh{display:flex;align-items:baseline;gap:var(--s2);margin-bottom:5px}
+.labh b{font-size:12.5px;color:#e6e0d5;flex:1;font-weight:600;line-height:1.3}
+.stt{font-family:var(--mono);font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;
+  border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.st-ok{color:#7dbb92}.st-mid{color:#d9b871}.st-open{color:#e08a6a}.st-bad{color:#e0705c}
+.testar{margin-top:var(--s2);font-family:var(--mono);font-size:10px;color:#14130f;background:#e6e0d5;
+  padding:6px 11px;border-radius:999px;display:inline-block}
+.testar:hover{background:#fff}
+.mtz{width:100%;border-collapse:collapse;margin-top:var(--s3);font-family:var(--mono);font-size:10px}
+.mtz th{color:#7b7469;font-weight:400;padding:4px 3px;text-align:center;font-size:8.5px;
+  writing-mode:vertical-rl;transform:rotate(180deg);height:56px}
+.mtz td{padding:5px 3px;text-align:center;color:#b6b0a6;border-top:1px solid #241f19}
+.mtz td:first-child{text-align:left;color:#e6e0d5}
+.mtz .tot{color:#f2f0eb;font-weight:600}
+.mtz .n5{color:#7dbb92}.mtz .n4{color:#a8c49a}.mtz .n2{color:#e08a6a}.mtz .n1{color:#e0705c}
 @media (max-width:720px){#lab{width:100%}}
 /* telas estreitas: o topo enxuga e Configurações vira lista → conteúdo */
 @media (max-width:640px){
@@ -452,7 +505,9 @@ var st={rota:"lib",cat:"geral",menu:false,ctx:null,pal:null,palq:"",bs:"",hit:nu
  leitor:false,valores:{},aviso:null,de:null,lab:false,layout:"A",cen:null,feito:{},passo:0,
  /* leitor */
  cap:0,chrome:"A",chromeVis:true,painel:null,sel:null,nota:null,destaques:{},marcado:false,
- fmtprog:"tempo",escopo:"livro",lq:"",leu:null,valoresLivro:{}};
+ fmtprog:"tempo",escopo:"livro",lq:"",leu:null,valoresLivro:{},
+ /* variantes em comparação */
+ mNota:"A",mDst:"A",mRev:"A",mConh:"B",labSec:"visao",escolhendoCor:null};
 /* preferência do livro atual tem precedência sobre o padrão global */
 function v(k){
  if(st.leitor&&SM[k]&&SM[k].ctx&&st.valoresLivro[k]!==undefined)return st.valoresLivro[k];
@@ -744,7 +799,11 @@ function vLeitor(){
    var id=st.cap+"-"+i,d=st.destaques[id];
    var txt=esc(p);
    if(d)txt='<mark class="dst '+(d.cor||"amarelo")+'" data-a="verdestaque" data-id="'+id+'">'+txt+'</mark>';
-   return'<p data-p="'+id+'"'+(st.leu===id?' class="alvo"':'')+'>'+txt+'</p>'}).join("")+
+   var bloco='<p data-p="'+id+'"'+(st.leu===id?' class="alvo"':'')+'>'+txt+'</p>';
+   /* MODELO B — a nota vive no fluxo, logo abaixo do trecho */
+   if(st.nota===id&&st.mNota==="B")bloco+=notaInline(id);
+   else if(d&&d.nota&&st.mNota==="B")bloco+=notaInlineLida(id,d);
+   return bloco}).join("")+
   '<div class="lfim">'+(st.cap<CAPS.length-1
    ?'<button class="btn sec sm" data-a="cap" data-i="'+(st.cap+1)+'">Próximo capítulo →</button>'
    :'<span class="lbl">fim do trecho de demonstração</span>')+'</div>'+
@@ -759,9 +818,30 @@ function vLeitor(){
  if(st.sel)h+=barraSelecao();
  /* ── painéis laterais ── */
  if(st.painel)h+=painelLeitor();
- /* ── nota lateral, preservando o parágrafo à vista ── */
- if(st.nota)h+=editorNota();
+ /* ── nota: modelo A lateral · B inline (no fluxo) · C flutuante ── */
+ if(st.nota&&st.mNota==="A")h+=editorNota();
+ if(st.nota&&st.mNota==="C")h+=notaFlutuante(st.nota);
  return h+'</div>'}
+/* ── MODELO B: expansão inline ── */
+function notaInline(id){
+ var d=st.destaques[id]||{};
+ return'<aside class="notainline" aria-label="Nota do trecho">'+
+  '<textarea id="notatxt" class="notaentrada" rows="3" placeholder="O que este trecho te fez pensar?">'+esc(d.nota||"")+'</textarea>'+
+  '<div class="acts"><button class="btn sm" data-a="salvarnota">Salvar</button>'+
+  '<button class="lnk" data-a="fecharnota">Cancelar</button>'+
+  (d.nota?'<button class="lnk dan" data-a="apagarnota">Apagar</button>':"")+'</div></aside>'}
+function notaInlineLida(id,d){
+ return'<aside class="notainline lida" data-a="anotarid" data-id="'+id+'">'+
+  '<span class="lbl">sua nota</span><p>'+esc(d.nota)+'</p></aside>'}
+/* ── MODELO C: compositor flutuante junto da seleção ── */
+function notaFlutuante(id){
+ var d=st.destaques[id]||{};
+ return'<div class="notaflut" role="dialog" aria-label="Nota rápida">'+
+  '<div class="notaflut-h"><span class="lbl">Nota rápida</span>'+
+  '<button class="lnk" data-a="fecharnota" aria-label="Fechar">✕</button></div>'+
+  '<textarea id="notatxt" class="notaentrada" rows="3" placeholder="Anote em uma linha…">'+esc(d.nota||"")+'</textarea>'+
+  '<div class="acts"><button class="btn sm" data-a="salvarnota">Salvar</button>'+
+  '<button class="lnk" data-a="expandirnota">Escrever mais →</button></div></div>'}
 function btnChrome(p,ic,rot){
  return'<button class="licone'+(st.painel===p?" on":"")+'" data-a="painel" data-p="'+p+'" aria-label="'+rot+
   '" title="'+rot+'" aria-pressed="'+(st.painel===p)+'">'+ic+'</button>'}
@@ -773,13 +853,27 @@ function textoProgresso(){
  var f=st.fmtprog||"tempo",pct=Math.round((st.cap+1)/CAPS.length*100);
  return f==="tempo"?"faltam ~"+(9-st.cap*3)+" min no capítulo":f==="paginas"?"pág. "+(12+st.cap*9)+" de 38":pct+"% do livro"}
 /* menu de seleção — só quatro ações; o resto é secundário */
+var CATS_DST=[{k:"importante",n:"Importante",c:"amarelo"},{k:"duvida",n:"Dúvida",c:"rosa"},
+ {k:"ideia",n:"Ideia",c:"verde"}];
 function barraSelecao(){
- var d=st.destaques[st.sel];
+ var d=st.destaques[st.sel],m=st.mDst;
+ /* MODELO C — escolher o sentido, não a cor */
+ if(m==="C"&&st.escolhendoCor)return'<div class="selbar" role="menu" aria-label="Tipo de destaque">'+
+  '<span class="selrot">Marcar como</span>'+CATS_DST.map(function(c){
+   return'<button data-a="destacarcat" data-k="'+c.k+'" role="menuitem"><span class="pt '+c.c+'"></span>'+c.n+'</button>'}).join("")+
+  '<button data-a="fechasel" aria-label="Cancelar">✕</button></div>';
+ /* MODELO B — destacar já escolhendo a cor */
+ if(m==="B"&&!d)return'<div class="selbar" role="menu">'+
+  '<span class="selrot">Destacar</span>'+["amarelo","rosa","verde"].map(function(c){
+   return'<button class="cor '+c+'" data-a="destacarcor" data-c="'+c+'" aria-label="Destacar em '+c+'"></button>'}).join("")+
+  '<button data-a="anotar" role="menuitem">Anotar</button>'+
+  '<button data-a="fechasel" aria-label="Fechar">✕</button></div>';
  return'<div class="selbar" role="menu" aria-label="Ações do trecho">'+
   (d?'<button data-a="tirardestaque" role="menuitem">Remover destaque</button>'+
+     (m==="C"&&d.cat?'<span class="selrot">'+CATS_DST.filter(function(c){return c.k===d.cat})[0].n+'</span>':
      '<span class="cores">'+["amarelo","rosa","verde"].map(function(c){
-       return'<button class="cor '+c+(d.cor===c?" on":"")+'" data-a="cordestaque" data-c="'+c+'" aria-label="Cor '+c+'"></button>'}).join("")+'</span>'
-    :'<button data-a="destacar" role="menuitem">Destacar</button>')+
+       return'<button class="cor '+c+(d.cor===c?" on":"")+'" data-a="cordestaque" data-c="'+c+'" aria-label="Cor '+c+'"></button>'}).join("")+'</span>')
+    :'<button data-a="'+(m==="C"?"escolhercat":"destacar")+'" role="menuitem">Destacar</button>')+
   '<button data-a="anotar" role="menuitem">'+(d&&d.nota?"Editar nota":"Anotar")+'</button>'+
   '<button data-a="copiar" role="menuitem">Copiar</button>'+
   '<button data-a="fechasel" aria-label="Fechar">✕</button></div>'}
@@ -798,6 +892,12 @@ function editorNota(){
   '<p class="notadica">A nota fica presa ao trecho. Você a reencontra pelo painel de anotações e pelo espaço do livro.</p>'+
   '</div></aside>'}
 function textoDoId(id){var p=id.split("-");return CAPS[+p[0]].ps[+p[1]]||""}
+function itemAnot(id){var d=st.destaques[id];
+ return'<button class="anot" data-a="irtrecho" data-c="'+id.split("-")[0]+'" data-i="'+id.split("-")[1]+'">'+
+  (st.mRev==="A"?'<span class="lbl">'+esc(CAPS[+id.split("-")[0]].n)+'</span>':'')+
+  (d.cat?'<span class="catdst '+d.cor+'">'+CATS_DST.filter(function(c){return c.k===d.cat})[0].n+'</span>':'')+
+  '<mark class="dst '+(d.cor||"amarelo")+'">'+esc(textoDoId(id).slice(0,90))+'…</mark>'+
+  (d.nota?'<span class="anotnota">'+esc(d.nota)+'</span>':'<span class="lbl">sem nota</span>')+'</button>'}
 /* painéis: sumário, busca, anotações */
 function painelLeitor(){
  var p=st.painel,h='<aside class="lpanel" aria-label="'+({toc:"Sumário",busca:"Buscar no livro",notas:"Anotações"})[p]+'">'+
@@ -818,12 +918,29 @@ function painelLeitor(){
   else h+='<p class="vaziop">Busca no texto deste livro.</p>'}
  if(p==="notas"){
   var ids=Object.keys(st.destaques);
-  h+=ids.length?ids.map(function(id){var d=st.destaques[id];
-   return'<button class="anot" data-a="irtrecho" data-c="'+id.split("-")[0]+'" data-i="'+id.split("-")[1]+'">'+
-    '<span class="lbl">'+esc(CAPS[+id.split("-")[0]].n)+'</span>'+
-    '<mark class="dst '+(d.cor||"amarelo")+'">'+esc(textoDoId(id).slice(0,90))+'…</mark>'+
-    (d.nota?'<span class="anotnota">'+esc(d.nota)+'</span>':'<span class="lbl">sem nota</span>')+'</button>'}).join("")
-   :'<p class="vaziop">Nenhuma anotação ainda. Selecione um trecho para destacar ou anotar.</p>'}
+  if(!ids.length)h+='<p class="vaziop">Nenhuma anotação ainda. Selecione um trecho para destacar ou anotar.</p>';
+  else if(st.mRev==="B"){
+   /* REVISÃO B — agrupada por capítulo */
+   CAPS.forEach(function(c,ci){
+    var doCap=ids.filter(function(id){return +id.split("-")[0]===ci});
+    if(!doCap.length)return;
+    h+='<div class="grpcap">'+esc(c.n)+' <span class="lbl">'+doCap.length+'</span></div>'+
+     doCap.map(function(id){return itemAnot(id)}).join("")})}
+  else if(st.mRev==="C"){
+   /* REVISÃO C — o que sobrou do livro, não a lista de marcações */
+   var comNota=ids.filter(function(id){return st.destaques[id].nota});
+   h+='<div class="resumo"><div class="rnum"><b>'+ids.length+'</b><span>destaques</span></div>'+
+    '<div class="rnum"><b>'+comNota.length+'</b><span>com nota</span></div>'+
+    '<div class="rnum"><b>2</b><span>conexões</span></div></div>'+
+    '<div class="lbl" style="margin-top:var(--s3)">Suas ideias</div>'+
+    (comNota.length?comNota.map(function(id){var d=st.destaques[id];
+      return'<div class="ideia"><p class="itxt">'+esc(d.nota)+'</p>'+
+       '<button class="ipass" data-a="irtrecho" data-c="'+id.split("-")[0]+'" data-i="'+id.split("-")[1]+'">'+
+       '↩ '+esc(textoDoId(id).slice(0,54))+'…</button></div>'}).join("")
+     :'<p class="vaziop">Você destacou, mas ainda não escreveu nada. Esta visão é sobre o que <b>você</b> pensou.</p>')+
+    '<div class="lbl" style="margin-top:var(--s4)">Só destacado</div>'+
+    ids.filter(function(id){return !st.destaques[id].nota}).map(function(id){return itemAnot(id)}).join("")}
+  else h+=ids.map(function(id){return itemAnot(id)}).join("")}
  return h+'</div></aside>'}
 function ctxAa(){
  var e=estiloLeitura();
@@ -879,10 +996,141 @@ var ANOT={lib:["Biblioteca","O controle de usuário no topo direito é o único 
  perfil:["Perfil","Perfil é visualização do que a leitura produziu; Conta é administração. “Editar perfil” atravessa essa fronteira de propósito.","Alguém procurar senha ou sessões aqui dentro."],
  canvas:["Canvas","Área de trabalho — existe para provar que dá para sair do produto para Settings e voltar ao mesmo lugar.","Voltar de Settings e cair em outro contexto."],
  conhecimento:["Conhecimento","Mesma função de contexto de saída e retorno.","Voltar de Settings e cair em outro contexto."]};
+/* ═════ LAB — seções navegáveis ═════ */
+var LABSEC=[["visao","Visão"],["chrome","Chrome"],["notas","Notas"],["destaque","Destaque"],
+ ["revisao","Revisão"],["conhec","Conhecimento"],["bench","Benchmark"],["acess","Acessib."],
+ ["mobile","Mobile"],["decisoes","Decisões"],["cen","Cenários"]];
+function testar(txt,cfg){
+ return'<button class="testar" data-teste=\''+JSON.stringify(cfg)+'\'>▸ '+txt+'</button>'}
+function bloco(titulo,status,corpo){
+ var cls={aceito:"st-ok",provavel:"st-mid",aberto:"st-open",candidato:"st-open"}[status]||"st-open";
+ return'<div class="labbloco"><div class="labh"><b>'+titulo+'</b><span class="stt '+cls+'">'+status+'</span></div>'+corpo+'</div>'}
+function labConteudo(){
+ var s=st.labSec;
+ if(s==="visao")return'<p class="nota">Baseline V1 congelado e preservado. Esta fase compara alternativas em vez de redesenhar.</p>'+
+  bloco("Chrome do leitor","provavel","<p class='nota'>A (topo+rodapé) lidera, mas B e C ainda não foram descartados.</p>")+
+  bloco("Criação de nota","aberto","<p class='nota'>Três modelos implementados e comparáveis. Nenhum vence em todos os critérios.</p>")+
+  bloco("Destaque","aberto","<p class='nota'>Cor livre × categoria semântica: a decisão depende de haver filtro por categoria depois.</p>")+
+  bloco("Revisão","provavel","<p class='nota'>A e C resolvem trabalhos diferentes; provavelmente convivem.</p>")+
+  bloco("Nota → conhecimento","aberto","<p class='nota'>Ler primeiro, conectar depois — a testar contra o modelo simultâneo.</p>")+
+  '<p class="nota" style="margin-top:var(--s3)"><b>Real no protótipo:</b> tipografia, seleção, destaque, nota, revisão, navegação, escopo.<br>'+
+  '<b>Simulado:</b> corpus de busca, progresso, envio ao conhecimento.<br>'+
+  '<b>Fora de escopo:</b> renderização de EPUB, ancoragem em texto que reflui, sincronização.</p>';
+ if(s==="chrome")return'<p class="nota">Mesma tarefa nos três: abrir sumário, mudar tipografia, ver progresso, anotar.</p>'+
+  [["A","Topo + rodapé","Descoberta alta. Único que comporta progresso legível e escala para novos controles. Custa duas faixas de tela.","provavel"],
+   ["B","Flutuante","Imersão máxima e menos ruído. Esconde navegação e progresso: some a noção de onde se está no livro.","candidato"],
+   ["C","Bordas","Libera topo e rodapé. Colide com o polegar no celular e desaparece em telas estreitas.","candidato"]].map(function(m){
+   return bloco("Modelo "+m[0]+" — "+m[1],m[3],'<p class="nota">'+m[2]+'</p>'+testar("Testar no leitor",{chrome:m[0],leitor:true}))}).join("")+
+  matriz(["Descoberta","Imersão","Progresso","Teclado","Celular","Escala"],
+   [["A",[5,3,5,5,4,5]],["B",[2,5,1,4,4,2]],["C",[3,4,2,3,2,3]]]);
+ if(s==="notas")return'<p class="nota">Mesma tarefa: registrar uma interpretação sem perder o contexto da leitura.</p>'+
+  [["A","Painel lateral","O trecho continua visível e cabe nota longa. Ocupa 360px e empurra a coluna de leitura.","provavel"],
+   ["B","Inline, no fluxo","Máxima proximidade — a nota nasce onde o texto está. Quebra o ritmo do parágrafo e sufoca notas longas.","candidato"],
+   ["C","Compositor flutuante","Rápido para uma linha, quase sem interrupção. Cobre texto e tem saída para o painel quando cresce.","candidato"]].map(function(m){
+   return bloco("Modelo "+m[0]+" — "+m[1],m[3],'<p class="nota">'+m[2]+'</p>'+testar("Testar este modelo",{mNota:m[0],leitor:true}))}).join("")+
+  matriz(["Descoberta","Rapidez","Contexto","Conforto","Celular","Nota longa"],
+   [["A",[4,3,5,5,3,5]],["B",[5,4,5,3,4,2]],["C",[4,5,4,3,4,2]]])+
+  '<p class="nota"><b>Hipótese:</b> C para a nota de uma linha, A quando ela cresce — com a ponte “escrever mais” ligando os dois. É o que está implementado no C.</p>';
+ if(s==="destaque")return[
+   ["A","Destacar e seguir","Um toque, cor padrão. Mais rápido; deixa a cor para depois.","provavel"],
+   ["B","Escolher a cor","Cor no ato. Custa um passo e exige decidir cedo o que a cor significa.","candidato"],
+   ["C","Categoria semântica","Importante / Dúvida / Ideia. Só se paga se houver filtro por categoria na revisão.","aberto"]].map(function(m){
+   return bloco("Modelo "+m[0]+" — "+m[1],m[3],'<p class="nota">'+m[2]+'</p>'+testar("Testar",{mDst:m[0],leitor:true}))}).join("")+
+  '<p class="nota"><b>Risco do C:</b> obriga a classificar no momento em que a pessoa só queria marcar. E cor sozinha não pode carregar significado — por isso o C mostra o rótulo em texto, não só a cor.</p>';
+ if(s==="revisao")return[
+   ["A","Painel do leitor","Lista simples, para conferir sem sair da leitura.","provavel"],
+   ["B","Por capítulo","Agrupa por onde apareceu. Ajuda a retomar um capítulo específico.","candidato"],
+   ["C","O que ficou do livro","Separa o que você escreveu do que só marcou. É estudo, não conferência.","provavel"]].map(function(m){
+   return bloco("Revisão "+m[0]+" — "+m[1],m[3],'<p class="nota">'+m[2]+'</p>'+testar("Testar",{mRev:m[0],leitor:true,painel:"notas"}))}).join("")+
+  '<p class="nota"><b>Leitura da comparação:</b> A e C não competem. A serve a “o que marquei nesta sessão”; C serve a “o que sobrou deste livro”. Provável que ambos existam, em lugares diferentes.</p>';
+ if(s==="conhec")return[
+   ["A","Nada acontece","A nota pertence ao livro e pronto. Simples, mas o conhecimento nunca se forma.","candidato"],
+   ["B","Ação opcional discreta","“Levar para o conhecimento” aparece depois de salvar. Implementado.","provavel"],
+   ["C","Só na revisão","Ler agora, conectar depois, num momento dedicado.","candidato"],
+   ["D","Sugestão automática","O sistema propõe relações; você confirma ou rejeita.","aberto"]].map(function(m){
+   return bloco("Modelo "+m[0]+" — "+m[1],m[3],'<p class="nota">'+m[2]+'</p>')}).join("")+
+  '<p class="nota"><b>Princípio em teste:</b> <b>ler primeiro, conhecer depois</b>. Ninguém deve precisar entender a arquitetura de conhecimento do Mekora para anotar um parágrafo. O D é o mais alinhado ao repositório, onde relações já têm confirmar/rejeitar com razão escrita.</p>';
+ if(s==="bench")return BENCH.map(function(b){
+   return'<div class="labbloco"><div class="labh"><b>'+b.i+'</b><span class="stt '+
+    ({Manter:"st-ok",Adaptar:"st-mid",Melhorar:"st-mid",Diferenciar:"st-open"})[b.d]+'">'+b.d+'</span></div>'+
+    '<p class="nota"><b>Referências:</b> '+b.r+'</p><p class="nota"><b>Esperado:</b> '+b.e+'</p>'+
+    '<p class="nota"><b>Por quê:</b> '+b.p+'</p></div>'}).join("");
+ if(s==="acess")return'<p class="nota">Resultado do percurso só com teclado, feito neste protótipo.</p>'+
+  ACESS.map(function(a){return'<div class="labbloco"><div class="labh"><b>'+a[0]+'</b>'+
+   '<span class="stt '+(a[1]==="ok"?"st-ok":a[1]==="parcial"?"st-mid":"st-bad")+'">'+a[1]+'</span></div>'+
+   '<p class="nota">'+a[2]+'</p></div>'}).join("");
+ if(s==="mobile")return'<p class="nota">Estados medidos a 375px. O que muda de modelo, muda por necessidade — não por simetria.</p>'+
+  bloco("Barra de seleção","aceito","<p class='nota'>Vira faixa de largura total no rodapé, fora do alcance dos dedos que seguram. Medida: 359px dentro de 375.</p>")+
+  bloco("Nota lateral vira folha","aceito","<p class='nota'>O painel de 360px não cabe: vira bottom sheet de 74% da altura, deixando o parágrafo visível acima.</p>")+
+  bloco("Chrome C no celular","aberto","<p class='nota'>Bordas laterais colidem com o polegar. Provável que o C simplesmente não exista no celular.</p>")+
+  testar("Abrir o leitor para testar",{leitor:true});
+ if(s==="decisoes")return'<p class="nota">Classificação honesta do estado de cada questão.</p>'+
+  [["Nota presa ao trecho, com volta ao parágrafo","aceito","O ciclo funciona nos dois sentidos e é o que separa anotar de copiar."],
+   ["Escopo livro × global explícito","aceito","Testado: o valor do livro tem precedência e o global reflete em Configurações."],
+   ["Barra de seleção com 4 ações","aceito","Acima disso vira menu e perde a leitura rápida."],
+   ["Chrome A","provavel","Lidera em descoberta e progresso; falta teste com usuário para descartar B."],
+   ["Revisão A + C convivendo","provavel","Resolvem trabalhos diferentes; falta decidir onde C mora."],
+   ["Modelo de nota","aberto","C ganha em rapidez, A em conforto. A ponte entre eles é a hipótese a testar."],
+   ["Categoria semântica no destaque","aberto","Só se paga com filtro por categoria — que ainda não existe."],
+   ["Transição para conhecimento","aberto","Quatro modelos plausíveis, nenhum testado com gente."]].map(function(d){
+   return bloco(d[0],d[1],'<p class="nota">'+d[2]+'</p>')}).join("");
+ return null}
+function matriz(cols,linhas){
+ return'<table class="mtz"><thead><tr><th></th>'+cols.map(function(c){return'<th>'+c+'</th>'}).join("")+'</tr></thead><tbody>'+
+  linhas.map(function(l){var tot=l[1].reduce(function(a,b){return a+b},0);
+   return'<tr><td><b>'+l[0]+'</b></td>'+l[1].map(function(n){
+    return'<td class="n'+n+'">'+n+'</td>'}).join("")+'<td class="tot">'+tot+'</td></tr>'}).join("")+'</tbody></table>'}
+var BENCH=[
+{i:"Revelar controles",r:"Kindle e Apple Books escondem tudo e revelam ao tocar no centro; Play Books mantém barra fina.",
+ e:"Tocar no texto alterna a interface. É gesto aprendido.",d:"Manter",
+ p:"Contrariar isso custaria aprendizado sem retorno. O Mekora usa o mesmo gesto."},
+{i:"Tipografia",r:"“Aa” em Kindle, Apple Books e Kobo. Readwise usa engrenagem.",
+ e:"O rótulo Aa já é vocabulário de leitura.",d:"Melhorar",
+ p:"Mantemos o Aa, mas com prévia ao vivo e a pergunta de escopo — que nenhum deles faz."},
+{i:"Escopo da tipografia",r:"Kindle, Apple Books e Kobo aplicam a todos os livros, sem avisar.",
+ e:"A pessoa espera que valha para tudo.",d:"Diferenciar",
+ p:"Quem lê ficção e técnico quer corpos diferentes. O risco é não perceber a escolha — por isso ela é explícita, não escondida."},
+{i:"Progresso",r:"Kindle: “faltam X min no capítulo”. Play Books: %. Kobo: ambos.",
+ e:"Tempo restante responde melhor à pergunta real.",d:"Manter",
+ p:"É a melhor microcópia de progresso do mercado. Copiar aqui é acerto."},
+{i:"Sumário e busca",r:"Universais nos cinco.",e:"Ausência lê como produto incompleto.",d:"Manter",
+ p:"Zero espaço para originalidade."},
+{i:"Seleção de texto",r:"Todos abrem barra com destacar, anotar e compartilhar.",
+ e:"O gesto é automático.",d:"Adaptar",
+ p:"Mesmo gesto, sem compartilhar (não há para onde) e com copiar-com-fonte no lugar."},
+{i:"Destaque",r:"Kindle tem 4 cores sem significado; Kobo idem; Readwise usa tags.",
+ e:"Cor é decoração, não taxonomia.",d:"Diferenciar",
+ p:"Categoria semântica só se paga se houver filtro depois — por isso está aberto, não decidido."},
+{i:"Nota",r:"Kindle abre caixa modal que cobre o texto; Play Books usa folha inferior; Readwise mantém painel lateral.",
+ e:"Anotar costuma custar o contexto do trecho.",d:"Diferenciar",
+ p:"É o buraco mais claro do mercado: perder o parágrafo de vista ao escrever sobre ele. Todos os nossos modelos preservam o trecho."},
+{i:"Rever anotações",r:"Kindle exila em site à parte; Play Books tem lista simples; Readwise é todo construído nisso.",
+ e:"Anotação vira arquivo morto.",d:"Diferenciar",
+ p:"Revisão dentro do leitor e volta ao parágrafo de origem. É a razão de o produto existir."},
+{i:"Voltar à biblioteca",r:"Seta no canto superior esquerdo nos cinco.",e:"Posição memorizada.",d:"Manter",p:"Não mexer."}];
+var ACESS=[
+["Foco visível em todos os controles","ok","Contorno de 2px com deslocamento, em botões, campos e itens de lista."],
+["Escape fecha em camadas","ok","Fecha na ordem: busca → seleção → menu → painel → leitor. Sem armadilha."],
+["Rótulos em ícones","ok","Todo ícone tem aria-label e title: Sumário, Buscar no livro, Anotações, Marcador, Tipografia."],
+["Alvos de toque","ok","Ícones do leitor a 36px. Acima do mínimo de 24px da WCAG 2.2, abaixo dos 44px do iOS."],
+["Significado só por cor","parcial","No destaque modelo C o rótulo é textual — correto. Nos modelos A e B a cor é decorativa, o que é aceitável, mas o filtro futuro por cor exigiria rótulo."],
+["Ordem de foco no painel de nota","parcial","O foco não é movido para o campo ao abrir a nota, e não volta ao parágrafo ao fechar. É o defeito de acessibilidade mais concreto que restou."],
+["Movimento reduzido","parcial","Existe a preferência em Aparência, mas as transições do chrome ainda não a consultam."],
+["Leitor de tela","aberto","Não testado com leitor de tela real. Marcar como aprovado sem isso seria falso."],
+["Zoom do navegador a 200%","aberto","Não verificado nesta rodada."]];
 function drawLab(){
  var el=$("lab");el.hidden=!st.lab;if(!st.lab)return;
+ var conteudo=labConteudo();
+ if(conteudo!==null){
+  el.innerHTML='<button class="fechar" data-l="fechar">fechar ✕</button>'+
+   '<nav class="labnav">'+LABSEC.map(function(s){
+    return'<button data-sec="'+s[0]+'" class="'+(st.labSec===s[0]?"on":"")+'">'+s[1]+'</button>'}).join("")+'</nav>'+
+   '<div class="labcorpo">'+conteudo+'</div>';
+  return}
  var c=CEN.filter(function(x){return x.k===st.cen})[0],a=ANOT[st.rota]||ANOT.lib;
  el.innerHTML='<button class="fechar" data-l="fechar">fechar ✕</button>'+
+  '<nav class="labnav">'+LABSEC.map(function(s){
+   return'<button data-sec="'+s[0]+'" class="'+(st.labSec===s[0]?"on":"")+'">'+s[1]+'</button>'}).join("")+'</nav>'+
   '<div><h4>Cenários</h4><div class="sc" style="margin-top:var(--s2)">'+
   CEN.map(function(s){return'<button data-s="'+s.k+'" aria-pressed="'+(st.cen===s.k)+'">'+
    '<span class="n">'+s.k+'</span><span class="d">'+s.t+'</span></button>'}).join("")+'</div></div>'+
@@ -941,9 +1189,18 @@ $("app").addEventListener("click",function(e){
    marcar("capitulo");aviso(CAPS[st.cap].n)}
  else if(a==="marcador"){st.marcado=!st.marcado;aviso(st.marcado?"Marcador colocado":"Marcador removido")}
  else if(a==="fmtprog"){st.fmtprog=st.fmtprog==="tempo"?"paginas":st.fmtprog==="paginas"?"pct":"tempo"}
- else if(a==="destacar"){st.destaques[st.sel]={cor:"amarelo"};marcar("destacar");
-   aviso("Destacado","");st.sel=st.sel}
+ else if(a==="destacar"){st.destaques[st.sel]={cor:"amarelo"};marcar("destacar");aviso("Destacado")}
+ else if(a==="destacarcor"){st.destaques[st.sel]={cor:el.dataset.c};marcar("destacar");
+   st.sel=null;aviso("Destacado")}
+ else if(a==="escolhercat"){st.escolhendoCor=true}
+ else if(a==="destacarcat"){var cat=CATS_DST.filter(function(c){return c.k===el.dataset.k})[0];
+   st.destaques[st.sel]={cor:cat.c,cat:cat.k};st.escolhendoCor=null;st.sel=null;
+   marcar("destacar");aviso("Marcado como "+cat.n)}
  else if(a==="cordestaque"){st.destaques[st.sel].cor=el.dataset.c}
+ else if(a==="anotarid"){st.nota=el.dataset.id;st.sel=null}
+ else if(a==="expandirnota"){var t0=document.getElementById("notatxt");
+   if(t0&&st.destaques[st.nota])st.destaques[st.nota].nota=t0.value;
+   st.mNota="A";aviso("Aberto no painel lateral — cabe uma nota longa")}
  else if(a==="tirardestaque"){delete st.destaques[st.sel];st.sel=null;aviso("Destaque removido")}
  else if(a==="anotar"){if(!st.destaques[st.sel])st.destaques[st.sel]={cor:"amarelo"};
    st.nota=st.sel;st.sel=null;marcar("anotar")}
@@ -996,6 +1253,11 @@ addEventListener("keydown",function(e){
 $("labbtn").addEventListener("click",function(){st.lab=!st.lab;drawLab()});
 $("lab").addEventListener("click",function(e){
  var f=e.target.closest("[data-l]");if(f){st.lab=false;drawLab();return}
+ var sec=e.target.closest("[data-sec]");if(sec){st.labSec=sec.dataset.sec;drawLab();return}
+ var t=e.target.closest("[data-teste]");if(t){var cfg=JSON.parse(t.dataset.teste);
+  Object.keys(cfg).forEach(function(k){st[k]=cfg[k]});
+  st.ctx=null;st.sel=null;st.nota=null;st.chromeVis=true;
+  aviso("Configurado para teste — o lab continua aberto para comparar");draw();return}
  var s=e.target.closest("[data-s]");if(s){comecar(s.dataset.s);return}
  var l=e.target.closest("[data-lay]");if(l){st.layout=l.dataset.lay;
   aviso("Layout "+l.dataset.lay+" — o escolhido é o A, com navegação lateral");drawLab();return}
