@@ -246,6 +246,30 @@ select.sel{height:var(--h1);border:1px solid var(--line);border-radius:var(--r1)
 .lh3{font-family:var(--ui);font-size:.82em;font-weight:650;letter-spacing:.01em;margin:2em 0 .7em;opacity:.75}
 .lq{margin:1.4em 0;padding-left:1.1em;border-left:2px solid currentColor;opacity:.72;font-style:italic}
 .lul{margin:0 0 1.05em;padding-left:1.3em}
+/* ═══ GRID EDITORIAL (alternativa B) ═══
+   Quatro faixas derivadas da coluna. O corpo nunca se move; o que
+   muda é quanto cada outra coisa escapa dele — para cima ou para baixo. */
+.gridE .lcol{overflow:visible}
+.gridE .lq{               /* 1.17× — escapa, porque é destaque do próprio texto */
+  width:var(--faixa-esc);max-width:none;margin-left:calc((var(--col) - var(--faixa-esc))/2);
+  padding-left:0;border-left:0;opacity:1;font-style:normal;
+  font-size:1.16em;line-height:1.34;text-indent:0;margin-top:1.8em;margin-bottom:1.8em}
+.gridE .lq::before{content:"";display:block;width:34px;height:1px;background:currentColor;
+  opacity:.35;margin-bottom:.7em}
+.gridE .lul{              /* 0.93× recuado — subordinado ao corpo, como legenda */
+  width:var(--faixa-sub);margin-left:calc(var(--col) - var(--faixa-sub));
+  font-family:var(--ui);font-size:.8em;line-height:1.5;opacity:.78}
+.gridE .lcap{             /* bleed — a fronteira de capítulo passa a ser visível na rolagem */
+  /* --sbw desconta a barra de rolagem: 100vw a inclui e o bleed vazaria à esquerda */
+  width:calc(100vw - var(--sbw,0px));max-width:none;
+  margin-left:calc(50% - 50vw + var(--sbw,0px)/2);opacity:1;
+  font-size:12px;padding:var(--s4) var(--s5);border-top:1px solid currentColor;
+  border-bottom:1px solid currentColor;box-sizing:border-box;
+  display:flex;justify-content:space-between;align-items:baseline}
+.gridE .lsec:first-child .lcap{border-top:0}
+.gridE .lcap::after{content:attr(data-faixa);font-family:var(--ui);opacity:.45;letter-spacing:.1em}
+.lbody.commargem.gridE .lcap{width:auto;max-width:none;margin-left:0}
+@media (max-width:700px){.gridE .lq,.gridE .lul{width:100%;margin-left:0}}
 .lul li{margin-bottom:.4em}
 .marcanota{font-size:.62em;opacity:.5;margin-left:.35em;vertical-align:super;line-height:1}
 .marcanota:hover{opacity:1;color:var(--acc)}
@@ -570,7 +594,7 @@ var st={rota:"lib",cat:"geral",menu:false,ctx:null,pal:null,palq:"",bs:"",hit:nu
  prog:0,ancora:null,pos:{},algo:"semantico",corrigindo:null,
  fmtprog:"tempo",escopo:"livro",lq:"",leu:null,valoresLivro:{},
  /* variantes em comparação */
- mNota:"A",mDst:"A",mRev:"A",mConh:"B",labSec:"visao",escolhendoCor:null};
+ mNota:"A",mDst:"A",mRev:"A",mConh:"B",mGrid:"A",labSec:"visao",escolhendoCor:null,limiar:null};
 /* preferência do livro atual tem precedência sobre o padrão global */
 function v(k){
  if(st.leitor&&SM[k]&&SM[k].ctx&&st.valoresLivro[k]!==undefined)return st.valoresLivro[k];
@@ -662,6 +686,23 @@ var CEN=[
 {k:"M5",t:"Inspector com a mesma carga",e:1,
  go:function(){st.mNota="A";st.leitor=true;st.cap=0;st.dst=notasDensidade(8,"mista");st.painel="notas"},
  p:[["comparar","Compare com o cenário M2"]]},
+/* ── grid editorial: quatro faixas derivadas da coluna ── */
+{k:"G1",t:"Grid editorial · citação e lista",
+ go:function(){st.mGrid="B";st.leitor=true;st.cap=2;st.mNota="A";st.dst=[]},
+ p:[["ver","Role até a citação em destaque"],["esc","Repare que ela escapa da coluna"],
+    ["lst","Compare com a lista, que recua"],["cap","Passe a fronteira do capítulo 4"]]},
+{k:"G2",t:"O mesmo capítulo no baseline",
+ go:function(){st.mGrid="A";st.leitor=true;st.cap=2;st.dst=[]},
+ p:[["ver","Role o mesmo trecho do G1"],["cmp","Volte ao G1 e decida qual lê melhor"]]},
+{k:"G3",t:"Grid editorial com notas de margem",
+ go:function(){st.mGrid="B";st.mNota="M";st.leitor=true;st.cap=2;st.dst=notasDensidade(5,"mista")},
+ p:[["conv","Veja se a citação larga colide com as notas"],
+    ["cap","Confirme que a faixa de capítulo recua quando há margem"]]},
+{k:"G4",t:"Grid editorial no corpo 16 e na coluna 560",
+ go:function(){st.mGrid="B";st.leitor=true;st.cap=2;st.mNota="A";st.dst=[];
+   setv("corpo","16","cfg");setv("largura","560","cfg")},
+ p:[["prop","As faixas encolheram junto com a coluna?"],
+    ["lim","Veja o limiar recalculado na aba Grid"]]},
 {k:"E8",t:"Voltar a uma nota de capítulos atrás",e:1,
  go:function(){st.dst=[{k:"c8",pid:"0-1",ini:0,fim:56,cor:"amarelo",nota:"a ordem vivida vence a imposta"}];
   st.leitor=true;st.cap=3;st.painel="notas"},
@@ -968,13 +1009,16 @@ function vLeitor(){
    (st.ctx==="aa"?ctxAa():"")+'</span>'+btnChrome("notas","✳","Anotações")+btnMarcador()+'</div>';
  }
  /* ── documento contínuo: o livro inteiro numa rolagem só ── */
- var margem=(st.mNota==="M"&&larguraTela()>=1180);
- h+='<div class="lbody'+(margem?" commargem":"")+'" id="lbody" data-a="togglechrome">'+
+ var margem=(st.mNota==="M"&&larguraTela()>=limiarMargem());
+ var col=v("largura");
+ h+='<div class="lbody'+(margem?" commargem":"")+(st.mGrid==="B"?" gridE":"")+'" id="lbody" data-a="togglechrome">'+
   '<div class="lcol" id="lcol" style="font-size:'+e.corpo+'px;line-height:'+e.el+
-  ';font-family:'+e.ff+';color:'+e.fg+';max-width:'+v("largura")+'px">'+
+  ';font-family:'+e.ff+';color:'+e.fg+';max-width:'+col+'px'+
+  /* as faixas do grid nascem da coluna: são proporções, não números soltos */
+  ';--col:'+col+'px;--faixa-sub:'+Math.round(col*.93)+'px;--faixa-esc:'+Math.round(col*1.17)+'px">'+
   CAPS.map(function(c,ci){
    return'<section class="lsec" data-cap="'+ci+'" id="cap-'+ci+'">'+
-    '<h2 class="lcap">'+esc(c.n)+'</h2>'+
+    '<h2 class="lcap" data-faixa="'+(ci+1)+'/'+CAPS.length+'">'+esc(c.n)+'</h2>'+
     c.ps.map(function(p,pi){return blocoHTML(ci+"-"+pi,p)}).join("")+'</section>'}).join("")+
   '<div class="lfim"><span class="lbl">fim do trecho de demonstração</span></div>'+
   '</div>'+(margem?'<div class="margem" id="margem"></div>':'')+'</div>';
@@ -1247,6 +1291,7 @@ function draw(){
  /* rolagem contínua: liga o cálculo de progresso e restaura a âncora */
  var lb=document.getElementById("lbody");
  if(lb){
+  medirScrollbar();
   if(!lb.dataset.lig){lb.dataset.lig="1";
    /* throttle por tempo: rAF não dispara em aba oculta e congelaria o progresso */
    lb.addEventListener("scroll",function(){
@@ -1258,6 +1303,31 @@ function draw(){
   if(st.mNota==="M")desenharMargem()}
  drawLab()}
 /* notas na margem: alinhadas ao parágrafo de origem, sem mexer na coluna de texto */
+/* ════════════════════════════════════════════════════════════
+   O BREAKPOINT DERIVADO DA LEGIBILIDADE
+   1180px era herdado. Aqui ele é calculado: a margem só existe
+   enquanto a coluna mantém 60 caracteres e a nota mantém 40.
+   ════════════════════════════════════════════════════════════ */
+var MIN_CH_COLUNA=60,MIN_CH_NOTA=40;
+function larguraDeChars(n,px,fam){
+ var p=document.createElement("span");
+ p.style.cssText="visibility:hidden;white-space:nowrap;position:absolute;font:"+px+"px "+(fam||"serif");
+ p.textContent="abcdefghijklmnopqrstuvwxyz";document.body.appendChild(p);
+ var w=p.getBoundingClientRect().width/26;p.remove();return Math.round(w*n)}
+function limiarMargem(){
+ var e=estiloLeitura(),chave=e.corpo+"|"+e.ff;
+ /* o cache é por tipografia: mudou o corpo ou a família, o limiar muda junto */
+ if(st.limiarChave===chave)return st.limiar;
+ var colMin=larguraDeChars(MIN_CH_COLUNA,e.corpo,e.ff==="var(--ui)"?"system-ui":"Iowan Old Style,Georgia,serif"),
+  notaMin=larguraDeChars(MIN_CH_NOTA,12.5,"system-ui"),
+  gutter=32,respiro=2*48;
+ st.limiarChave=chave;st.limiar=colMin+gutter+notaMin+respiro;
+ st.limiarPartes={coluna:colMin,gutter:gutter,nota:notaMin,respiro:respiro};
+ return st.limiar}
+/* largura real da barra de rolagem do corpo do leitor — o bleed depende dela */
+function medirScrollbar(){
+ var b=document.getElementById("lbody");if(!b)return;
+ document.documentElement.style.setProperty("--sbw",(b.offsetWidth-b.clientWidth)+"px")}
 var DESVIO_MAX=210;   /* acima disto a nota deixa de apontar para nada */
 function desenharMargem(){
  var m=document.getElementById("margem");if(!m)return;
@@ -1320,7 +1390,7 @@ var ANOT={lib:["Biblioteca","O controle de usuário no topo direito é o único 
 /* ═════ LAB — seções navegáveis ═════ */
 var LABSEC=[["visao","Visão"],["chrome","Chrome"],["notas","Notas"],["destaque","Destaque"],
  ["revisao","Revisão"],["conhec","Conhecimento"],["bench","Benchmark"],["acess","Acessib."],
- ["mobile","Mobile"],["densid","Densidade"],["decisoes","Decisões"],["cen","Cenários"]];
+ ["mobile","Mobile"],["densid","Densidade"],["grid","Grid"],["decisoes","Decisões"],["cen","Cenários"]];
 function testar(txt,cfg){
  return'<button class="testar" data-teste=\''+JSON.stringify(cfg)+'\'>▸ '+txt+'</button>'}
 function bloco(titulo,status,corpo){
@@ -1419,6 +1489,49 @@ function labConteudo(){
    '<p class="nota">A 1280px sobram 640px de coluna (≈70 caracteres por linha) e 300px de margem — ainda honesto. '+
    'Abaixo de 1180 a margem some sem substituto explícito, e o número continua sendo herdado, não derivado. '+
    'Falta medir onde a coluna cai abaixo de 60 caracteres.</p>');
+ if(s==="grid"){
+  var lm=limiarMargem(),pp=st.limiarPartes||{},cAtual=v("largura");
+  return'<p class="nota">Referência medida: <b>doc.cc</b> (UX Collective), artigo a 1440px. '+
+  'Não foi copiado — foi medido, e só o que resiste a um livro de 300 páginas atravessou.</p>'+
+  '<table class="mtz"><thead><tr><th></th><th>DOC</th><th>Mekora</th></tr></thead><tbody>'+
+  [["Corpo","Times NR MT 24/31,2","Iowan 21/32,5"],["Coluna","575px","760px"],
+   ["Medida","50 caracteres","71 caracteres"],["Parágrafo","recuo 40px, zero espaço","espaço 22px, zero recuo"],
+   ["Faixas de largura","4","2"]].map(function(l){
+   return'<tr><td><b>'+l[0]+'</b></td><td>'+l[1]+'</td><td>'+l[2]+'</td></tr>'}).join("")+'</tbody></table>'+
+  bloco("O que não foi trazido","rejeitado",
+   '<p class="nota">A <b>medida de 50 caracteres</b> e a <b>entrelinha 1,30</b>: são ritmo de ensaio de oito minutos, '+
+   'com retorno de linha a cada oito palavras. Em leitura sustentada cansam. Os 71 caracteres do Mekora ficam no meio da faixa de Bringhurst (45–75) e continuam.</p>'+
+   '<p class="nota">O <b>full-bleed a cada três parágrafos</b> pela mesma razão: num livro destruiria o fluxo. Aqui o bleed marca só a fronteira de capítulo.</p>')+
+  bloco("Modelo A — duas faixas (baseline)","provavel",
+   '<p class="nota">Coluna e margem, sem intermediários. Citação e lista vivem dentro da coluna, distinguidas por borda e recuo de texto. '+
+   'Funciona, e é o que está congelado.</p>'+testar("Voltar ao baseline",{mGrid:"A",leitor:true}))+
+  bloco("Modelo B — quatro faixas derivadas","candidato",
+   '<p class="nota">Cada faixa é uma proporção da coluna, não um número solto — muda junto quando você muda a largura de leitura:</p>'+
+   '<table class="mtz"><thead><tr><th>Faixa</th><th>Proporção</th><th>Em '+cAtual+'px</th><th>Uso</th></tr></thead><tbody>'+
+   [["Subordinada","0,93× recuada",Math.round(cAtual*.93)+"px","lista, legenda, nota"],
+    ["Corpo","1,00×",cAtual+"px","parágrafo, subtítulo"],
+    ["Escape","1,17×",Math.round(cAtual*1.17)+"px","citação de destaque"],
+    ["Bleed","até a borda","viewport","abertura de capítulo"]].map(function(l){
+    return'<tr><td><b>'+l[0]+'</b></td><td>'+l[1]+'</td><td>'+l[2]+'</td><td>'+l[3]+'</td></tr>'}).join("")+'</tbody></table>'+
+   '<p class="nota">A proporção 2,4× do DOC <b>não foi transportada</b>: ela é consequência da coluna estreita dele, não uma constante. '+
+   'O que é constante é a função — escapar até a borda. Por isso o bleed aqui é definido pelo viewport.</p>'+
+   '<p class="nota"><b>O bleed ganhou um trabalho que faltava:</b> na rolagem contínua a fronteira de capítulo era fraca. '+
+   'A faixa de capítulo agora atravessa a tela inteira e carrega a posição no livro.</p>'+
+   testar("Testar o grid editorial",{mGrid:"B",leitor:true,cap:2}))+
+  bloco("Breakpoint: 1180px → derivado","aceito",
+   '<p class="nota">Estava herdado desde o começo. Agora é calculado a partir da tipografia em uso, e <b>muda quando você muda o corpo</b>:</p>'+
+   '<table class="mtz"><thead><tr><th>Parcela</th><th>Regra</th><th>Agora</th></tr></thead><tbody>'+
+   [["Coluna","mínimo de "+MIN_CH_COLUNA+" caracteres",(pp.coluna||0)+"px"],
+    ["Gutter","fixo",(pp.gutter||0)+"px"],
+    ["Nota","mínimo de "+MIN_CH_NOTA+" caracteres",(pp.nota||0)+"px"],
+    ["Respiro","2 × 48px",(pp.respiro||0)+"px"]].map(function(l){
+    return'<tr><td><b>'+l[0]+'</b></td><td>'+l[1]+'</td><td>'+l[2]+'</td></tr>'}).join("")+
+   '<tr><td><b>Limiar</b></td><td>soma</td><td class="tot">'+lm+'px</td></tr></tbody></table>'+
+   '<p class="nota">Abaixo disso a margem não cabe sem espremer a coluna ou a nota — e aí ela desliga, com razão declarada em vez de número mágico.</p>')+
+  bloco("Recuo de parágrafo e papéis tipográficos","aberto",
+   '<p class="nota">Medidos e documentados, <b>não implementados</b> — ficaram fora do escopo desta iteração. '+
+   'O recuo tem consequência técnica: os 22px entre parágrafos são 396px de altura sem caractere nenhum, '+
+   'que afastam o progresso visual do semântico.</p>')}
  if(s==="decisoes")return'<p class="nota">Classificação honesta do estado de cada questão.</p>'+
   [["Nota presa ao trecho, com volta ao parágrafo","aceito","Sobreviveu ao estresse: salto de 3 capítulos de distância continua funcionando."],
    ["Escopo livro × global explícito","aceito","Testado: o valor do livro tem precedência e o global reflete em Configurações."],
@@ -1437,7 +1550,11 @@ function labConteudo(){
    ["Notas de margem como padrão do desktop","provavel","<b>Sobreviveu à densidade, com limites explícitos.</b> Até 5 notas visíveis funcionam com desvio ≤183px e zero sobreposição; acima disso o excedente colapsa num marcador de região. Não é “melhor que o painel”: entrega a mesma quantidade e troca a lista pela posição."],
    ["Painel lateral sob densidade","aceito","Continua sendo o único lugar onde <i>todas</i> as anotações são alcançáveis — 8 de 8 com busca e filtro. É o destino do que não cabe na margem."],
    ["Margem e painel como híbrido","provavel","O marcador colapsado abre o painel filtrado pela região. É a ponte entre os dois; falta testar se a pessoa entende que o marcador é um atalho e não uma perda."],
-   ["Breakpoint de 1180px","aberto","Ainda herdado. A 1280px o layout se sustenta (640px de coluna), mas o número não foi derivado de uma medida de legibilidade."]].map(function(d){
+   ["Breakpoint de 1180px","rejeitado","<b>Substituído por um limiar derivado.</b> Era herdado e conservador demais: desligava a margem em telas onde ela ainda cabia. Agora sai da tipografia em uso — 60 caracteres de coluna + gutter + 40 de nota + respiro. Medido: <b>854px no corpo 16, 1004px no corpo 21</b>."],
+   ["Grid de quatro faixas","candidato","Medido no doc.cc e implementado como alternativa B, com o baseline intacto. As faixas são proporções da coluna (0,93× / 1,00× / 1,17× / bleed) e acompanham a largura de leitura — verificado em 640px e em 560px. Falta ler um capítulo inteiro nele para saber se o escape ajuda ou interrompe."],
+   ["Bleed na fronteira de capítulo","provavel","Resolve de lado um problema que estava aberto: na rolagem contínua a passagem de capítulo era fraca. A faixa atravessa a tela e carrega a posição no livro. Recua sozinha quando a margem de notas está ligada."],
+   ["Medida de 50 caracteres do DOC","rejeitado","Não trazida. É ritmo de ensaio curto — retorno de linha a cada oito palavras. Os 71 caracteres do Mekora ficam no meio da faixa de Bringhurst e servem melhor a 300 páginas."],
+   ["Recuo de parágrafo e papéis tipográficos","aberto","Medidos no DOC e documentados, fora do escopo desta iteração. O recuo tem consequência técnica: os 22px entre parágrafos somam 396px de altura sem caractere nenhum, afastando o progresso visual do semântico."]].map(function(d){
    return bloco(d[0],d[1],'<p class="nota">'+d[2]+'</p>')}).join("");
  return null}
 function matriz(cols,linhas){
@@ -1499,7 +1616,7 @@ function drawLab(){
   '<div><h4>Cenários</h4><div class="sc" style="margin-top:var(--s2)">'+
   CEN.map(function(s){return'<button data-s="'+s.k+'" aria-pressed="'+(st.cen===s.k)+'">'+
    '<span class="n">'+s.k+'</span><span class="d">'+s.t+'</span></button>'}).join("")+'</div></div>'+
-  (c?'<div><h4>Passos</h4><ol style="margin-top:var(--s2)">'+c.p.map(function(p){
+  (c&&c.p?'<div><h4>Passos</h4><ol style="margin-top:var(--s2)">'+c.p.map(function(p){
    return'<li class="'+(st.feito[st.cen+p[0]]?"ok":"")+'">'+(st.feito[st.cen+p[0]]?"✓ ":"· ")+p[1]+'</li>'}).join("")+'</ol></div>':'')+
   '<div><h4>Anotação · '+a[0]+'</h4><p class="nota" style="margin:var(--s2) 0 0">'+a[1]+'</p>'+
   '<p class="nota" style="margin:var(--s2) 0 0;border-left:2px solid var(--acc);padding-left:10px">'+
