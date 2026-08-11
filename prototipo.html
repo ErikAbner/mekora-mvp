@@ -3,259 +3,459 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mekora · lab de UX</title>
+<title>Mekora · protótipo navegável</title>
 <style>
-/* ═══ tokens vindos de mekora-canvas-motion/app/globals.css ═══ */
+/* ═══════════════ SISTEMA ═══════════════
+   escala de espaço  4 8 12 16 24 32 48
+   raio              r1 4 (controles) · r2 8 (superfícies) · 999 (pílulas)
+   altura de controle  h1 32 (compacto) · h2 38 (padrão)
+   tipo              11 12 13 15 18 22 30
+   ═══════════════════════════════════════ */
 :root{
-  --paper:#f1eee7;--paper-2:#f5f2eb;--paper-3:#f6efe2;--paper-4:#edeae3;
-  --ink:#24150f;--ink-2:#4d2e1d;--ink-3:#6c5a4f;--ink-4:#91613e;
-  --rule:#ddd5c8;--rule-2:#e8e2d6;--nav:#2a2019;
-  --lime:#d7ff63;--orange:#ff9f72;--gold:#e4c347;--lilac:#c7adff;--blue:#b4c3ff;
-  --green:#37bc72;--red:#ec5a4f;--deep:#9e342e;
+  /* tokens reais de mekora-canvas-motion/app/globals.css */
+  --canvas:#f1eee7;--card:#f5f2eb;--ink:#24150f;--ink-2:#4d2e1d;--ink-3:#6c5a4f;
+  --rule:#ddd5c8;--rule-2:#e8e2d6;--bench-2:#f6efe2;--bench-3:#edeae3;
+  --accent:#9e342e;--good:#27885a;--warn:#bd8150;--crit:#9e342e;--slab:#2a2019;--shadow:36,21,15;
   --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:48px;
-  --r1:4px;--r2:10px;--h1:32px;--h2:38px;
-  --sans:"Helvetica Neue",Arial,Helvetica,sans-serif;
-  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
-  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
-  --tr:.42s cubic-bezier(.22,.61,.36,1);
+  --r1:4px;--r2:8px;--h1:32px;--h2:38px;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Mono",monospace;
+  --tr:.14s;
 }
-[data-motion="reduzido"] *{transition-duration:.001s!important;animation:none!important}
+[data-motion="off"] *{transition:none!important;animation:none!important}
 *{box-sizing:border-box}
 html,body{height:100%}
-body{margin:0;background:#171310;color:var(--ink);font-family:var(--sans);font-size:13px;
+body{margin:0;background:#0E0D0C;color:var(--ink);font-family:var(--sans);font-size:13px;
   -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;overflow:hidden}
 button{font:inherit;color:inherit;background:none;border:none;padding:0;cursor:pointer;text-align:left}
-button:focus-visible,[tabindex]:focus-visible,input:focus-visible,select:focus-visible{
-  outline:2px solid var(--deep);outline-offset:2px;border-radius:var(--r1)}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,[tabindex]:focus-visible{
+  outline:2px solid var(--accent);outline-offset:2px;border-radius:var(--r1)}
 .lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
-/* ═══ ANDAIME ═══ */
-.rig{background:#171310;color:#9a8d80;display:flex;align-items:center;gap:var(--s3);padding:0 var(--s4);
-  height:40px;flex:0 0 40px;font-family:var(--mono);font-size:10px;border-bottom:1px solid #2b2119;
-  overflow-x:auto;scrollbar-width:none}
-.rig::-webkit-scrollbar{display:none}
-.rig b{color:#f1eee7;font-weight:400;white-space:nowrap}
-.rig .sep{width:1px;height:16px;background:#332619;flex:0 0 1px}
-.rig .grp{display:flex;align-items:center;gap:6px;white-space:nowrap}
-.rig button{font-family:var(--mono);font-size:10px;color:#9a8d80;padding:5px 10px;border-radius:var(--r1);
-  border:1px solid #332619;white-space:nowrap}
-.rig button:hover{color:#f1eee7;border-color:#5b4632}
-.rig button[aria-pressed="true"]{background:#f1eee7;color:#24150f;border-color:#f1eee7}
+/* ═══ ANDAIME (fora do produto) ═══ */
+.rig{background:#0E0D0C;color:#8B857A;display:flex;align-items:center;gap:var(--s3);padding:0 var(--s4);
+  height:38px;flex:0 0 38px;font-family:var(--mono);font-size:10px;border-bottom:1px solid #262320}
+.rig b{color:#EDE8DE;font-weight:400}
+.rig .sep{width:1px;height:15px;background:#2B2825;flex:0 0 1px}
+.rig .grp{display:flex;align-items:center;gap:var(--s2);white-space:nowrap}
+.rig button{font-family:var(--mono);font-size:10px;color:#8B857A;padding:5px 10px;border-radius:var(--r1);
+  border:1px solid #2B2825;white-space:nowrap}
+.rig button:hover{color:#EDE8DE;border-color:#454039}
+.rig button[aria-pressed="true"]{background:#EDE8DE;color:#141311;border-color:#EDE8DE}
 .rig .spacer{flex:1}
-.rig .warn{color:var(--orange)}
+.rig .tag{color:var(--accent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:720px){.rig .tag{display:none}}
+@media (max-width:620px){.rig>b,.rig .sep{display:none}
+  .rig .grp:nth-of-type(2){display:none}
+  .rig{gap:var(--s2);padding:0 var(--s2);overflow-x:auto;scrollbar-width:none}
+  .rig::-webkit-scrollbar{display:none}}
 
 /* ═══ PALCO ═══ */
-.stage{flex:1;min-height:0;display:flex;position:relative;overflow:hidden;background:var(--paper)}
-.app{flex:1;min-width:0;position:relative;overflow:hidden;background:var(--paper)}
-.app[data-w="pequena"]{max-width:430px;margin:0 auto;border-left:1px solid var(--rule);border-right:1px solid var(--rule)}
+.stage{flex:1;min-height:0;display:flex;background:var(--canvas);position:relative;overflow:hidden}
+.app{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--canvas);position:relative}
+.app[data-w="pequena"]{max-width:430px;margin:0 auto;border-left:1px solid var(--rule);
+  border-right:1px solid var(--rule)}
 
-/* ═══ MUNDO ESPACIAL ═══ */
-.world{position:absolute;inset:0;transition:transform var(--tr);transform-origin:0 0;
-  background-image:radial-gradient(var(--rule) 1px,transparent 1px);background-size:32px 32px}
-.region{position:absolute;width:100vw;height:calc(100vh - 40px);padding:var(--s6) var(--s7);
-  display:flex;flex-direction:column;gap:var(--s4)}
-.region-h{display:flex;align-items:baseline;gap:var(--s3);flex-wrap:wrap}
-.region-h h2{margin:0;font-family:var(--serif);font-size:26px;font-weight:400;letter-spacing:-.01em}
-.region-h .mk{font-size:18px;color:var(--ink-3)}
-.region-h p{margin:0;font-size:12.5px;color:var(--ink-3)}
-
-/* barra fixa de navegação do mundo */
-.chrome{position:absolute;left:0;right:0;bottom:0;z-index:20;display:flex;align-items:center;gap:var(--s3);
-  padding:var(--s3) var(--s5);background:linear-gradient(to top,var(--paper) 62%,transparent);flex-wrap:wrap}
-.modes{display:flex;gap:2px;background:rgba(255,255,255,.5);border:1px solid var(--rule);
-  border-radius:999px;padding:3px;backdrop-filter:blur(6px)}
-.modes button{padding:7px 14px;border-radius:999px;font-size:12.5px;display:flex;gap:7px;align-items:center;
-  white-space:nowrap;transition:background .16s,color .16s}
-.modes button:hover{background:var(--paper-3)}
-.modes button[aria-current="true"]{background:var(--nav);color:var(--paper)}
-.modes .mk{font-size:13px;opacity:.7}
-.chrome .spacer{flex:1}
-.topbar{position:absolute;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;gap:var(--s3);
-  padding:var(--s3) var(--s5);background:linear-gradient(to bottom,var(--paper) 60%,transparent)}
-.topbar .brand{font-family:var(--serif);font-size:19px;letter-spacing:-.01em}
-.topbar .spacer{flex:1}
-.srch{display:flex;align-items:center;gap:var(--s2);border:1px solid var(--rule);border-radius:999px;
-  height:var(--h1);padding:0 var(--s3);color:var(--ink-3);font-size:12.5px;background:rgba(255,255,255,.5)}
-.srch:hover{border-color:var(--ink-3)}
-.kbd{font-family:var(--mono);font-size:9px;border:1px solid var(--rule);border-radius:3px;padding:1px 4px}
-.avbtn{width:var(--h1);height:var(--h1);border-radius:50%;background:var(--nav);color:var(--paper);
-  font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:0 0 var(--h1)}
-.avbtn:hover{background:var(--deep)}
-.filtros{display:flex;gap:6px;flex-wrap:wrap}
-.fchip{font-size:12px;border:1px solid var(--rule);border-radius:999px;padding:5px 12px;background:rgba(255,255,255,.5)}
-.fchip:hover{background:var(--paper-3)}
-.fchip[aria-pressed="true"]{background:var(--nav);color:var(--paper);border-color:var(--nav)}
-
-/* ═══ LIVRO — uma entidade, quatro representações ═══ */
-.obj{position:absolute;transition:all var(--tr);cursor:pointer;background:none;border:none}
-.obj .body{position:relative;width:100%;height:100%;border-radius:var(--r1);background:var(--c);
-  display:flex;flex-direction:column;justify-content:space-between;padding:10px;overflow:hidden;
-  box-shadow:0 6px 18px rgba(36,21,15,.18);transition:all var(--tr)}
-.obj .ini{font-family:var(--mono);font-size:11px;color:rgba(36,21,15,.62);letter-spacing:.08em}
-.obj .ttl{font-size:12px;font-weight:600;line-height:1.2;color:#24150f}
-.obj .src{position:absolute;top:8px;right:8px;font-family:var(--mono);font-size:8px;letter-spacing:.06em;
-  text-transform:uppercase;color:rgba(36,21,15,.5)}
-.obj:hover .body{transform:translateY(-3px);box-shadow:0 12px 26px rgba(36,21,15,.26)}
-.obj[aria-selected="true"] .body{outline:2px solid var(--ink);outline-offset:3px}
-/* estante: lombada vertical */
-.obj.shelf .body{border-radius:2px 3px 3px 2px;padding:8px 6px;justify-content:flex-end}
-.obj.shelf .ttl{writing-mode:vertical-rl;transform:rotate(180deg);font-size:11px;white-space:nowrap;
-  overflow:hidden;max-height:100%}
-.obj.shelf .ini,.obj.shelf .src{display:none}
-/* lista: linha */
-.obj.list .body{flex-direction:row;align-items:center;gap:var(--s3);border-radius:var(--r1);
-  background:var(--paper-2);box-shadow:none;border-bottom:1px solid var(--rule-2);padding:10px var(--s3)}
-.obj.list .swatch{width:26px;height:34px;border-radius:2px;background:var(--c);flex:0 0 26px}
-.obj.list .ttl{flex:1;font-size:13px}
-.obj.list .ini{display:none}
-.obj.list .src{position:static;color:var(--ink-3)}
-/* conexões: nó */
-.obj.node .body{border-radius:50%;align-items:center;justify-content:center;padding:0}
-.obj.node .ttl{display:none}
-.obj.node .src{display:none}
-.obj.node .ini{font-size:12px;color:rgba(36,21,15,.75)}
-.shelfline{position:absolute;height:4px;background:var(--ink-4);border-radius:2px;opacity:.5}
-.svg-links{position:absolute;inset:0;pointer-events:none}
-.svg-links line{stroke:var(--ink-3);stroke-width:1.5}
-.svg-links line.sug{stroke:var(--orange);stroke-dasharray:5 4}
-
-/* ═══ PAINEL LATERAL ═══ */
-.panel{position:absolute;top:0;right:0;bottom:0;width:360px;background:var(--paper-2);
-  border-left:1px solid var(--rule);z-index:30;display:flex;flex-direction:column;
-  box-shadow:-16px 0 40px rgba(36,21,15,.12)}
-.panel-h{display:flex;align-items:center;gap:var(--s2);padding:var(--s3) var(--s4);
+/* ═══ TOPO ═══ */
+.top{display:flex;align-items:center;gap:var(--s1);padding:0 var(--s5);height:56px;flex:0 0 56px;
   border-bottom:1px solid var(--rule-2)}
-.panel-h .lbl{flex:1}
-.tabs{display:flex;border-bottom:1px solid var(--rule-2)}
-.tabs button{flex:1;padding:var(--s3) 0;font-family:var(--mono);font-size:9px;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--ink-3);text-align:center}
-.tabs button[aria-selected="true"]{color:var(--ink);box-shadow:inset 0 -2px 0 var(--ink)}
-.panel-b{padding:var(--s4);overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:var(--s3)}
-.panel-b h3{margin:0;font-size:17px;font-weight:700;line-height:1.25}
-.meta{font-size:12.5px;color:var(--ink-3)}
-@media (max-width:720px){.panel{width:100%}}
+.top .brand{font-family:var(--serif);font-size:18px;letter-spacing:-.01em;margin-right:var(--s4)}
+.top nav{display:flex;gap:2px;min-width:0}
+.top nav button{font-size:13px;color:var(--ink-3);padding:7px 12px;border-radius:var(--r1);white-space:nowrap}
+.top nav button:hover{background:var(--bench-3);color:var(--ink)}
+.top nav button.on{color:var(--ink);font-weight:600}
+.top .spacer{flex:1}
+.srch{display:flex;align-items:center;gap:var(--s2);border:1px solid var(--rule);border-radius:999px;
+  padding:0 var(--s3);height:var(--h1);color:var(--ink-3);font-size:12.5px;min-width:0;max-width:230px;flex:1}
+.srch:hover{border-color:var(--ink-3)}
+.srch .txt{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kbd{font-family:var(--mono);font-size:9px;border:1px solid var(--rule);border-radius:3px;padding:1px 4px}
+.avbtn{width:var(--h1);height:var(--h1);border-radius:50%;background:var(--ink);color:var(--canvas);
+  font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:0 0 var(--h1)}
+.avbtn:hover{background:var(--accent)}
+@media (max-width:640px){.top{padding:0 var(--s4)}.top .brand{display:none}.srch .txt,.srch .kbd{display:none}
+  .srch{max-width:var(--h1);flex:0 0 var(--h1);justify-content:center;padding:0}}
 
-/* ═══ COMPONENTES ═══ */
-.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s4);align-items:center;
-  padding:var(--s3) 0;border-bottom:1px solid var(--rule-2)}
+.scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden}
+.libwrap{flex:1;min-height:0;display:flex;width:100%}
+.pad{padding:var(--s6) var(--s7) var(--s7)}
+.app[data-w="pequena"] .pad{padding:var(--s5) var(--s4) var(--s6)}
+@media (max-width:700px){.pad{padding:var(--s5) var(--s4) var(--s6)}}
+.col{max-width:720px;margin:0 auto}
+
+h1.t{font-family:var(--serif);font-size:30px;font-weight:400;letter-spacing:-.015em;margin:0 0 var(--s1)}
+.sub{font-size:13px;color:var(--ink-3);margin:0 0 var(--s5);line-height:1.5}
+h2.s{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);
+  margin:var(--s6) 0 var(--s1);padding-bottom:var(--s2);border-bottom:1px solid var(--ink)}
+h2.s:first-child{margin-top:0}
+
+/* ═══ LINHA DE AJUSTE ═══ */
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s5);align-items:center;
+  padding:var(--s4) 0;border-bottom:1px solid var(--rule-2);position:relative}
 .row:last-child{border-bottom:none}
-.lb{font-size:13.5px;font-weight:500;display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap}
-.ds{font-size:12px;color:var(--ink-3);line-height:1.5;margin-top:3px;max-width:46ch}
-.badge{font-family:var(--mono);font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;
+.lb{font-size:14px;font-weight:500;display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap;line-height:1.35}
+.ds{font-size:12.5px;color:var(--ink-3);line-height:1.5;margin-top:var(--s1);max-width:52ch}
+.row.chg::before{content:"";position:absolute;left:-14px;top:22px;width:6px;height:6px;border-radius:50%;
+  background:var(--accent)}
+.revert{font-family:var(--mono);font-size:10px;color:var(--accent);text-decoration:underline}
+@media (max-width:560px){.row{grid-template-columns:1fr;gap:var(--s3)}}
+
+.badge{font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;
   border:1px solid var(--rule);border-radius:999px;padding:2px 7px;color:var(--ink-3);white-space:nowrap}
-.badge.sim{border-color:var(--orange);color:var(--ink-4)}
 .badge.dev{border-color:var(--ink-3)}
-.badge.acc{border-color:var(--green);color:var(--green)}
-.sw{width:38px;height:22px;border-radius:999px;background:var(--rule);position:relative;flex:0 0 38px;display:block}
-.sw i{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;
-  box-shadow:0 1px 3px rgba(36,21,15,.3);transition:left .15s}
-.sw.on{background:var(--nav)}.sw.on i{left:18px}
+.badge.sync{border-color:var(--good);color:var(--good)}
+.badge.warn{border-color:var(--warn);color:var(--warn)}
+.badge.new{border-color:var(--good);color:var(--good)}
+
+/* ═══ CONTROLES ═══ */
+.sw{width:40px;height:23px;border-radius:999px;background:var(--rule);position:relative;flex:0 0 40px;
+  display:block;transition:background var(--tr)}
+.sw i{position:absolute;top:2.5px;left:2.5px;width:18px;height:18px;border-radius:50%;background:var(--card);
+  box-shadow:0 1px 3px rgba(var(--shadow),.3);transition:left var(--tr)}
+.sw.on{background:var(--ink)}
+.sw.on i{left:19.5px}
+.sw[disabled],.sw.off{opacity:.4;pointer-events:none}
 .segc{display:flex;border:1px solid var(--rule);border-radius:var(--r1);overflow:hidden;height:var(--h1)}
-.segc button{padding:0 var(--s3);font-size:12px;border-right:1px solid var(--rule);display:flex;align-items:center;
-  white-space:nowrap}
+.segc button{padding:0 var(--s3);font-size:12.5px;border-right:1px solid var(--rule);white-space:nowrap;
+  display:flex;align-items:center}
 .segc button:last-child{border-right:none}
-.segc button:hover{background:var(--paper-3)}
-.segc button.on{background:var(--nav);color:var(--paper)}
-select.sel{border:1px solid var(--rule);border-radius:var(--r1);height:var(--h1);padding:0 var(--s2);
-  font-size:12.5px;background:#fff;color:var(--ink);font-family:var(--sans)}
-.btn{font-size:13px;font-weight:600;background:var(--nav);color:var(--paper);border-radius:999px;
-  padding:0 var(--s5);height:var(--h2);display:inline-flex;align-items:center;justify-content:center;white-space:nowrap}
-.btn:hover{background:var(--deep)}
+.segc button:hover{background:var(--bench-3)}
+.segc button.on{background:var(--ink);color:var(--canvas)}
+select.sel{border:1px solid var(--rule);border-radius:var(--r1);padding:0 var(--s2);height:var(--h1);
+  font-size:12.5px;background:var(--card);color:var(--ink);font-family:var(--sans)}
+.stepc{display:flex;align-items:center;border:1px solid var(--rule);border-radius:var(--r1);overflow:hidden;
+  height:var(--h1)}
+.stepc button{padding:0 var(--s3);font-size:14px;border-right:1px solid var(--rule);display:flex;align-items:center}
+.stepc button:last-child{border:none}
+.stepc button:hover{background:var(--bench-3)}
+.stepc .v{padding:0 var(--s2);font-family:var(--mono);font-size:12.5px;min-width:48px;text-align:center;
+  border-right:1px solid var(--rule);display:flex;align-items:center;justify-content:center;height:100%}
+.inp{border:1px solid var(--rule);border-radius:var(--r1);padding:0 var(--s3);height:var(--h2);font-size:13px;
+  background:var(--card);color:var(--ink);font-family:inherit;min-width:240px;max-width:100%}
+.inp:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+.inp.err{border-color:var(--crit)}
+.err-msg{font-size:12px;color:var(--crit);margin-top:var(--s1);display:flex;gap:6px;align-items:center}
+.btn{font-size:13px;font-weight:600;background:var(--ink);color:var(--canvas);border-radius:999px;
+  padding:0 var(--s5);height:var(--h2);display:inline-flex;align-items:center;justify-content:center;
+  white-space:nowrap;transition:background var(--tr)}
+.btn:hover{background:var(--accent);color:#F1EEE8}
 .btn.sec{background:none;border:1px solid var(--rule);color:var(--ink);font-weight:500}
-.btn.sec:hover{background:var(--paper-3)}
-.btn.sm{height:var(--h1);padding:0 var(--s4);font-size:12px}
-.btn.dan{background:var(--deep);color:#fff}
-.lnk{font-size:12.5px;text-decoration:underline}
-.lnk:hover{color:var(--deep)}
-.lnk.dan{color:var(--deep)}
+.btn.sec:hover{background:var(--bench-3);color:var(--ink)}
+.btn.dan{background:var(--crit);color:#F1EEE8}
+.btn.sm{height:var(--h1);padding:0 var(--s4);font-size:12.5px}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.lnk{font-size:13px;text-decoration:underline;color:var(--ink)}
+.lnk:hover{color:var(--accent)}
+.lnk.dan{color:var(--crit)}
+.lnk.sm{font-size:12px}
 .acts{display:flex;gap:var(--s3);align-items:center;flex-wrap:wrap}
-.strip{display:flex;align-items:center;gap:var(--s3);font-size:12.5px;padding:var(--s3);border-radius:var(--r1);
-  background:var(--paper-3);border:1px solid var(--rule-2);color:var(--ink-2)}
+
+/* ═══ SUPERFÍCIES ═══ */
+.strip{display:flex;align-items:center;gap:var(--s3);font-size:13px;padding:var(--s3) var(--s4);
+  border-radius:var(--r1);background:var(--bench-2);border:1px solid var(--rule-2);color:var(--ink-2);
+  margin:var(--s4) 0}
 .strip .dot{width:8px;height:8px;border-radius:50%;flex:0 0 8px}
-.d-ok{background:var(--green)}.d-sim{background:var(--orange)}.d-off{background:var(--ink-3)}
-.note{border-left:2px solid var(--rule);padding-left:var(--s3);font-family:var(--serif);font-style:italic;
+.d-ok{background:var(--good)}.d-err{background:var(--crit)}.d-off{background:var(--ink-3)}
+.d-wait{background:var(--warn)}
+.strip.err{border-color:var(--crit)}
+.strip .spc{flex:1}
+.empty{text-align:center;padding:var(--s7) var(--s4);color:var(--ink-3)}
+.empty p{font-family:var(--serif);font-style:italic;font-size:15px;line-height:1.6;margin:0 0 var(--s4);
+  max-width:44ch;margin-inline:auto}
+
+/* ═══ CONTA ═══ */
+.acct{display:grid;grid-template-columns:46px minmax(0,1fr) auto;gap:var(--s4);align-items:center;
+  padding:var(--s4) 0;border-bottom:1px solid var(--rule-2)}
+.acct .av{width:46px;height:46px;border-radius:50%;background:var(--ink);color:var(--canvas);
+  display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600}
+.acct .nm{font-size:15px;font-weight:600}
+.acct .em{font-size:12.5px;color:var(--ink-3);margin-top:2px}
+.dev-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s4);align-items:center;
+  padding:var(--s4) 0;border-bottom:1px solid var(--rule-2)}
+.dev-row .dn{font-size:13.5px;font-weight:500;display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap}
+.dev-row .dm{font-size:12px;color:var(--ink-3);margin-top:3px}
+.here{font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--good);
+  border:1px solid var(--good);border-radius:999px;padding:2px 7px}
+
+/* ═══ ÍNDICE ═══ */
+.idx{display:flex;flex-direction:column}
+.idx button{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s4);align-items:center;
+  padding:var(--s4) 0;border-bottom:1px solid var(--rule-2);width:100%}
+.idx button:hover .nm{color:var(--accent)}
+.idx .nm{font-size:15px;font-weight:500}
+.idx .dc{font-size:12.5px;color:var(--ink-3);margin-top:3px;line-height:1.45}
+.idx .ct{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+
+/* ═══ BIBLIOTECA ═══ */
+.libbar{display:flex;align-items:center;gap:var(--s3);flex-wrap:wrap;margin-bottom:var(--s5)}
+.libbar .ttl{flex:1;min-width:150px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:var(--s5)}
+.chip{font-size:12.5px;border:1px solid var(--rule);border-radius:999px;padding:0 var(--s3);height:var(--h1);
+  display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.chip:hover{background:var(--bench-3)}
+.chip.on{background:var(--ink);color:var(--canvas);border-color:var(--ink)}
+.chip .n{font-family:var(--mono);font-size:10px;opacity:.6}
+.resume{display:flex;gap:var(--s4);align-items:center;background:var(--bench-2);border-radius:var(--r2);
+  padding:var(--s4);margin-bottom:var(--s5)}
+.resume .cv{width:52px;flex:0 0 52px;aspect-ratio:.72;border-radius:3px;background:var(--paper,#F6F3EC);
+  box-shadow:0 3px 10px rgba(var(--shadow),.18)}
+.resume .info{flex:1;min-width:0}
+.resume .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.resume .t{font-size:15px;font-weight:600;margin-top:3px}
+.resume .m{font-size:12.5px;color:var(--ink-3);margin-top:3px}
+
+.shelf{display:grid;gap:var(--s5);grid-template-columns:repeat(auto-fill,minmax(var(--cw,146px),1fr))}
+.shelf.lista{grid-template-columns:1fr;gap:0}
+.bk{display:flex;flex-direction:column;gap:var(--s2);cursor:pointer;position:relative;padding-top:13px;
+  text-align:left;border-radius:var(--r1)}
+.bk .cv{position:relative;width:100%;padding-bottom:139%;border-radius:5px;overflow:hidden;
+  background:var(--paper,#F6F3EC);box-shadow:0 5px 16px rgba(var(--shadow),.16);
+  transition:transform var(--tr),box-shadow var(--tr)}
+.bk:hover .cv{transform:translateY(-3px);box-shadow:0 12px 26px rgba(var(--shadow),.24)}
+.bk[aria-selected="true"] .cv{outline:2px solid var(--ink);outline-offset:3px}
+.bk .cvin{position:absolute;inset:0;display:flex;flex-direction:column}
+.bk .cvt{padding:9% 9% 0;font-size:calc(var(--cw,146px)*.085);font-weight:700;line-height:1.15;color:#141311}
+.bk .cva{flex:1;margin:6% 8% 0;background-image:radial-gradient(var(--tone,#141311) 12%,transparent 13%);
+  background-size:15% 15%;-webkit-mask-image:linear-gradient(to bottom,transparent,#000);
+  mask-image:linear-gradient(to bottom,transparent,#000)}
+.bk .cvf{background:#141311;height:6%}
+.bk .tab{position:absolute;top:0;right:11%;background:var(--slab);color:#F1EEE8;font-size:10px;font-weight:700;
+  line-height:1;padding:4px 7px 9px;border-radius:3px 3px 0 0;z-index:2;transition:background var(--tr)}
+.bk .tab:hover{background:var(--accent)}
+.bk .prg{position:absolute;left:0;bottom:0;height:3px;background:#F1EEE8}
+.bk .done{position:absolute;right:6px;bottom:6px;width:17px;height:17px;border-radius:50%;background:var(--slab);
+  color:#F1EEE8;font-size:10px;display:flex;align-items:center;justify-content:center}
+.bk .t{font-size:13px;font-weight:600;line-height:1.25}
+.bk .a{font-size:11.5px;color:var(--ink-3)}
+.bk .nt{font-size:11.5px;color:var(--ink-3);font-family:var(--serif);font-style:italic;line-height:1.4;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.bk .hov{position:absolute;left:7px;right:7px;bottom:7px;display:flex;gap:5px;opacity:0;
+  transition:opacity var(--tr);z-index:3}
+.bk:hover .hov,.bk:focus-within .hov{opacity:1}
+.bk .hov button{flex:1;text-align:center;font-size:11px;font-weight:600;background:var(--slab);color:#F1EEE8;
+  border-radius:999px;padding:6px 0;box-shadow:0 3px 10px rgba(20,19,17,.34)}
+.bk .hov button.g{flex:0 0 26px;background:var(--card);color:var(--ink);letter-spacing:1px}
+.bk .hov button:hover{background:var(--accent);color:#F1EEE8}
+.bk.list{flex-direction:row;align-items:center;gap:var(--s4);padding:var(--s3) var(--s2);
+  border-bottom:1px solid var(--rule-2)}
+.bk.list .cv{width:44px;flex:0 0 44px;padding-bottom:61px}
+.bk.list .tab,.bk.list .hov{display:none}
+.bk.list .meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.bk.list .side{font-size:12px;color:var(--ink-3);white-space:nowrap}
+
+/* inspector */
+.insp{width:320px;flex:0 0 320px;border-left:1px solid var(--rule-2);background:var(--card);
+  display:flex;flex-direction:column;min-height:0}
+.insp-h{display:flex;align-items:center;gap:var(--s2);padding:var(--s3) var(--s4);
+  border-bottom:1px solid var(--rule-2)}
+.insp-h .lbl{flex:1}
+.insp-tabs{display:flex;border-bottom:1px solid var(--rule-2)}
+.insp-tabs button{flex:1;padding:var(--s3) 0;font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-3);text-align:center}
+.insp-tabs button[aria-selected="true"]{color:var(--ink);box-shadow:inset 0 -2px 0 var(--ink)}
+.insp-b{padding:var(--s4);overflow-y:auto;display:flex;flex-direction:column;gap:var(--s3);flex:1}
+.insp-b h3{margin:0;font-family:var(--sans);font-size:16px;font-weight:700;line-height:1.25}
+.insp-b .meta{font-size:12.5px;color:var(--ink-3)}
+.pbar{height:3px;background:var(--rule-2);border-radius:2px;overflow:hidden}
+.pbar i{display:block;height:100%;background:var(--ink)}
+.note{border-left:2px solid var(--rule-2);padding-left:var(--s3);font-family:var(--serif);font-style:italic;
   font-size:13px;line-height:1.55;color:var(--ink-2)}
 .note b{display:block;font-family:var(--mono);font-style:normal;font-size:8.5px;letter-spacing:.1em;
   text-transform:uppercase;color:var(--ink-3);margin-bottom:4px;font-weight:400}
-.rel{border:1px solid var(--rule-2);border-radius:var(--r1);padding:var(--s3);display:flex;
-  flex-direction:column;gap:var(--s2);background:#fff}
-.rel .k{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
-.rel .r{font-size:12.5px;line-height:1.5;color:var(--ink-2)}
-.rel.sug{border-color:var(--orange);border-style:dashed}
+.tagl{display:flex;gap:5px;flex-wrap:wrap}
+.tagl span{font-size:11px;background:var(--bench-2);border-radius:999px;padding:3px 9px;color:var(--ink-2)}
+@media (max-width:860px){.insp{position:absolute;right:0;top:0;bottom:0;z-index:30;
+  box-shadow:-14px 0 40px rgba(var(--shadow),.18)}}
 
-/* leitura */
-.reader{position:absolute;inset:0;z-index:40;background:var(--paper);display:flex;flex-direction:column}
+/* ═══ LEITOR ═══ */
+.reader{display:flex;flex-direction:column;height:100%;min-height:0}
 .rtop{display:flex;align-items:center;gap:var(--s3);padding:0 var(--s5);height:52px;flex:0 0 52px;
   border-bottom:1px solid var(--rule-2);font-size:12.5px;color:var(--ink-3)}
-.rtop .ti{color:var(--ink);font-family:var(--serif);font-size:15px}
+.rtop .ti{color:var(--ink);font-family:var(--serif);font-size:15px;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis}
 .rtop .spc{flex:1}
-.rbody{flex:1;overflow-y:auto;padding:var(--s7) var(--s5) 80px}
-.rcol{max-width:620px;margin:0 auto;font-family:var(--serif);font-size:18px;line-height:1.62}
-.rcol p{margin:0 0 1em}
-.rcol .hl{background:#f2d66d;padding:2px 0;border-radius:2px}
-.anchor-warn{max-width:620px;margin:var(--s5) auto 0;border:1px dashed var(--orange);border-radius:var(--r1);
-  padding:var(--s3);font-family:var(--sans);font-size:12px;line-height:1.55;color:var(--ink-2)}
+.rtop button.ic{width:var(--h1);height:var(--h1);border-radius:var(--r1);display:flex;align-items:center;
+  justify-content:center;font-size:14px;color:var(--ink-2)}
+.rtop button.ic:hover{background:var(--bench-3);color:var(--ink)}
+.rtop button.ic.on{background:var(--ink);color:var(--canvas)}
+.rmain{flex:1;min-height:0;display:flex}
+.rscroll{flex:1;min-height:0;overflow-y:auto;background:var(--rbg,var(--card))}
+.rbody{max-width:var(--rw,620px);margin:0 auto;padding:var(--s7) var(--s6) 80px;
+  font-family:var(--rf,var(--serif));color:var(--rfg,var(--ink))}
+.rbody .ch{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:var(--s5)}
+.rbody p{margin:0 0 1em}
+.rbody .hl{background:var(--hl,#F2E07A);padding:2px 0;border-radius:2px;cursor:pointer}
+.rbody .sel{background:rgba(195,59,30,.16);border-radius:2px}
+.rbar{display:flex;align-items:center;gap:var(--s3);padding:0 var(--s5);height:56px;flex:0 0 56px;
+  border-top:1px solid var(--rule-2);background:var(--canvas);flex-wrap:wrap}
+.rbar .prog{flex:1;min-width:120px;display:flex;flex-direction:column;gap:5px}
+.rbar .prog .pb{height:2px;background:var(--rule-2);border-radius:2px;overflow:hidden}
+.rbar .prog .pb i{display:block;height:100%;background:var(--ink)}
+.rbar .prog .lg{font-size:11.5px;color:var(--ink-3)}
+.rpanel{width:300px;flex:0 0 300px;border-left:1px solid var(--rule-2);background:var(--canvas);
+  display:flex;flex-direction:column;min-height:0}
+.rpanel .hd{display:flex;align-items:center;padding:var(--s3) var(--s4);border-bottom:1px solid var(--rule-2)}
+.rpanel .bd{padding:var(--s4);overflow-y:auto;display:flex;flex-direction:column;gap:var(--s3);flex:1}
+.toc-i{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s3);padding:var(--s3) 0;
+  border-bottom:1px solid var(--rule-2);font-size:13px;width:100%}
+.toc-i:hover{color:var(--accent)}
+.toc-i.on{font-weight:700}
+.toc-i .pg{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+@media (max-width:860px){.rpanel{position:absolute;right:0;top:0;bottom:0;z-index:30;
+  box-shadow:-14px 0 40px rgba(var(--shadow),.18)}}
 
-/* modais e busca */
-.ovl{position:absolute;inset:0;background:rgba(36,21,15,.28);z-index:45}
-.pal{position:absolute;top:12vh;left:50%;transform:translateX(-50%);width:min(540px,90%);z-index:50;
-  background:#fff;border:1px solid var(--rule);border-radius:var(--r2);overflow:hidden;
-  box-shadow:0 26px 60px rgba(36,21,15,.3);max-height:62vh;display:flex;flex-direction:column}
-.pal-in{display:flex;gap:var(--s3);align-items:center;padding:var(--s4);border-bottom:1px solid var(--rule-2)}
-.pal-in input{border:none;outline:none;font:inherit;font-size:15px;width:100%;color:var(--ink);background:none}
+/* seleção de texto → ações */
+.selbar{position:absolute;z-index:40;background:var(--slab);color:#F1EEE8;border-radius:999px;
+  display:flex;gap:2px;padding:4px;box-shadow:0 10px 26px rgba(var(--shadow),.34)}
+.selbar button{color:#F1EEE8;font-size:12px;padding:6px 12px;border-radius:999px;white-space:nowrap}
+.selbar button:hover{background:rgba(241,238,232,.16)}
+
+/* ═══ SOBREPOSIÇÕES ═══ */
+.ovl{position:absolute;inset:0;background:rgba(var(--shadow),.26);z-index:30}
+.pop{position:absolute;z-index:40;background:var(--card);border:1px solid var(--rule);border-radius:var(--r2);
+  box-shadow:0 20px 46px rgba(var(--shadow),.24);padding:var(--s5);width:320px;display:flex;
+  flex-direction:column;gap:var(--s1)}
+.drawer{position:absolute;top:0;right:0;bottom:0;width:330px;background:var(--card);
+  border-left:1px solid var(--rule);box-shadow:-14px 0 40px rgba(var(--shadow),.18);padding:var(--s5);
+  display:flex;flex-direction:column;gap:var(--s1);z-index:40;overflow-y:auto}
+.pop .row,.drawer .row{padding:var(--s3) 0}
+.pop .lb,.drawer .lb{font-size:13px}
+.menu{padding:var(--s2)}
+.menu button{display:block;width:100%;padding:var(--s3);border-radius:var(--r1);font-size:13px}
+.menu button:hover{background:var(--bench-2)}
+.menu .dan{color:var(--crit)}
+.menu .hdr{padding:var(--s2) var(--s3) var(--s3)}
+
+.modal{position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
+  padding:var(--s5);background:rgba(var(--shadow),.3)}
+.modal .box{background:var(--card);border-radius:var(--r2);padding:var(--s6);max-width:480px;width:100%;
+  box-shadow:0 26px 60px rgba(var(--shadow),.3);display:flex;flex-direction:column;gap:var(--s4)}
+.modal h3{margin:0;font-family:var(--serif);font-size:22px;font-weight:400}
+.modal p{margin:0;font-size:13.5px;line-height:1.6;color:var(--ink-2)}
+
+/* ═══ BUSCA ═══ */
+.palwrap{position:absolute;inset:0;z-index:50;display:flex;justify-content:center;padding-top:10vh;
+  background:rgba(var(--shadow),.26)}
+.pal{width:min(560px,92%);max-height:66vh;background:var(--card);border:1px solid var(--rule);
+  border-radius:var(--r2);box-shadow:0 26px 60px rgba(var(--shadow),.3);display:flex;flex-direction:column;
+  overflow:hidden}
+.pal-in{display:flex;align-items:center;gap:var(--s3);padding:var(--s4) var(--s5);
+  border-bottom:1px solid var(--rule-2)}
+.pal-in input{border:none;outline:none;background:none;font:inherit;font-size:16px;color:var(--ink);width:100%}
 .pal-res{overflow-y:auto}
-.pal-g{font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);
-  padding:var(--s3) var(--s4) var(--s1)}
-.pal-r{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s3);padding:var(--s2) var(--s4);
-  font-size:13px;width:100%;align-items:center}
-.pal-r:hover,.pal-r.on{background:var(--paper-3)}
-.pal-r .pth{font-family:var(--mono);font-size:9.5px;color:var(--ink-3)}
-.toast{position:absolute;left:50%;transform:translateX(-50%);bottom:80px;z-index:60;background:var(--nav);
-  color:var(--paper);font-size:12.5px;padding:var(--s3) var(--s5);border-radius:999px;
-  box-shadow:0 12px 30px rgba(36,21,15,.3);max-width:80%}
+.pal-g{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);
+  padding:var(--s3) var(--s5) var(--s1)}
+.pal-r{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s4);padding:var(--s3) var(--s5);
+  font-size:13.5px;align-items:center;cursor:pointer;width:100%;text-align:left}
+.pal-r.on,.pal-r:hover{background:var(--bench-2)}
+.pal-r .pth{font-family:var(--mono);font-size:10px;color:var(--ink-3)}
+.pal-r .q{font-family:var(--serif);font-style:italic;font-size:12px;color:var(--ink-3);
+  display:block;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pal-empty{padding:var(--s5);font-size:13px;color:var(--ink-3);line-height:1.55}
 
-/* importação como fase de movimento */
-.phase{position:absolute;inset:0;z-index:35;display:flex;align-items:center;justify-content:center;
-  background:rgba(241,238,231,.94);flex-direction:column;gap:var(--s4);text-align:center;padding:var(--s6)}
-.phase h3{margin:0;font-family:var(--serif);font-size:24px;font-weight:400}
-.phase p{margin:0;font-size:13px;color:var(--ink-3);max-width:44ch;line-height:1.6}
-.phase .bar{width:220px;height:3px;background:var(--rule);border-radius:2px;overflow:hidden}
-.phase .bar i{display:block;height:100%;background:var(--nav);width:40%;animation:ind 1.1s ease-in-out infinite}
-@keyframes ind{0%{margin-left:-40%}100%{margin-left:100%}}
+/* ═══ ASSISTENTE ═══ */
+.wiz{position:absolute;inset:0;z-index:45;background:var(--canvas);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:var(--s6)}
+.wizbox{max-width:520px;width:100%;display:flex;flex-direction:column;gap:var(--s4)}
+.wizdots{display:flex;gap:6px}
+.wizdots i{width:22px;height:3px;border-radius:2px;background:var(--rule);display:block}
+.wizdots i.on{background:var(--ink)}
 
-/* painel de teste */
-.side{position:absolute;top:0;right:0;bottom:0;width:320px;background:#171310;color:#b3a698;z-index:70;
-  padding:var(--s5);overflow-y:auto;display:flex;flex-direction:column;gap:var(--s5);border-left:1px solid #2b2119}
-.side h4{margin:0;font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:#7d7166}
+/* ═══ DESTRUTIVO ═══ */
+.dz{border-top:1px solid var(--rule);margin-top:var(--s6);padding-top:var(--s5);display:flex;
+  flex-direction:column;gap:var(--s4)}
+.dz h5{margin:0;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--crit)}
+.confirm{border-left:2px solid var(--crit);padding:var(--s1) 0 var(--s1) var(--s4);display:flex;
+  flex-direction:column;gap:var(--s3)}
+.confirm p{margin:0;font-size:13.5px;line-height:1.6;color:var(--ink-2)}
+.confirm ul{margin:0;padding-left:var(--s5);font-size:13px;color:var(--ink-2);line-height:1.7}
+.confirm b{color:var(--ink)}
+
+/* ═══ ESPAÇO ═══ */
+.quota{display:flex;gap:1px;height:11px;border-radius:3px;overflow:hidden;background:var(--rule-2);
+  margin:var(--s4) 0 var(--s3)}
+.quota i{display:block;height:100%}
+.qleg{display:flex;gap:var(--s5);flex-wrap:wrap;font-size:12px;color:var(--ink-3)}
+.qleg span{display:flex;align-items:center;gap:7px}
+.qleg i{width:9px;height:9px;border-radius:2px;display:block}
+
+/* ═══ AVISO ═══ */
+.toast{position:absolute;left:50%;transform:translateX(-50%);bottom:var(--s5);z-index:60;background:var(--slab);
+  color:#F1EEE8;font-size:13px;padding:var(--s3) var(--s5);border-radius:999px;
+  box-shadow:0 12px 30px rgba(var(--shadow),.34);max-width:86%;display:flex;gap:var(--s4);align-items:center}
+.toast button{color:#F1EEE8;text-decoration:underline;font-size:12.5px;white-space:nowrap}
+.filecard{display:flex;gap:var(--s4);align-items:center;padding:var(--s4);background:var(--bench-2);
+  border-radius:var(--r2);margin-bottom:var(--s3)}
+.filecard .ic{width:44px;height:56px;background:var(--slab);border-radius:3px;color:#EDE8DE;font-size:9px;
+  display:flex;align-items:center;justify-content:center;font-family:var(--mono);flex:0 0 44px}
+
+/* ═══ SUA LEITURA ═══ */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:var(--rule-2);
+  border:1px solid var(--rule-2);border-radius:var(--r2);overflow:hidden;margin-bottom:var(--s5)}
+.stats div{background:var(--canvas);padding:var(--s4);display:flex;flex-direction:column;gap:3px}
+.stats b{font-family:var(--mono);font-size:22px;font-weight:500;letter-spacing:-.02em}
+.tl{display:flex;flex-direction:column}
+.tl-i{display:grid;grid-template-columns:82px minmax(0,1fr);gap:var(--s4);padding:var(--s4) 0;
+  border-bottom:1px solid var(--rule-2)}
+.tl-i .when{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.tl-i .what{font-size:13px;line-height:1.5}
+.tl-i .what b{font-weight:600}
+
+/* ═══ PAINEL DE TESTE ═══ */
+.side{position:absolute;top:0;right:0;bottom:0;width:310px;background:#0E0D0C;color:#B8B1A5;z-index:70;
+  padding:var(--s5);overflow-y:auto;display:flex;flex-direction:column;gap:var(--s5);
+  border-left:1px solid #262320}
+.side h4{margin:0;font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:#6F6A61}
 .side .sc{display:flex;flex-direction:column;gap:3px}
-.side .sc button{padding:var(--s3);border-radius:var(--r1);border:1px solid #241a13;display:flex;
+.side .sc button{padding:var(--s3);border-radius:var(--r1);border:1px solid #211F1C;display:flex;
   flex-direction:column;gap:3px}
-.side .sc button:hover{background:#1f1812}
-.side .sc button[aria-pressed="true"]{background:#f1eee7;border-color:#f1eee7}
-.side .sc button[aria-pressed="true"] .n,.side .sc button[aria-pressed="true"] .d{color:#24150f}
-.side .sc .n{font-family:var(--mono);font-size:9px;color:#7d7166;letter-spacing:.08em}
-.side .sc .d{font-size:12px;color:#d9cfc4;line-height:1.3}
+.side .sc button:hover{background:#1A1815}
+.side .sc button[aria-pressed="true"]{background:#EDE8DE;border-color:#EDE8DE}
+.side .sc button[aria-pressed="true"] .n,.side .sc button[aria-pressed="true"] .d{color:#141311}
+.side .sc .n{font-family:var(--mono);font-size:9px;color:#6F6A61;letter-spacing:.08em}
+.side .sc .d{font-size:12.5px;color:#D6CFC3;line-height:1.3}
+.side ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--s2)}
+.side ol li{font-size:12px;line-height:1.45;display:grid;grid-template-columns:14px 1fr;gap:var(--s2);
+  color:#B8B1A5}
+.side ol li i{width:12px;height:12px;border-radius:50%;border:1px solid #3A3630;margin-top:2px;display:block;
+  position:relative}
+.side ol li.ok i{background:var(--good);border-color:var(--good)}
+.side ol li.ok i::after{content:"";position:absolute;left:3.5px;top:1px;width:3px;height:6px;
+  border:solid #0E0D0C;border-width:0 1.5px 1.5px 0;transform:rotate(42deg)}
+.side ol li.ok{color:#6F6A61}
 .side .an{display:flex;flex-direction:column;gap:var(--s2)}
 .side .an div{display:flex;flex-direction:column;gap:3px}
-.side .an b{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:#7d7166;font-weight:400}
-.side .an span{font-size:12px;line-height:1.5;color:#b3a698}
-.side .an .f{border-left:2px solid var(--orange);padding-left:var(--s3)}
-.side .ev{font-family:var(--mono);font-size:10px;color:#7d7166;line-height:1.5}
+.side .an b{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:#6F6A61;
+  font-weight:400}
+.side .an span{font-size:12px;line-height:1.5;color:#B8B1A5}
+.side .an .f{border-left:2px solid var(--accent);padding-left:var(--s3)}
+.side .altseg{display:flex;border:1px solid #2B2825;border-radius:var(--r1);overflow:hidden}
+.side .altseg button{flex:1;padding:6px 4px;font-family:var(--mono);font-size:9.5px;text-align:center;
+  border-right:1px solid #2B2825;color:#8B857A}
+.side .altseg button:last-child{border:none}
+.side .altseg button[aria-pressed="true"]{background:#EDE8DE;color:#141311}
+.side .note{font-size:11px;line-height:1.45;color:#6F6A61}
 @media (max-width:860px){.side{width:100%}}
 </style>
 </head>
 <body>
 
 <div class="rig">
-  <b>Mekora · lab</b>
+  <b>Protótipo Mekora</b>
   <span class="sep"></span>
   <span class="grp">modelo <span id="modosw" style="display:flex;gap:4px"></span></span>
   <span class="sep"></span>
   <span class="grp">aparelho <span id="devsw" style="display:flex;gap:4px"></span></span>
   <span class="sep"></span>
-  <span class="grp warn" id="simcount"></span>
+  <span class="grp">alterados <b id="ndiff">0</b></span>
   <span class="spacer"></span>
-  <button id="sidebtn" aria-pressed="false">cenários</button>
+  <span class="tag" id="scenlabel"></span>
+  <button id="sidebtn" aria-pressed="false">cenários e anotações</button>
 </div>
 
 <div class="stage">
@@ -266,370 +466,861 @@ select.sel{border:1px solid var(--rule);border-radius:var(--r1);height:var(--h1)
 <script>
 (function(){
 "use strict";
-function $(i){return document.getElementById(i)}
+function $(id){return document.getElementById(id)}
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
 
-/* ═══ dados vindos de mekora-canvas-motion/app/page.tsx ═══ */
-var MODES=[{id:"canvas",label:"Canvas",mk:"◇"},{id:"shelf",label:"Estante 3D",mk:"▥"},
- {id:"list",label:"Lista",mk:"≡"},{id:"connections",label:"Conexões",mk:"✣"}];
-var REGIONS={canvas:{x:0,y:0},shelf:{x:1,y:0},list:{x:0,y:1},connections:{x:1,y:1}};
-var BOOKS=[
-{id:"interface",t:"Design de Interfaces",a:"Jenifer Tidwell",f:"EPUB",src:"Amazon",c:"#ff9f72",ini:"DI",p:62},
-{id:"research",t:"Pesquisa em Produto",a:"Documento pessoal",f:"PDF",src:"Pessoal",c:"#d7ff63",ini:"PP",p:100},
-{id:"psychology",t:"Psicologia das Cores",a:"Eva Heller",f:"AZW3",src:"Amazon",c:"#f2d66d",ini:"PC",p:24},
-{id:"systems",t:"Sistemas que Aprendem",a:"Arquivo de aula",f:"DOCX",src:"Pessoal",c:"#c7adff",ini:"SA",p:0},
-{id:"espaco",t:"Organização Espacial",a:"Documento pessoal",f:"PDF",src:"Pessoal",c:"#b4c3ff",ini:"OE",p:41},
-{id:"tipo",t:"Elementos do Estilo Tipográfico",a:"Robert Bringhurst",f:"EPUB",src:"Amazon",c:"#d7ffb8",ini:"ET",p:8}];
-var RELS=[
-{from:"interface",to:"psychology",kind:"Livro ↔ livro",status:"suggested",
- reason:"Os dois discutem como escolhas visuais alteram percepção, compreensão e comportamento."},
-{from:"research",to:"systems",kind:"Livro ↔ livro",status:"confirmed",
- reason:"A pesquisa aparece como entrada para sistemas que aprendem e se adaptam com evidências."},
-{from:"interface",to:"nota-1",kind:"Livro ↔ nota",status:"confirmed",
- reason:"A nota resume o princípio de tornar a interface discreta quando o conteúdo precisa de foco."},
-{from:"espaco",to:"destaque-1",kind:"Livro ↔ destaque",status:"suggested",
- reason:"O trecho associa organização espacial à memória, tema recorrente no arquivo importado."}];
-var NOTAS={interface:[{t:"tornar a interface discreta quando o conteúdo precisa de foco",pg:88}],
- research:[{t:"evidência sem decisão é só arquivo",pg:24}],
- espaco:[{t:"a organização espacial é uma forma de memória",pg:112}],
- psychology:[],systems:[],tipo:[]};
-var PAGINA=["A interface que se faz notar cobra um preço em atenção que o conteúdo precisaria receber inteiro.",
-"<span class=\"hl\">A organização espacial é uma forma de memória</span>: lembramos onde algo estava antes de lembrar o que era.",
-"Por isso a estante desarrumada de alguém que lê é mais navegável, para essa pessoa, do que a biblioteca perfeitamente catalogada de outra."];
-
-/* ═══ ajustes reais (derivados de ConfigPage do mekora-app) ═══ */
-var SEC=[{k:"leitura",n:"Leitura e movimento"},{k:"biblioteca",n:"Biblioteca"},
- {k:"preparo",n:"Preparo de arquivos"},{k:"kindle",n:"Exportar ao Kindle"},{k:"dados",n:"Dados"}];
+/* ═════ CATÁLOGO DE AJUSTES ═════ */
+var SEC=[
+ {k:"aparencia",n:"Aparência",d:"Tema, densidade, idioma, tela inicial"},
+ {k:"biblioteca",n:"Biblioteca",d:"Vista padrão, ordenação, capas, sinais de nota"},
+ {k:"leitura",n:"Leitura",d:"Tipografia, tema do leitor, destaques"},
+ {k:"conhecimento",n:"Conhecimento",d:"Notas, tags, conexões entre livros"},
+ {k:"arquivos",n:"Arquivos",d:"Conversão, OCR, importação"},
+ {k:"conexoes",n:"Exportar ao Kindle",d:"Envio por e-mail, com fila de retry"},
+ {k:"dados",n:"Seus dados",d:"Espaço, offline, privacidade, apagar"}
+];
 var S=[
-{k:"motion",sec:"leitura",lb:"Movimento",ds:"Existe no código: MotionPreference completo | reduzido.",
- t:"seg",op:["completo","reduzido"],d:"completo",esc:"aparelho"},
-{k:"tema",sec:"leitura",lb:"Tema do leitor",ds:"",t:"seg",op:["Papel","Sépia","Noite"],d:"Papel",esc:"conta"},
-{k:"corpo",sec:"leitura",lb:"Tamanho do texto",ds:"",t:"seg",op:["16","18","21"],d:"18",esc:"conta"},
-{k:"vista",sec:"biblioteca",lb:"Região ao abrir",ds:"Qual região do mundo recebe você.",
- t:"seg",op:["Canvas","Estante","Lista"],d:"Canvas",esc:"aparelho"},
-{k:"origem",sec:"biblioteca",lb:"Filtro de origem padrão",ds:"SourceFilter: Todos | Pessoal | Amazon.",
- t:"seg",op:["Todos","Pessoal","Amazon"],d:"Todos",esc:"conta"},
-{k:"sugestoes",sec:"biblioteca",lb:"Sugerir conexões",ds:"Relações determinísticas por tags — não é IA.",
- t:"sw",d:true,esc:"conta"},
-{k:"ocr",sec:"preparo",lb:"Reconhecer texto (OCR)",ds:"OCRmyPDF/Tesseract. Falha bloqueia conversão insegura.",
- t:"seg",op:["Automático","Sempre","Nunca"],d:"Automático",esc:"conta"},
-{k:"ocrlang",sec:"preparo",lb:"Idioma do OCR",ds:"",t:"sel",op:["Detectar","Português","Inglês"],d:"Detectar",esc:"conta"},
-{k:"formato",sec:"preparo",lb:"Formato de saída",ds:"Calibre converte para EPUB.",t:"sel",op:["EPUB"],d:"EPUB",esc:"conta"},
-{k:"reter",sec:"preparo",lb:"Reter arquivos por",ds:"Retenção real na ConfigPage do app.",
- t:"sel",op:["7 dias","30 dias","Sempre"],d:"30 dias",esc:"conta"},
-{k:"kcc",sec:"preparo",lb:"Perfil KCC para quadrinhos",ds:"Pipeline de comics do app operacional.",
- t:"sel",op:["Kindle PW","Kindle Oasis","Kindle Scribe"],d:"Kindle PW",esc:"conta"},
-{k:"smtp",sec:"kindle",lb:"Enviar após preparar",ds:"O Kindle é alvo de exportação, não destino.",
- t:"sw",d:false,esc:"conta"},
-{k:"telemetria",sec:"dados",lb:"Métricas locais por etapa",ds:"Observabilidade do app, não analytics de uso.",
- t:"sw",d:true,esc:"conta"}];
+{k:"theme",sec:"aparencia",lb:"Tema",ds:"O seu outro aparelho não muda junto.",esc:"aparelho",t:"seg",op:["Claro","Escuro","Sistema"],d:"Sistema",syn:"tema escuro claro noite cor"},
+{k:"density",sec:"aparencia",lb:"Densidade da interface",ds:"Espaçamento da interface, não o tamanho do texto lido.",esc:"aparelho",t:"seg",op:["Compacta","Padrão","Ampla"],d:"Padrão",syn:"densidade espaçamento"},
+{k:"lang",sec:"aparencia",lb:"Idioma da interface",ds:"Não altera o idioma dos livros nem do OCR.",esc:"conta",t:"sel",op:["Português (Brasil)","English","Español"],d:"Português (Brasil)",syn:"idioma lingua"},
+{k:"motion",sec:"aparencia",lb:"Reduzir movimento",ds:"Desliga transições de painel e estante.",esc:"aparelho",t:"sw",d:false,syn:"movimento animação acessibilidade"},
+{k:"start",sec:"aparencia",lb:"Ao abrir o Mekora",ds:"",esc:"aparelho",t:"sel",op:["Retomar leitura","Biblioteca","Sua leitura"],d:"Retomar leitura",syn:"abrir inicial"},
+{k:"libview",sec:"biblioteca",lb:"Vista ao abrir",ds:"Você também troca a vista na própria biblioteca.",esc:"conta",t:"seg",op:["Grade","Lista"],d:"Grade",syn:"vista grade lista estante"},
+{k:"carddens",sec:"biblioteca",lb:"Densidade dos cards",ds:"Compacta mostra só capa e progresso. Ampla acrescenta a última nota.",esc:"conta",t:"seg",op:["S","M","L"],d:"M",syn:"card capa tamanho densidade"},
+{k:"sort",sec:"biblioteca",lb:"Ordenação padrão",ds:"",esc:"conta",t:"sel",op:["Adicionado recentemente","Título","Autor","Progresso","Mais anotado"],d:"Adicionado recentemente",syn:"ordenar ordem classificar"},
+{k:"notesign",sec:"biblioteca",lb:"Sinal de notas nas capas",ds:"A aba ✳ com a contagem, no topo da capa.",esc:"conta",t:"sw",d:true,syn:"nota sinal aba capa"},
+{k:"donebooks",sec:"biblioteca",lb:"Livros concluídos",ds:"",esc:"conta",t:"sel",op:["Manter na estante","Ocultar"],d:"Manter na estante",syn:"concluído lido terminado"},
+{k:"font",sec:"leitura",lb:"Fonte de leitura",ds:"",esc:"conta",t:"seg",op:["Serifada","Sem serifa"],d:"Serifada",rd:1,syn:"fonte tipografia letra"},
+{k:"size",sec:"leitura",lb:"Tamanho do texto",ds:"",esc:"conta",t:"step",mn:14,mx:26,sp:1,d:18,rd:1,syn:"tamanho corpo letra maior menor"},
+{k:"leading",sec:"leitura",lb:"Entrelinha",ds:"",esc:"conta",t:"step",mn:1.3,mx:2.1,sp:.1,d:1.6,rd:1,syn:"entrelinha espaçamento linha"},
+{k:"width",sec:"leitura",lb:"Largura da coluna",ds:"",esc:"conta",t:"step",mn:480,mx:800,sp:40,d:620,rd:1,syn:"largura coluna margem"},
+{k:"readertheme",sec:"leitura",lb:"Tema do leitor",ds:"Independente do tema da interface, de propósito.",esc:"conta",t:"seg",op:["Papel","Sépia","Noite"],d:"Papel",rd:1,syn:"tema leitor papel sépia noite fundo"},
+{k:"scroll",sec:"leitura",lb:"Rolagem contínua",ds:"Desligado divide o capítulo em páginas.",esc:"conta",t:"sw",d:true,syn:"rolagem paginação virar página"},
+{k:"progfmt",sec:"leitura",lb:"Mostrar progresso como",ds:"Você também alterna tocando no indicador.",esc:"conta",t:"seg",op:["Tempo","Páginas","%"],d:"Tempo",syn:"progresso porcentagem tempo restante"},
+{k:"hlcolor",sec:"conhecimento",lb:"Cor do destaque",ds:"",esc:"conta",t:"seg",op:["Amarelo","Rosa","Verde"],d:"Amarelo",syn:"destaque grifo cor marcação"},
+{k:"noteonhl",sec:"conhecimento",lb:"Criar nota ao destacar",ds:"Abre o campo de nota junto com o destaque.",esc:"conta",t:"sw",d:false,syn:"nota destacar anotação"},
+{k:"citefmt",sec:"conhecimento",lb:"Copiar citação com a fonte",ds:"Inclui título, autor e página ao copiar.",esc:"conta",t:"sw",d:true,syn:"citação copiar fonte referência"},
+{k:"suggest",sec:"conhecimento",lb:"Sugerir conexões entre livros",ds:"Compara suas notas para propor ligações. Você revisa antes de aceitar.",esc:"conta",t:"sw",d:false,syn:"conexão sugestão relacionar ligação"},
+{k:"format",sec:"arquivos",lb:"Formato de saída",ds:"Arquivos já convertidos não mudam.",esc:"conta",t:"sel",op:["EPUB","PDF"],d:"EPUB",bd:"vale para novos",syn:"formato saída epub pdf"},
+{k:"ocr",sec:"arquivos",lb:"Reconhecer texto (OCR)",ds:"“Sempre” aumenta o tempo de processamento.",esc:"conta",t:"seg",op:["Automático","Sempre","Nunca"],d:"Automático",syn:"ocr reconhecimento texto escaneado digitalizado"},
+{k:"autoprocess",sec:"arquivos",lb:"Processar ao importar",ds:"Converte assim que o arquivo entra, sem perguntar.",esc:"conta",t:"sw",d:false,syn:"importar automático processar"},
+{k:"keeporig",sec:"arquivos",lb:"Manter o arquivo original",ds:"Ocupa espaço da conta e permite reconverter depois.",esc:"conta",t:"sw",d:true,syn:"original manter guardar"},
+{k:"reter",sec:"arquivos",lb:"Guardar arquivos por",ds:"Retenção real na ConfigPage do app operacional.",esc:"conta",t:"sel",op:["7 dias","30 dias","Sempre"],d:"30 dias",syn:"reter retenção guardar limpar"},
+{k:"kcc",sec:"arquivos",lb:"Perfil de quadrinhos (KCC)",ds:"Usado no pipeline de mangá e HQ, que existe e é operacional.",esc:"conta",t:"sel",op:["Kindle PW","Kindle Oasis","Kindle Scribe"],d:"Kindle PW",syn:"kcc quadrinho manga comic hq"},
+{k:"ocrlang",sec:"arquivos",lb:"Idioma do reconhecimento",ds:"Só use se a detecção automática errar.",esc:"conta",t:"sel",op:["Detectar","Português","Inglês","Espanhol"],d:"Detectar",adv:1,syn:"ocr idioma lingua reconhecimento"},
+{k:"quality",sec:"arquivos",lb:"Qualidade de imagem",ds:"Maior qualidade gera arquivos maiores.",esc:"conta",t:"seg",op:["Leve","Equilibrada","Máxima"],d:"Equilibrada",adv:1,syn:"qualidade resolução imagem"},
+{k:"sendafter",sec:"conexoes",lb:"Exportar ao Kindle depois de preparar",ds:"Decisão de 5 ago: o Kindle virou alvo de exportação, não o destino do produto.",esc:"conta",t:"sw",d:false,syn:"kindle enviar exportar automático"},
+{k:"wifionly",sec:"dados",lb:"Sincronizar só em Wi-Fi",ds:"",esc:"aparelho",t:"sw",d:true,syn:"wifi rede dados móveis"},
+{k:"dlreading",sec:"dados",lb:"Baixar o que estou lendo",ds:"Garante abrir sem rede o livro em andamento.",esc:"aparelho",t:"sw",d:true,syn:"baixar offline download sem rede"},
+{k:"telemetry",sec:"dados",lb:"Enviar dados de uso",ds:"Nunca o conteúdo dos seus livros ou notas.",esc:"conta",t:"sw",d:false,syn:"privacidade telemetria diagnóstico"},
+{k:"history",sec:"dados",lb:"Histórico de leitura",ds:"Alimenta “continuar lendo” e a sua página de leitura.",esc:"conta",t:"sw",d:true,syn:"histórico privacidade"}
+];
 var SM={};S.forEach(function(x){SM[x.k]=x});
+var DEVS=[{k:"mac",n:"MacBook",cls:"grande"},{k:"ipad",n:"iPad",cls:"pequena"}];
 
-/* ═══ estado ═══ */
-var st={modo:"local",dev:"desktop",mode:"canvas",sel:null,tab:"overview",panel:false,
- origem:"Todos",kf:"Tudo",reader:false,phase:null,pal:null,palq:"",prefs:false,prefsec:"leitura",
- conta:false,acct:{},dev_:{desktop:{},tablet:{}},toast:null,scen:null,done:{},side:false,
- rels:RELS.map(function(r){return Object.assign({},r)}),ev:[]};
-function val(k){var d=SM[k],bag=d.esc==="aparelho"?st.dev_[st.dev]:st.acct;
- return bag[k]!==undefined?bag[k]:d.d}
-function set(k,v){var d=SM[k];(d.esc==="aparelho"?st.dev_[st.dev]:st.acct)[k]=v;
- log("ajuste "+k+" = "+v)}
-function log(m){st.ev.unshift(m);if(st.ev.length>6)st.ev.pop()}
-var tm;function toast(m){st.toast=m;clearTimeout(tm);tm=setTimeout(function(){st.toast=null;draw()},2600)}
-function mark(i){if(st.scen)st.done[st.scen+i]=1}
-function livros(){return BOOKS.filter(function(b){return st.origem==="Todos"||b.src===st.origem})}
+/* ═════ CONTEÚDO ═════ */
+var NOTAS=["a distinção entre restrição e limitação atravessa o capítulo inteiro",
+"isso contradiz a tese do capítulo 3 — voltar aqui depois",
+"a densidade não é uma propriedade da tela, e sim da tarefa",
+"“o que não é escolhido também é projeto” — anotar a fonte",
+"exemplo de decisão que parece estética e é estrutural",
+"a metáfora do arquivo funciona melhor que a da biblioteca",
+"reler devagar: o melhor argumento do livro está numa nota de rodapé"];
+var BOOKS=[
+{t:"Estudo de Viabilidade",a:"Ana Duarte",n:24,p:80,col:"Trabalho",tags:["#Design","#Método"],paper:"#F6F3EC",tone:"#141311",add:9,src:"Pessoal",fmt:"PDF"},
+{t:"Teoria da Atenção",a:"Marina Rocha",n:12,p:34,col:"Pesquisa",tags:["#Atenção"],paper:"#EFE7D9",tone:"#C33B1E",add:8,src:"Amazon",fmt:"EPUB"},
+{t:"Ensaio do Comum",a:"Nuno Pacheco",n:0,p:0,col:"Depois",tags:[],paper:"#E9EEE9",tone:"#2E4B45",add:12,src:"Pessoal",fmt:"DOCX"},
+{t:"Cartografia do Erro",a:"Clara Bittencourt",n:41,p:100,col:"Pesquisa",tags:["#Método","#Erro"],paper:"#F2E9E4",tone:"#55504A",add:3,src:"Amazon",fmt:"AZW3"},
+{t:"Poética do Detalhe",a:"Paulo Guedes",n:7,p:12,col:"Depois",tags:["#Design"],paper:"#E7E9EF",tone:"#3A3550",add:11,src:"Pessoal",fmt:"PDF"},
+{t:"Inventário das Margens",a:"Iara Sampaio",n:103,p:56,col:"Pesquisa",tags:["#Arquivo"],paper:"#F4EEE0",tone:"#7A5C1E",add:2,src:"Amazon",fmt:"EPUB"},
+{t:"Gramática do Vazio",a:"Vitor Meireles",n:3,p:0,col:"Depois",tags:[],paper:"#EDEAE2",tone:"#141311",add:10,src:"Pessoal",fmt:"EPUB"},
+{t:"Manual da Escassez",a:"Renata Farias",n:18,p:91,col:"Trabalho",tags:["#Método"],paper:"#F6F3EC",tone:"#C33B1E",add:5,src:"Amazon",fmt:"EPUB"},
+{t:"Física do Cotidiano",a:"Bruno Almeida",n:0,p:47,col:"Trabalho",tags:[],paper:"#EFE7D9",tone:"#2E4B45",add:7,src:"Pessoal",fmt:"PDF"},
+{t:"Elogio da Repetição",a:"Karina Lousada",n:31,p:100,col:"Pesquisa",tags:["#Ritmo"],paper:"#E9EEE9",tone:"#141311",add:1,src:"Amazon",fmt:"EPUB"},
+{t:"Atlas da Escala",a:"Sérgio Vasques",n:9,p:22,col:"Depois",tags:["#Escala"],paper:"#F2E9E4",tone:"#7A5C1E",add:6,src:"Pessoal",fmt:"DOCX"},
+{t:"Diário das Cidades",a:"Olívia Cardoso",n:56,p:68,col:"Pesquisa",tags:["#Cidades"],paper:"#E7E9EF",tone:"#C33B1E",add:4,src:"Amazon",fmt:"EPUB"}];
+BOOKS.forEach(function(b,i){b.i=i;b.notas=[];var k=Math.min(4,b.n);
+  for(var j=0;j<k;j++)b.notas.push({t:NOTAS[(i*3+j)%NOTAS.length],pg:20+j*47,cap:1+(j%4)})});
+var COLS=["Trabalho","Pesquisa","Depois"];
+var CAPS=[{n:"1 · O problema da estante",pg:9},{n:"2 · Ordem imposta e ordem vivida",pg:34},
+ {n:"3 · Densidade não é quantidade",pg:71},{n:"4 · O inventário abandonado",pg:112},
+ {n:"5 · Reconhecer de longe",pg:148}];
+var PAGE=["Havia, no fundo da sala, uma estante que ninguém organizava desde a mudança — e era exatamente por isso que dava para saber onde tudo estava.",
+"A ordem que se impõe de fora envelhece rápido. A que nasce do uso repetido guarda, em cada lombada fora do lugar, a memória de uma tarde específica: o livro que ficou na mesa porque a conversa não acabou, o que voltou torto porque alguém procurava outra coisa.",
+"<span class=\"hl\" data-hl=\"1\">A densidade não é uma propriedade da tela: é uma propriedade da tarefa.</span> Duas pessoas diante da mesma interface enxergam quantidades diferentes de informação, porque chegam ali com perguntas diferentes. Uma quer encontrar; a outra quer lembrar.",
+"Foi por isso que abandonamos o inventário completo. Não porque fosse impreciso — era exato — mas porque respondia a uma pergunta que ninguém fazia. O catálogo perfeito de uma casa é inútil para quem mora nela.",
+"O que restou foi mais modesto e mais útil: um jeito de reconhecer as coisas de longe, e um jeito de chegar perto quando isso importa. Entre os dois, nada."];
 
-/* ═══ cenários ═══ */
+/* ═════ ESTADO ═════ */
+var st={route:{v:"lib"},modo:"local",dev:"mac",acct:{},devv:{mac:{},ipad:{}},book:{},origin:{},
+ kindle:"on",kmail:"erik_4f2a@kindle.com",ksender:"erik@vynce.com.br",
+ wiz:null,pal:null,palq:"",palsel:0,pop:false,adv:false,danger:false,menu:null,toast:null,f2a:false,
+ convDef:false,altSize:"classe",altPanel:"popover",scen:null,done:{},side:false,
+ sel:null,inspTab:"livro",libq:"",libcol:null,rpanel:null,rq:"",cap:2,mark:false,
+ selText:false,acctView:"main",pwd:{o:"",n:""},lastToast:null,
+ devices:[{n:"MacBook Pro",loc:"São Paulo",when:"agora",dl:8,here:true},
+   {n:"iPad de Erik",loc:"São Paulo",when:"há 2 horas",dl:3},
+   {n:"Windows · Chrome",loc:"Curitiba",when:"há 6 dias",dl:0,unk:true}]};
+function devCls(){return DEVS.filter(function(d){return d.k===st.dev})[0].cls}
+function devName(){return DEVS.filter(function(d){return d.k===st.dev})[0].n}
+function sizeBag(){if(st.altSize==="conta")return{b:st.acct,k:"size"};
+ if(st.altSize==="aparelho")return{b:st.devv[st.dev],k:"size"};return{b:st.acct,k:"size_"+devCls()}}
+function val(k){var d=SM[k];if(k==="size"){var s=sizeBag();return s.b[s.k]!==undefined?s.b[s.k]:d.d}
+ var bag=d.esc==="aparelho"?st.devv[st.dev]:st.acct;return bag[k]!==undefined?bag[k]:d.d}
+function set(k,v,o){var d=SM[k];if(k==="size"){var s=sizeBag();s.b[s.k]=v}
+ else (d.esc==="aparelho"?st.devv[st.dev]:st.acct)[k]=v;
+ st.origin[k]={o:o||"Preferências",dv:devName()}}
+function rst(k){var d=SM[k];if(k==="size"){var s=sizeBag();delete s.b[s.k]}
+ else delete (d.esc==="aparelho"?st.devv[st.dev]:st.acct)[k];delete st.origin[k]}
+function rd(k){return st.book[k]!==undefined?st.book[k]:val(k)}
+function dirty(){return Object.keys(st.book).length>0}
+function diff(){return S.filter(function(x){return val(x.k)!==x.d})}
+function fmtv(k,v){return SM[k].t==="sw"?(v?"Ligado":"Desligado"):String(v)}
+var tm;function toast(m,act){st.toast={m:m,a:act||null};clearTimeout(tm);
+ tm=setTimeout(function(){st.toast=null;draw()},act?5200:2600)}
+
+/* ═════ CENÁRIOS ═════ */
 var SCEN=[
-{k:"01",t:"Atravessar o mundo",go:function(){st.mode="canvas";st.sel=null;st.panel=false},
- steps:[["shelf","Vá para a Estante 3D"],["list","Vá para a Lista"],["conn","Vá para Conexões"]]},
-{k:"02",t:"Abrir o espaço de um livro",go:function(){st.mode="canvas";st.sel=null},
- steps:[["sel","Clique num objeto de livro"],["tab","Percorra as abas do espaço"],["amazon","Abra um livro Amazon e veja o limite"]]},
-{k:"03",t:"Revisar uma conexão sugerida",go:function(){st.mode="connections";st.sel=null},
- steps:[["ver","Encontre a relação tracejada"],["ler","Leia a razão da sugestão"],["dec","Confirme ou rejeite"]]},
-{k:"04",t:"Preparar um arquivo",go:function(){st.mode="canvas";st.phase=null},
- steps:[["start","Toque em Preparar arquivo"],["proc","Acompanhe o processamento"],["lib","Veja o livro chegar ao mundo"]]},
-{k:"05",t:"Ler e destacar",go:function(){st.mode="canvas";st.sel="espaco";st.tab="read";st.panel=true},
- steps:[["abrir","Abra a leitura"],["ancora","Leia o aviso de ancoragem"]]},
-{k:"06",t:"Com conta × sem conta",go:function(){st.prefs=true;st.prefsec="leitura"},
- steps:[["troca","Troque o modelo na barra de cima"],["cab","Veja o que aparece e some"],["amb","Compare o âmbito dos ajustes"]]}];
+{k:"01",t:"Trocar o tema e ver o que viaja",go:function(){st.route={v:"sec",sec:"aparencia"}},
+ steps:[["theme","Mude o tema para Escuro"],["dev","Troque para o iPad na barra de cima"],["back","Volte ao MacBook"]]},
+{k:"02",t:"Tipografia lendo, e o padrão",go:function(){st.route={v:"reader"}},
+ steps:[["aa","Abra o Aa no rodapé"],["size","Mude o tamanho do texto"],["dec","Decida: só este livro ou padrão"]]},
+{k:"03",t:"Destacar um trecho e ver a nota",go:function(){st.route={v:"reader"}},
+ steps:[["seltxt","Selecione o trecho grifado"],["hl","Crie o destaque"],["vernota","Veja em Notas, no leitor"]]},
+{k:"04",t:"Encontrar um livro na estante",go:function(){st.route={v:"lib"};st.libq="";st.sel=null},
+ steps:[["busca","Busque por “densidade” — acha pelas notas"],["col","Filtre por uma coleção"],["insp","Veja detalhes pela aba ✳ ou pelo ···"]]},
+{k:"05",t:"Achar um ajuste sem saber a seção",go:function(){st.route={v:"lib"};st.pal=null},
+ steps:[["open","Abra a busca no topo"],["type","Digite “ocr”"],["land","Chegue ao ajuste"]]},
+{k:"06",t:"Trocar a senha e ver as sessões",go:function(){st.route={v:"conta"};st.acctView="main"},
+ steps:[["seg","Entre em Senha e segurança"],["pwd","Troque a senha"],["end","Encerre a sessão do Windows"]]},
+{k:"07",t:"Apagar a biblioteca",go:function(){st.route={v:"sec",sec:"dados"}},
+ steps:[["open","Abra Apagar biblioteca"],["read","Leia o alcance da ação"],["out","Cancele — ou confirme"]]},
+{k:"08",t:"Recuperar de um erro de envio",go:function(){st.kindle="error";st.ksender="antigo@gmail.com";
+  st.route={v:"sec",sec:"conexoes"};st.done["08see"]=1},
+ steps:[["see","Veja o erro em Conexões"],["fix","Corrija o remetente"],["test","Teste de novo"]]},
+{k:"09",t:"Configurar o Kindle pelo envio",go:function(){st.kindle="off";st.route={v:"lib"};st.sel=null},
+ steps:[["menu","Passe o mouse num livro e abra o ···"],["send","Escolha Enviar para Kindle"],["wiz","Conclua o teste"]]},
+{k:"10",t:"OCR na conversão, salvo como padrão",go:function(){st.route={v:"conv"}},
+ steps:[["ocr","Troque para Sempre"],["def","Marque usar como padrão"],["diary","Confira no diário"]]}
+];
+function mark(id){if(st.scen)st.done[st.scen+id]=1}
 function startScen(k){var s=SCEN.filter(function(x){return x.k===k})[0];if(!s)return;
- st.scen=k;st.done={};st.reader=false;st.pal=null;st.phase=null;st.prefs=false;st.conta=false;
+ st.scen=k;st.done={};st.pop=false;st.wiz=null;st.danger=false;st.menu=null;st.pal=null;st.toast=null;
+ st.sel=null;st.rpanel=null;st.selText=false;st.acctView="main";
+ if(k!=="08"&&k!=="09"){st.kindle="on";st.ksender="erik@vynce.com.br"}
  st.side=true;$("sidebtn").setAttribute("aria-pressed","true");s.go();draw()}
 
-/* ═══ componentes ═══ */
-function ctl(x){var v=val(x.k),a='data-a="set" data-k="'+x.k+'"';
+/* ═════ CONTROLES ═════ */
+function ctl(x,pf){
+ var v=pf==="book"?rd(x.k):val(x.k),a='data-a="'+(pf==="book"?"bset":"set")+'" data-k="'+x.k+'"';
  if(x.t==="sw")return'<button class="sw'+(v?" on":"")+'" '+a+' data-v="'+(!v)+'" role="switch" aria-checked="'+!!v+'" aria-label="'+esc(x.lb)+'"><i></i></button>';
- if(x.t==="seg")return'<span class="segc">'+x.op.map(function(o){
-  return'<button '+a+' data-v="'+esc(o)+'" class="'+(o===v?"on":"")+'" aria-pressed="'+(o===v)+'">'+esc(o)+'</button>'}).join("")+'</span>';
- return'<select class="sel" data-k="'+x.k+'" aria-label="'+esc(x.lb)+'">'+x.op.map(function(o){
-  return'<option'+(o===v?" selected":"")+'>'+esc(o)+'</option>'}).join("")+'</select>'}
-function row(x){var amb=st.modo==="conta"
-  ?(x.esc==="aparelho"?'<span class="badge dev">este aparelho</span>':'<span class="badge acc">segue você</span>'):"";
- return'<div class="row"><div><div class="lb">'+esc(x.lb)+amb+'</div>'+
-  (x.ds?'<div class="ds">'+esc(x.ds)+'</div>':'')+'</div>'+ctl(x)+'</div>'}
+ if(x.t==="seg")return'<span class="segc" role="group" aria-label="'+esc(x.lb)+'">'+x.op.map(function(o){
+   return'<button '+a+' data-v="'+esc(o)+'" class="'+(o===v?"on":"")+'" aria-pressed="'+(o===v)+'">'+esc(o)+'</button>'}).join("")+'</span>';
+ if(x.t==="sel")return'<select class="sel" data-k="'+x.k+'" data-p="'+(pf||"")+'" aria-label="'+esc(x.lb)+'">'+
+   x.op.map(function(o){return'<option'+(o===v?" selected":"")+'>'+esc(o)+'</option>'}).join("")+'</select>';
+ if(x.t==="step")return'<span class="stepc"><button '+a+' data-v="'+Math.max(x.mn,+(v-x.sp).toFixed(1))+'" aria-label="Diminuir '+esc(x.lb)+'">−</button>'+
+   '<span class="v">'+(x.sp<1?(+v).toFixed(1):v)+'</span>'+
+   '<button '+a+' data-v="'+Math.min(x.mx,+(v+x.sp).toFixed(1))+'" aria-label="Aumentar '+esc(x.lb)+'">+</button></span>';
+ return""}
+function row(x,pf){
+ var chg=pf==="book"?st.book[x.k]!==undefined:val(x.k)!==x.d,bd="";
+ /* âmbito só existe quando há conta — no modelo local, tudo é deste computador */
+ if(st.modo==="conta"){
+  if(x.esc==="aparelho")bd+='<span class="badge dev">este aparelho</span>';
+  else if(x.sec==="aparencia")bd+='<span class="badge sync">segue você</span>'}
+ if(x.bd)bd+='<span class="badge new">'+x.bd+'</span>';
+ if(x.rd&&pf!=="book")bd+='<span class="badge">também no leitor</span>';
+ return'<div class="row'+(chg?" chg":"")+'"><div><div class="lb">'+esc(x.lb)+bd+
+  (chg&&pf!=="book"?'<button class="revert" data-a="revert" data-k="'+x.k+'">voltar ao padrão</button>':'')+'</div>'+
+  (x.ds?'<div class="ds">'+esc(x.ds)+'</div>':'')+'</div>'+ctl(x,pf)+'</div>'}
 
-/* ═══ o mundo ═══ */
-function objStyle(b,i,mode){
- var n=livros().length,idx=livros().indexOf(b);
- if(mode==="canvas"){var cx=[14,44,70,22,52,78][idx%6],cy=[26,18,34,58,62,56][idx%6];
-  return"left:"+cx+"%;top:"+cy+"%;width:132px;height:172px"}
- if(mode==="shelf"){return"left:"+(16+idx*8.4)+"%;bottom:22%;width:44px;height:"+(150+((idx*37)%60))+"px"}
- if(mode==="list"){return"left:8%;right:8%;top:"+(20+idx*10)+"%;width:auto;height:54px"}
- var ang=(idx/n)*Math.PI*2,R=26;
- return"left:calc(50% + "+(Math.cos(ang)*R)+"% - 34px);top:calc(50% + "+(Math.sin(ang)*R*.8)+"% - 34px);width:68px;height:68px"}
-function objHTML(b,mode){
- var cls=mode==="shelf"?"shelf":mode==="list"?"list":mode==="connections"?"node":"card";
- return'<button class="obj '+cls+'" data-a="sel" data-i="'+b.id+'" aria-selected="'+(st.sel===b.id)+'" '+
-  'style="--c:'+b.c+';'+objStyle(b,0,mode)+'" aria-label="'+esc(b.t)+', '+esc(b.src)+'">'+
-  '<span class="body">'+(mode==="list"?'<span class="swatch"></span>':'')+
-  '<span class="ini">'+b.ini+'</span><span class="ttl">'+esc(b.t)+'</span>'+
-  '<span class="src">'+b.src+'</span></span></button>'}
-function regionInner(m){
- var L=livros(),h="";
- if(m==="shelf")h+='<div class="shelfline" style="left:12%;right:12%;bottom:20%"></div>';
- if(m==="connections"){
-  h+='<svg class="svg-links">'+st.rels.filter(function(r){return r.status!=="rejected"}).map(function(r,i){
-   var a=L.findIndex(function(b){return b.id===r.from}),bq=L.findIndex(function(b){return b.id===r.to});
-   if(a<0)return"";var n=L.length;
-   function pt(k){var ang=(k/n)*Math.PI*2;return{x:50+Math.cos(ang)*26,y:50+Math.sin(ang)*26*.8}}
-   var p1=pt(a),p2=bq>=0?pt(bq):{x:50,y:50};
-   return'<line x1="'+p1.x+'%" y1="'+p1.y+'%" x2="'+p2.x+'%" y2="'+p2.y+'%"'+
-    (r.status==="suggested"?' class="sug"':'')+'/>'}).join("")+'</svg>'}
- return h+L.map(function(b){return objHTML(b,m)}).join("")}
-function vWorld(){
- var pos=REGIONS[st.mode];
- var h='<div class="world" style="transform:translate('+(-pos.x*100)+'vw,'+(-pos.y*100)+'%)">';
- MODES.forEach(function(mm){var p=REGIONS[mm.id];
-  h+='<div class="region" style="left:'+(p.x*100)+'vw;top:'+(p.y*100)+'%">'+
-   '<div class="region-h" style="margin-top:38px"><span class="mk">'+mm.mk+'</span>'+
-   '<h2>'+mm.label+'</h2><p>'+
-   ({canvas:"Livros como objetos que você move. A posição é sua.",
-     shelf:"A mesma biblioteca como lombadas — reconhecimento de longe.",
-     list:"A mesma biblioteca como linhas — quando você já sabe o que procura.",
-     connections:"O que a leitura ligou. Tracejado é sugestão, cheio é confirmado."})[mm.id]+'</p></div>'+
-   '<div style="position:relative;flex:1">'+regionInner(mm.id)+'</div></div>'});
- h+='</div>';
- h+='<div class="topbar"><span class="brand">Mekora</span>'+
-  '<div class="filtros">'+["Todos","Pessoal","Amazon"].map(function(o){
-   return'<button class="fchip" data-a="origem" data-v="'+o+'" aria-pressed="'+(st.origem===o)+'">'+o+'</button>'}).join("")+'</div>'+
-  '<span class="spacer"></span>'+
-  '<button class="srch" data-a="pal">⌕ <span class="kbd">⌘K</span></button>'+
-  '<button class="btn sm sec" data-a="prep">Preparar arquivo</button>'+
-  '<button class="avbtn" data-a="prefs">'+(st.modo==="conta"?"E":"⚙")+'</button></div>';
- h+='<div class="chrome"><div class="modes">'+MODES.map(function(mm){
-  return'<button data-a="mode" data-v="'+mm.id+'" aria-current="'+(st.mode===mm.id)+'">'+
-   '<span class="mk">'+mm.mk+'</span>'+mm.label+'</button>'}).join("")+'</div>'+
-  '<span class="spacer"></span>'+
-  '<span class="lbl">'+livros().length+' de '+BOOKS.length+' livros</span></div>';
- if(st.panel&&st.sel)h+=vPanel();
+function top(){var r=st.route.v;
+ return'<div class="top"><span class="brand">Mekora</span><nav>'+
+  '<button data-a="go" data-r="lib" class="'+(r==="lib"?"on":"")+'">Biblioteca</button>'+
+  '<button data-a="go" data-r="leitura" class="'+(r==="leitura"?"on":"")+'">Sua leitura</button>'+
+  '<button data-a="go" data-r="conv" class="'+(r==="conv"?"on":"")+'">Importar</button>'+
+  '</nav><span class="spacer"></span>'+
+  '<button class="srch" data-a="pal" aria-label="Buscar"><span>⌕</span><span class="txt">Buscar livro ou ajuste</span><span class="kbd">⌘K</span></button>'+
+  '<button class="avbtn" data-a="go" data-r="prefs" aria-label="Preferências e conta">E</button></div>'}
+
+/* ═════ BIBLIOTECA ═════ */
+function books(){
+ var q=(st.libq||"").toLowerCase().trim(),L=BOOKS.slice();
+ if(st.libcol)L=L.filter(function(b){return b.col===st.libcol});
+ if(val("donebooks")==="Ocultar")L=L.filter(function(b){return b.p<100});
+ if(q)L=L.filter(function(b){return (b.t+" "+b.a+" "+b.tags.join(" ")).toLowerCase().indexOf(q)>-1
+   || b.notas.some(function(n){return n.t.toLowerCase().indexOf(q)>-1})});
+ var s=val("sort");
+ L.sort(function(a,b){
+  if(s==="Título")return a.t.localeCompare(b.t);
+  if(s==="Autor")return a.a.localeCompare(b.a);
+  if(s==="Progresso")return b.p-a.p;
+  if(s==="Mais anotado")return b.n-a.n;
+  return a.add-b.add});
+ return L}
+function vLib(){
+ var lista=val("libview")==="Lista",dens=val("carddens"),
+   cw={S:"104px",M:"146px",L:"190px"}[dens],L=books(),cur=BOOKS[0];
+ var h=top()+'<div class="libwrap"><div class="scroll" id="libscroll"><div class="pad">'+
+  '<div class="libbar"><div class="ttl"><h1 class="t">Biblioteca</h1>'+
+  '<p class="sub" style="margin:0">'+BOOKS.length+' livros · '+BOOKS.reduce(function(a,b){return a+b.n},0)+' notas</p></div>'+
+  '<label class="srch" style="max-width:220px"><span>⌕</span>'+
+  '<input class="txt" id="libq" placeholder="Buscar na estante" value="'+esc(st.libq)+'" '+
+  'style="border:none;outline:none;background:none;font:inherit;color:var(--ink);width:100%"></label>'+
+  ctl(SM.libview)+ctl(SM.carddens)+'</div>'+
+  '<div class="chips"><button class="chip'+(!st.libcol?" on":"")+'" data-a="col" data-c="">Tudo <span class="n">'+BOOKS.length+'</span></button>'+
+  COLS.map(function(c){var n=BOOKS.filter(function(b){return b.col===c}).length;
+    return'<button class="chip'+(st.libcol===c?" on":"")+'" data-a="col" data-c="'+c+'">'+c+' <span class="n">'+n+'</span></button>'}).join("")+
+  '<span style="flex:1"></span>'+ctl(SM.sort)+'</div>';
+ if(!st.libq&&!st.libcol&&val("history"))
+  h+='<button class="resume" data-a="book" data-i="0" style="--paper:'+cur.paper+';width:100%">'+
+   '<span class="cv"></span><span class="info"><span class="k">Continuar lendo</span>'+
+   '<span class="t" style="display:block">'+esc(cur.t)+'</span>'+
+   '<span class="m" style="display:block">'+esc(cur.a)+' · cap. 3 · faltam 42 min</span></span>'+
+   '<span class="btn sm">Continuar</span></button>';
+ if(!L.length)h+='<div class="empty"><p>Nenhum livro corresponde a '+(st.libq?'“'+esc(st.libq)+'”':'este filtro')+'.</p>'+
+   '<button class="btn sec" data-a="limpa">Limpar busca e filtros</button></div>';
+ else{
+  h+='<div class="shelf'+(lista?" lista":"")+'" style="--cw:'+cw+'" role="grid" aria-label="Estante">';
+  L.forEach(function(b){
+   var selc=st.sel===b.i;
+   h+='<div class="bk'+(lista?" list":"")+'" data-a="book" data-i="'+b.i+'" role="gridcell" tabindex="'+(selc?0:-1)+'" aria-selected="'+selc+'" '+
+    'aria-label="'+esc(b.t)+', '+esc(b.a)+(b.n?', '+b.n+' notas':'')+'" style="--paper:'+b.paper+';--tone:'+b.tone+'">'+
+    '<div class="cv"><div class="cvin"><div class="cvt">'+esc(b.t)+'</div><div class="cva"></div><div class="cvf"></div></div>'+
+    (b.p>0&&b.p<100?'<span class="prg" style="width:'+b.p+'%"></span>':'')+
+    (b.p>=100?'<span class="done">✓</span>':'')+
+    (!lista?'<span class="hov"><button data-a="book" data-i="'+b.i+'">'+(b.p?"Continuar":"Ler")+'</button>'+
+      '<button class="g" data-a="menu" data-i="'+b.i+'" aria-label="Mais ações">···</button></span>':'')+'</div>'+
+    (val("notesign")&&b.n&&!lista?'<button class="tab" data-a="notas" data-i="'+b.i+'" aria-label="'+b.n+' notas">✳ '+(b.n>99?"99+":b.n)+'</button>':'')+
+    (lista
+      ?'<div class="meta"><div class="t">'+esc(b.t)+'</div><div class="a">'+esc(b.a)+'</div></div>'+
+       '<div class="side">'+(b.n?'✳ '+b.n+' · ':'')+(b.p>=100?'concluído':b.p?b.p+'%':'não iniciado')+'</div>'
+      :(dens==="S"?'<div class="t" style="font-size:12px">'+esc(b.t)+'</div>'
+        :'<div><div class="t">'+esc(b.t)+'</div><div class="a">'+esc(b.a)+'</div>'+
+         (dens==="L"&&b.notas[0]?'<div class="nt">“'+esc(b.notas[0].t)+'”</div>':'')+'</div>'))+
+    '</div>'});
+  h+='</div>'}
+ h+='</div></div>'+inspector()+'</div>';
+ if(st.menu!==null){var b=BOOKS[st.menu];
+  h+='<div class="ovl" data-a="close"></div><div class="pop menu" style="top:110px;left:50%;transform:translateX(-50%);width:250px">'+
+   '<div class="hdr lbl">'+esc(b.t)+'</div>'+
+   '<button data-a="book" data-i="'+st.menu+'">Continuar lendo</button>'+
+   '<button data-a="sel" data-i="'+st.menu+'">Ver detalhes</button>'+
+   '<button data-a="notas" data-i="'+st.menu+'">Ver as '+b.n+' notas</button>'+
+   '<button data-a="send" data-i="'+st.menu+'">Enviar para Kindle</button>'+
+   '<button data-a="colmove" data-i="'+st.menu+'">Mover para coleção…</button>'+
+   '<button class="dan" data-a="rmbook" data-i="'+st.menu+'">Remover da biblioteca</button></div>'}
  return h}
+function inspector(){
+ if(st.sel===null)return"";
+ var b=BOOKS[st.sel],nt=st.inspTab==="notas";
+ return'<aside class="insp" aria-label="Detalhes do livro"><div class="insp-h"><span class="lbl">Livro selecionado</span>'+
+  '<button class="lnk sm" data-a="unsel" aria-label="Fechar">fechar</button></div>'+
+  '<div class="insp-tabs"><button data-a="itab" data-t="livro" aria-selected="'+(!nt)+'">Livro</button>'+
+  '<button data-a="itab" data-t="notas" aria-selected="'+nt+'">Notas'+(b.n?" ("+b.n+")":"")+'</button></div>'+
+  '<div class="insp-b">'+(nt
+   ?(b.n?b.notas.map(function(n){return'<div class="note"><b>cap. '+n.cap+' · pág. '+n.pg+'</b>“'+esc(n.t)+'”</div>'}).join("")+
+      (b.n>b.notas.length?'<div class="lbl">+ '+(b.n-b.notas.length)+' outras</div>':'')
+     :'<div class="empty" style="padding:var(--s5) 0"><p style="font-size:13px">Nenhuma nota ainda. O que você destacar durante a leitura aparece aqui.</p></div>')
+   :'<h3>'+esc(b.t)+'</h3><div class="meta">'+esc(b.a)+' · '+b.fmt+' · '+b.src+' · '+
+     (b.p>=100?"concluído":b.p?b.p+"% lido":"não iniciado")+'</div>'+
+     (b.src==="Amazon"
+      ?'<div class="strip"><span class="dot d-off"></span>Catalogado, sem conteúdo legível — o Mekora não acessa o arquivo da Amazon. As notas viriam do My Clippings.</div>'
+      :'<div class="strip"><span class="dot d-ok"></span>Documento seu · leitura disponível no Mekora</div>')+
+     (b.p>0&&b.p<100?'<div class="pbar"><i style="width:'+b.p+'%"></i></div>':'')+
+     (b.n?'<div style="font-size:13px;font-weight:700;margin-top:var(--s2)">✳ '+b.n+' notas</div>'+
+       '<div class="note">“'+esc(b.notas[0].t)+'”</div>':'<div class="meta">Sem notas.</div>')+
+     '<div class="tagl">'+[b.col].concat(b.tags).map(function(t){return'<span>'+esc(t)+'</span>'}).join("")+'</div>'+
+     '<div class="acts" style="margin-top:var(--s2)">'+
+     (b.src==="Amazon"
+      ?'<button class="btn sec sm" data-a="noop2">Ver na Amazon</button>'
+      :'<button class="btn sm" data-a="book" data-i="'+b.i+'">'+(b.p?"Continuar":"Ler")+'</button>')+
+     '<button class="btn sec sm" data-a="itab" data-t="notas">Notas</button></div>')+
+  '</div></aside>'}
 
-/* ═══ espaço do livro ═══ */
-function vPanel(){
- var b=BOOKS.filter(function(x){return x.id===st.sel})[0];if(!b)return"";
- var amazon=b.src==="Amazon",T=st.tab;
- var tabs=[["overview","Visão"],["read","Ler"],["dossier","Dossiê"],["notes","Notas"]];
- var h='<aside class="panel"><div class="panel-h"><span class="lbl">Espaço do livro</span>'+
-  '<button class="lnk" data-a="close">fechar</button></div><div class="tabs">'+
-  tabs.map(function(t){return'<button data-a="tab" data-v="'+t[0]+'" aria-selected="'+(T===t[0])+'">'+t[1]+'</button>'}).join("")+
-  '</div><div class="panel-b">';
- if(T==="overview")h+='<h3>'+esc(b.t)+'</h3><div class="meta">'+esc(b.a)+' · '+b.f+' · '+b.src+'</div>'+
-  (amazon?'<div class="strip"><span class="dot d-off"></span>Catalogado, sem conteúdo legível. O Mekora não tem acesso ao arquivo da Amazon.</div>'
-   :'<div class="strip"><span class="dot d-ok"></span>Documento pessoal · leitura disponível</div>')+
-  '<div class="row"><div><div class="lb">Progresso</div></div><span class="lbl">'+(b.p?b.p+"%":"não iniciado")+'</span></div>'+
-  '<div class="acts">'+(amazon?'<button class="btn sm sec" data-a="noop">Ver na Amazon</button>'
-   :'<button class="btn sm" data-a="read">Ler</button>')+
-  '<button class="btn sm sec" data-a="export">Exportar ao Kindle</button></div>';
- if(T==="read")h+=(amazon
-  ?'<div class="strip"><span class="dot d-off"></span>Sem conteúdo. Livros Amazon entram no catálogo pelo My Clippings, não pelo arquivo.</div>'
-  :'<p style="font-size:12.5px;color:var(--ink-3);line-height:1.6;margin:0">A leitura acontece no próprio Mekora — decisão de 5 ago. O Kindle virou alvo de exportação.</p>'+
-   '<button class="btn" data-a="read">Abrir leitura</button>');
- if(T==="dossier")h+='<div class="strip"><span class="dot d-sim"></span>Simulado no protótipo V2 — não há indexação nem citação verificável.</div>'+
-  '<p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:0">O dossiê reúne trechos e responde “no livro”. Exige extração, índice e citações rastreáveis: nada disso existe hoje.</p>';
- if(T==="notes"){var ns=NOTAS[b.id]||[];
-  h+=ns.length?ns.map(function(n){return'<div class="note"><b>pág. '+n.pg+'</b>“'+esc(n.t)+'”</div>'}).join("")
-   :'<p style="font-size:12.5px;color:var(--ink-3);line-height:1.6;margin:0">Nenhuma nota. Notas e destaques ainda não têm modelo persistente no app.</p>';
-  var rel=st.rels.filter(function(r){return r.from===b.id||r.to===b.id});
-  if(rel.length)h+='<div class="lbl" style="margin-top:var(--s3)">Conexões</div>'+rel.map(function(r){
-   return'<div class="rel'+(r.status==="suggested"?" sug":"")+'"><span class="k">'+r.kind+' · '+
-    (r.status==="suggested"?"sugerida":"confirmada")+'</span><span class="r">'+esc(r.reason)+'</span></div>'}).join("")}
- return h+'</div></aside>'}
+/* ═════ SUA LEITURA (o que substitui Perfil) ═════ */
+function vLeitura(){
+ var tot=BOOKS.reduce(function(a,b){return a+b.n},0),fim=BOOKS.filter(function(b){return b.p>=100}).length;
+ return top()+'<div class="scroll"><div class="pad"><div class="col">'+
+  '<h1 class="t">Sua leitura</h1><p class="sub">O que você leu e o que ficou. É conteúdo seu — não um perfil, e não é visível para ninguém.</p>'+
+  '<div class="stats"><div><b>'+fim+'</b><span class="lbl">concluídos</span></div>'+
+  '<div><b>'+BOOKS.filter(function(b){return b.p>0&&b.p<100}).length+'</b><span class="lbl">em andamento</span></div>'+
+  '<div><b>'+tot+'</b><span class="lbl">notas</span></div>'+
+  '<div><b>7</b><span class="lbl">conexões</span></div></div>'+
+  '<h2 class="s">Notas recentes</h2><div class="tl">'+
+  BOOKS.filter(function(b){return b.n}).slice(0,5).map(function(b,i){
+   return'<div class="tl-i"><span class="when">'+["hoje","ontem","3 dias","1 semana","2 semanas"][i]+'</span>'+
+    '<span class="what"><b>'+esc(b.t)+'</b> · pág. '+b.notas[0].pg+'<br>'+
+    '<span style="font-family:var(--serif);font-style:italic;color:var(--ink-3)">“'+esc(b.notas[0].t)+'”</span></span></div>'}).join("")+
+  '</div><h2 class="s">Temas que voltam</h2>'+
+  '<div class="tagl" style="margin-top:var(--s3)">'+
+  ["#Método (4 livros)","#Design (3)","#Atenção (2)","#Arquivo (2)","#Escala (1)"].map(function(t){
+   return'<span style="font-size:12.5px;padding:6px 12px">'+t+'</span>'}).join("")+'</div>'+
+  '<p class="sub" style="margin-top:var(--s5)">As tags que aparecem em mais de um livro são candidatas a conexão. '+
+  'Ligar isso automaticamente é um ajuste em Preferências › Conhecimento, desligado por padrão.</p>'+
+  '</div></div></div>'}
 
-/* ═══ conexões: revisão ═══ */
-function vConnPanel(){
- var sug=st.rels.filter(function(r){return r.status==="suggested"});
- var h='<aside class="panel"><div class="panel-h"><span class="lbl">Conexões</span>'+
-  '<button class="lnk" data-a="close">fechar</button></div><div class="panel-b">'+
-  '<div class="strip"><span class="dot d-sim"></span>Relações determinísticas por tags. Não há IA nem embeddings — o mapa de capacidades é explícito nisso.</div>';
- h+=sug.length?'<div class="lbl">Aguardando sua revisão · '+sug.length+'</div>'+sug.map(function(r,i){
-  return'<div class="rel sug"><span class="k">'+r.kind+'</span><span class="r">'+esc(r.reason)+'</span>'+
-   '<div class="acts"><button class="btn sm" data-a="rel" data-i="'+RELS.indexOf(RELS.filter(function(x){return x.reason===r.reason})[0])+'" data-v="confirmed">Confirmar</button>'+
-   '<button class="btn sm sec" data-a="rel" data-i="'+RELS.indexOf(RELS.filter(function(x){return x.reason===r.reason})[0])+'" data-v="rejected">Rejeitar</button></div></div>'}).join("")
-  :'<p style="font-size:12.5px;color:var(--ink-3);line-height:1.6;margin:0">Nenhuma sugestão pendente. Confirmadas viram linha cheia no mundo.</p>';
- var conf=st.rels.filter(function(r){return r.status==="confirmed"});
- if(conf.length)h+='<div class="lbl" style="margin-top:var(--s4)">Confirmadas · '+conf.length+'</div>'+
-  conf.map(function(r){return'<div class="rel"><span class="k">'+r.kind+'</span><span class="r">'+esc(r.reason)+'</span></div>'}).join("");
- return h+'</div></aside>'}
-
-/* ═══ leitura ═══ */
+/* ═════ LEITOR ═════ */
 function vReader(){
- var b=BOOKS.filter(function(x){return x.id===st.sel})[0]||BOOKS[4];
- return'<div class="reader"><div class="rtop"><button class="lnk" data-a="closeread">← Mundo</button>'+
+ var th=rd("readertheme"),f=rd("font")==="Serifada"?"var(--serif)":"var(--sans)";
+ var hl={Amarelo:"#F2E07A",Rosa:"#F3C3D2",Verde:"#BFE0B4"}[val("hlcolor")];
+ var bg=th==="Sépia"?"#F3EAD8":th==="Noite"?"#1B1917":"var(--card)";
+ var fg=th==="Noite"?"#D8D2C6":"var(--ink)";
+ var pf=val("progfmt"),prog=pf==="Tempo"?"faltam 42 min no capítulo":pf==="Páginas"?"pág. 118 de 214":"80% lido";
+ var b=BOOKS[0];
+ var h='<div class="reader"><div class="rtop">'+
+  '<button class="lnk sm" data-a="go" data-r="lib">← Biblioteca</button>'+
   '<span class="ti">'+esc(b.t)+'</span><span class="spc"></span>'+
-  '<span class="lbl">'+b.f+' · pág. 112</span></div>'+
-  '<div class="rbody"><div class="rcol" style="font-size:'+val("corpo")+'px">'+
-  PAGINA.map(function(p){return"<p>"+p+"</p>"}).join("")+'</div>'+
-  '<div class="anchor-warn"><b>Problema declarado em 5 ago:</b> ancorar destaque em texto que reflui. '+
-  'Em EPUB a página não significa nada, e um destaque que escorrega passa a citar a frase errada. '+
-  'É o item que parece pequeno e separa visualizador de leitor.</div></div></div>'}
+  '<button class="ic'+(st.rpanel==="toc"?" on":"")+'" data-a="rp" data-p="toc" aria-label="Sumário" title="Sumário">☰</button>'+
+  '<button class="ic'+(st.rpanel==="busca"?" on":"")+'" data-a="rp" data-p="busca" aria-label="Buscar no livro" title="Buscar no livro">⌕</button>'+
+  '<button class="ic'+(st.rpanel==="notas"?" on":"")+'" data-a="rp" data-p="notas" aria-label="Notas" title="Notas">✳</button>'+
+  '<button class="ic'+(st.mark?" on":"")+'" data-a="bmk" aria-label="Marcador" title="Marcador">'+(st.mark?"◆":"◇")+'</button>'+
+  '</div><div class="rmain"><div class="rscroll" style="--rbg:'+bg+'">'+
+  '<div class="rbody" id="rbody" style="--rf:'+f+';--rfg:'+fg+';--hl:'+hl+';--rw:'+rd("width")+'px;'+
+  'font-size:'+rd("size")+'px;line-height:'+(+rd("leading")).toFixed(1)+'">'+
+  '<div class="ch">'+esc(CAPS[st.cap].n)+'</div>'+
+  PAGE.map(function(p,i){return"<p"+(i===2?' data-p="2"':'')+">"+p+"</p>"}).join("")+
+  (val("scroll")?"":'<div class="acts" style="justify-content:center;margin-top:var(--s6)">'+
+    '<button class="btn sec sm" data-a="pg" data-d="-1">← Anterior</button>'+
+    '<span class="lbl">página 3 de 9</span>'+
+    '<button class="btn sec sm" data-a="pg" data-d="1">Próxima →</button></div>')+
+  '</div></div>'+rpanel()+'</div>'+
+  '<div class="rbar"><button class="btn sec sm" data-a="aa" style="font-family:var(--serif);font-size:15px">Aa</button>'+
+  '<div class="prog"><div class="pb"><i style="width:80%"></i></div>'+
+  '<button class="lg" data-a="pfmt" title="Tocar alterna o formato">'+prog+'</button></div>'+
+  (dirty()?'<span style="font-size:12.5px;color:var(--ink-3)">Alterado <b style="color:var(--ink)">só neste livro</b></span>'+
+    '<button class="btn sm" data-a="usedef">Usar como padrão</button>'+
+    '<button class="lnk sm" data-a="undo">Descartar</button>':'')+
+  '</div></div>';
+ if(st.selText)h+='<div class="selbar" style="left:50%;transform:translateX(-50%);top:180px">'+
+   '<button data-a="hl">Destacar</button><button data-a="hlnote">Destacar e anotar</button>'+
+   '<button data-a="cite">Copiar citação</button><button data-a="selcancel">✕</button></div>';
+ if(st.pop){
+  var pan='<div class="lbl" style="margin-bottom:var(--s2)">Leitura</div>'+
+   ["font","size","leading","width","readertheme"].map(function(k){
+     return'<div class="row"><div><div class="lb">'+SM[k].lb+'</div></div>'+ctl(SM[k],"book")+'</div>'}).join("")+
+   '<p style="font-size:11.5px;color:var(--ink-3);line-height:1.5;margin:var(--s3) 0 0">Vale só para este livro até você tocar em “Usar como padrão”.</p>';
+  h+=st.altPanel==="drawer"
+   ?'<div class="ovl" data-a="aa"></div><div class="drawer">'+pan+'</div>'
+   :'<div class="ovl" data-a="aa" style="background:transparent"></div><div class="pop" style="left:22px;bottom:70px">'+pan+'</div>'}
+ return h}
+function rpanel(){
+ if(!st.rpanel)return"";
+ var b=BOOKS[0],h='<div class="rpanel"><div class="hd"><span class="lbl" style="flex:1">'+
+  ({toc:"Sumário",busca:"Buscar no livro",notas:"Notas deste livro"}[st.rpanel])+
+  '</span><button class="lnk sm" data-a="rp" data-p="">fechar</button></div><div class="bd">';
+ if(st.rpanel==="toc")h+=CAPS.map(function(c,i){
+  return'<button class="toc-i'+(i===st.cap?" on":"")+'" data-a="cap" data-i="'+i+'"><span>'+esc(c.n)+'</span>'+
+   '<span class="pg">'+c.pg+'</span></button>'}).join("");
+ if(st.rpanel==="busca"){
+  h+='<input class="inp" id="rq" placeholder="Palavra ou trecho" value="'+esc(st.rq)+'" style="min-width:0">';
+  var q=(st.rq||"").toLowerCase().trim();
+  if(q){var hits=PAGE.map(function(p,i){return{i:i,t:p.replace(/<[^>]+>/g,"")}})
+    .filter(function(p){return p.t.toLowerCase().indexOf(q)>-1});
+   h+=hits.length?'<div class="lbl">'+hits.length+' ocorrência(s)</div>'+hits.map(function(p){
+     return'<button class="note" style="text-align:left" data-a="cap" data-i="'+st.cap+'"><b>parágrafo '+(p.i+1)+'</b>'+
+      esc(p.t.slice(0,90))+'…</button>'}).join("")
+    :'<p style="font-size:12.5px;color:var(--ink-3);line-height:1.5">Nada encontrado neste capítulo.</p>'}
+  else h+='<p style="font-size:12.5px;color:var(--ink-3);line-height:1.5">Busca dentro do texto do livro. Tente “densidade” ou “estante”.</p>'}
+ if(st.rpanel==="notas")h+=(b.notas.length
+  ?b.notas.map(function(n){return'<div class="note"><b>cap. '+n.cap+' · pág. '+n.pg+'</b>“'+esc(n.t)+'”</div>'}).join("")
+  :'<p style="font-size:12.5px;color:var(--ink-3);line-height:1.5">Nenhuma nota ainda. Selecione um trecho para destacar.</p>');
+ return h+'</div></div>'}
 
-/* ═══ preferências e conta ═══ */
+/* ═════ PREFERÊNCIAS ═════ */
 function vPrefs(){
- var h='<div class="ovl" data-a="close"></div><aside class="panel" style="width:420px">'+
-  '<div class="panel-h"><span class="lbl">'+(st.conta?"Conta":"Preferências")+'</span>'+
-  '<button class="lnk" data-a="close">fechar</button></div><div class="panel-b">';
- if(st.conta){
-  h+='<div class="strip"><span class="dot d-sim"></span>Hipótese: <b>authentication: not_implemented</b> no repositório. Nada disto existe hoje.</div>'+
-   '<div class="row"><div><div class="lb">Erik Camargo</div><div class="ds">erik@vynce.com.br</div></div>'+
-   '<button class="lnk" data-a="noop">Editar</button></div>'+
-   '<div class="row"><div><div class="lb">Aparelhos</div><div class="ds">2 conectados · sincronização de posição e notas</div></div>'+
-   '<button class="lnk" data-a="noop">Ver</button></div>'+
-   '<div class="row"><div><div class="lb">Sair</div></div><button class="lnk dan" data-a="noop">Sair</button></div>';
-  return h+'</div></aside>'}
- if(st.modo==="conta")h+='<button class="row" data-a="conta" style="width:100%;text-align:left">'+
-   '<div><div class="lb">Erik Camargo</div><div class="ds">Conta e aparelhos <span class="badge sim">hipótese</span></div></div>'+
-   '<span class="lnk">→</span></button>';
- else h+='<div class="strip"><span class="dot d-ok"></span>Modelo local: um usuário, sem conta. É o que o repositório sustenta hoje.</div>';
- h+='<div class="segc" style="margin:var(--s3) 0">'+SEC.map(function(s){
-  return'<button data-a="prefsec" data-v="'+s.k+'" class="'+(st.prefsec===s.k?"on":"")+'">'+s.n.split(" ")[0]+'</button>'}).join("")+'</div>';
- h+=S.filter(function(x){return x.sec===st.prefsec}).map(function(x){return row(x)}).join("");
- if(st.prefsec==="kindle")h+='<div class="strip" style="margin-top:var(--s3)"><span class="dot d-ok"></span>SMTP real no app operacional, com fila de retry.</div>';
- if(st.prefsec==="preparo")h+='<div class="strip" style="margin-top:var(--s3)"><span class="dot d-ok"></span>Tudo aqui é operacional: OCR, Calibre, KCC e retenção existem na ConfigPage do app.</div>';
- return h+'</div></aside>'}
+ var dr=diff();
+ var h=top()+'<div class="scroll"><div class="pad"><div class="col">'+
+  '<h1 class="t">Preferências</h1><p class="sub">Tudo que você ajustou, e onde ajustar o resto.</p>'+
+  (st.modo==="conta"
+   ?'<button class="acct" data-a="go" data-r="conta" style="width:100%;text-align:left">'+
+    '<span class="av">E</span><span><span class="nm" style="display:block">Erik Camargo</span>'+
+    '<span class="em" style="display:block">erik@vynce.com.br · Plano anual</span></span>'+
+    '<span class="lnk">Conta e segurança →</span></button>'
+   :'<div class="strip"><span class="dot d-ok"></span>Um usuário, sem conta. É o que o repositório sustenta hoje — '+
+    '<b>authentication: not_implemented</b>.</div>')+
+  '<h2 class="s">Diferente do padrão · '+dr.length+'</h2>';
+ if(!dr.length)h+='<p style="font-family:var(--serif);font-style:italic;font-size:14px;color:var(--ink-3);line-height:1.6;padding:var(--s4) 0;margin:0">Nada foi alterado ainda. O que você mudar aqui, no leitor ou durante uma conversão aparece nesta lista — com a origem e o aparelho.</p>';
+ else dr.forEach(function(x){var o=st.origin[x.k]||{};
+  h+='<div class="row chg"><div><div class="lb">'+esc(x.lb)+' · '+esc(fmtv(x.k,val(x.k)))+
+   (x.esc==="aparelho"?'<span class="badge dev">este aparelho</span>':'')+
+   '<button class="revert" data-a="revert" data-k="'+x.k+'">voltar ao padrão</button></div>'+
+   '<div class="ds">'+(o.o?esc(o.o)+" · "+esc(o.dv):"padrão alterado")+'</div></div>'+
+   '<button class="lnk" data-a="go" data-r="sec" data-sec="'+x.sec+'">Ir →</button></div>'});
+ h+='<h2 class="s">Seções</h2><div class="idx">';
+ SEC.forEach(function(s){var n=S.filter(function(x){return x.sec===s.k}).length;
+  var ex=s.k==="conexoes"?' · '+(st.kindle==="on"?'<span style="color:var(--good)">conectado</span>':
+    st.kindle==="error"?'<span style="color:var(--crit)">com erro</span>':'não conectado'):"";
+  h+='<button data-a="go" data-r="sec" data-sec="'+s.k+'"><div><div class="nm">'+s.n+'</div>'+
+   '<div class="dc">'+s.d+ex+'</div></div><span class="ct">'+n+'</span></button>'});
+ return h+'</div></div></div></div>'}
+function vSec(sk){
+ var s=SEC.filter(function(x){return x.k===sk})[0],L=S.filter(function(x){return x.sec===sk});
+ var h=top()+'<div class="scroll"><div class="pad"><div class="col">'+
+  '<button class="lnk sm" data-a="go" data-r="prefs" style="display:inline-block;margin-bottom:var(--s5)">← Preferências</button>'+
+  '<h1 class="t">'+s.n+'</h1><p class="sub">'+s.d+'</p>';
+ if(sk==="aparencia")h+='<div class="strip"><span class="dot d-off"></span>Quase tudo aqui é deste aparelho — cada um tem o seu.</div>';
+ if(sk==="conhecimento")h+='<div class="strip"><span class="dot d-ok"></span>Tudo aqui segue você em todos os aparelhos.</div>';
+ if(sk==="conexoes"){
+  h+='<h2 class="s">Kindle</h2>';
+  if(st.kindle==="off")h+='<div class="strip"><span class="dot d-off"></span>Não conectado</div>'+
+   '<p style="font-size:13.5px;color:var(--ink-2);line-height:1.6;margin:0 0 var(--s4)">Configure quando for enviar seu primeiro livro — leva um minuto e termina com um teste real.</p>'+
+   '<button class="btn sec" data-a="wiz">Configurar Kindle</button>';
+  else{var er=st.kindle==="error";
+   h+='<div class="strip'+(er?" err":"")+'"><span class="dot '+(er?"d-err":"d-ok")+'"></span>'+
+    (er?"Último envio falhou":"Conectado · último envio há 2 dias")+
+    '<span class="spc"></span><button class="lnk sm" data-a="ktest">Testar</button></div>';
+   if(er)h+='<p style="font-size:13.5px;color:var(--ink-2);line-height:1.6;margin:0 0 var(--s2)">A Amazon recusou o remetente <b>'+esc(st.ksender)+'</b>. Corrija para o e-mail aprovado na sua conta Amazon e teste de novo.</p>';
+   h+='<div class="row"><div><div class="lb">Enviar para</div><div class="ds">Endereço do seu Kindle.</div></div>'+
+    '<input class="inp" data-f="kmail" value="'+esc(st.kmail)+'" aria-label="Endereço do Kindle"></div>'+
+    '<div class="row"><div><div class="lb">Remetente aprovado</div><div class="ds">A Amazon só aceita arquivos vindos deste endereço.</div></div>'+
+    '<div><input class="inp'+(er?" err":"")+'" data-f="ksender" value="'+esc(st.ksender)+'" aria-label="Remetente aprovado">'+
+    (er?'<div class="err-msg">Recusado pela Amazon</div>':'')+'</div></div>'}}
+ h+=L.filter(function(x){return !x.adv}).map(function(x){return row(x)}).join("");
+ var adv=L.filter(function(x){return x.adv});
+ if(adv.length)h+='<div style="margin-top:var(--s4)"><button class="lnk sm" data-a="adv" style="font-family:var(--mono)" aria-expanded="'+!!st.adv+'">Ajustes avançados '+(st.adv?"↑":"↓")+'</button>'+
+  (st.adv?'<div style="margin-top:var(--s2)">'+adv.map(function(x){return row(x)}).join("")+'</div>':'')+'</div>';
+ if(sk==="conexoes"&&st.kindle!=="off")h+='<div class="dz"><h5>Desconectar</h5>'+
+  '<p style="margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.6">Remove os endereços salvos de todos os seus aparelhos. Os arquivos já enviados permanecem no seu Kindle.</p>'+
+  '<div><button class="lnk dan" data-a="kdisc">Desconectar Kindle</button></div></div>';
+ if(sk==="dados"){
+  h+='<h2 class="s">Espaço</h2><div class="quota"><i style="width:52%;background:var(--ink)"></i>'+
+   '<i style="width:19%;background:var(--ink-3)"></i><i style="width:8%;background:var(--warn)"></i></div>'+
+   '<div class="qleg"><span><i style="background:var(--ink)"></i>Livros 6,4 GB</span>'+
+   '<span><i style="background:var(--ink-3)"></i>Originais 2,3 GB</span>'+
+   '<span><i style="background:var(--warn)"></i>Notas e capas 0,9 GB</span>'+
+   '<span style="color:var(--ink-2)">9,6 de 20 GB</span></div>'+
+   '<div class="row"><div><div class="lb">Baixados neste aparelho<span class="badge dev">este aparelho</span></div>'+
+   '<div class="ds">8 livros · 740 MB. Liberar não apaga nada: eles voltam quando você abrir.</div></div>'+
+   '<button class="btn sec sm" data-a="free">Liberar</button></div>'+
+   '<div class="row"><div><div class="lb">Exportar biblioteca e notas</div>'+
+   '<div class="ds">Metadados, notas, destaques e coleções em formato aberto.</div></div>'+
+   '<button class="btn sec sm" data-a="export">Exportar…</button></div>'+
+   '<div class="dz"><h5>Ações irreversíveis</h5><div class="acts" style="gap:var(--s5)">'+
+   '<button class="lnk dan" data-a="resetall">Restaurar preferências…</button>'+
+   '<button class="lnk dan" data-a="danger">Apagar biblioteca…</button></div>';
+  if(st.danger==="del")h+='<div class="confirm"><p><b>Apagar sua biblioteca?</b> Isto acontece <b>em todos os seus aparelhos</b> e não pode ser desfeito.</p>'+
+   '<ul><li><b>Serão apagados:</b> '+BOOKS.length+' livros, '+BOOKS.reduce(function(a,b){return a+b.n},0)+' notas, 3 coleções</li>'+
+   '<li><b>Não serão apagados:</b> sua conta, seu plano e o que já foi enviado ao Kindle</li></ul>'+
+   '<p style="color:var(--ink-3)">Seus outros 2 aparelhos serão atualizados assim que se conectarem.</p>'+
+   '<div class="acts"><button class="btn sec sm" data-a="export">Exportar primeiro</button>'+
+   '<button class="btn dan sm" data-a="delok">Apagar em todos os aparelhos</button>'+
+   '<button class="lnk sm" data-a="dcancel">Cancelar</button></div></div>';
+  if(st.danger==="reset")h+='<div class="confirm"><p><b>Restaurar preferências.</b> Escolha o alcance — a resposta muda o que acontece nos seus outros aparelhos.</p>'+
+   '<p style="color:var(--ink-3)">Biblioteca, notas, coleções e conexões não são afetadas.</p>'+
+   '<div class="acts"><button class="btn sec sm" data-a="rdev">Só neste aparelho</button>'+
+   '<button class="btn dan sm" data-a="racct">Na conta inteira</button>'+
+   '<button class="lnk sm" data-a="dcancel">Cancelar</button></div></div>';
+  h+='</div>'}
+ return h+'</div></div></div>'}
 
-/* ═══ fase de importação ═══ */
-function vPhase(){
- var m={processing:["Analisando o documento","Detectando se há texto selecionável. Se for escaneado, o OCR entra antes da conversão — e se falhar, a conversão não acontece."],
-  transitioning:["Convertendo com Calibre","O progresso é indeterminado de propósito: o Calibre não reporta percentual, e inventar um seria mentir sobre precisão."],
-  library:["Pronto","O arquivo virou um objeto no seu mundo."]}[st.phase];
- return'<div class="phase"><h3>'+m[0]+'</h3><p>'+m[1]+'</p>'+
-  (st.phase==="library"?'<button class="btn" data-a="phasedone">Ver no Canvas</button>'
-   :'<div class="bar"><i></i></div>')+'</div>'}
+/* ═════ CONTA ═════ */
+function vConta(){
+ var v=st.acctView;
+ var h=top()+'<div class="scroll"><div class="pad"><div class="col">'+
+  '<button class="lnk sm" data-a="'+(v==="main"?'go" data-r="prefs':'acctv" data-v="main')+'" style="display:inline-block;margin-bottom:var(--s5)">← '+(v==="main"?"Preferências":"Conta")+'</button>';
+ if(v==="main"){
+  h+='<h1 class="t">Conta</h1><p class="sub">Sua identidade no Mekora e o acesso a ela.</p>'+
+   '<div class="acct"><span class="av">E</span><div><div class="nm">Erik Camargo</div>'+
+   '<div class="em">erik@vynce.com.br</div></div><button class="lnk" data-a="acctv" data-v="ident">Editar</button></div>'+
+   '<div class="strip"><span class="dot d-ok"></span>Sincronizado há instantes · 3 aparelhos<span class="spc"></span>'+
+   '<button class="lnk sm" data-a="acctv" data-v="devs">Ver aparelhos</button></div>'+
+   '<div class="idx" style="margin-top:var(--s4)">'+
+   '<button data-a="acctv" data-v="seg"><div><div class="nm">Senha e segurança</div>'+
+   '<div class="dc">Senha, verificação em duas etapas, recuperação</div></div><span class="ct">›</span></button>'+
+   '<button data-a="acctv" data-v="devs"><div><div class="nm">Aparelhos e sessões</div>'+
+   '<div class="dc">3 aparelhos · 1 não reconhecido</div></div><span class="ct">›</span></button>'+
+   '<button data-a="acctv" data-v="plano"><div><div class="nm">Plano e cobrança</div>'+
+   '<div class="dc">Anual · renova em 4 de março de 2027</div></div><span class="ct">›</span></button>'+
+   '<button data-a="go" data-r="sec" data-sec="dados"><div><div class="nm">Seus dados</div>'+
+   '<div class="dc">Espaço, exportar, privacidade</div></div><span class="ct">›</span></button></div>'+
+   '<div class="dz"><h5>Encerrar</h5><div class="acts" style="gap:var(--s5)">'+
+   '<button class="lnk dan" data-a="logout">Sair deste aparelho</button>'+
+   '<button class="lnk dan" data-a="delacct">Apagar conta…</button></div>';
+  if(st.danger==="logout")h+='<div class="confirm"><p><b>Sair desta conta?</b> Os <b>8 livros baixados</b> serão removidos deste aparelho. Sua biblioteca, notas e progresso continuam na sua conta.</p>'+
+   '<p style="color:var(--ink-3)">3 anotações ainda não foram enviadas.</p>'+
+   '<div class="acts"><button class="btn sec sm" data-a="dcancel">Esperar enviar</button>'+
+   '<button class="btn dan sm" data-a="dcancel">Sair mesmo assim</button></div></div>';
+  if(st.danger==="delacct")h+='<div class="confirm"><p><b>Apagar a conta?</b> Isto é diferente de apagar a biblioteca: some tudo, inclusive o acesso.</p>'+
+   '<ul><li><b>Serão apagados:</b> conta, biblioteca, notas, coleções e aparelhos</li>'+
+   '<li><b>Continua com você:</b> o que você exportar antes, e o que já está no seu Kindle</li></ul>'+
+   '<p style="color:var(--ink-3)">Seu plano anual não é reembolsado automaticamente — fale com a gente antes se for o caso.</p>'+
+   '<div class="acts"><button class="btn sec sm" data-a="export">Exportar tudo primeiro</button>'+
+   '<button class="btn dan sm" data-a="dcancel">Apagar conta</button>'+
+   '<button class="lnk sm" data-a="dcancel">Cancelar</button></div></div>';
+  h+='</div>'}
+ if(v==="ident")h+='<h1 class="t">Identidade</h1><p class="sub">Como o Mekora chama você. Não é visível para mais ninguém.</p>'+
+  '<div class="row"><div><div class="lb">Nome</div><div class="ds">Aparece só nesta conta.</div></div>'+
+  '<input class="inp" value="Erik Camargo" aria-label="Nome"></div>'+
+  '<div class="row"><div><div class="lb">E-mail</div><div class="ds">Usado para entrar e recuperar a conta.</div></div>'+
+  '<input class="inp" value="erik@vynce.com.br" aria-label="E-mail"></div>'+
+  '<div class="acts" style="margin-top:var(--s5)"><button class="btn" data-a="saveident">Salvar</button>'+
+  '<button class="lnk sm" data-a="acctv" data-v="main">Cancelar</button></div>';
+ if(v==="seg"){
+  h+='<h1 class="t">Senha e segurança</h1><p class="sub">Quem consegue entrar na sua conta.</p>'+
+   '<h2 class="s">Trocar a senha</h2>'+
+   '<div class="row"><div><div class="lb">Senha atual</div></div>'+
+   '<input class="inp" type="password" data-f="pwdo" value="'+esc(st.pwd.o)+'" aria-label="Senha atual"></div>'+
+   '<div class="row"><div><div class="lb">Nova senha</div><div class="ds">Mínimo de 8 caracteres.</div></div>'+
+   '<div><input class="inp" type="password" data-f="pwdn" value="'+esc(st.pwd.n)+'" aria-label="Nova senha">'+
+   (st.pwd.n&&st.pwd.n.length<8?'<div class="err-msg">Curta demais — faltam '+(8-st.pwd.n.length)+' caracteres</div>':'')+'</div></div>'+
+   '<div class="row"><div><div class="lb">Encerrar as outras sessões</div>'+
+   '<div class="ds">Recomendado. Os outros aparelhos vão pedir para entrar de novo.</div></div>'+
+   '<button class="sw on" data-a="noop2"><i></i></button></div>'+
+   '<div class="acts" style="margin-top:var(--s5)"><button class="btn" data-a="savepwd"'+
+   ((!st.pwd.o||st.pwd.n.length<8)?" disabled":"")+'>Trocar senha</button></div>'+
+   '<h2 class="s">Verificação em duas etapas</h2>'+
+   '<div class="row"><div><div class="lb">Pedir um código ao entrar</div>'+
+   '<div class="ds">Vale para aparelhos novos. Os já conectados continuam entrando direto.</div></div>'+
+   '<button class="sw'+(st.f2a?" on":"")+'" data-a="f2a"><i></i></button></div>'+
+   (st.f2a?'<div class="strip"><span class="dot d-ok"></span>Ativa · guarde os códigos de recuperação'+
+     '<span class="spc"></span><button class="lnk sm" data-a="codes">Ver códigos</button></div>':'')+
+   '<h2 class="s">Recuperação</h2>'+
+   '<div class="row"><div><div class="lb">E-mail de recuperação</div>'+
+   '<div class="ds">Para o caso de perder o acesso ao e-mail principal.</div></div>'+
+   '<input class="inp" placeholder="ainda não definido" aria-label="E-mail de recuperação"></div>'}
+ if(v==="devs"){
+  h+='<h1 class="t">Aparelhos e sessões</h1><p class="sub">Onde a sua conta está aberta agora.</p>';
+  st.devices.forEach(function(d,i){
+   h+='<div class="dev-row"><div><div class="dn">'+esc(d.n)+(d.here?' <span class="here">aqui</span>':'')+
+    (d.unk?' <span class="badge warn">não reconhecido</span>':'')+'</div>'+
+    '<div class="dm">'+d.loc+' · '+d.when+(d.dl?' · '+d.dl+' livros baixados':'')+'</div></div>'+
+    (d.here?'<button class="lnk sm" data-a="logout">Sair</button>'
+      :'<button class="lnk dan sm" data-a="endsess" data-i="'+i+'">Encerrar</button>')+'</div>'});
+  if(st.devices.some(function(d){return d.unk}))
+   h+='<div class="strip err" style="margin-top:var(--s5)"><span class="dot d-err"></span>'+
+    'Um acesso em Curitiba não foi reconhecido.<span class="spc"></span>'+
+    '<button class="lnk sm" data-a="acctv" data-v="seg">Trocar a senha</button></div>'}
+ if(v==="plano")h+='<h1 class="t">Plano e cobrança</h1><p class="sub">Assinatura anual, renova em 4 de março de 2027.</p>'+
+  '<div class="row"><div><div class="lb">Plano atual</div><div class="ds">20 GB · sincronização entre aparelhos · OCR ilimitado</div></div>'+
+  '<span class="badge sync">ativo</span></div>'+
+  '<div class="row"><div><div class="lb">Forma de pagamento</div><div class="ds">Cartão terminado em 4471</div></div>'+
+  '<button class="lnk sm" data-a="noop2">Alterar</button></div>'+
+  '<div class="row"><div><div class="lb">Recibos</div><div class="ds">3 cobranças no histórico</div></div>'+
+  '<button class="lnk sm" data-a="noop2">Ver</button></div>'+
+  '<div class="dz"><h5>Cancelar</h5><p style="margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.6">'+
+  'Ao cancelar, você continua com acesso até 4 de março de 2027. Depois disso a biblioteca fica somente leitura, '+
+  'e nada é apagado.</p><div><button class="lnk dan" data-a="noop2">Cancelar assinatura</button></div></div>';
+ return h+'</div></div></div>'}
 
-/* ═══ busca ═══ */
-function res(){var q=(st.palq||"").toLowerCase().trim();if(!q)return[];var o=[];
- BOOKS.forEach(function(b){if((b.t+" "+b.a+" "+b.src).toLowerCase().indexOf(q)>-1)
-  o.push({l:b.t,p:b.src,bk:b.id})});
- Object.keys(NOTAS).forEach(function(id){NOTAS[id].forEach(function(n){
-  if(n.t.toLowerCase().indexOf(q)>-1)o.push({l:n.t,p:"Nota",bk:id})})});
- S.forEach(function(x){if((x.lb+" "+x.sec).toLowerCase().indexOf(q)>-1)o.push({l:x.lb,p:"Ajuste",sec:x.sec})});
- MODES.forEach(function(m){if(m.label.toLowerCase().indexOf(q)>-1)o.push({l:m.label,p:"Região",md:m.id})});
- return o.slice(0,8)}
-function vPal(){var rs=res();
- return'<div class="ovl" data-a="close"></div><div class="pal"><div class="pal-in"><span>⌕</span>'+
-  '<input id="palq" value="'+esc(st.palq)+'" placeholder="Livro, nota, região ou ajuste" autocomplete="off"></div>'+
-  '<div class="pal-res">'+(rs.length?rs.map(function(r,i){
-   return'<button class="pal-r" data-a="palgo" data-i="'+i+'"><span>'+esc(r.l)+'</span><span class="pth">'+r.p+'</span></button>'}).join("")
-   :'<div class="pal-g">Busca livros, o texto das notas, as regiões do mundo e os ajustes.</div>')+'</div></div>'}
+/* ═════ IMPORTAR ═════ */
+function vConv(){
+ return top()+'<div class="scroll"><div class="pad"><div class="col">'+
+  '<h1 class="t">Importar arquivo</h1><p class="sub">Ajuste o que vale para este arquivo. Se quiser, guarde como padrão.</p>'+
+  '<div class="filecard"><span class="ic">PDF</span><div><div style="font-size:14px;font-weight:600">Relatório Anual 2026.pdf</div>'+
+  '<div style="font-size:12.5px;color:var(--ink-3);margin-top:3px">18 MB · 214 páginas · escaneado, sem texto selecionável</div></div></div>'+
+  ["format","ocr"].map(function(k){return row(SM[k])}).join("")+
+  '<div style="margin-top:var(--s4)"><button class="lnk sm" data-a="adv" style="font-family:var(--mono)" aria-expanded="'+!!st.adv+'">Ajustes avançados '+(st.adv?"↑":"↓")+'</button>'+
+  (st.adv?'<div style="margin-top:var(--s2)">'+["ocrlang","quality"].map(function(k){return row(SM[k])}).join("")+'</div>':'')+'</div>'+
+  '<div class="strip" style="margin-top:var(--s5)"><button class="sw'+(st.convDef?" on":"")+'" data-a="convdef"><i></i></button>'+
+  '<span>Usar como padrão para os próximos arquivos</span></div>'+
+  (st.convDef?'<p style="font-size:12.5px;color:var(--ink-3);line-height:1.55;margin:0 0 var(--s4)">Vale para os próximos arquivos; os 34 já convertidos continuam como estão.</p>':'')+
+  '<div class="acts" style="margin-top:var(--s3)"><button class="btn" data-a="convert">Converter</button>'+
+  '<button class="btn sec" data-a="go" data-r="lib">Cancelar</button></div></div></div></div>'}
 
-/* ═══ desenho ═══ */
+/* ═════ BUSCA GLOBAL ═════ */
+var ACTS=[{lb:"Testar conexão com o Kindle",sec:"conexoes",syn:"kindle testar conexão envio",act:"ktest"},
+ {lb:"Exportar biblioteca e notas",sec:"dados",syn:"exportar backup levar dados"},
+ {lb:"Apagar biblioteca",sec:"dados",syn:"apagar excluir remover deletar"},
+ {lb:"Aparelhos e sessões",rt:"conta",av:"devs",syn:"aparelho dispositivo sessão sair segurança login"},
+ {lb:"Trocar a senha",rt:"conta",av:"seg",syn:"senha segurança recuperação"},
+ {lb:"Plano e cobrança",rt:"conta",av:"plano",syn:"plano assinatura cobrança pagamento cartão"}];
+function res(){
+ var q=(st.palq||"").toLowerCase().trim();if(!q)return[];var o=[];
+ BOOKS.forEach(function(b){
+  var emNota=b.notas.filter(function(n){return n.t.toLowerCase().indexOf(q)>-1})[0];
+  if((b.t+" "+b.a).toLowerCase().indexOf(q)>-1||emNota)
+   o.push({lb:b.t,pth:"Livro",bk:b.i,q:emNota?emNota.t:null})});
+ S.forEach(function(x){if((x.lb+" "+x.syn+" "+x.sec).toLowerCase().indexOf(q)>-1)
+  o.push({lb:x.lb,pth:SEC.filter(function(s){return s.k===x.sec})[0].n,sec:x.sec,k:x.k})});
+ ACTS.forEach(function(a){if((a.lb+" "+a.syn).toLowerCase().indexOf(q)>-1)
+  o.push({lb:a.lb,pth:a.rt?"Conta":SEC.filter(function(s){return s.k===a.sec})[0].n,sec:a.sec,rt:a.rt,av:a.av,ac:a.act,acao:1})});
+ return o.slice(0,9)}
+function vPal(){
+ var rs=res();
+ var h='<div class="palwrap" data-a="palbg"><div class="pal"><div class="pal-in"><span style="color:var(--ink-3)">⌕</span>'+
+  '<input id="palq" placeholder="Buscar livro, nota ou ajuste…" value="'+esc(st.palq||"")+'" autocomplete="off"></div><div class="pal-res">';
+ if(!st.palq)h+='<div class="pal-empty">Busca livros, o texto das suas notas e os ajustes. Tente “margens”, “letra”, “apagar” ou “sem rede”.</div>';
+ else if(!rs.length)h+='<div class="pal-empty">Nada com esse nome. Tente “ocr”, “tema”, “aparelho” ou “espaço”.</div>';
+ else{var last="";rs.forEach(function(r,i){
+  if(r.pth!==last){h+='<div class="pal-g">'+r.pth+'</div>';last=r.pth}
+  h+='<button class="pal-r'+(i===st.palsel?" on":"")+'" data-a="palgo" data-i="'+i+'"><span>'+esc(r.lb)+
+   (r.q?'<span class="q">“'+esc(r.q)+'”</span>':'')+'</span>'+
+   '<span class="pth">'+(r.acao?"ação":r.bk!==undefined?"abrir":"ajuste")+'</span></button>'})}
+ return h+'</div></div></div>'}
+function vWiz(){
+ var s=st.wiz.s,d="";for(var i=1;i<=3;i++)d+='<i class="'+(i<=s?"on":"")+'"></i>';
+ var h='<div class="wiz"><div class="wizbox"><div style="display:flex;align-items:center;gap:var(--s4)">'+
+  '<span class="lbl">Configurar Kindle · passo '+s+' de 3</span><span style="flex:1"></span>'+
+  '<span class="wizdots">'+d+'</span></div>';
+ if(s===1)h+='<h1 class="t">Qual é o endereço do seu Kindle?</h1>'+
+  '<p class="sub" style="margin:0">Está em Amazon › Conteúdo e dispositivos › Preferências. Termina em @kindle.com.</p>'+
+  '<input class="inp" data-f="mail" value="'+esc(st.wiz.mail)+'" placeholder="seu_id@kindle.com" aria-label="Endereço do Kindle">'+
+  '<div class="acts"><button class="btn" data-a="wnext">Continuar</button>'+
+  '<button class="lnk sm" data-a="wcancel">Cancelar</button></div>';
+ if(s===2)h+='<h1 class="t">Autorize o Mekora a enviar</h1>'+
+  '<p class="sub" style="margin:0">A Amazon só aceita arquivos vindos de um endereço aprovado por você. Adicione este e-mail à lista de remetentes aprovados na sua conta Amazon.</p>'+
+  '<input class="inp" data-f="sender" value="'+esc(st.wiz.sender)+'" placeholder="seu@email.com" aria-label="Remetente aprovado">'+
+  '<div class="acts"><button class="btn" data-a="wnext">Continuar</button>'+
+  '<button class="lnk sm" data-a="wback">Voltar</button></div>';
+ if(s===3)h+='<h1 class="t">Vamos testar antes de terminar</h1>'+
+  '<p class="sub" style="margin:0">Enviamos um arquivo pequeno para o seu Kindle. Sem isso, você só descobriria o erro dias depois.</p>'+
+  (st.wiz.test==="ok"?'<div class="strip"><span class="dot d-ok"></span>Chegou. A conexão está funcionando.</div>'+
+    '<div><button class="btn" data-a="wdone">Concluir e enviar o livro</button></div>'
+   :st.wiz.test==="run"?'<div class="strip"><span class="dot d-wait"></span>Enviando teste…</div>'
+   :'<div><button class="btn" data-a="wtest">Enviar teste</button></div>');
+ return h+'</div></div>'}
+
+/* ═════ DESENHO ═════ */
+var TOK={Escuro:{"--canvas":"#201E1B","--card":"#2A2724","--ink":"#F1EEE8","--ink-2":"#B9B2A6","--ink-3":"#867F74",
+ "--rule":"#3B372F","--rule-2":"#332F29","--bench-2":"#1B1917","--bench-3":"#0C0B0A","--slab":"#2A2724"},
+ Claro:{"--canvas":"#F1EEE8","--card":"#FCFBF8","--ink":"#141311","--ink-2":"#55504A","--ink-3":"#8A857C",
+ "--rule":"#C6C0B1","--rule-2":"#E4E0D6","--bench-2":"#E7E3D9","--bench-3":"#D2CCBE","--slab":"#141311"}};
+var DENS={Compacta:{s4:"12px",s5:"18px",s6:"24px",h1:"28px",h2:"34px"},
+ Padrão:{s4:"16px",s5:"24px",s6:"32px",h1:"32px",h2:"38px"},
+ Ampla:{s4:"20px",s5:"30px",s6:"42px",h1:"36px",h2:"42px"}};
 function draw(){
- var a=$("app"),h=vWorld();
- if(st.mode==="connections"&&st.panel&&!st.sel)h+=vConnPanel();
- if(st.phase)h+=vPhase();
- if(st.prefs)h+=vPrefs();
- if(st.pal!==null)h+=vPal();
- if(st.reader)h=vReader();
- if(st.toast)h+='<div class="toast">'+esc(st.toast)+'</div>';
- a.innerHTML=h;a.dataset.w=st.dev==="tablet"?"pequena":"grande";
- document.body.dataset.motion=val("motion");
- $("simcount").textContent="simulado: notas · dossiê · conexões · leitor";
+ var a=$("app"),r=st.route.v,h="";
+ if(r==="lib")h=vLib();else if(r==="reader")h=vReader();else if(r==="prefs")h=vPrefs();
+ else if(r==="sec")h=vSec(st.route.sec);else if(r==="conta")h=vConta();
+ else if(r==="leitura")h=vLeitura();else h=vConv();
+ if(st.wiz)h+=vWiz();
+ if(st.pal!==null&&st.pal!==undefined)h+=vPal();
+ if(st.toast)h+='<div class="toast">'+esc(st.toast.m)+
+   (st.toast.a?'<button data-a="toastact">'+esc(st.toast.a)+'</button>':'')+'</div>';
+ a.innerHTML=h;
+ var t=val("theme"),tk=TOK[t];
+ Object.keys(TOK.Claro).forEach(function(p){tk?a.style.setProperty(p,tk[p]):a.style.removeProperty(p)});
+ var dn=DENS[val("density")];
+ a.style.setProperty("--s4",dn.s4);a.style.setProperty("--s5",dn.s5);a.style.setProperty("--s6",dn.s6);
+ a.style.setProperty("--h1",dn.h1);a.style.setProperty("--h2",dn.h2);
+ a.dataset.w=devCls();
+ document.body.dataset.motion=val("motion")?"off":"on";
+ $("ndiff").textContent=diff().length;
  var q=$("palq");if(q){q.focus();q.setSelectionRange(q.value.length,q.value.length)}
- drawRig();drawSide()}
+ drawRig();drawSide();
+}
 function drawRig(){
  $("modosw").innerHTML=[["local","local"],["conta","com conta"]].map(function(m){
   return'<button data-m="'+m[0]+'" aria-pressed="'+(st.modo===m[0])+'">'+m[1]+'</button>'}).join("");
- $("devsw").innerHTML=[["desktop","desktop"],["tablet","tablet"]].map(function(d){
-  return'<button data-d="'+d[0]+'" aria-pressed="'+(st.dev===d[0])+'">'+d[1]+'</button>'}).join("")}
-var ANN={canvas:{t:"Se a pessoa entende que Canvas, Estante, Lista e Conexões são o mesmo acervo visto de outro ângulo — e não quatro páginas.",
- w:"É o modelo do código: WORLD_REGIONS + câmera GSAP. Trocar de modo move a câmera; os livros fazem morph.",
- d:"canvas-motion/app/page.tsx — ViewMode e WORLD_REGIONS.",
- f:"Alguém perguntar “onde ficou o outro livro?” ao trocar de região."},
- connections:{t:"Se a revisão de sugestões (confirmar/rejeitar com razão) é entendida como curadoria, não como mágica.",
- w:"RelationStatus tem três valores e cada relação carrega uma razão escrita.",
- d:"KnowledgeRelation no código real. O mapa proíbe chamar isso de rede neural.",
- f:"A pessoa achar que o sistema “descobriu” algo sozinho, ou ignorar as tracejadas."},
- shelf:{t:"Se a lombada preserva reconhecimento com menos informação que o card.",
- w:"Estante 3D existe em Three.js no protótipo V2 (MekoraShelf.tsx), com alternativa por teclado.",
- d:"Classe C: existe no protótipo, sem catálogo real por trás.",
- f:"Não conseguir achar um livro conhecido em menos tempo que na lista."},
- list:{t:"Se a lista serve ao caso “já sei o que procuro”.",
- w:"É a representação de menor custo cognitivo quando o alvo é conhecido.",
- d:"ViewMode list — mesma projeção, outra forma.",f:"Virar a região padrão de todos, o que indicaria que as outras não pagam o custo."}};
+ $("devsw").innerHTML=DEVS.map(function(d){
+  return'<button data-d="'+d.k+'" aria-pressed="'+(st.dev===d.k)+'"'+
+   (st.modo==="local"?' disabled title="sem conta, não há outro aparelho"':'')+'>'+d.n+'</button>'}).join("");
+ var s=SCEN.filter(function(x){return x.k===st.scen})[0];
+ $("scenlabel").textContent=s?"cenário "+s.k+" · "+s.t:""}
+var ANN={lib:{h:"Biblioteca",t:"Se dá para achar um livro rápido mesmo com o sinal de notas na capa, e se o inspector responde sem tirar você da estante.",
+  w:"Busca, coleções e ordenação ficam na própria estante — não em Preferências, que só guarda o padrão de abertura.",
+  d:"M8 do Caderno 01: card estável + inspector lateral, sem reflow.",
+  f:"Alguém demora mais que 10s para achar um livro que sabe que tem."},
+ reader:{h:"Leitor",t:"Se o Aa, o sumário, a busca e as notas são encontrados sem instrução — e se “só neste livro” é entendido.",
+  w:"Sumário, busca no livro e marcador são convenções consolidadas (Kindle, Play Books). Não inventamos aqui.",
+  d:"Princípio do espelho: a fonte da verdade é o contexto; Preferências reflete.",
+  f:"A pessoa sai do leitor para procurar tipografia, ou acha que mudou o padrão de todos os livros."},
+ leitura:{h:"Sua leitura",t:"Se isto resolve o que as pessoas procuram num “perfil” — sem virar placar.",
+  w:"É conteúdo, não identidade: notas recentes e temas que voltam. Sem sequência de dias, sem meta, sem público.",
+  d:"Decisão de não criar destino Perfil; o que se esperava dele vira superfície de leitura.",
+  f:"A pessoa procura por “perfil” e não relaciona com isto — ou pede metas e comparação."},
+ prefs:{h:"Preferências",t:"Se o diário responde “o que eu mudei?” antes de qualquer navegação.",
+  w:"Depois do primeiro mês ninguém vem aqui configurar — vem desfazer.",
+  d:"Modelo E: conta no cabeçalho, diário no corpo, sete seções por consequência.",
+  f:"A pessoa ignora o diário e navega pelas seções mesmo tendo acabado de mudar algo."},
+ sec:{h:"Seção",t:"Se as etiquetas de âmbito são lidas antes do erro acontecer.",
+  w:"Cada linha declara a consequência: o que viaja, o que fica, o que só vale para novos arquivos.",
+  d:"Regra de âmbito da Revisão A e o vocabulário de etiquetas.",
+  f:"Trocar de aparelho gera surpresa mesmo com a etiqueta na tela."},
+ conta:{h:"Conta",t:"Se identidade, segurança e aparelhos são procurados aqui — e se a divulgação progressiva evita a tela entulhada.",
+  w:"Quatro destinos rasos em vez de uma página longa: identidade, segurança, aparelhos, plano.",
+  d:"Conta é área real; Perfil não existe. A régua: conta é quem você é para o serviço.",
+  f:"A pessoa varre as seções de Preferências antes de olhar o cabeçalho."},
+ conv:{h:"Importar",t:"Se “usar como padrão” é entendido como decisão separada da conversão atual.",
+  w:"Ajustes de trabalho pertencem ao momento do trabalho.",
+  d:"Regra 2: “da próxima vez” mora no fluxo.",
+  f:"A pessoa marca “usar como padrão” achando que é obrigatório para converter."}};
+var ALTN={conta:"Um valor só para todos os aparelhos. Simples, mas o corpo bom no desktop fica pequeno no iPad.",
+ classe:"Um valor por classe de tela — a proposta do caderno. Troque de aparelho para sentir.",
+ aparelho:"Cada aparelho com o seu. Nunca surpreende, mas obriga a reconfigurar em cada um."};
 function drawSide(){
  var el=$("side");el.hidden=!st.side;if(!st.side)return;
- var sc=SCEN.filter(function(x){return x.k===st.scen})[0],an=ANN[st.mode]||ANN.canvas;
- el.innerHTML='<div><h4>Cenários</h4><div class="sc" style="margin-top:var(--s2)">'+
+ var sc=SCEN.filter(function(x){return x.k===st.scen})[0],an=ANN[st.route.v]||ANN.lib;
+ el.innerHTML='<div><h4>Cenários de teste</h4><div class="sc" style="margin-top:var(--s2)">'+
   SCEN.map(function(s){return'<button data-s="'+s.k+'" aria-pressed="'+(st.scen===s.k)+'">'+
-   '<span class="n">CENÁRIO '+s.k+'</span><span class="d">'+s.t+'</span></button>'}).join("")+'</div></div>'+
-  (sc?'<div><h4>Passos</h4><ol style="list-style:none;margin:var(--s2) 0 0;padding:0;display:flex;flex-direction:column;gap:7px">'+
-   sc.steps.map(function(p){return'<li style="font-size:12px;color:'+(st.done[st.scen+p[0]]?"#7d7166":"#b3a698")+'">'+
-    (st.done[st.scen+p[0]]?"✓ ":"· ")+p[1]+'</li>'}).join("")+'</ol></div>':'')+
-  '<div><h4>Anotação · '+st.mode+'</h4><div class="an" style="margin-top:var(--s2)">'+
-  '<div><b>o que se testa</b><span>'+an.t+'</span></div>'+
+    '<span class="n">CENÁRIO '+s.k+'</span><span class="d">'+s.t+'</span></button>'}).join("")+'</div></div>'+
+  (sc?'<div><h4>Passos</h4><ol style="margin-top:var(--s2)">'+sc.steps.map(function(p){
+    return'<li class="'+(st.done[st.scen+p[0]]?"ok":"")+'"><i></i><span>'+p[1]+'</span></li>'}).join("")+'</ol></div>':'')+
+  '<div><h4>Anotação · '+an.h+'</h4><div class="an" style="margin-top:var(--s2)">'+
+  '<div><b>o que está sendo testado</b><span>'+an.t+'</span></div>'+
   '<div><b>por que existe</b><span>'+an.w+'</span></div>'+
-  '<div><b>evidência no repo</b><span>'+an.d+'</span></div>'+
+  '<div><b>decisão que representa</b><span>'+an.d+'</span></div>'+
   '<div class="f"><b>sinal de fracasso</b><span>'+an.f+'</span></div></div></div>'+
-  '<div><h4>Eventos</h4><div class="ev" style="margin-top:var(--s2)">'+
-  (st.ev.length?st.ev.map(function(e){return"· "+esc(e)}).join("<br>"):"—")+'</div></div>'}
+  '<div><h4>Alternativas em aberto</h4>'+
+  '<div style="margin-top:var(--s2)"><div style="font-size:12px;color:#D6CFC3;margin-bottom:6px">Escopo do corpo de texto</div>'+
+  '<div class="altseg" id="altsize"><button data-v="conta" aria-pressed="'+(st.altSize==="conta")+'">segue você</button>'+
+  '<button data-v="classe" aria-pressed="'+(st.altSize==="classe")+'">por tela</button>'+
+  '<button data-v="aparelho" aria-pressed="'+(st.altSize==="aparelho")+'">do aparelho</button></div>'+
+  '<p class="note" style="margin:7px 0 0">'+ALTN[st.altSize]+'</p></div>'+
+  '<div style="margin-top:var(--s3)"><div style="font-size:12px;color:#D6CFC3;margin-bottom:6px">Painel de leitura</div>'+
+  '<div class="altseg" id="altpanel"><button data-v="popover" aria-pressed="'+(st.altPanel==="popover")+'">popover</button>'+
+  '<button data-v="drawer" aria-pressed="'+(st.altPanel==="drawer")+'">drawer</button></div></div></div>'}
 
-/* ═══ eventos ═══ */
+/* ═════ EVENTOS ═════ */
+function go(r,sec){st.route={v:r,sec:sec};st.pop=false;st.menu=null;st.danger=false;st.rpanel=null;st.selText=false}
 $("app").addEventListener("click",function(e){
  var el=e.target.closest("[data-a]");if(!el)return;
- var a=el.dataset.a,v=el.dataset.v,i=el.dataset.i;
- if(a==="mode"){st.mode=v;st.sel=null;st.panel=(v==="connections");
-  mark({shelf:"shelf",list:"list",connections:"conn"}[v]||"");log("região → "+v)}
- else if(a==="sel"){st.sel=i;st.panel=true;st.tab="overview";mark("sel");
-  var b=BOOKS.filter(function(x){return x.id===i})[0];if(b&&b.src==="Amazon")mark("amazon");log("livro "+i)}
- else if(a==="tab"){st.tab=v;mark("tab")}
- else if(a==="close"){st.panel=false;st.sel=null;st.prefs=false;st.conta=false;st.pal=null}
- else if(a==="origem"){st.origem=v;log("origem = "+v)}
- else if(a==="prefs"){st.prefs=true;st.conta=false}
- else if(a==="conta"){st.conta=true}
- else if(a==="prefsec"){st.prefsec=v}
- else if(a==="set"){var d=SM[el.dataset.k];set(el.dataset.k,d.t==="sw"?v==="true":v);toast("Salvo")}
- else if(a==="read"){st.reader=true;st.panel=false;mark("abrir");mark("ancora")}
- else if(a==="closeread"){st.reader=false}
- else if(a==="export"){toast(val("smtp")?"Enviado ao Kindle":"Exportação ao Kindle — opcional, não é o destino")}
- else if(a==="prep"){st.phase="processing";mark("start");draw();
-  setTimeout(function(){st.phase="transitioning";mark("proc");draw();
-   setTimeout(function(){st.phase="library";draw()},1400)},1400);return}
- else if(a==="phasedone"){st.phase=null;st.mode="canvas";mark("lib");toast("Objeto novo no Canvas")}
- else if(a==="rel"){st.rels[i].status=v;mark("dec");mark("ver");mark("ler");
-  toast(v==="confirmed"?"Conexão confirmada":"Sugestão rejeitada")}
- else if(a==="pal"){st.pal="";st.palq=""}
- else if(a==="palgo"){var r=res()[+i];st.pal=null;
-  if(r.bk){st.sel=r.bk;st.panel=true;st.tab=r.p==="Nota"?"notes":"overview"}
-  else if(r.md)st.mode=r.md;else{st.prefs=true;st.prefsec=r.sec}}
- else if(a==="noop"){toast("Fora do escopo do lab")}
+ var a=el.dataset.a,k=el.dataset.k,v=el.dataset.v,i=el.dataset.i;
+ if(a==="palbg"&&e.target.closest(".pal"))return;
+ if(a==="go"){go(el.dataset.r,el.dataset.sec);if(el.dataset.r==="conta")mark("conta");if(el.dataset.sec)mark("land")}
+ else if(a==="set"){var d=SM[k];set(k,d.t==="sw"?v==="true":d.t==="step"?+v:v,st.route.v==="conv"?"Conversão":"Preferências");
+   if(k==="theme")mark("theme");if(k==="ocr"&&st.route.v==="conv")mark("ocr");toast("Salvo")}
+ else if(a==="bset"){var d2=SM[k];st.book[k]=d2.t==="step"?+v:v;if(k==="size")mark("size")}
+ else if(a==="revert"){rst(k);toast("Voltou ao padrão")}
+ else if(a==="aa"){st.pop=!st.pop;if(st.pop)mark("aa")}
+ else if(a==="usedef"){Object.keys(st.book).forEach(function(x){set(x,st.book[x],"Leitor")});
+   st.book={};mark("dec");toast("Agora é o seu padrão de leitura")}
+ else if(a==="undo"){st.book={};mark("dec");toast("Descartado")}
+ else if(a==="sel"){st.menu=null;st.sel=(st.sel===+i?null:+i);st.inspTab="livro";
+   if(st.sel!==null)mark("insp")}
+ else if(a==="unsel"){st.sel=null}
+ else if(a==="itab"){st.inspTab=el.dataset.t}
+ else if(a==="book"){go("reader");mark("open")}
+ else if(a==="notas"){if(st.route.v==="reader"){st.rpanel="notas"}else{st.sel=+i;st.inspTab="notas";mark("insp")}}
+ else if(a==="menu"){st.menu=+i;mark("menu")}
+ else if(a==="close"){st.menu=null}
+ else if(a==="col"){st.libcol=el.dataset.c||null;mark("col")}
+ else if(a==="limpa"){st.libq="";st.libcol=null}
+ else if(a==="colmove"){st.menu=null;toast("Movido para Pesquisa","desfazer")}
+ else if(a==="rmbook"){st.menu=null;toast("Removido da biblioteca","desfazer")}
+ else if(a==="rp"){st.rpanel=el.dataset.p||null;st.rq=""}
+ else if(a==="cap"){st.cap=+i;st.rpanel=null;toast("Capítulo "+(+i+1))}
+ else if(a==="bmk"){st.mark=!st.mark;toast(st.mark?"Marcador colocado nesta página":"Marcador removido")}
+ else if(a==="pfmt"){var o=SM.progfmt.op,n=o[(o.indexOf(val("progfmt"))+1)%o.length];set("progfmt",n,"Leitor")}
+ else if(a==="pg"){toast("Página "+(3+ +el.dataset.d)+" de 9")}
+ else if(a==="hl"){st.selText=false;mark("hl");
+   toast(val("noteonhl")?"Destacado · campo de nota aberto":"Destacado","ver notas")}
+ else if(a==="hlnote"){st.selText=false;st.rpanel="notas";mark("hl");toast("Destacado e anotado")}
+ else if(a==="cite"){st.selText=false;
+   toast(val("citefmt")?"Citação copiada com a fonte":"Citação copiada")}
+ else if(a==="selcancel"){st.selText=false}
+ else if(a==="send"){st.menu=null;mark("send");
+   if(st.kindle==="on")toast("Enviado para o seu Kindle");
+   else st.wiz={s:1,mail:st.kmail,sender:st.ksender,test:null}}
+ else if(a==="wiz"){st.wiz={s:1,mail:st.kmail,sender:st.ksender,test:null}}
+ else if(a==="wnext"){st.wiz.s++}else if(a==="wback"){st.wiz.s--}else if(a==="wcancel"){st.wiz=null}
+ else if(a==="wtest"){st.wiz.test="run";draw();setTimeout(function(){st.wiz.test="ok";draw()},900);return}
+ else if(a==="wdone"){st.kmail=st.wiz.mail;st.ksender=st.wiz.sender;st.kindle="on";st.wiz=null;
+   mark("wiz");toast("Kindle conectado · livro enviado")}
+ else if(a==="ktest"){if(st.ksender&&st.ksender.indexOf("@")>-1&&st.ksender!=="antigo@gmail.com"){
+    st.kindle="on";mark("test");toast("Teste chegou ao seu Kindle")}
+   else{st.kindle="error";toast("A Amazon recusou o remetente — corrija o endereço acima")}}
+ else if(a==="kdisc"){st.kindle="off";set("sendafter",false,"Conexões");
+   toast("Kindle desconectado · “enviar após converter” foi desligado")}
+ else if(a==="adv"){st.adv=!st.adv}
+ else if(a==="convdef"){st.convDef=!st.convDef;if(st.convDef)mark("def")}
+ else if(a==="convert"){if(st.convDef)["format","ocr","ocrlang","quality"].forEach(function(x){set(x,val(x),"Conversão")});
+   go("prefs");mark("diary");toast(st.convDef?"Convertido · padrão atualizado":"Convertido")}
+ else if(a==="danger"){st.danger="del";mark("open");mark("read")}
+ else if(a==="resetall"){st.danger="reset"}
+ else if(a==="delacct"){st.danger="delacct"}
+ else if(a==="dcancel"){st.danger=false;mark("out")}
+ else if(a==="delok"){st.danger=false;mark("out");toast("Apagado em todos os aparelhos")}
+ else if(a==="rdev"){st.devv[st.dev]={};st.danger=false;toast("Restaurado neste aparelho")}
+ else if(a==="racct"){st.acct={};st.devv={mac:{},ipad:{}};st.origin={};st.danger=false;toast("Restaurado na conta inteira")}
+ else if(a==="export"){toast("Exportado · "+BOOKS.length+" livros e "+BOOKS.reduce(function(x,b){return x+b.n},0)+" notas")}
+ else if(a==="free"){toast("740 MB liberados neste aparelho")}
+ else if(a==="f2a"){st.f2a=!st.f2a;toast(st.f2a?"Verificação em duas etapas ligada":"Desligada")}
+ else if(a==="codes"){toast("8 códigos de recuperação gerados")}
+ else if(a==="endsess"){st.devices.splice(+i,1);mark("end");
+   toast("Sessão encerrada · downloads daquele aparelho apagados")}
+ else if(a==="logout"){st.danger="logout"}
+ else if(a==="acctv"){st.acctView=el.dataset.v;st.danger=false;if(el.dataset.v==="seg")mark("seg")}
+ else if(a==="saveident"){st.acctView="main";toast("Identidade atualizada")}
+ else if(a==="savepwd"){st.pwd={o:"",n:""};st.acctView="main";mark("pwd");
+   toast("Senha trocada · outras sessões encerradas")}
+ else if(a==="pal"){st.pal="";st.palq="";st.palsel=0;mark("open")}
+ else if(a==="palbg"){st.pal=null}
+ else if(a==="palgo"){var r2=res()[+i];st.pal=null;
+   if(r2.bk!==undefined){go("lib");st.sel=r2.bk;st.inspTab=r2.q?"notas":"livro"}
+   else if(r2.rt){go(r2.rt);if(r2.av)st.acctView=r2.av}
+   else{go("sec",r2.sec);if(r2.k&&SM[r2.k].adv)st.adv=true}
+   mark("land");toast("Achou: "+r2.lb)}
+ else if(a==="toastact"){var m=st.toast&&st.toast.m||"";st.toast=null;
+   if(m.indexOf("Destacado")===0){go("reader");st.rpanel="notas";mark("vernota")}
+   else toast("Desfeito")}
+ else if(a==="noop2"){toast("Fora do escopo deste protótipo")}
  draw()});
 $("app").addEventListener("change",function(e){var s=e.target.closest("select[data-k]");if(!s)return;
- set(s.dataset.k,s.value);toast("Salvo");draw()});
-$("app").addEventListener("input",function(e){if(e.target.id==="palq"){st.palq=e.target.value;draw()}});
+ if(s.dataset.p==="book")st.book[s.dataset.k]=s.value;
+ else set(s.dataset.k,s.value,st.route.v==="conv"?"Conversão":"Preferências");
+ toast("Salvo");draw()});
+$("app").addEventListener("input",function(e){
+ if(e.target.id==="palq"){st.palq=e.target.value;st.palsel=0;if(st.palq)mark("type");draw();return}
+ if(e.target.id==="libq"){st.libq=e.target.value;if(st.libq)mark("busca");
+   var p=e.target.selectionStart;draw();var n=$("libq");if(n){n.focus();n.setSelectionRange(p,p)}return}
+ if(e.target.id==="rq"){st.rq=e.target.value;var p2=e.target.selectionStart;draw();
+   var n2=$("rq");if(n2){n2.focus();n2.setSelectionRange(p2,p2)}return}
+ var f=e.target.closest("[data-f]");if(!f)return;
+ var key=f.dataset.f;
+ if(st.wiz&&(key==="mail"||key==="sender"))st.wiz[key]=e.target.value;
+ else if(key==="pwdo"||key==="pwdn"){st.pwd[key==="pwdo"?"o":"n"]=e.target.value;
+   var p3=e.target.selectionStart;draw();var n3=document.querySelector('[data-f="'+key+'"]');
+   if(n3){n3.focus();n3.setSelectionRange(p3,p3)}return}
+ else st[key]=e.target.value;
+ if(key==="ksender")mark("fix")});
+/* seleção de texto no leitor */
+$("app").addEventListener("mouseup",function(e){
+ if(st.route.v!=="reader")return;
+ var s=window.getSelection();
+ if(s&&String(s).trim().length>8&&e.target.closest(".rbody")){st.selText=true;mark("seltxt");draw()}});
+$("app").addEventListener("keydown",function(e){
+ if(e.target.id==="palq"){var rs=res();
+  if(e.key==="ArrowDown"){e.preventDefault();st.palsel=Math.min(rs.length-1,st.palsel+1);draw()}
+  else if(e.key==="ArrowUp"){e.preventDefault();st.palsel=Math.max(0,st.palsel-1);draw()}
+  else if(e.key==="Enter"&&rs[st.palsel]){e.preventDefault();var r2=rs[st.palsel];st.pal=null;
+   if(r2.bk!==undefined){go("lib");st.sel=r2.bk;st.inspTab=r2.q?"notas":"livro"}
+   else if(r2.rt){go(r2.rt);if(r2.av)st.acctView=r2.av}
+   else{go("sec",r2.sec);if(r2.k&&SM[r2.k].adv)st.adv=true}
+   mark("land");toast("Achou: "+r2.lb);draw()}
+  else if(e.key==="Escape"){st.pal=null;draw()}
+  return}
+ var cell=e.target.closest(".bk");
+ if(cell&&st.route.v==="lib"){
+  var L=books(),pos=L.findIndex(function(b){return b.i===+cell.dataset.i});
+  var cols=getComputedStyle(document.querySelector(".shelf")).gridTemplateColumns.split(" ").length||1;
+  var nx=null;
+  if(e.key==="ArrowRight")nx=pos+1;else if(e.key==="ArrowLeft")nx=pos-1;
+  else if(e.key==="ArrowDown")nx=pos+cols;else if(e.key==="ArrowUp")nx=pos-cols;
+  else if(e.key==="Enter"){e.preventDefault();go("reader");mark("open");draw();return}
+  else if(e.key===" "){e.preventDefault();st.sel=+cell.dataset.i;st.inspTab="livro";mark("insp");draw();return}
+  if(nx!==null){e.preventDefault();if(nx<0||nx>=L.length)return;
+   var t=document.querySelector('.bk[data-i="'+L[nx].i+'"]');
+   if(t){document.querySelectorAll(".bk").forEach(function(c){c.tabIndex=-1});t.tabIndex=0;t.focus()}}}});
 addEventListener("keydown",function(e){
- if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();st.pal="";st.palq="";draw()}
- else if(e.key==="Escape"){if(st.pal!==null)st.pal=null;else if(st.reader)st.reader=false;
-  else if(st.prefs){st.prefs=false;st.conta=false}else if(st.panel){st.panel=false;st.sel=null}draw()}});
-$("modosw").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;
- st.modo=b.dataset.m;mark("troca");mark("cab");mark("amb");
- toast(st.modo==="conta"?"Modelo com conta — hipótese, não existe no repo":"Modelo local — o que o repositório sustenta");draw()});
+ if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();
+  st.pal="";st.palq="";st.palsel=0;mark("open");draw()}
+ else if(e.key==="Escape"){
+  if(st.pal!==null&&st.pal!==undefined){st.pal=null;draw()}
+  else if(st.menu!==null){st.menu=null;draw()}
+  else if(st.pop){st.pop=false;draw()}
+  else if(st.selText){st.selText=false;draw()}
+  else if(st.rpanel){st.rpanel=null;draw()}
+  else if(st.sel!==null){st.sel=null;draw()}}});
 $("devsw").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;
- st.dev=b.dataset.d;draw()});
+ if(st.modo==="local"){toast("Sem conta não há segundo aparelho — troque o modelo para comparar");return}
+ st.dev=b.dataset.d;st.pop=false;st.menu=null;mark(st.dev==="ipad"?"dev":"back");
+ toast("Você está no "+devName()+". O que é da conta veio junto; o que é do aparelho, não.");draw()});
+$("modosw").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;
+ st.modo=b.dataset.m;st.dev="mac";
+ if(st.modo==="local"&&st.route.v==="conta")st.route={v:"prefs"};
+ mark("modo");
+ toast(st.modo==="conta"
+  ?"Modelo com conta — hipótese: não existe no repositório hoje"
+  :"Modelo local — um usuário, sem conta, sem sincronização");
+ draw()});
 $("sidebtn").addEventListener("click",function(){st.side=!st.side;
  this.setAttribute("aria-pressed",st.side);drawSide()});
-$("side").addEventListener("click",function(e){var s=e.target.closest("[data-s]");
- if(s)startScen(s.dataset.s)});
+$("side").addEventListener("click",function(e){
+ var s=e.target.closest("[data-s]");if(s){startScen(s.dataset.s);return}
+ var b=e.target.closest("#altsize button");if(b){st.altSize=b.dataset.v;draw();return}
+ var p=e.target.closest("#altpanel button");if(p){st.altPanel=p.dataset.v;draw()}});
 draw();
 })();
 </script>
