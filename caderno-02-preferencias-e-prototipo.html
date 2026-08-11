@@ -515,6 +515,7 @@ select.selc{border:1px solid var(--rule);border-radius:3px;padding:5px 8px;font-
   <a href="#s10">10 Telas</a><a href="#s11">11 Sistema visual</a><a href="#s12">12 Estados</a>
   <a href="#s13">13 Riscos</a><a href="#s14">14 Recomendação</a><a href="#s15">15 Estrutura final</a>
   <a href="#s16" style="color:var(--accent)">16 Protótipo</a><a href="#s17">17 Hipóteses</a><a href="#s18">18 Dependências</a>
+  <a href="#s19">19 Auditoria</a><a href="#s20" style="color:var(--accent)">20 Benchmark</a><a href="#s21">21 Perfil</a>
 </nav>
 
 <div class="page">
@@ -1159,6 +1160,12 @@ select.selc{border:1px solid var(--rule);border-radius:3px;padding:5px 8px;font-
   <div class="sh"><div class="rule"></div><div class="top"><h2><i>16</i>Protótipo navegável</h2>
     <span class="lbl" id="proto-state"></span></div>
     <p>A arquitetura das seções anteriores, funcionando. Os ajustes são reais: alterar o tema muda a janela, alterar a tipografia muda o texto lido, e o <em>diário</em> se preenche sozinho comparando com os padrões. O botão mais importante é <strong>o seletor de aparelho</strong> — é ele que torna testável a tese central da Revisão A.</p></div>
+  <div class="strip" style="margin-bottom:22px;font-family:var(--sans)">
+    <span class="dot d-ok"></span>
+    <span>A versão completa roda em <b>tela cheia</b>, com biblioteca, leitor, inspector, conta e os dez cenários.
+      Esta abaixo é a mesma arquitetura em miniatura, mantida para leitura junto do argumento.</span>
+    <a class="btn sm" href="prototipo.html" style="margin-left:auto;text-decoration:none;white-space:nowrap">Abrir em tela cheia →</a>
+  </div>
 
   <div class="proto">
     <!-- CENÁRIOS -->
@@ -1218,6 +1225,51 @@ select.selc{border:1px solid var(--rule);border-radius:3px;padding:5px 8px;font-
   <div class="sh"><div class="rule"></div><div class="top"><h2><i>18</i>O que não dá para representar ainda</h2></div>
     <p>Decisões de produto que faltam. Não desenhei nenhuma delas por suposição — desenhar aqui seria inventar requisito e depois defendê-lo.</p></div>
   <div class="ledger" id="deps"></div>
+</section>
+
+<!-- ══════════════ 19 AUDITORIA ══════════════ -->
+<section id="s19">
+  <div class="sh"><div class="rule"></div><div class="top"><h2><i>19</i>Auditoria e correções</h2>
+    <span class="lbl">rodada de refino · protótipo em tela cheia</span></div>
+    <p>O protótipo foi auditado como produto existente, não como maquete. Abaixo o que estava quebrado e o que foi feito — inclusive uma regressão minha contra a decisão do próprio Caderno 01.</p></div>
+  <div class="ledger" id="audit"></div>
+</section>
+
+<!-- ══════════════ 20 BENCHMARK ══════════════ -->
+<section id="s20">
+  <div class="sh"><div class="rule"></div><div class="top"><h2><i>20</i>Benchmark: Kindle, Play Books, Wattpad</h2>
+    <span class="lbl" id="bm-count"></span></div>
+    <p>Não é lista de recursos. A pergunta em cada linha é <em>qual modelo mental já está formado na cabeça de quem lê</em> — e quanto custaria contrariá-lo. Filtre pelo veredito para ver onde o Mekora deve se parecer e onde deve divergir.</p></div>
+  <div class="filters"><div class="fgrp"><span class="lbl">Veredito</span><div class="chips" id="f-bm"></div></div></div>
+  <div class="tbl"><div class="tbl-scroll"><table>
+    <thead><tr><th>Área</th><th>O que já é esperado</th><th>Mekora</th><th>Avaliação</th><th>Decisão</th></tr></thead>
+    <tbody id="bm-body"></tbody>
+  </table></div></div>
+  <div class="prose" style="margin-top:22px;max-width:720px">
+    <p><strong>A regra que saiu daqui.</strong> Diferença só se paga quando resolve um problema que o produto tem e os outros não têm. O Mekora tem exatamente um: <em>o que sobra da leitura</em> — notas, conexões, temas. É aí que ele deve divergir, e só aí.</p>
+    <p><strong>O erro que isso pegou.</strong> Eu havia feito o clique na capa <em>selecionar</em> em vez de abrir, para dar lugar ao inspector. Kindle, Play Books e Wattpad abrem o livro no toque da capa — e o próprio Caderno 01 já dizia “clique abre, Espaço seleciona”. Era diferença sem retorno, custando a ação mais frequente do produto. Corrigido: <b>capa abre</b>, a aba ✳ e o menu ··· levam aos detalhes.</p>
+  </div>
+</section>
+
+<!-- ══════════════ 21 PERFIL ══════════════ -->
+<section id="s21">
+  <div class="sh"><div class="rule"></div><div class="top"><h2><i>21</i>Perfil: três modelos e um veredito</h2></div>
+    <p>Com Conta já sendo área real, sobra a pergunta que ficou aberta desde a Revisão A: existe algo que mereça um destino chamado Perfil?</p></div>
+  <div class="verds">
+    <div class="verd"><span class="tag t-nao">Descartado</span><h4>A · Perfil mínimo</h4>
+      <p>Avatar, nome, e-mail, senha. <b>Problema:</b> isto <em>é</em> a Conta. Criar um segundo destino com o mesmo conteúdo obriga a pessoa a adivinhar em qual dos dois está o que ela quer.</p>
+      <p><b>Valor:</b> nenhum. <b>Duplicação:</b> total com Conta.</p></div>
+    <div class="verd"><span class="tag t-talvez">Descartado como destino</span><h4>B · Perfil de leitura</h4>
+      <p>Livros lidos, progresso, tempo, sequência de dias. <b>Problema:</b> metade duplica a Biblioteca e a outra metade empurra para gamificação — sequência de dias e meta anual transformam leitura em placar, que foi decisão explícita de não fazer.</p>
+      <p><b>Mas:</b> a parte não-gamificada tem valor real. Ela vira conteúdo, não perfil.</p></div>
+    <div class="verd"><span class="tag t-sim">Adotado — sem virar Perfil</span><h4>C · Conhecimento acumulado</h4>
+      <p>Notas recentes, temas que voltam, conexões entre livros. <b>É o que o Mekora tem de próprio</b> e ninguém mais tem.</p>
+      <p><b>Só que isto não é um perfil:</b> é uma superfície de leitura. Não representa você para ninguém — organiza o que você produziu. Por isso virou <b>“Sua leitura”</b>, item de primeiro nível ao lado da Biblioteca, e não uma página dentro de Conta.</p></div>
+    <div class="verd"><span class="tag t-nao">Veredito</span><h4>Não existe destino Perfil</h4>
+      <p><b>Conta</b> guarda quem você é para o serviço. <b>Sua leitura</b> guarda o que a leitura produziu. <b>Preferências</b> guarda como o produto se comporta. Nenhuma sobra pede uma quarta porta.</p>
+      <p><b>Gatilho para reabrir, inalterado:</b> compartilhamento. No dia em que existir um leitor do outro lado, Perfil nasce com função — e aí “Sua leitura” é a matéria-prima dele.</p></div>
+  </div>
+  <p class="prose" style="margin-top:22px;max-width:720px"><strong>Como testar se acertamos:</strong> peça a alguém para “ver seu perfil” no protótipo. Se a pessoa for a <em>Sua leitura</em>, o nome está certo. Se for ao avatar e depois reclamar que não achou estatística, o problema é de rótulo. Se pedir metas e comparação com outras pessoas, aí a decisão de não gamificar é que está sendo contestada — e essa é uma conversa de produto, não de interface.</p>
 </section>
 
 <footer>
@@ -1854,6 +1906,104 @@ var DEPS=[
 el("deps").innerHTML=DEPS.map(function(d){
   return'<div class="led"><span class="it">'+d.i+'</span>'+
     '<span class="vd '+(d.v==="bloqueia"?"v-desc":"v-rev")+'">'+d.v+'</span><p>'+d.p+'</p></div>'}).join("");
+
+/* ═══════════════ 19 · AUDITORIA ═══════════════ */
+var AUDIT=[
+{i:"Clique na capa selecionava em vez de abrir",v:"corrigido",
+ p:"<b>Regressão minha</b> contra o Caderno 01, que já dizia “clique abre, Espaço seleciona”. Ao acrescentar o inspector, gastei a ação mais frequente do produto com a menos frequente. Kindle, Play Books e Wattpad abrem no toque da capa. <b>Agora:</b> capa abre; a aba ✳ e o menu ··· levam aos detalhes."},
+{i:"Barra superior ia parar ao lado do conteúdo",v:"corrigido",
+ p:"Com o inspector aberto, o container virava <code>flex-direction:row</code> e arrastava o cabeçalho junto. Sintoma visual, causa estrutural: o inspector precisava de um wrapper próprio ao lado da área de rolagem, não ser irmão do topo."},
+{i:"Quatro controles mortos em Conta",v:"corrigido",
+ p:"“Editar”, “Gerenciar”, “Alterar” e “Apagar conta” só emitiam aviso. Viraram destinos reais: identidade, plano e cobrança, senha e segurança com validação, e confirmação de apagar conta distinta da de apagar biblioteca."},
+{i:"Aba ✳ não abria nada",v:"corrigido",
+ p:"O sinal de conhecimento é o diferencial do produto e não levava a lugar nenhum. Agora abre o inspector já na aba Notas — sinal e atalho no mesmo pixel, como o Caderno 02 especificava."},
+{i:"Dezessete ajustes sem efeito observável",v:"corrigido",
+ p:"Densidade da interface, ordenação, concluídos, sinal de notas, rolagem × paginação, formato de progresso, reduzir movimento e cor do destaque agora mudam o que se vê. Os que continuam simbólicos (idioma, telemetria, qualidade) estão assim por dependerem de decisões listadas na seção 18."},
+{i:"Biblioteca sem busca, filtros ou coleções",v:"corrigido",
+ p:"Entraram busca na estante, coleções como chips, ordenação e estado vazio com saída. A busca cobre <b>o texto das notas</b>, não só título e autor — o achado mais valioso desta rodada."},
+{i:"Leitor sem sumário, busca, marcador ou notas",v:"corrigido",
+ p:"Quatro convenções consolidadas que faltavam. Entraram como painel lateral no leitor, além da seleção de texto com destacar, anotar e copiar citação."},
+{i:"Faltava a seção Conhecimento",v:"revisado",
+ p:"A arquitetura tinha seis seções e as notas moravam dentro de Leitura. Com destaque, tags e conexões, Leitura ficava com dois trabalhos. <b>Sete seções agora</b> — a ordem por consequência não muda."},
+{i:"Sistema de UI sem escala",v:"corrigido",
+ p:"Raios misturados (3, 4, 8, 999, 50%) e alturas de controle ad-hoc. Agora há escala declarada: espaço 4·8·12·16·24·32·48, raio 4 para controles e 8 para superfícies, altura 32 compacto e 38 padrão. A densidade da interface reescala tudo de uma vez."},
+{i:"Sem estados vazios e sem foco visível",v:"corrigido",
+ p:"Estante vazia com saída, notas vazias explicando o que preencheria, busca sem resultado com sugestões. E <code>:focus-visible</code> explícito em todo controle."},
+{i:"Setas não navegavam a estante",v:"corrigido",
+ p:"Especificado no Caderno 02 e ausente. Agora setas navegam, Enter abre, Espaço seleciona, Esc fecha a camada mais externa — nessa ordem."},
+{i:"Leitor não leva a Preferências",v:"mantido",
+ p:"Continua sem caminho direto: o leitor é modo focado, e sai por “← Biblioteca” ou ⌘K, que funciona de qualquer tela. Kindle e Play Books fazem o mesmo. <b>Decisão, não esquecimento</b> — mas é a primeira coisa a revisitar se o teste mostrar gente presa lá dentro."}
+];
+el("audit").innerHTML=AUDIT.map(function(a){
+  return'<div class="led"><span class="it">'+a.i+'</span>'+
+    '<span class="vd '+(a.v==="corrigido"?"v-mant":a.v==="revisado"?"v-rev":"v-desc")+'">'+a.v+'</span>'+
+    '<p>'+a.p+'</p></div>'}).join("");
+
+/* ═══════════════ 20 · BENCHMARK ═══════════════ */
+var BM=[
+{a:"Abrir um livro",e:"Nos três, tocar na capa abre e retoma de onde parou. Não há passo intermediário.",
+ m:"Capa abre e retoma. Detalhes ficam na aba ✳ e no menu ···.",
+ av:"Convenção forte e barata de respeitar. Gastar o clique da capa com seleção encarece a tarefa nº 1.",v:"manter"},
+{a:"Continuar lendo",e:"Kindle e Play Books abrem com o livro em andamento em destaque, acima da estante.",
+ m:"Faixa “Continuar lendo” no topo da biblioteca, com capítulo e tempo restante.",
+ av:"Resolve a tarefa mais comum sem exigir busca. Nada a inventar aqui.",v:"manter"},
+{a:"Controles de tipografia",e:"“Aa” no leitor, em Kindle e Play Books. Wattpad usa engrenagem.",
+ m:"“Aa” no rodapé, com o texto reagindo ao vivo por trás do painel.",
+ av:"O rótulo Aa já é vocabulário. A prévia ao vivo é melhora real: os três aplicam e você descobre depois.",v:"melhorar"},
+{a:"Escopo da tipografia",e:"Kindle e Play Books aplicam a mudança a <i>todos</i> os livros, sem avisar. Não há noção de “só este”.",
+ m:"Vale só para este livro; “Usar como padrão” é ato separado e datado.",
+ av:"Divergência com retorno: quem lê ficção e técnico no mesmo app quer corpos diferentes. O risco é a pessoa não perceber que precisa confirmar.",v:"diferenciar"},
+{a:"Sumário, busca no livro, marcador",e:"Os três têm. Posição varia; a existência, não.",
+ m:"Três ícones no cabeçalho do leitor, painel lateral.",
+ av:"Ausência seria lida como produto incompleto. Zero espaço para originalidade.",v:"manter"},
+{a:"Destaque e nota",e:"Selecionar texto abre barra com destacar, anotar e compartilhar. Universal.",
+ m:"Mesma barra, sem compartilhar (não há para onde), com “copiar citação” incluindo a fonte.",
+ av:"Manter o gesto. Trocar compartilhar por citação com fonte é ajuste ao que o Mekora serve.",v:"melhorar"},
+{a:"Onde as notas vivem",e:"Kindle exila os destaques num site à parte. Play Books tem lista simples. Wattpad usa comentários públicos.",
+ m:"Notas ligadas ao livro, visíveis no inspector da estante e no leitor, e buscáveis pelo conteúdo.",
+ av:"Aqui está o buraco real do mercado. É a razão de o produto existir.",v:"diferenciar"},
+{a:"Busca na biblioteca",e:"Título e autor nos três. Play Books também busca dentro do texto dos livros.",
+ m:"Título, autor, tags e <b>o conteúdo das suas notas</b>.",
+ av:"Buscar pelo que você pensou sobre o livro, e não pelo que o livro é, resolve o caso “não lembro o título, lembro a ideia”.",v:"diferenciar"},
+{a:"Sinal de conhecimento na capa",e:"Nenhum dos três marca a capa com atividade de leitura. Wattpad mostra popularidade, que é outra coisa.",
+ m:"Aba ✳ com a contagem de notas, clicável.",
+ av:"Diferenciação legítima: mostra na navegação o que o produto tem de próprio. Precisa de teto visual (99+) e não pode competir com o título.",v:"diferenciar"},
+{a:"Progresso",e:"Kindle: “faltam X min no capítulo”, a melhor microcópia de progresso do mercado. Play Books: %. Wattpad: partes.",
+ m:"Tempo por padrão, alterna para páginas e % ao tocar.",
+ av:"Tempo restante responde a pergunta real (“dá para terminar antes de dormir?”). Copiar aqui é acerto, não preguiça.",v:"manter"},
+{a:"Coleções e organização",e:"Kindle tem coleções; Play Books, prateleiras; Wattpad, listas. Todos manuais e opcionais.",
+ m:"Coleções como chips filtrando a estante, mais tags herdadas das notas.",
+ av:"Convenção mantida. As tags vindas das notas são a camada nova — organização que se forma sozinha ao ler.",v:"melhorar"},
+{a:"Perfil",e:"Wattpad tem perfil público forte (é rede social). Kindle e Play Books não têm perfil nenhum.",
+ m:"Não existe. Há Conta, e há “Sua leitura” como conteúdo.",
+ av:"Dois dos três maiores produtos de leitura não têm perfil e não sentem falta. Perfil serve à rede social, não à leitura.",v:"diferenciar"},
+{a:"Estatística de leitura",e:"Kindle tem sequência de dias e metas. Play Books, quase nada. Wattpad, contagem pública.",
+ m:"Notas recentes e temas que voltam. Sem sequência, sem meta, sem público.",
+ av:"Sequência de dias transforma leitura em obrigação e pune quem viaja. Escolha deliberada de não ter.",v:"diferenciar"},
+{a:"Continuidade entre aparelhos",e:"Kindle sincroniza posição há quinze anos e pergunta ao abrir. É expectativa mínima.",
+ m:"Sincroniza posição, notas e preferências de leitura; tema e downloads ficam no aparelho.",
+ av:"Manter a promessa. O que é novo é <i>dizer</i> o que viaja e o que não viaja, com etiqueta na linha.",v:"melhorar"},
+{a:"Ajustes do aplicativo",e:"Os três misturam preferências de leitura com configuração de conta numa lista longa.",
+ m:"Preferências como espelho, com diário do que você mudou e a origem.",
+ av:"O diário não existe em nenhum concorrente e resolve um problema que todos têm: “mudou sozinho”.",v:"diferenciar"},
+{a:"Loja e descoberta",e:"Kindle e Play Books são lojas antes de serem leitores. Wattpad é catálogo social.",
+ m:"Não existe. Os livros vêm de você.",
+ av:"Não é lacuna: é escopo. Acrescentar descoberta seria virar outro produto.",v:"manter"}
+];
+var VER={manter:["manter","p-ambos"],melhorar:["melhorar","p-pref"],diferenciar:["diferenciar","p-fluxo"]};
+var fBm="tudo";
+function drawBm(){
+  var rows=BM.filter(function(r){return fBm==="tudo"||r.v===fBm});
+  el("bm-body").innerHTML=rows.map(function(r){
+    var v=VER[r.v];
+    return'<tr><td><b>'+esc(r.a)+'</b></td><td>'+r.e+'</td><td>'+r.m+'</td>'+
+      '<td style="color:var(--ink-2)">'+r.av+'</td>'+
+      '<td><span class="pill '+v[1]+'">'+v[0]+'</span></td></tr>'}).join("");
+  el("bm-count").textContent=rows.length+" de "+BM.length+" áreas";
+}
+chips("f-bm",[["tudo","todas"],["manter","manter familiar"],["melhorar","melhorar"],["diferenciar","diferenciar"]],"tudo",
+  function(v){fBm=v;drawBm()});
+drawBm();
 
 /* ═══════════════ interações das maquetes ═══════════════ */
 el("adv-toggle").addEventListener("click",function(){
