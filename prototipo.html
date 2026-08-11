@@ -250,6 +250,32 @@ select.sel{height:var(--h1);border:1px solid var(--line);border-radius:var(--r1)
 .marcanota{font-size:.62em;opacity:.5;margin-left:.35em;vertical-align:super;line-height:1}
 .marcanota:hover{opacity:1;color:var(--acc)}
 .dst.cat{box-shadow:inset 0 -2px 0 rgba(26,25,23,.32)}
+.dst.ativo{outline:2px solid var(--acc);outline-offset:1px}
+.temnota{font-size:.6em;vertical-align:super;opacity:.55;margin-left:.15em}
+.lsec{scroll-margin-top:70px}
+.lsec+.lsec{margin-top:3.2em;padding-top:2.4em;border-top:1px solid currentColor;border-color:rgba(26,25,23,.12)}
+.fioprog{position:absolute;left:0;right:0;bottom:0;height:2px;background:rgba(26,25,23,.1);z-index:5}
+.fioprog i{display:block;height:100%;background:var(--ink)}
+/* correção de trecho */
+.selbar.corrige{background:var(--acc)}
+.grpajuste{display:flex;align-items:center;gap:2px;padding:0 var(--s2);
+  border-left:1px solid rgba(255,255,255,.25)}
+.grpajuste .ajr{font-size:10.5px;color:rgba(255,255,255,.7);margin-right:3px}
+.grpajuste button{padding:6px 9px;font-size:14px;line-height:1}
+.destaque-corrige{font-weight:600}
+/* notas de margem (desktop largo) */
+.lbody.commargem{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:var(--s6);align-items:start}
+.lbody.commargem .lcol{justify-self:end;margin:0}
+.margem{position:relative;min-height:100%}
+.notamg{position:absolute;left:0;right:0;background:#fff;border:1px solid var(--line);
+  border-left:3px solid #f7e08a;border-radius:var(--r1);padding:var(--s3);text-align:left;
+  box-shadow:0 2px 8px rgba(26,25,23,.06);transition:box-shadow .14s}
+.notamg:hover{box-shadow:0 8px 20px rgba(26,25,23,.14);z-index:2}
+.mgtrecho{display:block;font-family:var(--serif);font-style:italic;font-size:11.5px;color:var(--ink-3);
+  margin-bottom:5px;line-height:1.4}
+.mgnota{display:block;font-size:12.5px;line-height:1.5;color:var(--ink);
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+@media (max-width:1179px){.lbody.commargem{display:block}.margem{display:none}}
 .dst{padding:2px 0;border-radius:2px;cursor:pointer;background:#f7e08a}
 .dst.rosa{background:#f6c9d8}.dst.verde{background:#c8e6bd}
 .lprog{flex:1;display:flex;flex-direction:column;gap:5px;align-items:center}
@@ -526,7 +552,8 @@ var PAG=["A interface que se faz notar cobra um preço em atenção que o conte�
 var st={rota:"lib",cat:"geral",menu:false,ctx:null,pal:null,palq:"",bs:"",hit:null,
  leitor:false,valores:{},aviso:null,de:null,lab:false,layout:"A",cen:null,feito:{},passo:0,
  /* leitor */
- cap:0,chrome:"A",chromeVis:true,painel:null,sel:null,nota:null,destaques:{},marcado:false,
+ cap:0,chrome:"A",chromeVis:true,painel:null,sel:null,nota:null,dst:[],seq:1,marcado:false,
+ prog:0,ancora:null,pos:{},algo:"semantico",corrigindo:null,
  fmtprog:"tempo",escopo:"livro",lq:"",leu:null,valoresLivro:{},
  /* variantes em comparação */
  mNota:"A",mDst:"A",mRev:"A",mConh:"B",labSec:"visao",escolhendoCor:null};
@@ -573,7 +600,7 @@ var CEN=[
  p:[["selecionar","Selecione um trecho com o mouse"],["destacar","Destaque"],
     ["anotar","Anote o que pensou"],["salvarnota","Salve a nota"]]},
 {k:"09",t:"Leitor: reencontrar a nota e voltar ao trecho",
- go:function(){st.leitor=true;st.destaques={"1-0":{cor:"amarelo",nota:"isto explica por que a estante bagunçada funciona"}};
+ go:function(){st.leitor=true;st.dst=[{k:"c1",pid:"1-0",ini:0,fim:60,cor:"amarelo",nota:"isto explica por que a estante bagunçada funciona"}];
   st.cap=2;st.painel=null},
  p:[["rever","Abra as anotações"],["voltar","Volte ao trecho de origem"]]},
 {k:"10",t:"Leitor: navegar capítulos e ler no escuro",
@@ -581,31 +608,32 @@ var CEN=[
  p:[["toc","Abra o sumário"],["capitulo","Vá a outro capítulo"],["chrome","Some com os controles tocando no texto"]]},
 /* ── estresse ── */
 {k:"E1",t:"50 anotações no livro",e:1,
- go:function(){st.destaques=gerarAnotacoes(50);st.leitor=true;st.painel="notas";st.cap=0},
+ go:function(){st.dst=gerarAnotacoes(50);st.leitor=true;st.painel="notas";st.cap=0},
  p:[["rever","Percorra o painel"],["achar","Tente achar uma nota específica"]]},
 {k:"E2",t:"8 destaques na mesma tela",e:1,
- go:function(){st.destaques=gerarAnotacoes(8,true);st.leitor=true;st.painel=null;st.cap=0},
+ go:function(){st.dst=gerarAnotacoes(8,true);st.leitor=true;st.painel=null;st.cap=0},
  p:[["ler","Tente ler o capítulo com tudo marcado"]]},
 {k:"E3",t:"Nota muito longa",e:1,
- go:function(){st.destaques={"1-0":{cor:"amarelo",nota:NOTA_LONGA}};st.leitor=true;st.cap=1;
+ go:function(){st.dst=[{k:"c3",pid:"1-0",ini:0,fim:70,cor:"amarelo",nota:NOTA_LONGA}];st.leitor=true;st.cap=1;
   st.nota="1-0";st.mNota="A"},
  p:[["editar","Role dentro do editor"],["trecho","Veja se o trecho continua visível"]]},
 {k:"E4",t:"Anotações vizinhas",e:1,
- go:function(){st.destaques={"0-0":{cor:"amarelo",nota:"primeira"},"0-1":{cor:"rosa",nota:"segunda"},
-  "0-2":{cor:"verde",nota:"terceira"}};st.leitor=true;st.cap=0;st.painel=null},
+ go:function(){st.dst=[{k:"v1",pid:"0-1",ini:0,fim:48,cor:"amarelo",nota:"primeira"},
+  {k:"v2",pid:"0-1",ini:60,fim:120,cor:"rosa",nota:"segunda"},
+  {k:"v3",pid:"0-1",ini:140,fim:200,cor:"verde",nota:"terceira"}];st.leitor=true;st.cap=0;st.painel=null},
  p:[["distinguir","Consegue distinguir uma da outra?"]]},
 {k:"E5",t:"Zoom 200% com fonte grande",e:1,
  go:function(){st.valores.corpo="21";st.valores.largura="760";st.leitor=true;st.cap=3},
  p:[["cabe","Veja se o chrome ainda cabe"]]},
 {k:"E6",t:"Capítulo longo",e:1,
- go:function(){st.cap=3;st.leitor=true;st.painel=null;st.destaques={}},
+ go:function(){st.cap=3;st.leitor=true;st.painel=null;st.dst=[]},
  p:[["rolar","Role o capítulo inteiro"],["voltar","Use o sumário para sair e voltar"]]},
 {k:"E7",t:"Falha ao salvar a nota",e:1,
- go:function(){st.falhaSalvar=true;st.leitor=true;st.cap=0;st.destaques={};st.nota=null;
+ go:function(){st.falhaSalvar=true;st.leitor=true;st.cap=0;st.dst=[];st.nota=null;
   aviso("Modo de falha ligado: a próxima nota não vai salvar")},
  p:[["tentar","Escreva uma nota e tente salvar"],["preservada","Veja se o texto foi preservado"]]},
 {k:"E8",t:"Voltar a uma nota de capítulos atrás",e:1,
- go:function(){st.destaques={"0-1":{cor:"amarelo",nota:"a ordem vivida vence a imposta"}};
+ go:function(){st.dst=[{k:"c8",pid:"0-1",ini:0,fim:56,cor:"amarelo",nota:"a ordem vivida vence a imposta"}];
   st.leitor=true;st.cap=3;st.painel="notas"},
  p:[["saltar","Salte para o trecho original"]]}];
 function marcar(i){if(st.cen)st.feito[st.cen+i]=1}
@@ -828,10 +856,20 @@ var CAPS=[
  "É por isso que arquivos pessoais morrem por excesso e não por falta. Ninguém abandona um sistema porque ele está vazio; abandona porque perdeu a confiança de que vale a pena olhar lá dentro.",
  {t:"q",x:"Guardar é uma promessa que se faz ao seu eu futuro. Sistemas quebram quando essa promessa deixa de ser crível."},
  "A saída não é guardar menos. É fazer com que o ato de guardar carregue, junto, alguma informação sobre por que aquilo foi guardado — que é exatamente o que uma nota faz e um favorito não faz."]}];
-/* ═════ carga para teste de estresse ═════ */
+/* ═════ documento contínuo: blocos com id estável ═════ */
 function paraTexto(b){return typeof b==="string"?b:(b.t==="l"?b.x.join(" · "):b.x)}
+/* lista plana de blocos legíveis, na ordem do livro */
+var BLOCOS=(function(){var out=[];
+ CAPS.forEach(function(c,ci){c.ps.forEach(function(p,pi){
+  var txt=paraTexto(p),tipo=typeof p==="string"?"p":p.t;
+  out.push({id:ci+"-"+pi,ci:ci,pi:pi,tipo:tipo,txt:txt,n:txt.length})})});
+ return out})();
+var TOTAL_CHARS=BLOCOS.filter(function(b){return b.tipo==="p"}).reduce(function(a,b){return a+b.n},0);
+function blocoPorId(id){return BLOCOS.filter(function(b){return b.id===id})[0]}
+/* caracteres acumulados antes de um bloco — base do progresso semântico */
+var ACUM={};(function(){var s=0;BLOCOS.forEach(function(b){ACUM[b.id]=s;if(b.tipo==="p")s+=b.n})})();
 function gerarAnotacoes(n,juntas){
- var d={},alvos=[];
+ var d=[],alvos=[];
  CAPS.forEach(function(c,ci){c.ps.forEach(function(p,pi){
   if(typeof p==="string")alvos.push(ci+"-"+pi)})});
  if(juntas)alvos=alvos.slice(0,6);
@@ -839,11 +877,13 @@ function gerarAnotacoes(n,juntas){
   "conferir a fonte","o argumento vira aqui","exemplo perfeito","guardar para a conversa de terça",
   "não concordo, mas é bem construído"];
  for(var i=0;i<n;i++){
-  var id=alvos[i%alvos.length];
-  if(juntas&&i>=alvos.length)id=alvos[i%alvos.length];
-  d[id]={cor:["amarelo","rosa","verde"][i%3]};
-  if(i%2===0)d[id].nota=notas[i%notas.length];
- }
+  var id=alvos[i%alvos.length],b=blocoPorId(id);if(!b)continue;
+  /* varios destaques no mesmo paragrafo: fatias distintas do texto */
+  var fatia=Math.floor(b.n/3),volta=Math.floor(i/alvos.length)%3;
+  var ini=Math.min(b.n-12,volta*fatia),fim=Math.min(b.n,ini+Math.max(24,fatia-8));
+  var item={k:"g"+i,pid:id,ini:ini,fim:fim,cor:["amarelo","rosa","verde"][i%3]};
+  if(i%2===0)item.nota=notas[i%notas.length];
+  d.push(item)}
  return d}
 var NOTA_LONGA="Este trecho resolve uma confusão que eu vinha carregando há semanas. Eu tratava densidade como se fosse uma propriedade da tela — quantos elementos cabem, qual o espaçamento mínimo, quantas colunas.\n\nO ponto do autor é outro e é mais útil: densidade é uma propriedade da tarefa. A mesma tela é densa para quem procura e esparsa para quem revisa, porque as duas pessoas chegam com perguntas diferentes e usam atributos diferentes para responder.\n\nIsso muda o que eu meço. Em vez de contar elementos por área, eu deveria medir quantas perguntas a tela consegue responder sem exigir uma segunda ação. Um card com quinze campos pode ser menos denso que um com três, se os três forem exatamente os que a tarefa pede.\n\nAplicando ao problema do card de livro: a capa responde “qual é este livro?” à distância. O título responde à mesma pergunta, mais devagar e com mais certeza. A contagem de notas responde a outra pergunta inteiramente — e é por isso que ela competia com o título em vez de complementá-lo.\n\nFalta testar se isso se sustenta quando o acervo passa de duzentos itens, que é onde a varredura deixa de ser possível e a busca vira o caminho principal.";
 function estiloLeitura(){
@@ -876,39 +916,24 @@ function vLeitor(){
    '<div class="lborda dir'+(mostra?"":" oculto")+'"><span class="ctxwrap">'+btnAa()+
    (st.ctx==="aa"?ctxAa():"")+'</span>'+btnChrome("notas","✳","Anotações")+btnMarcador()+'</div>';
  }
- /* ── texto ── */
- h+='<div class="lbody" data-a="togglechrome"><div class="lcol" id="lcol" style="font-size:'+e.corpo+
-  'px;line-height:'+e.el+';font-family:'+e.ff+';color:'+e.fg+';max-width:'+v("largura")+'px">'+
-  '<h2 class="lcap">'+esc(cap.n)+'</h2>'+
-  cap.ps.map(function(p,i){
-   var id=st.cap+"-"+i,d=st.destaques[id];
-   /* blocos estruturais não são anotáveis: título, citação e lista */
-   if(typeof p==="object"){
-    if(p.t==="h")return'<h3 class="lh3">'+esc(p.x)+'</h3>';
-    if(p.t==="q")return'<blockquote class="lq">'+esc(p.x)+'</blockquote>';
-    if(p.t==="l")return'<ul class="lul">'+p.x.map(function(li){return'<li>'+esc(li)+'</li>'}).join("")+'</ul>';
-    return""}
-   var txt=esc(p);
-   if(d)txt='<mark class="dst '+(d.cor||"amarelo")+(d.cat?" cat":"")+'" data-a="verdestaque" data-id="'+id+'" '+
-    'title="'+(d.nota?"Com nota":"Destaque")+'">'+txt+'</mark>';
-   var bloco='<p data-p="'+id+'"'+(st.leu===id?' class="alvo"':'')+'>'+txt+
-    (d&&d.nota&&st.mNota!=="B"?'<button class="marcanota" data-a="anotarid" data-id="'+id+
-     '" aria-label="Ver nota deste trecho" title="'+esc(d.nota.slice(0,60))+'">✎</button>':'')+'</p>';
-   if(st.nota===id&&st.mNota==="B")bloco+=notaInline(id);
-   else if(d&&d.nota&&st.mNota==="B")bloco+=notaInlineLida(id,d);
-   return bloco}).join("")+
-  '<div class="lfim">'+(st.cap<CAPS.length-1
-   ?'<button class="btn sec sm" data-a="cap" data-i="'+(st.cap+1)+'">Próximo capítulo →</button>'
-   :'<span class="lbl">fim do trecho de demonstração</span>')+'</div>'+
-  '</div></div>';
- /* ── rodapé (modelo A) ── */
+ /* ── documento contínuo: o livro inteiro numa rolagem só ── */
+ var margem=(st.mNota==="M"&&larguraTela()>=1180);
+ h+='<div class="lbody'+(margem?" commargem":"")+'" id="lbody" data-a="togglechrome">'+
+  '<div class="lcol" id="lcol" style="font-size:'+e.corpo+'px;line-height:'+e.el+
+  ';font-family:'+e.ff+';color:'+e.fg+';max-width:'+v("largura")+'px">'+
+  CAPS.map(function(c,ci){
+   return'<section class="lsec" data-cap="'+ci+'" id="cap-'+ci+'">'+
+    '<h2 class="lcap">'+esc(c.n)+'</h2>'+
+    c.ps.map(function(p,pi){return blocoHTML(ci+"-"+pi,p)}).join("")+'</section>'}).join("")+
+  '<div class="lfim"><span class="lbl">fim do trecho de demonstração</span></div>'+
+  '</div>'+(margem?'<div class="margem" id="margem"></div>':'')+'</div>';
+ /* ── rodapé (modelo A): progresso real ── */
  if(modelo==="A")h+='<div class="lbar'+(mostra?"":" oculto")+'">'+
-  '<button class="lnk" data-a="cap" data-i="'+Math.max(0,st.cap-1)+'" '+(st.cap?"":'disabled style="opacity:.35"')+'>← anterior</button>'+
-  '<div class="lprog"><div class="ltrilho"><i style="width:'+Math.round((st.cap+1)/CAPS.length*100)+'%"></i></div>'+
-  '<button class="lprogtxt" data-a="fmtprog">'+textoProgresso()+'</button></div>'+
-  '<button class="lnk" data-a="cap" data-i="'+Math.min(CAPS.length-1,st.cap+1)+'" '+(st.cap<CAPS.length-1?"":'disabled style="opacity:.35"')+'>próximo →</button></div>';
- /* ── seleção ── */
- if(st.sel)h+=barraSelecao();
+  '<div class="lprog" style="max-width:none"><div class="ltrilho"><i id="barra" style="width:0%"></i></div>'+
+  '<button class="lprogtxt" data-a="fmtprog" id="progtxt">—</button></div></div>';
+ if(modelo!=="A")h+='<div class="fioprog"><i id="barra" style="width:0%"></i></div>';
+ /* ── seleção: trecho novo (pendente), destaque existente, ou correção ── */
+ if(st.sel||st.pendente||st.corrigindo)h+=barraSelecao();
  /* ── painéis laterais ── */
  if(st.painel)h+=painelLeitor();
  /* ── nota: modelo A lateral · B inline (no fluxo) · C flutuante ── */
@@ -917,7 +942,7 @@ function vLeitor(){
  return h+'</div>'}
 /* ── MODELO B: expansão inline ── */
 function notaInline(id){
- var d=st.destaques[id]||{};
+ var d=dstPorK(id)||{};
  return'<aside class="notainline" aria-label="Nota do trecho">'+
   '<textarea id="notatxt" class="notaentrada" rows="3" placeholder="O que este trecho te fez pensar?">'+esc(d.nota||"")+'</textarea>'+
   '<div class="acts"><button class="btn sm" data-a="salvarnota">Salvar</button>'+
@@ -928,13 +953,40 @@ function notaInlineLida(id,d){
   '<span class="lbl">sua nota</span><p>'+esc(d.nota)+'</p></aside>'}
 /* ── MODELO C: compositor flutuante junto da seleção ── */
 function notaFlutuante(id){
- var d=st.destaques[id]||{};
+ var d=dstPorK(id)||{};
  return'<div class="notaflut" role="dialog" aria-label="Nota rápida">'+
   '<div class="notaflut-h"><span class="lbl">Nota rápida</span>'+
   '<button class="lnk" data-a="fecharnota" aria-label="Fechar">✕</button></div>'+
   '<textarea id="notatxt" class="notaentrada" rows="3" placeholder="Anote em uma linha…">'+esc(d.nota||"")+'</textarea>'+
   '<div class="acts"><button class="btn sm" data-a="salvarnota">Salvar</button>'+
   '<button class="lnk" data-a="expandirnota">Escrever mais →</button></div></div>'}
+function larguraTela(){return document.documentElement.clientWidth||1280}
+function limparSelecao(){var s=window.getSelection();if(s&&s.removeAllRanges)s.removeAllRanges()}
+/* ── destaque ancorado em offset de caractere: vários por parágrafo, e corrigível ── */
+function dstDoBloco(pid){return st.dst.filter(function(d){return d.pid===pid})
+ .sort(function(a,b){return a.ini-b.ini})}
+function blocoHTML(id,p){
+ if(typeof p==="object"){
+  if(p.t==="h")return'<h3 class="lh3">'+esc(p.x)+'</h3>';
+  if(p.t==="q")return'<blockquote class="lq">'+esc(p.x)+'</blockquote>';
+  if(p.t==="l")return'<ul class="lul">'+p.x.map(function(li){return'<li>'+esc(li)+'</li>'}).join("")+'</ul>';
+  return""}
+ var marcas=dstDoBloco(id),html="",pos=0;
+ marcas.forEach(function(d){
+  var ini=Math.max(pos,d.ini),fim=Math.min(p.length,d.fim);
+  if(fim<=ini)return;
+  html+=esc(p.slice(pos,ini));
+  html+='<mark class="dst '+(d.cor||"amarelo")+(d.cat?" cat":"")+(st.sel===d.k?" ativo":"")+
+   '" data-a="verdestaque" data-k="'+d.k+'" title="'+(d.nota?"Com nota — clique para editar":"Destaque")+'">'+
+   esc(p.slice(ini,fim))+(d.nota?'<span class="temnota" aria-label="tem nota">✎</span>':"")+'</mark>';
+  pos=fim});
+ html+=esc(p.slice(pos));
+ var bloco='<p data-p="'+id+'"'+(st.leu===id?' class="alvo"':'')+'>'+html+'</p>';
+ var comNota=marcas.filter(function(d){return d.nota});
+ if(st.mNota==="B"){
+  if(st.nota&&marcas.some(function(d){return d.k===st.nota}))bloco+=notaInline(st.nota);
+  else comNota.forEach(function(d){if(d.k!==st.nota)bloco+=notaInlineLida(d.k,d)})}
+ return bloco}
 function btnChrome(p,ic,rot){
  return'<button class="licone'+(st.painel===p?" on":"")+'" data-a="painel" data-p="'+p+'" aria-label="'+rot+
   '" title="'+rot+'" aria-pressed="'+(st.painel===p)+'">'+ic+'</button>'}
@@ -943,13 +995,42 @@ function btnMarcador(){
 function btnAa(){
  return'<button class="licone aa" data-a="ctx" data-t="aa" aria-label="Tipografia e tema" title="Tipografia" aria-expanded="'+(st.ctx==="aa")+'">Aa</button>'}
 function textoProgresso(){
- var f=st.fmtprog||"tempo",pct=Math.round((st.cap+1)/CAPS.length*100);
- return f==="tempo"?"faltam ~"+(9-st.cap*3)+" min no capítulo":f==="paginas"?"pág. "+(12+st.cap*9)+" de 38":pct+"% do livro"}
+ var f=st.fmtprog||"tempo",pct=Math.round(st.prog*100);
+ /* 220 palavras por minuto sobre o texto que falta */
+ var faltam=Math.max(0,Math.round((TOTAL_CHARS*(1-st.prog))/5.4/220));
+ var noCap=CAPS[st.cap]?CAPS[st.cap].n.split("·")[0].trim():"1";
+ if(f==="tempo")return faltam<1?"quase no fim":"faltam ~"+faltam+" min · cap. "+noCap;
+ if(f==="paginas")return "cap. "+noCap+" de "+CAPS.length+" · "+pct+"%";
+ return pct+"% lido · cap. "+noCap}
 /* menu de seleção — só quatro ações; o resto é secundário */
 var CATS_DST=[{k:"importante",n:"Importante",c:"amarelo"},{k:"duvida",n:"Dúvida",c:"rosa"},
  {k:"ideia",n:"Ideia",c:"verde"}];
+function dstPorK(k){return st.dst.filter(function(d){return d.k===k})[0]}
+/* ── correção: a seleção errada é caso normal, não exceção ── */
+function limitesPalavra(txt,ini,fim,dir,lado){
+ /* dir: +1 expande, -1 reduz · lado: "ini" ou "fim" */
+ if(lado==="fim"){
+  if(dir>0){var m=txt.slice(fim).match(/^\s*\S+/);return[ini,m?fim+m[0].length:txt.length]}
+  var t=txt.slice(ini,fim).replace(/\s*\S+\s*$/,"");return[ini,ini+Math.max(1,t.length)]}
+ if(dir>0){var pre=txt.slice(0,ini).match(/\S+\s*$/);return[pre?ini-pre[0].length:0,fim]}
+ var t2=txt.slice(ini,fim).replace(/^\s*\S+\s*/,"");
+ return[Math.min(fim-1,fim-t2.length),fim]}
+function barraCorrecao(){
+ var d=dstPorK(st.corrigindo);if(!d)return"";
+ var b=blocoPorId(d.pid),trecho=b.txt.slice(d.ini,d.fim);
+ return'<div class="selbar corrige" role="menu" aria-label="Corrigir destaque">'+
+  '<span class="selrot">Ajustar</span>'+
+  '<span class="grpajuste"><span class="ajr">início</span>'+
+  '<button data-a="ajusta" data-l="ini" data-d="1" aria-label="Expandir início">＋</button>'+
+  '<button data-a="ajusta" data-l="ini" data-d="-1" aria-label="Reduzir início">－</button></span>'+
+  '<span class="grpajuste"><span class="ajr">fim</span>'+
+  '<button data-a="ajusta" data-l="fim" data-d="-1" aria-label="Reduzir fim">－</button>'+
+  '<button data-a="ajusta" data-l="fim" data-d="1" aria-label="Expandir fim">＋</button></span>'+
+  '<button data-a="refazer" role="menuitem">Refazer seleção</button>'+
+  '<button data-a="fimcorrige" role="menuitem">Pronto</button></div>'}
 function barraSelecao(){
- var d=st.destaques[st.sel],m=st.mDst;
+ if(st.corrigindo)return barraCorrecao();
+ var d=st.sel&&dstPorK(st.sel),m=st.mDst;
  /* MODELO C — escolher o sentido, não a cor */
  if(m==="C"&&st.escolhendoCor)return'<div class="selbar" role="menu" aria-label="Tipo de destaque">'+
   '<span class="selrot">Marcar como</span>'+CATS_DST.map(function(c){
@@ -962,17 +1043,18 @@ function barraSelecao(){
   '<button data-a="anotar" role="menuitem">Anotar</button>'+
   '<button data-a="fechasel" aria-label="Fechar">✕</button></div>';
  return'<div class="selbar" role="menu" aria-label="Ações do trecho">'+
-  (d?'<button data-a="tirardestaque" role="menuitem">Remover destaque</button>'+
+  (d?'<button data-a="corrigir" role="menuitem" class="destaque-corrige">Ajustar trecho</button>'+
      (m==="C"&&d.cat?'<span class="selrot">'+CATS_DST.filter(function(c){return c.k===d.cat})[0].n+'</span>':
      '<span class="cores">'+["amarelo","rosa","verde"].map(function(c){
-       return'<button class="cor '+c+(d.cor===c?" on":"")+'" data-a="cordestaque" data-c="'+c+'" aria-label="Cor '+c+'"></button>'}).join("")+'</span>')
+       return'<button class="cor '+c+(d.cor===c?" on":"")+'" data-a="cordestaque" data-c="'+c+'" aria-label="Cor '+c+'"></button>'}).join("")+'</span>')+
+     '<button data-a="tirardestaque" role="menuitem">Remover</button>'
     :'<button data-a="'+(m==="C"?"escolhercat":"destacar")+'" role="menuitem">Destacar</button>')+
   '<button data-a="anotar" role="menuitem">'+(d&&d.nota?"Editar nota":"Anotar")+'</button>'+
   '<button data-a="copiar" role="menuitem">Copiar</button>'+
   '<button data-a="fechasel" aria-label="Fechar">✕</button></div>'}
 /* nota ao lado do texto: o parágrafo continua visível */
 function editorNota(){
- var id=st.nota,d=st.destaques[id]||{};
+ var id=st.nota,d=dstPorK(id)||{};
  return'<aside class="notaed" aria-label="Nota">'+
   '<div class="notaed-h"><span class="lbl">Nota · '+CAPS[st.cap].n.split("·")[0].trim()+'</span>'+
   '<button class="lnk" data-a="fecharnota">fechar</button></div>'+
@@ -987,11 +1069,13 @@ function editorNota(){
   '<button class="ponte" data-a="conhecimento" data-id="'+id+'">Adicionar ao conhecimento →</button>'+
   '<p class="notadica">A nota fica presa ao trecho. Você a reencontra pelo painel de anotações e pelo espaço do livro.</p>'+
   '</div></aside>'}
-function textoDoId(id){var p=id.split("-"),b=CAPS[+p[0]]&&CAPS[+p[0]].ps[+p[1]];
- return b?paraTexto(b):""}
-function itemAnot(id){var d=st.destaques[id];
+function textoDoId(k){var d=dstPorK(k);
+ if(d){var b=blocoPorId(d.pid);return b?b.txt.slice(d.ini,d.fim):""}
+ var p=String(k).split("-"),bl=CAPS[+p[0]]&&CAPS[+p[0]].ps[+p[1]];
+ return bl?paraTexto(bl):""}
+function itemAnot(id){var d=dstPorK(id);if(!d)return"";
  return'<button class="anot" data-a="irtrecho" data-c="'+id.split("-")[0]+'" data-i="'+id.split("-")[1]+'">'+
-  (st.mRev==="A"?'<span class="lbl">'+esc(CAPS[+id.split("-")[0]].n)+'</span>':'')+
+  (st.mRev==="A"?'<span class="lbl">'+esc(CAPS[blocoPorId(d.pid).ci].n)+'</span>':'')+
   (d.cat?'<span class="catdst '+d.cor+'">'+CATS_DST.filter(function(c){return c.k===d.cat})[0].n+'</span>':'')+
   '<mark class="dst '+(d.cor||"amarelo")+'">'+esc(textoDoId(id).slice(0,90))+'…</mark>'+
   (d.nota?'<span class="anotnota">'+esc(d.nota)+'</span>':'<span class="lbl">sem nota</span>')+'</button>'}
@@ -1014,7 +1098,7 @@ function painelLeitor(){
     :'<p class="vaziop">Nada encontrado. Tente “memória”, “densidade” ou “estante”.</p>'}
   else h+='<p class="vaziop">Busca no texto deste livro.</p>'}
  if(p==="notas"){
-  var ids=Object.keys(st.destaques);
+  var ids=st.dst.map(function(x){return x.k});
   /* busca e filtro só aparecem quando a lista deixa de caber na cabeça */
   if(ids.length>8){
    h+='<input class="inp" id="qanot" value="'+esc(st.qanot||"")+'" placeholder="Buscar nas anotações" style="min-width:0;width:100%">'+
@@ -1022,13 +1106,13 @@ function painelLeitor(){
      return'<button class="fa'+((st.fanot||"tudo")===f[0]?" on":"")+'" data-a="fanot" data-v="'+f[0]+'">'+f[1]+'</button>'}).join("")+
     '<span class="lbl" style="margin-left:auto">'+ids.length+'</span></div>';
    var qa2=(st.qanot||"").toLowerCase().trim(),fa=st.fanot||"tudo";
-   ids=ids.filter(function(id){var d=st.destaques[id];
+   ids=ids.filter(function(id){var d=dstPorK(id);
     if(fa==="nota"&&!d.nota)return false;
     if(fa==="so"&&d.nota)return false;
     if(qa2)return (textoDoId(id)+" "+(d.nota||"")).toLowerCase().indexOf(qa2)>-1;
     return true});
    if(!ids.length)h+='<p class="vaziop">Nenhuma anotação com esse filtro.</p>'}
-  if(!Object.keys(st.destaques).length)h+='<p class="vaziop">Nenhuma anotação ainda. Selecione um trecho para destacar ou anotar.</p>';
+  if(!st.dst.length)h+='<p class="vaziop">Nenhuma anotação ainda. Selecione um trecho para destacar ou anotar.</p>';
   else if(!ids.length){/* já avisado pelo filtro */}
   else if(st.mRev==="B"){
    /* REVISÃO B — agrupada por capítulo */
@@ -1039,18 +1123,18 @@ function painelLeitor(){
      doCap.map(function(id){return itemAnot(id)}).join("")})}
   else if(st.mRev==="C"){
    /* REVISÃO C — o que sobrou do livro, não a lista de marcações */
-   var comNota=ids.filter(function(id){return st.destaques[id].nota});
+   var comNota=ids.filter(function(id){var x=dstPorK(id);return x&&x.nota});
    h+='<div class="resumo"><div class="rnum"><b>'+ids.length+'</b><span>destaques</span></div>'+
     '<div class="rnum"><b>'+comNota.length+'</b><span>com nota</span></div>'+
     '<div class="rnum"><b>2</b><span>conexões</span></div></div>'+
     '<div class="lbl" style="margin-top:var(--s3)">Suas ideias</div>'+
-    (comNota.length?comNota.map(function(id){var d=st.destaques[id];
+    (comNota.length?comNota.map(function(id){var d=dstPorK(id);
       return'<div class="ideia"><p class="itxt">'+esc(d.nota)+'</p>'+
-       '<button class="ipass" data-a="irtrecho" data-c="'+id.split("-")[0]+'" data-i="'+id.split("-")[1]+'">'+
+       '<button class="ipass" data-a="irtrecho" data-c="'+blocoPorId(d.pid).ci+'" data-i="'+blocoPorId(d.pid).pi+'" data-k="'+d.k+'">'+
        '↩ '+esc(textoDoId(id).slice(0,54))+'…</button></div>'}).join("")
      :'<p class="vaziop">Você destacou, mas ainda não escreveu nada. Esta visão é sobre o que <b>você</b> pensou.</p>')+
     '<div class="lbl" style="margin-top:var(--s4)">Só destacado</div>'+
-    ids.filter(function(id){return !st.destaques[id].nota}).map(function(id){return itemAnot(id)}).join("")}
+    ids.filter(function(id){var x=dstPorK(id);return x&&!x.nota}).map(function(id){return itemAnot(id)}).join("")}
   else h+=ids.map(function(id){return itemAnot(id)}).join("")}
  return h+'</div></aside>'}
 function ctxAa(){
@@ -1106,7 +1190,32 @@ function draw(){
  if(st.hit){var el=$("row-"+st.hit);if(el)el.scrollIntoView({block:"center",behavior:"smooth"})}
  var b=$("bs");if(b&&document.activeElement!==b&&st.bs){b.focus();b.setSelectionRange(b.value.length,b.value.length)}
  var p=$("palq");if(p){p.focus();p.setSelectionRange(p.value.length,p.value.length)}
+ /* rolagem contínua: liga o cálculo de progresso e restaura a âncora */
+ var lb=document.getElementById("lbody");
+ if(lb){
+  if(!lb.dataset.lig){lb.dataset.lig="1";
+   /* throttle por tempo: rAF não dispara em aba oculta e congelaria o progresso */
+   lb.addEventListener("scroll",function(){
+    if(st.raf)return;
+    st.raf=setTimeout(function(){st.raf=null;calcProgresso();guardarPos()},60)},{passive:true});
+   if(st.pos["livro"])restaurarPos();else calcProgresso()}
+  else calcProgresso();
+  if(st.mNota==="M")desenharMargem()}
  drawLab()}
+/* notas na margem: alinhadas ao parágrafo de origem, sem mexer na coluna de texto */
+function desenharMargem(){
+ var m=document.getElementById("margem");if(!m)return;
+ var lb=document.getElementById("lbody"),base=lb.getBoundingClientRect().top-lb.scrollTop;
+ var usados=[];
+ m.innerHTML=st.dst.filter(function(d){return d.nota}).map(function(d){
+  var el=document.querySelector('[data-p="'+d.pid+'"]');if(!el)return"";
+  var y=el.getBoundingClientRect().top-base;
+  /* empilha quando colidem, em vez de sobrepor */
+  usados.forEach(function(u){if(Math.abs(y-u)<86)y=u+90});
+  usados.push(y);
+  return'<button class="notamg" data-a="anotarid" data-id="'+d.k+'" style="top:'+Math.round(y)+'px">'+
+   '<span class="mgtrecho">'+esc(textoDoId(d.k).slice(0,42))+'…</span>'+
+   '<span class="mgnota">'+esc(d.nota)+'</span></button>'}).join("")}
 
 /* ═════ LAB ═════ */
 var ANOT={lib:["Biblioteca","O controle de usuário no topo direito é o único ponto pessoal persistente. Settings não disputa espaço com as áreas de trabalho.","Ninguém achar o controle em 5 segundos."],
@@ -1313,37 +1422,55 @@ $("app").addEventListener("click",function(e){
    marcar("capitulo");aviso(CAPS[st.cap].n)}
  else if(a==="marcador"){st.marcado=!st.marcado;aviso(st.marcado?"Marcador colocado":"Marcador removido")}
  else if(a==="fmtprog"){st.fmtprog=st.fmtprog==="tempo"?"paginas":st.fmtprog==="paginas"?"pct":"tempo"}
- else if(a==="destacar"){st.destaques[st.sel]={cor:"amarelo"};marcar("destacar");aviso("Destacado")}
- else if(a==="destacarcor"){st.destaques[st.sel]={cor:el.dataset.c};marcar("destacar");
-   st.sel=null;aviso("Destacado")}
+ else if(a==="destacar"||a==="destacarcor"||a==="destacarcat"){
+   var cor=a==="destacarcor"?el.dataset.c:"amarelo",cat=null;
+   if(a==="destacarcat"){var c2=CATS_DST.filter(function(c){return c.k===el.dataset.k})[0];
+    cor=c2.c;cat=c2.k}
+   if(st.pendente){var novo={k:"d"+(st.seq++),pid:st.pendente.pid,ini:st.pendente.ini,
+     fim:st.pendente.fim,cor:cor,cat:cat};
+    st.dst.push(novo);st.sel=novo.k;st.pendente=null;st.escolhendoCor=null;
+    limparSelecao();marcar("destacar");
+    aviso(cat?"Marcado como "+CATS_DST.filter(function(c){return c.k===cat})[0].n
+      :"Destacado — se pegou errado, use Ajustar trecho")}}
  else if(a==="escolhercat"){st.escolhendoCor=true}
- else if(a==="destacarcat"){var cat=CATS_DST.filter(function(c){return c.k===el.dataset.k})[0];
-   st.destaques[st.sel]={cor:cat.c,cat:cat.k};st.escolhendoCor=null;st.sel=null;
-   marcar("destacar");aviso("Marcado como "+cat.n)}
- else if(a==="cordestaque"){st.destaques[st.sel].cor=el.dataset.c}
+ else if(a==="cordestaque"){var dd=dstPorK(st.sel);if(dd)dd.cor=el.dataset.c}
+ /* ── correção do trecho ── */
+ else if(a==="corrigir"){st.corrigindo=st.sel;marcar("corrigir");
+   aviso("Ajuste as bordas do trecho — nada é apagado")}
+ else if(a==="ajusta"){var d3=dstPorK(st.corrigindo);if(d3){
+    var b3=blocoPorId(d3.pid),lim=limitesPalavra(b3.txt,d3.ini,d3.fim,+el.dataset.d,el.dataset.l);
+    d3.ini=Math.max(0,lim[0]);d3.fim=Math.min(b3.txt.length,lim[1]);
+    if(d3.fim<=d3.ini)d3.fim=d3.ini+1;marcar("ajustou")}}
+ else if(a==="refazer"){var d4=dstPorK(st.corrigindo);
+   st.refazendo=st.corrigindo;st.corrigindo=null;st.sel=null;
+   aviso("Selecione o trecho certo — o antigo fica marcado até você confirmar")}
+ else if(a==="fimcorrige"){st.corrigindo=null;st.sel=null;marcar("pronto");aviso("Trecho ajustado")}
  else if(a==="anotarid"){st.nota=el.dataset.id;st.sel=null}
  else if(a==="expandirnota"){var t0=document.getElementById("notatxt");
-   if(t0&&st.destaques[st.nota])st.destaques[st.nota].nota=t0.value;
+   var dn0=dstPorK(st.nota);if(t0&&dn0)dn0.nota=t0.value;
    st.mNota="A";aviso("Aberto no painel lateral — cabe uma nota longa")}
- else if(a==="tirardestaque"){delete st.destaques[st.sel];st.sel=null;aviso("Destaque removido")}
- else if(a==="anotar"){if(!st.destaques[st.sel])st.destaques[st.sel]={cor:"amarelo"};
+ else if(a==="tirardestaque"){st.dst=st.dst.filter(function(x){return x.k!==st.sel});
+   st.sel=null;st.corrigindo=null;aviso("Destaque removido")}
+ else if(a==="anotar"){
+   if(st.pendente){var nv={k:"d"+(st.seq++),pid:st.pendente.pid,ini:st.pendente.ini,
+     fim:st.pendente.fim,cor:"amarelo"};st.dst.push(nv);st.sel=nv.k;st.pendente=null;limparSelecao()}
    st.nota=st.sel;st.sel=null;marcar("anotar")}
- else if(a==="copiar"){st.sel=null;aviso("Trecho copiado com a fonte")}
- else if(a==="fechasel"){st.sel=null;window.getSelection&&window.getSelection().removeAllRanges()}
- else if(a==="verdestaque"){st.sel=el.dataset.id}
+ else if(a==="copiar"){st.sel=null;st.pendente=null;limparSelecao();aviso("Trecho copiado com a fonte")}
+ else if(a==="fechasel"){st.sel=null;st.pendente=null;st.corrigindo=null;limparSelecao()}
+ else if(a==="verdestaque"){st.sel=el.dataset.k;st.pendente=null;st.corrigindo=null}
  else if(a==="salvarnota"){var ta=document.getElementById("notatxt");
    if(st.falhaSalvar){ /* o texto NUNCA se perde por falha de salvamento */
     st.rascunho=ta?ta.value:"";st.erroSalvar=true;marcar("tentar");marcar("preservada");
     aviso("Não deu para salvar agora. Seu texto está aqui e tentamos de novo.")}
-   else{if(ta){st.destaques[st.nota].nota=ta.value.trim();
-     if(!ta.value.trim())delete st.destaques[st.nota].nota}
+   else{var dn=dstPorK(st.nota);if(ta&&dn){dn.nota=ta.value.trim();
+     if(!ta.value.trim())delete dn.nota}
     st.nota=null;st.erroSalvar=false;st.rascunho=null;
     marcar("salvarnota");aviso("Nota salva — presa ao trecho")}}
  else if(a==="tentarnovamente"){st.falhaSalvar=false;st.erroSalvar=false;
    var tb=document.getElementById("notatxt");
-   if(tb&&st.nota){st.destaques[st.nota].nota=tb.value.trim()}
+   var dn2=dstPorK(st.nota);if(tb&&dn2){dn2.nota=tb.value.trim()}
    st.nota=null;st.rascunho=null;aviso("Salvo agora")}
- else if(a==="apagarnota"){delete st.destaques[st.nota].nota;st.nota=null;aviso("Nota apagada")}
+ else if(a==="apagarnota"){var dn3=dstPorK(st.nota);if(dn3)delete dn3.nota;st.nota=null;aviso("Nota apagada")}
  else if(a==="fecharnota"){st.nota=null}
  else if(a==="conhecimento"){st.nota=null;marcar("conhec");
    aviso("Nota enviada ao Conhecimento — vira um objeto conectável")}
@@ -1374,12 +1501,56 @@ $("app").addEventListener("input",function(e){
  else if(e.target.id==="qanot"){st.qanot=e.target.value;marcar("achar");
   var p2=e.target.selectionStart;draw();
   var n2=document.getElementById("qanot");if(n2){n2.focus();n2.setSelectionRange(p2,p2)}}});
-/* seleção real de texto no leitor → barra de ações */
+/* ── seleção real: converte a Range em offsets de caractere do parágrafo ── */
+function offsetsDaSelecao(p){
+ var s=window.getSelection();if(!s||!s.rangeCount)return null;
+ var r=s.getRangeAt(0);
+ if(!p.contains(r.startContainer)||!p.contains(r.endContainer))return null;
+ var pre=document.createRange();pre.selectNodeContents(p);pre.setEnd(r.startContainer,r.startOffset);
+ var ini=pre.toString().length,fim=ini+r.toString().length;
+ return fim>ini?{ini:ini,fim:fim}:null}
 $("app").addEventListener("mouseup",function(e){
- if(!st.leitor||st.nota)return;
+ if(!st.leitor||st.nota||st.corrigindo)return;
  var s=window.getSelection();if(!s||!s.toString().trim())return;
  var p=e.target.closest("[data-p]");if(!p)return;
- st.sel=p.dataset.p;marcar("selecionar");draw()});
+ var o=offsetsDaSelecao(p);if(!o)return;
+ st.pendente={pid:p.dataset.p,ini:o.ini,fim:o.fim};st.sel=null;
+ marcar("selecionar");draw()});
+/* ── progresso real, por peso de texto lido ── */
+function calcProgresso(){
+ var body=document.getElementById("lbody");if(!body)return;
+ var topo=body.getBoundingClientRect().top,alvo=topo+body.clientHeight*0.32;
+ var atual=null,frac=0;
+ var ps=[].slice.call(document.querySelectorAll("#lcol p[data-p]"));
+ for(var i=0;i<ps.length;i++){var r=ps[i].getBoundingClientRect();
+  if(r.bottom>=alvo){atual=ps[i];
+   frac=Math.min(1,Math.max(0,(alvo-r.top)/Math.max(1,r.height)));break}}
+ if(!atual&&ps.length){atual=ps[ps.length-1];frac=1}
+ if(!atual)return;
+ var id=atual.dataset.p,b=blocoPorId(id);
+ st.ancora={id:id,frac:frac};
+ var lidos,total;
+ if(st.algo==="semantico"){lidos=(ACUM[id]||0)+frac*(b?b.n:0);total=TOTAL_CHARS}
+ else{lidos=body.scrollTop;total=Math.max(1,body.scrollHeight-body.clientHeight)}
+ st.prog=Math.min(1,Math.max(0,lidos/total));
+ /* extremidades exatas: topo é 0 e fim é 100, sem depender da âncora */
+ var maxScroll=Math.max(1,body.scrollHeight-body.clientHeight);
+ if(body.scrollTop<=2)st.prog=0;
+ else if(body.scrollTop>=maxScroll-2)st.prog=1;
+ st.cap=b?b.ci:0;
+ var barra=document.getElementById("barra");
+ if(barra)barra.style.width=Math.round(st.prog*100)+"%";
+ var txt=document.getElementById("progtxt");
+ if(txt)txt.textContent=textoProgresso();
+ if(st.lab&&st.labSec==="scroll")drawLab()}
+/* restaura a posição pela âncora de parágrafo, não por pixels */
+function restaurarPos(){
+ var a=st.pos["livro"];if(!a)return;
+ var el=document.querySelector('[data-p="'+a.id+'"]'),body=document.getElementById("lbody");
+ if(!el||!body)return;
+ body.scrollTop=el.offsetTop-body.clientHeight*0.32+a.frac*el.offsetHeight;
+ calcProgresso()}
+function guardarPos(){if(st.ancora)st.pos["livro"]={id:st.ancora.id,frac:st.ancora.frac}}
 $("app").addEventListener("change",function(e){var s=e.target.closest("select[data-k]");if(!s)return;
  setv(s.dataset.k,s.value,"cfg");draw()});
 addEventListener("keydown",function(e){
