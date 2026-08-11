@@ -81,8 +81,9 @@ h1.t{font-size:26px;font-weight:650;letter-spacing:-.02em;margin:0 0 var(--s1)}
 .libtop{display:flex;align-items:flex-end;gap:var(--s4);flex-wrap:wrap;margin-bottom:var(--s5)}
 .libtop .ti{flex:1;min-width:160px}
 .grade{display:grid;gap:var(--s5);grid-template-columns:repeat(auto-fill,minmax(var(--cw,150px),1fr))}
-.bk{text-align:left;position:relative;padding-top:12px}
-.bk .cv{position:relative;width:100%;padding-bottom:140%;border-radius:var(--r1);background:var(--c);
+.bk{text-align:left;position:relative;padding-top:12px;display:block;width:100%}
+/* span é inline: sem display:block a altura por padding-bottom não existe */
+.bk .cv{display:block;position:relative;width:100%;padding-bottom:140%;border-radius:var(--r1);background:var(--c);
   box-shadow:0 4px 14px rgba(26,25,23,.14);transition:transform .14s,box-shadow .14s;overflow:hidden}
 .bk:hover .cv{transform:translateY(-3px);box-shadow:0 12px 26px rgba(26,25,23,.2)}
 .bk .cvin{position:absolute;inset:0;padding:11px;display:flex;flex-direction:column;justify-content:space-between}
@@ -247,7 +248,25 @@ select.sel{height:var(--h1);border:1px solid var(--line);border-radius:var(--r1)
 #lab .seg button{color:#b6b0a6;border-color:#2a2620;font-size:11px}
 #lab .seg button.on{background:#f2f0eb;color:#14130f}
 #lab .nota{font-size:11.5px;line-height:1.5;color:#7b7469}
-@media (max-width:720px){#lab{width:100%}.cfgnav{display:none}}
+@media (max-width:720px){#lab{width:100%}}
+/* telas estreitas: o topo enxuga e Configurações vira lista → conteúdo */
+@media (max-width:640px){
+  .topo{padding:0 var(--s4);gap:var(--s1)}
+  .marca{display:none}
+  .topo nav button{padding:7px 10px;font-size:13px}
+  .busca .kbd{display:none}
+  .pad{padding:var(--s5) var(--s4) var(--s6)}
+  .cfgpad{padding:var(--s5) var(--s4)}
+  .umenu{right:var(--s4);left:var(--s4);width:auto}
+  .cfg{flex-direction:column}
+  .cfgnav{width:100%;flex:1;border-right:none;border-bottom:1px solid var(--line)}
+  .cfgmain{display:none}
+  .cfg[data-aberto="1"] .cfgnav{display:none}
+  .cfg[data-aberto="1"] .cfgmain{display:block;flex:1}
+  .voltacat{display:inline-flex!important}
+}
+.voltacat{display:none;align-items:center;gap:var(--s2);font-size:13px;color:var(--acc);
+  margin-bottom:var(--s4);font-weight:550}
 </style>
 </head>
 <body>
@@ -332,7 +351,8 @@ function v(k){return st.valores[k]!==undefined?st.valores[k]:SM[k].d}
 function setv(k,val,origem){st.valores[k]=val;
  aviso(origem==="ctx"?"Ajustado — vale como padrão a partir de agora":"Salvo")}
 var tt;function aviso(m){st.aviso=m;clearTimeout(tt);tt=setTimeout(function(){st.aviso=null;draw()},2400)}
-function irCfg(cat,de){st.rota="cfg";st.cat=cat;st.de=de||st.de;st.menu=false;st.ctx=null;st.hit=null;draw()}
+function irCfg(cat,de,abrir){st.rota="cfg";st.cat=cat;st.de=de||st.de;st.menu=false;st.ctx=null;st.hit=null;
+ st.catAberta=abrir!==false;draw()}
 
 /* ═════ CENÁRIOS ═════ */
 var CEN=[
@@ -388,7 +408,7 @@ function umenu(){
   '<div><div class="n">Erik Abner</div><div class="e">erik@vynce.com.br</div></div></div>'+
   '<ul><li><button data-a="perfil"><span class="ic">◉</span>Ver perfil</button></li>'+
   '<li><button data-a="cfg" data-c="geral"><span class="ic">⚙</span>Configurações</button></li>'+
-  '<li><button data-a="cfg" data-c="dispositivos"><span class="ic">▢</span>Dispositivos e integrações</button></li>'+
+  '<li><button data-a="cfg" data-c="dispositivos" data-abrir="1"><span class="ic">▢</span>Dispositivos e integrações</button></li>'+
   '<div class="div"></div>'+
   '<li><button data-a="noop"><span class="ic">?</span>Ajuda</button></li>'+
   '<li><button data-a="noop"><span class="ic">⏻</span>Sair</button></li></ul></div>'}
@@ -483,8 +503,10 @@ function vCfg(){
    return'<button class="cat" data-a="ir" data-c="'+c.k+'" aria-current="'+(st.cat===c.k)+'">'+
     '<span class="ic">'+c.ic+'</span>'+c.n+
     (c.k==="kindle"?'<span class="badge ok">ativo</span>':"")+'</button>'}).join("")});
- h+='</div></nav><div class="cfgmain"><div class="cfgpad">'+conteudoCat()+'</div></div></div>';
- return h}
+ h+='</div></nav><div class="cfgmain"><div class="cfgpad">'+
+  '<button class="voltacat" data-a="fechacat">← Todas as configurações</button>'+
+  conteudoCat()+'</div></div></div>';
+ return h.replace('<div class="cfg">','<div class="cfg" data-aberto="'+(st.catAberta?1:0)+'">')}
 function conteudoCat(){
  var c=CATS[st.cat],lista=S.filter(function(x){return x.c===st.cat});
  var h='<div class="cfghead"><div class="trilha">Configurações · '+c.grupo+'</div>'+
@@ -628,7 +650,7 @@ $("app").addEventListener("click",function(e){
  if(a==="rota"){st.rota=el.dataset.r;st.menu=false;st.ctx=null;marcar("volta")}
  else if(a==="umenu"){st.menu=!st.menu;st.ctx=null;marcar("ava")}
  else if(a==="perfil"){st.rota="perfil";st.menu=false;st.de="perfil";marcar("perfil")}
- else if(a==="cfg"){irCfg(el.dataset.c,"lib");marcar("menu")}
+ else if(a==="cfg"){irCfg(el.dataset.c,"lib",el.dataset.abrir==="1");marcar("menu")}
  else if(a==="ctx"){st.ctx=st.ctx===el.dataset.t?null:el.dataset.t;
   marcar(el.dataset.t==="aa"?"aa":el.dataset.t==="lib"?"vis":"status")}
  else if(a==="ponte"){var c=el.dataset.c;
@@ -641,8 +663,9 @@ $("app").addEventListener("click",function(e){
  else if(a==="voltar"){if(st.de==="leitor"){st.rota="lib";st.leitor=true}
   else if(st.de==="perfil")st.rota="perfil";else st.rota="lib";
   st.de=null;marcar("volta")}
- else if(a==="ir"){st.cat=el.dataset.c;st.hit=el.dataset.k||null;
+ else if(a==="ir"){st.cat=el.dataset.c;st.hit=el.dataset.k||null;st.catAberta=true;
   if(el.dataset.k){st.bs="";marcar("achou")}marcar("nav")}
+ else if(a==="fechacat"){st.catAberta=false}
  else if(a==="ler"){st.leitor=true;st.ctx=null}
  else if(a==="fecharleitor"){st.leitor=false;st.ctx=null}
  else if(a==="set"){var x=SM[el.dataset.k];
