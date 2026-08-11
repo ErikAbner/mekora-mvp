@@ -243,6 +243,13 @@ select.sel{height:var(--h1);border:1px solid var(--line);border-radius:var(--r1)
 .lcol p.alvo{animation:pisca 1.6s ease-out}
 @keyframes pisca{0%,30%{background:rgba(200,72,31,.14)}100%{background:transparent}}
 .lfim{margin-top:var(--s7);padding-top:var(--s5);border-top:1px solid rgba(26,25,23,.1)}
+.lh3{font-family:var(--ui);font-size:.82em;font-weight:650;letter-spacing:.01em;margin:2em 0 .7em;opacity:.75}
+.lq{margin:1.4em 0;padding-left:1.1em;border-left:2px solid currentColor;opacity:.72;font-style:italic}
+.lul{margin:0 0 1.05em;padding-left:1.3em}
+.lul li{margin-bottom:.4em}
+.marcanota{font-size:.62em;opacity:.5;margin-left:.35em;vertical-align:super;line-height:1}
+.marcanota:hover{opacity:1;color:var(--acc)}
+.dst.cat{box-shadow:inset 0 -2px 0 rgba(26,25,23,.32)}
 .dst{padding:2px 0;border-radius:2px;cursor:pointer;background:#f7e08a}
 .dst.rosa{background:#f6c9d8}.dst.verde{background:#c8e6bd}
 .lprog{flex:1;display:flex;flex-direction:column;gap:5px;align-items:center}
@@ -275,6 +282,10 @@ select.sel{height:var(--h1);border:1px solid var(--line);border-radius:var(--r1)
   line-height:1.55;resize:vertical;color:var(--ink);background:var(--bg-2)}
 .notaentrada:focus{outline:2px solid var(--acc);outline-offset:-1px;background:#fff}
 .notadica{margin:0;font-size:12px;line-height:1.5;color:var(--ink-3)}
+.erroSalvar{font-size:12.5px;line-height:1.5;color:var(--ink-2);background:#fdf0ea;border:1px solid #f0c9b8;
+  border-radius:var(--r1);padding:var(--s3);display:flex;flex-direction:column;gap:var(--s2);align-items:flex-start}
+.notaed-b{max-height:100%}
+.notaed .notaentrada{max-height:46vh}
 
 /* painéis do leitor */
 .lpanel{position:absolute;top:0;right:0;bottom:0;width:340px;background:#fff;border-left:1px solid var(--line);
@@ -330,6 +341,10 @@ select.sel{height:var(--h1);border:1px solid var(--line);border-radius:var(--r1)
 .grpcap{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);
   padding:var(--s3) 0 var(--s1);border-top:1px solid var(--line-2);margin-top:var(--s2)}
 .grpcap:first-child{border:none;margin:0}
+.filtroanot{display:flex;gap:5px;align-items:center;padding:var(--s2) 0}
+.fa{font-size:11.5px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--ink-2)}
+.fa:hover{background:var(--bg-2)}
+.fa.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .resumo{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s2)}
 .rnum{background:var(--bg-2);border-radius:var(--r1);padding:var(--s3);text-align:center}
 .rnum b{display:block;font-size:20px;font-weight:650}
@@ -399,6 +414,7 @@ select.sel{height:var(--h1);border:1px solid var(--line);border-radius:var(--r1)
 .stt{font-family:var(--mono);font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;
   border-radius:999px;border:1px solid currentColor;white-space:nowrap}
 .st-ok{color:#7dbb92}.st-mid{color:#d9b871}.st-open{color:#e08a6a}.st-bad{color:#e0705c}
+.st-rej{color:#e0705c;border-style:dashed}
 .testar{margin-top:var(--s2);font-family:var(--mono);font-size:10px;color:#14130f;background:#e6e0d5;
   padding:6px 11px;border-radius:999px;display:inline-block}
 .testar:hover{background:#fff}
@@ -562,7 +578,36 @@ var CEN=[
  p:[["rever","Abra as anotações"],["voltar","Volte ao trecho de origem"]]},
 {k:"10",t:"Leitor: navegar capítulos e ler no escuro",
  go:function(){st.leitor=true;st.painel=null},
- p:[["toc","Abra o sumário"],["capitulo","Vá a outro capítulo"],["chrome","Some com os controles tocando no texto"]]}];
+ p:[["toc","Abra o sumário"],["capitulo","Vá a outro capítulo"],["chrome","Some com os controles tocando no texto"]]},
+/* ── estresse ── */
+{k:"E1",t:"50 anotações no livro",e:1,
+ go:function(){st.destaques=gerarAnotacoes(50);st.leitor=true;st.painel="notas";st.cap=0},
+ p:[["rever","Percorra o painel"],["achar","Tente achar uma nota específica"]]},
+{k:"E2",t:"8 destaques na mesma tela",e:1,
+ go:function(){st.destaques=gerarAnotacoes(8,true);st.leitor=true;st.painel=null;st.cap=0},
+ p:[["ler","Tente ler o capítulo com tudo marcado"]]},
+{k:"E3",t:"Nota muito longa",e:1,
+ go:function(){st.destaques={"1-0":{cor:"amarelo",nota:NOTA_LONGA}};st.leitor=true;st.cap=1;
+  st.nota="1-0";st.mNota="A"},
+ p:[["editar","Role dentro do editor"],["trecho","Veja se o trecho continua visível"]]},
+{k:"E4",t:"Anotações vizinhas",e:1,
+ go:function(){st.destaques={"0-0":{cor:"amarelo",nota:"primeira"},"0-1":{cor:"rosa",nota:"segunda"},
+  "0-2":{cor:"verde",nota:"terceira"}};st.leitor=true;st.cap=0;st.painel=null},
+ p:[["distinguir","Consegue distinguir uma da outra?"]]},
+{k:"E5",t:"Zoom 200% com fonte grande",e:1,
+ go:function(){st.valores.corpo="21";st.valores.largura="760";st.leitor=true;st.cap=3},
+ p:[["cabe","Veja se o chrome ainda cabe"]]},
+{k:"E6",t:"Capítulo longo",e:1,
+ go:function(){st.cap=3;st.leitor=true;st.painel=null;st.destaques={}},
+ p:[["rolar","Role o capítulo inteiro"],["voltar","Use o sumário para sair e voltar"]]},
+{k:"E7",t:"Falha ao salvar a nota",e:1,
+ go:function(){st.falhaSalvar=true;st.leitor=true;st.cap=0;st.destaques={};st.nota=null;
+  aviso("Modo de falha ligado: a próxima nota não vai salvar")},
+ p:[["tentar","Escreva uma nota e tente salvar"],["preservada","Veja se o texto foi preservado"]]},
+{k:"E8",t:"Voltar a uma nota de capítulos atrás",e:1,
+ go:function(){st.destaques={"0-1":{cor:"amarelo",nota:"a ordem vivida vence a imposta"}};
+  st.leitor=true;st.cap=3;st.painel="notas"},
+ p:[["saltar","Salte para o trecho original"]]}];
 function marcar(i){if(st.cen)st.feito[st.cen+i]=1}
 function comecar(k){var c=CEN.filter(function(x){return x.k===k})[0];if(!c)return;
  st.cen=k;st.feito={};st.menu=false;st.ctx=null;st.pal=null;st.lab=true;c.go();draw()}
@@ -765,8 +810,42 @@ var CAPS=[
  "Foi por isso que abandonamos o inventário completo. Não porque fosse impreciso — era exato — mas porque respondia a uma pergunta que ninguém fazia. O catálogo perfeito de uma casa é inútil para quem mora nela."]},
 {n:"3 · Reconhecer de longe",ps:[
  "O que restou foi mais modesto e mais útil: um jeito de reconhecer as coisas de longe, e um jeito de chegar perto quando isso importa. Entre os dois, nada.",
+ {t:"h",x:"A distância decide o atributo"},
  "Reconhecer de longe exige silhueta, cor, posição — atributos que sobrevivem à distância e ao movimento. Chegar perto exige o oposto: detalhe, precisão, texto legível.",
- "Interfaces que tentam servir aos dois ao mesmo tempo acabam falhando nos dois. É mais honesto escolher uma distância e construir uma passagem clara para a outra."]}];
+ {t:"q",x:"O olho que varre e o olho que lê são o mesmo órgão executando tarefas incompatíveis."},
+ "Interfaces que tentam servir aos dois ao mesmo tempo acabam falhando nos dois. É mais honesto escolher uma distância e construir uma passagem clara para a outra.",
+ {t:"l",x:["silhueta sobrevive ao movimento e à distância",
+   "cor sobrevive à distância, mas não ao daltonismo sozinha",
+   "texto exige parada, foco e proximidade"]},
+ "Nenhum desses atributos é melhor que o outro. Cada um responde a uma pergunta diferente, e a maioria dos problemas de interface nasce de usar o atributo certo para a pergunta errada."]},
+{n:"4 · O custo de guardar",ps:[
+ "Guardar parece barato. É a operação que menos exige no momento em que acontece: um gesto, um clique, e o item some do caminho.",
+ "O custo aparece depois, distribuído em pequenas parcelas. Cada coisa guardada aumenta em uma fração o tempo de encontrar todas as outras.",
+ "Uma pessoa que guarda tudo constrói, sem perceber, um sistema que cobra por consulta em vez de cobrar por depósito. E consulta é o que se faz todo dia.",
+ {t:"h",x:"O arquivo que ninguém abre"},
+ "Existe um ponto a partir do qual acrescentar deixa de ser acumular e passa a ser diluir. Depois dele, cada novo item torna o conjunto inteiro um pouco menos útil.",
+ "O incômodo é que esse ponto não anuncia sua chegada. Não há aviso, nem lentidão perceptível, nem erro. Apenas uma sensação crescente de que procurar deixou de compensar — e a partir daí a pessoa para de procurar, embora continue guardando.",
+ "É por isso que arquivos pessoais morrem por excesso e não por falta. Ninguém abandona um sistema porque ele está vazio; abandona porque perdeu a confiança de que vale a pena olhar lá dentro.",
+ {t:"q",x:"Guardar é uma promessa que se faz ao seu eu futuro. Sistemas quebram quando essa promessa deixa de ser crível."},
+ "A saída não é guardar menos. É fazer com que o ato de guardar carregue, junto, alguma informação sobre por que aquilo foi guardado — que é exatamente o que uma nota faz e um favorito não faz."]}];
+/* ═════ carga para teste de estresse ═════ */
+function paraTexto(b){return typeof b==="string"?b:(b.t==="l"?b.x.join(" · "):b.x)}
+function gerarAnotacoes(n,juntas){
+ var d={},alvos=[];
+ CAPS.forEach(function(c,ci){c.ps.forEach(function(p,pi){
+  if(typeof p==="string")alvos.push(ci+"-"+pi)})});
+ if(juntas)alvos=alvos.slice(0,6);
+ var notas=["releitura obrigatória","isso contradiz o capítulo anterior","base do ensaio",
+  "conferir a fonte","o argumento vira aqui","exemplo perfeito","guardar para a conversa de terça",
+  "não concordo, mas é bem construído"];
+ for(var i=0;i<n;i++){
+  var id=alvos[i%alvos.length];
+  if(juntas&&i>=alvos.length)id=alvos[i%alvos.length];
+  d[id]={cor:["amarelo","rosa","verde"][i%3]};
+  if(i%2===0)d[id].nota=notas[i%notas.length];
+ }
+ return d}
+var NOTA_LONGA="Este trecho resolve uma confusão que eu vinha carregando há semanas. Eu tratava densidade como se fosse uma propriedade da tela — quantos elementos cabem, qual o espaçamento mínimo, quantas colunas.\n\nO ponto do autor é outro e é mais útil: densidade é uma propriedade da tarefa. A mesma tela é densa para quem procura e esparsa para quem revisa, porque as duas pessoas chegam com perguntas diferentes e usam atributos diferentes para responder.\n\nIsso muda o que eu meço. Em vez de contar elementos por área, eu deveria medir quantas perguntas a tela consegue responder sem exigir uma segunda ação. Um card com quinze campos pode ser menos denso que um com três, se os três forem exatamente os que a tarefa pede.\n\nAplicando ao problema do card de livro: a capa responde “qual é este livro?” à distância. O título responde à mesma pergunta, mais devagar e com mais certeza. A contagem de notas responde a outra pergunta inteiramente — e é por isso que ela competia com o título em vez de complementá-lo.\n\nFalta testar se isso se sustenta quando o acervo passa de duzentos itens, que é onde a varredura deixa de ser possível e a busca vira o caminho principal.";
 function estiloLeitura(){
  var t=v("temaleitor");
  return {bg:t==="Escuro"?"#1c1a17":t==="Claro"?"#ffffff":"#f4f1ea",
@@ -803,10 +882,18 @@ function vLeitor(){
   '<h2 class="lcap">'+esc(cap.n)+'</h2>'+
   cap.ps.map(function(p,i){
    var id=st.cap+"-"+i,d=st.destaques[id];
+   /* blocos estruturais não são anotáveis: título, citação e lista */
+   if(typeof p==="object"){
+    if(p.t==="h")return'<h3 class="lh3">'+esc(p.x)+'</h3>';
+    if(p.t==="q")return'<blockquote class="lq">'+esc(p.x)+'</blockquote>';
+    if(p.t==="l")return'<ul class="lul">'+p.x.map(function(li){return'<li>'+esc(li)+'</li>'}).join("")+'</ul>';
+    return""}
    var txt=esc(p);
-   if(d)txt='<mark class="dst '+(d.cor||"amarelo")+'" data-a="verdestaque" data-id="'+id+'">'+txt+'</mark>';
-   var bloco='<p data-p="'+id+'"'+(st.leu===id?' class="alvo"':'')+'>'+txt+'</p>';
-   /* MODELO B — a nota vive no fluxo, logo abaixo do trecho */
+   if(d)txt='<mark class="dst '+(d.cor||"amarelo")+(d.cat?" cat":"")+'" data-a="verdestaque" data-id="'+id+'" '+
+    'title="'+(d.nota?"Com nota":"Destaque")+'">'+txt+'</mark>';
+   var bloco='<p data-p="'+id+'"'+(st.leu===id?' class="alvo"':'')+'>'+txt+
+    (d&&d.nota&&st.mNota!=="B"?'<button class="marcanota" data-a="anotarid" data-id="'+id+
+     '" aria-label="Ver nota deste trecho" title="'+esc(d.nota.slice(0,60))+'">✎</button>':'')+'</p>';
    if(st.nota===id&&st.mNota==="B")bloco+=notaInline(id);
    else if(d&&d.nota&&st.mNota==="B")bloco+=notaInlineLida(id,d);
    return bloco}).join("")+
@@ -891,13 +978,17 @@ function editorNota(){
   '<button class="lnk" data-a="fecharnota">fechar</button></div>'+
   '<div class="notaed-b">'+
   '<blockquote class="trecho">“'+esc(textoDoId(id).slice(0,150))+(textoDoId(id).length>150?"…":"")+'”</blockquote>'+
-  '<textarea id="notatxt" class="notaentrada" placeholder="O que este trecho te fez pensar?" rows="6">'+esc(d.nota||"")+'</textarea>'+
+  '<textarea id="notatxt" class="notaentrada" placeholder="O que este trecho te fez pensar?" rows="6">'+
+  esc(st.rascunho!==null&&st.rascunho!==undefined?st.rascunho:(d.nota||""))+'</textarea>'+
+  (st.erroSalvar?'<div class="erroSalvar">Não conseguimos salvar agora. <b>Seu texto continua aqui</b> — nada foi perdido.'+
+   '<button class="lnk" data-a="tentarnovamente">Tentar de novo</button></div>':"")+
   '<div class="acts"><button class="btn sm" data-a="salvarnota">Salvar nota</button>'+
   (d.nota?'<button class="lnk" data-a="apagarnota">Apagar</button>':"")+'</div>'+
   '<button class="ponte" data-a="conhecimento" data-id="'+id+'">Adicionar ao conhecimento →</button>'+
   '<p class="notadica">A nota fica presa ao trecho. Você a reencontra pelo painel de anotações e pelo espaço do livro.</p>'+
   '</div></aside>'}
-function textoDoId(id){var p=id.split("-");return CAPS[+p[0]].ps[+p[1]]||""}
+function textoDoId(id){var p=id.split("-"),b=CAPS[+p[0]]&&CAPS[+p[0]].ps[+p[1]];
+ return b?paraTexto(b):""}
 function itemAnot(id){var d=st.destaques[id];
  return'<button class="anot" data-a="irtrecho" data-c="'+id.split("-")[0]+'" data-i="'+id.split("-")[1]+'">'+
   (st.mRev==="A"?'<span class="lbl">'+esc(CAPS[+id.split("-")[0]].n)+'</span>':'')+
@@ -924,11 +1015,25 @@ function painelLeitor(){
   else h+='<p class="vaziop">Busca no texto deste livro.</p>'}
  if(p==="notas"){
   var ids=Object.keys(st.destaques);
-  if(!ids.length)h+='<p class="vaziop">Nenhuma anotação ainda. Selecione um trecho para destacar ou anotar.</p>';
+  /* busca e filtro só aparecem quando a lista deixa de caber na cabeça */
+  if(ids.length>8){
+   h+='<input class="inp" id="qanot" value="'+esc(st.qanot||"")+'" placeholder="Buscar nas anotações" style="min-width:0;width:100%">'+
+    '<div class="filtroanot">'+[["tudo","Tudo"],["nota","Com nota"],["so","Só destaque"]].map(function(f){
+     return'<button class="fa'+((st.fanot||"tudo")===f[0]?" on":"")+'" data-a="fanot" data-v="'+f[0]+'">'+f[1]+'</button>'}).join("")+
+    '<span class="lbl" style="margin-left:auto">'+ids.length+'</span></div>';
+   var qa2=(st.qanot||"").toLowerCase().trim(),fa=st.fanot||"tudo";
+   ids=ids.filter(function(id){var d=st.destaques[id];
+    if(fa==="nota"&&!d.nota)return false;
+    if(fa==="so"&&d.nota)return false;
+    if(qa2)return (textoDoId(id)+" "+(d.nota||"")).toLowerCase().indexOf(qa2)>-1;
+    return true});
+   if(!ids.length)h+='<p class="vaziop">Nenhuma anotação com esse filtro.</p>'}
+  if(!Object.keys(st.destaques).length)h+='<p class="vaziop">Nenhuma anotação ainda. Selecione um trecho para destacar ou anotar.</p>';
+  else if(!ids.length){/* já avisado pelo filtro */}
   else if(st.mRev==="B"){
    /* REVISÃO B — agrupada por capítulo */
    CAPS.forEach(function(c,ci){
-    var doCap=ids.filter(function(id){return +id.split("-")[0]===ci});
+    var doCap=ids.filter(function(id){return +id.split("-")[0]===ci});// eslint-disable-line
     if(!doCap.length)return;
     h+='<div class="grpcap">'+esc(c.n)+' <span class="lbl">'+doCap.length+'</span></div>'+
      doCap.map(function(id){return itemAnot(id)}).join("")})}
@@ -1016,7 +1121,8 @@ var LABSEC=[["visao","Visão"],["chrome","Chrome"],["notas","Notas"],["destaque"
 function testar(txt,cfg){
  return'<button class="testar" data-teste=\''+JSON.stringify(cfg)+'\'>▸ '+txt+'</button>'}
 function bloco(titulo,status,corpo){
- var cls={aceito:"st-ok",provavel:"st-mid",aberto:"st-open",candidato:"st-open"}[status]||"st-open";
+ var cls={aceito:"st-ok",provavel:"st-mid",aberto:"st-open",candidato:"st-open",
+  rejeitado:"st-rej"}[status]||"st-open";
  return'<div class="labbloco"><div class="labh"><b>'+titulo+'</b><span class="stt '+cls+'">'+status+'</span></div>'+corpo+'</div>'}
 function labConteudo(){
  var s=st.labSec;
@@ -1078,14 +1184,19 @@ function labConteudo(){
   bloco("Chrome C no celular","aberto","<p class='nota'>Bordas laterais colidem com o polegar. Provável que o C simplesmente não exista no celular.</p>")+
   testar("Abrir o leitor para testar",{leitor:true});
  if(s==="decisoes")return'<p class="nota">Classificação honesta do estado de cada questão.</p>'+
-  [["Nota presa ao trecho, com volta ao parágrafo","aceito","O ciclo funciona nos dois sentidos e é o que separa anotar de copiar."],
+  [["Nota presa ao trecho, com volta ao parágrafo","aceito","Sobreviveu ao estresse: salto de 3 capítulos de distância continua funcionando."],
    ["Escopo livro × global explícito","aceito","Testado: o valor do livro tem precedência e o global reflete em Configurações."],
    ["Barra de seleção com 4 ações","aceito","Acima disso vira menu e perde a leitura rápida."],
+   ["Nota nunca se perde por falha","aceito","<b>Reforçado.</b> Cenário E7: salvamento falha, editor continua aberto, texto preservado, com “tentar de novo”."],
+   ["Nota longa cabe no modelo A","aceito","<b>Reforçado.</b> 1.157 caracteres: editor rola internamente, trecho e parágrafo seguem visíveis."],
+   ["Fonte grande + coluna larga","aceito","<b>Reforçado.</b> 21px com coluna de 760 a 200% de zoom: chrome cabe, zero transbordo."],
+   ["Revisão A escala sozinha","rejeitado","<b>Enfraquecido pelo estresse.</b> Com 18 anotações, só 5 cabem na tela e a lista tem 2.414px. Sem busca era inutilizável — por isso ela entrou, mas só acima de 8 itens."],
    ["Chrome A","provavel","Lidera em descoberta e progresso; falta teste com usuário para descartar B."],
    ["Revisão A + C convivendo","provavel","Resolvem trabalhos diferentes; falta decidir onde C mora."],
    ["Modelo de nota","aberto","C ganha em rapidez, A em conforto. A ponte entre eles é a hipótese a testar."],
    ["Categoria semântica no destaque","aberto","Só se paga com filtro por categoria — que ainda não existe."],
-   ["Transição para conhecimento","aberto","Quatro modelos plausíveis, nenhum testado com gente."]].map(function(d){
+   ["Transição para conhecimento","aberto","Quatro modelos plausíveis, nenhum testado com gente."],
+   ["Ancoragem por parágrafo","rejeitado","<b>Quebrou no estresse.</b> O protótipo prende a anotação ao parágrafo inteiro, então não representa dois destaques no mesmo parágrafo — exatamente o caso que o repositório aponta como o que separa visualizador de leitor. Precisa de âncora por trecho antes de qualquer implementação."]].map(function(d){
    return bloco(d[0],d[1],'<p class="nota">'+d[2]+'</p>')}).join("");
  return null}
 function matriz(cols,linhas){
@@ -1221,9 +1332,17 @@ $("app").addEventListener("click",function(e){
  else if(a==="fechasel"){st.sel=null;window.getSelection&&window.getSelection().removeAllRanges()}
  else if(a==="verdestaque"){st.sel=el.dataset.id}
  else if(a==="salvarnota"){var ta=document.getElementById("notatxt");
-   if(ta){st.destaques[st.nota].nota=ta.value.trim();
-    if(!ta.value.trim())delete st.destaques[st.nota].nota}
-   st.nota=null;marcar("salvarnota");aviso("Nota salva — presa ao trecho")}
+   if(st.falhaSalvar){ /* o texto NUNCA se perde por falha de salvamento */
+    st.rascunho=ta?ta.value:"";st.erroSalvar=true;marcar("tentar");marcar("preservada");
+    aviso("Não deu para salvar agora. Seu texto está aqui e tentamos de novo.")}
+   else{if(ta){st.destaques[st.nota].nota=ta.value.trim();
+     if(!ta.value.trim())delete st.destaques[st.nota].nota}
+    st.nota=null;st.erroSalvar=false;st.rascunho=null;
+    marcar("salvarnota");aviso("Nota salva — presa ao trecho")}}
+ else if(a==="tentarnovamente"){st.falhaSalvar=false;st.erroSalvar=false;
+   var tb=document.getElementById("notatxt");
+   if(tb&&st.nota){st.destaques[st.nota].nota=tb.value.trim()}
+   st.nota=null;st.rascunho=null;aviso("Salvo agora")}
  else if(a==="apagarnota"){delete st.destaques[st.nota].nota;st.nota=null;aviso("Nota apagada")}
  else if(a==="fecharnota"){st.nota=null}
  else if(a==="conhecimento"){st.nota=null;marcar("conhec");
@@ -1233,6 +1352,7 @@ $("app").addEventListener("click",function(e){
    setTimeout(function(){var p=document.querySelector('[data-p="'+st.leu+'"]');
     if(p)p.scrollIntoView({block:"center",behavior:"smooth"})},60)}
  else if(a==="escopo"){st.escopo=el.dataset.v;marcar("escopo")}
+ else if(a==="fanot"){st.fanot=el.dataset.v;marcar("achar")}
  else if(a==="set"){var x=SM[el.dataset.k];
   setv(el.dataset.k,x.t==="sw"?el.dataset.v==="true":el.dataset.v,el.dataset.ctx?"ctx":"cfg");
   if(el.dataset.ctx)marcar("ctx")}
@@ -1250,7 +1370,10 @@ $("app").addEventListener("input",function(e){
  if(e.target.id==="bs"){st.bs=e.target.value;st.hit=null;if(st.bs)marcar("buscar");draw()}
  else if(e.target.id==="palq"){st.palq=e.target.value;draw()}
  else if(e.target.id==="lbusca"){st.lq=e.target.value;var p=e.target.selectionStart;draw();
-  var n=document.getElementById("lbusca");if(n){n.focus();n.setSelectionRange(p,p)}}});
+  var n=document.getElementById("lbusca");if(n){n.focus();n.setSelectionRange(p,p)}}
+ else if(e.target.id==="qanot"){st.qanot=e.target.value;marcar("achar");
+  var p2=e.target.selectionStart;draw();
+  var n2=document.getElementById("qanot");if(n2){n2.focus();n2.setSelectionRange(p2,p2)}}});
 /* seleção real de texto no leitor → barra de ações */
 $("app").addEventListener("mouseup",function(e){
  if(!st.leitor||st.nota)return;
