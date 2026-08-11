@@ -3,1324 +3,676 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mekora · protótipo navegável</title>
+<title>Mekora · área pessoal</title>
 <style>
-/* ═══════════════ SISTEMA ═══════════════
-   escala de espaço  4 8 12 16 24 32 48
-   raio              r1 4 (controles) · r2 8 (superfícies) · 999 (pílulas)
-   altura de controle  h1 32 (compacto) · h2 38 (padrão)
-   tipo              11 12 13 15 18 22 30
-   ═══════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════
+   Neutros limpos para a interface; o creme do repositório
+   (--paper #f1eee7) fica reservado à superfície de leitura.
+   Acento derivado das cores de livro do canvas-motion.
+   ════════════════════════════════════════════════════════════ */
 :root{
-  /* tokens reais de mekora-canvas-motion/app/globals.css */
-  --canvas:#f1eee7;--card:#f5f2eb;--ink:#24150f;--ink-2:#4d2e1d;--ink-3:#6c5a4f;
-  --rule:#ddd5c8;--rule-2:#e8e2d6;--bench-2:#f6efe2;--bench-3:#edeae3;
-  --accent:#9e342e;--good:#27885a;--warn:#bd8150;--crit:#9e342e;--slab:#2a2019;--shadow:36,21,15;
+  --bg:#ffffff;--bg-2:#f7f7f5;--bg-3:#f0efec;--nav:#f4f3f0;
+  --ink:#1a1917;--ink-2:#57534d;--ink-3:#8a857d;--ink-4:#b5b0a8;
+  --line:#e6e4de;--line-2:#efede8;
+  --acc:#c8481f;--acc-soft:#fdf0ea;
+  --ok:#2f7d55;--warn:#a8701c;--dan:#b23b2a;
+  --paper:#f1eee7;                       /* só o leitor */
   --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:48px;
-  --r1:4px;--r2:8px;--h1:32px;--h2:38px;
-  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
-  --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
-  --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Mono",monospace;
-  --tr:.14s;
+  --r1:6px;--r2:10px;--h1:32px;--h2:38px;
+  --ui:-apple-system,"Segoe UI",Inter,"Helvetica Neue",Arial,sans-serif;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
 }
-[data-motion="off"] *{transition:none!important;animation:none!important}
 *{box-sizing:border-box}
 html,body{height:100%}
-body{margin:0;background:#0E0D0C;color:var(--ink);font-family:var(--sans);font-size:13px;
-  -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;overflow:hidden}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:14px;
+  -webkit-font-smoothing:antialiased;overflow:hidden}
 button{font:inherit;color:inherit;background:none;border:none;padding:0;cursor:pointer;text-align:left}
-button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,[tabindex]:focus-visible{
-  outline:2px solid var(--accent);outline-offset:2px;border-radius:var(--r1)}
-.lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3)}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+button:focus-visible,input:focus-visible,select:focus-visible,[tabindex]:focus-visible{
+  outline:2px solid var(--acc);outline-offset:2px;border-radius:var(--r1)}
+.mono{font-family:var(--mono)}
+.lbl{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
 
-/* ═══ ANDAIME (fora do produto) ═══ */
-.rig{background:#0E0D0C;color:#8B857A;display:flex;align-items:center;gap:var(--s3);padding:0 var(--s4);
-  height:38px;flex:0 0 38px;font-family:var(--mono);font-size:10px;border-bottom:1px solid #262320}
-.rig b{color:#EDE8DE;font-weight:400}
-.rig .sep{width:1px;height:15px;background:#2B2825;flex:0 0 1px}
-.rig .grp{display:flex;align-items:center;gap:var(--s2);white-space:nowrap}
-.rig button{font-family:var(--mono);font-size:10px;color:#8B857A;padding:5px 10px;border-radius:var(--r1);
-  border:1px solid #2B2825;white-space:nowrap}
-.rig button:hover{color:#EDE8DE;border-color:#454039}
-.rig button[aria-pressed="true"]{background:#EDE8DE;color:#141311;border-color:#EDE8DE}
-.rig .spacer{flex:1}
-.rig .tag{color:var(--accent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-@media (max-width:720px){.rig .tag{display:none}}
-@media (max-width:620px){.rig>b,.rig .sep{display:none}
-  .rig .grp:nth-of-type(2){display:none}
-  .rig{gap:var(--s2);padding:0 var(--s2);overflow-x:auto;scrollbar-width:none}
-  .rig::-webkit-scrollbar{display:none}}
+/* ═══ MOLDURA DO PRODUTO ═══ */
+#app{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--bg)}
+.topo{display:flex;align-items:center;gap:var(--s2);height:56px;flex:0 0 56px;padding:0 var(--s5);
+  border-bottom:1px solid var(--line);background:var(--bg)}
+.marca{font-family:var(--serif);font-size:19px;letter-spacing:-.01em;margin-right:var(--s5)}
+.topo nav{display:flex;gap:2px}
+.topo nav button{padding:7px 13px;border-radius:var(--r1);color:var(--ink-2);font-size:13.5px}
+.topo nav button:hover{background:var(--bg-2);color:var(--ink)}
+.topo nav button[aria-current="true"]{background:var(--ink);color:#fff}
+.topo .sp{flex:1}
+.busca{display:flex;align-items:center;gap:var(--s2);height:var(--h1);padding:0 var(--s3);
+  border:1px solid var(--line);border-radius:999px;color:var(--ink-3);font-size:13px;background:var(--bg-2);min-width:0}
+.busca:hover{border-color:var(--ink-4)}
+.kbd{font-family:var(--mono);font-size:9.5px;border:1px solid var(--line);border-radius:4px;padding:1px 5px;background:#fff}
+/* controle de usuário persistente */
+.uctl{display:flex;align-items:center;gap:7px;padding:4px 8px 4px 4px;border-radius:999px;
+  border:1px solid var(--line);background:var(--bg-2)}
+.uctl:hover{border-color:var(--ink-4);background:#fff}
+.uctl[aria-expanded="true"]{border-color:var(--ink);background:#fff}
+.ava{width:26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;font-size:11px;
+  font-weight:600;display:flex;align-items:center;justify-content:center;letter-spacing:.02em}
+.uctl .ch{font-size:9px;color:var(--ink-3)}
 
-/* ═══ PALCO ═══ */
-.stage{flex:1;min-height:0;display:flex;background:var(--canvas);position:relative;overflow:hidden}
-.app{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--canvas);position:relative}
-.app[data-w="pequena"]{max-width:430px;margin:0 auto;border-left:1px solid var(--rule);
-  border-right:1px solid var(--rule)}
+/* menu do usuário */
+.umenu{position:absolute;top:52px;right:var(--s5);width:264px;background:#fff;border:1px solid var(--line);
+  border-radius:var(--r2);box-shadow:0 16px 44px rgba(26,25,23,.14);z-index:60;overflow:hidden}
+.umenu .id{padding:var(--s4);border-bottom:1px solid var(--line-2);display:flex;gap:var(--s3);align-items:center}
+.umenu .id .ava{width:38px;height:38px;font-size:14px}
+.umenu .id .n{font-size:14px;font-weight:600}
+.umenu .id .e{font-size:12px;color:var(--ink-3);margin-top:1px}
+.umenu ul{list-style:none;margin:0;padding:var(--s2)}
+.umenu li button{display:flex;align-items:center;gap:var(--s3);width:100%;padding:9px var(--s3);
+  border-radius:var(--r1);font-size:13.5px}
+.umenu li button:hover{background:var(--bg-2)}
+.umenu li button .ic{width:16px;text-align:center;color:var(--ink-3);font-size:13px}
+.umenu .div{height:1px;background:var(--line-2);margin:var(--s2) 0}
 
-/* ═══ TOPO ═══ */
-.top{display:flex;align-items:center;gap:var(--s1);padding:0 var(--s5);height:56px;flex:0 0 56px;
-  border-bottom:1px solid var(--rule-2)}
-.top .brand{font-family:var(--serif);font-size:18px;letter-spacing:-.01em;margin-right:var(--s4)}
-.top nav{display:flex;gap:2px;min-width:0}
-.top nav button{font-size:13px;color:var(--ink-3);padding:7px 12px;border-radius:var(--r1);white-space:nowrap}
-.top nav button:hover{background:var(--bench-3);color:var(--ink)}
-.top nav button.on{color:var(--ink);font-weight:600}
-.top .spacer{flex:1}
-.srch{display:flex;align-items:center;gap:var(--s2);border:1px solid var(--rule);border-radius:999px;
-  padding:0 var(--s3);height:var(--h1);color:var(--ink-3);font-size:12.5px;min-width:0;max-width:230px;flex:1}
-.srch:hover{border-color:var(--ink-3)}
-.srch .txt{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.kbd{font-family:var(--mono);font-size:9px;border:1px solid var(--rule);border-radius:3px;padding:1px 4px}
-.avbtn{width:var(--h1);height:var(--h1);border-radius:50%;background:var(--ink);color:var(--canvas);
-  font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:0 0 var(--h1)}
-.avbtn:hover{background:var(--accent)}
-@media (max-width:640px){.top{padding:0 var(--s4)}.top .brand{display:none}.srch .txt,.srch .kbd{display:none}
-  .srch{max-width:var(--h1);flex:0 0 var(--h1);justify-content:center;padding:0}}
-
-.scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden}
-.libwrap{flex:1;min-height:0;display:flex;width:100%}
+/* ═══ ÁREAS ═══ */
+.corpo{flex:1;min-height:0;display:flex;overflow:hidden}
+.rolo{flex:1;min-height:0;overflow-y:auto}
 .pad{padding:var(--s6) var(--s7) var(--s7)}
-.app[data-w="pequena"] .pad{padding:var(--s5) var(--s4) var(--s6)}
-@media (max-width:700px){.pad{padding:var(--s5) var(--s4) var(--s6)}}
-.col{max-width:720px;margin:0 auto}
+h1.t{font-size:26px;font-weight:650;letter-spacing:-.02em;margin:0 0 var(--s1)}
+.sub{font-size:13.5px;color:var(--ink-3);margin:0 0 var(--s5);line-height:1.55}
 
-h1.t{font-family:var(--serif);font-size:30px;font-weight:400;letter-spacing:-.015em;margin:0 0 var(--s1)}
-.sub{font-size:13px;color:var(--ink-3);margin:0 0 var(--s5);line-height:1.5}
-h2.s{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);
-  margin:var(--s6) 0 var(--s1);padding-bottom:var(--s2);border-bottom:1px solid var(--ink)}
-h2.s:first-child{margin-top:0}
+/* biblioteca */
+.libtop{display:flex;align-items:flex-end;gap:var(--s4);flex-wrap:wrap;margin-bottom:var(--s5)}
+.libtop .ti{flex:1;min-width:160px}
+.grade{display:grid;gap:var(--s5);grid-template-columns:repeat(auto-fill,minmax(var(--cw,150px),1fr))}
+.bk{text-align:left;position:relative;padding-top:12px}
+.bk .cv{position:relative;width:100%;padding-bottom:140%;border-radius:var(--r1);background:var(--c);
+  box-shadow:0 4px 14px rgba(26,25,23,.14);transition:transform .14s,box-shadow .14s;overflow:hidden}
+.bk:hover .cv{transform:translateY(-3px);box-shadow:0 12px 26px rgba(26,25,23,.2)}
+.bk .cvin{position:absolute;inset:0;padding:11px;display:flex;flex-direction:column;justify-content:space-between}
+.bk .ini{font-family:var(--mono);font-size:10px;color:rgba(26,25,23,.55)}
+.bk .ct{font-size:12px;font-weight:600;color:#1a1917;line-height:1.2}
+.bk .tab{position:absolute;top:0;right:11%;background:var(--ink);color:#fff;font-size:9.5px;font-weight:600;
+  padding:3px 6px 8px;border-radius:3px 3px 0 0;z-index:2}
+.bk .prg{position:absolute;left:0;bottom:0;height:3px;background:#fff}
+.bk .t{font-size:13px;font-weight:600;margin-top:var(--s2);line-height:1.25}
+.bk .a{font-size:12px;color:var(--ink-3);margin-top:1px}
+.bk .src{font-family:var(--mono);font-size:9px;color:var(--ink-4);text-transform:uppercase;letter-spacing:.06em}
 
-/* ═══ LINHA DE AJUSTE ═══ */
-.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s5);align-items:center;
-  padding:var(--s4) 0;border-bottom:1px solid var(--rule-2);position:relative}
-.row:last-child{border-bottom:none}
-.lb{font-size:14px;font-weight:500;display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap;line-height:1.35}
-.ds{font-size:12.5px;color:var(--ink-3);line-height:1.5;margin-top:var(--s1);max-width:52ch}
-.row.chg::before{content:"";position:absolute;left:-14px;top:22px;width:6px;height:6px;border-radius:50%;
-  background:var(--accent)}
-.revert{font-family:var(--mono);font-size:10px;color:var(--accent);text-decoration:underline}
-@media (max-width:560px){.row{grid-template-columns:1fr;gap:var(--s3)}}
+/* painel contextual (o elo com Settings) */
+.ctxwrap{position:relative}
+.ctx{position:absolute;z-index:50;background:#fff;border:1px solid var(--line);border-radius:var(--r2);
+  box-shadow:0 18px 46px rgba(26,25,23,.16);width:300px;padding:var(--s4);display:flex;flex-direction:column;gap:var(--s3)}
+.ctx .row{padding:var(--s2) 0;border:none}
+.ctx .ponte{margin-top:var(--s2);padding-top:var(--s3);border-top:1px solid var(--line-2);
+  display:flex;align-items:center;gap:var(--s2);font-size:13px;color:var(--acc);font-weight:550}
+.ctx .ponte:hover{text-decoration:underline}
 
-.badge{font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;
-  border:1px solid var(--rule);border-radius:999px;padding:2px 7px;color:var(--ink-3);white-space:nowrap}
-.badge.dev{border-color:var(--ink-3)}
-.badge.sync{border-color:var(--good);color:var(--good)}
-.badge.warn{border-color:var(--warn);color:var(--warn)}
-.badge.new{border-color:var(--good);color:var(--good)}
-
-/* ═══ CONTROLES ═══ */
-.sw{width:40px;height:23px;border-radius:999px;background:var(--rule);position:relative;flex:0 0 40px;
-  display:block;transition:background var(--tr)}
-.sw i{position:absolute;top:2.5px;left:2.5px;width:18px;height:18px;border-radius:50%;background:var(--card);
-  box-shadow:0 1px 3px rgba(var(--shadow),.3);transition:left var(--tr)}
-.sw.on{background:var(--ink)}
-.sw.on i{left:19.5px}
-.sw[disabled],.sw.off{opacity:.4;pointer-events:none}
-.segc{display:flex;border:1px solid var(--rule);border-radius:var(--r1);overflow:hidden;height:var(--h1)}
-.segc button{padding:0 var(--s3);font-size:12.5px;border-right:1px solid var(--rule);white-space:nowrap;
-  display:flex;align-items:center}
-.segc button:last-child{border-right:none}
-.segc button:hover{background:var(--bench-3)}
-.segc button.on{background:var(--ink);color:var(--canvas)}
-select.sel{border:1px solid var(--rule);border-radius:var(--r1);padding:0 var(--s2);height:var(--h1);
-  font-size:12.5px;background:var(--card);color:var(--ink);font-family:var(--sans)}
-.stepc{display:flex;align-items:center;border:1px solid var(--rule);border-radius:var(--r1);overflow:hidden;
-  height:var(--h1)}
-.stepc button{padding:0 var(--s3);font-size:14px;border-right:1px solid var(--rule);display:flex;align-items:center}
-.stepc button:last-child{border:none}
-.stepc button:hover{background:var(--bench-3)}
-.stepc .v{padding:0 var(--s2);font-family:var(--mono);font-size:12.5px;min-width:48px;text-align:center;
-  border-right:1px solid var(--rule);display:flex;align-items:center;justify-content:center;height:100%}
-.inp{border:1px solid var(--rule);border-radius:var(--r1);padding:0 var(--s3);height:var(--h2);font-size:13px;
-  background:var(--card);color:var(--ink);font-family:inherit;min-width:240px;max-width:100%}
-.inp:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
-.inp.err{border-color:var(--crit)}
-.err-msg{font-size:12px;color:var(--crit);margin-top:var(--s1);display:flex;gap:6px;align-items:center}
-.btn{font-size:13px;font-weight:600;background:var(--ink);color:var(--canvas);border-radius:999px;
-  padding:0 var(--s5);height:var(--h2);display:inline-flex;align-items:center;justify-content:center;
-  white-space:nowrap;transition:background var(--tr)}
-.btn:hover{background:var(--accent);color:#F1EEE8}
-.btn.sec{background:none;border:1px solid var(--rule);color:var(--ink);font-weight:500}
-.btn.sec:hover{background:var(--bench-3);color:var(--ink)}
-.btn.dan{background:var(--crit);color:#F1EEE8}
-.btn.sm{height:var(--h1);padding:0 var(--s4);font-size:12.5px}
-.btn[disabled]{opacity:.4;pointer-events:none}
-.lnk{font-size:13px;text-decoration:underline;color:var(--ink)}
-.lnk:hover{color:var(--accent)}
-.lnk.dan{color:var(--crit)}
-.lnk.sm{font-size:12px}
-.acts{display:flex;gap:var(--s3);align-items:center;flex-wrap:wrap}
-
-/* ═══ SUPERFÍCIES ═══ */
-.strip{display:flex;align-items:center;gap:var(--s3);font-size:13px;padding:var(--s3) var(--s4);
-  border-radius:var(--r1);background:var(--bench-2);border:1px solid var(--rule-2);color:var(--ink-2);
-  margin:var(--s4) 0}
-.strip .dot{width:8px;height:8px;border-radius:50%;flex:0 0 8px}
-.d-ok{background:var(--good)}.d-err{background:var(--crit)}.d-off{background:var(--ink-3)}
-.d-wait{background:var(--warn)}
-.strip.err{border-color:var(--crit)}
-.strip .spc{flex:1}
-.empty{text-align:center;padding:var(--s7) var(--s4);color:var(--ink-3)}
-.empty p{font-family:var(--serif);font-style:italic;font-size:15px;line-height:1.6;margin:0 0 var(--s4);
-  max-width:44ch;margin-inline:auto}
-
-/* ═══ CONTA ═══ */
-.acct{display:grid;grid-template-columns:46px minmax(0,1fr) auto;gap:var(--s4);align-items:center;
-  padding:var(--s4) 0;border-bottom:1px solid var(--rule-2)}
-.acct .av{width:46px;height:46px;border-radius:50%;background:var(--ink);color:var(--canvas);
-  display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600}
-.acct .nm{font-size:15px;font-weight:600}
-.acct .em{font-size:12.5px;color:var(--ink-3);margin-top:2px}
-.dev-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s4);align-items:center;
-  padding:var(--s4) 0;border-bottom:1px solid var(--rule-2)}
-.dev-row .dn{font-size:13.5px;font-weight:500;display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap}
-.dev-row .dm{font-size:12px;color:var(--ink-3);margin-top:3px}
-.here{font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--good);
-  border:1px solid var(--good);border-radius:999px;padding:2px 7px}
-
-/* ═══ ÍNDICE ═══ */
-.idx{display:flex;flex-direction:column}
-.idx button{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s4);align-items:center;
-  padding:var(--s4) 0;border-bottom:1px solid var(--rule-2);width:100%}
-.idx button:hover .nm{color:var(--accent)}
-.idx .nm{font-size:15px;font-weight:500}
-.idx .dc{font-size:12.5px;color:var(--ink-3);margin-top:3px;line-height:1.45}
-.idx .ct{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
-
-/* ═══ BIBLIOTECA ═══ */
-.libbar{display:flex;align-items:center;gap:var(--s3);flex-wrap:wrap;margin-bottom:var(--s5)}
-.libbar .ttl{flex:1;min-width:150px}
-.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:var(--s5)}
-.chip{font-size:12.5px;border:1px solid var(--rule);border-radius:999px;padding:0 var(--s3);height:var(--h1);
-  display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-.chip:hover{background:var(--bench-3)}
-.chip.on{background:var(--ink);color:var(--canvas);border-color:var(--ink)}
-.chip .n{font-family:var(--mono);font-size:10px;opacity:.6}
-.resume{display:flex;gap:var(--s4);align-items:center;background:var(--bench-2);border-radius:var(--r2);
-  padding:var(--s4);margin-bottom:var(--s5)}
-.resume .cv{width:52px;flex:0 0 52px;aspect-ratio:.72;border-radius:3px;background:var(--paper,#F6F3EC);
-  box-shadow:0 3px 10px rgba(var(--shadow),.18)}
-.resume .info{flex:1;min-width:0}
-.resume .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
-.resume .t{font-size:15px;font-weight:600;margin-top:3px}
-.resume .m{font-size:12.5px;color:var(--ink-3);margin-top:3px}
-
-.shelf{display:grid;gap:var(--s5);grid-template-columns:repeat(auto-fill,minmax(var(--cw,146px),1fr))}
-.shelf.lista{grid-template-columns:1fr;gap:0}
-.bk{display:flex;flex-direction:column;gap:var(--s2);cursor:pointer;position:relative;padding-top:13px;
-  text-align:left;border-radius:var(--r1)}
-.bk .cv{position:relative;width:100%;padding-bottom:139%;border-radius:5px;overflow:hidden;
-  background:var(--paper,#F6F3EC);box-shadow:0 5px 16px rgba(var(--shadow),.16);
-  transition:transform var(--tr),box-shadow var(--tr)}
-.bk:hover .cv{transform:translateY(-3px);box-shadow:0 12px 26px rgba(var(--shadow),.24)}
-.bk[aria-selected="true"] .cv{outline:2px solid var(--ink);outline-offset:3px}
-.bk .cvin{position:absolute;inset:0;display:flex;flex-direction:column}
-.bk .cvt{padding:9% 9% 0;font-size:calc(var(--cw,146px)*.085);font-weight:700;line-height:1.15;color:#141311}
-.bk .cva{flex:1;margin:6% 8% 0;background-image:radial-gradient(var(--tone,#141311) 12%,transparent 13%);
-  background-size:15% 15%;-webkit-mask-image:linear-gradient(to bottom,transparent,#000);
-  mask-image:linear-gradient(to bottom,transparent,#000)}
-.bk .cvf{background:#141311;height:6%}
-.bk .tab{position:absolute;top:0;right:11%;background:var(--slab);color:#F1EEE8;font-size:10px;font-weight:700;
-  line-height:1;padding:4px 7px 9px;border-radius:3px 3px 0 0;z-index:2;transition:background var(--tr)}
-.bk .tab:hover{background:var(--accent)}
-.bk .prg{position:absolute;left:0;bottom:0;height:3px;background:#F1EEE8}
-.bk .done{position:absolute;right:6px;bottom:6px;width:17px;height:17px;border-radius:50%;background:var(--slab);
-  color:#F1EEE8;font-size:10px;display:flex;align-items:center;justify-content:center}
-.bk .t{font-size:13px;font-weight:600;line-height:1.25}
-.bk .a{font-size:11.5px;color:var(--ink-3)}
-.bk .nt{font-size:11.5px;color:var(--ink-3);font-family:var(--serif);font-style:italic;line-height:1.4;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.bk .hov{position:absolute;left:7px;right:7px;bottom:7px;display:flex;gap:5px;opacity:0;
-  transition:opacity var(--tr);z-index:3}
-.bk:hover .hov,.bk:focus-within .hov{opacity:1}
-.bk .hov button{flex:1;text-align:center;font-size:11px;font-weight:600;background:var(--slab);color:#F1EEE8;
-  border-radius:999px;padding:6px 0;box-shadow:0 3px 10px rgba(20,19,17,.34)}
-.bk .hov button.g{flex:0 0 26px;background:var(--card);color:var(--ink);letter-spacing:1px}
-.bk .hov button:hover{background:var(--accent);color:#F1EEE8}
-.bk.list{flex-direction:row;align-items:center;gap:var(--s4);padding:var(--s3) var(--s2);
-  border-bottom:1px solid var(--rule-2)}
-.bk.list .cv{width:44px;flex:0 0 44px;padding-bottom:61px}
-.bk.list .tab,.bk.list .hov{display:none}
-.bk.list .meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.bk.list .side{font-size:12px;color:var(--ink-3);white-space:nowrap}
-
-/* inspector */
-.insp{width:320px;flex:0 0 320px;border-left:1px solid var(--rule-2);background:var(--card);
+/* ═══ CONFIGURAÇÕES ═══ */
+.cfg{flex:1;min-height:0;display:flex;overflow:hidden}
+.cfgnav{width:246px;flex:0 0 246px;border-right:1px solid var(--line);background:var(--nav);
   display:flex;flex-direction:column;min-height:0}
-.insp-h{display:flex;align-items:center;gap:var(--s2);padding:var(--s3) var(--s4);
-  border-bottom:1px solid var(--rule-2)}
-.insp-h .lbl{flex:1}
-.insp-tabs{display:flex;border-bottom:1px solid var(--rule-2)}
-.insp-tabs button{flex:1;padding:var(--s3) 0;font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;
-  text-transform:uppercase;color:var(--ink-3);text-align:center}
-.insp-tabs button[aria-selected="true"]{color:var(--ink);box-shadow:inset 0 -2px 0 var(--ink)}
-.insp-b{padding:var(--s4);overflow-y:auto;display:flex;flex-direction:column;gap:var(--s3);flex:1}
-.insp-b h3{margin:0;font-family:var(--sans);font-size:16px;font-weight:700;line-height:1.25}
-.insp-b .meta{font-size:12.5px;color:var(--ink-3)}
-.pbar{height:3px;background:var(--rule-2);border-radius:2px;overflow:hidden}
-.pbar i{display:block;height:100%;background:var(--ink)}
-.note{border-left:2px solid var(--rule-2);padding-left:var(--s3);font-family:var(--serif);font-style:italic;
-  font-size:13px;line-height:1.55;color:var(--ink-2)}
-.note b{display:block;font-family:var(--mono);font-style:normal;font-size:8.5px;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--ink-3);margin-bottom:4px;font-weight:400}
-.tagl{display:flex;gap:5px;flex-wrap:wrap}
-.tagl span{font-size:11px;background:var(--bench-2);border-radius:999px;padding:3px 9px;color:var(--ink-2)}
-@media (max-width:860px){.insp{position:absolute;right:0;top:0;bottom:0;z-index:30;
-  box-shadow:-14px 0 40px rgba(var(--shadow),.18)}}
+.cfgnav .volta{display:flex;align-items:center;gap:var(--s2);padding:var(--s4) var(--s4) var(--s3);
+  font-size:13px;color:var(--ink-2)}
+.cfgnav .volta:hover{color:var(--acc)}
+.cfgnav .bs{margin:0 var(--s3) var(--s3);display:flex;align-items:center;gap:var(--s2);height:var(--h1);
+  padding:0 var(--s3);border:1px solid var(--line);border-radius:var(--r1);background:#fff}
+.cfgnav .bs input{border:none;outline:none;background:none;font:inherit;font-size:13px;width:100%;color:var(--ink)}
+.cfgnav .lista{overflow-y:auto;padding:0 var(--s2) var(--s5);flex:1}
+.grp{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-4);
+  padding:var(--s4) var(--s3) var(--s2)}
+.cat{display:flex;align-items:center;gap:var(--s3);width:100%;padding:8px var(--s3);border-radius:var(--r1);
+  font-size:13.5px;color:var(--ink-2)}
+.cat:hover{background:var(--bg-3);color:var(--ink)}
+.cat[aria-current="true"]{background:#fff;color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(26,25,23,.07)}
+.cat[aria-current="true"] .ic{color:var(--acc)}
+.cat .ic{width:15px;text-align:center;color:var(--ink-4);font-size:12px}
+.cat .badge{margin-left:auto}
+.cfgmain{flex:1;min-width:0;overflow-y:auto;background:var(--bg)}
+.cfgpad{padding:var(--s6) var(--s7);max-width:760px}
+.cfghead{margin-bottom:var(--s5)}
+.cfghead .trilha{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-4);margin-bottom:var(--s2)}
+.cfghead h2{margin:0;font-size:23px;font-weight:650;letter-spacing:-.02em}
+.cfghead p{margin:var(--s2) 0 0;font-size:13.5px;color:var(--ink-3);line-height:1.55;max-width:60ch}
+.bloco{margin-bottom:var(--s6)}
+.bloco h3{margin:0 0 var(--s2);font-size:12px;font-weight:650;letter-spacing:.02em;color:var(--ink-2)}
+.cartao{border:1px solid var(--line);border-radius:var(--r2);background:#fff;overflow:hidden}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s5);align-items:center;
+  padding:var(--s4);border-bottom:1px solid var(--line-2)}
+.row:last-child{border-bottom:none}
+.row.hit{background:var(--acc-soft);box-shadow:inset 3px 0 0 var(--acc)}
+.lb{font-size:13.5px;font-weight:550;display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap}
+.ds{font-size:12.5px;color:var(--ink-3);line-height:1.5;margin-top:3px;max-width:52ch}
+@media (max-width:620px){.row{grid-template-columns:1fr;gap:var(--s3)}}
+
+/* controles */
+.badge{font-family:var(--mono);font-size:9px;letter-spacing:.05em;text-transform:uppercase;border:1px solid var(--line);
+  border-radius:999px;padding:2px 7px;color:var(--ink-3);white-space:nowrap}
+.badge.ok{border-color:var(--ok);color:var(--ok)}
+.badge.sim{border-color:var(--warn);color:var(--warn)}
+.sw{width:40px;height:23px;border-radius:999px;background:var(--line);position:relative;flex:0 0 40px;display:block;
+  transition:background .16s}
+.sw i{position:absolute;top:2.5px;left:2.5px;width:18px;height:18px;border-radius:50%;background:#fff;
+  box-shadow:0 1px 3px rgba(26,25,23,.28);transition:left .16s}
+.sw.on{background:var(--ink)}.sw.on i{left:19.5px}
+.seg{display:flex;border:1px solid var(--line);border-radius:var(--r1);overflow:hidden;height:var(--h1);background:#fff}
+.seg button{padding:0 var(--s3);font-size:12.5px;border-right:1px solid var(--line);display:flex;align-items:center;
+  white-space:nowrap;color:var(--ink-2)}
+.seg button:last-child{border-right:none}
+.seg button:hover{background:var(--bg-2)}
+.seg button.on{background:var(--ink);color:#fff}
+select.sel{height:var(--h1);border:1px solid var(--line);border-radius:var(--r1);padding:0 var(--s2);
+  background:#fff;font:inherit;font-size:13px;color:var(--ink)}
+.inp{height:var(--h2);border:1px solid var(--line);border-radius:var(--r1);padding:0 var(--s3);background:#fff;
+  font:inherit;font-size:13.5px;color:var(--ink);min-width:240px;max-width:100%}
+.btn{height:var(--h2);padding:0 var(--s5);border-radius:var(--r1);background:var(--ink);color:#fff;font-size:13.5px;
+  font-weight:600;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap}
+.btn:hover{background:var(--acc)}
+.btn.sec{background:#fff;border:1px solid var(--line);color:var(--ink);font-weight:550}
+.btn.sec:hover{background:var(--bg-2)}
+.btn.dan{background:var(--dan)}
+.btn.sm{height:var(--h1);padding:0 var(--s4);font-size:12.5px}
+.lnk{font-size:13px;color:var(--acc);font-weight:550}
+.lnk:hover{text-decoration:underline}
+.acts{display:flex;gap:var(--s3);align-items:center;flex-wrap:wrap}
+.faixa{display:flex;align-items:center;gap:var(--s3);padding:var(--s3) var(--s4);border-radius:var(--r1);
+  background:var(--bg-2);border:1px solid var(--line-2);font-size:13px;color:var(--ink-2)}
+.faixa .dot{width:8px;height:8px;border-radius:50%;flex:0 0 8px}
+.d-ok{background:var(--ok)}.d-sim{background:var(--warn)}.d-off{background:var(--ink-4)}
+.faixa .sp{flex:1}
+
+/* ═══ PERFIL ═══ */
+.pcabec{display:flex;gap:var(--s5);align-items:center;padding-bottom:var(--s5);border-bottom:1px solid var(--line);
+  margin-bottom:var(--s5);flex-wrap:wrap}
+.pcabec .ava{width:72px;height:72px;font-size:26px}
+.pcabec h1{margin:0;font-size:24px;font-weight:650;letter-spacing:-.02em}
+.pcabec .h{font-size:13px;color:var(--ink-3);margin-top:3px}
+.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:var(--s4);margin-bottom:var(--s6)}
+.num{border:1px solid var(--line);border-radius:var(--r2);padding:var(--s4);background:#fff}
+.num b{display:block;font-size:24px;font-weight:650;letter-spacing:-.02em}
+.num span{font-size:12.5px;color:var(--ink-3)}
+.linhat{display:grid;grid-template-columns:78px minmax(0,1fr);gap:var(--s4);padding:var(--s3) 0;
+  border-bottom:1px solid var(--line-2);font-size:13px}
+.linhat .q{font-family:var(--mono);font-size:11px;color:var(--ink-4)}
 
 /* ═══ LEITOR ═══ */
-.reader{display:flex;flex-direction:column;height:100%;min-height:0}
-.rtop{display:flex;align-items:center;gap:var(--s3);padding:0 var(--s5);height:52px;flex:0 0 52px;
-  border-bottom:1px solid var(--rule-2);font-size:12.5px;color:var(--ink-3)}
-.rtop .ti{color:var(--ink);font-family:var(--serif);font-size:15px;white-space:nowrap;overflow:hidden;
-  text-overflow:ellipsis}
-.rtop .spc{flex:1}
-.rtop button.ic{width:var(--h1);height:var(--h1);border-radius:var(--r1);display:flex;align-items:center;
-  justify-content:center;font-size:14px;color:var(--ink-2)}
-.rtop button.ic:hover{background:var(--bench-3);color:var(--ink)}
-.rtop button.ic.on{background:var(--ink);color:var(--canvas)}
-.rmain{flex:1;min-height:0;display:flex}
-.rscroll{flex:1;min-height:0;overflow-y:auto;background:var(--rbg,var(--card))}
-.rbody{max-width:var(--rw,620px);margin:0 auto;padding:var(--s7) var(--s6) 80px;
-  font-family:var(--rf,var(--serif));color:var(--rfg,var(--ink))}
-.rbody .ch{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--ink-3);margin-bottom:var(--s5)}
-.rbody p{margin:0 0 1em}
-.rbody .hl{background:var(--hl,#F2E07A);padding:2px 0;border-radius:2px;cursor:pointer}
-.rbody .sel{background:rgba(195,59,30,.16);border-radius:2px}
-.rbar{display:flex;align-items:center;gap:var(--s3);padding:0 var(--s5);height:56px;flex:0 0 56px;
-  border-top:1px solid var(--rule-2);background:var(--canvas);flex-wrap:wrap}
-.rbar .prog{flex:1;min-width:120px;display:flex;flex-direction:column;gap:5px}
-.rbar .prog .pb{height:2px;background:var(--rule-2);border-radius:2px;overflow:hidden}
-.rbar .prog .pb i{display:block;height:100%;background:var(--ink)}
-.rbar .prog .lg{font-size:11.5px;color:var(--ink-3)}
-.rpanel{width:300px;flex:0 0 300px;border-left:1px solid var(--rule-2);background:var(--canvas);
-  display:flex;flex-direction:column;min-height:0}
-.rpanel .hd{display:flex;align-items:center;padding:var(--s3) var(--s4);border-bottom:1px solid var(--rule-2)}
-.rpanel .bd{padding:var(--s4);overflow-y:auto;display:flex;flex-direction:column;gap:var(--s3);flex:1}
-.toc-i{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s3);padding:var(--s3) 0;
-  border-bottom:1px solid var(--rule-2);font-size:13px;width:100%}
-.toc-i:hover{color:var(--accent)}
-.toc-i.on{font-weight:700}
-.toc-i .pg{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
-@media (max-width:860px){.rpanel{position:absolute;right:0;top:0;bottom:0;z-index:30;
-  box-shadow:-14px 0 40px rgba(var(--shadow),.18)}}
+.leitor{position:fixed;inset:0;z-index:70;background:var(--paper);display:flex;flex-direction:column}
+.ltop{display:flex;align-items:center;gap:var(--s3);height:52px;flex:0 0 52px;padding:0 var(--s5);
+  border-bottom:1px solid rgba(26,25,23,.1);font-size:13px;color:var(--ink-2)}
+.ltop .ti{font-family:var(--serif);font-size:15px;color:var(--ink)}
+.ltop .sp{flex:1}
+.lbody{flex:1;overflow-y:auto;padding:var(--s7) var(--s5) 90px}
+.lcol{max-width:620px;margin:0 auto;font-family:var(--serif);line-height:1.62;color:#26221c}
+.lcol p{margin:0 0 1em}
+.lcol .hl{background:#f3dd8c;padding:2px 0}
 
-/* seleção de texto → ações */
-.selbar{position:absolute;z-index:40;background:var(--slab);color:#F1EEE8;border-radius:999px;
-  display:flex;gap:2px;padding:4px;box-shadow:0 10px 26px rgba(var(--shadow),.34)}
-.selbar button{color:#F1EEE8;font-size:12px;padding:6px 12px;border-radius:999px;white-space:nowrap}
-.selbar button:hover{background:rgba(241,238,232,.16)}
+/* ═══ BUSCA GLOBAL ═══ */
+.velo{position:fixed;inset:0;background:rgba(26,25,23,.24);z-index:80}
+.pal{position:fixed;top:12vh;left:50%;transform:translateX(-50%);width:min(560px,92%);z-index:81;background:#fff;
+  border:1px solid var(--line);border-radius:var(--r2);box-shadow:0 28px 64px rgba(26,25,23,.28);overflow:hidden;
+  max-height:64vh;display:flex;flex-direction:column}
+.pal .in{display:flex;align-items:center;gap:var(--s3);padding:var(--s4);border-bottom:1px solid var(--line-2)}
+.pal .in input{border:none;outline:none;font:inherit;font-size:15.5px;width:100%;background:none}
+.pal .res{overflow-y:auto}
+.pal .g{font-family:var(--mono);font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-4);
+  padding:var(--s3) var(--s4) var(--s1)}
+.pal .r{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s3);padding:9px var(--s4);width:100%;
+  align-items:center;font-size:13.5px}
+.pal .r:hover,.pal .r.on{background:var(--bg-2)}
+.pal .r .p{font-family:var(--mono);font-size:10px;color:var(--ink-4)}
+.pal .vazio{padding:var(--s5);font-size:13px;color:var(--ink-3);line-height:1.6}
 
-/* ═══ SOBREPOSIÇÕES ═══ */
-.ovl{position:absolute;inset:0;background:rgba(var(--shadow),.26);z-index:30}
-.pop{position:absolute;z-index:40;background:var(--card);border:1px solid var(--rule);border-radius:var(--r2);
-  box-shadow:0 20px 46px rgba(var(--shadow),.24);padding:var(--s5);width:320px;display:flex;
-  flex-direction:column;gap:var(--s1)}
-.drawer{position:absolute;top:0;right:0;bottom:0;width:330px;background:var(--card);
-  border-left:1px solid var(--rule);box-shadow:-14px 0 40px rgba(var(--shadow),.18);padding:var(--s5);
-  display:flex;flex-direction:column;gap:var(--s1);z-index:40;overflow-y:auto}
-.pop .row,.drawer .row{padding:var(--s3) 0}
-.pop .lb,.drawer .lb{font-size:13px}
-.menu{padding:var(--s2)}
-.menu button{display:block;width:100%;padding:var(--s3);border-radius:var(--r1);font-size:13px}
-.menu button:hover{background:var(--bench-2)}
-.menu .dan{color:var(--crit)}
-.menu .hdr{padding:var(--s2) var(--s3) var(--s3)}
+.aviso{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:90;background:var(--ink);color:#fff;
+  font-size:13px;padding:11px var(--s5);border-radius:999px;box-shadow:0 14px 34px rgba(26,25,23,.3);max-width:82%}
 
-.modal{position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
-  padding:var(--s5);background:rgba(var(--shadow),.3)}
-.modal .box{background:var(--card);border-radius:var(--r2);padding:var(--s6);max-width:480px;width:100%;
-  box-shadow:0 26px 60px rgba(var(--shadow),.3);display:flex;flex-direction:column;gap:var(--s4)}
-.modal h3{margin:0;font-family:var(--serif);font-size:22px;font-weight:400}
-.modal p{margin:0;font-size:13.5px;line-height:1.6;color:var(--ink-2)}
-
-/* ═══ BUSCA ═══ */
-.palwrap{position:absolute;inset:0;z-index:50;display:flex;justify-content:center;padding-top:10vh;
-  background:rgba(var(--shadow),.26)}
-.pal{width:min(560px,92%);max-height:66vh;background:var(--card);border:1px solid var(--rule);
-  border-radius:var(--r2);box-shadow:0 26px 60px rgba(var(--shadow),.3);display:flex;flex-direction:column;
-  overflow:hidden}
-.pal-in{display:flex;align-items:center;gap:var(--s3);padding:var(--s4) var(--s5);
-  border-bottom:1px solid var(--rule-2)}
-.pal-in input{border:none;outline:none;background:none;font:inherit;font-size:16px;color:var(--ink);width:100%}
-.pal-res{overflow-y:auto}
-.pal-g{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);
-  padding:var(--s3) var(--s5) var(--s1)}
-.pal-r{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s4);padding:var(--s3) var(--s5);
-  font-size:13.5px;align-items:center;cursor:pointer;width:100%;text-align:left}
-.pal-r.on,.pal-r:hover{background:var(--bench-2)}
-.pal-r .pth{font-family:var(--mono);font-size:10px;color:var(--ink-3)}
-.pal-r .q{font-family:var(--serif);font-style:italic;font-size:12px;color:var(--ink-3);
-  display:block;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pal-empty{padding:var(--s5);font-size:13px;color:var(--ink-3);line-height:1.55}
-
-/* ═══ ASSISTENTE ═══ */
-.wiz{position:absolute;inset:0;z-index:45;background:var(--canvas);display:flex;flex-direction:column;
-  align-items:center;justify-content:center;padding:var(--s6)}
-.wizbox{max-width:520px;width:100%;display:flex;flex-direction:column;gap:var(--s4)}
-.wizdots{display:flex;gap:6px}
-.wizdots i{width:22px;height:3px;border-radius:2px;background:var(--rule);display:block}
-.wizdots i.on{background:var(--ink)}
-
-/* ═══ DESTRUTIVO ═══ */
-.dz{border-top:1px solid var(--rule);margin-top:var(--s6);padding-top:var(--s5);display:flex;
-  flex-direction:column;gap:var(--s4)}
-.dz h5{margin:0;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
-  color:var(--crit)}
-.confirm{border-left:2px solid var(--crit);padding:var(--s1) 0 var(--s1) var(--s4);display:flex;
-  flex-direction:column;gap:var(--s3)}
-.confirm p{margin:0;font-size:13.5px;line-height:1.6;color:var(--ink-2)}
-.confirm ul{margin:0;padding-left:var(--s5);font-size:13px;color:var(--ink-2);line-height:1.7}
-.confirm b{color:var(--ink)}
-
-/* ═══ ESPAÇO ═══ */
-.quota{display:flex;gap:1px;height:11px;border-radius:3px;overflow:hidden;background:var(--rule-2);
-  margin:var(--s4) 0 var(--s3)}
-.quota i{display:block;height:100%}
-.qleg{display:flex;gap:var(--s5);flex-wrap:wrap;font-size:12px;color:var(--ink-3)}
-.qleg span{display:flex;align-items:center;gap:7px}
-.qleg i{width:9px;height:9px;border-radius:2px;display:block}
-
-/* ═══ AVISO ═══ */
-.toast{position:absolute;left:50%;transform:translateX(-50%);bottom:var(--s5);z-index:60;background:var(--slab);
-  color:#F1EEE8;font-size:13px;padding:var(--s3) var(--s5);border-radius:999px;
-  box-shadow:0 12px 30px rgba(var(--shadow),.34);max-width:86%;display:flex;gap:var(--s4);align-items:center}
-.toast button{color:#F1EEE8;text-decoration:underline;font-size:12.5px;white-space:nowrap}
-.filecard{display:flex;gap:var(--s4);align-items:center;padding:var(--s4);background:var(--bench-2);
-  border-radius:var(--r2);margin-bottom:var(--s3)}
-.filecard .ic{width:44px;height:56px;background:var(--slab);border-radius:3px;color:#EDE8DE;font-size:9px;
-  display:flex;align-items:center;justify-content:center;font-family:var(--mono);flex:0 0 44px}
-
-/* ═══ SUA LEITURA ═══ */
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:var(--rule-2);
-  border:1px solid var(--rule-2);border-radius:var(--r2);overflow:hidden;margin-bottom:var(--s5)}
-.stats div{background:var(--canvas);padding:var(--s4);display:flex;flex-direction:column;gap:3px}
-.stats b{font-family:var(--mono);font-size:22px;font-weight:500;letter-spacing:-.02em}
-.tl{display:flex;flex-direction:column}
-.tl-i{display:grid;grid-template-columns:82px minmax(0,1fr);gap:var(--s4);padding:var(--s4) 0;
-  border-bottom:1px solid var(--rule-2)}
-.tl-i .when{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
-.tl-i .what{font-size:13px;line-height:1.5}
-.tl-i .what b{font-weight:600}
-
-/* ═══ PAINEL DE TESTE ═══ */
-.side{position:absolute;top:0;right:0;bottom:0;width:310px;background:#0E0D0C;color:#B8B1A5;z-index:70;
+/* ═══ LAB — secundário, fora do produto ═══ */
+#labbtn{position:fixed;right:16px;bottom:16px;z-index:95;height:34px;padding:0 14px;border-radius:999px;
+  background:var(--ink);color:#fff;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;
+  display:flex;align-items:center;gap:7px;box-shadow:0 8px 24px rgba(26,25,23,.28);opacity:.62}
+#labbtn:hover{opacity:1}
+#lab{position:fixed;top:0;right:0;bottom:0;width:330px;background:#14130f;color:#b6b0a6;z-index:96;
   padding:var(--s5);overflow-y:auto;display:flex;flex-direction:column;gap:var(--s5);
-  border-left:1px solid #262320}
-.side h4{margin:0;font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
-  color:#6F6A61}
-.side .sc{display:flex;flex-direction:column;gap:3px}
-.side .sc button{padding:var(--s3);border-radius:var(--r1);border:1px solid #211F1C;display:flex;
+  box-shadow:-18px 0 50px rgba(0,0,0,.34)}
+#lab h4{margin:0;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#7b7469}
+#lab .fechar{position:absolute;top:14px;right:16px;color:#7b7469;font-family:var(--mono);font-size:11px}
+#lab .sc{display:flex;flex-direction:column;gap:3px}
+#lab .sc button{padding:10px var(--s3);border-radius:var(--r1);border:1px solid #221f19;display:flex;
   flex-direction:column;gap:3px}
-.side .sc button:hover{background:#1A1815}
-.side .sc button[aria-pressed="true"]{background:#EDE8DE;border-color:#EDE8DE}
-.side .sc button[aria-pressed="true"] .n,.side .sc button[aria-pressed="true"] .d{color:#141311}
-.side .sc .n{font-family:var(--mono);font-size:9px;color:#6F6A61;letter-spacing:.08em}
-.side .sc .d{font-size:12.5px;color:#D6CFC3;line-height:1.3}
-.side ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--s2)}
-.side ol li{font-size:12px;line-height:1.45;display:grid;grid-template-columns:14px 1fr;gap:var(--s2);
-  color:#B8B1A5}
-.side ol li i{width:12px;height:12px;border-radius:50%;border:1px solid #3A3630;margin-top:2px;display:block;
-  position:relative}
-.side ol li.ok i{background:var(--good);border-color:var(--good)}
-.side ol li.ok i::after{content:"";position:absolute;left:3.5px;top:1px;width:3px;height:6px;
-  border:solid #0E0D0C;border-width:0 1.5px 1.5px 0;transform:rotate(42deg)}
-.side ol li.ok{color:#6F6A61}
-.side .an{display:flex;flex-direction:column;gap:var(--s2)}
-.side .an div{display:flex;flex-direction:column;gap:3px}
-.side .an b{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:#6F6A61;
-  font-weight:400}
-.side .an span{font-size:12px;line-height:1.5;color:#B8B1A5}
-.side .an .f{border-left:2px solid var(--accent);padding-left:var(--s3)}
-.side .altseg{display:flex;border:1px solid #2B2825;border-radius:var(--r1);overflow:hidden}
-.side .altseg button{flex:1;padding:6px 4px;font-family:var(--mono);font-size:9.5px;text-align:center;
-  border-right:1px solid #2B2825;color:#8B857A}
-.side .altseg button:last-child{border:none}
-.side .altseg button[aria-pressed="true"]{background:#EDE8DE;color:#141311}
-.side .note{font-size:11px;line-height:1.45;color:#6F6A61}
-@media (max-width:860px){.side{width:100%}}
+#lab .sc button:hover{background:#1c1a14}
+#lab .sc button[aria-pressed="true"]{background:#f2f0eb;border-color:#f2f0eb}
+#lab .sc button[aria-pressed="true"] .n,#lab .sc button[aria-pressed="true"] .d{color:#14130f}
+#lab .sc .n{font-family:var(--mono);font-size:9px;color:#7b7469;letter-spacing:.07em}
+#lab .sc .d{font-size:12.5px;color:#d5cec3;line-height:1.3}
+#lab ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+#lab ol li{font-size:12px;line-height:1.45;color:#b6b0a6}
+#lab ol li.ok{color:#6f6a60}
+#lab .seg{background:#1c1a14;border-color:#2a2620}
+#lab .seg button{color:#b6b0a6;border-color:#2a2620;font-size:11px}
+#lab .seg button.on{background:#f2f0eb;color:#14130f}
+#lab .nota{font-size:11.5px;line-height:1.5;color:#7b7469}
+@media (max-width:720px){#lab{width:100%}.cfgnav{display:none}}
 </style>
 </head>
 <body>
-
-<div class="rig">
-  <b>Protótipo Mekora</b>
-  <span class="sep"></span>
-  <span class="grp">modelo <span id="modosw" style="display:flex;gap:4px"></span></span>
-  <span class="sep"></span>
-  <span class="grp">aparelho <span id="devsw" style="display:flex;gap:4px"></span></span>
-  <span class="sep"></span>
-  <span class="grp">alterados <b id="ndiff">0</b></span>
-  <span class="spacer"></span>
-  <span class="tag" id="scenlabel"></span>
-  <button id="sidebtn" aria-pressed="false">cenários e anotações</button>
-</div>
-
-<div class="stage">
-  <div class="app" id="app"></div>
-  <div class="side" id="side" hidden></div>
-</div>
+<div id="app"></div>
+<button id="labbtn">◇ lab</button>
+<div id="lab" hidden></div>
 
 <script>
 (function(){
 "use strict";
-function $(id){return document.getElementById(id)}
+function $(i){return document.getElementById(i)}
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
 
-/* ═════ CATÁLOGO DE AJUSTES ═════ */
-var SEC=[
- {k:"aparencia",n:"Aparência",d:"Tema, densidade, idioma, tela inicial"},
- {k:"biblioteca",n:"Biblioteca",d:"Vista padrão, ordenação, capas, sinais de nota"},
- {k:"leitura",n:"Leitura",d:"Tipografia, tema do leitor, destaques"},
- {k:"conhecimento",n:"Conhecimento",d:"Notas, tags, conexões entre livros"},
- {k:"arquivos",n:"Arquivos",d:"Conversão, OCR, importação"},
- {k:"conexoes",n:"Exportar ao Kindle",d:"Envio por e-mail, com fila de retry"},
- {k:"dados",n:"Seus dados",d:"Espaço, offline, privacidade, apagar"}
-];
-var S=[
-{k:"theme",sec:"aparencia",lb:"Tema",ds:"O seu outro aparelho não muda junto.",esc:"aparelho",t:"seg",op:["Claro","Escuro","Sistema"],d:"Sistema",syn:"tema escuro claro noite cor"},
-{k:"density",sec:"aparencia",lb:"Densidade da interface",ds:"Espaçamento da interface, não o tamanho do texto lido.",esc:"aparelho",t:"seg",op:["Compacta","Padrão","Ampla"],d:"Padrão",syn:"densidade espaçamento"},
-{k:"lang",sec:"aparencia",lb:"Idioma da interface",ds:"Não altera o idioma dos livros nem do OCR.",esc:"conta",t:"sel",op:["Português (Brasil)","English","Español"],d:"Português (Brasil)",syn:"idioma lingua"},
-{k:"motion",sec:"aparencia",lb:"Reduzir movimento",ds:"Desliga transições de painel e estante.",esc:"aparelho",t:"sw",d:false,syn:"movimento animação acessibilidade"},
-{k:"start",sec:"aparencia",lb:"Ao abrir o Mekora",ds:"",esc:"aparelho",t:"sel",op:["Retomar leitura","Biblioteca","Sua leitura"],d:"Retomar leitura",syn:"abrir inicial"},
-{k:"libview",sec:"biblioteca",lb:"Vista ao abrir",ds:"Você também troca a vista na própria biblioteca.",esc:"conta",t:"seg",op:["Grade","Lista"],d:"Grade",syn:"vista grade lista estante"},
-{k:"carddens",sec:"biblioteca",lb:"Densidade dos cards",ds:"Compacta mostra só capa e progresso. Ampla acrescenta a última nota.",esc:"conta",t:"seg",op:["S","M","L"],d:"M",syn:"card capa tamanho densidade"},
-{k:"sort",sec:"biblioteca",lb:"Ordenação padrão",ds:"",esc:"conta",t:"sel",op:["Adicionado recentemente","Título","Autor","Progresso","Mais anotado"],d:"Adicionado recentemente",syn:"ordenar ordem classificar"},
-{k:"notesign",sec:"biblioteca",lb:"Sinal de notas nas capas",ds:"A aba ✳ com a contagem, no topo da capa.",esc:"conta",t:"sw",d:true,syn:"nota sinal aba capa"},
-{k:"donebooks",sec:"biblioteca",lb:"Livros concluídos",ds:"",esc:"conta",t:"sel",op:["Manter na estante","Ocultar"],d:"Manter na estante",syn:"concluído lido terminado"},
-{k:"font",sec:"leitura",lb:"Fonte de leitura",ds:"",esc:"conta",t:"seg",op:["Serifada","Sem serifa"],d:"Serifada",rd:1,syn:"fonte tipografia letra"},
-{k:"size",sec:"leitura",lb:"Tamanho do texto",ds:"",esc:"conta",t:"step",mn:14,mx:26,sp:1,d:18,rd:1,syn:"tamanho corpo letra maior menor"},
-{k:"leading",sec:"leitura",lb:"Entrelinha",ds:"",esc:"conta",t:"step",mn:1.3,mx:2.1,sp:.1,d:1.6,rd:1,syn:"entrelinha espaçamento linha"},
-{k:"width",sec:"leitura",lb:"Largura da coluna",ds:"",esc:"conta",t:"step",mn:480,mx:800,sp:40,d:620,rd:1,syn:"largura coluna margem"},
-{k:"readertheme",sec:"leitura",lb:"Tema do leitor",ds:"Independente do tema da interface, de propósito.",esc:"conta",t:"seg",op:["Papel","Sépia","Noite"],d:"Papel",rd:1,syn:"tema leitor papel sépia noite fundo"},
-{k:"scroll",sec:"leitura",lb:"Rolagem contínua",ds:"Desligado divide o capítulo em páginas.",esc:"conta",t:"sw",d:true,syn:"rolagem paginação virar página"},
-{k:"progfmt",sec:"leitura",lb:"Mostrar progresso como",ds:"Você também alterna tocando no indicador.",esc:"conta",t:"seg",op:["Tempo","Páginas","%"],d:"Tempo",syn:"progresso porcentagem tempo restante"},
-{k:"hlcolor",sec:"conhecimento",lb:"Cor do destaque",ds:"",esc:"conta",t:"seg",op:["Amarelo","Rosa","Verde"],d:"Amarelo",syn:"destaque grifo cor marcação"},
-{k:"noteonhl",sec:"conhecimento",lb:"Criar nota ao destacar",ds:"Abre o campo de nota junto com o destaque.",esc:"conta",t:"sw",d:false,syn:"nota destacar anotação"},
-{k:"citefmt",sec:"conhecimento",lb:"Copiar citação com a fonte",ds:"Inclui título, autor e página ao copiar.",esc:"conta",t:"sw",d:true,syn:"citação copiar fonte referência"},
-{k:"suggest",sec:"conhecimento",lb:"Sugerir conexões entre livros",ds:"Compara suas notas para propor ligações. Você revisa antes de aceitar.",esc:"conta",t:"sw",d:false,syn:"conexão sugestão relacionar ligação"},
-{k:"format",sec:"arquivos",lb:"Formato de saída",ds:"Arquivos já convertidos não mudam.",esc:"conta",t:"sel",op:["EPUB","PDF"],d:"EPUB",bd:"vale para novos",syn:"formato saída epub pdf"},
-{k:"ocr",sec:"arquivos",lb:"Reconhecer texto (OCR)",ds:"“Sempre” aumenta o tempo de processamento.",esc:"conta",t:"seg",op:["Automático","Sempre","Nunca"],d:"Automático",syn:"ocr reconhecimento texto escaneado digitalizado"},
-{k:"autoprocess",sec:"arquivos",lb:"Processar ao importar",ds:"Converte assim que o arquivo entra, sem perguntar.",esc:"conta",t:"sw",d:false,syn:"importar automático processar"},
-{k:"keeporig",sec:"arquivos",lb:"Manter o arquivo original",ds:"Ocupa espaço da conta e permite reconverter depois.",esc:"conta",t:"sw",d:true,syn:"original manter guardar"},
-{k:"reter",sec:"arquivos",lb:"Guardar arquivos por",ds:"Retenção real na ConfigPage do app operacional.",esc:"conta",t:"sel",op:["7 dias","30 dias","Sempre"],d:"30 dias",syn:"reter retenção guardar limpar"},
-{k:"kcc",sec:"arquivos",lb:"Perfil de quadrinhos (KCC)",ds:"Usado no pipeline de mangá e HQ, que existe e é operacional.",esc:"conta",t:"sel",op:["Kindle PW","Kindle Oasis","Kindle Scribe"],d:"Kindle PW",syn:"kcc quadrinho manga comic hq"},
-{k:"ocrlang",sec:"arquivos",lb:"Idioma do reconhecimento",ds:"Só use se a detecção automática errar.",esc:"conta",t:"sel",op:["Detectar","Português","Inglês","Espanhol"],d:"Detectar",adv:1,syn:"ocr idioma lingua reconhecimento"},
-{k:"quality",sec:"arquivos",lb:"Qualidade de imagem",ds:"Maior qualidade gera arquivos maiores.",esc:"conta",t:"seg",op:["Leve","Equilibrada","Máxima"],d:"Equilibrada",adv:1,syn:"qualidade resolução imagem"},
-{k:"sendafter",sec:"conexoes",lb:"Exportar ao Kindle depois de preparar",ds:"Decisão de 5 ago: o Kindle virou alvo de exportação, não o destino do produto.",esc:"conta",t:"sw",d:false,syn:"kindle enviar exportar automático"},
-{k:"wifionly",sec:"dados",lb:"Sincronizar só em Wi-Fi",ds:"",esc:"aparelho",t:"sw",d:true,syn:"wifi rede dados móveis"},
-{k:"dlreading",sec:"dados",lb:"Baixar o que estou lendo",ds:"Garante abrir sem rede o livro em andamento.",esc:"aparelho",t:"sw",d:true,syn:"baixar offline download sem rede"},
-{k:"telemetry",sec:"dados",lb:"Enviar dados de uso",ds:"Nunca o conteúdo dos seus livros ou notas.",esc:"conta",t:"sw",d:false,syn:"privacidade telemetria diagnóstico"},
-{k:"history",sec:"dados",lb:"Histórico de leitura",ds:"Alimenta “continuar lendo” e a sua página de leitura.",esc:"conta",t:"sw",d:true,syn:"histórico privacidade"}
-];
-var SM={};S.forEach(function(x){SM[x.k]=x});
-var DEVS=[{k:"mac",n:"MacBook",cls:"grande"},{k:"ipad",n:"iPad",cls:"pequena"}];
+/* ═════ ARQUITETURA DE CONFIGURAÇÕES ═════ */
+var GRUPOS=[
+{n:"Preferências",cats:[
+  {k:"geral",n:"Geral",ic:"◈"},{k:"aparencia",n:"Aparência",ic:"◐"},{k:"leitura",n:"Leitura",ic:"▤"},
+  {k:"biblioteca",n:"Biblioteca",ic:"▦"},{k:"conhecimento",n:"Conhecimento",ic:"✳"}]},
+{n:"Conexões",cats:[
+  {k:"kindle",n:"Kindle",ic:"◨"},{k:"dispositivos",n:"Dispositivos",ic:"▢"},{k:"integracoes",n:"Integrações",ic:"⊞"}]},
+{n:"Conta",cats:[
+  {k:"identidade",n:"Conta e identidade",ic:"◉"},{k:"seguranca",n:"Segurança",ic:"⚿"},{k:"sessoes",n:"Sessões",ic:"◍"}]},
+{n:"Dados",cats:[
+  {k:"privacidade",n:"Privacidade",ic:"◇"},{k:"exportacao",n:"Exportação",ic:"↧"}]}];
+var CATS={};GRUPOS.forEach(function(g){g.cats.forEach(function(c){c.grupo=g.n;CATS[c.k]=c})});
+var DESC={geral:"Idioma, início e comportamento geral do Mekora.",
+ aparencia:"Tema e densidade da interface.",
+ leitura:"Tipografia e comportamento do leitor. Você também ajusta isso lendo, pelo Aa.",
+ biblioteca:"Como a estante abre: representação, ordenação e sinais.",
+ conhecimento:"Notas, destaques e as conexões entre o que você lê.",
+ kindle:"Exportar livros para o seu Kindle por e-mail.",
+ dispositivos:"Onde o Mekora está aberto.",
+ integracoes:"Serviços ligados à sua conta.",
+ identidade:"Nome, e-mail e como o Mekora chama você.",
+ seguranca:"Senha, verificação em duas etapas e recuperação.",
+ sessoes:"Acessos ativos e encerramento remoto.",
+ privacidade:"O que é processado nos servidores e o que você pode apagar.",
+ exportacao:"Levar sua biblioteca e suas notas embora."};
 
-/* ═════ CONTEÚDO ═════ */
-var NOTAS=["a distinção entre restrição e limitação atravessa o capítulo inteiro",
-"isso contradiz a tese do capítulo 3 — voltar aqui depois",
-"a densidade não é uma propriedade da tela, e sim da tarefa",
-"“o que não é escolhido também é projeto” — anotar a fonte",
-"exemplo de decisão que parece estética e é estrutural",
-"a metáfora do arquivo funciona melhor que a da biblioteca",
-"reler devagar: o melhor argumento do livro está numa nota de rodapé"];
-var BOOKS=[
-{t:"Estudo de Viabilidade",a:"Ana Duarte",n:24,p:80,col:"Trabalho",tags:["#Design","#Método"],paper:"#F6F3EC",tone:"#141311",add:9,src:"Pessoal",fmt:"PDF"},
-{t:"Teoria da Atenção",a:"Marina Rocha",n:12,p:34,col:"Pesquisa",tags:["#Atenção"],paper:"#EFE7D9",tone:"#C33B1E",add:8,src:"Amazon",fmt:"EPUB"},
-{t:"Ensaio do Comum",a:"Nuno Pacheco",n:0,p:0,col:"Depois",tags:[],paper:"#E9EEE9",tone:"#2E4B45",add:12,src:"Pessoal",fmt:"DOCX"},
-{t:"Cartografia do Erro",a:"Clara Bittencourt",n:41,p:100,col:"Pesquisa",tags:["#Método","#Erro"],paper:"#F2E9E4",tone:"#55504A",add:3,src:"Amazon",fmt:"AZW3"},
-{t:"Poética do Detalhe",a:"Paulo Guedes",n:7,p:12,col:"Depois",tags:["#Design"],paper:"#E7E9EF",tone:"#3A3550",add:11,src:"Pessoal",fmt:"PDF"},
-{t:"Inventário das Margens",a:"Iara Sampaio",n:103,p:56,col:"Pesquisa",tags:["#Arquivo"],paper:"#F4EEE0",tone:"#7A5C1E",add:2,src:"Amazon",fmt:"EPUB"},
-{t:"Gramática do Vazio",a:"Vitor Meireles",n:3,p:0,col:"Depois",tags:[],paper:"#EDEAE2",tone:"#141311",add:10,src:"Pessoal",fmt:"EPUB"},
-{t:"Manual da Escassez",a:"Renata Farias",n:18,p:91,col:"Trabalho",tags:["#Método"],paper:"#F6F3EC",tone:"#C33B1E",add:5,src:"Amazon",fmt:"EPUB"},
-{t:"Física do Cotidiano",a:"Bruno Almeida",n:0,p:47,col:"Trabalho",tags:[],paper:"#EFE7D9",tone:"#2E4B45",add:7,src:"Pessoal",fmt:"PDF"},
-{t:"Elogio da Repetição",a:"Karina Lousada",n:31,p:100,col:"Pesquisa",tags:["#Ritmo"],paper:"#E9EEE9",tone:"#141311",add:1,src:"Amazon",fmt:"EPUB"},
-{t:"Atlas da Escala",a:"Sérgio Vasques",n:9,p:22,col:"Depois",tags:["#Escala"],paper:"#F2E9E4",tone:"#7A5C1E",add:6,src:"Pessoal",fmt:"DOCX"},
-{t:"Diário das Cidades",a:"Olívia Cardoso",n:56,p:68,col:"Pesquisa",tags:["#Cidades"],paper:"#E7E9EF",tone:"#C33B1E",add:4,src:"Amazon",fmt:"EPUB"}];
-BOOKS.forEach(function(b,i){b.i=i;b.notas=[];var k=Math.min(4,b.n);
-  for(var j=0;j<k;j++)b.notas.push({t:NOTAS[(i*3+j)%NOTAS.length],pg:20+j*47,cap:1+(j%4)})});
-var COLS=["Trabalho","Pesquisa","Depois"];
-var CAPS=[{n:"1 · O problema da estante",pg:9},{n:"2 · Ordem imposta e ordem vivida",pg:34},
- {n:"3 · Densidade não é quantidade",pg:71},{n:"4 · O inventário abandonado",pg:112},
- {n:"5 · Reconhecer de longe",pg:148}];
-var PAGE=["Havia, no fundo da sala, uma estante que ninguém organizava desde a mudança — e era exatamente por isso que dava para saber onde tudo estava.",
-"A ordem que se impõe de fora envelhece rápido. A que nasce do uso repetido guarda, em cada lombada fora do lugar, a memória de uma tarde específica: o livro que ficou na mesa porque a conversa não acabou, o que voltou torto porque alguém procurava outra coisa.",
-"<span class=\"hl\" data-hl=\"1\">A densidade não é uma propriedade da tela: é uma propriedade da tarefa.</span> Duas pessoas diante da mesma interface enxergam quantidades diferentes de informação, porque chegam ali com perguntas diferentes. Uma quer encontrar; a outra quer lembrar.",
-"Foi por isso que abandonamos o inventário completo. Não porque fosse impreciso — era exato — mas porque respondia a uma pergunta que ninguém fazia. O catálogo perfeito de uma casa é inútil para quem mora nela.",
-"O que restou foi mais modesto e mais útil: um jeito de reconhecer as coisas de longe, e um jeito de chegar perto quando isso importa. Entre os dois, nada."];
+/* ajustes — derivados da ConfigPage do mekora-app + decisões registradas */
+var S=[
+{k:"idioma",c:"geral",lb:"Idioma da interface",ds:"Não altera o idioma dos livros nem do reconhecimento de texto.",t:"sel",op:["Português (Brasil)","English","Español"],d:"Português (Brasil)",syn:"idioma lingua"},
+{k:"inicio",c:"geral",lb:"Ao abrir o Mekora",ds:"",t:"sel",op:["Retomar leitura","Biblioteca","Canvas"],d:"Retomar leitura",syn:"inicio abrir"},
+{k:"tema",c:"aparencia",lb:"Tema",ds:"",t:"seg",op:["Claro","Sistema","Escuro"],d:"Sistema",syn:"tema escuro claro cor aparencia"},
+{k:"densidade",c:"aparencia",lb:"Densidade da interface",ds:"Afeta o espaçamento da interface, não o tamanho do texto lido.",t:"seg",op:["Compacta","Padrão","Ampla"],d:"Padrão",syn:"densidade espaco"},
+{k:"movimento",c:"aparencia",lb:"Movimento",ds:"O Canvas e as transições entre representações usam animação.",t:"seg",op:["Completo","Reduzido"],d:"Completo",syn:"movimento animacao acessibilidade"},
+{k:"fonte",c:"leitura",lb:"Fonte de leitura",ds:"",t:"sel",op:["Literata","Serifada","Sem serifa"],d:"Literata",ctx:1,syn:"fonte tipografia letra"},
+{k:"corpo",c:"leitura",lb:"Tamanho do texto",ds:"",t:"seg",op:["16","18","21"],d:"18",ctx:1,syn:"tamanho corpo letra"},
+{k:"entrelinha",c:"leitura",lb:"Entrelinha",ds:"",t:"seg",op:["1,4×","1,5×","1,8×"],d:"1,5×",ctx:1,syn:"entrelinha espacamento linha"},
+{k:"temaleitor",c:"leitura",lb:"Tema do leitor",ds:"Independente do tema da interface, de propósito.",t:"seg",op:["Papel","Claro","Escuro"],d:"Papel",ctx:1,syn:"tema leitor papel"},
+{k:"rolagem",c:"leitura",lb:"Rolagem contínua",ds:"Desligado divide o capítulo em páginas.",t:"sw",d:true,syn:"rolagem paginacao"},
+{k:"vista",c:"biblioteca",lb:"Representação ao abrir",ds:"Canvas, Estante, Lista e Conexões são o mesmo acervo visto de outro ângulo.",t:"seg",op:["Grade","Canvas","Lista"],d:"Grade",ctx:1,syn:"vista representacao grade lista canvas"},
+{k:"densidadecard",c:"biblioteca",lb:"Densidade dos cards",ds:"",t:"seg",op:["Compacta","Confortável"],d:"Confortável",ctx:1,syn:"card densidade"},
+{k:"ordem",c:"biblioteca",lb:"Ordenar por",ds:"",t:"sel",op:["Recentes","Título","Autor","Mais anotado"],d:"Recentes",ctx:1,syn:"ordenar ordem"},
+{k:"sinal",c:"biblioteca",lb:"Sinal de notas nas capas",ds:"A aba com a contagem, no topo da capa.",t:"sw",d:true,syn:"nota sinal capa"},
+{k:"destaque",c:"conhecimento",lb:"Cor do destaque",ds:"",t:"seg",op:["Amarelo","Rosa","Verde"],d:"Amarelo",syn:"destaque grifo cor"},
+{k:"notaaodestacar",c:"conhecimento",lb:"Criar nota ao destacar",ds:"Abre o campo de nota junto com o destaque.",t:"sw",d:false,syn:"nota destacar"},
+{k:"sugestoes",c:"conhecimento",lb:"Sugerir conexões",ds:"Relações determinísticas por tags, revisadas por você. Não é IA.",t:"sw",d:true,syn:"conexao sugestao relacao"},
+{k:"kenvio",c:"kindle",lb:"Exportar após preparar",ds:"O Kindle é alvo de exportação, não o destino do produto.",t:"sw",d:false,syn:"kindle enviar exportar"},
+{k:"kformato",c:"kindle",lb:"Formato preferencial",ds:"",t:"sel",op:["EPUB","PDF"],d:"EPUB",syn:"formato epub"},
+{k:"ocr",c:"integracoes",lb:"Reconhecer texto (OCR)",ds:"OCRmyPDF/Tesseract. Se falhar, a conversão é bloqueada.",t:"seg",op:["Automático","Sempre","Nunca"],d:"Automático",syn:"ocr texto escaneado"},
+{k:"reter",c:"integracoes",lb:"Guardar arquivos por",ds:"Retenção real na configuração do app.",t:"sel",op:["7 dias","30 dias","Sempre"],d:"30 dias",syn:"reter guardar limpar"},
+{k:"metricas",c:"privacidade",lb:"Métricas locais por etapa",ds:"Observabilidade do processamento, não análise de comportamento.",t:"sw",d:true,syn:"metrica privacidade"},
+{k:"historico",c:"privacidade",lb:"Histórico de leitura",ds:"Alimenta “continuar lendo” e o seu perfil.",t:"sw",d:true,syn:"historico privacidade"}];
+var SM={};S.forEach(function(x){SM[x.k]=x});
+
+var LIVROS=[
+{t:"Design de Interfaces",a:"Jenifer Tidwell",ini:"DI",c:"#ffb894",n:12,p:62,src:"Amazon"},
+{t:"Pesquisa em Produto",a:"Documento pessoal",ini:"PP",c:"#e3f5a4",n:24,p:100,src:"Pessoal"},
+{t:"Psicologia das Cores",a:"Eva Heller",ini:"PC",c:"#f6e2a0",n:7,p:24,src:"Amazon"},
+{t:"Sistemas que Aprendem",a:"Arquivo de aula",ini:"SA",c:"#d8c8f7",n:0,p:0,src:"Pessoal"},
+{t:"Organização Espacial",a:"Documento pessoal",ini:"OE",c:"#c8d6f7",n:9,p:41,src:"Pessoal"},
+{t:"Estilo Tipográfico",a:"Robert Bringhurst",ini:"ET",c:"#dff0d0",n:3,p:8,src:"Amazon"}];
+var PAG=["A interface que se faz notar cobra um preço em atenção que o conteúdo precisaria receber inteiro.",
+"<span class=\"hl\">A organização espacial é uma forma de memória</span>: lembramos onde algo estava antes de lembrar o que era.",
+"Por isso a estante desarrumada de quem lê é mais navegável, para essa pessoa, do que a biblioteca perfeitamente catalogada de outra."];
 
 /* ═════ ESTADO ═════ */
-var st={route:{v:"lib"},modo:"local",dev:"mac",acct:{},devv:{mac:{},ipad:{}},book:{},origin:{},
- kindle:"on",kmail:"erik_4f2a@kindle.com",ksender:"erik@vynce.com.br",
- wiz:null,pal:null,palq:"",palsel:0,pop:false,adv:false,danger:false,menu:null,toast:null,f2a:false,
- convDef:false,altSize:"classe",altPanel:"popover",scen:null,done:{},side:false,
- sel:null,inspTab:"livro",libq:"",libcol:null,rpanel:null,rq:"",cap:2,mark:false,
- selText:false,acctView:"main",pwd:{o:"",n:""},lastToast:null,
- devices:[{n:"MacBook Pro",loc:"São Paulo",when:"agora",dl:8,here:true},
-   {n:"iPad de Erik",loc:"São Paulo",when:"há 2 horas",dl:3},
-   {n:"Windows · Chrome",loc:"Curitiba",when:"há 6 dias",dl:0,unk:true}]};
-function devCls(){return DEVS.filter(function(d){return d.k===st.dev})[0].cls}
-function devName(){return DEVS.filter(function(d){return d.k===st.dev})[0].n}
-function sizeBag(){if(st.altSize==="conta")return{b:st.acct,k:"size"};
- if(st.altSize==="aparelho")return{b:st.devv[st.dev],k:"size"};return{b:st.acct,k:"size_"+devCls()}}
-function val(k){var d=SM[k];if(k==="size"){var s=sizeBag();return s.b[s.k]!==undefined?s.b[s.k]:d.d}
- var bag=d.esc==="aparelho"?st.devv[st.dev]:st.acct;return bag[k]!==undefined?bag[k]:d.d}
-function set(k,v,o){var d=SM[k];if(k==="size"){var s=sizeBag();s.b[s.k]=v}
- else (d.esc==="aparelho"?st.devv[st.dev]:st.acct)[k]=v;
- st.origin[k]={o:o||"Preferências",dv:devName()}}
-function rst(k){var d=SM[k];if(k==="size"){var s=sizeBag();delete s.b[s.k]}
- else delete (d.esc==="aparelho"?st.devv[st.dev]:st.acct)[k];delete st.origin[k]}
-function rd(k){return st.book[k]!==undefined?st.book[k]:val(k)}
-function dirty(){return Object.keys(st.book).length>0}
-function diff(){return S.filter(function(x){return val(x.k)!==x.d})}
-function fmtv(k,v){return SM[k].t==="sw"?(v?"Ligado":"Desligado"):String(v)}
-var tm;function toast(m,act){st.toast={m:m,a:act||null};clearTimeout(tm);
- tm=setTimeout(function(){st.toast=null;draw()},act?5200:2600)}
+var st={rota:"lib",cat:"geral",menu:false,ctx:null,pal:null,palq:"",bs:"",hit:null,
+ leitor:false,valores:{},aviso:null,de:null,lab:false,layout:"A",cen:null,feito:{},passo:0};
+function v(k){return st.valores[k]!==undefined?st.valores[k]:SM[k].d}
+function setv(k,val,origem){st.valores[k]=val;
+ aviso(origem==="ctx"?"Ajustado — vale como padrão a partir de agora":"Salvo")}
+var tt;function aviso(m){st.aviso=m;clearTimeout(tt);tt=setTimeout(function(){st.aviso=null;draw()},2400)}
+function irCfg(cat,de){st.rota="cfg";st.cat=cat;st.de=de||st.de;st.menu=false;st.ctx=null;st.hit=null;draw()}
 
 /* ═════ CENÁRIOS ═════ */
-var SCEN=[
-{k:"01",t:"Trocar o tema e ver o que viaja",go:function(){st.route={v:"sec",sec:"aparencia"}},
- steps:[["theme","Mude o tema para Escuro"],["dev","Troque para o iPad na barra de cima"],["back","Volte ao MacBook"]]},
-{k:"02",t:"Tipografia lendo, e o padrão",go:function(){st.route={v:"reader"}},
- steps:[["aa","Abra o Aa no rodapé"],["size","Mude o tamanho do texto"],["dec","Decida: só este livro ou padrão"]]},
-{k:"03",t:"Destacar um trecho e ver a nota",go:function(){st.route={v:"reader"}},
- steps:[["seltxt","Selecione o trecho grifado"],["hl","Crie o destaque"],["vernota","Veja em Notas, no leitor"]]},
-{k:"04",t:"Encontrar um livro na estante",go:function(){st.route={v:"lib"};st.libq="";st.sel=null},
- steps:[["busca","Busque por “densidade” — acha pelas notas"],["col","Filtre por uma coleção"],["insp","Veja detalhes pela aba ✳ ou pelo ···"]]},
-{k:"05",t:"Achar um ajuste sem saber a seção",go:function(){st.route={v:"lib"};st.pal=null},
- steps:[["open","Abra a busca no topo"],["type","Digite “ocr”"],["land","Chegue ao ajuste"]]},
-{k:"06",t:"Trocar a senha e ver as sessões",go:function(){st.route={v:"conta"};st.acctView="main"},
- steps:[["seg","Entre em Senha e segurança"],["pwd","Troque a senha"],["end","Encerre a sessão do Windows"]]},
-{k:"07",t:"Apagar a biblioteca",go:function(){st.route={v:"sec",sec:"dados"}},
- steps:[["open","Abra Apagar biblioteca"],["read","Leia o alcance da ação"],["out","Cancele — ou confirme"]]},
-{k:"08",t:"Recuperar de um erro de envio",go:function(){st.kindle="error";st.ksender="antigo@gmail.com";
-  st.route={v:"sec",sec:"conexoes"};st.done["08see"]=1},
- steps:[["see","Veja o erro em Conexões"],["fix","Corrija o remetente"],["test","Teste de novo"]]},
-{k:"09",t:"Configurar o Kindle pelo envio",go:function(){st.kindle="off";st.route={v:"lib"};st.sel=null},
- steps:[["menu","Passe o mouse num livro e abra o ···"],["send","Escolha Enviar para Kindle"],["wiz","Conclua o teste"]]},
-{k:"10",t:"OCR na conversão, salvo como padrão",go:function(){st.route={v:"conv"}},
- steps:[["ocr","Troque para Sempre"],["def","Marque usar como padrão"],["diary","Confira no diário"]]}
-];
-function mark(id){if(st.scen)st.done[st.scen+id]=1}
-function startScen(k){var s=SCEN.filter(function(x){return x.k===k})[0];if(!s)return;
- st.scen=k;st.done={};st.pop=false;st.wiz=null;st.danger=false;st.menu=null;st.pal=null;st.toast=null;
- st.sel=null;st.rpanel=null;st.selText=false;st.acctView="main";
- if(k!=="08"&&k!=="09"){st.kindle="on";st.ksender="erik@vynce.com.br"}
- st.side=true;$("sidebtn").setAttribute("aria-pressed","true");s.go();draw()}
+var CEN=[
+{k:"01",t:"Achar as configurações sem ajuda",
+ go:function(){st.rota="lib";st.menu=false},
+ p:[["ava","Clique no seu controle, no topo direito"],["menu","Escolha Configurações"],
+    ["nav","Percorra os quatro grupos"],["volta","Volte para a Biblioteca"]]},
+{k:"02",t:"Do leitor até a configuração global",
+ go:function(){st.rota="lib";st.leitor=true;st.ctx=null},
+ p:[["aa","Abra o Aa no leitor"],["ctx","Ajuste algo ali mesmo"],
+    ["ponte","Toque em Gerenciar preferências de leitura"],["chegou","Veja onde você caiu"]]},
+{k:"03",t:"Da biblioteca até os padrões",
+ go:function(){st.rota="lib";st.leitor=false;st.ctx=null},
+ p:[["vis","Abra Visualização, na barra da estante"],["ponte2","Toque em Gerenciar padrões da biblioteca"]]},
+{k:"04",t:"Perfil e a fronteira com Conta",
+ go:function(){st.rota="lib";st.menu=false},
+ p:[["perfil","Abra Ver perfil"],["editar","Toque em Editar perfil"],["conta","Repare onde isso leva"]]},
+{k:"05",t:"Buscar um ajuste pelo nome",
+ go:function(){st.rota="cfg";st.cat="geral";st.bs=""},
+ p:[["buscar","Digite “kindle” na busca lateral"],["achou","Vá até a linha exata"]]},
+{k:"06",t:"Gerenciar o Kindle pelo status",
+ go:function(){st.rota="lib"},
+ p:[["status","Ache o status do Kindle na estante"],["gerenciar","Toque em Gerenciar"]]}];
+function marcar(i){if(st.cen)st.feito[st.cen+i]=1}
+function comecar(k){var c=CEN.filter(function(x){return x.k===k})[0];if(!c)return;
+ st.cen=k;st.feito={};st.menu=false;st.ctx=null;st.pal=null;st.lab=true;c.go();draw()}
 
-/* ═════ CONTROLES ═════ */
-function ctl(x,pf){
- var v=pf==="book"?rd(x.k):val(x.k),a='data-a="'+(pf==="book"?"bset":"set")+'" data-k="'+x.k+'"';
- if(x.t==="sw")return'<button class="sw'+(v?" on":"")+'" '+a+' data-v="'+(!v)+'" role="switch" aria-checked="'+!!v+'" aria-label="'+esc(x.lb)+'"><i></i></button>';
- if(x.t==="seg")return'<span class="segc" role="group" aria-label="'+esc(x.lb)+'">'+x.op.map(function(o){
-   return'<button '+a+' data-v="'+esc(o)+'" class="'+(o===v?"on":"")+'" aria-pressed="'+(o===v)+'">'+esc(o)+'</button>'}).join("")+'</span>';
- if(x.t==="sel")return'<select class="sel" data-k="'+x.k+'" data-p="'+(pf||"")+'" aria-label="'+esc(x.lb)+'">'+
-   x.op.map(function(o){return'<option'+(o===v?" selected":"")+'>'+esc(o)+'</option>'}).join("")+'</select>';
- if(x.t==="step")return'<span class="stepc"><button '+a+' data-v="'+Math.max(x.mn,+(v-x.sp).toFixed(1))+'" aria-label="Diminuir '+esc(x.lb)+'">−</button>'+
-   '<span class="v">'+(x.sp<1?(+v).toFixed(1):v)+'</span>'+
-   '<button '+a+' data-v="'+Math.min(x.mx,+(v+x.sp).toFixed(1))+'" aria-label="Aumentar '+esc(x.lb)+'">+</button></span>';
- return""}
-function row(x,pf){
- var chg=pf==="book"?st.book[x.k]!==undefined:val(x.k)!==x.d,bd="";
- /* âmbito só existe quando há conta — no modelo local, tudo é deste computador */
- if(st.modo==="conta"){
-  if(x.esc==="aparelho")bd+='<span class="badge dev">este aparelho</span>';
-  else if(x.sec==="aparencia")bd+='<span class="badge sync">segue você</span>'}
- if(x.bd)bd+='<span class="badge new">'+x.bd+'</span>';
- if(x.rd&&pf!=="book")bd+='<span class="badge">também no leitor</span>';
- return'<div class="row'+(chg?" chg":"")+'"><div><div class="lb">'+esc(x.lb)+bd+
-  (chg&&pf!=="book"?'<button class="revert" data-a="revert" data-k="'+x.k+'">voltar ao padrão</button>':'')+'</div>'+
-  (x.ds?'<div class="ds">'+esc(x.ds)+'</div>':'')+'</div>'+ctl(x,pf)+'</div>'}
+/* ═════ COMPONENTES ═════ */
+function ctl(x,ctx){
+ var val=v(x.k),a='data-a="set" data-k="'+x.k+'"'+(ctx?' data-ctx="1"':'');
+ if(x.t==="sw")return'<button class="sw'+(val?" on":"")+'" '+a+' data-v="'+(!val)+'" role="switch" aria-checked="'+!!val+'" aria-label="'+esc(x.lb)+'"><i></i></button>';
+ if(x.t==="seg")return'<span class="seg" role="group" aria-label="'+esc(x.lb)+'">'+x.op.map(function(o){
+  return'<button '+a+' data-v="'+esc(o)+'" class="'+(o===val?"on":"")+'" aria-pressed="'+(o===val)+'">'+esc(o)+'</button>'}).join("")+'</span>';
+ return'<select class="sel" data-k="'+x.k+'" aria-label="'+esc(x.lb)+'">'+x.op.map(function(o){
+  return'<option'+(o===val?" selected":"")+'>'+esc(o)+'</option>'}).join("")+'</select>'}
+function linha(x){
+ return'<div class="row'+(st.hit===x.k?" hit":"")+'" id="row-'+x.k+'"><div><div class="lb">'+esc(x.lb)+
+  (x.ctx?'<span class="badge">também no contexto</span>':'')+'</div>'+
+  (x.ds?'<div class="ds">'+esc(x.ds)+'</div>':'')+'</div>'+ctl(x)+'</div>'}
 
-function top(){var r=st.route.v;
- return'<div class="top"><span class="brand">Mekora</span><nav>'+
-  '<button data-a="go" data-r="lib" class="'+(r==="lib"?"on":"")+'">Biblioteca</button>'+
-  '<button data-a="go" data-r="leitura" class="'+(r==="leitura"?"on":"")+'">Sua leitura</button>'+
-  '<button data-a="go" data-r="conv" class="'+(r==="conv"?"on":"")+'">Importar</button>'+
-  '</nav><span class="spacer"></span>'+
-  '<button class="srch" data-a="pal" aria-label="Buscar"><span>⌕</span><span class="txt">Buscar livro ou ajuste</span><span class="kbd">⌘K</span></button>'+
-  '<button class="avbtn" data-a="go" data-r="prefs" aria-label="Preferências e conta">E</button></div>'}
+/* ═════ MOLDURA ═════ */
+function topo(){
+ return'<div class="topo"><span class="marca">Mekora</span><nav>'+
+  [["lib","Biblioteca"],["canvas","Canvas"],["conhecimento","Conhecimento"]].map(function(r){
+   return'<button data-a="rota" data-r="'+r[0]+'" aria-current="'+(st.rota===r[0])+'">'+r[1]+'</button>'}).join("")+
+  '</nav><span class="sp"></span>'+
+  '<button class="busca" data-a="pal">⌕ <span class="kbd">⌘K</span></button>'+
+  '<button class="uctl" data-a="umenu" aria-expanded="'+st.menu+'" aria-haspopup="menu">'+
+  '<span class="ava">EA</span><span class="ch">▾</span></button></div>'+
+  (st.menu?umenu():"")}
+function umenu(){
+ return'<div class="umenu" role="menu"><div class="id"><span class="ava">EA</span>'+
+  '<div><div class="n">Erik Abner</div><div class="e">erik@vynce.com.br</div></div></div>'+
+  '<ul><li><button data-a="perfil"><span class="ic">◉</span>Ver perfil</button></li>'+
+  '<li><button data-a="cfg" data-c="geral"><span class="ic">⚙</span>Configurações</button></li>'+
+  '<li><button data-a="cfg" data-c="dispositivos"><span class="ic">▢</span>Dispositivos e integrações</button></li>'+
+  '<div class="div"></div>'+
+  '<li><button data-a="noop"><span class="ic">?</span>Ajuda</button></li>'+
+  '<li><button data-a="noop"><span class="ic">⏻</span>Sair</button></li></ul></div>'}
 
 /* ═════ BIBLIOTECA ═════ */
-function books(){
- var q=(st.libq||"").toLowerCase().trim(),L=BOOKS.slice();
- if(st.libcol)L=L.filter(function(b){return b.col===st.libcol});
- if(val("donebooks")==="Ocultar")L=L.filter(function(b){return b.p<100});
- if(q)L=L.filter(function(b){return (b.t+" "+b.a+" "+b.tags.join(" ")).toLowerCase().indexOf(q)>-1
-   || b.notas.some(function(n){return n.t.toLowerCase().indexOf(q)>-1})});
- var s=val("sort");
- L.sort(function(a,b){
-  if(s==="Título")return a.t.localeCompare(b.t);
-  if(s==="Autor")return a.a.localeCompare(b.a);
-  if(s==="Progresso")return b.p-a.p;
-  if(s==="Mais anotado")return b.n-a.n;
-  return a.add-b.add});
- return L}
 function vLib(){
- var lista=val("libview")==="Lista",dens=val("carddens"),
-   cw={S:"104px",M:"146px",L:"190px"}[dens],L=books(),cur=BOOKS[0];
- var h=top()+'<div class="libwrap"><div class="scroll" id="libscroll"><div class="pad">'+
-  '<div class="libbar"><div class="ttl"><h1 class="t">Biblioteca</h1>'+
-  '<p class="sub" style="margin:0">'+BOOKS.length+' livros · '+BOOKS.reduce(function(a,b){return a+b.n},0)+' notas</p></div>'+
-  '<label class="srch" style="max-width:220px"><span>⌕</span>'+
-  '<input class="txt" id="libq" placeholder="Buscar na estante" value="'+esc(st.libq)+'" '+
-  'style="border:none;outline:none;background:none;font:inherit;color:var(--ink);width:100%"></label>'+
-  ctl(SM.libview)+ctl(SM.carddens)+'</div>'+
-  '<div class="chips"><button class="chip'+(!st.libcol?" on":"")+'" data-a="col" data-c="">Tudo <span class="n">'+BOOKS.length+'</span></button>'+
-  COLS.map(function(c){var n=BOOKS.filter(function(b){return b.col===c}).length;
-    return'<button class="chip'+(st.libcol===c?" on":"")+'" data-a="col" data-c="'+c+'">'+c+' <span class="n">'+n+'</span></button>'}).join("")+
-  '<span style="flex:1"></span>'+ctl(SM.sort)+'</div>';
- if(!st.libq&&!st.libcol&&val("history"))
-  h+='<button class="resume" data-a="book" data-i="0" style="--paper:'+cur.paper+';width:100%">'+
-   '<span class="cv"></span><span class="info"><span class="k">Continuar lendo</span>'+
-   '<span class="t" style="display:block">'+esc(cur.t)+'</span>'+
-   '<span class="m" style="display:block">'+esc(cur.a)+' · cap. 3 · faltam 42 min</span></span>'+
-   '<span class="btn sm">Continuar</span></button>';
- if(!L.length)h+='<div class="empty"><p>Nenhum livro corresponde a '+(st.libq?'“'+esc(st.libq)+'”':'este filtro')+'.</p>'+
-   '<button class="btn sec" data-a="limpa">Limpar busca e filtros</button></div>';
- else{
-  h+='<div class="shelf'+(lista?" lista":"")+'" style="--cw:'+cw+'" role="grid" aria-label="Estante">';
-  L.forEach(function(b){
-   var selc=st.sel===b.i;
-   h+='<div class="bk'+(lista?" list":"")+'" data-a="book" data-i="'+b.i+'" role="gridcell" tabindex="'+(selc?0:-1)+'" aria-selected="'+selc+'" '+
-    'aria-label="'+esc(b.t)+', '+esc(b.a)+(b.n?', '+b.n+' notas':'')+'" style="--paper:'+b.paper+';--tone:'+b.tone+'">'+
-    '<div class="cv"><div class="cvin"><div class="cvt">'+esc(b.t)+'</div><div class="cva"></div><div class="cvf"></div></div>'+
-    (b.p>0&&b.p<100?'<span class="prg" style="width:'+b.p+'%"></span>':'')+
-    (b.p>=100?'<span class="done">✓</span>':'')+
-    (!lista?'<span class="hov"><button data-a="book" data-i="'+b.i+'">'+(b.p?"Continuar":"Ler")+'</button>'+
-      '<button class="g" data-a="menu" data-i="'+b.i+'" aria-label="Mais ações">···</button></span>':'')+'</div>'+
-    (val("notesign")&&b.n&&!lista?'<button class="tab" data-a="notas" data-i="'+b.i+'" aria-label="'+b.n+' notas">✳ '+(b.n>99?"99+":b.n)+'</button>':'')+
-    (lista
-      ?'<div class="meta"><div class="t">'+esc(b.t)+'</div><div class="a">'+esc(b.a)+'</div></div>'+
-       '<div class="side">'+(b.n?'✳ '+b.n+' · ':'')+(b.p>=100?'concluído':b.p?b.p+'%':'não iniciado')+'</div>'
-      :(dens==="S"?'<div class="t" style="font-size:12px">'+esc(b.t)+'</div>'
-        :'<div><div class="t">'+esc(b.t)+'</div><div class="a">'+esc(b.a)+'</div>'+
-         (dens==="L"&&b.notas[0]?'<div class="nt">“'+esc(b.notas[0].t)+'”</div>':'')+'</div>'))+
-    '</div>'});
-  h+='</div>'}
- h+='</div></div>'+inspector()+'</div>';
- if(st.menu!==null){var b=BOOKS[st.menu];
-  h+='<div class="ovl" data-a="close"></div><div class="pop menu" style="top:110px;left:50%;transform:translateX(-50%);width:250px">'+
-   '<div class="hdr lbl">'+esc(b.t)+'</div>'+
-   '<button data-a="book" data-i="'+st.menu+'">Continuar lendo</button>'+
-   '<button data-a="sel" data-i="'+st.menu+'">Ver detalhes</button>'+
-   '<button data-a="notas" data-i="'+st.menu+'">Ver as '+b.n+' notas</button>'+
-   '<button data-a="send" data-i="'+st.menu+'">Enviar para Kindle</button>'+
-   '<button data-a="colmove" data-i="'+st.menu+'">Mover para coleção…</button>'+
-   '<button class="dan" data-a="rmbook" data-i="'+st.menu+'">Remover da biblioteca</button></div>'}
- return h}
-function inspector(){
- if(st.sel===null)return"";
- var b=BOOKS[st.sel],nt=st.inspTab==="notas";
- return'<aside class="insp" aria-label="Detalhes do livro"><div class="insp-h"><span class="lbl">Livro selecionado</span>'+
-  '<button class="lnk sm" data-a="unsel" aria-label="Fechar">fechar</button></div>'+
-  '<div class="insp-tabs"><button data-a="itab" data-t="livro" aria-selected="'+(!nt)+'">Livro</button>'+
-  '<button data-a="itab" data-t="notas" aria-selected="'+nt+'">Notas'+(b.n?" ("+b.n+")":"")+'</button></div>'+
-  '<div class="insp-b">'+(nt
-   ?(b.n?b.notas.map(function(n){return'<div class="note"><b>cap. '+n.cap+' · pág. '+n.pg+'</b>“'+esc(n.t)+'”</div>'}).join("")+
-      (b.n>b.notas.length?'<div class="lbl">+ '+(b.n-b.notas.length)+' outras</div>':'')
-     :'<div class="empty" style="padding:var(--s5) 0"><p style="font-size:13px">Nenhuma nota ainda. O que você destacar durante a leitura aparece aqui.</p></div>')
-   :'<h3>'+esc(b.t)+'</h3><div class="meta">'+esc(b.a)+' · '+b.fmt+' · '+b.src+' · '+
-     (b.p>=100?"concluído":b.p?b.p+"% lido":"não iniciado")+'</div>'+
-     (b.src==="Amazon"
-      ?'<div class="strip"><span class="dot d-off"></span>Catalogado, sem conteúdo legível — o Mekora não acessa o arquivo da Amazon. As notas viriam do My Clippings.</div>'
-      :'<div class="strip"><span class="dot d-ok"></span>Documento seu · leitura disponível no Mekora</div>')+
-     (b.p>0&&b.p<100?'<div class="pbar"><i style="width:'+b.p+'%"></i></div>':'')+
-     (b.n?'<div style="font-size:13px;font-weight:700;margin-top:var(--s2)">✳ '+b.n+' notas</div>'+
-       '<div class="note">“'+esc(b.notas[0].t)+'”</div>':'<div class="meta">Sem notas.</div>')+
-     '<div class="tagl">'+[b.col].concat(b.tags).map(function(t){return'<span>'+esc(t)+'</span>'}).join("")+'</div>'+
-     '<div class="acts" style="margin-top:var(--s2)">'+
-     (b.src==="Amazon"
-      ?'<button class="btn sec sm" data-a="noop2">Ver na Amazon</button>'
-      :'<button class="btn sm" data-a="book" data-i="'+b.i+'">'+(b.p?"Continuar":"Ler")+'</button>')+
-     '<button class="btn sec sm" data-a="itab" data-t="notas">Notas</button></div>')+
-  '</div></aside>'}
+ var dens=v("densidadecard")==="Compacta"?"116px":"150px";
+ var h=topo()+'<div class="corpo"><div class="rolo"><div class="pad">'+
+  '<div class="libtop"><div class="ti"><h1 class="t">Biblioteca</h1>'+
+  '<p class="sub" style="margin:0">'+LIVROS.length+' itens · '+LIVROS.reduce(function(a,b){return a+b.n},0)+' notas</p></div>'+
+  '<div class="ctxwrap"><button class="btn sec sm" data-a="ctx" data-t="lib">Visualização ▾</button>'+
+  (st.ctx==="lib"?ctxLib():"")+'</div>'+
+  '<div class="ctxwrap"><button class="btn sec sm" data-a="ctx" data-t="kindle">◨ Kindle · conectado</button>'+
+  (st.ctx==="kindle"?ctxKindle():"")+'</div></div>'+
+  '<div class="grade" style="--cw:'+dens+'">';
+ LIVROS.forEach(function(b,i){
+  h+='<button class="bk" data-a="ler" data-i="'+i+'" style="--c:'+b.c+'">'+
+   '<span class="cv"><span class="cvin"><span class="ini">'+b.ini+'</span>'+
+   '<span class="ct">'+esc(b.t)+'</span></span>'+
+   (b.p>0&&b.p<100?'<span class="prg" style="width:'+b.p+'%"></span>':'')+'</span>'+
+   (v("sinal")&&b.n?'<span class="tab">✳ '+b.n+'</span>':'')+
+   '<span class="t" style="display:block">'+esc(b.t)+'</span>'+
+   '<span class="a" style="display:block">'+esc(b.a)+' · <span class="src">'+b.src+'</span></span></button>'});
+ return h+'</div></div></div></div>'}
+function ctxLib(){
+ return'<div class="ctx" style="top:38px;right:0">'+
+  '<div class="lbl">Visualização</div>'+
+  ["vista","densidadecard","ordem"].map(function(k){
+   return'<div class="row" style="padding:6px 0;border:none"><div><div class="lb" style="font-size:13px">'+SM[k].lb+'</div></div>'+ctl(SM[k],1)+'</div>'}).join("")+
+  '<button class="ponte" data-a="ponte" data-c="biblioteca">Gerenciar padrões da biblioteca →</button></div>'}
+function ctxKindle(){
+ return'<div class="ctx" style="top:38px;right:0">'+
+  '<div class="lbl">Kindle Paperwhite</div>'+
+  '<div class="faixa"><span class="dot d-ok"></span>Conectado<span class="sp"></span>'+
+  '<span class="lbl">hoje, 18:42</span></div>'+
+  '<div class="row" style="padding:6px 0;border:none"><div><div class="lb" style="font-size:13px">Exportar após preparar</div></div>'+ctl(SM.kenvio,1)+'</div>'+
+  '<button class="ponte" data-a="ponte" data-c="kindle">Gerenciar Kindle →</button></div>'}
 
-/* ═════ SUA LEITURA (o que substitui Perfil) ═════ */
-function vLeitura(){
- var tot=BOOKS.reduce(function(a,b){return a+b.n},0),fim=BOOKS.filter(function(b){return b.p>=100}).length;
- return top()+'<div class="scroll"><div class="pad"><div class="col">'+
-  '<h1 class="t">Sua leitura</h1><p class="sub">O que você leu e o que ficou. É conteúdo seu — não um perfil, e não é visível para ninguém.</p>'+
-  '<div class="stats"><div><b>'+fim+'</b><span class="lbl">concluídos</span></div>'+
-  '<div><b>'+BOOKS.filter(function(b){return b.p>0&&b.p<100}).length+'</b><span class="lbl">em andamento</span></div>'+
-  '<div><b>'+tot+'</b><span class="lbl">notas</span></div>'+
-  '<div><b>7</b><span class="lbl">conexões</span></div></div>'+
-  '<h2 class="s">Notas recentes</h2><div class="tl">'+
-  BOOKS.filter(function(b){return b.n}).slice(0,5).map(function(b,i){
-   return'<div class="tl-i"><span class="when">'+["hoje","ontem","3 dias","1 semana","2 semanas"][i]+'</span>'+
-    '<span class="what"><b>'+esc(b.t)+'</b> · pág. '+b.notas[0].pg+'<br>'+
-    '<span style="font-family:var(--serif);font-style:italic;color:var(--ink-3)">“'+esc(b.notas[0].t)+'”</span></span></div>'}).join("")+
-  '</div><h2 class="s">Temas que voltam</h2>'+
-  '<div class="tagl" style="margin-top:var(--s3)">'+
-  ["#Método (4 livros)","#Design (3)","#Atenção (2)","#Arquivo (2)","#Escala (1)"].map(function(t){
-   return'<span style="font-size:12.5px;padding:6px 12px">'+t+'</span>'}).join("")+'</div>'+
-  '<p class="sub" style="margin-top:var(--s5)">As tags que aparecem em mais de um livro são candidatas a conexão. '+
-  'Ligar isso automaticamente é um ajuste em Preferências › Conhecimento, desligado por padrão.</p>'+
+/* ═════ CANVAS / CONHECIMENTO (contexto, não o objeto desta exploração) ═════ */
+function vSimples(titulo,texto,catPonte,rotuloPonte){
+ return topo()+'<div class="corpo"><div class="rolo"><div class="pad">'+
+  '<h1 class="t">'+titulo+'</h1><p class="sub">'+texto+'</p>'+
+  '<div class="faixa" style="max-width:640px"><span class="dot d-sim"></span>'+
+  'Área existente no produto e fora do escopo desta exploração, que é a área pessoal. '+
+  'Aqui ela serve para provar que dá para sair e voltar.</div>'+
+  '<div class="acts" style="margin-top:var(--s5)">'+
+  '<button class="btn sec" data-a="ponte" data-c="'+catPonte+'">'+rotuloPonte+' →</button></div>'+
   '</div></div></div>'}
 
-/* ═════ LEITOR ═════ */
-function vReader(){
- var th=rd("readertheme"),f=rd("font")==="Serifada"?"var(--serif)":"var(--sans)";
- var hl={Amarelo:"#F2E07A",Rosa:"#F3C3D2",Verde:"#BFE0B4"}[val("hlcolor")];
- var bg=th==="Sépia"?"#F3EAD8":th==="Noite"?"#1B1917":"var(--card)";
- var fg=th==="Noite"?"#D8D2C6":"var(--ink)";
- var pf=val("progfmt"),prog=pf==="Tempo"?"faltam 42 min no capítulo":pf==="Páginas"?"pág. 118 de 214":"80% lido";
- var b=BOOKS[0];
- var h='<div class="reader"><div class="rtop">'+
-  '<button class="lnk sm" data-a="go" data-r="lib">← Biblioteca</button>'+
-  '<span class="ti">'+esc(b.t)+'</span><span class="spc"></span>'+
-  '<button class="ic'+(st.rpanel==="toc"?" on":"")+'" data-a="rp" data-p="toc" aria-label="Sumário" title="Sumário">☰</button>'+
-  '<button class="ic'+(st.rpanel==="busca"?" on":"")+'" data-a="rp" data-p="busca" aria-label="Buscar no livro" title="Buscar no livro">⌕</button>'+
-  '<button class="ic'+(st.rpanel==="notas"?" on":"")+'" data-a="rp" data-p="notas" aria-label="Notas" title="Notas">✳</button>'+
-  '<button class="ic'+(st.mark?" on":"")+'" data-a="bmk" aria-label="Marcador" title="Marcador">'+(st.mark?"◆":"◇")+'</button>'+
-  '</div><div class="rmain"><div class="rscroll" style="--rbg:'+bg+'">'+
-  '<div class="rbody" id="rbody" style="--rf:'+f+';--rfg:'+fg+';--hl:'+hl+';--rw:'+rd("width")+'px;'+
-  'font-size:'+rd("size")+'px;line-height:'+(+rd("leading")).toFixed(1)+'">'+
-  '<div class="ch">'+esc(CAPS[st.cap].n)+'</div>'+
-  PAGE.map(function(p,i){return"<p"+(i===2?' data-p="2"':'')+">"+p+"</p>"}).join("")+
-  (val("scroll")?"":'<div class="acts" style="justify-content:center;margin-top:var(--s6)">'+
-    '<button class="btn sec sm" data-a="pg" data-d="-1">← Anterior</button>'+
-    '<span class="lbl">página 3 de 9</span>'+
-    '<button class="btn sec sm" data-a="pg" data-d="1">Próxima →</button></div>')+
-  '</div></div>'+rpanel()+'</div>'+
-  '<div class="rbar"><button class="btn sec sm" data-a="aa" style="font-family:var(--serif);font-size:15px">Aa</button>'+
-  '<div class="prog"><div class="pb"><i style="width:80%"></i></div>'+
-  '<button class="lg" data-a="pfmt" title="Tocar alterna o formato">'+prog+'</button></div>'+
-  (dirty()?'<span style="font-size:12.5px;color:var(--ink-3)">Alterado <b style="color:var(--ink)">só neste livro</b></span>'+
-    '<button class="btn sm" data-a="usedef">Usar como padrão</button>'+
-    '<button class="lnk sm" data-a="undo">Descartar</button>':'')+
-  '</div></div>';
- if(st.selText)h+='<div class="selbar" style="left:50%;transform:translateX(-50%);top:180px">'+
-   '<button data-a="hl">Destacar</button><button data-a="hlnote">Destacar e anotar</button>'+
-   '<button data-a="cite">Copiar citação</button><button data-a="selcancel">✕</button></div>';
- if(st.pop){
-  var pan='<div class="lbl" style="margin-bottom:var(--s2)">Leitura</div>'+
-   ["font","size","leading","width","readertheme"].map(function(k){
-     return'<div class="row"><div><div class="lb">'+SM[k].lb+'</div></div>'+ctl(SM[k],"book")+'</div>'}).join("")+
-   '<p style="font-size:11.5px;color:var(--ink-3);line-height:1.5;margin:var(--s3) 0 0">Vale só para este livro até você tocar em “Usar como padrão”.</p>';
-  h+=st.altPanel==="drawer"
-   ?'<div class="ovl" data-a="aa"></div><div class="drawer">'+pan+'</div>'
-   :'<div class="ovl" data-a="aa" style="background:transparent"></div><div class="pop" style="left:22px;bottom:70px">'+pan+'</div>'}
+/* ═════ PERFIL ═════ */
+function vPerfil(){
+ var notas=LIVROS.reduce(function(a,b){return a+b.n},0);
+ return topo()+'<div class="corpo"><div class="rolo"><div class="pad" style="max-width:820px">'+
+  '<button class="lnk" data-a="rota" data-r="lib" style="margin-bottom:var(--s5);display:inline-block">← Biblioteca</button>'+
+  '<div class="pcabec"><span class="ava">EA</span>'+
+  '<div style="flex:1;min-width:180px"><h1>Erik Abner</h1><div class="h">@erik · desde março de 2026</div></div>'+
+  '<button class="btn sec" data-a="ponte" data-c="identidade">Editar perfil</button></div>'+
+  '<div class="nums">'+
+  '<div class="num"><b>'+LIVROS.length+'</b><span>na biblioteca</span></div>'+
+  '<div class="num"><b>'+notas+'</b><span>notas</span></div>'+
+  '<div class="num"><b>3</b><span>coleções</span></div>'+
+  '<div class="num"><b>7</b><span>conexões</span></div></div>'+
+  '<div class="bloco"><h3>Notas recentes</h3>'+
+  [["hoje","Organização Espacial","a organização espacial é uma forma de memória"],
+   ["ontem","Pesquisa em Produto","evidência sem decisão é só arquivo"],
+   ["3 dias","Design de Interfaces","tornar a interface discreta quando o conteúdo precisa de foco"]].map(function(r){
+   return'<div class="linhat"><span class="q">'+r[0]+'</span><span><b>'+r[1]+'</b><br>'+
+    '<span style="font-family:var(--serif);font-style:italic;color:var(--ink-3)">“'+r[2]+'”</span></span></div>'}).join("")+
+  '</div>'+
+  '<div class="faixa" style="max-width:640px"><span class="dot d-off"></span>'+
+  'Perfil é <b>visualização</b> do que a leitura produziu. Não tem seguidores, medalhas nem sequência de dias — '+
+  'e não é visível para mais ninguém. Administração da conta fica em Configurações.</div>'+
+  '</div></div></div>'}
+
+/* ═════ CONFIGURAÇÕES ═════ */
+function achados(){
+ var q=(st.bs||"").toLowerCase().trim();if(!q)return null;
+ return S.filter(function(x){return (x.lb+" "+x.syn+" "+CATS[x.c].n).toLowerCase().indexOf(q)>-1})}
+function vCfg(){
+ var res=achados();
+ var h=topo()+'<div class="cfg"><nav class="cfgnav" aria-label="Configurações">'+
+  '<button class="volta" data-a="voltar">← '+(st.de==="leitor"?"Voltar ao leitor":st.de==="perfil"?"Voltar ao perfil":"Voltar à Biblioteca")+'</button>'+
+  '<label class="bs">⌕<input id="bs" value="'+esc(st.bs)+'" placeholder="Buscar configuração"></label>'+
+  '<div class="lista">';
+ if(res){
+  h+='<div class="grp">'+res.length+' resultado(s)</div>'+res.map(function(x){
+   return'<button class="cat" data-a="ir" data-c="'+x.c+'" data-k="'+x.k+'">'+
+    '<span class="ic">⌕</span><span>'+esc(x.lb)+'<br><span class="lbl" style="text-transform:none;letter-spacing:0;font-family:var(--ui);font-size:11px">'+
+    CATS[x.c].grupo+' → '+CATS[x.c].n+'</span></span></button>'}).join("")}
+ else GRUPOS.forEach(function(g){
+  h+='<div class="grp">'+g.n+'</div>'+g.cats.map(function(c){
+   return'<button class="cat" data-a="ir" data-c="'+c.k+'" aria-current="'+(st.cat===c.k)+'">'+
+    '<span class="ic">'+c.ic+'</span>'+c.n+
+    (c.k==="kindle"?'<span class="badge ok">ativo</span>':"")+'</button>'}).join("")});
+ h+='</div></nav><div class="cfgmain"><div class="cfgpad">'+conteudoCat()+'</div></div></div>';
  return h}
-function rpanel(){
- if(!st.rpanel)return"";
- var b=BOOKS[0],h='<div class="rpanel"><div class="hd"><span class="lbl" style="flex:1">'+
-  ({toc:"Sumário",busca:"Buscar no livro",notas:"Notas deste livro"}[st.rpanel])+
-  '</span><button class="lnk sm" data-a="rp" data-p="">fechar</button></div><div class="bd">';
- if(st.rpanel==="toc")h+=CAPS.map(function(c,i){
-  return'<button class="toc-i'+(i===st.cap?" on":"")+'" data-a="cap" data-i="'+i+'"><span>'+esc(c.n)+'</span>'+
-   '<span class="pg">'+c.pg+'</span></button>'}).join("");
- if(st.rpanel==="busca"){
-  h+='<input class="inp" id="rq" placeholder="Palavra ou trecho" value="'+esc(st.rq)+'" style="min-width:0">';
-  var q=(st.rq||"").toLowerCase().trim();
-  if(q){var hits=PAGE.map(function(p,i){return{i:i,t:p.replace(/<[^>]+>/g,"")}})
-    .filter(function(p){return p.t.toLowerCase().indexOf(q)>-1});
-   h+=hits.length?'<div class="lbl">'+hits.length+' ocorrência(s)</div>'+hits.map(function(p){
-     return'<button class="note" style="text-align:left" data-a="cap" data-i="'+st.cap+'"><b>parágrafo '+(p.i+1)+'</b>'+
-      esc(p.t.slice(0,90))+'…</button>'}).join("")
-    :'<p style="font-size:12.5px;color:var(--ink-3);line-height:1.5">Nada encontrado neste capítulo.</p>'}
-  else h+='<p style="font-size:12.5px;color:var(--ink-3);line-height:1.5">Busca dentro do texto do livro. Tente “densidade” ou “estante”.</p>'}
- if(st.rpanel==="notas")h+=(b.notas.length
-  ?b.notas.map(function(n){return'<div class="note"><b>cap. '+n.cap+' · pág. '+n.pg+'</b>“'+esc(n.t)+'”</div>'}).join("")
-  :'<p style="font-size:12.5px;color:var(--ink-3);line-height:1.5">Nenhuma nota ainda. Selecione um trecho para destacar.</p>');
- return h+'</div></div>'}
-
-/* ═════ PREFERÊNCIAS ═════ */
-function vPrefs(){
- var dr=diff();
- var h=top()+'<div class="scroll"><div class="pad"><div class="col">'+
-  '<h1 class="t">Preferências</h1><p class="sub">Tudo que você ajustou, e onde ajustar o resto.</p>'+
-  (st.modo==="conta"
-   ?'<button class="acct" data-a="go" data-r="conta" style="width:100%;text-align:left">'+
-    '<span class="av">E</span><span><span class="nm" style="display:block">Erik Camargo</span>'+
-    '<span class="em" style="display:block">erik@vynce.com.br · Plano anual</span></span>'+
-    '<span class="lnk">Conta e segurança →</span></button>'
-   :'<div class="strip"><span class="dot d-ok"></span>Um usuário, sem conta. É o que o repositório sustenta hoje — '+
-    '<b>authentication: not_implemented</b>.</div>')+
-  '<h2 class="s">Diferente do padrão · '+dr.length+'</h2>';
- if(!dr.length)h+='<p style="font-family:var(--serif);font-style:italic;font-size:14px;color:var(--ink-3);line-height:1.6;padding:var(--s4) 0;margin:0">Nada foi alterado ainda. O que você mudar aqui, no leitor ou durante uma conversão aparece nesta lista — com a origem e o aparelho.</p>';
- else dr.forEach(function(x){var o=st.origin[x.k]||{};
-  h+='<div class="row chg"><div><div class="lb">'+esc(x.lb)+' · '+esc(fmtv(x.k,val(x.k)))+
-   (x.esc==="aparelho"?'<span class="badge dev">este aparelho</span>':'')+
-   '<button class="revert" data-a="revert" data-k="'+x.k+'">voltar ao padrão</button></div>'+
-   '<div class="ds">'+(o.o?esc(o.o)+" · "+esc(o.dv):"padrão alterado")+'</div></div>'+
-   '<button class="lnk" data-a="go" data-r="sec" data-sec="'+x.sec+'">Ir →</button></div>'});
- h+='<h2 class="s">Seções</h2><div class="idx">';
- SEC.forEach(function(s){var n=S.filter(function(x){return x.sec===s.k}).length;
-  var ex=s.k==="conexoes"?' · '+(st.kindle==="on"?'<span style="color:var(--good)">conectado</span>':
-    st.kindle==="error"?'<span style="color:var(--crit)">com erro</span>':'não conectado'):"";
-  h+='<button data-a="go" data-r="sec" data-sec="'+s.k+'"><div><div class="nm">'+s.n+'</div>'+
-   '<div class="dc">'+s.d+ex+'</div></div><span class="ct">'+n+'</span></button>'});
- return h+'</div></div></div></div>'}
-function vSec(sk){
- var s=SEC.filter(function(x){return x.k===sk})[0],L=S.filter(function(x){return x.sec===sk});
- var h=top()+'<div class="scroll"><div class="pad"><div class="col">'+
-  '<button class="lnk sm" data-a="go" data-r="prefs" style="display:inline-block;margin-bottom:var(--s5)">← Preferências</button>'+
-  '<h1 class="t">'+s.n+'</h1><p class="sub">'+s.d+'</p>';
- if(sk==="aparencia")h+='<div class="strip"><span class="dot d-off"></span>Quase tudo aqui é deste aparelho — cada um tem o seu.</div>';
- if(sk==="conhecimento")h+='<div class="strip"><span class="dot d-ok"></span>Tudo aqui segue você em todos os aparelhos.</div>';
- if(sk==="conexoes"){
-  h+='<h2 class="s">Kindle</h2>';
-  if(st.kindle==="off")h+='<div class="strip"><span class="dot d-off"></span>Não conectado</div>'+
-   '<p style="font-size:13.5px;color:var(--ink-2);line-height:1.6;margin:0 0 var(--s4)">Configure quando for enviar seu primeiro livro — leva um minuto e termina com um teste real.</p>'+
-   '<button class="btn sec" data-a="wiz">Configurar Kindle</button>';
-  else{var er=st.kindle==="error";
-   h+='<div class="strip'+(er?" err":"")+'"><span class="dot '+(er?"d-err":"d-ok")+'"></span>'+
-    (er?"Último envio falhou":"Conectado · último envio há 2 dias")+
-    '<span class="spc"></span><button class="lnk sm" data-a="ktest">Testar</button></div>';
-   if(er)h+='<p style="font-size:13.5px;color:var(--ink-2);line-height:1.6;margin:0 0 var(--s2)">A Amazon recusou o remetente <b>'+esc(st.ksender)+'</b>. Corrija para o e-mail aprovado na sua conta Amazon e teste de novo.</p>';
-   h+='<div class="row"><div><div class="lb">Enviar para</div><div class="ds">Endereço do seu Kindle.</div></div>'+
-    '<input class="inp" data-f="kmail" value="'+esc(st.kmail)+'" aria-label="Endereço do Kindle"></div>'+
-    '<div class="row"><div><div class="lb">Remetente aprovado</div><div class="ds">A Amazon só aceita arquivos vindos deste endereço.</div></div>'+
-    '<div><input class="inp'+(er?" err":"")+'" data-f="ksender" value="'+esc(st.ksender)+'" aria-label="Remetente aprovado">'+
-    (er?'<div class="err-msg">Recusado pela Amazon</div>':'')+'</div></div>'}}
- h+=L.filter(function(x){return !x.adv}).map(function(x){return row(x)}).join("");
- var adv=L.filter(function(x){return x.adv});
- if(adv.length)h+='<div style="margin-top:var(--s4)"><button class="lnk sm" data-a="adv" style="font-family:var(--mono)" aria-expanded="'+!!st.adv+'">Ajustes avançados '+(st.adv?"↑":"↓")+'</button>'+
-  (st.adv?'<div style="margin-top:var(--s2)">'+adv.map(function(x){return row(x)}).join("")+'</div>':'')+'</div>';
- if(sk==="conexoes"&&st.kindle!=="off")h+='<div class="dz"><h5>Desconectar</h5>'+
-  '<p style="margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.6">Remove os endereços salvos de todos os seus aparelhos. Os arquivos já enviados permanecem no seu Kindle.</p>'+
-  '<div><button class="lnk dan" data-a="kdisc">Desconectar Kindle</button></div></div>';
- if(sk==="dados"){
-  h+='<h2 class="s">Espaço</h2><div class="quota"><i style="width:52%;background:var(--ink)"></i>'+
-   '<i style="width:19%;background:var(--ink-3)"></i><i style="width:8%;background:var(--warn)"></i></div>'+
-   '<div class="qleg"><span><i style="background:var(--ink)"></i>Livros 6,4 GB</span>'+
-   '<span><i style="background:var(--ink-3)"></i>Originais 2,3 GB</span>'+
-   '<span><i style="background:var(--warn)"></i>Notas e capas 0,9 GB</span>'+
-   '<span style="color:var(--ink-2)">9,6 de 20 GB</span></div>'+
-   '<div class="row"><div><div class="lb">Baixados neste aparelho<span class="badge dev">este aparelho</span></div>'+
-   '<div class="ds">8 livros · 740 MB. Liberar não apaga nada: eles voltam quando você abrir.</div></div>'+
-   '<button class="btn sec sm" data-a="free">Liberar</button></div>'+
-   '<div class="row"><div><div class="lb">Exportar biblioteca e notas</div>'+
-   '<div class="ds">Metadados, notas, destaques e coleções em formato aberto.</div></div>'+
-   '<button class="btn sec sm" data-a="export">Exportar…</button></div>'+
-   '<div class="dz"><h5>Ações irreversíveis</h5><div class="acts" style="gap:var(--s5)">'+
-   '<button class="lnk dan" data-a="resetall">Restaurar preferências…</button>'+
-   '<button class="lnk dan" data-a="danger">Apagar biblioteca…</button></div>';
-  if(st.danger==="del")h+='<div class="confirm"><p><b>Apagar sua biblioteca?</b> Isto acontece <b>em todos os seus aparelhos</b> e não pode ser desfeito.</p>'+
-   '<ul><li><b>Serão apagados:</b> '+BOOKS.length+' livros, '+BOOKS.reduce(function(a,b){return a+b.n},0)+' notas, 3 coleções</li>'+
-   '<li><b>Não serão apagados:</b> sua conta, seu plano e o que já foi enviado ao Kindle</li></ul>'+
-   '<p style="color:var(--ink-3)">Seus outros 2 aparelhos serão atualizados assim que se conectarem.</p>'+
-   '<div class="acts"><button class="btn sec sm" data-a="export">Exportar primeiro</button>'+
-   '<button class="btn dan sm" data-a="delok">Apagar em todos os aparelhos</button>'+
-   '<button class="lnk sm" data-a="dcancel">Cancelar</button></div></div>';
-  if(st.danger==="reset")h+='<div class="confirm"><p><b>Restaurar preferências.</b> Escolha o alcance — a resposta muda o que acontece nos seus outros aparelhos.</p>'+
-   '<p style="color:var(--ink-3)">Biblioteca, notas, coleções e conexões não são afetadas.</p>'+
-   '<div class="acts"><button class="btn sec sm" data-a="rdev">Só neste aparelho</button>'+
-   '<button class="btn dan sm" data-a="racct">Na conta inteira</button>'+
-   '<button class="lnk sm" data-a="dcancel">Cancelar</button></div></div>';
-  h+='</div>'}
- return h+'</div></div></div>'}
-
-/* ═════ CONTA ═════ */
-function vConta(){
- var v=st.acctView;
- var h=top()+'<div class="scroll"><div class="pad"><div class="col">'+
-  '<button class="lnk sm" data-a="'+(v==="main"?'go" data-r="prefs':'acctv" data-v="main')+'" style="display:inline-block;margin-bottom:var(--s5)">← '+(v==="main"?"Preferências":"Conta")+'</button>';
- if(v==="main"){
-  h+='<h1 class="t">Conta</h1><p class="sub">Sua identidade no Mekora e o acesso a ela.</p>'+
-   '<div class="acct"><span class="av">E</span><div><div class="nm">Erik Camargo</div>'+
-   '<div class="em">erik@vynce.com.br</div></div><button class="lnk" data-a="acctv" data-v="ident">Editar</button></div>'+
-   '<div class="strip"><span class="dot d-ok"></span>Sincronizado há instantes · 3 aparelhos<span class="spc"></span>'+
-   '<button class="lnk sm" data-a="acctv" data-v="devs">Ver aparelhos</button></div>'+
-   '<div class="idx" style="margin-top:var(--s4)">'+
-   '<button data-a="acctv" data-v="seg"><div><div class="nm">Senha e segurança</div>'+
-   '<div class="dc">Senha, verificação em duas etapas, recuperação</div></div><span class="ct">›</span></button>'+
-   '<button data-a="acctv" data-v="devs"><div><div class="nm">Aparelhos e sessões</div>'+
-   '<div class="dc">3 aparelhos · 1 não reconhecido</div></div><span class="ct">›</span></button>'+
-   '<button data-a="acctv" data-v="plano"><div><div class="nm">Plano e cobrança</div>'+
-   '<div class="dc">Anual · renova em 4 de março de 2027</div></div><span class="ct">›</span></button>'+
-   '<button data-a="go" data-r="sec" data-sec="dados"><div><div class="nm">Seus dados</div>'+
-   '<div class="dc">Espaço, exportar, privacidade</div></div><span class="ct">›</span></button></div>'+
-   '<div class="dz"><h5>Encerrar</h5><div class="acts" style="gap:var(--s5)">'+
-   '<button class="lnk dan" data-a="logout">Sair deste aparelho</button>'+
-   '<button class="lnk dan" data-a="delacct">Apagar conta…</button></div>';
-  if(st.danger==="logout")h+='<div class="confirm"><p><b>Sair desta conta?</b> Os <b>8 livros baixados</b> serão removidos deste aparelho. Sua biblioteca, notas e progresso continuam na sua conta.</p>'+
-   '<p style="color:var(--ink-3)">3 anotações ainda não foram enviadas.</p>'+
-   '<div class="acts"><button class="btn sec sm" data-a="dcancel">Esperar enviar</button>'+
-   '<button class="btn dan sm" data-a="dcancel">Sair mesmo assim</button></div></div>';
-  if(st.danger==="delacct")h+='<div class="confirm"><p><b>Apagar a conta?</b> Isto é diferente de apagar a biblioteca: some tudo, inclusive o acesso.</p>'+
-   '<ul><li><b>Serão apagados:</b> conta, biblioteca, notas, coleções e aparelhos</li>'+
-   '<li><b>Continua com você:</b> o que você exportar antes, e o que já está no seu Kindle</li></ul>'+
-   '<p style="color:var(--ink-3)">Seu plano anual não é reembolsado automaticamente — fale com a gente antes se for o caso.</p>'+
-   '<div class="acts"><button class="btn sec sm" data-a="export">Exportar tudo primeiro</button>'+
-   '<button class="btn dan sm" data-a="dcancel">Apagar conta</button>'+
-   '<button class="lnk sm" data-a="dcancel">Cancelar</button></div></div>';
-  h+='</div>'}
- if(v==="ident")h+='<h1 class="t">Identidade</h1><p class="sub">Como o Mekora chama você. Não é visível para mais ninguém.</p>'+
-  '<div class="row"><div><div class="lb">Nome</div><div class="ds">Aparece só nesta conta.</div></div>'+
-  '<input class="inp" value="Erik Camargo" aria-label="Nome"></div>'+
+function conteudoCat(){
+ var c=CATS[st.cat],lista=S.filter(function(x){return x.c===st.cat});
+ var h='<div class="cfghead"><div class="trilha">Configurações · '+c.grupo+'</div>'+
+  '<h2>'+c.n+'</h2><p>'+DESC[st.cat]+'</p></div>';
+ if(st.cat==="leitura")h+='<div class="faixa" style="margin-bottom:var(--s5)"><span class="dot d-ok"></span>'+
+  'Você também ajusta isso enquanto lê, pelo <b>Aa</b> — e escolhe se vale só para aquele livro.</div>';
+ if(st.cat==="kindle"){h+='<div class="bloco"><h3>Dispositivo</h3><div class="cartao">'+
+  '<div class="row"><div><div class="lb">Paperwhite de Erik</div>'+
+  '<div class="ds">Última atividade hoje, 18:42</div></div><span class="badge ok">conectado</span></div>'+
+  '<div class="row"><div><div class="lb">E-mail do Kindle</div></div>'+
+  '<input class="inp" value="erik_4f2a@kindle.com" aria-label="E-mail do Kindle"></div>'+
+  '<div class="row"><div><div class="lb">Remetente aprovado</div>'+
+  '<div class="ds">A Amazon só aceita arquivos vindos deste endereço.</div></div>'+
+  '<input class="inp" value="erik@vynce.com.br" aria-label="Remetente"></div></div></div>'}
+ if(st.cat==="dispositivos"){h+='<div class="cartao">'+
+  [["MacBook Pro","São Paulo · agora","aqui"],["iPad de Erik","São Paulo · há 2 horas",""],
+   ["Windows · Chrome","Curitiba · há 6 dias","não reconhecido"]].map(function(d){
+   return'<div class="row"><div><div class="lb">'+d[0]+
+    (d[2]==="aqui"?'<span class="badge ok">este</span>':d[2]?'<span class="badge sim">'+d[2]+'</span>':"")+
+    '</div><div class="ds">'+d[1]+'</div></div>'+
+    (d[2]==="aqui"?'<span class="lbl">sessão atual</span>':'<button class="lnk" data-a="noop">Encerrar</button>')+'</div>'}).join("")+
+  '</div>';return h}
+ if(st.cat==="identidade"){h+='<div class="cartao">'+
+  '<div class="row"><div><div class="lb">Nome</div><div class="ds">Como o Mekora chama você.</div></div>'+
+  '<input class="inp" value="Erik Abner" aria-label="Nome"></div>'+
+  '<div class="row"><div><div class="lb">Usuário</div></div><input class="inp" value="@erik" aria-label="Usuário"></div>'+
   '<div class="row"><div><div class="lb">E-mail</div><div class="ds">Usado para entrar e recuperar a conta.</div></div>'+
-  '<input class="inp" value="erik@vynce.com.br" aria-label="E-mail"></div>'+
-  '<div class="acts" style="margin-top:var(--s5)"><button class="btn" data-a="saveident">Salvar</button>'+
-  '<button class="lnk sm" data-a="acctv" data-v="main">Cancelar</button></div>';
- if(v==="seg"){
-  h+='<h1 class="t">Senha e segurança</h1><p class="sub">Quem consegue entrar na sua conta.</p>'+
-   '<h2 class="s">Trocar a senha</h2>'+
-   '<div class="row"><div><div class="lb">Senha atual</div></div>'+
-   '<input class="inp" type="password" data-f="pwdo" value="'+esc(st.pwd.o)+'" aria-label="Senha atual"></div>'+
-   '<div class="row"><div><div class="lb">Nova senha</div><div class="ds">Mínimo de 8 caracteres.</div></div>'+
-   '<div><input class="inp" type="password" data-f="pwdn" value="'+esc(st.pwd.n)+'" aria-label="Nova senha">'+
-   (st.pwd.n&&st.pwd.n.length<8?'<div class="err-msg">Curta demais — faltam '+(8-st.pwd.n.length)+' caracteres</div>':'')+'</div></div>'+
-   '<div class="row"><div><div class="lb">Encerrar as outras sessões</div>'+
-   '<div class="ds">Recomendado. Os outros aparelhos vão pedir para entrar de novo.</div></div>'+
-   '<button class="sw on" data-a="noop2"><i></i></button></div>'+
-   '<div class="acts" style="margin-top:var(--s5)"><button class="btn" data-a="savepwd"'+
-   ((!st.pwd.o||st.pwd.n.length<8)?" disabled":"")+'>Trocar senha</button></div>'+
-   '<h2 class="s">Verificação em duas etapas</h2>'+
-   '<div class="row"><div><div class="lb">Pedir um código ao entrar</div>'+
-   '<div class="ds">Vale para aparelhos novos. Os já conectados continuam entrando direto.</div></div>'+
-   '<button class="sw'+(st.f2a?" on":"")+'" data-a="f2a"><i></i></button></div>'+
-   (st.f2a?'<div class="strip"><span class="dot d-ok"></span>Ativa · guarde os códigos de recuperação'+
-     '<span class="spc"></span><button class="lnk sm" data-a="codes">Ver códigos</button></div>':'')+
-   '<h2 class="s">Recuperação</h2>'+
-   '<div class="row"><div><div class="lb">E-mail de recuperação</div>'+
-   '<div class="ds">Para o caso de perder o acesso ao e-mail principal.</div></div>'+
-   '<input class="inp" placeholder="ainda não definido" aria-label="E-mail de recuperação"></div>'}
- if(v==="devs"){
-  h+='<h1 class="t">Aparelhos e sessões</h1><p class="sub">Onde a sua conta está aberta agora.</p>';
-  st.devices.forEach(function(d,i){
-   h+='<div class="dev-row"><div><div class="dn">'+esc(d.n)+(d.here?' <span class="here">aqui</span>':'')+
-    (d.unk?' <span class="badge warn">não reconhecido</span>':'')+'</div>'+
-    '<div class="dm">'+d.loc+' · '+d.when+(d.dl?' · '+d.dl+' livros baixados':'')+'</div></div>'+
-    (d.here?'<button class="lnk sm" data-a="logout">Sair</button>'
-      :'<button class="lnk dan sm" data-a="endsess" data-i="'+i+'">Encerrar</button>')+'</div>'});
-  if(st.devices.some(function(d){return d.unk}))
-   h+='<div class="strip err" style="margin-top:var(--s5)"><span class="dot d-err"></span>'+
-    'Um acesso em Curitiba não foi reconhecido.<span class="spc"></span>'+
-    '<button class="lnk sm" data-a="acctv" data-v="seg">Trocar a senha</button></div>'}
- if(v==="plano")h+='<h1 class="t">Plano e cobrança</h1><p class="sub">Assinatura anual, renova em 4 de março de 2027.</p>'+
-  '<div class="row"><div><div class="lb">Plano atual</div><div class="ds">20 GB · sincronização entre aparelhos · OCR ilimitado</div></div>'+
-  '<span class="badge sync">ativo</span></div>'+
-  '<div class="row"><div><div class="lb">Forma de pagamento</div><div class="ds">Cartão terminado em 4471</div></div>'+
-  '<button class="lnk sm" data-a="noop2">Alterar</button></div>'+
-  '<div class="row"><div><div class="lb">Recibos</div><div class="ds">3 cobranças no histórico</div></div>'+
-  '<button class="lnk sm" data-a="noop2">Ver</button></div>'+
-  '<div class="dz"><h5>Cancelar</h5><p style="margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.6">'+
-  'Ao cancelar, você continua com acesso até 4 de março de 2027. Depois disso a biblioteca fica somente leitura, '+
-  'e nada é apagado.</p><div><button class="lnk dan" data-a="noop2">Cancelar assinatura</button></div></div>';
- return h+'</div></div></div>'}
+  '<input class="inp" value="erik@vynce.com.br" aria-label="E-mail"></div></div>'+
+  '<div class="acts" style="margin-top:var(--s5)"><button class="btn" data-a="salvar">Salvar</button>'+
+  '<button class="lnk" data-a="perfil">Ver perfil</button></div>';return h}
+ if(st.cat==="seguranca"){h+='<div class="cartao">'+
+  '<div class="row"><div><div class="lb">Senha</div><div class="ds">Alterada há 8 meses.</div></div>'+
+  '<button class="btn sec sm" data-a="noop">Alterar</button></div>'+
+  '<div class="row"><div><div class="lb">Verificação em duas etapas</div>'+
+  '<div class="ds">Pede um código ao entrar num aparelho novo.</div></div>'+
+  '<button class="sw" data-a="noop"><i></i></button></div>'+
+  '<div class="row"><div><div class="lb">E-mail de recuperação</div></div>'+
+  '<input class="inp" placeholder="ainda não definido" aria-label="Recuperação"></div></div>';return h}
+ if(st.cat==="sessoes"){h+='<div class="faixa" style="margin-bottom:var(--s5)"><span class="dot d-sim"></span>'+
+  'Um acesso em Curitiba não foi reconhecido.<span class="sp"></span>'+
+  '<button class="lnk" data-a="ir" data-c="seguranca">Trocar a senha</button></div>'+
+  '<div class="cartao"><div class="row"><div><div class="lb">Encerrar as outras sessões</div>'+
+  '<div class="ds">Os outros aparelhos vão pedir para entrar de novo.</div></div>'+
+  '<button class="btn sec sm" data-a="noop">Encerrar</button></div></div>';return h}
+ if(st.cat==="exportacao"){h+='<div class="cartao"><div class="row"><div><div class="lb">Exportar biblioteca e notas</div>'+
+  '<div class="ds">Metadados, notas, destaques e coleções em formato aberto.</div></div>'+
+  '<button class="btn sec sm" data-a="noop">Exportar…</button></div></div>';return h}
+ if(!lista.length)h+='<div class="faixa"><span class="dot d-off"></span>Nada configurável aqui ainda.</div>';
+ else h+='<div class="cartao">'+lista.map(linha).join("")+'</div>';
+ if(st.cat==="privacidade")h+='<div class="bloco" style="margin-top:var(--s6)"><h3>Irreversível</h3>'+
+  '<div class="cartao"><div class="row"><div><div class="lb">Apagar biblioteca</div>'+
+  '<div class="ds">Remove livros, notas e coleções da sua conta, em todos os lugares.</div></div>'+
+  '<button class="btn dan sm" data-a="noop">Apagar…</button></div></div></div>';
+ return h}
 
-/* ═════ IMPORTAR ═════ */
-function vConv(){
- return top()+'<div class="scroll"><div class="pad"><div class="col">'+
-  '<h1 class="t">Importar arquivo</h1><p class="sub">Ajuste o que vale para este arquivo. Se quiser, guarde como padrão.</p>'+
-  '<div class="filecard"><span class="ic">PDF</span><div><div style="font-size:14px;font-weight:600">Relatório Anual 2026.pdf</div>'+
-  '<div style="font-size:12.5px;color:var(--ink-3);margin-top:3px">18 MB · 214 páginas · escaneado, sem texto selecionável</div></div></div>'+
-  ["format","ocr"].map(function(k){return row(SM[k])}).join("")+
-  '<div style="margin-top:var(--s4)"><button class="lnk sm" data-a="adv" style="font-family:var(--mono)" aria-expanded="'+!!st.adv+'">Ajustes avançados '+(st.adv?"↑":"↓")+'</button>'+
-  (st.adv?'<div style="margin-top:var(--s2)">'+["ocrlang","quality"].map(function(k){return row(SM[k])}).join("")+'</div>':'')+'</div>'+
-  '<div class="strip" style="margin-top:var(--s5)"><button class="sw'+(st.convDef?" on":"")+'" data-a="convdef"><i></i></button>'+
-  '<span>Usar como padrão para os próximos arquivos</span></div>'+
-  (st.convDef?'<p style="font-size:12.5px;color:var(--ink-3);line-height:1.55;margin:0 0 var(--s4)">Vale para os próximos arquivos; os 34 já convertidos continuam como estão.</p>':'')+
-  '<div class="acts" style="margin-top:var(--s3)"><button class="btn" data-a="convert">Converter</button>'+
-  '<button class="btn sec" data-a="go" data-r="lib">Cancelar</button></div></div></div></div>'}
+/* ═════ LEITOR ═════ */
+function vLeitor(){
+ var tema=v("temaleitor"),bg=tema==="Escuro"?"#211f1b":tema==="Claro"?"#fff":"var(--paper)";
+ var fg=tema==="Escuro"?"#ded8cd":"#26221c";
+ var corpo={"16":16,"18":18,"21":21}[v("corpo")],el={"1,4×":1.4,"1,5×":1.5,"1,8×":1.8}[v("entrelinha")];
+ var ff=v("fonte")==="Sem serifa"?"var(--ui)":"var(--serif)";
+ return'<div class="leitor" style="background:'+bg+'"><div class="ltop">'+
+  '<button class="lnk" data-a="fecharleitor">← Biblioteca</button>'+
+  '<span class="ti">Organização Espacial</span><span class="sp"></span>'+
+  '<span class="ctxwrap"><button class="btn sec sm" data-a="ctx" data-t="aa" style="font-family:var(--serif);font-size:15px">Aa</button>'+
+  (st.ctx==="aa"?ctxAa():"")+'</span></div>'+
+  '<div class="lbody"><div class="lcol" style="font-size:'+corpo+'px;line-height:'+el+';font-family:'+ff+';color:'+fg+'">'+
+  PAG.map(function(p){return"<p>"+p+"</p>"}).join("")+'</div></div></div>'}
+function ctxAa(){
+ return'<div class="ctx" style="top:40px;right:0">'+
+  '<div class="lbl">Leitura</div>'+
+  ["fonte","corpo","entrelinha","temaleitor"].map(function(k){
+   return'<div class="row" style="padding:6px 0;border:none"><div><div class="lb" style="font-size:13px">'+SM[k].lb+'</div></div>'+ctl(SM[k],1)+'</div>'}).join("")+
+  '<div class="acts" style="margin-top:var(--s2)"><button class="btn sm sec" data-a="soeste">Só neste livro</button>'+
+  '<button class="btn sm" data-a="padrao">Usar como padrão</button></div>'+
+  '<button class="ponte" data-a="ponte" data-c="leitura">Gerenciar preferências de leitura →</button></div>'}
 
 /* ═════ BUSCA GLOBAL ═════ */
-var ACTS=[{lb:"Testar conexão com o Kindle",sec:"conexoes",syn:"kindle testar conexão envio",act:"ktest"},
- {lb:"Exportar biblioteca e notas",sec:"dados",syn:"exportar backup levar dados"},
- {lb:"Apagar biblioteca",sec:"dados",syn:"apagar excluir remover deletar"},
- {lb:"Aparelhos e sessões",rt:"conta",av:"devs",syn:"aparelho dispositivo sessão sair segurança login"},
- {lb:"Trocar a senha",rt:"conta",av:"seg",syn:"senha segurança recuperação"},
- {lb:"Plano e cobrança",rt:"conta",av:"plano",syn:"plano assinatura cobrança pagamento cartão"}];
-function res(){
- var q=(st.palq||"").toLowerCase().trim();if(!q)return[];var o=[];
- BOOKS.forEach(function(b){
-  var emNota=b.notas.filter(function(n){return n.t.toLowerCase().indexOf(q)>-1})[0];
-  if((b.t+" "+b.a).toLowerCase().indexOf(q)>-1||emNota)
-   o.push({lb:b.t,pth:"Livro",bk:b.i,q:emNota?emNota.t:null})});
- S.forEach(function(x){if((x.lb+" "+x.syn+" "+x.sec).toLowerCase().indexOf(q)>-1)
-  o.push({lb:x.lb,pth:SEC.filter(function(s){return s.k===x.sec})[0].n,sec:x.sec,k:x.k})});
- ACTS.forEach(function(a){if((a.lb+" "+a.syn).toLowerCase().indexOf(q)>-1)
-  o.push({lb:a.lb,pth:a.rt?"Conta":SEC.filter(function(s){return s.k===a.sec})[0].n,sec:a.sec,rt:a.rt,av:a.av,ac:a.act,acao:1})});
- return o.slice(0,9)}
-function vPal(){
- var rs=res();
- var h='<div class="palwrap" data-a="palbg"><div class="pal"><div class="pal-in"><span style="color:var(--ink-3)">⌕</span>'+
-  '<input id="palq" placeholder="Buscar livro, nota ou ajuste…" value="'+esc(st.palq||"")+'" autocomplete="off"></div><div class="pal-res">';
- if(!st.palq)h+='<div class="pal-empty">Busca livros, o texto das suas notas e os ajustes. Tente “margens”, “letra”, “apagar” ou “sem rede”.</div>';
- else if(!rs.length)h+='<div class="pal-empty">Nada com esse nome. Tente “ocr”, “tema”, “aparelho” ou “espaço”.</div>';
- else{var last="";rs.forEach(function(r,i){
-  if(r.pth!==last){h+='<div class="pal-g">'+r.pth+'</div>';last=r.pth}
-  h+='<button class="pal-r'+(i===st.palsel?" on":"")+'" data-a="palgo" data-i="'+i+'"><span>'+esc(r.lb)+
-   (r.q?'<span class="q">“'+esc(r.q)+'”</span>':'')+'</span>'+
-   '<span class="pth">'+(r.acao?"ação":r.bk!==undefined?"abrir":"ajuste")+'</span></button>'})}
- return h+'</div></div></div>'}
-function vWiz(){
- var s=st.wiz.s,d="";for(var i=1;i<=3;i++)d+='<i class="'+(i<=s?"on":"")+'"></i>';
- var h='<div class="wiz"><div class="wizbox"><div style="display:flex;align-items:center;gap:var(--s4)">'+
-  '<span class="lbl">Configurar Kindle · passo '+s+' de 3</span><span style="flex:1"></span>'+
-  '<span class="wizdots">'+d+'</span></div>';
- if(s===1)h+='<h1 class="t">Qual é o endereço do seu Kindle?</h1>'+
-  '<p class="sub" style="margin:0">Está em Amazon › Conteúdo e dispositivos › Preferências. Termina em @kindle.com.</p>'+
-  '<input class="inp" data-f="mail" value="'+esc(st.wiz.mail)+'" placeholder="seu_id@kindle.com" aria-label="Endereço do Kindle">'+
-  '<div class="acts"><button class="btn" data-a="wnext">Continuar</button>'+
-  '<button class="lnk sm" data-a="wcancel">Cancelar</button></div>';
- if(s===2)h+='<h1 class="t">Autorize o Mekora a enviar</h1>'+
-  '<p class="sub" style="margin:0">A Amazon só aceita arquivos vindos de um endereço aprovado por você. Adicione este e-mail à lista de remetentes aprovados na sua conta Amazon.</p>'+
-  '<input class="inp" data-f="sender" value="'+esc(st.wiz.sender)+'" placeholder="seu@email.com" aria-label="Remetente aprovado">'+
-  '<div class="acts"><button class="btn" data-a="wnext">Continuar</button>'+
-  '<button class="lnk sm" data-a="wback">Voltar</button></div>';
- if(s===3)h+='<h1 class="t">Vamos testar antes de terminar</h1>'+
-  '<p class="sub" style="margin:0">Enviamos um arquivo pequeno para o seu Kindle. Sem isso, você só descobriria o erro dias depois.</p>'+
-  (st.wiz.test==="ok"?'<div class="strip"><span class="dot d-ok"></span>Chegou. A conexão está funcionando.</div>'+
-    '<div><button class="btn" data-a="wdone">Concluir e enviar o livro</button></div>'
-   :st.wiz.test==="run"?'<div class="strip"><span class="dot d-wait"></span>Enviando teste…</div>'
-   :'<div><button class="btn" data-a="wtest">Enviar teste</button></div>');
- return h+'</div></div>'}
+function resGlobal(){var q=(st.palq||"").toLowerCase().trim();if(!q)return[];var o=[];
+ LIVROS.forEach(function(b,i){if((b.t+" "+b.a).toLowerCase().indexOf(q)>-1)o.push({l:b.t,p:"Livro",i:i})});
+ S.forEach(function(x){if((x.lb+" "+x.syn).toLowerCase().indexOf(q)>-1)
+  o.push({l:x.lb,p:CATS[x.c].grupo+" → "+CATS[x.c].n,c:x.c,k:x.k})});
+ [["Perfil","perfil"],["Configurações","cfg"]].forEach(function(d){
+  if(d[0].toLowerCase().indexOf(q)>-1)o.push({l:d[0],p:"Área",r:d[1]})});
+ return o.slice(0,8)}
+function vPal(){var rs=resGlobal();
+ return'<div class="velo" data-a="fecharpal"></div><div class="pal"><div class="in">⌕'+
+  '<input id="palq" value="'+esc(st.palq)+'" placeholder="Buscar livro, ajuste ou área" autocomplete="off"></div>'+
+  '<div class="res">'+(rs.length?rs.map(function(r,i){
+   return'<button class="r" data-a="palgo" data-i="'+i+'"><span>'+esc(r.l)+'</span><span class="p">'+r.p+'</span></button>'}).join("")
+   :'<div class="vazio">Busca livros, ajustes e áreas. Tente “kindle”, “fonte”, “tema” ou “perfil”.</div>')+'</div></div>'}
 
 /* ═════ DESENHO ═════ */
-var TOK={Escuro:{"--canvas":"#201E1B","--card":"#2A2724","--ink":"#F1EEE8","--ink-2":"#B9B2A6","--ink-3":"#867F74",
- "--rule":"#3B372F","--rule-2":"#332F29","--bench-2":"#1B1917","--bench-3":"#0C0B0A","--slab":"#2A2724"},
- Claro:{"--canvas":"#F1EEE8","--card":"#FCFBF8","--ink":"#141311","--ink-2":"#55504A","--ink-3":"#8A857C",
- "--rule":"#C6C0B1","--rule-2":"#E4E0D6","--bench-2":"#E7E3D9","--bench-3":"#D2CCBE","--slab":"#141311"}};
-var DENS={Compacta:{s4:"12px",s5:"18px",s6:"24px",h1:"28px",h2:"34px"},
- Padrão:{s4:"16px",s5:"24px",s6:"32px",h1:"32px",h2:"38px"},
- Ampla:{s4:"20px",s5:"30px",s6:"42px",h1:"36px",h2:"42px"}};
 function draw(){
- var a=$("app"),r=st.route.v,h="";
- if(r==="lib")h=vLib();else if(r==="reader")h=vReader();else if(r==="prefs")h=vPrefs();
- else if(r==="sec")h=vSec(st.route.sec);else if(r==="conta")h=vConta();
- else if(r==="leitura")h=vLeitura();else h=vConv();
- if(st.wiz)h+=vWiz();
- if(st.pal!==null&&st.pal!==undefined)h+=vPal();
- if(st.toast)h+='<div class="toast">'+esc(st.toast.m)+
-   (st.toast.a?'<button data-a="toastact">'+esc(st.toast.a)+'</button>':'')+'</div>';
- a.innerHTML=h;
- var t=val("theme"),tk=TOK[t];
- Object.keys(TOK.Claro).forEach(function(p){tk?a.style.setProperty(p,tk[p]):a.style.removeProperty(p)});
- var dn=DENS[val("density")];
- a.style.setProperty("--s4",dn.s4);a.style.setProperty("--s5",dn.s5);a.style.setProperty("--s6",dn.s6);
- a.style.setProperty("--h1",dn.h1);a.style.setProperty("--h2",dn.h2);
- a.dataset.w=devCls();
- document.body.dataset.motion=val("motion")?"off":"on";
- $("ndiff").textContent=diff().length;
- var q=$("palq");if(q){q.focus();q.setSelectionRange(q.value.length,q.value.length)}
- drawRig();drawSide();
-}
-function drawRig(){
- $("modosw").innerHTML=[["local","local"],["conta","com conta"]].map(function(m){
-  return'<button data-m="'+m[0]+'" aria-pressed="'+(st.modo===m[0])+'">'+m[1]+'</button>'}).join("");
- $("devsw").innerHTML=DEVS.map(function(d){
-  return'<button data-d="'+d.k+'" aria-pressed="'+(st.dev===d.k)+'"'+
-   (st.modo==="local"?' disabled title="sem conta, não há outro aparelho"':'')+'>'+d.n+'</button>'}).join("");
- var s=SCEN.filter(function(x){return x.k===st.scen})[0];
- $("scenlabel").textContent=s?"cenário "+s.k+" · "+s.t:""}
-var ANN={lib:{h:"Biblioteca",t:"Se dá para achar um livro rápido mesmo com o sinal de notas na capa, e se o inspector responde sem tirar você da estante.",
-  w:"Busca, coleções e ordenação ficam na própria estante — não em Preferências, que só guarda o padrão de abertura.",
-  d:"M8 do Caderno 01: card estável + inspector lateral, sem reflow.",
-  f:"Alguém demora mais que 10s para achar um livro que sabe que tem."},
- reader:{h:"Leitor",t:"Se o Aa, o sumário, a busca e as notas são encontrados sem instrução — e se “só neste livro” é entendido.",
-  w:"Sumário, busca no livro e marcador são convenções consolidadas (Kindle, Play Books). Não inventamos aqui.",
-  d:"Princípio do espelho: a fonte da verdade é o contexto; Preferências reflete.",
-  f:"A pessoa sai do leitor para procurar tipografia, ou acha que mudou o padrão de todos os livros."},
- leitura:{h:"Sua leitura",t:"Se isto resolve o que as pessoas procuram num “perfil” — sem virar placar.",
-  w:"É conteúdo, não identidade: notas recentes e temas que voltam. Sem sequência de dias, sem meta, sem público.",
-  d:"Decisão de não criar destino Perfil; o que se esperava dele vira superfície de leitura.",
-  f:"A pessoa procura por “perfil” e não relaciona com isto — ou pede metas e comparação."},
- prefs:{h:"Preferências",t:"Se o diário responde “o que eu mudei?” antes de qualquer navegação.",
-  w:"Depois do primeiro mês ninguém vem aqui configurar — vem desfazer.",
-  d:"Modelo E: conta no cabeçalho, diário no corpo, sete seções por consequência.",
-  f:"A pessoa ignora o diário e navega pelas seções mesmo tendo acabado de mudar algo."},
- sec:{h:"Seção",t:"Se as etiquetas de âmbito são lidas antes do erro acontecer.",
-  w:"Cada linha declara a consequência: o que viaja, o que fica, o que só vale para novos arquivos.",
-  d:"Regra de âmbito da Revisão A e o vocabulário de etiquetas.",
-  f:"Trocar de aparelho gera surpresa mesmo com a etiqueta na tela."},
- conta:{h:"Conta",t:"Se identidade, segurança e aparelhos são procurados aqui — e se a divulgação progressiva evita a tela entulhada.",
-  w:"Quatro destinos rasos em vez de uma página longa: identidade, segurança, aparelhos, plano.",
-  d:"Conta é área real; Perfil não existe. A régua: conta é quem você é para o serviço.",
-  f:"A pessoa varre as seções de Preferências antes de olhar o cabeçalho."},
- conv:{h:"Importar",t:"Se “usar como padrão” é entendido como decisão separada da conversão atual.",
-  w:"Ajustes de trabalho pertencem ao momento do trabalho.",
-  d:"Regra 2: “da próxima vez” mora no fluxo.",
-  f:"A pessoa marca “usar como padrão” achando que é obrigatório para converter."}};
-var ALTN={conta:"Um valor só para todos os aparelhos. Simples, mas o corpo bom no desktop fica pequeno no iPad.",
- classe:"Um valor por classe de tela — a proposta do caderno. Troque de aparelho para sentir.",
- aparelho:"Cada aparelho com o seu. Nunca surpreende, mas obriga a reconfigurar em cada um."};
-function drawSide(){
- var el=$("side");el.hidden=!st.side;if(!st.side)return;
- var sc=SCEN.filter(function(x){return x.k===st.scen})[0],an=ANN[st.route.v]||ANN.lib;
- el.innerHTML='<div><h4>Cenários de teste</h4><div class="sc" style="margin-top:var(--s2)">'+
-  SCEN.map(function(s){return'<button data-s="'+s.k+'" aria-pressed="'+(st.scen===s.k)+'">'+
-    '<span class="n">CENÁRIO '+s.k+'</span><span class="d">'+s.t+'</span></button>'}).join("")+'</div></div>'+
-  (sc?'<div><h4>Passos</h4><ol style="margin-top:var(--s2)">'+sc.steps.map(function(p){
-    return'<li class="'+(st.done[st.scen+p[0]]?"ok":"")+'"><i></i><span>'+p[1]+'</span></li>'}).join("")+'</ol></div>':'')+
-  '<div><h4>Anotação · '+an.h+'</h4><div class="an" style="margin-top:var(--s2)">'+
-  '<div><b>o que está sendo testado</b><span>'+an.t+'</span></div>'+
-  '<div><b>por que existe</b><span>'+an.w+'</span></div>'+
-  '<div><b>decisão que representa</b><span>'+an.d+'</span></div>'+
-  '<div class="f"><b>sinal de fracasso</b><span>'+an.f+'</span></div></div></div>'+
-  '<div><h4>Alternativas em aberto</h4>'+
-  '<div style="margin-top:var(--s2)"><div style="font-size:12px;color:#D6CFC3;margin-bottom:6px">Escopo do corpo de texto</div>'+
-  '<div class="altseg" id="altsize"><button data-v="conta" aria-pressed="'+(st.altSize==="conta")+'">segue você</button>'+
-  '<button data-v="classe" aria-pressed="'+(st.altSize==="classe")+'">por tela</button>'+
-  '<button data-v="aparelho" aria-pressed="'+(st.altSize==="aparelho")+'">do aparelho</button></div>'+
-  '<p class="note" style="margin:7px 0 0">'+ALTN[st.altSize]+'</p></div>'+
-  '<div style="margin-top:var(--s3)"><div style="font-size:12px;color:#D6CFC3;margin-bottom:6px">Painel de leitura</div>'+
-  '<div class="altseg" id="altpanel"><button data-v="popover" aria-pressed="'+(st.altPanel==="popover")+'">popover</button>'+
-  '<button data-v="drawer" aria-pressed="'+(st.altPanel==="drawer")+'">drawer</button></div></div></div>'}
+ var h="";
+ if(st.rota==="lib")h=vLib();
+ else if(st.rota==="perfil")h=vPerfil();
+ else if(st.rota==="cfg")h=vCfg();
+ else if(st.rota==="canvas")h=vSimples("Canvas","Os livros como objetos que você posiciona. A mesma biblioteca, outro ângulo.","biblioteca","Gerenciar padrões da biblioteca");
+ else h=vSimples("Conhecimento","Notas, destaques e as conexões entre o que você leu.","conhecimento","Gerenciar preferências de conhecimento");
+ if(st.leitor)h+=vLeitor();
+ if(st.pal!==null)h+=vPal();
+ if(st.aviso)h+='<div class="aviso">'+esc(st.aviso)+'</div>';
+ $("app").innerHTML=h;
+ if(st.hit){var el=$("row-"+st.hit);if(el)el.scrollIntoView({block:"center",behavior:"smooth"})}
+ var b=$("bs");if(b&&document.activeElement!==b&&st.bs){b.focus();b.setSelectionRange(b.value.length,b.value.length)}
+ var p=$("palq");if(p){p.focus();p.setSelectionRange(p.value.length,p.value.length)}
+ drawLab()}
+
+/* ═════ LAB ═════ */
+var ANOT={lib:["Biblioteca","O controle de usuário no topo direito é o único ponto pessoal persistente. Settings não disputa espaço com as áreas de trabalho.","Ninguém achar o controle em 5 segundos."],
+ cfg:["Configurações","Quatro grupos visíveis: Preferências, Conexões, Conta, Dados. A hierarquia inteira fica à vista, e o retorno diz de onde você veio.","A pessoa não souber dizer quantas categorias existem depois de usar."],
+ perfil:["Perfil","Perfil é visualização do que a leitura produziu; Conta é administração. “Editar perfil” atravessa essa fronteira de propósito.","Alguém procurar senha ou sessões aqui dentro."],
+ canvas:["Canvas","Área de trabalho — existe para provar que dá para sair do produto para Settings e voltar ao mesmo lugar.","Voltar de Settings e cair em outro contexto."],
+ conhecimento:["Conhecimento","Mesma função de contexto de saída e retorno.","Voltar de Settings e cair em outro contexto."]};
+function drawLab(){
+ var el=$("lab");el.hidden=!st.lab;if(!st.lab)return;
+ var c=CEN.filter(function(x){return x.k===st.cen})[0],a=ANOT[st.rota]||ANOT.lib;
+ el.innerHTML='<button class="fechar" data-l="fechar">fechar ✕</button>'+
+  '<div><h4>Cenários</h4><div class="sc" style="margin-top:var(--s2)">'+
+  CEN.map(function(s){return'<button data-s="'+s.k+'" aria-pressed="'+(st.cen===s.k)+'">'+
+   '<span class="n">'+s.k+'</span><span class="d">'+s.t+'</span></button>'}).join("")+'</div></div>'+
+  (c?'<div><h4>Passos</h4><ol style="margin-top:var(--s2)">'+c.p.map(function(p){
+   return'<li class="'+(st.feito[st.cen+p[0]]?"ok":"")+'">'+(st.feito[st.cen+p[0]]?"✓ ":"· ")+p[1]+'</li>'}).join("")+'</ol></div>':'')+
+  '<div><h4>Anotação · '+a[0]+'</h4><p class="nota" style="margin:var(--s2) 0 0">'+a[1]+'</p>'+
+  '<p class="nota" style="margin:var(--s2) 0 0;border-left:2px solid var(--acc);padding-left:10px">'+
+  '<b style="color:#d5cec3">Falha se:</b> '+a[2]+'</p></div>'+
+  '<div><h4>Layout de Configurações</h4><div class="seg" style="margin-top:var(--s2)">'+
+  [["A","lateral"],["B","compacto"],["C","busca"]].map(function(l){
+   return'<button data-lay="'+l[0]+'" class="'+(st.layout===l[0]?"on":"")+'">'+l[1]+'</button>'}).join("")+'</div>'+
+  '<p class="nota" style="margin:var(--s2) 0 0">'+
+  ({A:"Navegação lateral persistente: a arquitetura inteira à vista o tempo todo. Escolhido — é o que responde “o que mais existe aqui?”.",
+    B:"Navegador compacto e conteúdo largo: ganha área útil, perde a noção de conjunto.",
+    C:"Busca primeiro: rápido para quem sabe o nome, cego para quem não sabe."})[st.layout]+'</p></div>'}
 
 /* ═════ EVENTOS ═════ */
-function go(r,sec){st.route={v:r,sec:sec};st.pop=false;st.menu=null;st.danger=false;st.rpanel=null;st.selText=false}
 $("app").addEventListener("click",function(e){
- var el=e.target.closest("[data-a]");if(!el)return;
- var a=el.dataset.a,k=el.dataset.k,v=el.dataset.v,i=el.dataset.i;
- if(a==="palbg"&&e.target.closest(".pal"))return;
- if(a==="go"){go(el.dataset.r,el.dataset.sec);if(el.dataset.r==="conta")mark("conta");if(el.dataset.sec)mark("land")}
- else if(a==="set"){var d=SM[k];set(k,d.t==="sw"?v==="true":d.t==="step"?+v:v,st.route.v==="conv"?"Conversão":"Preferências");
-   if(k==="theme")mark("theme");if(k==="ocr"&&st.route.v==="conv")mark("ocr");toast("Salvo")}
- else if(a==="bset"){var d2=SM[k];st.book[k]=d2.t==="step"?+v:v;if(k==="size")mark("size")}
- else if(a==="revert"){rst(k);toast("Voltou ao padrão")}
- else if(a==="aa"){st.pop=!st.pop;if(st.pop)mark("aa")}
- else if(a==="usedef"){Object.keys(st.book).forEach(function(x){set(x,st.book[x],"Leitor")});
-   st.book={};mark("dec");toast("Agora é o seu padrão de leitura")}
- else if(a==="undo"){st.book={};mark("dec");toast("Descartado")}
- else if(a==="sel"){st.menu=null;st.sel=(st.sel===+i?null:+i);st.inspTab="livro";
-   if(st.sel!==null)mark("insp")}
- else if(a==="unsel"){st.sel=null}
- else if(a==="itab"){st.inspTab=el.dataset.t}
- else if(a==="book"){go("reader");mark("open")}
- else if(a==="notas"){if(st.route.v==="reader"){st.rpanel="notas"}else{st.sel=+i;st.inspTab="notas";mark("insp")}}
- else if(a==="menu"){st.menu=+i;mark("menu")}
- else if(a==="close"){st.menu=null}
- else if(a==="col"){st.libcol=el.dataset.c||null;mark("col")}
- else if(a==="limpa"){st.libq="";st.libcol=null}
- else if(a==="colmove"){st.menu=null;toast("Movido para Pesquisa","desfazer")}
- else if(a==="rmbook"){st.menu=null;toast("Removido da biblioteca","desfazer")}
- else if(a==="rp"){st.rpanel=el.dataset.p||null;st.rq=""}
- else if(a==="cap"){st.cap=+i;st.rpanel=null;toast("Capítulo "+(+i+1))}
- else if(a==="bmk"){st.mark=!st.mark;toast(st.mark?"Marcador colocado nesta página":"Marcador removido")}
- else if(a==="pfmt"){var o=SM.progfmt.op,n=o[(o.indexOf(val("progfmt"))+1)%o.length];set("progfmt",n,"Leitor")}
- else if(a==="pg"){toast("Página "+(3+ +el.dataset.d)+" de 9")}
- else if(a==="hl"){st.selText=false;mark("hl");
-   toast(val("noteonhl")?"Destacado · campo de nota aberto":"Destacado","ver notas")}
- else if(a==="hlnote"){st.selText=false;st.rpanel="notas";mark("hl");toast("Destacado e anotado")}
- else if(a==="cite"){st.selText=false;
-   toast(val("citefmt")?"Citação copiada com a fonte":"Citação copiada")}
- else if(a==="selcancel"){st.selText=false}
- else if(a==="send"){st.menu=null;mark("send");
-   if(st.kindle==="on")toast("Enviado para o seu Kindle");
-   else st.wiz={s:1,mail:st.kmail,sender:st.ksender,test:null}}
- else if(a==="wiz"){st.wiz={s:1,mail:st.kmail,sender:st.ksender,test:null}}
- else if(a==="wnext"){st.wiz.s++}else if(a==="wback"){st.wiz.s--}else if(a==="wcancel"){st.wiz=null}
- else if(a==="wtest"){st.wiz.test="run";draw();setTimeout(function(){st.wiz.test="ok";draw()},900);return}
- else if(a==="wdone"){st.kmail=st.wiz.mail;st.ksender=st.wiz.sender;st.kindle="on";st.wiz=null;
-   mark("wiz");toast("Kindle conectado · livro enviado")}
- else if(a==="ktest"){if(st.ksender&&st.ksender.indexOf("@")>-1&&st.ksender!=="antigo@gmail.com"){
-    st.kindle="on";mark("test");toast("Teste chegou ao seu Kindle")}
-   else{st.kindle="error";toast("A Amazon recusou o remetente — corrija o endereço acima")}}
- else if(a==="kdisc"){st.kindle="off";set("sendafter",false,"Conexões");
-   toast("Kindle desconectado · “enviar após converter” foi desligado")}
- else if(a==="adv"){st.adv=!st.adv}
- else if(a==="convdef"){st.convDef=!st.convDef;if(st.convDef)mark("def")}
- else if(a==="convert"){if(st.convDef)["format","ocr","ocrlang","quality"].forEach(function(x){set(x,val(x),"Conversão")});
-   go("prefs");mark("diary");toast(st.convDef?"Convertido · padrão atualizado":"Convertido")}
- else if(a==="danger"){st.danger="del";mark("open");mark("read")}
- else if(a==="resetall"){st.danger="reset"}
- else if(a==="delacct"){st.danger="delacct"}
- else if(a==="dcancel"){st.danger=false;mark("out")}
- else if(a==="delok"){st.danger=false;mark("out");toast("Apagado em todos os aparelhos")}
- else if(a==="rdev"){st.devv[st.dev]={};st.danger=false;toast("Restaurado neste aparelho")}
- else if(a==="racct"){st.acct={};st.devv={mac:{},ipad:{}};st.origin={};st.danger=false;toast("Restaurado na conta inteira")}
- else if(a==="export"){toast("Exportado · "+BOOKS.length+" livros e "+BOOKS.reduce(function(x,b){return x+b.n},0)+" notas")}
- else if(a==="free"){toast("740 MB liberados neste aparelho")}
- else if(a==="f2a"){st.f2a=!st.f2a;toast(st.f2a?"Verificação em duas etapas ligada":"Desligada")}
- else if(a==="codes"){toast("8 códigos de recuperação gerados")}
- else if(a==="endsess"){st.devices.splice(+i,1);mark("end");
-   toast("Sessão encerrada · downloads daquele aparelho apagados")}
- else if(a==="logout"){st.danger="logout"}
- else if(a==="acctv"){st.acctView=el.dataset.v;st.danger=false;if(el.dataset.v==="seg")mark("seg")}
- else if(a==="saveident"){st.acctView="main";toast("Identidade atualizada")}
- else if(a==="savepwd"){st.pwd={o:"",n:""};st.acctView="main";mark("pwd");
-   toast("Senha trocada · outras sessões encerradas")}
- else if(a==="pal"){st.pal="";st.palq="";st.palsel=0;mark("open")}
- else if(a==="palbg"){st.pal=null}
- else if(a==="palgo"){var r2=res()[+i];st.pal=null;
-   if(r2.bk!==undefined){go("lib");st.sel=r2.bk;st.inspTab=r2.q?"notas":"livro"}
-   else if(r2.rt){go(r2.rt);if(r2.av)st.acctView=r2.av}
-   else{go("sec",r2.sec);if(r2.k&&SM[r2.k].adv)st.adv=true}
-   mark("land");toast("Achou: "+r2.lb)}
- else if(a==="toastact"){var m=st.toast&&st.toast.m||"";st.toast=null;
-   if(m.indexOf("Destacado")===0){go("reader");st.rpanel="notas";mark("vernota")}
-   else toast("Desfeito")}
- else if(a==="noop2"){toast("Fora do escopo deste protótipo")}
+ var el=e.target.closest("[data-a]");
+ if(!el){if(st.menu||st.ctx){st.menu=false;st.ctx=null;draw()}return}
+ var a=el.dataset.a;
+ if(a==="rota"){st.rota=el.dataset.r;st.menu=false;st.ctx=null;marcar("volta")}
+ else if(a==="umenu"){st.menu=!st.menu;st.ctx=null;marcar("ava")}
+ else if(a==="perfil"){st.rota="perfil";st.menu=false;st.de="perfil";marcar("perfil")}
+ else if(a==="cfg"){irCfg(el.dataset.c,"lib");marcar("menu")}
+ else if(a==="ctx"){st.ctx=st.ctx===el.dataset.t?null:el.dataset.t;
+  marcar(el.dataset.t==="aa"?"aa":el.dataset.t==="lib"?"vis":"status")}
+ else if(a==="ponte"){var c=el.dataset.c;
+  st.de=st.leitor?"leitor":st.rota==="perfil"?"perfil":"lib";
+  if(st.leitor)st.leitor=false;
+  irCfg(c,st.de);
+  marcar(c==="leitura"?"ponte":c==="biblioteca"?"ponte2":c==="identidade"?"editar":"gerenciar");
+  marcar("chegou");marcar("conta");
+  aviso("Você veio "+(st.de==="leitor"?"do leitor":st.de==="perfil"?"do perfil":"da Biblioteca")+" — o botão de voltar leva de volta para lá")}
+ else if(a==="voltar"){if(st.de==="leitor"){st.rota="lib";st.leitor=true}
+  else if(st.de==="perfil")st.rota="perfil";else st.rota="lib";
+  st.de=null;marcar("volta")}
+ else if(a==="ir"){st.cat=el.dataset.c;st.hit=el.dataset.k||null;
+  if(el.dataset.k){st.bs="";marcar("achou")}marcar("nav")}
+ else if(a==="ler"){st.leitor=true;st.ctx=null}
+ else if(a==="fecharleitor"){st.leitor=false;st.ctx=null}
+ else if(a==="set"){var x=SM[el.dataset.k];
+  setv(el.dataset.k,x.t==="sw"?el.dataset.v==="true":el.dataset.v,el.dataset.ctx?"ctx":"cfg");
+  if(el.dataset.ctx)marcar("ctx")}
+ else if(a==="soeste"){st.ctx=null;aviso("Vale só neste livro")}
+ else if(a==="padrao"){st.ctx=null;aviso("Agora é o seu padrão de leitura")}
+ else if(a==="salvar"){aviso("Identidade atualizada")}
+ else if(a==="pal"){st.pal="";st.palq="";st.menu=false}
+ else if(a==="fecharpal"){st.pal=null}
+ else if(a==="palgo"){var r=resGlobal()[+el.dataset.i];st.pal=null;
+  if(r.i!==undefined)st.leitor=true;else if(r.r==="perfil")st.rota="perfil";
+  else if(r.c){st.de=st.rota==="cfg"?st.de:"lib";irCfg(r.c,st.de);st.hit=r.k}}
+ else if(a==="noop"){aviso("Fora do escopo desta exploração")}
  draw()});
-$("app").addEventListener("change",function(e){var s=e.target.closest("select[data-k]");if(!s)return;
- if(s.dataset.p==="book")st.book[s.dataset.k]=s.value;
- else set(s.dataset.k,s.value,st.route.v==="conv"?"Conversão":"Preferências");
- toast("Salvo");draw()});
 $("app").addEventListener("input",function(e){
- if(e.target.id==="palq"){st.palq=e.target.value;st.palsel=0;if(st.palq)mark("type");draw();return}
- if(e.target.id==="libq"){st.libq=e.target.value;if(st.libq)mark("busca");
-   var p=e.target.selectionStart;draw();var n=$("libq");if(n){n.focus();n.setSelectionRange(p,p)}return}
- if(e.target.id==="rq"){st.rq=e.target.value;var p2=e.target.selectionStart;draw();
-   var n2=$("rq");if(n2){n2.focus();n2.setSelectionRange(p2,p2)}return}
- var f=e.target.closest("[data-f]");if(!f)return;
- var key=f.dataset.f;
- if(st.wiz&&(key==="mail"||key==="sender"))st.wiz[key]=e.target.value;
- else if(key==="pwdo"||key==="pwdn"){st.pwd[key==="pwdo"?"o":"n"]=e.target.value;
-   var p3=e.target.selectionStart;draw();var n3=document.querySelector('[data-f="'+key+'"]');
-   if(n3){n3.focus();n3.setSelectionRange(p3,p3)}return}
- else st[key]=e.target.value;
- if(key==="ksender")mark("fix")});
-/* seleção de texto no leitor */
-$("app").addEventListener("mouseup",function(e){
- if(st.route.v!=="reader")return;
- var s=window.getSelection();
- if(s&&String(s).trim().length>8&&e.target.closest(".rbody")){st.selText=true;mark("seltxt");draw()}});
-$("app").addEventListener("keydown",function(e){
- if(e.target.id==="palq"){var rs=res();
-  if(e.key==="ArrowDown"){e.preventDefault();st.palsel=Math.min(rs.length-1,st.palsel+1);draw()}
-  else if(e.key==="ArrowUp"){e.preventDefault();st.palsel=Math.max(0,st.palsel-1);draw()}
-  else if(e.key==="Enter"&&rs[st.palsel]){e.preventDefault();var r2=rs[st.palsel];st.pal=null;
-   if(r2.bk!==undefined){go("lib");st.sel=r2.bk;st.inspTab=r2.q?"notas":"livro"}
-   else if(r2.rt){go(r2.rt);if(r2.av)st.acctView=r2.av}
-   else{go("sec",r2.sec);if(r2.k&&SM[r2.k].adv)st.adv=true}
-   mark("land");toast("Achou: "+r2.lb);draw()}
-  else if(e.key==="Escape"){st.pal=null;draw()}
-  return}
- var cell=e.target.closest(".bk");
- if(cell&&st.route.v==="lib"){
-  var L=books(),pos=L.findIndex(function(b){return b.i===+cell.dataset.i});
-  var cols=getComputedStyle(document.querySelector(".shelf")).gridTemplateColumns.split(" ").length||1;
-  var nx=null;
-  if(e.key==="ArrowRight")nx=pos+1;else if(e.key==="ArrowLeft")nx=pos-1;
-  else if(e.key==="ArrowDown")nx=pos+cols;else if(e.key==="ArrowUp")nx=pos-cols;
-  else if(e.key==="Enter"){e.preventDefault();go("reader");mark("open");draw();return}
-  else if(e.key===" "){e.preventDefault();st.sel=+cell.dataset.i;st.inspTab="livro";mark("insp");draw();return}
-  if(nx!==null){e.preventDefault();if(nx<0||nx>=L.length)return;
-   var t=document.querySelector('.bk[data-i="'+L[nx].i+'"]');
-   if(t){document.querySelectorAll(".bk").forEach(function(c){c.tabIndex=-1});t.tabIndex=0;t.focus()}}}});
+ if(e.target.id==="bs"){st.bs=e.target.value;st.hit=null;if(st.bs)marcar("buscar");draw()}
+ else if(e.target.id==="palq"){st.palq=e.target.value;draw()}});
+$("app").addEventListener("change",function(e){var s=e.target.closest("select[data-k]");if(!s)return;
+ setv(s.dataset.k,s.value,"cfg");draw()});
 addEventListener("keydown",function(e){
- if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();
-  st.pal="";st.palq="";st.palsel=0;mark("open");draw()}
- else if(e.key==="Escape"){
-  if(st.pal!==null&&st.pal!==undefined){st.pal=null;draw()}
-  else if(st.menu!==null){st.menu=null;draw()}
-  else if(st.pop){st.pop=false;draw()}
-  else if(st.selText){st.selText=false;draw()}
-  else if(st.rpanel){st.rpanel=null;draw()}
-  else if(st.sel!==null){st.sel=null;draw()}}});
-$("devsw").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;
- if(st.modo==="local"){toast("Sem conta não há segundo aparelho — troque o modelo para comparar");return}
- st.dev=b.dataset.d;st.pop=false;st.menu=null;mark(st.dev==="ipad"?"dev":"back");
- toast("Você está no "+devName()+". O que é da conta veio junto; o que é do aparelho, não.");draw()});
-$("modosw").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;
- st.modo=b.dataset.m;st.dev="mac";
- if(st.modo==="local"&&st.route.v==="conta")st.route={v:"prefs"};
- mark("modo");
- toast(st.modo==="conta"
-  ?"Modelo com conta — hipótese: não existe no repositório hoje"
-  :"Modelo local — um usuário, sem conta, sem sincronização");
- draw()});
-$("sidebtn").addEventListener("click",function(){st.side=!st.side;
- this.setAttribute("aria-pressed",st.side);drawSide()});
-$("side").addEventListener("click",function(e){
- var s=e.target.closest("[data-s]");if(s){startScen(s.dataset.s);return}
- var b=e.target.closest("#altsize button");if(b){st.altSize=b.dataset.v;draw();return}
- var p=e.target.closest("#altpanel button");if(p){st.altPanel=p.dataset.v;draw()}});
+ if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();st.pal="";st.palq="";draw()}
+ else if(e.key==="Escape"){if(st.pal!==null)st.pal=null;else if(st.ctx)st.ctx=null;
+  else if(st.menu)st.menu=false;else if(st.leitor)st.leitor=false;draw()}});
+$("labbtn").addEventListener("click",function(){st.lab=!st.lab;drawLab()});
+$("lab").addEventListener("click",function(e){
+ var f=e.target.closest("[data-l]");if(f){st.lab=false;drawLab();return}
+ var s=e.target.closest("[data-s]");if(s){comecar(s.dataset.s);return}
+ var l=e.target.closest("[data-lay]");if(l){st.layout=l.dataset.lay;
+  aviso("Layout "+l.dataset.lay+" — o escolhido é o A, com navegação lateral");drawLab()}});
 draw();
 })();
 </script>
