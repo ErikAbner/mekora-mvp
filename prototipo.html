@@ -1,0 +1,839 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mekora · protótipo navegável</title>
+<style>
+:root{
+  --canvas:#F1EEE8;--card:#FCFBF8;--ink:#141311;--ink-2:#55504A;--ink-3:#8A857C;
+  --rule:#C6C0B1;--rule-2:#E4E0D6;--bench-2:#E7E3D9;--bench-3:#D2CCBE;
+  --accent:#C33B1E;--good:#4A6B45;--warn:#A8791F;--crit:#C33B1E;--slab:#141311;--shadow:20,19,17;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Mono",monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:#0E0D0C;color:var(--ink);font-family:var(--sans);
+  -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:none;padding:0;cursor:pointer;text-align:left}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+.lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3)}
+
+/* ══ ANDAIME DE TESTE — fora do produto, deliberadamente escuro ══ */
+.rig{background:#0E0D0C;color:#8B857A;display:flex;align-items:center;gap:14px;padding:0 14px;
+  height:38px;flex:0 0 38px;font-family:var(--mono);font-size:10px;border-bottom:1px solid #262320}
+.rig b{color:#EDE8DE;font-weight:400}
+.rig .sep{width:1px;height:15px;background:#2B2825}
+.rig .grp{display:flex;align-items:center;gap:7px}
+.rig button{font-family:var(--mono);font-size:10px;color:#8B857A;padding:4px 9px;border-radius:3px;
+  border:1px solid #2B2825;white-space:nowrap}
+.rig button:hover{color:#EDE8DE;border-color:#454039}
+.rig button[aria-pressed="true"]{background:#EDE8DE;color:#141311;border-color:#EDE8DE}
+.rig .spacer{flex:1}
+.rig .tag{color:var(--accent)}
+
+/* ══ PRODUTO ══ */
+.stage{flex:1;min-height:0;display:flex;background:var(--canvas);position:relative;overflow:hidden}
+.app{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--canvas);position:relative}
+.app[data-w="pequena"]{max-width:430px;margin:0 auto;border-left:1px solid var(--rule);border-right:1px solid var(--rule)}
+
+.top{display:flex;align-items:center;gap:6px;padding:0 22px;height:52px;flex:0 0 52px;
+  border-bottom:1px solid var(--rule-2)}
+.top .brand{font-family:var(--serif);font-size:18px;letter-spacing:-.01em;margin-right:14px}
+.top nav{display:flex;gap:2px}
+.top nav button{font-size:13px;color:var(--ink-3);padding:6px 11px;border-radius:4px}
+.top nav button:hover{background:var(--bench-3);color:var(--ink)}
+.top nav button.on{color:var(--ink);font-weight:600}
+.top .spacer{flex:1}
+.srch{display:flex;align-items:center;gap:8px;border:1px solid var(--rule);border-radius:999px;
+  padding:6px 12px;color:var(--ink-3);font-size:12.5px;min-width:190px}
+.srch:hover{border-color:var(--ink-3)}
+.kbd{font-family:var(--mono);font-size:9px;border:1px solid var(--rule);border-radius:2px;padding:1px 4px}
+.avbtn{width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--canvas);font-size:12px;
+  font-weight:600;display:flex;align-items:center;justify-content:center;flex:0 0 30px}
+.scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden}
+.pad{padding:34px 40px 60px}
+.app[data-w="pequena"] .pad{padding:22px 20px 50px}
+.col{max-width:720px;margin:0 auto}
+
+h1.t{font-family:var(--serif);font-size:30px;font-weight:400;letter-spacing:-.015em;margin:0 0 4px}
+.sub{font-size:13.5px;color:var(--ink-3);margin:0 0 26px;line-height:1.5}
+h2.s{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);
+  margin:30px 0 4px;padding-bottom:8px;border-bottom:1px solid var(--ink)}
+
+/* linhas de ajuste */
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:26px;align-items:center;
+  padding:15px 0;border-bottom:1px solid var(--rule-2);position:relative}
+.row:last-child{border-bottom:none}
+.lb{font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ds{font-size:12.5px;color:var(--ink-3);line-height:1.5;margin-top:4px;max-width:52ch}
+.row.chg::before{content:"";position:absolute;left:-16px;top:22px;width:6px;height:6px;border-radius:50%;
+  background:var(--accent)}
+.revert{font-family:var(--mono);font-size:10px;color:var(--accent);text-decoration:underline}
+.badge{font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;
+  border:1px solid var(--rule);border-radius:999px;padding:2px 7px;color:var(--ink-3);white-space:nowrap}
+.badge.dev{border-color:var(--ink-3)}
+.badge.sync{border-color:var(--good);color:var(--good)}
+.badge.warn{border-color:var(--warn);color:var(--warn)}
+.badge.new{border-color:var(--good);color:var(--good)}
+
+/* controles */
+.sw{width:40px;height:23px;border-radius:999px;background:var(--rule);position:relative;flex:0 0 40px;display:block}
+.sw i{position:absolute;top:2.5px;left:2.5px;width:18px;height:18px;border-radius:50%;background:var(--card);
+  box-shadow:0 1px 3px rgba(var(--shadow),.3);transition:left .15s}
+.sw.on{background:var(--ink)}
+.sw.on i{left:19.5px}
+.sw[disabled]{opacity:.4}
+.segc{display:flex;border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.segc button{padding:7px 14px;font-size:12.5px;border-right:1px solid var(--rule);white-space:nowrap}
+.segc button:last-child{border-right:none}
+.segc button:hover{background:var(--bench-3)}
+.segc button.on{background:var(--ink);color:var(--canvas)}
+select.sel{border:1px solid var(--rule);border-radius:4px;padding:7px 10px;font-size:13px;
+  background:var(--card);color:var(--ink);font-family:var(--sans)}
+.stepc{display:flex;align-items:center;border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.stepc button{padding:6px 13px;font-size:14px;border-right:1px solid var(--rule)}
+.stepc button:last-child{border:none}
+.stepc button:hover{background:var(--bench-3)}
+.stepc .v{padding:6px 10px;font-family:var(--mono);font-size:13px;min-width:50px;text-align:center;
+  border-right:1px solid var(--rule)}
+.inp{border:1px solid var(--rule);border-radius:4px;padding:8px 11px;font-size:13px;background:var(--card);
+  color:var(--ink);font-family:inherit;min-width:250px}
+.inp.err{border-color:var(--crit)}
+.btn{font-size:13px;font-weight:600;background:var(--ink);color:var(--canvas);border-radius:999px;padding:9px 20px;
+  display:inline-block}
+.btn:hover{background:var(--accent);color:#F1EEE8}
+.btn.sec{background:none;border:1px solid var(--rule);color:var(--ink);font-weight:500}
+.btn.sec:hover{background:var(--bench-3);color:var(--ink)}
+.btn.dan{background:var(--crit);color:#F1EEE8}
+.lnk{font-size:13px;text-decoration:underline;color:var(--ink)}
+.lnk:hover{color:var(--accent)}
+.lnk.dan{color:var(--crit)}
+
+/* cabeçalho de conta */
+.acct{display:grid;grid-template-columns:46px minmax(0,1fr) auto;gap:15px;align-items:center;
+  padding:16px 0;border-bottom:1px solid var(--rule-2)}
+.acct .av{width:46px;height:46px;border-radius:50%;background:var(--ink);color:var(--canvas);
+  display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600}
+.acct .nm{font-size:15px;font-weight:600}
+.acct .em{font-size:12.5px;color:var(--ink-3);margin-top:2px}
+
+/* índice de seções */
+.idx{display:flex;flex-direction:column}
+.idx button{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;padding:16px 0;
+  border-bottom:1px solid var(--rule-2);width:100%}
+.idx button:hover .nm{color:var(--accent)}
+.idx .nm{font-size:15px;font-weight:500}
+.idx .dc{font-size:12.5px;color:var(--ink-3);margin-top:3px;line-height:1.45}
+.idx .ct{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+
+/* faixas de estado */
+.strip{display:flex;align-items:center;gap:11px;font-size:13px;padding:11px 15px;border-radius:4px;
+  background:var(--bench-2);border:1px solid var(--rule-2);color:var(--ink-2);margin:14px 0}
+.strip .dot{width:8px;height:8px;border-radius:50%;flex:0 0 8px}
+.d-ok{background:var(--good)}.d-err{background:var(--crit)}.d-off{background:var(--ink-3)}.d-wait{background:var(--warn)}
+.strip.err{border-color:var(--crit)}
+
+/* biblioteca */
+.shelf{display:grid;gap:26px;grid-template-columns:repeat(auto-fill,minmax(var(--cw,146px),1fr))}
+.bk{display:flex;flex-direction:column;gap:9px;cursor:pointer;position:relative;padding-top:13px;text-align:left}
+.bk .cv{position:relative;width:100%;padding-bottom:139%;border-radius:5px;overflow:hidden;
+  background:var(--paper,#F6F3EC);box-shadow:0 5px 16px rgba(var(--shadow),.16);
+  transition:transform .13s,box-shadow .13s}
+.bk:hover .cv{transform:translateY(-3px);box-shadow:0 12px 26px rgba(var(--shadow),.24)}
+.bk .cvin{position:absolute;inset:0;display:flex;flex-direction:column}
+.bk .cvt{padding:9% 9% 0;font-size:calc(var(--cw,146px)*.088);font-weight:700;line-height:1.15;color:#141311}
+.bk .cva{flex:1;margin:6% 8% 0;background-image:radial-gradient(var(--tone,#141311) 12%,transparent 13%);
+  background-size:15% 15%;-webkit-mask-image:linear-gradient(to bottom,transparent,#000);
+  mask-image:linear-gradient(to bottom,transparent,#000)}
+.bk .cvf{background:#141311;height:6%}
+.bk .tab{position:absolute;top:0;right:11%;background:var(--slab);color:#F1EEE8;font-size:10px;font-weight:700;
+  line-height:1;padding:4px 7px 9px;border-radius:3px 3px 0 0;z-index:2}
+.bk .tab:hover{background:var(--accent)}
+.bk .prg{position:absolute;left:0;bottom:0;height:3px;background:#F1EEE8}
+.bk .t{font-size:13.5px;font-weight:600;line-height:1.25}
+.bk .a{font-size:11.5px;color:var(--ink-3)}
+.bk .dots{position:absolute;top:15px;right:2px;color:var(--ink-3);letter-spacing:1px;padding:2px 6px;
+  opacity:0;background:var(--canvas);border-radius:3px}
+.bk:hover .dots,.bk:focus-within .dots{opacity:1}
+.bk.list{flex-direction:row;align-items:center;gap:16px;padding-top:0;border-bottom:1px solid var(--rule-2);
+  padding-bottom:12px}
+.bk.list .cv{width:52px;flex:0 0 52px;padding-bottom:72px}
+.bk.list .tab{display:none}
+
+/* leitor */
+.reader{display:flex;flex-direction:column;height:100%}
+.rtop{display:flex;align-items:center;gap:12px;padding:0 22px;height:46px;flex:0 0 46px;
+  border-bottom:1px solid var(--rule-2);font-size:12.5px;color:var(--ink-3)}
+.rtop .ti{color:var(--ink);font-family:var(--serif);font-size:15px}
+.rtop .spacer{flex:1}
+.rscroll{flex:1;min-height:0;overflow-y:auto;background:var(--rbg,var(--card))}
+.rbody{max-width:var(--rw,620px);margin:0 auto;padding:56px 30px 90px;font-family:var(--rf,var(--serif));
+  color:var(--rfg,var(--ink))}
+.rbody p{margin:0 0 1em}
+.rbody .hl{background:var(--hl,#F2E07A);padding:2px 0;border-radius:2px}
+.rbar{display:flex;align-items:center;gap:12px;padding:0 22px;height:52px;flex:0 0 52px;
+  border-top:1px solid var(--rule-2);background:var(--canvas);flex-wrap:wrap}
+.rbar .note{font-size:12.5px;color:var(--ink-3);flex:1;min-width:150px}
+.rbar .note b{color:var(--ink)}
+
+/* sobreposições */
+.ovl{position:absolute;inset:0;background:rgba(var(--shadow),.26);z-index:30}
+.pop{position:absolute;z-index:40;background:var(--card);border:1px solid var(--rule);border-radius:6px;
+  box-shadow:0 20px 46px rgba(var(--shadow),.24);padding:20px;width:320px;display:flex;flex-direction:column;gap:6px}
+.drawer{position:absolute;top:0;right:0;bottom:0;width:330px;background:var(--card);
+  border-left:1px solid var(--rule);box-shadow:-14px 0 40px rgba(var(--shadow),.18);padding:24px;
+  display:flex;flex-direction:column;gap:6px;z-index:40;overflow-y:auto}
+.pop .row,.drawer .row{padding:11px 0}
+.pop .lb,.drawer .lb{font-size:13px}
+
+/* busca */
+.palwrap{position:absolute;inset:0;z-index:50;display:flex;justify-content:center;padding-top:11vh;
+  background:rgba(var(--shadow),.26)}
+.pal{width:min(540px,90%);max-height:60vh;background:var(--card);border:1px solid var(--rule);border-radius:8px;
+  box-shadow:0 26px 60px rgba(var(--shadow),.3);display:flex;flex-direction:column;overflow:hidden}
+.pal-in{display:flex;align-items:center;gap:11px;padding:16px 20px;border-bottom:1px solid var(--rule-2)}
+.pal-in input{border:none;outline:none;background:none;font:inherit;font-size:16px;color:var(--ink);width:100%}
+.pal-res{overflow-y:auto}
+.pal-g{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);
+  padding:13px 20px 5px}
+.pal-r{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;padding:10px 20px;font-size:13.5px;
+  align-items:center;cursor:pointer}
+.pal-r.on,.pal-r:hover{background:var(--bench-2)}
+.pal-r .pth{font-family:var(--mono);font-size:10px;color:var(--ink-3)}
+.pal-empty{padding:22px 20px;font-size:13px;color:var(--ink-3);line-height:1.55}
+
+/* assistente */
+.wiz{position:absolute;inset:0;z-index:45;background:var(--canvas);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:40px}
+.wizbox{max-width:520px;width:100%;display:flex;flex-direction:column;gap:18px}
+.wizdots{display:flex;gap:6px}
+.wizdots i{width:22px;height:3px;border-radius:2px;background:var(--rule);display:block}
+.wizdots i.on{background:var(--ink)}
+
+/* destrutivo */
+.dz{border-top:1px solid var(--rule);margin-top:34px;padding-top:20px;display:flex;flex-direction:column;gap:14px}
+.dz h5{margin:0;font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--crit)}
+.confirm{border-left:2px solid var(--crit);padding:4px 0 4px 16px;display:flex;flex-direction:column;gap:12px}
+.confirm p{margin:0;font-size:13.5px;line-height:1.6;color:var(--ink-2)}
+.confirm ul{margin:0;padding-left:18px;font-size:13px;color:var(--ink-2);line-height:1.7}
+.confirm b{color:var(--ink)}
+
+/* aparelhos */
+.dev-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;padding:14px 0;
+  border-bottom:1px solid var(--rule-2)}
+.dev-row .dn{font-size:13.5px;font-weight:500;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.dev-row .dm{font-size:12px;color:var(--ink-3);margin-top:3px}
+.here{font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--good);
+  border:1px solid var(--good);border-radius:999px;padding:2px 7px}
+
+/* espaço */
+.quota{display:flex;gap:1px;height:11px;border-radius:3px;overflow:hidden;background:var(--rule-2);margin:16px 0 10px}
+.quota i{display:block;height:100%}
+.qleg{display:flex;gap:20px;flex-wrap:wrap;font-size:12px;color:var(--ink-3)}
+.qleg span{display:flex;align-items:center;gap:7px}
+.qleg i{width:9px;height:9px;border-radius:2px;display:block}
+
+/* aviso e conversão */
+.toast{position:absolute;left:50%;transform:translateX(-50%);bottom:26px;z-index:60;background:var(--slab);
+  color:#F1EEE8;font-size:13px;padding:11px 18px;border-radius:999px;box-shadow:0 12px 30px rgba(var(--shadow),.34);
+  max-width:80%}
+.filecard{display:flex;gap:16px;align-items:center;padding:18px;background:var(--bench-2);border-radius:6px;
+  margin-bottom:8px}
+.filecard .ic{width:44px;height:56px;background:var(--slab);border-radius:3px;color:#EDE8DE;font-size:9px;
+  display:flex;align-items:center;justify-content:center;font-family:var(--mono);flex:0 0 44px}
+
+/* painel de cenários */
+.side{position:absolute;top:0;right:0;bottom:0;width:310px;background:#0E0D0C;color:#B8B1A5;z-index:70;
+  padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:20px;border-left:1px solid #262320}
+.side h4{margin:0;font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:#6F6A61}
+.side .sc{display:flex;flex-direction:column;gap:3px}
+.side .sc button{padding:9px 11px;border-radius:4px;border:1px solid #211F1C;display:flex;flex-direction:column;gap:3px}
+.side .sc button:hover{background:#1A1815}
+.side .sc button[aria-pressed="true"]{background:#EDE8DE;border-color:#EDE8DE}
+.side .sc button[aria-pressed="true"] .n,.side .sc button[aria-pressed="true"] .d{color:#141311}
+.side .sc .n{font-family:var(--mono);font-size:9px;color:#6F6A61;letter-spacing:.08em}
+.side .sc .d{font-size:12.5px;color:#D6CFC3;line-height:1.3}
+.side ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
+.side ol li{font-size:12px;line-height:1.45;display:grid;grid-template-columns:14px 1fr;gap:9px;color:#B8B1A5}
+.side ol li i{width:12px;height:12px;border-radius:50%;border:1px solid #3A3630;margin-top:2px;display:block;
+  position:relative}
+.side ol li.ok i{background:var(--good);border-color:var(--good)}
+.side ol li.ok i::after{content:"";position:absolute;left:3.5px;top:1px;width:3px;height:6px;
+  border:solid #0E0D0C;border-width:0 1.5px 1.5px 0;transform:rotate(42deg)}
+.side ol li.ok{color:#6F6A61}
+.side .an{display:flex;flex-direction:column;gap:9px}
+.side .an div{display:flex;flex-direction:column;gap:3px}
+.side .an b{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:#6F6A61;
+  font-weight:400}
+.side .an span{font-size:12px;line-height:1.5;color:#B8B1A5}
+.side .an .f{border-left:2px solid var(--accent);padding-left:10px}
+.side .alt{display:flex;flex-direction:column;gap:10px}
+.side .altseg{display:flex;border:1px solid #2B2825;border-radius:4px;overflow:hidden}
+.side .altseg button{flex:1;padding:6px 4px;font-family:var(--mono);font-size:9.5px;text-align:center;
+  border-right:1px solid #2B2825;color:#8B857A}
+.side .altseg button:last-child{border:none}
+.side .altseg button[aria-pressed="true"]{background:#EDE8DE;color:#141311}
+.side .note{font-size:11px;line-height:1.45;color:#6F6A61}
+
+@media (max-width:860px){.side{width:100%}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="rig">
+  <b>Protótipo Mekora</b>
+  <span class="sep"></span>
+  <span class="grp">aparelho <span id="devsw" style="display:flex;gap:4px"></span></span>
+  <span class="sep"></span>
+  <span class="grp">alterados <b id="ndiff">0</b></span>
+  <span class="spacer"></span>
+  <span class="tag" id="scenlabel"></span>
+  <button id="sidebtn">cenários e anotações</button>
+</div>
+
+<div class="stage">
+  <div class="app" id="app"></div>
+  <div class="side" id="side" hidden></div>
+</div>
+
+<script>
+(function(){
+"use strict";
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+
+/* ══ catálogo ══ */
+var SEC=[
+ {k:"aparencia",n:"Aparência",d:"Tema, densidade, idioma, tela inicial"},
+ {k:"biblioteca",n:"Biblioteca",d:"Vista padrão, ordenação, capas, sinais de nota"},
+ {k:"leitura",n:"Leitura",d:"Tipografia, tema do leitor, destaques"},
+ {k:"arquivos",n:"Arquivos",d:"Conversão, OCR, importação"},
+ {k:"conexoes",n:"Conexões",d:"Kindle"},
+ {k:"dados",n:"Seus dados",d:"Espaço, offline, privacidade, apagar"}
+];
+var S=[
+{k:"theme",sec:"aparencia",lb:"Tema",ds:"O seu outro aparelho não muda junto.",esc:"aparelho",t:"seg",op:["Claro","Escuro","Sistema"],d:"Sistema",syn:"tema escuro claro noite cor"},
+{k:"density",sec:"aparencia",lb:"Densidade da interface",ds:"Espaçamento da interface, não o tamanho do texto lido.",esc:"aparelho",t:"seg",op:["Compacta","Padrão","Ampla"],d:"Padrão",syn:"densidade espaçamento"},
+{k:"lang",sec:"aparencia",lb:"Idioma da interface",ds:"Não altera o idioma dos livros nem do OCR.",esc:"conta",t:"sel",op:["Português (Brasil)","English","Español"],d:"Português (Brasil)",syn:"idioma lingua"},
+{k:"motion",sec:"aparencia",lb:"Reduzir movimento",ds:"Desliga transições de painel e estante.",esc:"aparelho",t:"sw",d:false,syn:"movimento animação acessibilidade"},
+{k:"start",sec:"aparencia",lb:"Ao abrir o Mekora",ds:"",esc:"aparelho",t:"sel",op:["Retomar leitura","Biblioteca","Notas"],d:"Retomar leitura",syn:"abrir inicial"},
+{k:"libview",sec:"biblioteca",lb:"Vista ao abrir",ds:"Você também troca a vista na própria biblioteca.",esc:"conta",t:"seg",op:["Grade","Lista"],d:"Grade",syn:"vista grade lista estante"},
+{k:"carddens",sec:"biblioteca",lb:"Densidade dos cards",ds:"",esc:"conta",t:"seg",op:["S","M","L"],d:"M",syn:"card capa tamanho"},
+{k:"sort",sec:"biblioteca",lb:"Ordenação padrão",ds:"",esc:"conta",t:"sel",op:["Adicionado recentemente","Título","Autor","Progresso"],d:"Adicionado recentemente",syn:"ordenar ordem"},
+{k:"notesign",sec:"biblioteca",lb:"Sinal de notas nas capas",ds:"A aba ✳ com a contagem, no topo da capa.",esc:"conta",t:"sw",d:true,syn:"nota sinal aba capa"},
+{k:"covergen",sec:"biblioteca",lb:"Gerar capa quando não houver",ds:"",esc:"conta",t:"sw",d:true,syn:"capa gerar"},
+{k:"donebooks",sec:"biblioteca",lb:"Livros concluídos",ds:"",esc:"conta",t:"sel",op:["Manter na estante","Ocultar","Mover para Concluídos"],d:"Manter na estante",syn:"concluído lido"},
+{k:"font",sec:"leitura",lb:"Fonte de leitura",ds:"",esc:"conta",t:"seg",op:["Serifada","Sem serifa"],d:"Serifada",rd:1,syn:"fonte tipografia letra"},
+{k:"size",sec:"leitura",lb:"Tamanho do texto",ds:"",esc:"conta",t:"step",mn:14,mx:26,sp:1,d:18,rd:1,syn:"tamanho corpo letra maior menor"},
+{k:"leading",sec:"leitura",lb:"Entrelinha",ds:"",esc:"conta",t:"step",mn:1.3,mx:2.1,sp:.1,d:1.6,rd:1,syn:"entrelinha espaçamento linha"},
+{k:"width",sec:"leitura",lb:"Largura da coluna",ds:"",esc:"conta",t:"step",mn:480,mx:800,sp:40,d:620,rd:1,syn:"largura coluna margem"},
+{k:"readertheme",sec:"leitura",lb:"Tema do leitor",ds:"Independente do tema da interface, de propósito.",esc:"conta",t:"seg",op:["Papel","Sépia","Noite"],d:"Papel",rd:1,syn:"tema leitor papel sépia noite"},
+{k:"scroll",sec:"leitura",lb:"Rolagem contínua",ds:"Desligado usa paginação com virada.",esc:"conta",t:"sw",d:true,syn:"rolagem paginação"},
+{k:"hlcolor",sec:"leitura",lb:"Cor do destaque",ds:"",esc:"conta",t:"seg",op:["Amarelo","Rosa","Verde"],d:"Amarelo",syn:"destaque grifo cor"},
+{k:"noteonhl",sec:"leitura",lb:"Criar nota ao destacar",ds:"Abre o campo de nota junto com o destaque.",esc:"conta",t:"sw",d:false,syn:"nota destacar"},
+{k:"format",sec:"arquivos",lb:"Formato de saída",ds:"Arquivos já convertidos não mudam.",esc:"conta",t:"sel",op:["EPUB","PDF"],d:"EPUB",bd:"vale para novos",syn:"formato saída epub pdf"},
+{k:"ocr",sec:"arquivos",lb:"OCR",ds:"“Sempre” aumenta o tempo de processamento.",esc:"conta",t:"seg",op:["Automático","Sempre","Nunca"],d:"Automático",syn:"ocr reconhecimento texto escaneado"},
+{k:"autoprocess",sec:"arquivos",lb:"Processar ao importar",ds:"Converte assim que o arquivo entra, sem perguntar.",esc:"conta",t:"sw",d:false,syn:"importar automático"},
+{k:"keeporig",sec:"arquivos",lb:"Manter o arquivo original",ds:"Ocupa espaço da conta e permite reconverter depois.",esc:"conta",t:"sw",d:true,syn:"original manter"},
+{k:"ocrlang",sec:"arquivos",lb:"Idioma do OCR",ds:"Só use se a detecção automática errar.",esc:"conta",t:"sel",op:["Detectar","Português","Inglês","Espanhol"],d:"Detectar",adv:1,syn:"ocr idioma lingua"},
+{k:"quality",sec:"arquivos",lb:"Qualidade de imagem",ds:"Maior qualidade gera arquivos maiores.",esc:"conta",t:"seg",op:["Leve","Equilibrada","Máxima"],d:"Equilibrada",adv:1,syn:"qualidade resolução"},
+{k:"sendafter",sec:"conexoes",lb:"Enviar após converter",ds:"Envia automaticamente quando a conversão termina.",esc:"conta",t:"sw",d:false,syn:"kindle enviar automático"},
+{k:"wifionly",sec:"dados",lb:"Sincronizar só em Wi-Fi",ds:"",esc:"aparelho",t:"sw",d:true,syn:"wifi rede dados móveis"},
+{k:"dlreading",sec:"dados",lb:"Baixar o que estou lendo",ds:"Garante abrir sem rede o livro em andamento.",esc:"aparelho",t:"sw",d:true,syn:"baixar offline download"},
+{k:"telemetry",sec:"dados",lb:"Enviar dados de uso",ds:"Nunca o conteúdo dos seus livros ou notas.",esc:"conta",t:"sw",d:false,syn:"privacidade telemetria"},
+{k:"history",sec:"dados",lb:"Histórico de leitura",ds:"Alimenta “continuar lendo” e as estatísticas.",esc:"conta",t:"sw",d:true,syn:"histórico privacidade"}
+];
+var SM={};S.forEach(function(x){SM[x.k]=x});
+var DEVS=[{k:"mac",n:"MacBook",cls:"grande"},{k:"ipad",n:"iPad",cls:"pequena"}];
+var BOOKS=[
+{t:"Estudo de Viabilidade",a:"Ana Duarte",n:24,p:80,paper:"#F6F3EC",tone:"#141311"},
+{t:"Teoria da Atenção",a:"Marina Rocha",n:12,p:34,paper:"#EFE7D9",tone:"#C33B1E"},
+{t:"Ensaio do Comum",a:"Nuno Pacheco",n:0,p:0,paper:"#E9EEE9",tone:"#2E4B45"},
+{t:"Cartografia do Erro",a:"Clara Bittencourt",n:41,p:100,paper:"#F2E9E4",tone:"#55504A"},
+{t:"Poética do Detalhe",a:"Paulo Guedes",n:7,p:12,paper:"#E7E9EF",tone:"#3A3550"},
+{t:"Inventário das Margens",a:"Iara Sampaio",n:103,p:56,paper:"#F4EEE0",tone:"#7A5C1E"},
+{t:"Gramática do Vazio",a:"Vitor Meireles",n:3,p:0,paper:"#EDEAE2",tone:"#141311"},
+{t:"Manual da Escassez",a:"Renata Farias",n:18,p:91,paper:"#F6F3EC",tone:"#C33B1E"},
+{t:"Física do Cotidiano",a:"Bruno Almeida",n:0,p:47,paper:"#EFE7D9",tone:"#2E4B45"},
+{t:"Elogio da Repetição",a:"Karina Lousada",n:31,p:100,paper:"#E9EEE9",tone:"#141311"},
+{t:"Atlas da Escala",a:"Sérgio Vasques",n:9,p:22,paper:"#F2E9E4",tone:"#7A5C1E"},
+{t:"Diário das Cidades",a:"Olívia Cardoso",n:56,p:68,paper:"#E7E9EF",tone:"#C33B1E"}
+];
+var PAGE=["Havia, no fundo da sala, uma estante que ninguém organizava desde a mudança — e era exatamente por isso que dava para saber onde tudo estava.",
+"A ordem que se impõe de fora envelhece rápido. A que nasce do uso repetido guarda, em cada lombada fora do lugar, a memória de uma tarde específica: o livro que ficou na mesa porque a conversa não acabou, o que voltou torto porque alguém procurava outra coisa.",
+"<span class=\"hl\">A densidade não é uma propriedade da tela: é uma propriedade da tarefa.</span> Duas pessoas diante da mesma interface enxergam quantidades diferentes de informação, porque chegam ali com perguntas diferentes. Uma quer encontrar; a outra quer lembrar.",
+"Foi por isso que abandonamos o inventário completo. Não porque fosse impreciso — era exato — mas porque respondia a uma pergunta que ninguém fazia. O catálogo perfeito de uma casa é inútil para quem mora nela.",
+"O que restou foi mais modesto e mais útil: um jeito de reconhecer as coisas de longe, e um jeito de chegar perto quando isso importa. Entre os dois, nada."];
+
+/* ══ estado ══ */
+var st={route:{v:"lib"},dev:"mac",acct:{},devv:{mac:{},ipad:{}},book:{},origin:{},
+ kindle:"on",kmail:"erik_4f2a@kindle.com",ksender:"erik@vynce.com.br",
+ wiz:null,pal:null,palq:"",palsel:0,pop:false,adv:false,danger:false,menu:null,toast:null,f2a:false,
+ convDef:false,altSize:"classe",altPanel:"popover",scen:null,done:{},side:false,
+ devices:[{n:"MacBook Pro",loc:"São Paulo",when:"agora",dl:8,here:true},
+   {n:"iPad de Erik",loc:"São Paulo",when:"há 2 horas",dl:3},
+   {n:"Windows · Chrome",loc:"Curitiba",when:"há 6 dias",dl:0,unk:true}]};
+function devCls(){return DEVS.filter(function(d){return d.k===st.dev})[0].cls}
+function devName(){return DEVS.filter(function(d){return d.k===st.dev})[0].n}
+function sizeBag(){
+  if(st.altSize==="conta")return{b:st.acct,k:"size"};
+  if(st.altSize==="aparelho")return{b:st.devv[st.dev],k:"size"};
+  return{b:st.acct,k:"size_"+devCls()};
+}
+function val(k){var d=SM[k];
+  if(k==="size"){var s=sizeBag();return s.b[s.k]!==undefined?s.b[s.k]:d.d}
+  var bag=d.esc==="aparelho"?st.devv[st.dev]:st.acct;
+  return bag[k]!==undefined?bag[k]:d.d}
+function set(k,v,o){var d=SM[k];
+  if(k==="size"){var s=sizeBag();s.b[s.k]=v}
+  else (d.esc==="aparelho"?st.devv[st.dev]:st.acct)[k]=v;
+  st.origin[k]={o:o||"Preferências",dv:devName()}}
+function rst(k){var d=SM[k];
+  if(k==="size"){var s=sizeBag();delete s.b[s.k]}
+  else delete (d.esc==="aparelho"?st.devv[st.dev]:st.acct)[k];
+  delete st.origin[k]}
+function rd(k){return st.book[k]!==undefined?st.book[k]:val(k)}
+function dirty(){return Object.keys(st.book).length>0}
+function diff(){return S.filter(function(x){return val(x.k)!==x.d})}
+function fmtv(k,v){return SM[k].t==="sw"?(v?"Ligado":"Desligado"):String(v)}
+var tm;function toast(m){st.toast=m;clearTimeout(tm);tm=setTimeout(function(){st.toast=null;draw()},2800)}
+
+/* ══ cenários ══ */
+var SCEN=[
+{k:"01",t:"Trocar o tema e ver o que viaja",go:function(){st.route={v:"sec",sec:"aparencia"}},
+ steps:[["theme","Mude o tema para Escuro"],["dev","Troque para o iPad na barra de cima"],["back","Volte ao MacBook"]]},
+{k:"02",t:"Tipografia lendo, e o padrão",go:function(){st.route={v:"reader"}},
+ steps:[["aa","Abra o Aa no rodapé do leitor"],["size","Mude o tamanho do texto"],["dec","Decida: só este livro ou padrão"]]},
+{k:"03",t:"Configurar o Kindle pelo envio",go:function(){st.kindle="off";st.route={v:"lib"}},
+ steps:[["menu","Passe o mouse num livro e abra o ···"],["send","Escolha Enviar para Kindle"],["wiz","Conclua o teste de envio"]]},
+{k:"04",t:"OCR na conversão, salvo como padrão",go:function(){st.route={v:"conv"}},
+ steps:[["ocr","Troque o OCR para Sempre"],["def","Marque usar como padrão"],["diary","Confira no diário"]]},
+{k:"05",t:"Achar um ajuste sem saber a seção",go:function(){st.route={v:"lib"};st.pal=null},
+ steps:[["open","Abra a busca no topo"],["type","Digite “ocr”"],["land","Chegue ao ajuste"]]},
+{k:"06",t:"Encerrar a sessão de um aparelho",go:function(){st.route={v:"prefs"}},
+ steps:[["conta","Vá a Conta e segurança"],["end","Encerre a sessão do Windows"]]},
+{k:"07",t:"Apagar a biblioteca",go:function(){st.route={v:"sec",sec:"dados"}},
+ steps:[["open","Abra Apagar biblioteca"],["read","Leia o alcance da ação"],["out","Cancele — ou confirme"]]},
+{k:"08",t:"Recuperar de um erro de envio",go:function(){st.kindle="error";st.ksender="antigo@gmail.com";
+  st.route={v:"sec",sec:"conexoes"};st.done["08see"]=1},
+ steps:[["see","Veja o erro em Conexões"],["fix","Corrija o remetente"],["test","Teste de novo"]]}
+];
+function mark(id){if(!st.scen)return;st.done[st.scen+id]=1}
+function startScen(k){var s=SCEN.filter(function(x){return x.k===k})[0];if(!s)return;
+  st.scen=k;st.done={};st.pop=false;st.wiz=null;st.danger=false;st.menu=null;st.pal=null;st.toast=null;
+  if(k!=="08"&&k!=="03"){st.kindle="on";st.ksender="erik@vynce.com.br"}
+  st.side=true;s.go();draw()}
+
+/* ══ controles ══ */
+function ctl(x,pf){
+  var v=pf==="book"?rd(x.k):val(x.k),a='data-a="'+(pf==="book"?"bset":"set")+'" data-k="'+x.k+'"';
+  if(x.t==="sw")return'<button class="sw'+(v?" on":"")+'" '+a+' data-v="'+(!v)+'" role="switch" aria-checked="'+!!v+'" aria-label="'+esc(x.lb)+'"><i></i></button>';
+  if(x.t==="seg")return'<span class="segc">'+x.op.map(function(o){
+    return'<button '+a+' data-v="'+esc(o)+'" class="'+(o===v?"on":"")+'" aria-pressed="'+(o===v)+'">'+esc(o)+'</button>'}).join("")+'</span>';
+  if(x.t==="sel")return'<select class="sel" data-k="'+x.k+'" data-p="'+(pf||"")+'">'+x.op.map(function(o){
+    return'<option'+(o===v?" selected":"")+'>'+esc(o)+'</option>'}).join("")+'</select>';
+  if(x.t==="step")return'<span class="stepc"><button '+a+' data-v="'+Math.max(x.mn,+(v-x.sp).toFixed(1))+'" aria-label="diminuir">−</button>'+
+    '<span class="v">'+(x.sp<1?(+v).toFixed(1):v)+(x.k==="width"?"":"")+'</span>'+
+    '<button '+a+' data-v="'+Math.min(x.mx,+(v+x.sp).toFixed(1))+'" aria-label="aumentar">+</button></span>';
+  return""}
+function row(x,pf){
+  var chg=pf==="book"?st.book[x.k]!==undefined:val(x.k)!==x.d,bd="";
+  if(x.esc==="aparelho")bd+='<span class="badge dev">este aparelho</span>';
+  else if(x.sec==="aparencia")bd+='<span class="badge sync">segue você</span>';
+  if(x.bd)bd+='<span class="badge new">'+x.bd+'</span>';
+  if(x.rd&&pf!=="book")bd+='<span class="badge">também no leitor</span>';
+  return'<div class="row'+(chg?" chg":"")+'"><div><div class="lb">'+esc(x.lb)+bd+
+    (chg&&pf!=="book"?'<button class="revert" data-a="revert" data-k="'+x.k+'">voltar ao padrão</button>':'')+'</div>'+
+    (x.ds?'<div class="ds">'+esc(x.ds)+'</div>':'')+'</div>'+ctl(x,pf)+'</div>'}
+
+/* ══ topo ══ */
+function top(){var r=st.route.v;
+  return'<div class="top"><span class="brand">Mekora</span><nav>'+
+   '<button data-a="go" data-r="lib" class="'+(r==="lib"?"on":"")+'">Biblioteca</button>'+
+   '<button data-a="go" data-r="reader" class="'+(r==="reader"?"on":"")+'">Lendo</button>'+
+   '<button data-a="go" data-r="conv" class="'+(r==="conv"?"on":"")+'">Importar</button>'+
+   '</nav><span class="spacer"></span>'+
+   '<button class="srch" data-a="pal">⌕ Buscar um ajuste <span class="spacer"></span><span class="kbd">⌘K</span></button>'+
+   '<button class="avbtn" data-a="go" data-r="prefs" title="Preferências">E</button></div>'}
+
+/* ══ telas ══ */
+function vLib(){
+  var lista=val("libview")==="Lista",cw={S:"104px",M:"146px",L:"196px"}[val("carddens")];
+  var h=top()+'<div class="scroll"><div class="pad"><div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:26px">'+
+   '<div style="flex:1"><h1 class="t">Biblioteca</h1><p class="sub" style="margin:0">'+BOOKS.length+' livros · 244 notas</p></div>'+
+   ctl(SM.libview)+ctl(SM.carddens)+'</div>'+
+   '<div class="shelf" style="--cw:'+cw+(lista?';grid-template-columns:1fr':'')+'">';
+  BOOKS.forEach(function(b,i){
+    h+='<div class="bk'+(lista?" list":"")+'" data-a="book" data-i="'+i+'" style="--paper:'+b.paper+';--tone:'+b.tone+'">'+
+     '<div class="cv"><div class="cvin"><div class="cvt">'+esc(b.t)+'</div><div class="cva"></div><div class="cvf"></div></div>'+
+     (b.p&&b.p<100?'<span class="prg" style="width:'+b.p+'%"></span>':'')+'</div>'+
+     (val("notesign")&&b.n&&!lista?'<button class="tab" data-a="notes" data-i="'+i+'">✳ '+(b.n>99?"99+":b.n)+'</button>':'')+
+     '<button class="dots" data-a="menu" data-i="'+i+'">···</button>'+
+     '<div><div class="t">'+esc(b.t)+'</div><div class="a">'+esc(b.a)+
+     (lista&&b.n?' · ✳ '+b.n+' notas':'')+'</div></div></div>'});
+  h+='</div></div></div>';
+  if(st.menu!==null){var b=BOOKS[st.menu];
+    h+='<div class="ovl" data-a="close"></div><div class="pop" style="top:120px;left:50%;transform:translateX(-50%);width:270px;gap:2px">'+
+     '<div class="lbl" style="margin-bottom:8px">'+esc(b.t)+'</div>'+
+     '<button class="lnk" data-a="book" data-i="'+st.menu+'" style="padding:8px 0">Ler</button>'+
+     '<button class="lnk" data-a="send" data-i="'+st.menu+'" style="padding:8px 0">Enviar para Kindle</button>'+
+     '<button class="lnk" data-a="close" style="padding:8px 0">Ver notas ('+b.n+')</button>'+
+     '<button class="lnk dan" data-a="close" style="padding:8px 0">Remover da biblioteca</button></div>'}
+  return h}
+function vReader(){
+  var th=rd("readertheme"),f=rd("font")==="Serifada"?"var(--serif)":"var(--sans)";
+  var hl={Amarelo:"#F2E07A",Rosa:"#F3C3D2",Verde:"#BFE0B4"}[val("hlcolor")];
+  var bg=th==="Sépia"?"#F3EAD8":th==="Noite"?"#1B1917":"var(--card)";
+  var fg=th==="Noite"?"#D8D2C6":"var(--ink)";
+  var h='<div class="reader">'+
+   '<div class="rtop"><button class="lnk" data-a="go" data-r="lib" style="font-size:12.5px">← Biblioteca</button>'+
+   '<span class="ti">Estudo de Viabilidade</span><span>Ana Duarte</span><span class="spacer"></span><span>80% · cap. 4</span></div>'+
+   '<div class="rscroll" style="--rbg:'+bg+'"><div class="rbody" style="--rf:'+f+';--rfg:'+fg+';--hl:'+hl+
+   ';--rw:'+rd("width")+'px;font-size:'+rd("size")+'px;line-height:'+(+rd("leading")).toFixed(1)+'">'+
+   PAGE.map(function(p){return"<p>"+p+"</p>"}).join("")+'</div></div>'+
+   '<div class="rbar"><button class="btn sec" data-a="aa" style="font-family:var(--serif);font-size:15px;padding:7px 16px">Aa</button>'+
+   '<button class="btn sec" data-a="hl">Destacar</button>'+
+   '<span class="note">'+(dirty()?'Alterado <b>só neste livro</b>.':'Usando seus padrões de leitura.')+'</span>'+
+   (dirty()?'<button class="btn" data-a="usedef">Usar como padrão</button><button class="lnk" data-a="undo">Descartar</button>':'')+
+   '</div></div>';
+  if(st.pop){
+    var pan='<div class="lbl" style="margin-bottom:6px">Leitura</div>'+
+     ["font","size","leading","width","readertheme"].map(function(k){
+       return'<div class="row"><div><div class="lb">'+SM[k].lb+'</div></div>'+ctl(SM[k],"book")+'</div>'}).join("")+
+     '<p style="font-size:11.5px;color:var(--ink-3);line-height:1.5;margin:10px 0 0">Vale só para este livro até você tocar em “Usar como padrão”.</p>';
+    h+=st.altPanel==="drawer"
+      ?'<div class="ovl" data-a="aa"></div><div class="drawer">'+pan+'</div>'
+      :'<div class="ovl" data-a="aa" style="background:transparent"></div><div class="pop" style="left:22px;bottom:66px">'+pan+'</div>'}
+  return h}
+function vPrefs(){
+  var dr=diff();
+  var h=top()+'<div class="scroll"><div class="pad"><div class="col">'+
+   '<h1 class="t">Preferências</h1><p class="sub">Tudo que você ajustou, e onde ajustar o resto.</p>'+
+   '<div class="acct"><span class="av">E</span><div><div class="nm">Erik Camargo</div>'+
+   '<div class="em">erik@vynce.com.br · Plano anual</div></div>'+
+   '<button class="lnk" data-a="go" data-r="conta">Conta e segurança →</button></div>'+
+   '<h2 class="s">Diferente do padrão · '+dr.length+'</h2>';
+  if(!dr.length)h+='<p style="font-family:var(--serif);font-style:italic;font-size:14px;color:var(--ink-3);line-height:1.6;padding:18px 0;margin:0">Nada foi alterado ainda. Quando você mudar algo aqui, no leitor ou durante uma conversão, aparece nesta lista — com a origem e o aparelho.</p>';
+  else dr.forEach(function(x){var o=st.origin[x.k]||{};
+    h+='<div class="row chg"><div><div class="lb">'+esc(x.lb)+' · '+esc(fmtv(x.k,val(x.k)))+
+     (x.esc==="aparelho"?'<span class="badge dev">este aparelho</span>':'')+
+     '<button class="revert" data-a="revert" data-k="'+x.k+'">voltar ao padrão</button></div>'+
+     '<div class="ds">'+(o.o?esc(o.o)+" · "+esc(o.dv):"padrão alterado")+'</div></div>'+
+     '<button class="lnk" data-a="go" data-r="sec" data-sec="'+x.sec+'">Ir →</button></div>'});
+  h+='<h2 class="s">Seções</h2><div class="idx">';
+  SEC.forEach(function(s){var n=S.filter(function(x){return x.sec===s.k}).length;
+    var ex=s.k==="conexoes"?' · '+(st.kindle==="on"?'<span style="color:var(--good)">conectado</span>':
+      st.kindle==="error"?'<span style="color:var(--crit)">com erro</span>':'<span>não conectado</span>'):"";
+    h+='<button data-a="go" data-r="sec" data-sec="'+s.k+'"><div><div class="nm">'+s.n+'</div>'+
+      '<div class="dc">'+s.d+ex+'</div></div><span class="ct">'+n+'</span></button>'});
+  return h+'</div></div></div></div>'}
+function vSec(sk){
+  var s=SEC.filter(function(x){return x.k===sk})[0],L=S.filter(function(x){return x.sec===sk});
+  var h=top()+'<div class="scroll"><div class="pad"><div class="col">'+
+   '<button class="lnk" data-a="go" data-r="prefs" style="font-size:12.5px;display:inline-block;margin-bottom:20px">← Preferências</button>'+
+   '<h1 class="t">'+s.n+'</h1><p class="sub">'+s.d+'</p>';
+  if(sk==="aparencia")h+='<div class="strip"><span class="dot d-off"></span>Quase tudo aqui é deste aparelho — cada um tem o seu.</div>';
+  if(sk==="conexoes"){
+    h+='<h2 class="s">Kindle</h2>';
+    if(st.kindle==="off")h+='<div class="strip"><span class="dot d-off"></span>Não conectado</div>'+
+      '<p style="font-size:13.5px;color:var(--ink-2);line-height:1.6;margin:0 0 16px">Configure quando for enviar seu primeiro livro — leva um minuto e termina com um teste real.</p>'+
+      '<button class="btn sec" data-a="wiz">Configurar Kindle</button>';
+    else{var er=st.kindle==="error";
+      h+='<div class="strip'+(er?" err":"")+'"><span class="dot '+(er?"d-err":"d-ok")+'"></span>'+
+       (er?"Último envio falhou":"Conectado · último envio há 2 dias")+
+       '<span class="spacer" style="flex:1"></span><button class="lnk" data-a="ktest">Testar</button></div>';
+      if(er)h+='<p style="font-size:13.5px;color:var(--ink-2);line-height:1.6;margin:0 0 8px">A Amazon recusou o remetente <b>'+esc(st.ksender)+'</b>. Corrija para o e-mail aprovado na sua conta Amazon e teste de novo.</p>';
+      h+='<div class="row"><div><div class="lb">Enviar para</div><div class="ds">Endereço do seu Kindle.</div></div>'+
+       '<input class="inp" data-f="kmail" value="'+esc(st.kmail)+'"></div>'+
+       '<div class="row"><div><div class="lb">Remetente aprovado</div><div class="ds">A Amazon só aceita arquivos vindos deste endereço.</div></div>'+
+       '<input class="inp'+(er?" err":"")+'" data-f="ksender" value="'+esc(st.ksender)+'"></div>'}}
+  h+=L.filter(function(x){return !x.adv}).map(function(x){return row(x)}).join("");
+  var adv=L.filter(function(x){return x.adv});
+  if(adv.length)h+='<div style="margin-top:18px"><button class="lnk" data-a="adv" style="font-family:var(--mono);font-size:11.5px">Ajustes avançados '+(st.adv?"↑":"↓")+'</button>'+
+    (st.adv?'<div style="margin-top:8px">'+adv.map(function(x){return row(x)}).join("")+'</div>':'')+'</div>';
+  if(sk==="conexoes"&&st.kindle!=="off")h+='<div class="dz"><h5>Desconectar</h5>'+
+   '<p style="margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.6">Remove os endereços salvos de todos os seus aparelhos. Os arquivos já enviados permanecem no seu Kindle.</p>'+
+   '<div><button class="lnk dan" data-a="kdisc">Desconectar Kindle</button></div></div>';
+  if(sk==="dados"){
+    h+='<h2 class="s">Espaço</h2><div class="quota"><i style="width:52%;background:var(--ink)"></i>'+
+     '<i style="width:19%;background:var(--ink-3)"></i><i style="width:8%;background:var(--warn)"></i></div>'+
+     '<div class="qleg"><span><i style="background:var(--ink)"></i>Livros 6,4 GB</span>'+
+     '<span><i style="background:var(--ink-3)"></i>Originais 2,3 GB</span>'+
+     '<span><i style="background:var(--warn)"></i>Notas e capas 0,9 GB</span>'+
+     '<span style="color:var(--ink-2)">9,6 de 20 GB</span></div>'+
+     '<div class="row"><div><div class="lb">Baixados neste aparelho<span class="badge dev">este aparelho</span></div>'+
+     '<div class="ds">8 livros · 740 MB. Liberar não apaga nada: eles voltam quando você abrir.</div></div>'+
+     '<button class="btn sec" data-a="free">Liberar</button></div>'+
+     '<div class="row"><div><div class="lb">Exportar biblioteca e notas</div>'+
+     '<div class="ds">Metadados, notas, destaques e coleções em formato aberto.</div></div>'+
+     '<button class="btn sec" data-a="export">Exportar…</button></div>'+
+     '<div class="dz"><h5>Ações irreversíveis</h5><div style="display:flex;gap:24px;flex-wrap:wrap">'+
+     '<button class="lnk dan" data-a="resetall">Restaurar preferências…</button>'+
+     '<button class="lnk dan" data-a="danger">Apagar biblioteca…</button></div>';
+    if(st.danger==="del")h+='<div class="confirm"><p><b>Apagar sua biblioteca?</b> Isto acontece <b>em todos os seus aparelhos</b> e não pode ser desfeito.</p>'+
+     '<ul><li><b>Serão apagados:</b> 214 livros, 1.482 notas, 96 tags, 18 coleções</li>'+
+     '<li><b>Não serão apagados:</b> sua conta, seu plano e o que já foi enviado ao Kindle</li></ul>'+
+     '<p style="color:var(--ink-3)">Seus outros 2 aparelhos serão atualizados assim que se conectarem.</p>'+
+     '<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn sec" data-a="export">Exportar primeiro</button>'+
+     '<button class="btn dan" data-a="delok">Apagar em todos os aparelhos</button>'+
+     '<button class="lnk" data-a="dcancel">Cancelar</button></div></div>';
+    if(st.danger==="reset")h+='<div class="confirm"><p><b>Restaurar preferências.</b> Escolha o alcance — a resposta muda o que acontece nos seus outros aparelhos.</p>'+
+     '<p style="color:var(--ink-3)">Biblioteca, notas, coleções e conexões não são afetadas.</p>'+
+     '<div style="display:flex;gap:12px;flex-wrap:wrap"><button class="btn sec" data-a="rdev">Só neste aparelho</button>'+
+     '<button class="btn dan" data-a="racct">Na conta inteira</button><button class="lnk" data-a="dcancel">Cancelar</button></div></div>';
+    h+='</div>'}
+  return h+'</div></div></div>'}
+function vConta(){
+  var h=top()+'<div class="scroll"><div class="pad"><div class="col">'+
+   '<button class="lnk" data-a="go" data-r="prefs" style="font-size:12.5px;display:inline-block;margin-bottom:20px">← Preferências</button>'+
+   '<h1 class="t">Conta e segurança</h1><p class="sub">Quem você é para o Mekora, e onde você entrou.</p>'+
+   '<div class="acct"><span class="av">E</span><div><div class="nm">Erik Camargo</div>'+
+   '<div class="em">erik@vynce.com.br</div></div><button class="lnk" data-a="noop">Editar</button></div>'+
+   '<div class="row"><div><div class="lb">Plano</div><div class="ds">Anual, renova em 4 de março de 2027.</div></div>'+
+   '<button class="lnk" data-a="noop">Gerenciar</button></div>'+
+   '<div class="row"><div><div class="lb">Senha</div><div class="ds">Alterada há 8 meses.</div></div>'+
+   '<button class="lnk" data-a="noop">Alterar</button></div>'+
+   '<div class="row"><div><div class="lb">Verificação em duas etapas</div>'+
+   '<div class="ds">Pede um código ao entrar num aparelho novo.</div></div>'+
+   '<button class="sw'+(st.f2a?" on":"")+'" data-a="f2a"><i></i></button></div>'+
+   '<h2 class="s">Aparelhos · '+st.devices.length+'</h2>';
+  st.devices.forEach(function(d,i){
+    h+='<div class="dev-row"><div><div class="dn">'+esc(d.n)+(d.here?' <span class="here">aqui</span>':'')+
+     (d.unk?' <span class="badge warn">não reconhecido</span>':'')+'</div>'+
+     '<div class="dm">'+d.loc+' · '+d.when+(d.dl?' · '+d.dl+' livros baixados':'')+'</div></div>'+
+     (d.here?'<button class="lnk" data-a="logout">Sair</button>'
+       :'<button class="lnk dan" data-a="endsess" data-i="'+i+'">Encerrar</button>')+'</div>'});
+  h+='<div class="dz"><h5>Ações irreversíveis</h5><div><button class="lnk dan" data-a="noop">Apagar conta e todos os dados</button></div>';
+  if(st.danger==="logout")h+='<div class="confirm"><p><b>Sair desta conta?</b> Os <b>8 livros baixados</b> serão removidos deste aparelho. Sua biblioteca, notas e progresso continuam na sua conta.</p>'+
+   '<p style="color:var(--ink-3)">3 anotações ainda não foram enviadas.</p>'+
+   '<div style="display:flex;gap:12px;flex-wrap:wrap"><button class="btn sec" data-a="dcancel">Esperar enviar</button>'+
+   '<button class="btn dan" data-a="dcancel">Sair mesmo assim</button></div></div>';
+  return h+'</div></div></div></div>'}
+function vConv(){
+  return top()+'<div class="scroll"><div class="pad"><div class="col">'+
+   '<h1 class="t">Importar arquivo</h1><p class="sub">Ajuste o que vale para este arquivo. Se quiser, guarde como padrão.</p>'+
+   '<div class="filecard"><span class="ic">PDF</span><div><div style="font-size:14px;font-weight:600">Relatório Anual 2026.pdf</div>'+
+   '<div style="font-size:12.5px;color:var(--ink-3);margin-top:3px">18 MB · 214 páginas · escaneado, sem texto selecionável</div></div></div>'+
+   ["format","ocr"].map(function(k){return row(SM[k])}).join("")+
+   '<div style="margin-top:18px"><button class="lnk" data-a="adv" style="font-family:var(--mono);font-size:11.5px">Ajustes avançados '+(st.adv?"↑":"↓")+'</button>'+
+   (st.adv?'<div style="margin-top:8px">'+["ocrlang","quality"].map(function(k){return row(SM[k])}).join("")+'</div>':'')+'</div>'+
+   '<div class="strip" style="margin-top:26px"><button class="sw'+(st.convDef?" on":"")+'" data-a="convdef"><i></i></button>'+
+   '<span>Usar como padrão para os próximos arquivos</span></div>'+
+   (st.convDef?'<p style="font-size:12.5px;color:var(--ink-3);line-height:1.55;margin:0 0 18px">Vale para os próximos arquivos; os 34 já convertidos continuam como estão.</p>':'')+
+   '<div style="display:flex;gap:12px;margin-top:12px"><button class="btn" data-a="convert">Converter</button>'+
+   '<button class="btn sec" data-a="go" data-r="lib">Cancelar</button></div>'+
+   '</div></div></div>'}
+
+/* ══ busca ══ */
+var ACTS=[{lb:"Testar conexão com o Kindle",sec:"conexoes",syn:"kindle testar conexão envio"},
+ {lb:"Exportar biblioteca e notas",sec:"dados",syn:"exportar backup levar"},
+ {lb:"Apagar biblioteca",sec:"dados",syn:"apagar excluir remover deletar"},
+ {lb:"Aparelhos e sessões",rt:"conta",syn:"aparelho dispositivo sessão sair segurança login"},
+ {lb:"Alterar senha",rt:"conta",syn:"senha segurança"}];
+function res(){var q=(st.palq||"").toLowerCase().trim();if(!q)return[];var o=[];
+  S.forEach(function(x){if((x.lb+" "+x.syn+" "+x.sec).toLowerCase().indexOf(q)>-1)
+    o.push({lb:x.lb,pth:SEC.filter(function(s){return s.k===x.sec})[0].n,sec:x.sec,k:x.k})});
+  ACTS.forEach(function(a){if((a.lb+" "+a.syn).toLowerCase().indexOf(q)>-1)
+    o.push({lb:a.lb,pth:a.rt?"Conta":SEC.filter(function(s){return s.k===a.sec})[0].n,sec:a.sec,rt:a.rt,act:1})});
+  return o.slice(0,9)}
+function vPal(){var rs=res();
+  var h='<div class="palwrap" data-a="palbg"><div class="pal"><div class="pal-in"><span style="color:var(--ink-3)">⌕</span>'+
+   '<input id="palq" placeholder="Buscar um ajuste…" value="'+esc(st.palq||"")+'" autocomplete="off"></div><div class="pal-res">';
+  if(!st.palq)h+='<div class="pal-empty">Digite o que você quer mudar. Funciona com sinônimos: “letra”, “apagar”, “sem rede”, “aparelho”.</div>';
+  else if(!rs.length)h+='<div class="pal-empty">Nada com esse nome. Tente “ocr”, “tema”, “aparelho” ou “espaço”.</div>';
+  else{var last="";rs.forEach(function(r,i){
+    if(r.pth!==last){h+='<div class="pal-g">'+r.pth+'</div>';last=r.pth}
+    h+='<div class="pal-r'+(i===st.palsel?" on":"")+'" data-a="palgo" data-i="'+i+'"><span>'+esc(r.lb)+'</span>'+
+     '<span class="pth">'+(r.act?"ação":"ajuste")+'</span></div>'})}
+  return h+'</div></div></div>'}
+function vWiz(){var s=st.wiz.s,d="";for(var i=1;i<=3;i++)d+='<i class="'+(i<=s?"on":"")+'"></i>';
+  var h='<div class="wiz"><div class="wizbox"><div style="display:flex;align-items:center;gap:14px">'+
+   '<span class="lbl">Configurar Kindle · passo '+s+' de 3</span><span class="spacer" style="flex:1"></span>'+
+   '<span class="wizdots">'+d+'</span></div>';
+  if(s===1)h+='<h1 class="t">Qual é o endereço do seu Kindle?</h1>'+
+   '<p class="sub" style="margin:0">Está em Amazon › Conteúdo e dispositivos › Preferências. Termina em @kindle.com.</p>'+
+   '<input class="inp" data-f="mail" value="'+esc(st.wiz.mail)+'" placeholder="seu_id@kindle.com">'+
+   '<div style="display:flex;gap:14px;align-items:center"><button class="btn" data-a="wnext">Continuar</button>'+
+   '<button class="lnk" data-a="wcancel">Cancelar</button></div>';
+  if(s===2)h+='<h1 class="t">Autorize o Mekora a enviar</h1>'+
+   '<p class="sub" style="margin:0">A Amazon só aceita arquivos vindos de um endereço que você aprovou. Adicione o seu e-mail à lista de remetentes aprovados na sua conta Amazon.</p>'+
+   '<input class="inp" data-f="sender" value="'+esc(st.wiz.sender)+'" placeholder="seu@email.com">'+
+   '<div style="display:flex;gap:14px;align-items:center"><button class="btn" data-a="wnext">Continuar</button>'+
+   '<button class="lnk" data-a="wback">Voltar</button></div>';
+  if(s===3)h+='<h1 class="t">Vamos testar antes de terminar</h1>'+
+   '<p class="sub" style="margin:0">Enviamos um arquivo pequeno para o seu Kindle. Sem isso, você só descobriria o erro dias depois.</p>'+
+   (st.wiz.test==="ok"?'<div class="strip"><span class="dot d-ok"></span>Chegou. A conexão está funcionando.</div>'+
+     '<div><button class="btn" data-a="wdone">Concluir e enviar o livro</button></div>'
+    :st.wiz.test==="run"?'<div class="strip"><span class="dot d-wait"></span>Enviando teste…</div>'
+    :'<div><button class="btn" data-a="wtest">Enviar teste</button></div>');
+  return h+'</div></div>'}
+
+/* ══ desenho ══ */
+var TOK={Escuro:{"--canvas":"#201E1B","--card":"#2A2724","--ink":"#F1EEE8","--ink-2":"#B9B2A6","--ink-3":"#867F74",
+ "--rule":"#3B372F","--rule-2":"#332F29","--bench-2":"#1B1917","--bench-3":"#0C0B0A","--slab":"#2A2724"},
+ Claro:{"--canvas":"#F1EEE8","--card":"#FCFBF8","--ink":"#141311","--ink-2":"#55504A","--ink-3":"#8A857C",
+ "--rule":"#C6C0B1","--rule-2":"#E4E0D6","--bench-2":"#E7E3D9","--bench-3":"#D2CCBE","--slab":"#141311"}};
+function draw(){
+  var a=$("app"),r=st.route.v,h="";
+  if(r==="lib")h=vLib();else if(r==="reader")h=vReader();else if(r==="prefs")h=vPrefs();
+  else if(r==="sec")h=vSec(st.route.sec);else if(r==="conta")h=vConta();else h=vConv();
+  if(st.wiz)h+=vWiz();
+  if(st.pal!==null&&st.pal!==undefined)h+=vPal();
+  if(st.toast)h+='<div class="toast">'+esc(st.toast)+'</div>';
+  a.innerHTML=h;
+  var t=val("theme"),tk=TOK[t];
+  Object.keys(TOK.Claro).forEach(function(p){tk?a.style.setProperty(p,tk[p]):a.style.removeProperty(p)});
+  a.dataset.w=devCls();
+  $("ndiff").textContent=diff().length;
+  var q=$("palq");if(q){q.focus();q.setSelectionRange(q.value.length,q.value.length)}
+  drawRig();drawSide();
+}
+function drawRig(){
+  $("devsw").innerHTML=DEVS.map(function(d){
+    return'<button data-d="'+d.k+'" aria-pressed="'+(st.dev===d.k)+'">'+d.n+'</button>'}).join("");
+  var s=SCEN.filter(function(x){return x.k===st.scen})[0];
+  $("scenlabel").textContent=s?"cenário "+s.k+" · "+s.t:"";
+}
+var ANN={lib:{h:"Biblioteca",t:"Se o caminho para Preferências é achável sem rótulo, e se o ··· é onde se procura enviar para o Kindle.",
+  w:"É a tela de onde se sai para tudo. Três entradas: busca, avatar e o menu do item.",
+  d:"Entradas definidas na seção 15 do caderno: sem menu suspenso no avatar.",
+  f:"Ninguém encontra Preferências em 5 segundos."},
+ reader:{h:"Leitor",t:"A pessoa acha o Aa sem sair do livro, e entende que a mudança vale só aqui.",
+  w:"Tipografia é o ajuste mais usado do produto. Ajustar sem ver o texto é navegar de olhos fechados.",
+  d:"Princípio do espelho: a fonte da verdade é o contexto; Preferências reflete.",
+  f:"A pessoa sai do leitor para procurar, ou acha que mudou o padrão de todos os livros."},
+ prefs:{h:"Preferências",t:"O diário responde “o que eu mudei?” antes de qualquer navegação.",
+  w:"Depois do primeiro mês ninguém vem aqui configurar — vem desfazer.",
+  d:"Modelo E: conta no cabeçalho, diário no corpo, seis seções por consequência.",
+  f:"A pessoa ignora o diário e navega pelas seções mesmo tendo acabado de mudar algo."},
+ sec:{h:"Seção",t:"As etiquetas de âmbito são lidas antes do erro acontecer.",
+  w:"Cada linha declara a consequência: o que viaja, o que fica, o que só vale para novos arquivos.",
+  d:"Regra de âmbito da Revisão A e o vocabulário de etiquetas.",
+  f:"Trocar de aparelho gera surpresa mesmo com a etiqueta na tela."},
+ conta:{h:"Conta e segurança",t:"Aparelhos e sessões são procurados aqui, não nas seções.",
+  w:"Único instrumento de segurança que a pessoa opera sozinha: local, hora e quanto há baixado.",
+  d:"Conta como cabeçalho com página de profundidade, não item da lista.",
+  f:"A pessoa varre as seis seções antes de olhar o cabeçalho."},
+ conv:{h:"Importar",t:"“Usar como padrão” é entendido como decisão separada da conversão atual.",
+  w:"Ajustes de trabalho pertencem ao momento do trabalho.",
+  d:"Regra 2: “da próxima vez” mora no fluxo.",
+  f:"A pessoa marca “usar como padrão” achando que é obrigatório para converter."}};
+var ALTN={conta:"Um valor só para todos os aparelhos. Simples, mas o corpo bom no desktop fica pequeno no iPad.",
+ classe:"Um valor por classe de tela — a proposta do caderno. Troque de aparelho para sentir.",
+ aparelho:"Cada aparelho com o seu. Nunca surpreende, mas obriga a reconfigurar em cada um."};
+function drawSide(){
+  var el=$("side");el.hidden=!st.side;if(!st.side)return;
+  var sc=SCEN.filter(function(x){return x.k===st.scen})[0],an=ANN[st.route.v]||ANN.lib;
+  el.innerHTML='<div><h4>Cenários de teste</h4><div class="sc" style="margin-top:9px">'+
+   SCEN.map(function(s){return'<button data-s="'+s.k+'" aria-pressed="'+(st.scen===s.k)+'">'+
+     '<span class="n">CENÁRIO '+s.k+'</span><span class="d">'+s.t+'</span></button>'}).join("")+'</div></div>'+
+   (sc?'<div><h4>Passos</h4><ol style="margin-top:9px">'+sc.steps.map(function(p){
+     return'<li class="'+(st.done[st.scen+p[0]]?"ok":"")+'"><i></i><span>'+p[1]+'</span></li>'}).join("")+'</ol></div>':'')+
+   '<div><h4>Anotação · '+an.h+'</h4><div class="an" style="margin-top:9px">'+
+   '<div><b>o que está sendo testado</b><span>'+an.t+'</span></div>'+
+   '<div><b>por que existe</b><span>'+an.w+'</span></div>'+
+   '<div><b>decisão que representa</b><span>'+an.d+'</span></div>'+
+   '<div class="f"><b>sinal de fracasso</b><span>'+an.f+'</span></div></div></div>'+
+   '<div class="alt"><h4>Alternativas em aberto</h4>'+
+   '<div><div style="font-size:12px;color:#D6CFC3;margin-bottom:6px">Escopo do corpo de texto</div>'+
+   '<div class="altseg" id="altsize"><button data-v="conta" aria-pressed="'+(st.altSize==="conta")+'">segue você</button>'+
+   '<button data-v="classe" aria-pressed="'+(st.altSize==="classe")+'">por tela</button>'+
+   '<button data-v="aparelho" aria-pressed="'+(st.altSize==="aparelho")+'">do aparelho</button></div>'+
+   '<p class="note" style="margin:7px 0 0">'+ALTN[st.altSize]+'</p></div>'+
+   '<div><div style="font-size:12px;color:#D6CFC3;margin-bottom:6px">Painel de leitura</div>'+
+   '<div class="altseg" id="altpanel"><button data-v="popover" aria-pressed="'+(st.altPanel==="popover")+'">popover</button>'+
+   '<button data-v="drawer" aria-pressed="'+(st.altPanel==="drawer")+'">drawer</button></div></div></div>';
+}
+
+/* ══ eventos ══ */
+function go(r,sec){st.route={v:r,sec:sec};st.pop=false;st.menu=null;st.danger=false}
+$("app").addEventListener("click",function(e){
+  var el=e.target.closest("[data-a]");if(!el)return;
+  var a=el.dataset.a,k=el.dataset.k,v=el.dataset.v;
+  if(a==="palbg"&&e.target.closest(".pal"))return;
+  if(a==="go"){go(el.dataset.r,el.dataset.sec);if(el.dataset.r==="conta")mark("conta");if(el.dataset.sec)mark("land")}
+  else if(a==="set"){var d=SM[k];set(k,d.t==="sw"?v==="true":d.t==="step"?+v:v,st.route.v==="conv"?"Conversão":"Preferências");
+    if(k==="theme")mark("theme");if(k==="ocr"&&st.route.v==="conv")mark("ocr");toast("Salvo")}
+  else if(a==="bset"){var d2=SM[k];st.book[k]=d2.t==="step"?+v:v;if(k==="size")mark("size")}
+  else if(a==="revert"){rst(k);toast("Voltou ao padrão")}
+  else if(a==="aa"){st.pop=!st.pop;if(st.pop)mark("aa")}
+  else if(a==="usedef"){Object.keys(st.book).forEach(function(x){set(x,st.book[x],"Leitor")});
+    st.book={};mark("dec");toast("Agora é o seu padrão de leitura")}
+  else if(a==="undo"){st.book={};mark("dec");toast("Descartado")}
+  else if(a==="hl"){toast(val("noteonhl")?"Destacado — campo de nota aberto":"Destacado")}
+  else if(a==="book"){go("reader")}
+  else if(a==="notes"){toast(BOOKS[+el.dataset.i].n+" notas · painel de notas fora do escopo deste protótipo")}
+  else if(a==="menu"){st.menu=+el.dataset.i;mark("menu")}
+  else if(a==="close"){st.menu=null}
+  else if(a==="send"){st.menu=null;mark("send");
+    if(st.kindle==="on")toast("Enviado para o seu Kindle");
+    else st.wiz={s:1,mail:st.kmail,sender:st.ksender,test:null}}
+  else if(a==="wiz"){st.wiz={s:1,mail:st.kmail,sender:st.ksender,test:null}}
+  else if(a==="wnext"){st.wiz.s++}else if(a==="wback"){st.wiz.s--}else if(a==="wcancel"){st.wiz=null}
+  else if(a==="wtest"){st.wiz.test="run";draw();setTimeout(function(){st.wiz.test="ok";draw()},900);return}
+  else if(a==="wdone"){st.kmail=st.wiz.mail;st.ksender=st.wiz.sender;st.kindle="on";st.wiz=null;
+    mark("wiz");toast("Kindle conectado · livro enviado")}
+  else if(a==="ktest"){if(st.ksender&&st.ksender.indexOf("@")>-1&&st.ksender!=="antigo@gmail.com"){
+      st.kindle="on";mark("test");toast("Teste chegou ao seu Kindle")}
+    else{st.kindle="error";toast("A Amazon recusou o remetente — corrija o endereço acima")}}
+  else if(a==="kdisc"){st.kindle="off";set("sendafter",false,"Conexões");toast("Kindle desconectado · “enviar após converter” foi desligado")}
+  else if(a==="adv"){st.adv=!st.adv}
+  else if(a==="convdef"){st.convDef=!st.convDef;if(st.convDef)mark("def")}
+  else if(a==="convert"){if(st.convDef)["format","ocr","ocrlang","quality"].forEach(function(x){set(x,val(x),"Conversão")});
+    go("prefs");mark("diary");toast(st.convDef?"Convertido · padrão atualizado":"Convertido")}
+  else if(a==="danger"){st.danger="del";mark("open");mark("read")}
+  else if(a==="resetall"){st.danger="reset"}
+  else if(a==="dcancel"){st.danger=false;mark("out")}
+  else if(a==="delok"){st.danger=false;mark("out");toast("Apagado em todos os aparelhos")}
+  else if(a==="rdev"){st.devv[st.dev]={};st.danger=false;toast("Restaurado neste aparelho")}
+  else if(a==="racct"){st.acct={};st.devv={mac:{},ipad:{}};st.origin={};st.danger=false;toast("Restaurado na conta inteira")}
+  else if(a==="export"){toast("Exportado · 214 livros e 1.482 notas")}
+  else if(a==="free"){toast("740 MB liberados neste aparelho")}
+  else if(a==="f2a"){st.f2a=!st.f2a;toast(st.f2a?"Verificação em duas etapas ligada":"Desligada")}
+  else if(a==="endsess"){st.devices.splice(+el.dataset.i,1);mark("end");toast("Sessão encerrada · downloads daquele aparelho apagados")}
+  else if(a==="logout"){st.danger="logout"}
+  else if(a==="pal"){st.pal="";st.palq="";st.palsel=0;mark("open")}
+  else if(a==="palbg"){st.pal=null}
+  else if(a==="palgo"){var r2=res()[+el.dataset.i];st.pal=null;
+    if(r2.rt)go(r2.rt);else go("sec",r2.sec);
+    if(r2.k&&SM[r2.k].adv)st.adv=true;mark("land");toast("Achou: "+r2.lb)}
+  else if(a==="noop"){toast("Fora do escopo deste protótipo")}
+  draw()});
+$("app").addEventListener("change",function(e){var s=e.target.closest("select[data-k]");if(!s)return;
+  if(s.dataset.p==="book")st.book[s.dataset.k]=s.value;
+  else set(s.dataset.k,s.value,st.route.v==="conv"?"Conversão":"Preferências");
+  toast("Salvo");draw()});
+$("app").addEventListener("input",function(e){
+  if(e.target.id==="palq"){st.palq=e.target.value;st.palsel=0;if(st.palq)mark("type");draw();return}
+  var f=e.target.closest("[data-f]");if(!f)return;
+  if(st.wiz)st.wiz[f.dataset.f]=e.target.value;else st[f.dataset.f]=e.target.value;
+  if(f.dataset.f==="ksender")mark("fix")});
+$("app").addEventListener("keydown",function(e){
+  if(e.target.id!=="palq")return;var rs=res();
+  if(e.key==="ArrowDown"){e.preventDefault();st.palsel=Math.min(rs.length-1,st.palsel+1);draw()}
+  else if(e.key==="ArrowUp"){e.preventDefault();st.palsel=Math.max(0,st.palsel-1);draw()}
+  else if(e.key==="Enter"&&rs[st.palsel]){e.preventDefault();var r2=rs[st.palsel];st.pal=null;
+    if(r2.rt)go(r2.rt);else go("sec",r2.sec);if(r2.k&&SM[r2.k].adv)st.adv=true;mark("land");toast("Achou: "+r2.lb);draw()}
+  else if(e.key==="Escape"){st.pal=null;draw()}});
+addEventListener("keydown",function(e){
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();
+    st.pal="";st.palq="";st.palsel=0;mark("open");draw()}
+  else if(e.key==="Escape"&&st.pal!==null){st.pal=null;draw()}});
+$("devsw").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;
+  st.dev=b.dataset.d;st.pop=false;st.menu=null;mark(st.dev==="ipad"?"dev":"back");
+  draw();toast("Você está no "+devName()+". O que é da conta veio junto; o que é do aparelho, não.");draw()});
+$("sidebtn").addEventListener("click",function(){st.side=!st.side;
+  this.setAttribute("aria-pressed",st.side);drawSide()});
+$("side").addEventListener("click",function(e){
+  var s=e.target.closest("[data-s]");if(s){startScen(s.dataset.s);return}
+  var b=e.target.closest("#altsize button");if(b){st.altSize=b.dataset.v;draw();return}
+  var p=e.target.closest("#altpanel button");if(p){st.altPanel=p.dataset.v;draw()}});
+draw();
+})();
+</script>
+</body>
+</html>
