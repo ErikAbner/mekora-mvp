@@ -210,6 +210,61 @@ select.sel{height:var(--h1);border:1px solid var(--line);border-radius:var(--r1)
 .lcol p{margin:0 0 1em}
 .lcol .hl{background:#f3dd8c;padding:2px 0}
 
+/* ═══ CONHECIMENTO ═══ */
+.kviews{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);
+  border:1px solid var(--line);border-radius:var(--r1);overflow:hidden;margin:var(--s5) 0;max-width:760px}
+.kv{background:var(--paper);padding:11px 13px;text-align:left;display:flex;flex-direction:column;gap:3px}
+.kv:hover{background:var(--paper-2)}
+.kv.on{background:var(--ink);color:var(--paper)}
+.kv b{font-size:13px;font-weight:600}
+.kv span{font-size:11px;opacity:.62;line-height:1.35}
+.klista{display:flex;flex-direction:column;gap:var(--s3);max-width:760px;margin-top:var(--s4)}
+.kdia,.kgrupo{display:flex;align-items:baseline;gap:var(--s3);margin-top:var(--s4);
+  padding-bottom:6px;border-bottom:1px solid var(--line)}
+.kcard{border:1px solid var(--line);border-radius:var(--r1);background:var(--paper);overflow:hidden}
+.kcard.aberto{border-color:var(--ink)}
+.kcab{display:block;width:100%;text-align:left;padding:var(--s4)}
+.kcab:hover{background:var(--paper-2)}
+.ktrecho{margin:0 0 8px;font-family:var(--serif);font-size:15px;line-height:1.5;font-style:italic;
+  color:var(--ink-2);border-left:2px solid var(--acc);padding-left:11px}
+.knota{margin:0 0 11px;font-size:13.5px;line-height:1.6;color:var(--ink)}
+.kmeta{display:flex;flex-wrap:wrap;align-items:center;gap:9px}
+.kliv{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink-2)}
+.kliv i{width:9px;height:12px;border-radius:1px;display:inline-block}
+.kliv.grande{font-size:14px;font-weight:600;color:var(--ink)}
+.kliv.grande i{width:12px;height:16px}
+.ktags{display:inline-flex;gap:5px;flex-wrap:wrap}
+.ktag{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;padding:3px 7px;border-radius:999px;
+  border:1px solid var(--line);color:var(--ink-2)}
+.ktag:hover{border-color:var(--ink);color:var(--ink)}
+.ktag.grande{font-size:11px;padding:6px 11px;display:inline-flex;align-items:center;gap:7px}
+.ktag.grande span{font-family:var(--ui);opacity:.5}
+.ktag.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.ktag.on span{opacity:.7}
+.kcx{font-family:var(--mono);font-size:9.5px;color:var(--ink-3);margin-left:auto}
+.knuvem{display:flex;flex-wrap:wrap;gap:7px;max-width:760px;margin:var(--s4) 0 var(--s3)}
+.krel{border-top:1px solid var(--line);padding:var(--s4);background:var(--paper-2);
+  display:flex;flex-direction:column;gap:var(--s3)}
+.krow{border:1px solid var(--line);border-radius:var(--r1);padding:var(--s3);background:var(--paper)}
+.krow.aceita{border-left:3px solid #4f8a4a}
+.krow.recusada{opacity:.55;border-left:3px solid var(--ink-3)}
+.krow-b{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:6px}
+.kforca{display:inline-flex;gap:4px;margin-left:auto}
+.kt{font-family:var(--mono);font-size:9px;background:var(--paper-2);border:1px solid var(--line);
+  border-radius:3px;padding:2px 5px;color:var(--ink-2)}
+.krow-n{margin:0 0 9px;font-size:12.5px;line-height:1.55;color:var(--ink-2)}
+.kacts{display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+.kest{font-size:11.5px;color:var(--ink-2)}
+.kfiltro{display:flex;align-items:center;gap:11px;font-size:13px;padding:9px 13px;background:var(--paper-2);
+  border:1px solid var(--line);border-radius:var(--r1);max-width:760px;margin-bottom:var(--s3)}
+.kdossie{max-width:640px;display:flex;flex-direction:column;gap:var(--s3);margin-top:var(--s4)}
+.klbl2{font-size:12.5px;color:var(--ink-2)}
+.kvazio{max-width:560px;display:flex;flex-direction:column;gap:var(--s3);margin-top:var(--s5);
+  padding:var(--s5);border:1px dashed var(--line);border-radius:var(--r1)}
+.kv-t{margin:0;font-size:17px;font-weight:600}
+.kv-p{margin:0;font-size:13.5px;line-height:1.62;color:var(--ink-2)}
+@media (max-width:640px){.kviews{grid-template-columns:1fr 1fr}.kcx{margin-left:0}}
+
 /* ═══ LEITOR ═══ */
 .leitor{position:fixed;inset:0;z-index:70;display:flex;flex-direction:column;overflow:hidden}
 .licone{width:36px;height:36px;border-radius:var(--r1);display:inline-flex;align-items:center;justify-content:center;
@@ -526,7 +581,7 @@ select.sel{height:var(--h1);border:1px solid var(--line);border-radius:var(--r1)
 </head>
 <body>
 <div id="app"></div>
-<button id="labbtn" aria-label="Abrir o laboratório de decisões">◇ lab<span class="bdg">5 novos</span></button>
+<button id="labbtn" aria-label="Abrir o laboratório de decisões">◇ lab<span class="bdg">7 novos</span></button>
 <div id="lab" hidden></div>
 
 <script>
@@ -596,6 +651,61 @@ var LIVROS=[
 {t:"Sistemas que Aprendem",a:"Arquivo de aula",ini:"SA",c:"#d8c8f7",n:0,p:0,src:"Pessoal"},
 {t:"Organização Espacial",a:"Documento pessoal",ini:"OE",c:"#c8d6f7",n:9,p:41,src:"Pessoal"},
 {t:"Estilo Tipográfico",a:"Robert Bringhurst",ini:"ET",c:"#dff0d0",n:3,p:8,src:"Amazon"}];
+/* ═════════════════════════════════════════════════════════════════
+   CONHECIMENTO
+   O que chega aqui não é tudo que foi destacado: é o que a pessoa
+   levou, pela ponte do leitor. A distinção é o produto — sem ela isto
+   vira o "arquivo que ninguém abre" de que o próprio livro fala.
+   ═════════════════════════════════════════════════════════════════ */
+var CONHEC=[
+{k:"k1",li:4,cap:"2 · Densidade não é quantidade",em:"2026-08-09",
+ tr:"densidade é uma propriedade da tarefa",
+ no:"Eu tratava densidade como propriedade da tela. É da tarefa: a mesma tela é densa para quem procura e esparsa para quem revisa.",
+ tg:["densidade","atenção"]},
+{k:"k2",li:4,cap:"3 · Reconhecer de longe",em:"2026-08-09",
+ tr:"O olho que varre e o olho que lê são o mesmo órgão executando tarefas incompatíveis.",
+ no:"Explica por que o card de livro nunca fecha: ele tenta servir à varredura e à leitura ao mesmo tempo.",
+ tg:["atenção","leitura","cards"]},
+{k:"k3",li:4,cap:"4 · O custo de guardar",em:"2026-08-10",
+ tr:"arquivos pessoais morrem por excesso e não por falta",
+ no:"É o argumento contra salvar tudo por padrão. Guardar precisa custar alguma coisa, nem que seja escrever por quê.",
+ tg:["acúmulo","confiança"]},
+{k:"k4",li:0,cap:"Padrões de navegação",em:"2026-08-06",
+ tr:"o usuário não lê a interface, ele a varre procurando o próximo passo",
+ no:"Mesma ideia do olho que varre, dita vinte anos antes e com outro vocabulário.",
+ tg:["atenção","leitura"]},
+{k:"k5",li:5,cap:"2 · A medida da linha",em:"2026-08-04",
+ tr:"entre 45 e 75 caracteres por linha",
+ no:"A faixa não é estética: é onde o olho acha o começo da linha seguinte sem se perder. Usei isso para recusar os 50 do doc.cc.",
+ tg:["leitura","tipografia"]},
+{k:"k6",li:1,cap:"Entrevistas",em:"2026-07-29",
+ tr:"as pessoas descrevem o sistema que gostariam de ter, não o que usam",
+ no:"Vale para as minhas próprias notas: eu registro a intenção, não o comportamento.",
+ tg:["pesquisa","confiança"]},
+{k:"k7",li:2,cap:"Amarelo",em:"2026-07-21",
+ tr:"o amarelo é a cor que mais rápido chama e mais rápido cansa",
+ no:"Por isso o destaque padrão é amarelo e a nota longa não é: uma quer ser vista, a outra quer ser lida.",
+ tg:["cor","atenção"]},
+{k:"k8",li:5,cap:"1 · O corpo do texto",em:"2026-08-03",
+ tr:"tipografia é a arte de não ser notada",
+ no:"Contradiz o k7 só na aparência: chamar e desaparecer são funções de camadas diferentes.",
+ tg:["tipografia","atenção"]}];
+/* Conexão determinística por tag em comum. Não é IA, e o mapa de
+   capacidades é explícito: "começar determinístico por tags". */
+function conexoesDe(k){
+ var a=CONHEC.filter(function(x){return x.k===k})[0];if(!a)return[];
+ return CONHEC.filter(function(b){return b.k!==k})
+  .map(function(b){
+   var comuns=a.tg.filter(function(t){return b.tg.indexOf(t)>-1});
+   return{item:b,tags:comuns,forca:comuns.length}})
+  .filter(function(c){return c.forca>0})
+  .sort(function(x,y){return y.forca-x.forca})}
+function estadoConex(a,b){var id=[a,b].sort().join("|");
+ return st.conex[id]||"sugerida"}
+function tagsTodas(){var m={};
+ CONHEC.forEach(function(c){c.tg.forEach(function(t){m[t]=(m[t]||0)+1})});
+ return Object.keys(m).sort(function(a,b){return m[b]-m[a]||a.localeCompare(b)})
+  .map(function(t){return{t:t,n:m[t]}})}
 var PAG=["A interface que se faz notar cobra um preço em atenção que o conteúdo precisaria receber inteiro.",
 "<span class=\"hl\">A organização espacial é uma forma de memória</span>: lembramos onde algo estava antes de lembrar o que era.",
 "Por isso a estante desarrumada de quem lê é mais navegável, para essa pessoa, do que a biblioteca perfeitamente catalogada de outra."];
@@ -608,7 +718,8 @@ var st={rota:"lib",cat:"geral",menu:false,ctx:null,pal:null,palq:"",bs:"",hit:nu
  prog:0,ancora:null,pos:{},algo:"semantico",corrigindo:null,
  fmtprog:"tempo",escopo:"livro",lq:"",leu:null,valoresLivro:{},
  /* variantes em comparação */
- mNota:"A",mDst:"A",mRev:"A",mConh:"B",mGrid:"A",labSec:"novo",escolhendoCor:null,limiar:null};
+ mNota:"A",mDst:"A",mRev:"A",mConh:"B",mGrid:"A",labSec:"novo",escolhendoCor:null,limiar:null,
+ kView:"tempo",kAberto:null,kFiltro:null,kPergunta:"",kVazio:"n",conex:{}};
 /* preferência do livro atual tem precedência sobre o padrão global */
 function v(k){
  if(st.leitor&&SM[k]&&SM[k].ctx&&st.valoresLivro[k]!==undefined)return st.valoresLivro[k];
@@ -717,6 +828,29 @@ var CEN=[
    setv("corpo","16","cfg");setv("largura","560","cfg")},
  p:[["prop","As faixas encolheram junto com a coluna?"],
     ["lim","Veja o limiar recalculado na aba Grid"]]},
+/* ── conhecimento ── */
+{k:"K1",t:"Conhecimento vazio — o primeiro dia",
+ go:function(){st.rota="conhecimento";st.leitor=false;st.kVazio="0";st.kAberto=null},
+ p:[["ler","O vazio explica por que está vazio?"],["saida","Ele oferece uma saída real?"]]},
+{k:"K2",t:"Conhecimento com uma ideia só",
+ go:function(){st.rota="conhecimento";st.leitor=false;st.kVazio="1";st.kView="tempo"},
+ p:[["sozinha","Uma ideia sem relação parece defeito ou parece cedo?"]]},
+{k:"K3",t:"Relação sugerida: aceitar e recusar",
+ go:function(){st.rota="conhecimento";st.leitor=false;st.kVazio="n";st.kView="tempo";
+   st.kAberto="k2";st.conex={}},
+ p:[["ver","Veja as tags que justificam cada relação"],["aceitar","Aceite uma"],
+    ["outro","Abra o item do outro lado e confirme que valeu nos dois"]]},
+{k:"K4",t:"Por tema: a nuvem e o filtro",
+ go:function(){st.rota="conhecimento";st.leitor=false;st.kVazio="n";st.kView="tag";st.kFiltro=null},
+ p:[["nuvem","A contagem é real, não peso semântico"],["filtrar","Filtre por “atenção”"]]},
+{k:"K5",t:"Dossiê: perguntar em linguagem natural",
+ go:function(){st.rota="conhecimento";st.leitor=false;st.kVazio="n";st.kView="dossie";
+   st.kPergunta="por que guardo demais"},
+ p:[["achou","Achou pelo radical, não pela palavra exata"],
+    ["errar","Tente “blockchain” e veja como ele falha"]]},
+{k:"K6",t:"Por livro: o que sobrou de cada um",
+ go:function(){st.rota="conhecimento";st.leitor=false;st.kVazio="n";st.kView="livro"},
+ p:[["proporcao","“3 de 9 levadas” — a diferença é o produto"]]},
 {k:"E8",t:"Voltar a uma nota de capítulos atrás",e:1,
  go:function(){st.dst=[{k:"c8",pid:"0-1",ini:0,fim:56,cor:"amarelo",nota:"a ordem vivida vence a imposta"}];
   st.leitor=true;st.cap=3;st.painel="notas"},
@@ -802,6 +936,136 @@ function vSimples(titulo,texto,catPonte,rotuloPonte){
   '<div class="acts" style="margin-top:var(--s5)">'+
   '<button class="btn sec" data-a="ponte" data-c="'+catPonte+'">'+rotuloPonte+' →</button></div>'+
   '</div></div></div>'}
+
+/* ═════ CONHECIMENTO ═════ */
+function itensConhec(){
+ return st.kVazio==="0"?[]:st.kVazio==="1"?CONHEC.slice(0,1):CONHEC}
+function cabecaConhec(itens){
+ var vistas=[["tempo","Por tempo","o que andei pensando"],
+   ["livro","Por livro","o que sobrou de cada um"],
+   ["tag","Por tema","onde a ideia se repete"],
+   ["dossie","Por pergunta","o que tenho sobre isso"]];
+ return'<h1 class="t">Conhecimento</h1>'+
+  '<p class="sub">O que você trouxe da leitura — e só isso. Destacar não traz nada para cá; '+
+  'levar é um gesto separado, feito no leitor.</p>'+
+  (itens.length?'<div class="kviews" role="tablist" aria-label="Como organizar">'+
+   vistas.map(function(v){var on=(st.kView||"tempo")===v[0];
+    return'<button class="kv'+(on?" on":"")+'" data-a="kview" data-v="'+v[0]+'" role="tab" aria-selected="'+on+'">'+
+     '<b>'+v[1]+'</b><span>'+v[2]+'</span></button>'}).join("")+'</div>':"")}
+function cartaoConhec(c,mostrarLivro){
+ var b=LIVROS[c.li],conx=conexoesDe(c.k),
+  aceitas=conx.filter(function(x){return estadoConex(c.k,x.item.k)==="aceita"}).length;
+ return'<article class="kcard'+(st.kAberto===c.k?" aberto":"")+'">'+
+  '<button class="kcab" data-a="kabrir" data-k="'+c.k+'" aria-expanded="'+(st.kAberto===c.k)+'">'+
+  '<blockquote class="ktrecho">“'+esc(c.tr)+'”</blockquote>'+
+  '<p class="knota">'+esc(c.no)+'</p>'+
+  '<div class="kmeta">'+(mostrarLivro!==false
+   ?'<span class="kliv"><i style="background:'+b.c+'"></i>'+esc(b.t)+'</span>':"")+
+  '<span class="klbl">'+esc(c.cap)+'</span>'+
+  '<span class="ktags">'+c.tg.map(function(t){
+    return'<button class="ktag" data-a="ktag" data-t="'+t+'">'+t+'</button>'}).join("")+'</span>'+
+  (conx.length?'<span class="kcx">'+conx.length+(conx.length===1?' relação':' relações')+
+    (aceitas?' · '+aceitas+(aceitas===1?' aceita':' aceitas'):"")+'</span>':"")+
+  '</div></button>'+
+  (st.kAberto===c.k?painelRelacoes(c,conx):"")+'</article>'}
+function painelRelacoes(c,conx){
+ if(!conx.length)return'<div class="krel"><p class="vaziop">Nenhuma ideia sua compartilha tema com esta ainda. '+
+  'A relação aparece quando uma segunda leitura tocar em <b>'+esc(c.tg.join("</b> ou <b>"))+'</b>.</p></div>';
+ return'<div class="krel"><div class="lbl">Relações sugeridas por tema — você decide</div>'+
+  conx.map(function(x){var e=estadoConex(c.k,x.item.k),bl=LIVROS[x.item.li];
+   return'<div class="krow '+e+'">'+
+    '<div class="krow-b"><span class="kliv"><i style="background:'+bl.c+'"></i>'+esc(bl.t)+'</span>'+
+    '<span class="kforca" title="tags em comum">'+x.tags.map(function(t){
+      return'<span class="kt">'+t+'</span>'}).join("")+'</span></div>'+
+    '<p class="krow-n">'+esc(x.item.no.slice(0,110))+(x.item.no.length>110?"…":"")+'</p>'+
+    (e==="sugerida"
+     ?'<div class="kacts"><button class="btn sm" data-a="kaceitar" data-a2="'+c.k+'" data-b="'+x.item.k+'">Faz sentido</button>'+
+      '<button class="lnk" data-a="krejeitar" data-a2="'+c.k+'" data-b="'+x.item.k+'">Não é a mesma coisa</button></div>'
+     :'<div class="kacts"><span class="kest">'+(e==="aceita"?"✓ aceita por você":"× recusada")+'</span>'+
+      '<button class="lnk" data-a="kdesfazer" data-a2="'+c.k+'" data-b="'+x.item.k+'">desfazer</button></div>')+
+    '</div>'}).join("")+
+  '<p class="notadica">Relações vêm de <b>tags em comum</b>, calculadas do seu próprio texto. '+
+  'Não há modelo de linguagem envolvido — e por isso elas erram de um jeito previsível.</p></div>'}
+function vConhecimento(){
+ var itens=itensConhec(),v=st.kView||"tempo",h=topo()+'<div class="corpo"><div class="rolo"><div class="pad">';
+ h+=cabecaConhec(itens);
+ if(!itens.length)return h+vazioConhec()+'</div></div></div>';
+ if(st.kFiltro)h+='<div class="kfiltro">Só o tema <b>'+esc(st.kFiltro)+'</b>'+
+  '<button class="lnk" data-a="ktag" data-t="">mostrar tudo</button></div>';
+ var lista=st.kFiltro?itens.filter(function(c){return c.tg.indexOf(st.kFiltro)>-1}):itens;
+ if(v==="tempo"){
+  var pordia={},ordem=[];
+  lista.slice().sort(function(a,b){return a.em<b.em?1:-1}).forEach(function(c){
+   if(!pordia[c.em]){pordia[c.em]=[];ordem.push(c.em)}pordia[c.em].push(c)});
+  h+='<div class="klista">'+ordem.map(function(d){
+   return'<div class="kdia"><span class="klbl">'+dataLonga(d)+'</span></div>'+
+    pordia[d].map(function(c){return cartaoConhec(c)}).join("")}).join("")+'</div>'}
+ else if(v==="livro"){
+  var porliv={},ord=[];
+  lista.forEach(function(c){if(!porliv[c.li]){porliv[c.li]=[];ord.push(c.li)}porliv[c.li].push(c)});
+  ord.sort(function(a,b){return porliv[b].length-porliv[a].length});
+  h+='<div class="klista">'+ord.map(function(li){var b=LIVROS[li];
+   return'<div class="kgrupo"><span class="kliv grande"><i style="background:'+b.c+'"></i>'+esc(b.t)+'</span>'+
+    '<span class="klbl">'+porliv[li].length+' de '+b.n+' anotações levadas</span></div>'+
+    porliv[li].map(function(c){return cartaoConhec(c,false)}).join("")}).join("")+'</div>'}
+ else if(v==="tag"){
+  h+='<div class="knuvem">'+tagsTodas().map(function(t){
+   return'<button class="ktag grande'+(st.kFiltro===t.t?" on":"")+'" data-a="ktag" data-t="'+t.t+'">'+
+    t.t+'<span>'+t.n+'</span></button>'}).join("")+'</div>'+
+   '<p class="notadica" style="max-width:640px">O tamanho do número é a contagem real, não peso semântico. '+
+   'Um tema com uma ocorrência só não é fraco: pode ser recente.</p>'+
+   '<div class="klista">'+lista.map(function(c){return cartaoConhec(c)}).join("")+'</div>'}
+ else{
+  h+=vDossie(lista)}
+ return h+'<div class="acts" style="margin-top:var(--s6)">'+
+  '<button class="btn sec" data-a="ponte" data-c="conhecimento">Gerenciar preferências de conhecimento →</button>'+
+  '</div></div></div></div>'}
+/* Casamento por radical, não por palavra inteira: "guardo" precisa achar
+   "guardar". Corta as duas últimas letras da palavra, que em português
+   carregam quase toda a flexão. É burro de propósito — determinístico e
+   explicável. Erra em palavra curta e não sabe sinônimo: isso está dito
+   na tela, não escondido. */
+var VAZIAS=["para","como","onde","quando","porque","sobre","isso","esse","essa",
+ "aquilo","muito","mais","menos","pelo","pela","meu","minha","seu","sua","que"];
+function radical(w){return w.length>4?w.slice(0,w.length-2):w}
+function termosDe(p){
+ return p.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")
+  .split(/[^a-z0-9]+/).filter(function(w){return w.length>3&&VAZIAS.indexOf(w)<0})}
+function casaPergunta(p,c){
+ var alvo=(c.tr+" "+c.no+" "+c.tg.join(" ")).toLowerCase()
+  .normalize("NFD").replace(/[̀-ͯ]/g,"");
+ var t=termosDe(p);
+ return t.length?t.some(function(w){return alvo.indexOf(radical(w))>-1}):false}
+function vDossie(lista){
+ var p=st.kPergunta||"",resp=p?lista.filter(function(c){
+  return casaPergunta(p,c)}):[];
+ return'<div class="kdossie">'+
+  '<label class="lbl" for="kperg">Sobre o que você quer juntar o que já leu?</label>'+
+  '<input class="inp" id="kperg" value="'+esc(p)+'" placeholder="ex.: atenção, tipografia, por que guardo demais">'+
+  (p?(resp.length
+   ?'<div class="klbl2">'+resp.length+' de '+lista.length+' ideias tocam nisso</div>'+
+    '<div class="klista">'+resp.map(function(c){return cartaoConhec(c)}).join("")+'</div>'+
+    '<div class="acts"><button class="btn sm" data-a="kexportar">Reunir num dossiê</button>'+
+    '<span class="klbl">Markdown, com a origem de cada trecho</span></div>'
+   :'<p class="vaziop">Nada do que você trouxe toca nisso ainda. '+
+    'A busca é literal, nas suas palavras — não há interpretação por trás dela.</p>')
+   :'<p class="notadica" style="max-width:600px">Isto procura <b>nas suas palavras</b>, não no texto dos livros. '+
+    'É uma decisão: o dossiê reúne o que você já pensou, não o que o autor escreveu.<br>'+
+    'O casamento é por radical — “guardo” acha “guardar” —, sem sinônimo e sem modelo de linguagem. '+
+    'Ele erra de um jeito previsível, e é isso que o torna confiável.</p>')+
+  '</div>'}
+function vazioConhec(){
+ return'<div class="kvazio">'+
+  '<p class="kv-t">Você ainda não trouxe nada para cá.</p>'+
+  '<p class="kv-p">Destaques e notas ficam no livro onde nasceram — o Conhecimento só recebe o que você '+
+  'decidir levar, pelo botão <b>Adicionar ao conhecimento</b> no fim de uma nota.</p>'+
+  '<p class="kv-p">A separação é de propósito. Se tudo viesse sozinho, esta tela viraria a lista de '+
+  'tudo que você já marcou, que é exatamente o arquivo que ninguém abre.</p>'+
+  '<div class="acts"><button class="btn" data-a="ler">Abrir um livro e anotar</button>'+
+  '<button class="lnk" data-a="kdemo">Ver com um exemplo</button></div></div>'}
+function dataLonga(iso){
+ var m=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"],
+  p=iso.split("-");return +p[2]+" de "+m[+p[1]-1]}
 
 /* ═════ PERFIL ═════ */
 function vPerfil(){
@@ -1302,7 +1566,7 @@ function draw(){
  else if(st.rota==="perfil")h=vPerfil();
  else if(st.rota==="cfg")h=vCfg();
  else if(st.rota==="canvas")h=vSimples("Canvas","Os livros como objetos que você posiciona. A mesma biblioteca, outro ângulo.","biblioteca","Gerenciar padrões da biblioteca");
- else h=vSimples("Conhecimento","Notas, destaques e as conexões entre o que você leu.","conhecimento","Gerenciar preferências de conhecimento");
+ else h=vConhecimento();
  if(st.leitor)h+=vLeitor();
  if(st.pal!==null)h+=vPal();
  if(st.aviso)h+='<div class="aviso">'+esc(st.aviso)+'</div>';
@@ -1424,7 +1688,8 @@ var ANOT={lib:["Biblioteca","O controle de usuário no topo direito é o único 
 /* ═════ LAB — seções navegáveis ═════ */
 var LABSEC=[["novo","● Novidades"],["visao","Visão"],["chrome","Chrome"],["notas","Notas"],["destaque","Destaque"],
  ["revisao","Revisão"],["conhec","Conhecimento"],["bench","Benchmark"],["acess","Acessib."],
- ["mobile","Mobile"],["densid","Densidade"],["grid","Grid"],["decisoes","Decisões"],["cen","Cenários"]];
+ ["mobile","Mobile"],["densid","Densidade"],["grid","Grid"],["conhecarea","● Conhecimento"],
+ ["decisoes","Decisões"],["cen","Cenários"]];
 function testar(txt,cfg){
  return'<button class="testar" data-teste=\''+JSON.stringify(cfg)+'\'>▸ '+txt+'</button>'}
 function bloco(titulo,status,corpo){
@@ -1455,6 +1720,17 @@ function labConteudo(){
   bloco("Breakpoint derivado da tipografia","aceito",
    '<p class="nota">Os 1180px eram herdados. Agora o limiar sai da tipografia em uso — '+
    '<b>'+limiarMargem()+'px</b> no corpo atual. Mude o corpo no Aa e o número muda junto.</p>')+
+  bloco("Área de Conhecimento — as telas que faltavam","candidato",
+   '<p class="nota">Deixou de ser um espaço reservado. Quatro organizações sobre o mesmo acervo, '+
+   'relações <b>determinísticas por tag</b> com confirmar/rejeitar, dossiê por pergunta e o estado vazio. '+
+   'Desenhada contra o mapa de capacidades do Project OS, que manda <i>“começar determinístico por tags; não prometer IA”</i>.</p>'+
+   '<p class="nota"><b>Onde ver:</b> aba <b>Conhecimento</b> no topo. Detalhe na aba ● Conhecimento aqui do lab.</p>'+
+   testar("Abrir",{rota:"conhecimento",leitor:false,kVazio:"n",kView:"tempo"})+
+   testar("O estado vazio",{rota:"conhecimento",leitor:false,kVazio:"0"}))+
+  bloco("Três defeitos dos modos de nota","aceito",
+   '<p class="nota">Reportados com capturas. A margem empurrava o texto <b>266px</b> para a direita — agora o desvio é '+
+   '<b>0px</b>. Painel e Flutuante não mostravam nada ao serem escolhidos — agora abrem uma nota e dizem o que mudou. '+
+   'E o limiar da margem usava coluna mínima teórica, ligando a margem onde ela não cabia.</p>')+
   bloco("Progresso que não se mexe","aceito",
    '<p class="nota">A âncora {bloco, caractere} passou a mandar, e o pixel obedece. '+
    'O grid novo aumenta a altura do documento em 190px e o mesmo ponto continua marcando 66%.</p>')+
@@ -1605,6 +1881,47 @@ function labConteudo(){
    '<p class="nota">Medidos e documentados, <b>não implementados</b> — ficaram fora do escopo desta iteração. '+
    'O recuo tem consequência técnica: os 22px entre parágrafos são 396px de altura sem caractere nenhum, '+
    'que afastam o progresso visual do semântico.</p>')}
+ if(s==="conhecarea")return'<p class="nota">A área que faltava. Desenhada contra o '+
+  '<b>mapa de capacidades</b> do Project OS, não contra suposição: lá ela é <b>classe C</b> em tudo — '+
+  'notas, tags, rede e dossiê existem só como protótipo, sem modelo persistente.</p>'+
+  bloco("A regra que veio do mapa, não de mim","aceito",
+   '<p class="nota">O mapa é literal: <i>“o nome ‘rede neural’ excede a evidência: o protótipo mostra grafo '+
+   'determinístico por tags, não IA”</i>, com a recomendação <b>“começar determinístico por tags; não prometer IA”</b>.</p>'+
+   '<p class="nota">Foi seguido ao pé da letra. As relações aqui são calculadas por <b>tag em comum</b>, '+
+   'em JavaScript legível, e a tela mostra <b>quais tags</b> justificam cada uma. Nenhuma delas se aplica sozinha: '+
+   'toda relação nasce <i>sugerida</i> e espera você. É o mesmo confirmar/rejeitar que o repositório já usa.</p>')+
+  bloco("A tese: levar é um gesto separado","candidato",
+   '<p class="nota">Destacar não manda nada para cá. Só chega o que passou pela ponte '+
+   '<i>Adicionar ao conhecimento</i>, no fim de uma nota. A vista <b>Por livro</b> mostra a diferença sem explicar: '+
+   '“3 de 9 anotações levadas”.</p>'+
+   '<p class="nota">A razão está no próprio livro de demonstração: <i>“arquivos pessoais morrem por excesso e não '+
+   'por falta”</i>. Se tudo viesse sozinho, esta tela seria a lista de tudo que você já marcou — o arquivo que ninguém abre.</p>'+
+   testar("Ver a proporção por livro",{rota:"conhecimento",leitor:false,kView:"livro",kVazio:"n"}))+
+  '<p class="nota" style="margin-top:var(--s3)"><b>Quatro organizações, quatro perguntas diferentes:</b></p>'+
+  '<table class="mtz"><thead><tr><th>Vista</th><th>Responde</th><th>Falha quando</th></tr></thead><tbody>'+
+  [["Por tempo","o que andei pensando","o acervo passa de uns meses"],
+   ["Por livro","o que sobrou de cada um","a ideia atravessa livros"],
+   ["Por tema","onde a ideia se repete","as tags não foram escritas com cuidado"],
+   ["Por pergunta","o que tenho sobre isso","a palavra da pergunta não está no seu texto"]].map(function(l){
+   return'<tr><td><b>'+l[0]+'</b></td><td>'+l[1]+'</td><td>'+l[2]+'</td></tr>'}).join("")+'</tbody></table>'+
+  bloco("Busca do dossiê: por radical, e assumidamente burra","provavel",
+   '<p class="nota">A primeira versão era literal e falhou no caso mais óbvio: <b>“por que guardo demais” '+
+   'devolvia zero</b>, com uma nota sobre exatamente isso no acervo — porque “guardo” não é substring de “guardar”.</p>'+
+   '<p class="nota">Agora corta as duas últimas letras da palavra, onde o português guarda quase toda a flexão. '+
+   'Verificado em 8 perguntas, 8 acertos, incluindo o zero correto para “blockchain”.</p>'+
+   '<p class="nota">Ela <b>não</b> sabe sinônimo e erra em palavra curta — e isso está escrito na tela, '+
+   'não escondido. O mapa é claro: <i>“decidir arquitetura local de busca antes de qualquer IA”</i>, '+
+   'e classifica dossiê contextual como risco <b>muito alto</b>.</p>'+
+   testar("Testar o dossiê",{rota:"conhecimento",leitor:false,kView:"dossie",kVazio:"n",kPergunta:"por que guardo demais"}))+
+  bloco("O vazio é a tela mais importante","provavel",
+   '<p class="nota">É o que todo mundo vê primeiro, e onde a tese precisa ser explicada antes de existir acervo. '+
+   'Ele diz por que está vazio, por que a separação existe, e oferece as duas saídas: ler ou ver um exemplo.</p>'+
+   testar("Ver o vazio",{rota:"conhecimento",leitor:false,kVazio:"0"})+
+   testar("Uma ideia só",{rota:"conhecimento",leitor:false,kVazio:"1",kView:"tempo"}))+
+  bloco("O que NÃO foi feito","rejeitado",
+   '<p class="nota">Sem canvas espacial: o mapa marca risco <b>alto</b> e pede modelo espacial e comportamento '+
+   'acessível decididos antes. Sem coleções: o mapa pede <i>“coleção manual separada de tags e redes”</i>, '+
+   'e misturar as três agora seria exatamente o erro apontado. Sem export real do dossiê — o botão avisa que é simulado.</p>');
  if(s==="decisoes")return'<p class="nota">Classificação honesta do estado de cada questão.</p>'+
   [["Nota presa ao trecho, com volta ao parágrafo","aceito","Sobreviveu ao estresse: salto de 3 capítulos de distância continua funcionando."],
    ["Escopo livro × global explícito","aceito","Testado: o valor do livro tem precedência e o global reflete em Configurações."],
@@ -1623,6 +1940,10 @@ function labConteudo(){
    ["Notas de margem como padrão do desktop","provavel","<b>Sobreviveu à densidade, com limites explícitos.</b> Até 5 notas visíveis funcionam com desvio ≤183px e zero sobreposição; acima disso o excedente colapsa num marcador de região. Não é “melhor que o painel”: entrega a mesma quantidade e troca a lista pela posição."],
    ["Painel lateral sob densidade","aceito","Continua sendo o único lugar onde <i>todas</i> as anotações são alcançáveis — 8 de 8 com busca e filtro. É o destino do que não cabe na margem."],
    ["Margem e painel como híbrido","provavel","O marcador colapsado abre o painel filtrado pela região. É a ponte entre os dois; falta testar se a pessoa entende que o marcador é um atalho e não uma perda."],
+   ["Conhecimento recebe só o que foi levado","candidato","<b>A tese da área.</b> Destacar não manda nada; a ponte no fim da nota manda. A vista Por livro mostra a diferença sem explicar — “3 de 9 anotações levadas”. Falta saber se a pessoa entende a separação sem ler o texto do estado vazio."],
+   ["Relações determinísticas por tag","aceito","Veio do mapa de capacidades, não de suposição: <i>“começar determinístico por tags; não prometer IA”</i>. Implementado assim, com as tags que justificam cada relação visíveis e confirmar/rejeitar em toda uma. Verificado: aceitar num item vale no outro extremo."],
+   ["Busca do dossiê por radical","provavel","A versão literal falhava em “por que guardo demais”, com uma nota sobre isso no acervo. Cortar as duas últimas letras resolve — 8 de 8 perguntas, incluindo o zero correto para “blockchain”. Não sabe sinônimo, e a tela diz isso."],
+   ["Canvas espacial no Conhecimento","rejeitado","Não implementado, de propósito. O mapa marca risco <b>alto</b> e pede modelo espacial e comportamento acessível decididos antes. O mundo contínuo já existe no <code>canvas-motion</code> — duplicá-lo aqui criaria uma quarta exploração."],
    ["Breakpoint de 1180px","rejeitado","<b>Substituído por um limiar derivado.</b> Era herdado e conservador demais: desligava a margem em telas onde ela ainda cabia. Agora sai da tipografia em uso — 60 caracteres de coluna + gutter + 40 de nota + respiro. Medido: <b>854px no corpo 16, 1004px no corpo 21</b>."],
    ["Grid de quatro faixas","candidato","Medido no doc.cc e implementado como alternativa B, com o baseline intacto. As faixas são proporções da coluna (0,93× / 1,00× / 1,17× / bleed) e acompanham a largura de leitura — verificado em 640px e em 560px. Falta ler um capítulo inteiro nele para saber se o escape ajuda ou interrompe."],
    ["Bleed na fronteira de capítulo","provavel","Resolve de lado um problema que estava aberto: na rolagem contínua a passagem de capítulo era fraca. A faixa atravessa a tela e carrega a posição no livro. Recua sozinha quando a margem de notas está ligada."],
@@ -1817,6 +2138,20 @@ $("app").addEventListener("click",function(e){
  else if(a==="fecharnota"){st.nota=null}
  else if(a==="conhecimento"){st.nota=null;marcar("conhec");
    aviso("Nota enviada ao Conhecimento — vira um objeto conectável")}
+ /* ── Conhecimento ── */
+ else if(a==="kview"){st.kView=el.dataset.v;st.kAberto=null;
+   if(el.dataset.v!=="tag")st.kFiltro=null}
+ else if(a==="kabrir"){st.kAberto=st.kAberto===el.dataset.k?null:el.dataset.k}
+ else if(a==="ktag"){st.kFiltro=el.dataset.t||null;
+   if(el.dataset.t)st.kView="tag"}
+ else if(a==="kaceitar"||a==="krejeitar"||a==="kdesfazer"){
+   var par=[el.dataset.a2,el.dataset.b].sort().join("|");
+   if(a==="kdesfazer")delete st.conex[par];
+   else{st.conex[par]=a==="kaceitar"?"aceita":"recusada";
+    aviso(a==="kaceitar"?"Relação aceita — passa a valer nos dois lados"
+                        :"Relação recusada — não volta a ser sugerida")}}
+ else if(a==="kdemo"){st.kVazio="n";aviso("Exemplo carregado — 8 ideias de 5 livros")}
+ else if(a==="kexportar"){aviso("Dossiê em Markdown — simulado neste protótipo")}
  else if(a==="irtrecho"){st.cap=+el.dataset.c;st.leu=el.dataset.c+"-"+el.dataset.i;st.painel=null;
    marcar("voltar");aviso("Voltou ao trecho original");
    setTimeout(function(){var p=document.querySelector('[data-p="'+st.leu+'"]');
@@ -1845,7 +2180,10 @@ $("app").addEventListener("input",function(e){
   var n=document.getElementById("lbusca");if(n){n.focus();n.setSelectionRange(p,p)}}
  else if(e.target.id==="qanot"){st.qanot=e.target.value;marcar("achar");
   var p2=e.target.selectionStart;draw();
-  var n2=document.getElementById("qanot");if(n2){n2.focus();n2.setSelectionRange(p2,p2)}}});
+  var n2=document.getElementById("qanot");if(n2){n2.focus();n2.setSelectionRange(p2,p2)}}
+ else if(e.target.id==="kperg"){st.kPergunta=e.target.value;
+  var p3=e.target.selectionStart;draw();
+  var n3=document.getElementById("kperg");if(n3){n3.focus();n3.setSelectionRange(p3,p3)}}});
 /* ── seleção real: converte a Range em offsets de caractere do parágrafo ── */
 function offsetsDaSelecao(p){
  var s=window.getSelection();if(!s||!s.rangeCount)return null;
