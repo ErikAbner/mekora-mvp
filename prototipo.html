@@ -288,8 +288,16 @@ select.sel{height:var(--h1);border:1px solid var(--line);border-radius:var(--r1)
 .grpajuste button{padding:6px 9px;font-size:14px;line-height:1}
 .destaque-corrige{font-weight:600}
 /* notas de margem (desktop largo) */
-.lbody.commargem{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:var(--s6);align-items:start}
+/* ═══ A COLUNA NÃO PODE ANDAR AO LIGAR A MARGEM ═══
+   A faixa esquerda vale (100% + coluna)/2, então a borda direita do texto cai
+   exatamente onde cairia se ele estivesse centrado sozinho: ligar a margem não
+   move uma linha. Ela ocupa o vazio que já existia à direita.
+   Quando esse vazio não dá, .apertada centra o conjunto — o texto anda, mas
+   metade do que andaria, e só nesse caso. */
+.lbody.commargem{display:grid;gap:var(--s6);align-items:start;
+  grid-template-columns:calc((100% + var(--col,640px))/2) 300px}
 .lbody.commargem .lcol{justify-self:end;margin:0}
+.lbody.commargem.apertada{grid-template-columns:minmax(0,1fr) 300px}
 .margem{position:relative;min-height:100%}
 .notamg{position:absolute;left:0;right:0;background:#fff;border:1px solid var(--line);
   border-left:3px solid #f7e08a;border-radius:var(--r1);padding:var(--s3);text-align:left;
@@ -1016,8 +1024,9 @@ function vLeitor(){
  }
  /* ── documento contínuo: o livro inteiro numa rolagem só ── */
  var margem=(st.mNota==="M"&&larguraTela()>=limiarMargem());
- var col=v("largura");
- h+='<div class="lbody'+(margem?" commargem":"")+(st.mGrid==="B"?" gridE":"")+'" id="lbody" data-a="togglechrome">'+
+ var col=+v("largura")||640;   /* v() devolve string: sem o + isso vira concatenação */
+ h+='<div class="lbody'+(margem?" commargem":"")+(margem&&!cabeTextoImovel(col)?" apertada":"")+
+  (st.mGrid==="B"?" gridE":"")+'" id="lbody" data-a="togglechrome" style="--col:'+col+'px">'+
   '<div class="lcol" id="lcol" style="font-size:'+e.corpo+'px;line-height:'+e.el+
   ';font-family:'+e.ff+';color:'+e.fg+';max-width:'+col+'px'+
   /* as faixas do grid nascem da coluna: são proporções, não números soltos */
@@ -1328,26 +1337,31 @@ function draw(){
    1180px era herdado. Aqui ele é calculado: a margem só existe
    enquanto a coluna mantém 60 caracteres e a nota mantém 40.
    ════════════════════════════════════════════════════════════ */
-var MIN_CH_COLUNA=60,MIN_CH_NOTA=40;
+var MIN_CH_NOTA=40,PAD_LEITOR=24,GUTTER=32,MARGEM_W=300;
 function larguraDeChars(n,px,fam){
  var p=document.createElement("span");
  p.style.cssText="visibility:hidden;white-space:nowrap;position:absolute;font:"+px+"px "+(fam||"serif");
  p.textContent="abcdefghijklmnopqrstuvwxyz";document.body.appendChild(p);
  var w=p.getBoundingClientRect().width/26;p.remove();return Math.round(w*n)}
 function limiarMargem(){
- var e=estiloLeitura(),chave=e.corpo+"|"+e.ff;
- /* o cache é por tipografia: mudou o corpo ou a família, o limiar muda junto */
+ /* usa a coluna REALMENTE em uso, não uma mínima teórica: com a coluna em 760
+    a margem exige mais tela do que com 560, e o número precisa dizer isso */
+ var col=+v("largura")||640,chave=col;
  if(st.limiarChave===chave)return st.limiar;
- var colMin=larguraDeChars(MIN_CH_COLUNA,e.corpo,e.ff==="var(--ui)"?"system-ui":"Iowan Old Style,Georgia,serif"),
-  notaMin=larguraDeChars(MIN_CH_NOTA,12.5,"system-ui"),
-  gutter=32,respiro=2*48;
- st.limiarChave=chave;st.limiar=colMin+gutter+notaMin+respiro;
- st.limiarPartes={coluna:colMin,gutter:gutter,nota:notaMin,respiro:respiro};
+ var notaMin=larguraDeChars(MIN_CH_NOTA,12.5,"system-ui"),respiro=2*PAD_LEITOR+16;
+ st.limiarChave=chave;st.limiar=col+GUTTER+Math.max(MARGEM_W,notaMin)+respiro;
+ st.limiarPartes={coluna:col,gutter:GUTTER,nota:Math.max(MARGEM_W,notaMin),respiro:respiro};
  return st.limiar}
 /* largura real da barra de rolagem do corpo do leitor — o bleed depende dela */
 function medirScrollbar(){
  var b=document.getElementById("lbody");if(!b)return;
  document.documentElement.style.setProperty("--sbw",(b.offsetWidth-b.clientWidth)+"px")}
+/* Três degraus, do melhor ao pior:
+   1. texto imóvel  — sobra vazio à direita para a margem inteira
+   2. apertada      — o conjunto se centra; o texto anda, mas metade do que andaria
+   3. sem margem    — abaixo do limiar, as notas voltam para o painel           */
+function larguraInterna(){return larguraTela()-2*PAD_LEITOR-16}
+function cabeTextoImovel(col){return larguraInterna()>=col+2*(GUTTER+MARGEM_W)}
 var DESVIO_MAX=210;   /* acima disto a nota deixa de apontar para nada */
 function desenharMargem(){
  var m=document.getElementById("margem");if(!m)return;
@@ -1566,15 +1580,27 @@ function labConteudo(){
    'A faixa de capítulo agora atravessa a tela inteira e carrega a posição no livro.</p>'+
    testar("Testar o grid editorial",{mGrid:"B",leitor:true,cap:2}))+
   bloco("Breakpoint: 1180px → derivado","aceito",
-   '<p class="nota">Estava herdado desde o começo. Agora é calculado a partir da tipografia em uso, e <b>muda quando você muda o corpo</b>:</p>'+
+   '<p class="nota">Estava herdado desde o começo. Agora sai da <b>coluna realmente em uso</b> — '+
+   'com a coluna em 760 a margem exige mais tela do que com 560, e o número diz isso:</p>'+
    '<table class="mtz"><thead><tr><th>Parcela</th><th>Regra</th><th>Agora</th></tr></thead><tbody>'+
-   [["Coluna","mínimo de "+MIN_CH_COLUNA+" caracteres",(pp.coluna||0)+"px"],
+   [["Coluna","a que você escolheu",(pp.coluna||0)+"px"],
     ["Gutter","fixo",(pp.gutter||0)+"px"],
-    ["Nota","mínimo de "+MIN_CH_NOTA+" caracteres",(pp.nota||0)+"px"],
-    ["Respiro","2 × 48px",(pp.respiro||0)+"px"]].map(function(l){
+    ["Margem","o maior entre 300px e "+MIN_CH_NOTA+" caracteres",(pp.nota||0)+"px"],
+    ["Respiro","padding do leitor + barra de rolagem",(pp.respiro||0)+"px"]].map(function(l){
     return'<tr><td><b>'+l[0]+'</b></td><td>'+l[1]+'</td><td>'+l[2]+'</td></tr>'}).join("")+
    '<tr><td><b>Limiar</b></td><td>soma</td><td class="tot">'+lm+'px</td></tr></tbody></table>'+
-   '<p class="nota">Abaixo disso a margem não cabe sem espremer a coluna ou a nota — e aí ela desliga, com razão declarada em vez de número mágico.</p>')+
+   '<p class="nota">Abaixo disso a margem desliga, com razão declarada em vez de número mágico. '+
+   'A versão anterior usava uma coluna <i>mínima teórica</i> de 60 caracteres e por isso ligava a margem '+
+   'em telas onde a coluna real não deixava espaço — defeito encontrado a 960px.</p>')+
+  bloco("Três degraus, e o texto não anda","aceito",
+   '<p class="nota">Ligar a margem empurrava a coluna <b>266px para a direita</b> e abria um vazio na esquerda. '+
+   'Agora a faixa esquerda vale <code>(100% + coluna)/2</code>, então a borda direita do texto cai exatamente '+
+   'onde cairia se ele estivesse sozinho.</p>'+
+   '<table class="mtz"><thead><tr><th>Degrau</th><th>Quando</th><th>Desvio do texto</th></tr></thead><tbody>'+
+   [["Texto imóvel","sobra vazio à direita para a margem inteira","<b>0px</b>"],
+    ["Apertada","o conjunto se centra","−44px a 1280"],
+    ["Sem margem","abaixo do limiar","as notas voltam ao painel"]].map(function(l){
+    return'<tr><td><b>'+l[0]+'</b></td><td>'+l[1]+'</td><td>'+l[2]+'</td></tr>'}).join("")+'</tbody></table>')+
   bloco("Recuo de parágrafo e papéis tipográficos","aberto",
    '<p class="nota">Medidos e documentados, <b>não implementados</b> — ficaram fora do escopo desta iteração. '+
    'O recuo tem consequência técnica: os 22px entre parágrafos são 396px de altura sem caractere nenhum, '+
@@ -1741,11 +1767,23 @@ $("app").addEventListener("click",function(e){
    st.refazendo=st.corrigindo;st.corrigindo=null;st.sel=null;
    aviso("Selecione o trecho certo — o antigo fica marcado até você confirmar")}
  else if(a==="fimcorrige"){st.corrigindo=null;st.sel=null;marcar("pronto");aviso("Trecho ajustado")}
- else if(a==="grid"){st.mGrid=el.dataset.v;st.reflow=true;
+ else if(a==="grid"){st.mGrid=el.dataset.v;st.reflow=true;st.ctx=null;
    aviso(el.dataset.v==="B"?"Grid de quatro faixas — vá ao capítulo 3":"De volta à coluna única")}
- else if(a==="modonota"){st.mNota=el.dataset.v;st.nota=null;
-   if(el.dataset.v==="M"&&larguraTela()<limiarMargem())
-    aviso("Tela estreita demais para a margem: precisa de "+limiarMargem()+"px")}
+ /* escolheu: o painel de ajuste sai da frente para o resultado aparecer */
+ else if(a==="modonota"){var mv=el.dataset.v;st.mNota=mv;st.nota=null;st.painel=null;st.ctx=null;
+   /* o modo decide ONDE a nota abre — então trocar precisa abrir uma para mostrar */
+   var comNota=st.dst.filter(function(d){return d.nota});
+   if(mv==="M"){
+    if(larguraTela()<limiarMargem())
+     aviso("A tela tem "+larguraTela()+"px e a margem exige "+limiarMargem()+"px — continua no painel");
+    else if(!comNota.length)aviso("Nenhuma nota ainda: destaque um trecho e escreva para vê-la na margem")}
+   else if(!comNota.length)
+    aviso(mv==="A"?"Nenhuma nota ainda: o painel abre ao escrever a primeira"
+                  :"Nenhuma nota ainda: o compositor abre sobre o trecho que você destacar");
+   else if(mv==="A"){st.nota=comNota[0].k;st.painel="notas";
+    aviso("Painel lateral: o trecho continua visível e cabe nota longa")}
+   else if(mv==="C"){st.nota=comNota[0].k;
+    aviso("Compositor flutuante: rápido para uma linha, com saída para o painel")}}
  else if(a==="anotarid"){st.nota=el.dataset.id;st.sel=null}
  /* grupo colapsado: a margem admite que não cabe e entrega ao painel */
  else if(a==="grupomg"){var ks=el.dataset.ks.split(",");
@@ -1897,7 +1935,10 @@ addEventListener("keydown",function(e){
 /* redimensionar também reflui: a âncora manda, o pixel obedece */
 addEventListener("resize",function(){
  if(!st.leitor)return;
- clearTimeout(st.rz);st.rz=setTimeout(function(){reposicionarPelaAncora();
+ clearTimeout(st.rz);st.rz=setTimeout(function(){
+  /* a largura muda os três degraus da margem: precisa redesenhar, não só reposicionar */
+  if(st.mNota==="M")draw();
+  reposicionarPelaAncora();
   if(st.mNota==="M")desenharMargem()},140)});
 $("labbtn").addEventListener("click",function(){st.lab=!st.lab;drawLab()});
 $("lab").addEventListener("click",function(e){
