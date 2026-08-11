@@ -204,6 +204,106 @@ select.sel{height:var(--h1);border:1px solid var(--line);border-radius:var(--r1)
 .lcol p{margin:0 0 1em}
 .lcol .hl{background:#f3dd8c;padding:2px 0}
 
+/* ═══ LEITOR ═══ */
+.leitor{position:fixed;inset:0;z-index:70;display:flex;flex-direction:column;overflow:hidden}
+.licone{width:36px;height:36px;border-radius:var(--r1);display:inline-flex;align-items:center;justify-content:center;
+  font-size:15px;color:var(--ink-2);flex:0 0 36px}
+.licone:hover{background:rgba(26,25,23,.07);color:var(--ink)}
+.licone.on{background:var(--ink);color:#fff}
+.licone.aa{font-family:var(--serif);font-size:17px}
+.ltop,.lbar{display:flex;align-items:center;gap:var(--s2);padding:0 var(--s5);flex:0 0 54px;height:54px;
+  transition:opacity .2s,transform .2s;background:inherit;position:relative;z-index:5}
+.ltop{border-bottom:1px solid rgba(26,25,23,.08)}
+.lbar{border-top:1px solid rgba(26,25,23,.08);gap:var(--s5)}
+.ltop .ti{font-family:var(--serif);font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  margin-left:var(--s2)}
+.ltop .sp{flex:1}
+.oculto{opacity:0;pointer-events:none;transform:translateY(-6px)}
+.lbar.oculto{transform:translateY(6px)}
+.lflut{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);z-index:6;display:flex;gap:var(--s1);
+  background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px;
+  box-shadow:0 10px 30px rgba(26,25,23,.18);transition:opacity .2s}
+.lflut.oculto{opacity:0;pointer-events:none}
+.lborda{position:absolute;top:50%;transform:translateY(-50%);z-index:6;display:flex;flex-direction:column;
+  gap:var(--s1);background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px;
+  box-shadow:0 8px 24px rgba(26,25,23,.14);transition:opacity .2s}
+.lborda.esq{left:14px}.lborda.dir{right:14px}
+.lborda.oculto{opacity:0;pointer-events:none}
+.lbody{flex:1;min-height:0;overflow-y:auto;padding:var(--s7) var(--s5) 96px;cursor:text}
+.lcol{margin:0 auto}
+.lcol .lcap{font-family:var(--ui);font-size:11px;letter-spacing:.13em;text-transform:uppercase;font-weight:600;
+  opacity:.5;margin:0 0 var(--s6)}
+.lcol p{margin:0 0 1.05em}
+.lcol p.alvo{animation:pisca 1.6s ease-out}
+@keyframes pisca{0%,30%{background:rgba(200,72,31,.14)}100%{background:transparent}}
+.lfim{margin-top:var(--s7);padding-top:var(--s5);border-top:1px solid rgba(26,25,23,.1)}
+.dst{padding:2px 0;border-radius:2px;cursor:pointer;background:#f7e08a}
+.dst.rosa{background:#f6c9d8}.dst.verde{background:#c8e6bd}
+.lprog{flex:1;display:flex;flex-direction:column;gap:5px;align-items:center}
+.ltrilho{width:100%;max-width:320px;height:3px;background:rgba(26,25,23,.14);border-radius:2px;overflow:hidden}
+.ltrilho i{display:block;height:100%;background:var(--ink)}
+.lprogtxt{font-size:12px;color:var(--ink-3)}
+.lprogtxt:hover{color:var(--acc)}
+
+/* seleção */
+.selbar{position:fixed;left:50%;transform:translateX(-50%);bottom:96px;z-index:78;background:var(--ink);
+  border-radius:999px;display:flex;align-items:center;gap:2px;padding:5px;
+  box-shadow:0 14px 34px rgba(26,25,23,.34)}
+.selbar button{color:#fff;font-size:13px;padding:8px 14px;border-radius:999px;white-space:nowrap}
+.selbar button:hover{background:rgba(255,255,255,.16)}
+.selbar .cores{display:flex;gap:4px;padding:0 var(--s2);border-left:1px solid rgba(255,255,255,.2);
+  margin-left:var(--s1)}
+.selbar .cor{width:22px;height:22px;border-radius:50%;padding:0;border:2px solid transparent}
+.selbar .cor.amarelo{background:#f7e08a}.selbar .cor.rosa{background:#f6c9d8}.selbar .cor.verde{background:#c8e6bd}
+.selbar .cor.on{border-color:#fff}
+
+/* nota lateral — o trecho continua visível */
+.notaed{position:absolute;top:0;right:0;bottom:0;width:360px;background:#fff;border-left:1px solid var(--line);
+  z-index:76;display:flex;flex-direction:column;box-shadow:-18px 0 46px rgba(26,25,23,.14)}
+.notaed-h{display:flex;align-items:center;padding:var(--s4);border-bottom:1px solid var(--line-2)}
+.notaed-h .lbl{flex:1}
+.notaed-b{padding:var(--s4);display:flex;flex-direction:column;gap:var(--s3);overflow-y:auto}
+.trecho{margin:0;border-left:3px solid #f7e08a;padding:var(--s2) 0 var(--s2) var(--s3);font-family:var(--serif);
+  font-size:14px;line-height:1.55;color:var(--ink-2)}
+.notaentrada{border:1px solid var(--line);border-radius:var(--r1);padding:var(--s3);font:inherit;font-size:14px;
+  line-height:1.55;resize:vertical;color:var(--ink);background:var(--bg-2)}
+.notaentrada:focus{outline:2px solid var(--acc);outline-offset:-1px;background:#fff}
+.notadica{margin:0;font-size:12px;line-height:1.5;color:var(--ink-3)}
+
+/* painéis do leitor */
+.lpanel{position:absolute;top:0;right:0;bottom:0;width:340px;background:#fff;border-left:1px solid var(--line);
+  z-index:75;display:flex;flex-direction:column;box-shadow:-18px 0 46px rgba(26,25,23,.12)}
+.lpanel-h{display:flex;align-items:center;padding:var(--s4);border-bottom:1px solid var(--line-2)}
+.lpanel-h .lbl{flex:1}
+.lpanel-b{padding:var(--s4);overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:var(--s2)}
+.tocit{display:flex;justify-content:space-between;gap:var(--s3);padding:var(--s3);border-radius:var(--r1);
+  font-size:13.5px;color:var(--ink-2)}
+.tocit:hover{background:var(--bg-2);color:var(--ink)}
+.tocit.on{background:var(--bg-3);color:var(--ink);font-weight:600}
+.hit,.anot{display:flex;flex-direction:column;gap:5px;padding:var(--s3);border-radius:var(--r1);
+  border:1px solid var(--line-2);text-align:left;background:#fff}
+.hit:hover,.anot:hover{border-color:var(--ink-4);background:var(--bg-2)}
+.anot mark{font-family:var(--serif);font-size:13px;line-height:1.5}
+.anotnota{font-size:12.5px;color:var(--ink-2);line-height:1.5}
+.vaziop{margin:0;font-size:13px;color:var(--ink-3);line-height:1.6}
+
+/* painel de tipografia */
+.ctx.aa{width:340px}
+.ctx.aa .prev{padding:var(--s3);border-radius:var(--r1);border:1px solid var(--line-2);margin-bottom:var(--s2)}
+.linhactx{display:grid;grid-template-columns:88px minmax(0,1fr);gap:var(--s3);align-items:center;padding:5px 0}
+.linhactx .rot{font-size:12.5px;color:var(--ink-2)}
+.linhactx .seg{width:100%}
+.linhactx .seg button{flex:1;justify-content:center;padding:0 var(--s1)}
+.escopo{margin-top:var(--s3);padding-top:var(--s3);border-top:1px solid var(--line-2)}
+@media (max-width:720px){
+  .notaed,.lpanel{width:100%;top:auto;height:74%;border-left:none;border-top:1px solid var(--line);
+    border-radius:var(--r2) var(--r2) 0 0}
+  .ctx.aa{width:calc(100vw - 32px);right:-8px}
+  .lbody{padding:var(--s5) var(--s4) 110px}
+  .selbar{bottom:auto;top:auto;position:fixed;left:8px;right:8px;transform:none;justify-content:space-between}
+  .selbar button{padding:10px 10px;font-size:12.5px}
+}
+
 /* ═══ BUSCA GLOBAL ═══ */
 .velo{position:fixed;inset:0;background:rgba(26,25,23,.24);z-index:80}
 .pal{position:fixed;top:12vh;left:50%;transform:translateX(-50%);width:min(560px,92%);z-index:81;background:#fff;
@@ -228,6 +328,8 @@ select.sel{height:var(--h1);border:1px solid var(--line);border-radius:var(--r1)
   background:var(--ink);color:#fff;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;
   display:flex;align-items:center;gap:7px;box-shadow:0 8px 24px rgba(26,25,23,.28);opacity:.62}
 #labbtn:hover{opacity:1}
+/* display num seletor de ID vence o [hidden] do browser — precisa ser explícito */
+#lab[hidden]{display:none}
 #lab{position:fixed;top:0;right:0;bottom:0;width:330px;background:#14130f;color:#b6b0a6;z-index:96;
   padding:var(--s5);overflow-y:auto;display:flex;flex-direction:column;gap:var(--s5);
   box-shadow:-18px 0 50px rgba(0,0,0,.34)}
@@ -316,7 +418,8 @@ var S=[
 {k:"fonte",c:"leitura",lb:"Fonte de leitura",ds:"",t:"sel",op:["Literata","Serifada","Sem serifa"],d:"Literata",ctx:1,syn:"fonte tipografia letra"},
 {k:"corpo",c:"leitura",lb:"Tamanho do texto",ds:"",t:"seg",op:["16","18","21"],d:"18",ctx:1,syn:"tamanho corpo letra"},
 {k:"entrelinha",c:"leitura",lb:"Entrelinha",ds:"",t:"seg",op:["1,4×","1,5×","1,8×"],d:"1,5×",ctx:1,syn:"entrelinha espacamento linha"},
-{k:"temaleitor",c:"leitura",lb:"Tema do leitor",ds:"Independente do tema da interface, de propósito.",t:"seg",op:["Papel","Claro","Escuro"],d:"Papel",ctx:1,syn:"tema leitor papel"},
+{k:"largura",c:"leitura",lb:"Largura da coluna",ds:"Linhas muito longas cansam; muito curtas quebram o ritmo.",t:"seg",op:["560","640","760"],d:"640",ctx:1,syn:"largura coluna margem medida"},
+{k:"temaleitor",c:"leitura",lb:"Tema do leitor",ds:"Independente do tema da interface, de propósito.",t:"seg",op:["Papel","Claro","Escuro"],d:"Papel",ctx:1,syn:"tema leitor papel escuro noite"},
 {k:"rolagem",c:"leitura",lb:"Rolagem contínua",ds:"Desligado divide o capítulo em páginas.",t:"sw",d:true,syn:"rolagem paginacao"},
 {k:"vista",c:"biblioteca",lb:"Representação ao abrir",ds:"Canvas, Estante, Lista e Conexões são o mesmo acervo visto de outro ângulo.",t:"seg",op:["Grade","Canvas","Lista"],d:"Grade",ctx:1,syn:"vista representacao grade lista canvas"},
 {k:"densidadecard",c:"biblioteca",lb:"Densidade dos cards",ds:"",t:"seg",op:["Compacta","Confortável"],d:"Confortável",ctx:1,syn:"card densidade"},
@@ -346,10 +449,19 @@ var PAG=["A interface que se faz notar cobra um preço em atenção que o conte�
 
 /* ═════ ESTADO ═════ */
 var st={rota:"lib",cat:"geral",menu:false,ctx:null,pal:null,palq:"",bs:"",hit:null,
- leitor:false,valores:{},aviso:null,de:null,lab:false,layout:"A",cen:null,feito:{},passo:0};
-function v(k){return st.valores[k]!==undefined?st.valores[k]:SM[k].d}
-function setv(k,val,origem){st.valores[k]=val;
- aviso(origem==="ctx"?"Ajustado — vale como padrão a partir de agora":"Salvo")}
+ leitor:false,valores:{},aviso:null,de:null,lab:false,layout:"A",cen:null,feito:{},passo:0,
+ /* leitor */
+ cap:0,chrome:"A",chromeVis:true,painel:null,sel:null,nota:null,destaques:{},marcado:false,
+ fmtprog:"tempo",escopo:"livro",lq:"",leu:null,valoresLivro:{}};
+/* preferência do livro atual tem precedência sobre o padrão global */
+function v(k){
+ if(st.leitor&&SM[k]&&SM[k].ctx&&st.valoresLivro[k]!==undefined)return st.valoresLivro[k];
+ return st.valores[k]!==undefined?st.valores[k]:SM[k].d}
+function setv(k,val,origem){
+ if(origem==="ctx"&&st.escopo==="livro"&&SM[k]&&SM[k].ctx){
+  st.valoresLivro[k]=val;aviso("Aplicado só a este livro")}
+ else{st.valores[k]=val;delete st.valoresLivro[k];
+  aviso(origem==="ctx"?"Agora vale para todos os livros":"Salvo")}}
 var tt;function aviso(m){st.aviso=m;clearTimeout(tt);tt=setTimeout(function(){st.aviso=null;draw()},2400)}
 function irCfg(cat,de,abrir){st.rota="cfg";st.cat=cat;st.de=de||st.de;st.menu=false;st.ctx=null;st.hit=null;
  st.catAberta=abrir!==false;draw()}
@@ -375,7 +487,21 @@ var CEN=[
  p:[["buscar","Digite “kindle” na busca lateral"],["achou","Vá até a linha exata"]]},
 {k:"06",t:"Gerenciar o Kindle pelo status",
  go:function(){st.rota="lib"},
- p:[["status","Ache o status do Kindle na estante"],["gerenciar","Toque em Gerenciar"]]}];
+ p:[["status","Ache o status do Kindle na estante"],["gerenciar","Toque em Gerenciar"]]},
+{k:"07",t:"Leitor: aumentar o texto",
+ go:function(){st.leitor=true;st.ctx=null;st.chromeVis=true},
+ p:[["aa","Ache o controle de tipografia"],["escopo","Decida onde a mudança vale"]]},
+{k:"08",t:"Leitor: destacar e anotar",
+ go:function(){st.leitor=true;st.painel=null;st.sel=null;st.nota=null},
+ p:[["selecionar","Selecione um trecho com o mouse"],["destacar","Destaque"],
+    ["anotar","Anote o que pensou"],["salvarnota","Salve a nota"]]},
+{k:"09",t:"Leitor: reencontrar a nota e voltar ao trecho",
+ go:function(){st.leitor=true;st.destaques={"1-0":{cor:"amarelo",nota:"isto explica por que a estante bagunçada funciona"}};
+  st.cap=2;st.painel=null},
+ p:[["rever","Abra as anotações"],["voltar","Volte ao trecho de origem"]]},
+{k:"10",t:"Leitor: navegar capítulos e ler no escuro",
+ go:function(){st.leitor=true;st.painel=null},
+ p:[["toc","Abra o sumário"],["capitulo","Vá a outro capítulo"],["chrome","Some com os controles tocando no texto"]]}];
 function marcar(i){if(st.cen)st.feito[st.cen+i]=1}
 function comecar(k){var c=CEN.filter(function(x){return x.k===k})[0];if(!c)return;
  st.cen=k;st.feito={};st.menu=false;st.ctx=null;st.pal=null;st.lab=true;c.go();draw()}
@@ -562,26 +688,157 @@ function conteudoCat(){
   '<button class="btn dan sm" data-a="noop">Apagar…</button></div></div></div>';
  return h}
 
-/* ═════ LEITOR ═════ */
+/* ═════ LEITOR ═════
+   Modelos de chrome alternáveis no lab:
+   A  topo+rodapé   B  flutuante mínimo   C  bordas contextuais
+   ══════════════════════════════════════════════════════════ */
+var CAPS=[
+{n:"1 · A estante que ninguém arrumou",ps:[
+ "Havia, no fundo da sala, uma estante que ninguém organizava desde a mudança — e era exatamente por isso que dava para saber onde tudo estava.",
+ "A ordem que se impõe de fora envelhece rápido. A que nasce do uso repetido guarda, em cada lombada fora do lugar, a memória de uma tarde específica: o livro que ficou na mesa porque a conversa não acabou, o que voltou torto porque alguém procurava outra coisa.",
+ "Quem chega de fora vê desleixo. Quem mora ali atravessa a sala no escuro e encontra o volume certo na terceira prateleira, à direita, um pouco inclinado."]},
+{n:"2 · Densidade não é quantidade",ps:[
+ "A organização espacial é uma forma de memória: lembramos onde algo estava antes de lembrar o que era.",
+ "Por isso confundimos com frequência duas perguntas diferentes. “Cabe mais informação aqui?” é uma pergunta sobre a tela. “Consigo encontrar o que preciso?” é uma pergunta sobre a tarefa. A primeira tem resposta técnica; a segunda, não.",
+ "Duas pessoas diante da mesma interface enxergam quantidades diferentes de informação, porque chegam com perguntas diferentes. Uma quer encontrar; a outra quer lembrar. A interface que serve bem à primeira costuma atrapalhar a segunda.",
+ "Foi por isso que abandonamos o inventário completo. Não porque fosse impreciso — era exato — mas porque respondia a uma pergunta que ninguém fazia. O catálogo perfeito de uma casa é inútil para quem mora nela."]},
+{n:"3 · Reconhecer de longe",ps:[
+ "O que restou foi mais modesto e mais útil: um jeito de reconhecer as coisas de longe, e um jeito de chegar perto quando isso importa. Entre os dois, nada.",
+ "Reconhecer de longe exige silhueta, cor, posição — atributos que sobrevivem à distância e ao movimento. Chegar perto exige o oposto: detalhe, precisão, texto legível.",
+ "Interfaces que tentam servir aos dois ao mesmo tempo acabam falhando nos dois. É mais honesto escolher uma distância e construir uma passagem clara para a outra."]}];
+function estiloLeitura(){
+ var t=v("temaleitor");
+ return {bg:t==="Escuro"?"#1c1a17":t==="Claro"?"#ffffff":"#f4f1ea",
+   fg:t==="Escuro"?"#ddd7cb":"#241f19",
+   corpo:{"16":16,"18":18,"21":21}[v("corpo")]||18,
+   el:{"1,4×":1.4,"1,5×":1.55,"1,8×":1.8}[v("entrelinha")]||1.55,
+   ff:v("fonte")==="Sem serifa"?"var(--ui)":"var(--serif)"}}
 function vLeitor(){
- var tema=v("temaleitor"),bg=tema==="Escuro"?"#211f1b":tema==="Claro"?"#fff":"var(--paper)";
- var fg=tema==="Escuro"?"#ded8cd":"#26221c";
- var corpo={"16":16,"18":18,"21":21}[v("corpo")],el={"1,4×":1.4,"1,5×":1.5,"1,8×":1.8}[v("entrelinha")];
- var ff=v("fonte")==="Sem serifa"?"var(--ui)":"var(--serif)";
- return'<div class="leitor" style="background:'+bg+'"><div class="ltop">'+
-  '<button class="lnk" data-a="fecharleitor">← Biblioteca</button>'+
-  '<span class="ti">Organização Espacial</span><span class="sp"></span>'+
-  '<span class="ctxwrap"><button class="btn sec sm" data-a="ctx" data-t="aa" style="font-family:var(--serif);font-size:15px">Aa</button>'+
-  (st.ctx==="aa"?ctxAa():"")+'</span></div>'+
-  '<div class="lbody"><div class="lcol" style="font-size:'+corpo+'px;line-height:'+el+';font-family:'+ff+';color:'+fg+'">'+
-  PAG.map(function(p){return"<p>"+p+"</p>"}).join("")+'</div></div></div>'}
+ var e=estiloLeitura(),cap=CAPS[st.cap],modelo=st.chrome;
+ var mostra=st.chromeVis||st.painel||st.sel;
+ var h='<div class="leitor" style="background:'+e.bg+'" data-chrome="'+modelo+'">';
+ /* ── chrome ── */
+ if(modelo==="A"){
+  h+='<div class="ltop'+(mostra?"":" oculto")+'">'+
+   '<button class="licone" data-a="fecharleitor" aria-label="Voltar à biblioteca" title="Biblioteca">←</button>'+
+   '<span class="ti">Organização Espacial</span><span class="sp"></span>'+
+   btnChrome("toc","☰","Sumário")+btnChrome("busca","⌕","Buscar no livro")+
+   btnChrome("notas","✳","Anotações")+btnMarcador()+
+   '<span class="ctxwrap">'+btnAa()+(st.ctx==="aa"?ctxAa():"")+'</span></div>';
+ }else if(modelo==="B"){
+  h+='<div class="lflut'+(mostra?"":" oculto")+'"><span class="ctxwrap">'+btnAa()+(st.ctx==="aa"?ctxAa():"")+'</span>'+
+   btnChrome("toc","☰","Sumário")+btnChrome("notas","✳","Anotações")+
+   '<button class="licone" data-a="fecharleitor" aria-label="Voltar à biblioteca" title="Biblioteca">←</button></div>';
+ }else{
+  h+='<div class="lborda esq'+(mostra?"":" oculto")+'">'+
+   '<button class="licone" data-a="fecharleitor" aria-label="Voltar à biblioteca">←</button>'+
+   btnChrome("toc","☰","Sumário")+'</div>'+
+   '<div class="lborda dir'+(mostra?"":" oculto")+'"><span class="ctxwrap">'+btnAa()+
+   (st.ctx==="aa"?ctxAa():"")+'</span>'+btnChrome("notas","✳","Anotações")+btnMarcador()+'</div>';
+ }
+ /* ── texto ── */
+ h+='<div class="lbody" data-a="togglechrome"><div class="lcol" id="lcol" style="font-size:'+e.corpo+
+  'px;line-height:'+e.el+';font-family:'+e.ff+';color:'+e.fg+';max-width:'+v("largura")+'px">'+
+  '<h2 class="lcap">'+esc(cap.n)+'</h2>'+
+  cap.ps.map(function(p,i){
+   var id=st.cap+"-"+i,d=st.destaques[id];
+   var txt=esc(p);
+   if(d)txt='<mark class="dst '+(d.cor||"amarelo")+'" data-a="verdestaque" data-id="'+id+'">'+txt+'</mark>';
+   return'<p data-p="'+id+'"'+(st.leu===id?' class="alvo"':'')+'>'+txt+'</p>'}).join("")+
+  '<div class="lfim">'+(st.cap<CAPS.length-1
+   ?'<button class="btn sec sm" data-a="cap" data-i="'+(st.cap+1)+'">Próximo capítulo →</button>'
+   :'<span class="lbl">fim do trecho de demonstração</span>')+'</div>'+
+  '</div></div>';
+ /* ── rodapé (modelo A) ── */
+ if(modelo==="A")h+='<div class="lbar'+(mostra?"":" oculto")+'">'+
+  '<button class="lnk" data-a="cap" data-i="'+Math.max(0,st.cap-1)+'" '+(st.cap?"":'disabled style="opacity:.35"')+'>← anterior</button>'+
+  '<div class="lprog"><div class="ltrilho"><i style="width:'+Math.round((st.cap+1)/CAPS.length*100)+'%"></i></div>'+
+  '<button class="lprogtxt" data-a="fmtprog">'+textoProgresso()+'</button></div>'+
+  '<button class="lnk" data-a="cap" data-i="'+Math.min(CAPS.length-1,st.cap+1)+'" '+(st.cap<CAPS.length-1?"":'disabled style="opacity:.35"')+'>próximo →</button></div>';
+ /* ── seleção ── */
+ if(st.sel)h+=barraSelecao();
+ /* ── painéis laterais ── */
+ if(st.painel)h+=painelLeitor();
+ /* ── nota lateral, preservando o parágrafo à vista ── */
+ if(st.nota)h+=editorNota();
+ return h+'</div>'}
+function btnChrome(p,ic,rot){
+ return'<button class="licone'+(st.painel===p?" on":"")+'" data-a="painel" data-p="'+p+'" aria-label="'+rot+
+  '" title="'+rot+'" aria-pressed="'+(st.painel===p)+'">'+ic+'</button>'}
+function btnMarcador(){
+ return'<button class="licone'+(st.marcado?" on":"")+'" data-a="marcador" aria-label="Marcador" title="Marcador" aria-pressed="'+!!st.marcado+'">'+(st.marcado?"◆":"◇")+'</button>'}
+function btnAa(){
+ return'<button class="licone aa" data-a="ctx" data-t="aa" aria-label="Tipografia e tema" title="Tipografia" aria-expanded="'+(st.ctx==="aa")+'">Aa</button>'}
+function textoProgresso(){
+ var f=st.fmtprog||"tempo",pct=Math.round((st.cap+1)/CAPS.length*100);
+ return f==="tempo"?"faltam ~"+(9-st.cap*3)+" min no capítulo":f==="paginas"?"pág. "+(12+st.cap*9)+" de 38":pct+"% do livro"}
+/* menu de seleção — só quatro ações; o resto é secundário */
+function barraSelecao(){
+ var d=st.destaques[st.sel];
+ return'<div class="selbar" role="menu" aria-label="Ações do trecho">'+
+  (d?'<button data-a="tirardestaque" role="menuitem">Remover destaque</button>'+
+     '<span class="cores">'+["amarelo","rosa","verde"].map(function(c){
+       return'<button class="cor '+c+(d.cor===c?" on":"")+'" data-a="cordestaque" data-c="'+c+'" aria-label="Cor '+c+'"></button>'}).join("")+'</span>'
+    :'<button data-a="destacar" role="menuitem">Destacar</button>')+
+  '<button data-a="anotar" role="menuitem">'+(d&&d.nota?"Editar nota":"Anotar")+'</button>'+
+  '<button data-a="copiar" role="menuitem">Copiar</button>'+
+  '<button data-a="fechasel" aria-label="Fechar">✕</button></div>'}
+/* nota ao lado do texto: o parágrafo continua visível */
+function editorNota(){
+ var id=st.nota,d=st.destaques[id]||{};
+ return'<aside class="notaed" aria-label="Nota">'+
+  '<div class="notaed-h"><span class="lbl">Nota · '+CAPS[st.cap].n.split("·")[0].trim()+'</span>'+
+  '<button class="lnk" data-a="fecharnota">fechar</button></div>'+
+  '<div class="notaed-b">'+
+  '<blockquote class="trecho">“'+esc(textoDoId(id).slice(0,150))+(textoDoId(id).length>150?"…":"")+'”</blockquote>'+
+  '<textarea id="notatxt" class="notaentrada" placeholder="O que este trecho te fez pensar?" rows="6">'+esc(d.nota||"")+'</textarea>'+
+  '<div class="acts"><button class="btn sm" data-a="salvarnota">Salvar nota</button>'+
+  (d.nota?'<button class="lnk" data-a="apagarnota">Apagar</button>':"")+'</div>'+
+  '<button class="ponte" data-a="conhecimento" data-id="'+id+'">Adicionar ao conhecimento →</button>'+
+  '<p class="notadica">A nota fica presa ao trecho. Você a reencontra pelo painel de anotações e pelo espaço do livro.</p>'+
+  '</div></aside>'}
+function textoDoId(id){var p=id.split("-");return CAPS[+p[0]].ps[+p[1]]||""}
+/* painéis: sumário, busca, anotações */
+function painelLeitor(){
+ var p=st.painel,h='<aside class="lpanel" aria-label="'+({toc:"Sumário",busca:"Buscar no livro",notas:"Anotações"})[p]+'">'+
+  '<div class="lpanel-h"><span class="lbl">'+({toc:"Sumário",busca:"Buscar no livro",notas:"Anotações deste livro"})[p]+
+  '</span><button class="lnk" data-a="painel" data-p="">fechar</button></div><div class="lpanel-b">';
+ if(p==="toc")h+=CAPS.map(function(c,i){
+  return'<button class="tocit'+(i===st.cap?" on":"")+'" data-a="cap" data-i="'+i+'">'+
+   '<span>'+esc(c.n)+'</span><span class="lbl">'+c.ps.length+' §</span></button>'}).join("");
+ if(p==="busca"){
+  h+='<input class="inp" id="lbusca" value="'+esc(st.lq||"")+'" placeholder="Palavra ou trecho" style="min-width:0;width:100%">';
+  var q=(st.lq||"").toLowerCase().trim();
+  if(q){var hits=[];CAPS.forEach(function(c,ci){c.ps.forEach(function(t,pi){
+    if(t.toLowerCase().indexOf(q)>-1)hits.push({ci:ci,pi:pi,t:t})})});
+   h+=hits.length?'<div class="lbl" style="margin-top:var(--s3)">'+hits.length+' ocorrência(s)</div>'+
+     hits.map(function(x){return'<button class="hit" data-a="irtrecho" data-c="'+x.ci+'" data-i="'+x.pi+'">'+
+       '<span class="lbl">'+esc(CAPS[x.ci].n)+'</span><span>'+esc(x.t.slice(0,80))+'…</span></button>'}).join("")
+    :'<p class="vaziop">Nada encontrado. Tente “memória”, “densidade” ou “estante”.</p>'}
+  else h+='<p class="vaziop">Busca no texto deste livro.</p>'}
+ if(p==="notas"){
+  var ids=Object.keys(st.destaques);
+  h+=ids.length?ids.map(function(id){var d=st.destaques[id];
+   return'<button class="anot" data-a="irtrecho" data-c="'+id.split("-")[0]+'" data-i="'+id.split("-")[1]+'">'+
+    '<span class="lbl">'+esc(CAPS[+id.split("-")[0]].n)+'</span>'+
+    '<mark class="dst '+(d.cor||"amarelo")+'">'+esc(textoDoId(id).slice(0,90))+'…</mark>'+
+    (d.nota?'<span class="anotnota">'+esc(d.nota)+'</span>':'<span class="lbl">sem nota</span>')+'</button>'}).join("")
+   :'<p class="vaziop">Nenhuma anotação ainda. Selecione um trecho para destacar ou anotar.</p>'}
+ return h+'</div></aside>'}
 function ctxAa(){
- return'<div class="ctx" style="top:40px;right:0">'+
-  '<div class="lbl">Leitura</div>'+
-  ["fonte","corpo","entrelinha","temaleitor"].map(function(k){
-   return'<div class="row" style="padding:6px 0;border:none"><div><div class="lb" style="font-size:13px">'+SM[k].lb+'</div></div>'+ctl(SM[k],1)+'</div>'}).join("")+
-  '<div class="acts" style="margin-top:var(--s2)"><button class="btn sm sec" data-a="soeste">Só neste livro</button>'+
-  '<button class="btn sm" data-a="padrao">Usar como padrão</button></div>'+
+ var e=estiloLeitura();
+ return'<div class="ctx aa" style="top:44px;right:0" role="dialog" aria-label="Tipografia">'+
+  '<div class="lbl">Tipografia</div>'+
+  '<div class="prev" style="background:'+e.bg+';color:'+e.fg+';font-family:'+e.ff+';font-size:'+e.corpo+
+  'px;line-height:'+e.el+'">A organização espacial é uma forma de memória.</div>'+
+  ["fonte","corpo","entrelinha","largura","temaleitor"].map(function(k){
+   return'<div class="linhactx"><span class="rot">'+SM[k].lb+'</span>'+ctl(SM[k],1)+'</div>'}).join("")+
+  '<div class="escopo"><div class="lbl">Onde aplicar</div>'+
+  '<div class="seg" style="width:100%"><button data-a="escopo" data-v="livro" class="'+(st.escopo==="livro"?"on":"")+'">Só neste livro</button>'+
+  '<button data-a="escopo" data-v="padrao" class="'+(st.escopo==="padrao"?"on":"")+'">Todos os livros</button></div>'+
+  '<p class="notadica" style="margin-top:var(--s2)">'+(st.escopo==="livro"
+   ?"Vale só para <b>Organização Espacial</b>. Outros livros continuam como estão."
+   :"Passa a valer para <b>todos os livros</b>, inclusive os próximos.")+'</p></div>'+
   '<button class="ponte" data-a="ponte" data-c="leitura">Gerenciar preferências de leitura →</button></div>'}
 
 /* ═════ BUSCA GLOBAL ═════ */
@@ -634,12 +891,19 @@ function drawLab(){
   '<div><h4>Anotação · '+a[0]+'</h4><p class="nota" style="margin:var(--s2) 0 0">'+a[1]+'</p>'+
   '<p class="nota" style="margin:var(--s2) 0 0;border-left:2px solid var(--acc);padding-left:10px">'+
   '<b style="color:#d5cec3">Falha se:</b> '+a[2]+'</p></div>'+
+  '<div><h4>Controles do leitor</h4><div class="seg" style="margin-top:var(--s2)">'+
+  [["A","topo+rodapé"],["B","flutuante"],["C","bordas"]].map(function(l){
+   return'<button data-chr="'+l[0]+'" class="'+(st.chrome===l[0]?"on":"")+'">'+l[1]+'</button>'}).join("")+'</div>'+
+  '<p class="nota" style="margin:var(--s2) 0 0">'+
+  ({A:"Topo e rodapé, como Kindle e Play Books. Descoberta alta, imersão média — e é o único que comporta progresso legível. <b>Recomendado.</b>",
+    B:"Uma barra flutuante só. Imersão máxima, mas esconde navegação e progresso: o leitor perde noção de onde está.",
+    C:"Controles nas bordas laterais. Libera o topo, porém colide com o polegar no celular e some em telas estreitas."})[st.chrome]+'</p></div>'+
   '<div><h4>Layout de Configurações</h4><div class="seg" style="margin-top:var(--s2)">'+
   [["A","lateral"],["B","compacto"],["C","busca"]].map(function(l){
    return'<button data-lay="'+l[0]+'" class="'+(st.layout===l[0]?"on":"")+'">'+l[1]+'</button>'}).join("")+'</div>'+
   '<p class="nota" style="margin:var(--s2) 0 0">'+
-  ({A:"Navegação lateral persistente: a arquitetura inteira à vista o tempo todo. Escolhido — é o que responde “o que mais existe aqui?”.",
-    B:"Navegador compacto e conteúdo largo: ganha área útil, perde a noção de conjunto.",
+  ({A:"Navegação lateral persistente: a arquitetura inteira à vista. Escolhido — responde “o que mais existe aqui?”.",
+    B:"Navegador compacto e conteúdo largo: ganha área, perde a noção de conjunto.",
     C:"Busca primeiro: rápido para quem sabe o nome, cego para quem não sabe."})[st.layout]+'</p></div>'}
 
 /* ═════ EVENTOS ═════ */
@@ -666,8 +930,39 @@ $("app").addEventListener("click",function(e){
  else if(a==="ir"){st.cat=el.dataset.c;st.hit=el.dataset.k||null;st.catAberta=true;
   if(el.dataset.k){st.bs="";marcar("achou")}marcar("nav")}
  else if(a==="fechacat"){st.catAberta=false}
- else if(a==="ler"){st.leitor=true;st.ctx=null}
- else if(a==="fecharleitor"){st.leitor=false;st.ctx=null}
+ else if(a==="ler"){st.leitor=true;st.ctx=null;st.chromeVis=true;st.painel=null;st.sel=null;st.nota=null}
+ else if(a==="fecharleitor"){st.leitor=false;st.ctx=null;st.painel=null;st.sel=null;st.nota=null}
+ /* ── leitor ── */
+ else if(a==="togglechrome"){if(!st.sel&&!st.nota&&!st.ctx&&!e.target.closest("mark,button")){
+   st.chromeVis=!st.chromeVis;marcar("chrome")}}
+ else if(a==="painel"){st.painel=el.dataset.p||null;st.chromeVis=true;st.lq="";
+   if(el.dataset.p==="notas")marcar("rever");if(el.dataset.p==="toc")marcar("toc")}
+ else if(a==="cap"){st.cap=+el.dataset.i;st.painel=null;st.sel=null;st.leu=null;
+   marcar("capitulo");aviso(CAPS[st.cap].n)}
+ else if(a==="marcador"){st.marcado=!st.marcado;aviso(st.marcado?"Marcador colocado":"Marcador removido")}
+ else if(a==="fmtprog"){st.fmtprog=st.fmtprog==="tempo"?"paginas":st.fmtprog==="paginas"?"pct":"tempo"}
+ else if(a==="destacar"){st.destaques[st.sel]={cor:"amarelo"};marcar("destacar");
+   aviso("Destacado","");st.sel=st.sel}
+ else if(a==="cordestaque"){st.destaques[st.sel].cor=el.dataset.c}
+ else if(a==="tirardestaque"){delete st.destaques[st.sel];st.sel=null;aviso("Destaque removido")}
+ else if(a==="anotar"){if(!st.destaques[st.sel])st.destaques[st.sel]={cor:"amarelo"};
+   st.nota=st.sel;st.sel=null;marcar("anotar")}
+ else if(a==="copiar"){st.sel=null;aviso("Trecho copiado com a fonte")}
+ else if(a==="fechasel"){st.sel=null;window.getSelection&&window.getSelection().removeAllRanges()}
+ else if(a==="verdestaque"){st.sel=el.dataset.id}
+ else if(a==="salvarnota"){var ta=document.getElementById("notatxt");
+   if(ta){st.destaques[st.nota].nota=ta.value.trim();
+    if(!ta.value.trim())delete st.destaques[st.nota].nota}
+   st.nota=null;marcar("salvarnota");aviso("Nota salva — presa ao trecho")}
+ else if(a==="apagarnota"){delete st.destaques[st.nota].nota;st.nota=null;aviso("Nota apagada")}
+ else if(a==="fecharnota"){st.nota=null}
+ else if(a==="conhecimento"){st.nota=null;marcar("conhec");
+   aviso("Nota enviada ao Conhecimento — vira um objeto conectável")}
+ else if(a==="irtrecho"){st.cap=+el.dataset.c;st.leu=el.dataset.c+"-"+el.dataset.i;st.painel=null;
+   marcar("voltar");aviso("Voltou ao trecho original");
+   setTimeout(function(){var p=document.querySelector('[data-p="'+st.leu+'"]');
+    if(p)p.scrollIntoView({block:"center",behavior:"smooth"})},60)}
+ else if(a==="escopo"){st.escopo=el.dataset.v;marcar("escopo")}
  else if(a==="set"){var x=SM[el.dataset.k];
   setv(el.dataset.k,x.t==="sw"?el.dataset.v==="true":el.dataset.v,el.dataset.ctx?"ctx":"cfg");
   if(el.dataset.ctx)marcar("ctx")}
@@ -683,7 +978,15 @@ $("app").addEventListener("click",function(e){
  draw()});
 $("app").addEventListener("input",function(e){
  if(e.target.id==="bs"){st.bs=e.target.value;st.hit=null;if(st.bs)marcar("buscar");draw()}
- else if(e.target.id==="palq"){st.palq=e.target.value;draw()}});
+ else if(e.target.id==="palq"){st.palq=e.target.value;draw()}
+ else if(e.target.id==="lbusca"){st.lq=e.target.value;var p=e.target.selectionStart;draw();
+  var n=document.getElementById("lbusca");if(n){n.focus();n.setSelectionRange(p,p)}}});
+/* seleção real de texto no leitor → barra de ações */
+$("app").addEventListener("mouseup",function(e){
+ if(!st.leitor||st.nota)return;
+ var s=window.getSelection();if(!s||!s.toString().trim())return;
+ var p=e.target.closest("[data-p]");if(!p)return;
+ st.sel=p.dataset.p;marcar("selecionar");draw()});
 $("app").addEventListener("change",function(e){var s=e.target.closest("select[data-k]");if(!s)return;
  setv(s.dataset.k,s.value,"cfg");draw()});
 addEventListener("keydown",function(e){
@@ -695,7 +998,9 @@ $("lab").addEventListener("click",function(e){
  var f=e.target.closest("[data-l]");if(f){st.lab=false;drawLab();return}
  var s=e.target.closest("[data-s]");if(s){comecar(s.dataset.s);return}
  var l=e.target.closest("[data-lay]");if(l){st.layout=l.dataset.lay;
-  aviso("Layout "+l.dataset.lay+" — o escolhido é o A, com navegação lateral");drawLab()}});
+  aviso("Layout "+l.dataset.lay+" — o escolhido é o A, com navegação lateral");drawLab();return}
+ var c=e.target.closest("[data-chr]");if(c){st.chrome=c.dataset.chr;st.chromeVis=true;
+  if(!st.leitor){st.leitor=true}draw()}});
 draw();
 })();
 </script>
