@@ -253,6 +253,23 @@ select.sel{height:var(--h1);border:1px solid var(--line);border-radius:var(--r1)
 .ktag.on span{opacity:.7}
 .kcx{font-family:var(--mono);font-size:9.5px;color:var(--ink-3);margin-left:auto}
 .knuvem{display:flex;flex-wrap:wrap;gap:7px;max-width:760px;margin:var(--s4) 0 var(--s3)}
+/* assuntos: a unidade da área, não a nota */
+.ktemas{display:grid;grid-template-columns:repeat(auto-fill,minmax(238px,1fr));gap:var(--s3);
+  max-width:760px;margin-top:var(--s4)}
+.ktema{border:1px solid var(--line);border-radius:var(--r1);background:var(--bg);padding:var(--s4);
+  text-align:left;display:flex;flex-direction:column;gap:7px}
+.ktema:hover{border-color:var(--ink);background:var(--bg-2)}
+.ktema-t{font-size:16px;font-weight:600;color:var(--ink)}
+.ktema-n{font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:var(--ink-3)}
+.ktema-caps{display:flex;gap:3px}
+.ktema-caps i{width:8px;height:11px;border-radius:1px;display:inline-block}
+.ktema-x{font-size:12.5px;line-height:1.5;color:var(--ink-2)}
+.ktemaAberto{max-width:760px;margin-top:var(--s4);padding-bottom:var(--s3);border-bottom:1px solid var(--line)}
+.ktema-h{display:flex;align-items:baseline;gap:var(--s3);flex-wrap:wrap}
+.ktema-h h2{margin:0;font-size:24px;font-weight:600;letter-spacing:-.01em}
+.ktema-h .lnk{margin-left:auto}
+.ktema-p{margin:9px 0 0;font-size:13px;line-height:1.6;color:var(--ink-2);max-width:600px}
+.ksoltas{max-width:760px;margin-top:var(--s6);padding-top:var(--s4);border-top:1px solid var(--line)}
 .krel{border-top:1px solid var(--line);padding:var(--s4);background:var(--bg-2);
   display:flex;flex-direction:column;gap:var(--s3)}
 .krow{border:1px solid var(--line);border-radius:var(--r1);padding:var(--s3);background:var(--bg)}
@@ -331,16 +348,22 @@ select.sel{height:var(--h1);border:1px solid var(--line);border-radius:var(--r1)
 .gridE .lul{              /* 0.93× recuado — subordinado ao corpo, como legenda */
   width:var(--faixa-sub);margin-left:calc(var(--col) - var(--faixa-sub));
   font-family:var(--ui);font-size:.8em;line-height:1.5;opacity:.78}
-.gridE .lcap{             /* bleed — a fronteira de capítulo passa a ser visível na rolagem */
-  /* --sbw desconta a barra de rolagem: 100vw a inclui e o bleed vazaria à esquerda */
-  width:calc(100vw - var(--sbw,0px));max-width:none;
-  margin-left:calc(50% - 50vw + var(--sbw,0px)/2);opacity:1;
-  font-size:12px;padding:var(--s4) var(--s5);border-top:1px solid currentColor;
-  border-bottom:1px solid currentColor;box-sizing:border-box;
-  display:flex;justify-content:space-between;align-items:baseline}
-.gridE .lsec:first-child .lcap{border-top:0}
-.gridE .lcap::after{content:attr(data-faixa);font-family:var(--ui);opacity:.45;letter-spacing:.1em}
-.lbody.commargem.gridE .lcap{width:auto;max-width:none;margin-left:0}
+/* A RÉGUA SANGRA, O TÍTULO NÃO.
+   A primeira versão jogava a faixa inteira até a borda da tela, e o título
+   ficava a ~450px do texto: para lê-lo o olho tinha de sair da coluna e
+   voltar, a cada capítulo. O que marca a fronteira na rolagem é a linha
+   atravessando a tela — não o texto acompanhá-la. */
+.gridE .lcap{position:relative;opacity:1;font-size:12px;
+  padding:var(--s6) 0 var(--s4);margin-bottom:var(--s3);
+  display:flex;justify-content:space-between;align-items:baseline;gap:var(--s4)}
+.gridE .lcap::before{content:"";position:absolute;top:0;height:1px;
+  left:calc(50% - 50vw + var(--sbw,0px)/2);width:calc(100vw - var(--sbw,0px));
+  background:currentColor;opacity:.22}
+.gridE .lsec:first-child .lcap::before{display:none}
+.gridE .lcap::after{content:attr(data-faixa);font-family:var(--ui);opacity:.5;letter-spacing:.1em;
+  white-space:nowrap}
+/* com a margem ligada, a régua para na coluna: atravessar cortaria as notas */
+.lbody.commargem.gridE .lcap::before{left:0;width:100%}
 @media (max-width:700px){.gridE .lq,.gridE .lul{width:100%;margin-left:0}}
 .lul li{margin-bottom:.4em}
 .marcanota{font-size:.62em;opacity:.5;margin-left:.35em;vertical-align:super;line-height:1}
@@ -399,8 +422,12 @@ select.sel{height:var(--h1);border:1px solid var(--line);border-radius:var(--r1)
 .lprog{flex:1;display:flex;flex-direction:column;gap:5px;align-items:center}
 .ltrilho{width:100%;max-width:320px;height:3px;background:rgba(26,25,23,.14);border-radius:2px;overflow:hidden}
 .ltrilho i{display:block;height:100%;background:var(--ink)}
-.lprogtxt{font-size:12px;color:var(--ink-3)}
+/* os dois controles do chrome do leitor tinham 16px e 17px de alvo —
+   no toque isso é erro de clique esperando acontecer */
+.lprogtxt{font-size:12px;color:var(--ink-3);min-height:32px;display:inline-flex;
+  align-items:center;padding:0 var(--s2)}
 .lprogtxt:hover{color:var(--acc)}
+.lpanel-h .lnk{min-height:32px;display:inline-flex;align-items:center;padding:0 var(--s2);margin-right:-8px}
 
 /* seleção */
 .selbar{position:fixed;left:50%;transform:translateX(-50%);bottom:96px;z-index:78;background:var(--ink);
@@ -477,6 +504,9 @@ select.sel{height:var(--h1);border:1px solid var(--line);border-radius:var(--r1)
   box-shadow:0 20px 50px rgba(26,25,23,.24);display:flex;flex-direction:column;gap:var(--s2)}
 .notaflut-h{display:flex;align-items:center}
 .notaflut-h .lbl{flex:1}
+/* fechar de 17px era o menor alvo do leitor: 32px é o mínimo do toque */
+.notaflut-h .lnk{min-width:32px;min-height:32px;display:inline-flex;align-items:center;
+  justify-content:center;margin:-6px -6px -6px 0}
 .selbar .selrot{color:rgba(255,255,255,.7);font-size:12px;padding:0 var(--s2)}
 .selbar .pt{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px}
 .selbar .pt.amarelo{background:#f7e08a}.selbar .pt.rosa{background:#f6c9d8}.selbar .pt.verde{background:#c8e6bd}
@@ -486,7 +516,8 @@ select.sel{height:var(--h1);border:1px solid var(--line);border-radius:var(--r1)
   padding:var(--s3) 0 var(--s1);border-top:1px solid var(--line-2);margin-top:var(--s2)}
 .grpcap:first-child{border:none;margin:0}
 .filtroanot{display:flex;gap:5px;align-items:center;padding:var(--s2) 0}
-.fa{font-size:11.5px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--ink-2)}
+.fa{font-size:11.5px;padding:7px 12px;border-radius:999px;border:1px solid var(--line);color:var(--ink-2)}
+@media (max-width:768px){.fa{padding:9px 14px}.acts .lnk{min-height:32px;display:inline-flex;align-items:center}}
 .fa:hover{background:var(--bg-2)}
 .fa.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .resumo{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s2)}
@@ -706,7 +737,16 @@ var CONHEC=[
 {k:"k8",li:5,cap:"1 · O corpo do texto",em:"2026-08-03",
  tr:"tipografia é a arte de não ser notada",
  no:"Contradiz o k7 só na aparência: chamar e desaparecer são funções de camadas diferentes.",
- tg:["tipografia","atenção"]}];
+ tg:["tipografia","atenção"]},
+/* sem assunto, e é assim mesmo: forçar uma gaveta seria pior que deixar solta */
+{k:"k9",li:1,cap:"Método",em:"2026-08-07",
+ tr:"o problema não estava na resposta, estava na pergunta",
+ no:"Não sei ainda onde isto se encaixa. Guardei porque me pareceu importante, não porque eu soubesse o que fazer com isso.",
+ tg:[]},
+{k:"k10",li:0,cap:"Formulários",em:"2026-07-18",
+ tr:"todo campo a mais é uma pessoa a menos",
+ no:"Anotado no dia da reunião de cadastro. Ainda não voltei a isso.",
+ tg:[]}];
 /* Conexão determinística por tag em comum. Não é IA, e o mapa de
    capacidades é explícito: "começar determinístico por tags". */
 function conexoesDe(k){
@@ -735,8 +775,8 @@ var st={rota:"lib",cat:"geral",menu:false,ctx:null,pal:null,palq:"",bs:"",hit:nu
  prog:0,ancora:null,pos:{},algo:"semantico",corrigindo:null,
  fmtprog:"tempo",escopo:"livro",lq:"",leu:null,valoresLivro:{},
  /* variantes em comparação */
- mNota:"A",mDst:"A",mRev:"A",mConh:"B",mGrid:"A",labSec:"novo",escolhendoCor:null,limiar:null,
- kView:"tempo",kAberto:null,kFiltro:null,kPergunta:"",kVazio:"n",conex:{}};
+ mNota:"C",mDst:"A",mRev:"A",mConh:"B",mGrid:"A",labSec:"novo",escolhendoCor:null,limiar:null,
+ kView:"tag",kAberto:null,kFiltro:null,kPergunta:"",kVazio:"n",conex:{}};
 /* ─── O leitor nunca abre vazio ───────────────────────────────
    Sem nenhuma anotação, metade das funções não tem o que mostrar:
    margem, painel, revisão, conexões e a ponte para o Conhecimento
@@ -809,7 +849,7 @@ var CEN=[
  p:[["ler","Tente ler o capítulo com tudo marcado"]]},
 {k:"E3",t:"Nota muito longa",e:1,
  go:function(){st.dst=[{k:"c3",pid:"1-0",ini:0,fim:70,cor:"amarelo",nota:NOTA_LONGA}];st.leitor=true;st.cap=1;
-  st.nota="1-0";st.mNota="A"},
+  st.nota="1-0";st.mNota="C"},
  p:[["editar","Role dentro do editor"],["trecho","Veja se o trecho continua visível"]]},
 {k:"E4",t:"Anotações vizinhas",e:1,
  go:function(){st.dst=[{k:"v1",pid:"0-1",ini:0,fim:48,cor:"amarelo",nota:"primeira"},
@@ -840,11 +880,11 @@ var CEN=[
  go:function(){st.mNota="M";st.leitor=true;st.cap=0;st.dst=notasDensidade(3,"longa")},
  p:[["longa","Nota longa cabe na margem?"]]},
 {k:"M5",t:"Inspector com a mesma carga",e:1,
- go:function(){st.mNota="A";st.leitor=true;st.cap=0;st.dst=notasDensidade(8,"mista");st.painel="notas"},
+ go:function(){st.mNota="C";st.leitor=true;st.cap=0;st.dst=notasDensidade(8,"mista");st.painel="notas"},
  p:[["comparar","Compare com o cenário M2"]]},
 /* ── grid editorial: quatro faixas derivadas da coluna ── */
 {k:"G1",t:"Grid editorial · citação e lista",
- go:function(){st.mGrid="B";st.leitor=true;st.cap=2;st.mNota="A";st.dst=[]},
+ go:function(){st.mGrid="B";st.leitor=true;st.cap=2;st.mNota="C";st.dst=[]},
  p:[["ver","Role até a citação em destaque"],["esc","Repare que ela escapa da coluna"],
     ["lst","Compare com a lista, que recua"],["cap","Passe a fronteira do capítulo 4"]]},
 {k:"G2",t:"O mesmo capítulo no baseline",
@@ -855,7 +895,7 @@ var CEN=[
  p:[["conv","Veja se a citação larga colide com as notas"],
     ["cap","Confirme que a faixa de capítulo recua quando há margem"]]},
 {k:"G4",t:"Grid editorial no corpo 16 e na coluna 560",
- go:function(){st.mGrid="B";st.leitor=true;st.cap=2;st.mNota="A";st.dst=[];
+ go:function(){st.mGrid="B";st.leitor=true;st.cap=2;st.mNota="C";st.dst=[];
    setv("corpo","16","cfg");setv("largura","560","cfg")},
  p:[["prop","As faixas encolheram junto com a coluna?"],
     ["lim","Veja o limiar recalculado na aba Grid"]]},
@@ -972,10 +1012,10 @@ function vSimples(titulo,texto,catPonte,rotuloPonte){
 function itensConhec(){
  return st.kVazio==="0"?[]:st.kVazio==="1"?CONHEC.slice(0,1):CONHEC}
 function cabecaConhec(itens){
- var vistas=[["tempo","Por tempo","o que andei pensando"],
+ var vistas=[["tag","Por assunto","o que se acumulou em cada um"],
+   ["dossie","Por pergunta","o que tenho sobre isso"],
    ["livro","Por livro","o que sobrou de cada um"],
-   ["tag","Por tema","onde a ideia se repete"],
-   ["dossie","Por pergunta","o que tenho sobre isso"]];
+   ["tempo","Por tempo","o que andei pensando"]];
  return'<h1 class="t">Conhecimento</h1>'+
   '<p class="sub">O que você trouxe da leitura — e só isso. Destacar não traz nada para cá; '+
   'levar é um gesto separado, feito no leitor.</p>'+
@@ -1046,18 +1086,57 @@ function vConhecimento(){
    return'<div class="kgrupo"><span class="kliv grande"><i style="background:'+b.c+'"></i>'+esc(b.t)+'</span>'+
     '<span class="klbl">'+porliv[li].length+' de '+b.n+' anotações levadas</span></div>'+
     porliv[li].map(function(c){return cartaoConhec(c,false)}).join("")}).join("")+'</div>'}
- else if(v==="tag"){
-  h+='<div class="knuvem">'+tagsTodas().map(function(t){
-   return'<button class="ktag grande'+(st.kFiltro===t.t?" on":"")+'" data-a="ktag" data-t="'+t.t+'">'+
-    t.t+'<span>'+t.n+'</span></button>'}).join("")+'</div>'+
-   '<p class="notadica" style="max-width:640px">O tamanho do número é a contagem real, não peso semântico. '+
-   'Um tema com uma ocorrência só não é fraco: pode ser recente.</p>'+
-   '<div class="klista">'+lista.map(function(c){return cartaoConhec(c)}).join("")+'</div>'}
+ else if(v==="tag")h+=vAssuntos(lista);
  else{
   h+=vDossie(lista)}
  return h+'<div class="acts" style="margin-top:var(--s6)">'+
   '<button class="btn sec" data-a="ponte" data-c="conhecimento">Gerenciar preferências de conhecimento →</button>'+
   '</div></div></div></div>'}
+/* ─── A VISTA POR ASSUNTO ────────────────────────────────────────
+   A primeira versão abria numa lista cronológica de notas, e era isso
+   que ela parecia: várias notas. O assunto e as conexões ficavam atrás
+   de um clique. Aqui o assunto é a unidade, e o que se acumulou nele
+   aparece de saída. Nota sem assunto não é defeito nem fica escondida:
+   tem lugar próprio no fim.                                          */
+function vAssuntos(lista){
+ var tags=tagsTodas().filter(function(t){
+  return lista.some(function(c){return c.tg.indexOf(t.t)>-1})});
+ var soltas=lista.filter(function(c){return !c.tg.length});
+ if(st.kFiltro){
+  var t=st.kFiltro,doTema=lista.filter(function(c){return c.tg.indexOf(t)>-1});
+  return'<div class="ktemaAberto"><div class="ktema-h"><h2>'+esc(t)+'</h2>'+
+   '<span class="klbl">'+doTema.length+(doTema.length===1?' ideia':' ideias')+
+   ' · '+livrosDe(doTema).length+' livro(s)</span>'+
+   '<button class="lnk" data-a="ktag" data-t="">todos os assuntos</button></div>'+
+   '<p class="ktema-p">'+esc(vizinhosDe(t,doTema))+'</p></div>'+
+   '<div class="klista">'+doTema.map(function(c){return cartaoConhec(c)}).join("")+'</div>'}
+ return'<div class="ktemas">'+tags.map(function(t){
+  var doTema=lista.filter(function(c){return c.tg.indexOf(t.t)>-1}),
+   livros=livrosDe(doTema);
+  return'<button class="ktema" data-a="ktag" data-t="'+t.t+'">'+
+   '<span class="ktema-t">'+t.t+'</span>'+
+   '<span class="ktema-n">'+t.n+(t.n===1?' ideia':' ideias')+
+    (livros.length>1?' · '+livros.length+' livros':'')+'</span>'+
+   '<span class="ktema-caps">'+livros.map(function(li){
+     return'<i style="background:'+LIVROS[li].c+'" title="'+esc(LIVROS[li].t)+'"></i>'}).join("")+'</span>'+
+   '<span class="ktema-x">'+esc(doTema[0].no.slice(0,88))+(doTema[0].no.length>88?"…":"")+'</span>'+
+   '</button>'}).join("")+'</div>'+
+  (soltas.length?'<div class="ksoltas"><div class="lbl">Sem assunto ainda — '+soltas.length+'</div>'+
+   '<p class="notadica">Nem toda ideia entra numa gaveta, e forçar uma seria pior que deixá-la aqui. '+
+   'Ela aparece na busca e na ordem por tempo do mesmo jeito.</p>'+
+   '<div class="klista">'+soltas.map(function(c){return cartaoConhec(c)}).join("")+'</div></div>':"")+
+  '<p class="notadica" style="max-width:640px;margin-top:var(--s4)">A contagem é literal: quantas ideias '+
+  'suas carregam aquela palavra. Assunto com uma ocorrência não é fraco — pode ser recente.</p>'}
+function livrosDe(itens){return itens.map(function(c){return c.li})
+ .filter(function(v,i,a){return a.indexOf(v)===i})}
+function vizinhosDe(t,doTema){
+ var outros={};
+ doTema.forEach(function(c){c.tg.forEach(function(x){if(x!==t)outros[x]=(outros[x]||0)+1})});
+ var ks=Object.keys(outros).sort(function(a,b){return outros[b]-outros[a]});
+ if(!ks.length)return"Este assunto ainda não encostou em nenhum outro nas suas notas.";
+ return"Nas suas notas, este assunto aparece junto de "+
+  ks.slice(0,3).map(function(k){return k+" ("+outros[k]+")"}).join(", ")+
+  " — por coincidência de palavra, não por interpretação.";}
 /* Casamento por radical, não por palavra inteira: "guardo" precisa achar
    "guardar". Corta as duas últimas letras da palavra, que em português
    carregam quase toda a flexão. É burro de propósito — determinístico e
@@ -1349,8 +1428,8 @@ function vLeitor(){
  /* ── painéis laterais ── */
  if(st.painel)h+=painelLeitor();
  /* ── nota: modelo A lateral · B inline (no fluxo) · C flutuante ── */
- if(st.nota&&st.mNota==="A")h+=editorNota();
- if(st.nota&&st.mNota==="C")h+=notaFlutuante(st.nota);
+ if(st.nota&&st.mNota!=="M")h+=notaFlutuante(st.nota);
+ 
  return h+'</div>'}
 /* ── MODELO B: expansão inline ── */
 function notaInline(id){
@@ -1364,14 +1443,25 @@ function notaInlineLida(id,d){
  return'<aside class="notainline lida" data-a="anotarid" data-id="'+id+'">'+
   '<span class="lbl">sua nota</span><p>'+esc(d.nota)+'</p></aside>'}
 /* ── MODELO C: compositor flutuante junto da seleção ── */
+/* Um editor só.
+   O painel lateral era o mesmo editor, maior, com dois botões a mais —
+   e cobrava um clique por eles. Os dois botões vieram para cá; o painel
+   deixou de ser editor e ficou com o que só ele faz: a lista do livro. */
 function notaFlutuante(id){
- var d=dstPorK(id)||{};
- return'<div class="notaflut" role="dialog" aria-label="Nota rápida">'+
-  '<div class="notaflut-h"><span class="lbl">Nota rápida</span>'+
+ var d=dstPorK(id)||{},tem=!!(d.nota&&d.nota.trim());
+ return'<div class="notaflut" role="dialog" aria-label="Nota">'+
+  '<div class="notaflut-h"><span class="lbl">Nota</span>'+
   '<button class="lnk" data-a="fecharnota" aria-label="Fechar">✕</button></div>'+
-  '<textarea id="notatxt" class="notaentrada" rows="3" placeholder="Anote em uma linha…">'+esc(d.nota||"")+'</textarea>'+
+  '<blockquote class="trecho">“'+esc(textoDoId(id).slice(0,110))+
+   (textoDoId(id).length>110?"…":"")+'”</blockquote>'+
+  '<textarea id="notatxt" class="notaentrada" rows="4" placeholder="O que este trecho te fez pensar?">'+
+  esc(st.rascunho!==null&&st.rascunho!==undefined?st.rascunho:(d.nota||""))+'</textarea>'+
+  (st.erroSalvar?'<div class="erroSalvar">Não conseguimos salvar agora. <b>Seu texto continua aqui</b> — nada foi perdido.'+
+   '<button class="lnk" data-a="tentarnovamente">Tentar de novo</button></div>':"")+
   '<div class="acts"><button class="btn sm" data-a="salvarnota">Salvar</button>'+
-  '<button class="lnk" data-a="expandirnota">Escrever mais →</button></div></div>'}
+  (tem?'<button class="lnk" data-a="apagarnota">Apagar</button>':"")+'</div>'+
+  (tem?'<button class="ponte" data-a="conhecimento" data-id="'+id+'">Adicionar ao conhecimento →</button>':"")+
+  '</div>'}
 function larguraTela(){return document.documentElement.clientWidth||1280}
 function limparSelecao(){var s=window.getSelection();if(s&&s.removeAllRanges)s.removeAllRanges()}
 /* ── destaque ancorado em offset de caractere: vários por parágrafo, e corrigível ── */
@@ -1574,7 +1664,7 @@ function ctxAa(){
    ?"Citação escapa da coluna, lista recua, capítulo atravessa a tela. <b>Vá ao capítulo 3</b> para ver os três."
    :"O texto todo na mesma largura. É o modelo congelado, para comparação.")+'</p></div>'+
   '<div class="escopo"><div class="lbl">Em teste · notas</div>'+
-  '<div class="seg" style="width:100%">'+[["A","Painel"],["C","Flutuante"],["M","Na margem"]].map(function(m){
+  '<div class="seg" style="width:100%">'+[["C","Sobre o trecho"],["M","Na margem"]].map(function(m){
    return'<button data-a="modonota" data-v="'+m[0]+'" class="'+(st.mNota===m[0]?"on":"")+'">'+m[1]+'</button>'}).join("")+'</div>'+
   '<p class="notadica" style="margin-top:var(--s2)">'+(st.mNota==="M"
    ?(larguraTela()>=limiarMargem()?"As notas ficam ao lado do trecho. Acima de 5 na mesma região, o excedente colapsa num marcador."
@@ -1697,7 +1787,7 @@ function desenharMargem(){
    '<textarea id="notatxt" class="mgentrada" rows="5" placeholder="O que este trecho te fez pensar?">'+
    esc(d.nota||"")+'</textarea>'+
    '<div class="mgacts"><button class="btn sm" data-a="salvarnota">Salvar</button>'+
-   '<button class="lnk" data-a="expandirnota">abrir no painel</button>'+
+   (d.nota?'<button class="lnk" data-a="conhecimento" data-id="'+d.k+'">Ao conhecimento →</button>':"")+
    '<button class="lnk" data-a="fecharnota">fechar</button></div></div>';
   return'<button class="notamg" data-a="anotarid" data-id="'+d.k+'" '+
    'aria-describedby="mk-'+d.k+'" '+pos+'>'+fio+trecho+
@@ -1763,9 +1853,17 @@ function auditarTela(){
   if(e.tagName==="BUTTON"||e.tagName==="A"){
    var b2=e.querySelector("div,p,blockquote,ul,ol,section,article,h1,h2,h3,table,button");
    if(b2)r.html.push(rotuloEl(e)+" contém &lt;"+b2.tagName.toLowerCase()+"&gt;")}
-  if(txt&&e.scrollWidth>e.clientWidth+2&&cs.overflowX!=="auto"&&cs.overflowX!=="scroll"&&
-     cs.textOverflow!=="ellipsis"&&cs.whiteSpace!=="nowrap")
-   r.cortado.push(rotuloEl(e)+" — "+e.scrollWidth+"px em "+e.clientWidth+"px");
+  /* scrollWidth conta pseudo-elemento absoluto e dá falso positivo — a régua
+     de capítulo inflava .lcap para 1073px sem cortar texto nenhum. Range mede
+     só o conteúdo real. */
+  /* elemento inline tem clientWidth 0 e daria falso positivo em tudo:
+     a checagem só faz sentido em caixa de bloco, que é quem corta */
+  if(txt&&e.clientWidth>0&&cs.display.indexOf("inline")!==0&&
+     cs.overflowX!=="auto"&&cs.overflowX!=="scroll"&&
+     cs.textOverflow!=="ellipsis"&&cs.whiteSpace!=="nowrap"){
+   var rg=document.createRange();rg.selectNodeContents(e);
+   var lt=rg.getBoundingClientRect().width;
+   if(lt>e.clientWidth+2)r.cortado.push(rotuloEl(e)+" — texto de "+Math.round(lt)+"px em "+e.clientWidth+"px")}
   if(toque&&(e.tagName==="BUTTON"||e.tagName==="A")&&bb.height<30&&!e.closest("#lab"))
    r.alvo.push(rotuloEl(e)+" — "+Math.round(bb.height)+"px de altura")});
  r.transbordo=document.documentElement.scrollWidth>larguraTela()+1;
@@ -1786,7 +1884,7 @@ function labConteudo(){
    '<p class="nota">Vindo do <b>doc.cc</b>, medido e filtrado. A citação escapa da coluna, a lista recua, '+
    'o capítulo atravessa a tela inteira. As faixas são proporções da coluna, então acompanham a largura de leitura.</p>'+
    '<p class="nota"><b>Onde mexer sem o lab:</b> abra o <b>Aa</b> no leitor → <i>Em teste · grid</i>.</p>'+
-   testar("Ver no capítulo 3",{mGrid:"B",leitor:true,cap:2,mNota:"A"})+
+   testar("Ver no capítulo 3",{mGrid:"B",leitor:true,cap:2,mNota:"C"})+
    testar("Comparar com o congelado",{mGrid:"A",leitor:true,cap:2}))+
   bloco("Notas na margem, sob densidade","provavel",
    '<p class="nota">Empilhamento corrigido: a altura vem do conteúdo medido, não de uma constante. '+
@@ -1802,6 +1900,17 @@ function labConteudo(){
   bloco("Breakpoint derivado da tipografia","aceito",
    '<p class="nota">Os 1180px eram herdados. Agora o limiar sai da tipografia em uso — '+
    '<b>'+limiarMargem()+'px</b> no corpo atual. Mude o corpo no Aa e o número muda junto.</p>')+
+  bloco("Três coisas reprovadas pelo uso","aceito",
+   '<p class="nota"><b>A faixa de capítulo em bleed saiu.</b> O título ia até a borda e ficava a ~450px do texto — '+
+   'o olho tinha de sair da coluna e voltar a cada capítulo. Agora só a régua atravessa; o título alinha com o '+
+   'texto, desvio 0px.</p>'+
+   '<p class="nota"><b>O painel lateral deixou de ser editor.</b> Era o mesmo compositor, maior, com dois botões '+
+   'a mais — e cobrava um clique por eles. Os botões vieram para o compositor. O painel ficou com a lista do livro, '+
+   'que é o que só ele faz.</p>'+
+   '<p class="nota"><b>O Conhecimento abre por assunto.</b> Abria numa lista por data, e parecia o que era: '+
+   'várias notas. Agora o assunto é a unidade — e quem não tem assunto tem lugar próprio, sem tag forçada.</p>'+
+   testar("Capítulo 3 no grid",{mGrid:"B",leitor:true,cap:2,mNota:"C"})+
+   testar("Conhecimento por assunto",{rota:"conhecimento",leitor:false,kView:"tag",kVazio:"n",kFiltro:null}))+
   bloco("Área de Conhecimento — as telas que faltavam","candidato",
    '<p class="nota">Deixou de ser um espaço reservado. Quatro organizações sobre o mesmo acervo, '+
    'relações <b>determinísticas por tag</b> com confirmar/rejeitar, dossiê por pergunta e o estado vazio. '+
@@ -1834,14 +1943,28 @@ function labConteudo(){
    return bloco("Modelo "+m[0]+" — "+m[1],m[3],'<p class="nota">'+m[2]+'</p>'+testar("Testar no leitor",{chrome:m[0],leitor:true}))}).join("")+
   matriz(["Descoberta","Imersão","Progresso","Teclado","Celular","Escala"],
    [["A",[5,3,5,5,4,5]],["B",[2,5,1,4,4,2]],["C",[3,4,2,3,2,3]]]);
- if(s==="notas")return'<p class="nota">Mesma tarefa: registrar uma interpretação sem perder o contexto da leitura.</p>'+
-  [["A","Painel lateral","O trecho continua visível e cabe nota longa. Ocupa 360px e empurra a coluna de leitura.","provavel"],
-   ["B","Inline, no fluxo","Máxima proximidade — a nota nasce onde o texto está. Quebra o ritmo do parágrafo e sufoca notas longas.","candidato"],
-   ["C","Compositor flutuante","Rápido para uma linha, quase sem interrupção. Cobre texto e tem saída para o painel quando cresce.","candidato"]].map(function(m){
-   return bloco("Modelo "+m[0]+" — "+m[1],m[3],'<p class="nota">'+m[2]+'</p>'+testar("Testar este modelo",{mNota:m[0],leitor:true}))}).join("")+
-  matriz(["Descoberta","Rapidez","Contexto","Conforto","Celular","Nota longa"],
-   [["A",[4,3,5,5,3,5]],["B",[5,4,5,3,4,2]],["C",[4,5,4,3,4,2]]])+
-  '<p class="nota"><b>Hipótese:</b> C para a nota de uma linha, A quando ela cresce — com a ponte “escrever mais” ligando os dois. É o que está implementado no C.</p>';
+ if(s==="notas")return'<p class="nota">Eram três modelos. Sobraram dois, e a razão é uma comparação lado a lado que não se sustentou.</p>'+
+  bloco("O painel lateral foi aposentado","rejeitado",
+   '<p class="nota"><b>Ele era o mesmo editor, maior.</b> Postos lado a lado, o flutuante tinha trecho, campo, '+
+   'Salvar e fechar; o painel tinha isso mais <i>Apagar</i> e <i>Adicionar ao conhecimento</i>. '+
+   'Dois botões — e para chegar neles era preciso clicar em “escrever mais”.</p>'+
+   '<p class="nota">Um clique que entrega dois botões e nenhuma capacidade nova não é uma escolha de modelo: '+
+   'é um passo a mais. E a pergunta que sobrava — <i>expandir para quê?</i> — não tinha resposta. '+
+   'Os dois botões vieram para o compositor e o painel deixou de ser editor.</p>')+
+  bloco("Modelo C — sobre o trecho","provavel",
+   '<p class="nota">Único lugar de escrever. Abre sobre o trecho, mostra a citação, e agora carrega tudo: '+
+   'Salvar, Apagar e a ponte para o Conhecimento. Cobre um pedaço do texto — é o custo, e é o mesmo do Kindle.</p>'+
+   testar("Testar",{mNota:"C",leitor:true}))+
+  bloco("Modelo M — na margem","provavel",
+   '<p class="nota">Só no desktop largo, e só até 5 notas visíveis. Não é “melhor”: entrega a mesma quantidade '+
+   'que o painel e troca a lista pela posição. Ver a aba Densidade.</p>'+
+   testar("Testar",{mNota:"M",leitor:true}))+
+  bloco("O painel de anotações continua","aceito",
+   '<p class="nota">Como <b>lista do livro</b>, no ícone ✳ — não como editor. É o único lugar onde todas as '+
+   'anotações são alcançáveis de uma vez, com busca e filtro acima de 8. Esse trabalho o compositor não faz.</p>'+
+   testar("Abrir a lista",{leitor:true,painel:"notas"}))+
+  matriz(["Rapidez","Contexto","Conforto","Celular","Nota longa","Passos"],
+   [["C",[5,5,4,4,4,5]],["M",[4,5,4,1,3,5]],["A (aposentado)",[3,5,5,3,5,2]]]);
  if(s==="destaque")return[
    ["A","Destacar e seguir","Um toque, cor padrão. Mais rápido; deixa a cor para depois.","provavel"],
    ["B","Escolher a cor","Cor no ato. Custa um passo e exige decidir cedo o que a cor significa.","candidato"],
@@ -1900,7 +2023,7 @@ function labConteudo(){
    '<p class="nota">A capacidade é a mesma. O que difere é o <b>resto</b>: a margem substitui o excedente por um marcador '+
    'que ainda diz <i>onde</i>; o painel o empurra para fora da vista, mas mantém <i>todas</i> acessíveis por busca e filtro. '+
    'Margem responde “o que eu pensei aqui”; painel responde “o que eu pensei neste livro”. Não são o mesmo trabalho.</p>'+
-   testar("Margem com 8 notas",{mNota:"M",leitor:true})+testar("Painel com 8 notas",{mNota:"A",leitor:true,painel:"notas"}))+
+   testar("Margem com 8 notas",{mNota:"M",leitor:true})+testar("Painel com 8 notas",{mNota:"C",leitor:true,painel:"notas"}))+
   bloco("Teclado: texto → destaque → nota","aceito",
    '<p class="nota">Falha encontrada e corrigida: os destaques eram <b>0 de 8 alcançáveis por Tab</b> — a margem era exclusiva do mouse. '+
    'Agora cada destaque é um controle com rótulo (8/8), <kbd>→</kbd> vai do trecho à nota e <kbd>←</kbd> volta.</p>')+
@@ -2047,6 +2170,11 @@ function labConteudo(){
    ["Notas de margem como padrão do desktop","provavel","<b>Sobreviveu à densidade, com limites explícitos.</b> Até 5 notas visíveis funcionam com desvio ≤183px e zero sobreposição; acima disso o excedente colapsa num marcador de região. Não é “melhor que o painel”: entrega a mesma quantidade e troca a lista pela posição."],
    ["Painel lateral sob densidade","aceito","Continua sendo o único lugar onde <i>todas</i> as anotações são alcançáveis — 8 de 8 com busca e filtro. É o destino do que não cabe na margem."],
    ["Margem e painel como híbrido","provavel","O marcador colapsado abre o painel filtrado pela região. É a ponte entre os dois; falta testar se a pessoa entende que o marcador é um atalho e não uma perda."],
+   ["Faixa de capítulo em bleed","rejeitado","<b>Reprovada pelo uso.</b> O título ia até a borda da tela e ficava a ~450px do texto: para lê-lo o olho saía da coluna e voltava, a cada capítulo. Bleed serve para imagem, que se lê de longe. Agora só a <b>régua</b> atravessa (1585px) e o título alinha com o texto — desvio medido: 0px nos quatro capítulos."],
+   ["Painel lateral como editor de nota","rejeitado","<b>Não sobreviveu à comparação lado a lado.</b> Era o mesmo editor, maior, com dois botões a mais — e cobrava um clique por eles. Um passo que entrega dois botões e nenhuma capacidade nova não é um modelo. Os botões vieram para o compositor; o painel ficou com o que só ele faz: a lista do livro."],
+   ["Um editor de nota só","provavel","O compositor sobre o trecho passa a ser o único lugar de escrever, com Salvar, Apagar e a ponte para o Conhecimento. De três modelos para dois — e o segundo (margem) só existe no desktop largo."],
+   ["Conhecimento organizado por assunto","provavel","<b>Correção de rota.</b> A área abria numa lista cronológica e era isso que parecia: várias notas. O assunto e as conexões ficavam atrás de um clique. Agora o assunto é a unidade e o que se acumulou nele aparece de saída."],
+   ["Nem toda ideia tem assunto","aceito","Duas das dez do acervo não têm, e ficam num grupo próprio no fim em vez de sumir ou receber uma tag forçada. Forçar uma gaveta seria pior que admitir que ainda não há."],
    ["Conhecimento recebe só o que foi levado","candidato","<b>A tese da área.</b> Destacar não manda nada; a ponte no fim da nota manda. A vista Por livro mostra a diferença sem explicar — “3 de 9 anotações levadas”. Falta saber se a pessoa entende a separação sem ler o texto do estado vazio."],
    ["Relações determinísticas por tag","aceito","Veio do mapa de capacidades, não de suposição: <i>“começar determinístico por tags; não prometer IA”</i>. Implementado assim, com as tags que justificam cada relação visíveis e confirmar/rejeitar em toda uma. Verificado: aceitar num item vale no outro extremo."],
    ["Busca do dossiê por radical","provavel","A versão literal falhava em “por que guardo demais”, com uma nota sobre isso no acervo. Cortar as duas últimas letras resolve — 8 de 8 perguntas, incluindo o zero correto para “blockchain”. Não sabe sinônimo, e a tela diz isso."],
@@ -2210,20 +2338,14 @@ $("app").addEventListener("click",function(e){
      aviso("A tela tem "+larguraTela()+"px e a margem exige "+limiarMargem()+"px — continua no painel");
     else if(!comNota.length)aviso("Nenhuma nota ainda: destaque um trecho e escreva para vê-la na margem")}
    else if(!comNota.length)
-    aviso(mv==="A"?"Nenhuma nota ainda: o painel abre ao escrever a primeira"
-                  :"Nenhuma nota ainda: o compositor abre sobre o trecho que você destacar");
-   else if(mv==="A"){st.nota=comNota[0].k;st.painel="notas";
-    aviso("Painel lateral: o trecho continua visível e cabe nota longa")}
-   else if(mv==="C"){st.nota=comNota[0].k;
-    aviso("Compositor flutuante: rápido para uma linha, com saída para o painel")}}
+    aviso("Nenhuma nota ainda: o compositor abre sobre o trecho que você destacar");
+   else{st.nota=comNota[0].k;
+    aviso("A nota abre sobre o trecho — um editor só, sem versão “maior”")}}
  else if(a==="anotarid"){st.nota=el.dataset.id;st.sel=null}
  /* grupo colapsado: a margem admite que não cabe e entrega ao painel */
  else if(a==="grupomg"){var ks=el.dataset.ks.split(",");
    st.nota=ks[0];st.painel="notas";st.filtroNotas=ks;
    aviso(ks.length+" notas desta região abertas no painel — não cabiam na margem")}
- else if(a==="expandirnota"){var t0=document.getElementById("notatxt");
-   var dn0=dstPorK(st.nota);if(t0&&dn0)dn0.nota=t0.value;
-   st.mNota="A";aviso("Aberto no painel lateral — cabe uma nota longa")}
  else if(a==="tirardestaque"){st.dst=st.dst.filter(function(x){return x.k!==st.sel});
    st.sel=null;st.corrigindo=null;aviso("Destaque removido")}
  else if(a==="anotar"){
