@@ -1,0 +1,997 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mekora · Mesa e preparação</title>
+<style>
+/* ════════════════════════════════════════════════════════════
+   Mesmos tokens do prototipo.html — os dois são o mesmo produto,
+   e essa é justamente a correção: a preparação passa a morar na
+   moldura que a área pessoal já tinha.
+   Bordas translúcidas e sombra zero vêm do sistema candidato
+   (Caderno 03, seção 11).
+   ════════════════════════════════════════════════════════════ */
+:root{
+  --bg:#ffffff;--bg-2:#f7f7f5;--bg-3:#f0efec;--nav:#f4f3f0;
+  --ink:#1a1917;--ink-2:#57534d;--ink-3:#706c65;--ink-4:#b5b0a8;
+  --line:rgba(26,25,23,.17);--line-2:rgba(26,25,23,.09);--line-3:rgba(26,25,23,.32);
+  --acc:#c8481f;--acc-soft:#fdf0ea;
+  --ok:#2f7d55;--ok-soft:#eef6f1;--warn:#a8701c;--warn-soft:#fdf4e6;--dan:#b23b2a;--dan-soft:#fdefec;
+  --paper:#f1eee7;
+  --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:48px;
+  --r1:4px;--r2:8px;--h1:32px;--h2:38px;
+  --curva:cubic-bezier(.16,1,.3,1);--d1:.12s;--d2:.24s;--d3:.42s;
+  --ui:-apple-system,"Segoe UI",Inter,"Helvetica Neue",Arial,sans-serif;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-tema="claro"]){
+    --bg:#161513;--bg-2:#1e1c1a;--bg-3:#252320;--nav:#1b1917;
+    --ink:#f1eee8;--ink-2:#b9b2a6;--ink-3:#948d81;--ink-4:#6b655c;
+    --line:hsla(40,20%,96%,.18);--line-2:hsla(40,20%,96%,.10);--line-3:hsla(40,20%,96%,.32);
+    --acc:#e4613d;--acc-soft:#2a1d17;
+    --ok:#8fb283;--ok-soft:#1c241d;--warn:#d3a448;--warn-soft:#282017;--dan:#e0705c;--dan-soft:#2a1a17;
+  }
+}
+:root[data-tema="escuro"]{
+  --bg:#161513;--bg-2:#1e1c1a;--bg-3:#252320;--nav:#1b1917;
+  --ink:#f1eee8;--ink-2:#b9b2a6;--ink-3:#948d81;--ink-4:#6b655c;
+  --line:hsla(40,20%,96%,.18);--line-2:hsla(40,20%,96%,.10);--line-3:hsla(40,20%,96%,.32);
+  --acc:#e4613d;--acc-soft:#2a1d17;
+  --ok:#8fb283;--ok-soft:#1c241d;--warn:#d3a448;--warn-soft:#282017;--dan:#e0705c;--dan-soft:#2a1a17;
+}
+*{box-sizing:border-box}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.001s!important;animation:none!important}}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:14px;
+  -webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:none;padding:0;cursor:pointer;text-align:left}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:var(--r1)}
+.mono{font-family:var(--mono)}
+.lbl{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+
+/* ═══ MOLDURA ═══ a mesma do prototipo.html */
+#app{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--bg)}
+.topo{display:flex;align-items:center;gap:var(--s2);height:56px;flex:0 0 56px;padding:0 var(--s5);
+  border-bottom:1px solid var(--line);background:var(--bg);position:relative;overflow:hidden}
+.tcam{position:absolute;inset:0;display:flex;flex-direction:column;transition:transform var(--d3) var(--curva)}
+.topo.-dentro .tcam{transform:translateY(-56px)}
+.tlin{height:56px;flex:0 0 56px;display:flex;align-items:center;gap:var(--s2);padding:0 var(--s5)}
+.marca{font-family:var(--serif);font-size:19px;letter-spacing:-.01em;margin-right:var(--s5);
+  padding:3px 6px;border-radius:var(--r1)}
+.marca:hover{background:var(--bg-2)}
+.topo nav{display:flex;gap:2px}
+.topo nav button{padding:7px 13px;border-radius:var(--r1);color:var(--ink-2);font-size:13.5px}
+.topo nav button:hover{background:var(--bg-2);color:var(--ink)}
+.topo nav button[aria-current="true"]{background:var(--ink);color:var(--bg)}
+.sp{flex:1}
+.busca{display:flex;align-items:center;gap:var(--s2);height:var(--h1);padding:0 var(--s3);
+  border:1px solid var(--line);border-radius:999px;color:var(--ink-3);font-size:13px;background:var(--bg-2)}
+.busca:hover{border-color:var(--line-3);color:var(--ink-2)}
+.kbd{font-family:var(--mono);font-size:9.5px;border:1px solid var(--line);border-radius:3px;padding:1px 5px}
+.icb{width:32px;height:32px;border-radius:999px;display:flex;align-items:center;justify-content:center;
+  color:var(--ink-2);font-size:14px;border:1px solid transparent}
+.icb:hover{background:var(--bg-2);border-color:var(--line)}
+.uctl{display:flex;align-items:center;gap:7px;padding:4px 8px 4px 4px;border-radius:999px;
+  border:1px solid var(--line);background:var(--bg-2)}
+.uctl:hover{border-color:var(--line-3)}
+.ava{width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--bg);font-size:11px;
+  font-weight:600;display:flex;align-items:center;justify-content:center}
+.uctl .ch{font-size:9px;color:var(--ink-3)}
+/* faixa contextual: o nome do arquivo assume a barra quando se entra nele */
+.tlin .fnome{font-size:14px;font-weight:600;letter-spacing:-.01em}
+.tlin .fest{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-2)}
+.pt{width:7px;height:7px;border-radius:50%;display:inline-block;flex:0 0 7px}
+.pt-ok{background:var(--ok)}.pt-at{background:var(--warn)}.pt-er{background:var(--dan)}
+.pt-go{background:var(--ink);animation:pulso 1.4s ease-in-out infinite}
+@keyframes pulso{0%,100%{opacity:1}50%{opacity:.3}}
+
+.corpo{flex:1;min-height:0;overflow-y:auto;position:relative}
+.pad{padding:var(--s6) var(--s7) var(--s7);max-width:860px;margin:0 auto}
+.pad.larga{max-width:1120px}
+h1.t{font-size:25px;font-weight:650;letter-spacing:-.025em;margin:0 0 var(--s1)}
+p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;max-width:58ch}
+
+/* ═══ MESA ═══ */
+.solta{border:1.5px dashed var(--line-3);border-radius:var(--r2);padding:var(--s7) var(--s5);
+  text-align:center;background:var(--bg-2);display:flex;flex-direction:column;align-items:center;
+  gap:var(--s3);width:100%;transition:border-color var(--d1) var(--curva),background var(--d1) var(--curva)}
+.solta:hover{border-color:var(--acc);background:var(--acc-soft)}
+.solta .tt{font-size:19px;font-weight:650;letter-spacing:-.02em}
+.solta .ds{font-size:13.5px;color:var(--ink-2);max-width:44ch}
+.solta .fm{font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.07em}
+.solta.fina{flex-direction:row;justify-content:center;align-items:center;padding:var(--s4);gap:var(--s4);text-align:left}
+.solta.fina .tt{font-size:14.5px}
+.passos{display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));gap:var(--s5);margin-top:var(--s6)}
+.passo{border-left:2px solid var(--line);padding-left:var(--s3)}
+.passo b{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:5px}
+.passo span{font-size:13.5px;color:var(--ink-2);line-height:1.5}
+.grupo{margin-top:var(--s6)}
+.gcab{display:flex;align-items:baseline;gap:var(--s2);margin-bottom:var(--s3);
+  padding-bottom:var(--s2);border-bottom:1px solid var(--line-2)}
+.gcab h2{margin:0;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+.gcab .n{font-family:var(--mono);font-size:10px;color:var(--ink-3)}
+.linha{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:var(--s4);align-items:center;
+  padding:var(--s3) var(--s4);border:1px solid var(--line);border-radius:var(--r2);background:var(--bg);
+  margin-bottom:var(--s2);width:100%;transition:border-color var(--d1) var(--curva)}
+.linha:hover{border-color:var(--line-3);background:var(--bg-2)}
+.linha .capa{width:38px;height:50px;border-radius:3px;border:1px solid var(--line);object-fit:cover;
+  object-position:top;background:var(--paper);display:block}
+.linha .capa.vazia{display:flex;align-items:center;justify-content:center;font-family:var(--mono);
+  font-size:8px;color:var(--ink-3);background:var(--bg-3)}
+.linha .nm{font-size:14px;font-weight:600;letter-spacing:-.005em;display:block}
+.linha .st{font-size:12.5px;color:var(--ink-2);margin-top:3px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.linha .ac{font-size:13px;color:var(--acc);font-weight:600;white-space:nowrap}
+@media(max-width:620px){.linha{grid-template-columns:38px minmax(0,1fr)}.linha .ac{grid-column:2}}
+
+/* ═══ ITEM ═══ */
+.volta{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-3);
+  padding:5px 9px 5px 5px;border-radius:var(--r1);margin-bottom:var(--s4)}
+.volta:hover{color:var(--acc);background:var(--bg-2)}
+.icab{display:flex;gap:var(--s4);align-items:flex-start;margin-bottom:var(--s5);flex-wrap:wrap}
+.icab .cp{width:74px;height:98px;border-radius:var(--r1);border:1px solid var(--line);object-fit:cover;
+  object-position:top;flex:0 0 74px;background:var(--paper)}
+.icab .tx{flex:1;min-width:220px}
+.icab h1{margin:0;font-size:22px;font-weight:650;letter-spacing:-.025em;line-height:1.2}
+.metas{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.meta{font-size:11.5px;color:var(--ink-2);background:var(--bg-2);border:1px solid var(--line);
+  border-radius:999px;padding:3px 10px}
+.modo{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-2);
+  border:1px solid var(--line);border-radius:999px;padding:6px 12px;white-space:nowrap}
+.modo:hover{border-color:var(--line-3)}
+.modo b{color:var(--ink);font-weight:650}
+.estado{display:flex;gap:var(--s3);padding:var(--s4);border:1px solid var(--line);border-radius:var(--r2);
+  background:var(--bg-2);margin-bottom:var(--s5);align-items:flex-start}
+.estado.ok{background:var(--ok-soft);border-color:var(--ok)}
+.estado.at{background:var(--warn-soft);border-color:var(--warn)}
+.estado .pt{margin-top:6px}
+.estado h2{margin:0;font-size:15px;font-weight:650;letter-spacing:-.012em}
+.estado p{margin:4px 0 0;font-size:13.5px;color:var(--ink-2);line-height:1.55;max-width:60ch}
+.sec{margin-bottom:var(--s5)}
+.sec>h3{margin:0 0 var(--s3);font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-3)}
+.lista{border:1px solid var(--line);border-radius:var(--r2);overflow:hidden}
+.li{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:var(--s3);align-items:start;
+  padding:var(--s3) var(--s4);border-bottom:1px solid var(--line-2)}
+.li:last-child{border-bottom:none}
+.sn{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;flex:0 0 20px;margin-top:1px}
+.s-ok{background:var(--ok-soft);color:var(--ok)}.s-at{background:var(--warn-soft);color:var(--warn)}
+.s-er{background:var(--dan-soft);color:var(--dan)}.s-in{background:var(--bg-3);color:var(--ink-2)}
+.li .tx b{display:block;font-size:13.5px;font-weight:600;letter-spacing:-.005em}
+.li .tx span{display:block;font-size:12.5px;color:var(--ink-2);line-height:1.5;margin-top:2px}
+.li .ac{font-size:12.5px;color:var(--acc);font-weight:600;white-space:nowrap;padding:2px 5px;border-radius:3px}
+.li .ac:hover{background:var(--acc-soft)}
+.acoes{display:flex;gap:var(--s3);align-items:center;flex-wrap:wrap;margin-top:var(--s5)}
+.btn{height:var(--h2);padding:0 var(--s5);border-radius:999px;background:var(--ink);color:var(--bg);
+  font-size:13.5px;font-weight:600;display:inline-flex;align-items:center;gap:8px;justify-content:center;
+  white-space:nowrap;transition:background var(--d1) var(--curva)}
+.btn:hover{background:var(--acc);color:#fff}
+.btn.sec2{background:none;border:1px solid var(--line-3);color:var(--ink);font-weight:550}
+.btn.sec2:hover{background:var(--bg-2);border-color:var(--ink);color:var(--ink)}
+.btn.sm{height:var(--h1);padding:0 var(--s4);font-size:12.5px}
+.lnk{font-size:13px;color:var(--acc);font-weight:600;padding:4px 6px;border-radius:3px}
+.lnk:hover{background:var(--acc-soft)}
+.lnk.mudo{color:var(--ink-3);font-weight:550}
+.lnk.mudo:hover{color:var(--ink);background:var(--bg-2)}
+.nota{display:flex;gap:var(--s3);align-items:flex-start;padding:var(--s3) var(--s4);border-radius:var(--r1);
+  background:var(--bg-2);border:1px solid var(--line-2);font-size:12.5px;color:var(--ink-2);
+  line-height:1.55;margin-top:var(--s4)}
+.nota b{color:var(--ink)}
+.trilho{height:5px;border-radius:999px;background:var(--bg-3);overflow:hidden;margin:var(--s3) 0 var(--s2)}
+.trilho i{display:block;height:100%;background:var(--ink);border-radius:999px;transition:width .4s linear}
+.leg{display:flex;justify-content:space-between;gap:var(--s3);font-size:12.5px;color:var(--ink-2)}
+.leg .mn{font-family:var(--mono);font-size:10.5px;color:var(--ink-3)}
+.etapas{display:flex;flex-direction:column;gap:1px;margin-top:var(--s4)}
+.etapa{display:flex;align-items:center;gap:var(--s3);font-size:12.5px;padding:5px 0;color:var(--ink-3)}
+.etapa.feita{color:var(--ink-2)}.etapa.agora{color:var(--ink);font-weight:600}
+.etapa .mk{width:14px;text-align:center;font-size:11px}
+.pend{display:inline-flex;align-items:center;gap:9px;border:1px solid var(--warn);background:var(--warn-soft);
+  border-radius:999px;padding:8px 15px;font-size:13px;font-weight:600;color:var(--ink)}
+.pend .n{font-family:var(--mono);font-size:10px;color:var(--warn)}
+
+/* ═══ ESPAÇO DO LIVRO ═══ */
+.livro{display:grid;grid-template-columns:230px minmax(0,1fr);gap:var(--s7);align-items:start}
+@media(max-width:800px){.livro{grid-template-columns:1fr;gap:var(--s5)}}
+.livro .capao{width:100%;border-radius:var(--r2);border:1px solid var(--line);display:block;background:var(--paper)}
+.livro h1{margin:0 0 6px;font-family:var(--serif);font-size:28px;font-weight:400;letter-spacing:-.015em;line-height:1.15}
+.livro .autor{font-size:14px;color:var(--ink-2);margin:0 0 var(--s4)}
+.barra{display:flex;gap:var(--s2);flex-wrap:wrap;margin:var(--s4) 0 var(--s5)}
+.dado{display:grid;grid-template-columns:130px minmax(0,1fr);gap:var(--s4);padding:9px 0;
+  border-bottom:1px solid var(--line-2);font-size:13.5px}
+.dado .k{color:var(--ink-3);font-size:12.5px}
+.dado:last-child{border-bottom:none}
+
+/* ═══ ESTANTE ═══ */
+.vista{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--bg-2)}
+.vista button{padding:6px 14px;font-size:12.5px;color:var(--ink-2)}
+.vista button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(136px,1fr));gap:var(--s5)}
+.bk{text-align:left;display:block;width:100%}
+.bk img{display:block;width:100%;height:auto;border-radius:var(--r1);border:1px solid var(--line);
+  background:var(--paper);transition:transform var(--d2) var(--curva)}
+.bk:hover img{transform:translateY(-3px)}
+.bk .t{display:block;font-size:12.5px;font-weight:600;margin-top:9px;line-height:1.25}
+.bk .a{display:block;font-size:12px;color:var(--ink-3);margin-top:1px}
+.prat{margin-bottom:var(--s5)}
+.lombs{display:flex;align-items:flex-end;gap:2px;padding:0 var(--s5);min-height:150px}
+.lombs img{display:block;width:auto;border-radius:2px 2px 0 0;transition:transform var(--d2) var(--curva)}
+.lombs button:hover img{transform:translateY(-9px)}
+.lombs button[aria-pressed="true"] img{transform:translateY(-15px)}
+.tabua{height:9px;background:var(--bg-3);border-bottom:4px solid var(--ink-4);border-radius:2px}
+.legenda{display:flex;align-items:baseline;gap:var(--s3);padding:var(--s3) var(--s5) 0;min-height:36px}
+
+/* ═══ PERFIL ═══ */
+.pcab{display:flex;gap:var(--s5);align-items:center;padding-bottom:var(--s5);
+  border-bottom:1px solid var(--line);margin-bottom:var(--s5);flex-wrap:wrap}
+.pcab .ava{width:64px;height:64px;font-size:22px}
+.pcab h1{margin:0;font-size:24px;font-weight:650;letter-spacing:-.025em}
+.pcab .h{font-size:13px;color:var(--ink-3);margin-top:3px}
+.dobra{border:1px solid var(--line);border-radius:var(--r2);margin-bottom:var(--s2);overflow:hidden}
+.dobra>button{display:flex;align-items:center;gap:var(--s3);width:100%;padding:var(--s4)}
+.dobra>button:hover{background:var(--bg-2)}
+.dobra .nm{font-size:14.5px;font-weight:650}
+.dobra .rs{font-size:12.5px;color:var(--ink-2);margin-top:2px}
+.dobra .ch{margin-left:auto;color:var(--ink-3);font-size:11px}
+.dobra .in{padding:0 var(--s4) var(--s4);border-top:1px solid var(--line-2)}
+.row{display:flex;align-items:center;gap:var(--s4);padding:var(--s3) 0;border-bottom:1px solid var(--line-2)}
+.row:last-child{border-bottom:none}
+.row .tx{flex:1;min-width:0}
+.row .tx b{display:block;font-size:13.5px;font-weight:600}
+.row .tx span{display:block;font-size:12.5px;color:var(--ink-2);margin-top:2px;line-height:1.5}
+.sw{width:38px;height:22px;border-radius:999px;background:var(--line-3);position:relative;flex:0 0 38px;
+  transition:background var(--d1) var(--curva)}
+.sw i{position:absolute;top:2.5px;left:2.5px;width:17px;height:17px;border-radius:50%;background:var(--bg);
+  transition:left var(--d1) var(--curva)}
+.sw[aria-pressed="true"]{background:var(--ink)}
+.sw[aria-pressed="true"] i{left:18.5px}
+.espelho{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;
+  border:1px solid var(--line);border-radius:3px;padding:2px 6px;color:var(--ink-3);white-space:nowrap}
+
+/* ═══ DOCK ═══ só nas superfícies espaciais */
+.dock{position:sticky;bottom:var(--s5);margin:var(--s6) auto 0;width:max-content;display:flex;gap:var(--s1);
+  background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:5px}
+.dock button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 15px;border-radius:999px;
+  font-size:11.5px;color:var(--ink-2)}
+.dock button:hover{background:var(--bg-2);color:var(--ink)}
+.dock button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.dock .div{width:1px;background:var(--line-2);margin:6px 4px}
+
+/* ═══ FOLHA ═══ */
+.veu{position:fixed;inset:0;background:rgba(20,19,17,.44);display:flex;align-items:flex-start;
+  justify-content:center;padding:var(--s6) var(--s4);z-index:80;overflow-y:auto}
+.folha{background:var(--bg);border:1px solid var(--line);border-radius:var(--r2);width:100%;max-width:560px;
+  overflow:hidden}
+.fcab{display:flex;align-items:flex-start;gap:var(--s3);padding:var(--s4);border-bottom:1px solid var(--line-2)}
+.fcab .ct{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+.fcab h2{margin:3px 0 0;font-size:17px;font-weight:650;letter-spacing:-.018em}
+.fx{width:30px;height:30px;border-radius:999px;display:flex;align-items:center;justify-content:center;
+  font-size:15px;color:var(--ink-2);border:1px solid var(--line);flex:0 0 30px}
+.fx:hover{background:var(--bg-2);color:var(--ink)}
+.fcorpo{padding:var(--s4)}
+.fpe{display:flex;gap:var(--s3);align-items:center;padding:var(--s4);border-top:1px solid var(--line-2);
+  background:var(--bg-2);flex-wrap:wrap}
+.conf{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-2);
+  background:var(--bg-2);border:1px solid var(--line);border-radius:999px;padding:5px 12px}
+.conf b{color:var(--ink);font-weight:650}
+.pgs{display:flex;gap:var(--s3);justify-content:center;padding:var(--s4);background:var(--bg-2);
+  border-radius:var(--r1);margin-bottom:var(--s4)}
+.pg{width:86px;height:120px;border:1px solid var(--line);border-radius:3px;background:var(--bg);position:relative;
+  display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;font-family:var(--mono);
+  font-size:9px;color:var(--ink-3)}
+.pg i{position:absolute;inset:6px 6px 20px;border-radius:2px;
+  background:repeating-linear-gradient(135deg,var(--bg-3) 0 7px,var(--bg-2) 7px 14px)}
+.pg.dup{width:172px}
+.seta{display:flex;align-items:center;font-size:19px;color:var(--ink-3)}
+
+/* ═══ MENU DA CONTA ═══ */
+.umenu{position:absolute;top:50px;right:var(--s5);width:262px;background:var(--bg);border:1px solid var(--line);
+  border-radius:var(--r2);z-index:70;overflow:hidden}
+.umenu .id{padding:var(--s4);border-bottom:1px solid var(--line-2);display:flex;gap:var(--s3);align-items:center}
+.umenu .id .ava{width:38px;height:38px;font-size:14px}
+.umenu .id .n{font-size:14px;font-weight:600}
+.umenu .id .e{font-size:12px;color:var(--ink-3);margin-top:1px}
+.umenu ul{list-style:none;margin:0;padding:var(--s2)}
+.umenu li button{display:flex;align-items:center;gap:var(--s3);width:100%;padding:9px var(--s3);
+  border-radius:var(--r1);font-size:13.5px}
+.umenu li button:hover{background:var(--bg-2)}
+.umenu li button .ic{width:16px;text-align:center;color:var(--ink-3);font-size:12px}
+.umenu .divi{height:1px;background:var(--line-2);margin:var(--s2) 0}
+
+/* ═══ PAINEL DE NOTAS ═══ */
+#notasbt{position:fixed;right:18px;bottom:18px;z-index:90;background:var(--ink);color:var(--bg);
+  border-radius:999px;padding:10px 17px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:9px}
+#notasbt:hover{background:var(--acc);color:#fff}
+#notasbt .bdg{font-family:var(--mono);font-size:9px;background:var(--acc);color:#fff;border-radius:999px;
+  padding:2px 7px}
+#notas{position:fixed;inset:0;z-index:95;background:var(--bg);display:flex;flex-direction:column}
+#notas[hidden]{display:none}
+.ncab{display:flex;align-items:center;gap:var(--s3);padding:var(--s4) var(--s5);border-bottom:1px solid var(--line)}
+.nabas{display:flex;gap:2px}
+.nabas button{padding:7px 13px;border-radius:var(--r1);font-size:13px;color:var(--ink-2)}
+.nabas button:hover{background:var(--bg-2)}
+.nabas button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.ncorpo{flex:1;overflow-y:auto;padding:var(--s6) var(--s7)}
+.ncorpo .w{max-width:820px}
+.ncorpo h2{font-size:22px;font-weight:400;font-family:var(--serif);letter-spacing:-.015em;margin:0 0 var(--s3)}
+.ncorpo h3{font-size:12px;font-weight:700;letter-spacing:.06em;margin:var(--s6) 0 var(--s3);color:var(--ink-2)}
+.ncorpo p{font-size:14px;line-height:1.65;color:var(--ink-2);margin:0 0 var(--s3);max-width:68ch}
+.ncorpo p b,.ncorpo li b{color:var(--ink);font-weight:600}
+.ncorpo ul{margin:0 0 var(--s3);padding-left:20px;font-size:14px;line-height:1.65;color:var(--ink-2);
+  display:flex;flex-direction:column;gap:6px;max-width:68ch}
+table{border-collapse:collapse;width:100%;font-size:12.5px;margin:var(--s3) 0}
+th{text-align:left;font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:400;padding:9px 11px;border-bottom:1px solid var(--line)}
+td{padding:9px 11px;border-bottom:1px solid var(--line-2);color:var(--ink-2);vertical-align:top;line-height:1.5}
+td.n{color:var(--ink);font-weight:600}
+.copy{border:1px solid var(--line);border-radius:var(--r2);overflow:hidden;margin-top:var(--s4)}
+.cpl{display:grid;grid-template-columns:150px minmax(0,1fr);gap:var(--s4);padding:var(--s3) var(--s4);
+  border-bottom:1px solid var(--line-2)}
+.cpl:last-child{border-bottom:none}
+.cpl .onde{font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:var(--ink-3);text-transform:uppercase}
+.cpl .txt{font-size:13.5px;color:var(--ink);line-height:1.5}
+.cpl .pq{font-size:12.5px;color:var(--ink-3);line-height:1.5;margin-top:4px}
+.mau{color:var(--dan);text-decoration:line-through;text-decoration-thickness:1px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<button id="notasbt" type="button">◇ notas<span class="bdg">copy · dock</span></button>
+<div id="notas" hidden></div>
+<script>
+"use strict";
+/* ════════════════════════════════════════════════════════════
+   Protótipo navegável. Tudo simulado: nenhum arquivo é lido,
+   nada sai desta página. A microcópia é a entrega principal
+   junto com o fluxo — está registrada no painel ◇ notas.
+   ════════════════════════════════════════════════════════════ */
+const app=document.getElementById("app");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const ACERVO=[
+ {c:"01",t:"Estudo de Viabilidade",a:"Ana Duarte",f:"EPUB",q:"14 notas",l:"03",h:196},
+ {c:"02",t:"Malha Urbana",a:"Ana Duarte",f:"EPUB",q:"preparado hoje",l:"02",h:182},
+ {c:"03",t:"Sequênca Noturna",a:"Ana Duarte",f:"EPUB",q:"6 notas",l:"04",h:204},
+ {c:"04",t:"Censo de Fauna",a:"Ana Duarte",f:"EPUB",q:"lido em julho",l:"05",h:174},
+ {c:"05",t:"Malha Urbana",a:"Ana Duarte",f:"EPUB",q:"outra edição",l:"06",h:190},
+ {c:"06",t:"Ensaio Visual",a:"Ana Duarte",f:"TXT",q:"2 notas",l:"07",h:166},
+ {c:"07",t:"Ensaio Visual",a:"Ana Duarte",f:"TXT",q:"variante",l:"08",h:198},
+ {c:"08",t:"Arquivo",a:"Ana Duarte",f:"PDF",q:"capa gerada",l:"09",h:186},
+ {c:"09",t:"Ata da reunião",a:"Ana Duarte",f:"PDF",q:"pesquisa",l:"10",h:172},
+ {c:"10",t:"Arquivo",a:"Ana Duarte",f:"XLSX",q:"planilha",l:"11",h:200},
+ {c:"11",t:"Diário 02",a:"Ana Duarte",f:"PDF",q:"registro de campo",l:"12",h:178},
+ {c:"12",t:"Ata da reunião",a:"Ana Duarte",f:"PDF",q:"pesquisa",l:"13",h:192},
+ {c:"13",t:"Briefing de Marca",a:"Ana Duarte",f:"PDF",q:"1 nota",l:"01",h:168},
+ {c:"14",t:"Apresentação Institucional",a:"Ana Duarte",f:"PDF",q:"pesquisa",l:"14",h:206}
+];
+const capa=n=>"capas/capa-"+n+".jpg";
+const lomb=n=>"capas/lombada-"+n+".png";
+const ARQ={nome:"Relatório de pesquisa — expedição 02.pdf",saida:"Diário 02.epub",fmt:"PDF",
+  tam:"12,8 MB",pgs:96,idioma:"Português",titulo:"Diário 02",autor:"Ana Duarte",capa:"11",gerada:"08"};
+
+const zero={
+  lugar:"mesa",cena:"trabalho",conta:true,modo:"guiado",dentro:false,
+  fase:"analise",feito:0,pendMostrada:false,pendResolvida:false,enviado:false,
+  traduzir:null,capaEsc:"gerada",feitoAberto:false,
+  estante:"lista",lombSel:"01",perfil:"conta",folha:null,menu:false,aviso:null,manuais:0,avisoUso:true
+};
+let S=Object.assign({},zero),timer=null;
+function reset(cena){
+  clearInterval(timer);timer=null;S=Object.assign({},zero);
+  if(cena==="nova"){S.cena="nova";}
+  if(cena==="sem-conta"){S.cena="nova";S.conta=false;}
+  pinta();
+}
+
+/* ═══ TOPO ═══ o mesmo do prototipo.html, com a faixa contextual */
+function topo(){
+  const noItem=S.lugar==="item"||S.lugar==="livro";
+  const lug=[["mesa","Mesa"],["estante","Estante"],["canvas","Canvas"],["conexoes","Conexões"]];
+  const at=noItem?"mesa":S.lugar;
+  let l1='<div class="tlin"><button class="marca" data-a="ir" data-v="mesa" title="Voltar à Mesa">Mekora</button>';
+  if(S.conta){
+    l1+='<nav>'+lug.map(x=>'<button data-a="ir" data-v="'+x[0]+'"'+(at===x[0]?' aria-current="true"':'')+
+      '>'+x[1]+'</button>').join("")+'</nav><span class="sp"></span>'+
+      '<button class="busca" data-a="nada"><span>⌕</span><span>Buscar</span><span class="kbd">⌘K</span></button>'+
+      '<button class="icb" data-a="nada" aria-label="Ajuda">?</button>'+
+      '<button class="uctl" data-a="menu" aria-expanded="'+S.menu+'"><span class="ava">EA</span><span class="ch">▾</span></button>';
+  }else{
+    l1+='<span class="sp"></span><button class="lnk mudo" data-a="nada">Como funciona</button>'+
+      '<button class="icb" data-a="nada" aria-label="Ajuda">?</button>'+
+      '<button class="btn sm sec2" data-a="folha" data-v="conta">Entrar</button>';
+  }
+  l1+='</div>';
+  const est=S.fase==="pronto"?['pt-ok',S.enviado?"Enviado ao Kindle":"Pronto · "+ARQ.saida]:
+    S.fase==="preparando"?['pt-go',"Preparando — "+S.feito+" de 96 páginas"]:['pt-at',"Analisado · 1 coisa para você ver"];
+  const l2='<div class="tlin"><button class="marca" data-a="ir" data-v="mesa">Mekora</button>'+
+    '<span class="fnome">'+esc(S.lugar==="livro"?ARQ.titulo:ARQ.nome)+'</span>'+
+    '<span class="fest"><i class="pt '+est[0]+'"></i>'+est[1]+'</span><span class="sp"></span>'+
+    (S.fase==="pronto"?'<button class="btn sm" data-a="folha" data-v="envio">Enviar ao Kindle</button>':
+      '<button class="lnk mudo" data-a="ir" data-v="mesa">‹ Mesa</button>')+'</div>';
+  return '<div class="topo'+(S.dentro&&noItem?' -dentro':'')+'"><div class="tcam">'+l1+l2+'</div></div>'+
+    (S.menu?menuConta():"");
+}
+function menuConta(){
+  const its=[["Perfil e conta","perfil","◍"],["Dispositivos Kindle","perfil","▭"],["Preferências","perfil","≡"],
+    ["Privacidade","perfil","⚿"],["Atualizações","perfil","✦"],["Ajuda e recursos","","?"]];
+  return '<div class="umenu"><div class="id"><span class="ava">EA</span><div>'+
+    '<div class="n">Erik Abner</div><div class="e">erik@exemplo.com</div></div></div><ul>'+
+    its.map(i=>'<li><button data-a="'+(i[1]?"ir":"nada")+'"'+(i[1]?' data-v="'+i[1]+'"':'')+
+      '><span class="ic">'+i[2]+'</span>'+i[0]+'</button></li>').join("")+
+    '<li class="divi"></li><li><button data-a="nada"><span class="ic">→</span>Sair</button></li></ul></div>';
+}
+
+/* ═══ MESA ═══ */
+function vMesa(){
+  if(S.cena==="nova")return mesaNova();
+  let h='<div class="pad">'+
+    '<h1 class="t">Sua mesa</h1>'+
+    '<p class="sub">O que chegou, o que está sendo preparado e o que já pode ser lido.</p>'+
+    '<button class="solta fina" data-a="soltar" style="margin-bottom:var(--s6)">'+
+      '<span class="tt">Solte arquivos aqui</span>'+
+      '<span class="ds">ou clique para escolher · PDF, EPUB, DOCX, CBZ, CBR, ZIP</span></button>';
+
+  h+='<div class="grupo"><div class="gcab"><h2>Precisa de você</h2><span class="n">1</span></div>'+
+    linha({nm:"Relatório de pesquisa — expedição 02.pdf",st:"Analisado · o arquivo não tem capa",pt:"at",
+      cap:"",acao:"Ver",a:"abrir-item"})+'</div>';
+
+  h+='<div class="grupo"><div class="gcab"><h2>Sendo preparados</h2><span class="n">2</span>'+
+    '<span class="sp"></span><span class="n">continua com a aba fechada</span></div>'+
+    linha({nm:"Censo de Fauna — digitalização.pdf",st:"Reconhecendo o texto — 1 min 04 s",pt:"go",cap:"",acao:"Ver",a:"nada"})+
+    linha({nm:"Ensaio Visual — rascunho.pdf",st:"Conexão caiu na página 38 de 210 · retomando sozinho",pt:"at",cap:"",acao:"Ver",a:"nada"})+
+    '</div>';
+
+  h+='<div class="grupo"><div class="gcab"><h2>Na estante</h2><span class="n">14</span><span class="sp"></span>'+
+    '<button class="lnk mudo" data-a="ir" data-v="estante">Ver a estante →</button></div>'+
+    ACERVO.slice(0,3).map(b=>linha({nm:b.t,st:b.f+" · "+b.q,pt:"ok",cap:b.c,acao:"Abrir",a:"ir-livro"})).join("")+
+    '</div>';
+  return h+'</div>';
+}
+function mesaNova(){
+  return '<div class="pad">'+
+    '<h1 class="t">Comece soltando um arquivo</h1>'+
+    '<p class="sub">O Mekora abre, vê o que tem dentro e prepara para leitura. Você confirma uma vez.'+
+      (S.conta?'':' <b style="color:var(--ink)">Converter não exige conta.</b>')+'</p>'+
+    '<button class="solta" data-a="soltar">'+
+      '<span class="tt">Solte um arquivo aqui</span>'+
+      '<span class="ds">ou clique para escolher no computador</span>'+
+      '<span class="fm">PDF · EPUB · DOCX · CBZ · CBR · ZIP · imagens</span></button>'+
+    '<div class="passos">'+
+      '<div class="passo"><b>Assim que chegar</b><span>Eu abro, conto as páginas e digo o que encontrei.</span></div>'+
+      '<div class="passo"><b>Você confirma</b><span>Uma tela, uma lista, um botão. Só pergunto quando há dúvida de verdade.</span></div>'+
+      '<div class="passo"><b>No fim</b><span>Baixe o arquivo ou mande direto para o seu Kindle.</span></div>'+
+    '</div>'+
+    (S.avisoUso?'<div class="nota"><span>◆</span><div>Registramos <b>onde você clica e onde trava</b> nesta '+
+      'interface, para descobrir o que está confuso — nunca o conteúdo dos seus arquivos. '+
+      '<button class="lnk" data-a="ir" data-v="perfil" style="padding:0">Ver o que é guardado</button> · '+
+      '<button class="lnk mudo" data-a="fechar-aviso" style="padding:0">dispensar</button></div></div>':'')+
+    '</div>';
+}
+function linha(o){
+  return '<button class="linha" data-a="'+o.a+'">'+
+    (o.cap?'<img class="capa" src="'+capa(o.cap)+'" alt="">':'<span class="capa vazia">sem<br>capa</span>')+
+    '<span><span class="nm">'+esc(o.nm)+'</span><span class="st"><i class="pt pt-'+o.pt+'"></i>'+esc(o.st)+'</span></span>'+
+    '<span class="ac">'+o.acao+'</span></button>';
+}
+
+/* ═══ ITEM ═══ */
+function vItem(){
+  if(S.fase==="preparando")return itemPreparando();
+  if(S.fase==="pronto")return itemPronto();
+  let h='<div class="pad">'+cab()+
+    est("","Analisado. Nada aqui impede a preparação.",
+      "96 páginas, todas abriram. Uma coisa eu resolvi sozinho e vale você conferir: o arquivo não tem capa.");
+
+  h+='<div class="sec"><h3>O que encontrei</h3><div class="lista">'+
+    li("at","!","Texto em imagem","As 96 páginas são digitalizações. Sem reconhecimento, o Kindle não busca palavras nem ajusta o tamanho da letra.","por quê","ocr")+
+    li("at","!","Sumário sem links","Os títulos de capítulo estão lá, mas não levam a lugar nenhum.","","")+
+    li("ok","✓","Nenhuma página corrompida","96 de 96 abriram sem erro.","","")+
+    '</div></div>';
+
+  h+='<div class="sec"><h3>O que vou fazer</h3><div class="lista">'+
+    li("in","1","Reconhecer o texto em português","O idioma estava declarado no próprio arquivo.","","")+
+    li("in","2","Converter para EPUB","No EPUB o texto reflui: você muda o corpo da letra e o conteúdo se ajusta. Em PDF, não.","","")+
+    li("in","3","Gerar um sumário navegável","A partir dos 14 títulos de capítulo que encontrei.","","")+
+    li(S.capaEsc==="gerada"?"ok":"in",S.capaEsc==="gerada"?"✓":"4",
+      S.capaEsc==="gerada"?"Capa gerada":"Usar a página 1 como capa",
+      S.capaEsc==="gerada"?"Montei uma com o título, o autor e o formato — o arquivo não tinha nenhuma.":"Escolhido por você.","ver","capa")+
+    li(S.traduzir?"ok":"in",S.traduzir?"✓":"5",
+      S.traduzir?"Traduzir para "+S.traduzir:"Idioma: português, como no original",
+      S.traduzir?"Sai um segundo arquivo. O original fica intacto na estante.":"Nada é traduzido a não ser que você peça.",
+      S.traduzir?"alterar":"traduzir","traduzir")+
+    '</div></div>';
+
+  h+='<div class="sec"><h3>Como vai aparecer na estante</h3><div class="lista">'+
+    li("in","T","Título: "+esc(ARQ.titulo),"Lido das propriedades do arquivo.","alterar","meta")+
+    li("in","A","Autor: "+esc(ARQ.autor),"Lido das propriedades do arquivo.","alterar","meta")+
+    '</div></div>';
+
+  if(S.modo==="personalizado")h+=painel();
+
+  h+='<div class="acoes"><button class="btn" data-a="preparar">Preparar com estas recomendações</button>'+
+    '<button class="lnk mudo" data-a="modo">Ajustar manualmente</button></div>'+
+    '<div class="nota"><span>◆</span><div>Pode fechar a aba: o trabalho não é feito no seu computador. '+
+      'O item volta a aparecer na Mesa quando terminar.</div></div>';
+  return h+'</div>';
+}
+function cab(){
+  return '<button class="volta" data-a="ir" data-v="mesa">‹ Mesa</button>'+
+    '<div class="icab"><img class="cp" src="'+capa(S.capaEsc==="gerada"?ARQ.gerada:ARQ.capa)+'" alt="">'+
+    '<div class="tx"><h1>'+esc(ARQ.nome)+'</h1><div class="metas">'+
+    '<span class="meta">'+ARQ.fmt+'</span><span class="meta">'+ARQ.tam+'</span>'+
+    '<span class="meta">'+ARQ.pgs+' páginas</span><span class="meta">'+ARQ.idioma+'</span></div></div>'+
+    '<button class="modo" data-a="modo">'+(S.modo==="guiado"?'<b>Guiado</b> · trocar':'<b>Personalizado</b> · voltar')+'</button></div>';
+}
+function est(k,t,p){
+  return '<div class="estado '+k+'"><i class="pt pt-'+(k==="ok"?"ok":k==="at"?"at":"go")+'"></i>'+
+    '<div><h2>'+t+'</h2>'+(p?'<p>'+p+'</p>':'')+'</div></div>';
+}
+function li(k,ch,t,d,ac,v){
+  return '<div class="li"><span class="sn s-'+k+'">'+ch+'</span><span class="tx"><b>'+t+'</b>'+
+    (d?'<span>'+d+'</span>':'')+'</span>'+
+    (ac?'<button class="ac" data-a="folha" data-v="'+v+'">'+ac+'</button>':'<span></span>')+'</div>';
+}
+function painel(){
+  return '<div class="sec"><h3>Personalizado</h3><div class="lista">'+
+    '<div class="li" style="grid-template-columns:1fr"><span class="tx"><b>As decisões automáticas foram preservadas</b>'+
+    '<span>Nenhum campo nasce vazio: tudo abaixo já está com o que o Guiado teria feito.</span></span></div></div>'+
+    '<div class="lista" style="margin-top:var(--s2)">'+
+    row("Formato de saída","EPUB — porque o arquivo é texto corrido","Alterar")+
+    row("Qualidade das imagens","Equilibrada — 300 PPI nas figuras","Alterar")+
+    row("Nome do arquivo final","Derivado do original","Alterar")+
+    '</div>'+(S.manuais?'<div class="nota"><span>◆</span><div>'+S.manuais+' ajuste'+(S.manuais>1?"s":"")+
+      ' manual. Ao voltar ao Guiado eu pergunto o que fazer com '+(S.manuais>1?"eles":"ele")+
+      ' — nada é descartado em silêncio.</div></div>':'')+'</div>';
+}
+function row(t,d,b){
+  return '<div class="li" style="grid-template-columns:minmax(0,1fr) auto"><span class="tx"><b>'+t+'</b><span>'+d+'</span></span>'+
+    '<button class="btn sm sec2" data-a="manual">'+b+'</button></div>';
+}
+function itemPreparando(){
+  const f=S.feito;
+  let h='<div class="pad">'+cab()+
+    est("","Preparando — reconhecendo o texto",
+      "Esta etapa eu sei contar, porque é página a página. As seguintes não avançam de forma linear, então mostro a etapa e o tempo, não uma barra.")+
+    '<div class="sec"><div class="trilho"><i style="width:'+Math.round(f/96*100)+'%"></i></div>'+
+    '<div class="leg"><span><b>'+f+' de 96 páginas</b> reconhecidas</span>'+
+    '<span class="mn">'+Math.floor(f/16)+' MIN '+String(Math.floor(f*1.7)%60).padStart(2,"0")+' S</span></div>'+
+    '<div class="etapas">'+
+      '<div class="etapa feita"><span class="mk">✓</span>Analisar</div>'+
+      '<div class="etapa agora"><span class="mk">●</span>Reconhecer o texto <span style="color:var(--ink-3);font-weight:400">— página '+f+'</span></div>'+
+      '<div class="etapa"><span class="mk">○</span>Converter para EPUB</div>'+
+      '<div class="etapa"><span class="mk">○</span>Gerar o sumário</div>'+
+      '<div class="etapa"><span class="mk">○</span>Montar a capa</div>'+
+    '</div></div>'+
+    '<div class="acoes"><button class="btn sec2" data-a="cancelar">Cancelar</button>'+
+    '<button class="lnk mudo" data-a="ir" data-v="mesa">Continuar navegando</button></div>'+
+    '<div class="nota"><span>◆</span><div>Nenhuma porcentagem aparece para etapa que não avança linearmente. '+
+      'A barra acima conta páginas de verdade.</div></div>';
+  return h+'</div>';
+}
+function itemPronto(){
+  let h='<div class="pad">'+cab()+
+    est("ok","Pronto. "+ARQ.saida+" · 8,4 MB",
+      S.pendResolvida?"Três páginas ficaram sem reconhecimento, como você decidiu. O resto está completo.":
+      "93 das 96 páginas com texto reconhecido, sumário com 14 capítulos, capa montada.");
+  if(S.enviado)h+='<div class="estado ok" style="margin-top:calc(var(--s5) * -1 + 4px)"><i class="pt pt-ok"></i>'+
+    '<div><h2>A Amazon aceitou o arquivo às 09:12</h2><p>Costuma aparecer no aparelho em poucos minutos, '+
+    'quando ele estiver conectado. Não temos como saber se já chegou.</p></div></div>';
+  h+='<div class="acoes">'+
+    (S.enviado?'':'<button class="btn" data-a="folha" data-v="envio">Enviar ao Kindle de Erik</button>')+
+    '<button class="btn '+(S.enviado?'':'sec2')+'" data-a="baixar">Baixar EPUB</button>'+
+    '<button class="lnk mudo" data-a="ir-livro">Abrir na estante</button></div>';
+  h+='<div class="sec" style="margin-top:var(--s6)"><button class="lnk" data-a="feito">'+
+    (S.feitoAberto?"▾":"▸")+' O que foi feito neste arquivo</button>'+
+    (S.feitoAberto?'<div class="lista" style="margin-top:var(--s3)">'+
+      li("ok","✓","Texto reconhecido em 93 das 96 páginas","Três eram fotografias sem texto legível.","","")+
+      li("ok","✓","Convertido de PDF para EPUB","O original continua na estante, intacto.","desfazer","undo")+
+      li("ok","✓","Sumário com 14 capítulos","","desfazer","undo")+
+      li("ok","✓","Capa gerada pelo Mekora","","alterar","capa")+
+      '</div>':'')+'</div>';
+  return h+'</div>';
+}
+
+/* ═══ ESPAÇO DO LIVRO ═══ */
+function vLivro(){
+  return '<div class="pad larga">'+
+    '<button class="volta" data-a="ir" data-v="estante">‹ Estante</button>'+
+    '<div class="livro"><div>'+
+      '<img class="capao" src="'+capa(ARQ.capa)+'" alt="Capa de '+esc(ARQ.titulo)+'">'+
+      '<div class="acoes" style="margin-top:var(--s4);flex-direction:column;align-items:stretch">'+
+      '<button class="btn" data-a="nada">Ler</button>'+
+      '<button class="btn sec2" data-a="folha" data-v="envio">Enviar ao Kindle</button></div></div>'+
+    '<div>'+
+      '<h1>'+esc(ARQ.titulo)+'</h1><p class="autor">'+esc(ARQ.autor)+'</p>'+
+      '<div class="barra"><span class="meta">EPUB · 8,4 MB</span><span class="meta">96 páginas</span>'+
+      '<span class="meta">Português</span><span class="meta">preparado hoje, 09:04</span></div>'+
+      '<div class="sec"><h3>De onde veio</h3><div class="lista">'+
+        '<div class="li"><span class="sn s-in">↑</span><span class="tx"><b>Relatório de pesquisa — expedição 02.pdf</b>'+
+        '<span>O original continua guardado. Dá para preparar de novo com outras opções sem enviar o arquivo outra vez.</span></span>'+
+        '<button class="ac" data-a="abrir-item">ver o preparo</button></div></div></div>'+
+      '<div class="sec"><h3>Ficha</h3>'+
+        '<div class="dado"><span class="k">Título</span><span>'+esc(ARQ.titulo)+'</span></div>'+
+        '<div class="dado"><span class="k">Autor</span><span>'+esc(ARQ.autor)+'</span></div>'+
+        '<div class="dado"><span class="k">Capa</span><span>Gerada pelo Mekora — o original não tinha</span></div>'+
+        '<div class="dado"><span class="k">Sumário</span><span>14 capítulos, navegáveis</span></div>'+
+        '<div class="dado"><span class="k">Texto</span><span>Reconhecido em 93 de 96 páginas</span></div>'+
+        '<div class="dado"><span class="k">No Kindle</span><span>'+(S.enviado?"Enviado hoje, 09:12":"Ainda não enviado")+'</span></div>'+
+      '</div>'+
+      '<div class="sec"><h3>Leitura e notas</h3>'+
+      '<div class="nota" style="margin-top:0"><span>◆</span><div>O leitor, os destaques, as notas de margem e a '+
+      'área de Conhecimento já existem e continuam no <b>protótipo da área pessoal</b> — este aqui cobre a chegada '+
+      'do arquivo e a ficha do livro. Os dois são a mesma moldura, de propósito.</div></div></div>'+
+    '</div></div></div>';
+}
+
+/* ═══ ESTANTE ═══ */
+function vEstante(){
+  let h='<div class="pad larga">'+
+    '<div style="display:flex;align-items:center;gap:var(--s4);flex-wrap:wrap;margin-bottom:var(--s5)">'+
+    '<div><h1 class="t">Estante</h1><p class="sub" style="margin:0">14 itens · tudo que já foi preparado.</p></div>'+
+    '<span class="sp"></span>'+
+    '<span class="vista"><button data-a="vista" data-v="lista" aria-pressed="'+(S.estante==="lista")+'">Capas</button>'+
+    '<button data-a="vista" data-v="3d" aria-pressed="'+(S.estante==="3d")+'">Estante</button></span></div>';
+  if(S.estante==="lista"){
+    h+='<div class="grade">'+ACERVO.map(b=>'<button class="bk" data-a="ir-livro">'+
+      '<img src="'+capa(b.c)+'" alt="Capa de '+esc(b.t)+'" loading="lazy">'+
+      '<span class="t">'+esc(b.t)+'</span><span class="a">'+esc(b.a)+' · '+b.f+'</span></button>').join("")+'</div>';
+  }else{
+    const prats=[ACERVO.slice(0,5),ACERVO.slice(5,10),ACERVO.slice(10)];
+    h+=prats.map(p=>'<div class="prat"><div class="lombs">'+p.map(b=>
+      '<button data-a="lomb" data-v="'+b.c+'" aria-pressed="'+(S.lombSel===b.c)+'" title="'+esc(b.t)+'">'+
+      '<img src="'+lomb(b.l)+'" alt="Lombada de '+esc(b.t)+'" style="height:'+b.h+'px" loading="lazy"></button>').join("")+
+      '</div><div class="tabua"></div></div>').join("");
+    const b=ACERVO.find(x=>x.c===S.lombSel);
+    h+='<div class="legenda">'+(b?'<b style="font-size:14px">'+esc(b.t)+'</b>'+
+      '<span style="font-size:12.5px;color:var(--ink-3)">'+esc(b.a)+' · '+b.f+' · '+esc(b.q)+'</span>'+
+      '<span class="sp"></span><button class="lnk" data-a="ir-livro">Abrir</button>':'')+'</div>';
+  }
+  h+=dock(["Capas","Estante","Filtrar","Organizar"],S.estante==="lista"?0:1);
+  return h+'</div>';
+}
+function vCanvas(nome){
+  return '<div class="pad larga"><h1 class="t">'+nome+'</h1>'+
+    '<p class="sub">Superfície espacial. É aqui — e só aqui — que a dock existe: ela segura ferramentas de '+
+    'manipulação direta, que precisam ficar perto das mãos.</p>'+
+    '<div style="border:1px dashed var(--line);border-radius:var(--r2);padding:var(--s7);text-align:center;'+
+    'color:var(--ink-3);font-size:13.5px">Preservado do protótipo da área pessoal.<br>'+
+    'O que muda aqui é só a barra do topo, que passou a ser a mesma das outras telas.</div>'+
+    dock(["Nota","Mídia","Conectar","Organizar","Filtrar"],-1)+'</div>';
+}
+function dock(its,on){
+  return '<div class="dock">'+its.map((t,i)=>'<button data-a="nada"'+(i===on?' aria-pressed="true"':'')+
+    '>'+t+'</button>').join("")+'</div>';
+}
+
+/* ═══ PERFIL ═══ */
+function vPerfil(){
+  const D=[
+   ["conta","Conta","erik@exemplo.com · desde julho de 2026",
+     rowP("Nome","Erik Abner","","Alterar")+rowP("E-mail","erik@exemplo.com","","Alterar")+
+     rowP("Senha","Alterada em 2 de agosto","","Alterar")],
+   ["disp","Dispositivos Kindle","1 aparelho · Paperwhite",
+     rowP("Kindle de Erik","Paperwhite · 1236 × 1680 · erik_abc@kindle.com","padrão","")+
+     rowP("Adicionar aparelho","Precisa do endereço @kindle.com e de autorizar o remetente na Amazon","","Adicionar")+
+     '<div class="nota"><span>◆</span><div>É este aparelho que define o tamanho das páginas nos quadrinhos. '+
+     'Trocar aqui muda a recomendação dos próximos arquivos.</div></div>'],
+   ["pref","Preferências","Modo padrão, downloads e movimento",
+     rowP("Modo ao abrir um arquivo","Guiado","","Alterar")+
+     rowSw("Baixar sozinho quando ficar pronto","Desligado. Você continua sendo avisado na Mesa.",false)+
+     rowSw("Reduzir movimento","Segue a preferência do seu sistema.",false)+
+     '<div class="nota"><span>◆</span><div>Tipografia do leitor, densidade da estante e OCR moram '+
+     '<b>onde o efeito acontece</b> e sobem a padrão por ato deliberado. Aqui fica só o que não tem contexto '+
+     '— é a regra do caderno 02.</div></div>'],
+   ["priv","Privacidade","O que é guardado, o que é medido, por quanto tempo",
+     rowP("Arquivos originais","Apagados 24 horas depois de preparados. O resultado fica na sua estante.","","Alterar")+
+     rowSw("Ajudar a melhorar o Mekora","Registramos onde você clica e onde trava — nunca o conteúdo dos seus arquivos, nem o texto que sai do reconhecimento.",true)+
+     rowSw("Usar minhas respostas de pendência","Quando você responde uma dúvida, isso vira exemplo para o Mekora aprender a acertar sozinho. Guardamos a resposta e as medidas das páginas, não as imagens.",true)+
+     rowP("Baixar meus dados","Estante, notas e histórico de preparação","","Baixar")+
+     rowP("Apagar a conta","Irreversível. Pedimos confirmação por e-mail antes.","","Apagar")],
+   ["hist","Histórico","O que você mudou, e de onde",
+     '<div class="dado"><span class="k">hoje, 09:04</span><span>Capa gerada aceita em <b>Relatório de pesquisa</b> · neste navegador</span></div>'+
+     '<div class="dado"><span class="k">ontem</span><span>Modo padrão alterado para <b>Guiado</b> · neste navegador</span></div>'+
+     '<div class="dado"><span class="k">6 de agosto</span><span>Kindle de Erik adicionado · neste navegador</span></div>'+
+     '<div class="nota"><span>◆</span><div>Preferências é um espelho, não a fonte: ela guarda o que não tem '+
+     'contexto, reflete o resto e mantém este diário.</div></div>']
+  ];
+  let h='<div class="pad">'+
+    '<div class="pcab"><span class="ava">EA</span><div><h1>Erik Abner</h1>'+
+    '<div class="h">erik@exemplo.com · 14 itens na estante · 23 notas</div></div></div>';
+  D.forEach(d=>{
+    const ab=S.perfil===d[0];
+    h+='<div class="dobra"><button data-a="dobra" data-v="'+d[0]+'" aria-expanded="'+ab+'">'+
+      '<span><span class="nm">'+d[1]+'</span><span class="rs">'+d[2]+'</span></span>'+
+      '<span class="ch">'+(ab?"▾":"▸")+'</span></button>'+(ab?'<div class="in">'+d[3]+'</div>':'')+'</div>';
+  });
+  h+='<div class="nota"><span>◆</span><div><b>Não existe uma área de Configurações.</b> Ela era um item de menu '+
+    'que competia com os lugares onde se trabalha, e o que ela guardava está aqui dentro ou no ponto de uso.</div></div>';
+  return h+'</div>';
+}
+function rowP(t,d,tag,bt){
+  return '<div class="row"><div class="tx"><b>'+t+'</b><span>'+d+'</span></div>'+
+    (tag?'<span class="espelho">'+tag+'</span>':'')+
+    (bt?'<button class="btn sm sec2" data-a="manual">'+bt+'</button>':'')+'</div>';
+}
+function rowSw(t,d,on){
+  return '<div class="row"><div class="tx"><b>'+t+'</b><span>'+d+'</span></div>'+
+    '<button class="sw" data-a="manual" aria-pressed="'+on+'" aria-label="'+t+'"><i></i></button></div>';
+}
+
+/* ═══ FOLHAS ═══ */
+function vFolha(){
+  const f=S.folha;if(!f)return"";
+  if(f==="capa")return folha("Capa","Este arquivo não tem capa",
+    '<div style="display:flex;gap:var(--s4);align-items:flex-start">'+
+    '<img src="'+capa(ARQ.gerada)+'" alt="Capa gerada" style="width:140px;border:1px solid var(--line);'+
+    'border-radius:var(--r1);flex:0 0 140px">'+
+    '<div><p style="margin:0 0 var(--s3);font-size:14px;line-height:1.6;color:var(--ink-2)">'+
+    'Montei uma com o título, o autor e o formato, na mesma linguagem das outras capas da sua estante. '+
+    'Ela vai para o EPUB e para a biblioteca do Kindle.</p>'+
+    '<div class="lista">'+
+    li(S.capaEsc==="gerada"?"ok":"in",S.capaEsc==="gerada"?"✓":"·","Manter a capa gerada","Recomendado.","","")+
+    li(S.capaEsc==="pagina"?"ok":"in",S.capaEsc==="pagina"?"✓":"·","Usar a página 1","Ela tem texto corrido — vira um borrão como miniatura.","","")+
+    '</div>'+
+    '<div class="acoes"><button class="btn sm" data-a="capa" data-v="gerada">Manter a gerada</button>'+
+    '<button class="btn sm sec2" data-a="capa" data-v="pagina">Usar a página 1</button></div></div></div>',
+    '<button class="btn sec2" data-a="fechar">Fechar</button>');
+  if(f==="traduzir"){
+    const L=["Inglês","Espanhol","Francês","Alemão","Japonês"];
+    return folha("Saída","Traduzir este documento",
+      '<p style="margin:0 0 var(--s4);font-size:14px;line-height:1.6;color:var(--ink-2)">'+
+      'A tradução gera <b>um segundo arquivo</b>. O original fica na estante do jeito que está — você fica com os dois.</p>'+
+      '<div class="lista">'+L.map(l=>'<div class="li"><span class="sn s-'+(S.traduzir===l?"ok":"in")+'">'+
+      (S.traduzir===l?"✓":"·")+'</span><span class="tx"><b>'+l+'</b></span>'+
+      '<button class="ac" data-a="trad" data-v="'+l+'">'+(S.traduzir===l?"escolhido":"escolher")+'</button></div>').join("")+'</div>'+
+      '<div class="nota"><span>◆</span><div>Traduzir um livro inteiro não é traduzir uma frase: nomes próprios, '+
+      'citações e trocadilhos saem piores que o resto. <b>Vale conferir antes de mandar para o aparelho.</b> '+
+      'Para quadrinhos e mangás a tradução não está disponível — o texto vive dentro da imagem, e isso ainda '+
+      'não passou em teste de qualidade.</div></div>',
+      (S.traduzir?'<button class="lnk mudo" data-a="trad" data-v="">Não traduzir</button>':'')+
+      '<button class="btn sec2" data-a="fechar">Fechar</button>');
+  }
+  if(f==="envio")return folha("Envio","Enviar ao Kindle",
+    '<div class="lista">'+
+    li("ok","✓","Kindle de Erik","Paperwhite · erik_abc@kindle.com — o aparelho salvo no seu perfil.","","")+
+    li("in","·","Usar outro endereço","Precisa estar autorizado na sua conta da Amazon.","","")+
+    li("in","·","Cabo USB","Abre a pasta do aparelho quando ele estiver conectado.","","")+
+    '</div><div class="nota"><span>◆</span><div>O envio passa pelo serviço da Amazon. Avisamos quando ele '+
+    '<b>aceitar</b> o arquivo — não temos como saber se já apareceu no aparelho.</div></div>',
+    '<button class="lnk mudo" data-a="fechar">Cancelar</button><button class="btn" data-a="enviar">Enviar agora</button>');
+  if(f==="pend")return folha("Durante a preparação","3 páginas sem texto reconhecido",
+    '<div class="pgs"><span class="pg"><i></i>12</span><span class="pg"><i></i>57</span><span class="pg"><i></i>83</span></div>'+
+    '<p style="margin:0 0 var(--s3);font-size:14px;line-height:1.6;color:var(--ink-2)">'+
+    'As páginas 12, 57 e 83 são fotografias. Não há texto legível nelas — o reconhecimento devolveu ruído.</p>'+
+    '<span class="conf">Medido: <b>3 de 96 páginas</b> abaixo do limite em todas as tentativas</span>'+
+    '<p style="margin:var(--s3) 0 0;font-size:12.5px;color:var(--ink-3);line-height:1.55">'+
+    'Elas continuam no livro como imagem, apenas sem busca de texto.</p>',
+    '<button class="lnk mudo" data-a="pend-retry">Tentar em alta qualidade</button>'+
+    '<button class="btn" data-a="pend-ok">Seguir sem elas</button>');
+  if(f==="volta")return folha("Trocar de modo","Você alterou "+S.manuais+" ajuste"+(S.manuais>1?"s":""),
+    '<p style="margin:0;font-size:14px;line-height:1.6;color:var(--ink-2)">Voltar ao Guiado normalmente significa '+
+    'usar de novo o que eu recomendei. Como você mexeu em '+S.manuais+' coisa'+(S.manuais>1?"s":"")+
+    ', prefiro perguntar antes de desfazer.</p>',
+    '<button class="lnk mudo" data-a="guiado" data-v="descartar">Voltar ao recomendado</button>'+
+    '<button class="btn" data-a="guiado" data-v="manter">Manter minhas alterações</button>');
+  if(f==="conta")return folha("Conta","Criar conta no Mekora",
+    '<p style="margin:0 0 var(--s3);font-size:14px;line-height:1.6;color:var(--ink-2)">'+
+    'Converter não exige conta e não vai exigir. A conta serve para o que vem depois:</p>'+
+    '<div class="lista">'+
+    li("in","1","Estante, Canvas e Conexões","São o seu acervo, e ele precisa de um dono.","","")+
+    li("in","2","O seu Kindle fica salvo","Sem conta, o endereço é digitado a cada envio.","","")+
+    li("in","3","Sem conta, esta aba é o único endereço","O preparo não morre se você fechar — mas não haverá Mesa onde reencontrá-lo.","","")+
+    '</div>',
+    '<button class="lnk mudo" data-a="fechar">Agora não</button>'+
+    '<button class="btn" data-a="criar-conta">Criar conta</button>');
+  if(f==="ocr")return folha("Ajuda","O que é reconhecimento de texto",
+    '<p style="margin:0 0 var(--s3);font-size:16px;line-height:1.5;font-weight:600">Sem ele, o Kindle vê o seu '+
+    'livro como uma pilha de fotos.</p>'+
+    '<p style="margin:0;font-size:14px;line-height:1.65;color:var(--ink-2)">Num PDF digitalizado cada página é '+
+    'uma imagem. O reconhecimento lê essa imagem e devolve o texto — é o que permite buscar uma palavra, mudar '+
+    'o corpo da letra e o conteúdo refluir na tela.</p>','<button class="btn sec2" data-a="fechar">Entendi</button>');
+  if(f==="aviso")return folha("Simulação",S.aviso||"Ação representada",
+    '<p style="margin:0;font-size:14px;line-height:1.65;color:var(--ink-2)">Este é um protótipo: o controle existe, '+
+    'tem estado e leva a algum lugar, mas nada é gravado e nenhum arquivo real é tocado.</p>',
+    '<button class="btn" data-a="fechar">Entendi</button>');
+  return "";
+}
+function folha(ct,tit,corpo,pe){
+  return '<div class="veu" data-a="fechar-veu"><div class="folha" data-stop="1">'+
+    '<div class="fcab"><div><span class="ct">'+ct+'</span><h2>'+tit+'</h2></div><span class="sp"></span>'+
+    '<button class="fx" data-a="fechar" aria-label="Fechar">✕</button></div>'+
+    '<div class="fcorpo">'+corpo+'</div><div class="fpe"><span class="sp"></span>'+(pe||"")+'</div></div></div>';
+}
+
+/* ═══ RENDER ═══ */
+function corpo(){
+  if(S.lugar==="mesa")return vMesa();
+  if(S.lugar==="item")return vItem();
+  if(S.lugar==="livro")return vLivro();
+  if(S.lugar==="estante")return vEstante();
+  if(S.lugar==="canvas")return vCanvas("Canvas");
+  if(S.lugar==="conexoes")return vCanvas("Conexões");
+  if(S.lugar==="perfil")return vPerfil();
+  return vMesa();
+}
+function pinta(){
+  const y=app.querySelector(".corpo")?app.querySelector(".corpo").scrollTop:0;
+  app.innerHTML=topo()+'<div class="corpo">'+corpo()+'</div>'+vFolha();
+  const c=app.querySelector(".corpo");
+  if(c){
+    c.scrollTop=y;
+    c.addEventListener("scroll",()=>{
+      const d=c.scrollTop>96;
+      if(d!==S.dentro){S.dentro=d;const t=app.querySelector(".topo");
+        if(t)t.classList.toggle("-dentro",d&&(S.lugar==="item"||S.lugar==="livro"));}
+    });
+  }
+}
+function tick(){
+  clearInterval(timer);
+  timer=setInterval(()=>{
+    S.feito+=6;
+    if(S.feito>=42&&!S.pendMostrada&&!S.pendResolvida){
+      S.pendMostrada=true;clearInterval(timer);timer=null;S.folha="pend";pinta();return;}
+    if(S.feito>=96){S.feito=96;clearInterval(timer);timer=null;S.fase="pronto";}
+    pinta();
+  },300);
+}
+function aviso(t){S.aviso=t;S.folha="aviso";}
+
+app.addEventListener("click",ev=>{
+  const el=ev.target.closest("[data-a]");if(!el)return;
+  const a=el.dataset.a,v=el.dataset.v;
+  if(a==="fechar-veu"&&ev.target.closest("[data-stop]"))return;
+  if(S.menu&&a!=="menu")S.menu=false;
+  switch(a){
+    case "nada":aviso("Controle representado");break;
+    case "fechar":case "fechar-veu":S.folha=null;S.aviso=null;break;
+    case "menu":S.menu=!S.menu;break;
+    case "ir":S.lugar=v;S.folha=null;S.dentro=false;break;
+    case "ir-livro":S.lugar="livro";S.folha=null;S.dentro=false;break;
+    case "abrir-item":S.lugar="item";S.folha=null;S.dentro=false;break;
+    case "soltar":S.lugar="item";S.cena="trabalho";S.dentro=false;break;
+    case "folha":S.folha=v;break;
+    case "fechar-aviso":S.avisoUso=false;break;
+    case "modo":
+      if(S.modo==="guiado")S.modo="personalizado";
+      else if(S.manuais>0)S.folha="volta";
+      else S.modo="guiado";
+      break;
+    case "manual":S.manuais++;aviso("Ajuste manual registrado — "+S.manuais+" no total");break;
+    case "guiado":S.modo="guiado";S.folha=null;if(v==="descartar")S.manuais=0;break;
+    case "capa":S.capaEsc=v;S.folha=null;break;
+    case "trad":S.traduzir=v||null;S.folha=null;break;
+    case "preparar":S.fase="preparando";S.feito=0;tick();break;
+    case "cancelar":clearInterval(timer);timer=null;S.fase="analise";S.feito=0;S.pendMostrada=false;break;
+    case "pend-ok":S.pendResolvida=true;S.folha=null;tick();break;
+    case "pend-retry":S.pendResolvida=true;S.folha=null;tick();aviso("Nova tentativa — leva mais 40 s");break;
+    case "enviar":S.folha=null;S.enviado=true;break;
+    case "baixar":aviso("Download iniciado");break;
+    case "feito":S.feitoAberto=!S.feitoAberto;break;
+    case "vista":S.estante=v;break;
+    case "lomb":S.lombSel=v;break;
+    case "dobra":S.perfil=S.perfil===v?"":v;break;
+    case "criar-conta":S.conta=true;S.folha=null;S.cena="trabalho";S.lugar="mesa";break;
+  }
+  pinta();
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&(S.folha||S.menu)){S.folha=null;S.menu=false;pinta();}});
+
+/* ═══ PAINEL ◇ NOTAS ═══ */
+const NT={
+copy:`<div class="w"><h2>A microcópia, e por quê</h2>
+<p>A copy aqui não é acabamento: em vários pontos ela <b>é</b> a decisão. A regra que segui é a mesma
+em todas as telas — <b>dizer o que aconteceu, o que vai acontecer e o que ainda não se sabe</b>, nessa
+ordem, e nunca prometer o que o sistema não pode cumprir.</p>
+<h3>As cinco regras de voz</h3>
+<ul>
+<li><b>Primeira pessoa para o sistema, segunda para você.</b> "Eu abro, conto as páginas e digo o que
+encontrei" — não "o sistema realiza a análise". O produto age; a pessoa decide.</li>
+<li><b>Nunca declarar o que não é medido.</b> "3 de 96 páginas abaixo do limite" pode; "confiança alta"
+não pode, a menos que exista contagem.</li>
+<li><b>Toda promessa é verificável.</b> "A Amazon aceitou o arquivo" é verificável. "Chegou no seu
+Kindle" não é, e por isso não aparece em lugar nenhum.</li>
+<li><b>O motivo vem junto quando muda a decisão.</b> "Converter para EPUB" sozinho não ensina;
+"no EPUB o texto reflui, em PDF não" ensina, e é a diferença entre confirmar e obedecer.</li>
+<li><b>Sem vocabulário de operador.</b> Não há "pipeline", "job", "log", "renderizar", "assets".</li>
+</ul>
+<h3>O que foi reescrito</h3>
+<div class="copy">
+<div class="cpl"><span class="onde">Home · título</span><div><div class="txt">Sua mesa</div>
+<div class="pq"><span class="mau">Prepare e organize seus arquivos para o Kindle</span> — vendia o produto para quem já entrou.</div></div></div>
+<div class="cpl"><span class="onde">Home · em curso</span><div><div class="txt">Sendo preparados · continua com a aba fechada</div>
+<div class="pq">O grupo diz sozinho a coisa que o usuário mais precisa saber sobre ele.</div></div></div>
+<div class="cpl"><span class="onde">Home · vazia</span><div><div class="txt">Comece soltando um arquivo</div>
+<div class="pq">Instrução, não slogan. O que vem embaixo são três linhas do que vai acontecer — não benefícios.</div></div></div>
+<div class="cpl"><span class="onde">Análise</span><div><div class="txt">Analisado. Nada aqui impede a preparação.</div>
+<div class="pq"><span class="mau">Diagnóstico dos arquivos</span> — nomeava a tela, não o resultado. A pessoa quer saber se pode seguir.</div></div></div>
+<div class="cpl"><span class="onde">Recomendação</span><div><div class="txt">O que vou fazer</div>
+<div class="pq"><span class="mau">Recomendações :</span> — lista de sugestões com caixas marcadas é decisão disfarçada de conselho.</div></div></div>
+<div class="cpl"><span class="onde">Capa</span><div><div class="txt">Capa gerada — montei uma com o título, o autor e o formato, o arquivo não tinha nenhuma</div>
+<div class="pq">Substitui a escolha entre cinco miniaturas idênticas. O sistema faz e explica.</div></div></div>
+<div class="cpl"><span class="onde">Tradução</span><div><div class="txt">Idioma: português, como no original — nada é traduzido a não ser que você peça</div>
+<div class="pq"><span class="mau">Traduzir esse documento? [Sim]</span> — pergunta pré-respondida, com Português → Português.</div></div></div>
+<div class="cpl"><span class="onde">Progresso</span><div><div class="txt">Esta etapa eu sei contar, porque é página a página. As seguintes não avançam de forma linear.</div>
+<div class="pq">Herdado do texto que já existia e era o melhor do produto. Virou regra em vez de exceção.</div></div></div>
+<div class="cpl"><span class="onde">Pronto</span><div><div class="txt">Pronto. Diário 02.epub · 8,4 MB</div>
+<div class="pq">O nome do que saiu, não "conversão concluída". A pessoa recebe um arquivo, não um processo.</div></div></div>
+<div class="cpl"><span class="onde">Envio</span><div><div class="txt">A Amazon aceitou o arquivo às 09:12 · não temos como saber se já chegou</div>
+<div class="pq"><span class="mau">Enviando para o Kindle…</span> aparecia com o campo vazio e sem ninguém ter pedido.</div></div></div>
+<div class="cpl"><span class="onde">Privacidade</span><div><div class="txt">Registramos onde você clica e onde trava — nunca o conteúdo dos seus arquivos</div>
+<div class="pq">A frase precisa dizer o limite, não só a intenção.</div></div></div>
+<div class="cpl"><span class="onde">Sem conta</span><div><div class="txt">Sem conta, esta aba é o único endereço</div>
+<div class="pq">Descreve a consequência real. Não ameaça perder trabalho, porque não se perde.</div></div></div>
+</div></div>`,
+dock:`<div class="w"><h2>A dock: uma sai, uma fica, uma vira outra coisa</h2>
+<p>A confusão é justa, porque hoje <b>existem três coisas diferentes chamadas dock</b> no produto, e
+elas não têm o mesmo destino.</p>
+<h3>1. A dock de navegação — sai</h3>
+<p>Na biblioteca, a barra flutuante com Canvas · Estante · Conexões duplica o que a barra do topo faz.
+Ter os lugares em duas molduras diferentes era parte do problema dos "dois produtos": na preparação a
+navegação era uma pílula no topo, na biblioteca era uma dock embaixo. <b>Os lugares sobem para a barra
+do topo</b>, que agora é a mesma nas quatro superfícies.</p>
+<h3>2. A dock de ferramentas — fica, só onde há manipulação direta</h3>
+<p>Adicionar nota, adicionar mídia, conectar, organizar, filtrar: são ferramentas que agem sobre
+objetos que você está arrastando. Elas precisam ficar perto das mãos, e uma barra flutuante é a forma
+certa. <b>Continua no Canvas, nas Conexões e na Estante</b> — e some no resto.</p>
+<p>Abra Canvas ou Estante aqui do lado: a dock está lá, e agora só com ferramentas.</p>
+<h3>3. A dock de ação da preparação — morre</h3>
+<p>É a barra flutuante com <i>Reanalisar · Detalhes · Aplicar e continuar</i>. O trabalho dela é ter uma
+ação principal, e isso uma barra flutuante faz mal: nas telas atuais ela <b>cobre o primeiro problema
+encontrado</b> na análise do quadrinho, e o centro do antes/depois na preparação. Uma ação principal
+precisa estar presa ao conteúdo que ela conclui, não pairando sobre ele.</p>
+<p>No lugar dela entram duas coisas: o botão no fim do item, onde a leitura termina, e a
+<b>faixa contextual do topo</b> — role a tela de um item e repare que o cabeçalho troca de conteúdo:
+sai a navegação, entra o nome do arquivo, o estado e a ação principal. Custa zero pixel e resolve
+"onde estou" sem cobrir nada.</p>
+<h3>Resumo</h3>
+<table><thead><tr><th>Qual</th><th>Onde estava</th><th>Destino</th></tr></thead><tbody>
+<tr><td class="n">Navegação</td><td>Canvas e Estante</td><td>Sai — vira a barra do topo</td></tr>
+<tr><td class="n">Ferramentas</td><td>Canvas e Estante</td><td>Fica, só nessas superfícies</td></tr>
+<tr><td class="n">Ação da preparação</td><td>Análise, preparação, conversão</td><td>Morre — vira botão no item e faixa no topo</td></tr>
+</tbody></table></div>`,
+fluxos:`<div class="w"><h2>O que dá para percorrer aqui</h2>
+<p>Três fluxos, do começo ao fim. Tudo simulado — nada é gravado, nenhum arquivo é lido.</p>
+<h3>Chegada de um arquivo</h3>
+<ul><li><b>Mesa → soltar → item.</b> A análise e a preparação são a mesma tela; as quatro abas de
+etapa não existem mais.</li>
+<li><b>Preparar com estas recomendações.</b> No meio do processamento aparece uma pendência real —
+depois de o trabalho começar, não antes.</li>
+<li><b>Pronto → Enviar ao Kindle → Abrir na estante.</b></li>
+<li>Role a tela do item para ver a faixa do topo trocar de conteúdo.</li></ul>
+<h3>Guiado e Personalizado</h3>
+<ul><li>No item, canto direito: <b>Guiado · trocar</b>. O Personalizado abre com tudo já preenchido.</li>
+<li>Mexa em um ajuste e volte para Guiado: ele pergunta o que fazer, e diz quantos são.</li></ul>
+<h3>Do livro de volta ao preparo</h3>
+<ul><li><b>Estante → capa → espaço do livro.</b> A ficha diz de onde o arquivo veio, e
+<b>"ver o preparo"</b> volta para o item — o caminho de mão única entre preparação e biblioteca deixou
+de existir.</li>
+<li>Na Estante, o seletor <b>Estante</b> mostra a versão com as lombadas.</li></ul>
+<h3>Perfil</h3>
+<ul><li>Avatar no topo → <b>Perfil</b>. Cinco dobras, uma página só. Não há área de Configurações.</li>
+<li>Repare em <b>Preferências</b>: o que tem contexto mora onde o efeito acontece; aqui fica o resto.</li></ul>
+<h3>O que não está aqui, de propósito</h3>
+<p>Leitor, destaques, notas de margem, Conhecimento e Rede já existem no <b>protótipo da área
+pessoal</b> e continuam sendo a fonte deles. Este protótipo cobre a chegada do arquivo, a ficha do
+livro e o perfil. Os dois usam os mesmos tokens porque são o mesmo produto.</p></div>`
+};
+let abaN="copy";
+const notas=document.getElementById("notas");
+function pintaNotas(){
+  notas.innerHTML='<div class="ncab"><span class="lbl">◇ notas desta exploração</span>'+
+    '<div class="nabas">'+[["copy","Copy"],["dock","A dock"],["fluxos","Fluxos"]].map(x=>
+      '<button data-n="'+x[0]+'" aria-pressed="'+(abaN===x[0])+'">'+x[1]+'</button>').join("")+'</div>'+
+    '<span class="sp"></span><button class="btn sm sec2" id="fechaN">Voltar ao produto</button></div>'+
+    '<div class="ncorpo">'+NT[abaN]+'</div>';
+  notas.querySelectorAll("[data-n]").forEach(b=>b.addEventListener("click",()=>{abaN=b.dataset.n;pintaNotas();}));
+  document.getElementById("fechaN").addEventListener("click",()=>{notas.hidden=true;});
+}
+document.getElementById("notasbt").addEventListener("click",()=>{notas.hidden=false;pintaNotas();});
+
+pinta();
+</script>
+</body>
+</html>
