@@ -23,7 +23,13 @@
      O DOC opera em múltiplos de 20 e usa 40 e 80 como respiro grande.
      Mantive isso e só troquei a base de 5px por 4px, que já era do Mekora. */
   --s1:4px;--s2:8px;--s3:12px;--s4:20px;--s5:30px;--s6:40px;--s7:60px;--s8:80px;
-  --r1:4px;--r2:8px;--h1:2.2rem;--h2:2.6rem;
+  /* ── RAIO: a forma diz o que a coisa é, não em que tela ela está ──
+     --r1  ação e objeto pequeno: botão, controle, campo, miniatura
+     --r2  superfície: card, lista, folha, dock, imagem grande
+     --rp  dado: tag, chip de metadado, trilho, interruptor — pílula lê como
+           rótulo, e é isso que separa "isto informa" de "isto faz"
+     50%   círculo: avatar e ponto de estado. Não é raio, é forma. */
+  --r1:4px;--r2:8px;--rp:999px;--h1:2.2rem;--h2:2.6rem;
   --curva:cubic-bezier(.16,1,.3,1);--d1:.12s;--d2:.24s;--d3:.42s;
   --ui:-apple-system,"Segoe UI",Inter,"Helvetica Neue",Arial,sans-serif;
   --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
@@ -93,13 +99,13 @@ button{font:inherit;color:inherit;background:none;border:none;padding:0;cursor:p
 .topo nav button[aria-current="true"]{background:var(--ink);color:var(--bg)}
 .sp{flex:1}
 .busca{display:flex;align-items:center;gap:var(--s2);height:var(--h1);padding:0 var(--s3);
-  border:1px solid var(--line);border-radius:999px;color:var(--ink-3);font-size:13px;background:var(--bg-2)}
+  border:1px solid var(--line);border-radius:var(--r1);color:var(--ink-3);font-size:13px;background:var(--bg-2)}
 .busca:hover{border-color:var(--line-3);color:var(--ink-2)}
-.kbd{font-family:var(--mono);font-size:9.5px;border:1px solid var(--line);border-radius:3px;padding:1px 5px}
-.icb{width:32px;height:32px;border-radius:999px;display:flex;align-items:center;justify-content:center;
+.kbd{font-family:var(--mono);font-size:9.5px;border:1px solid var(--line);border-radius:var(--r1);padding:1px 5px}
+.icb{width:32px;height:32px;border-radius:var(--r1);display:flex;align-items:center;justify-content:center;
   color:var(--ink-2);font-size:14px;border:1px solid transparent}
 .icb:hover{background:var(--bg-2);border-color:var(--line)}
-.uctl{display:flex;align-items:center;gap:7px;padding:4px 8px 4px 4px;border-radius:999px;
+.uctl{display:flex;align-items:center;gap:7px;padding:4px 8px 4px 4px;border-radius:var(--r1);
   border:1px solid var(--line);background:var(--bg-2)}
 .uctl:hover{border-color:var(--line-3)}
 .ava{width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--bg);font-size:11px;
@@ -143,7 +149,7 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
   padding:var(--s3) var(--s4);border:1px solid var(--line);border-radius:var(--r2);background:var(--bg);
   margin-bottom:var(--s2);width:100%;transition:border-color var(--d1) var(--curva)}
 .linha:hover{border-color:var(--line-3);background:var(--bg-2)}
-.linha .capa{width:38px;height:50px;border-radius:3px;border:1px solid var(--line);object-fit:cover;
+.linha .capa{width:38px;height:50px;border-radius:var(--r1);border:1px solid var(--line);object-fit:cover;
   object-position:top;background:var(--paper);display:block}
 .linha .capa.vazia{display:flex;align-items:center;justify-content:center;font-family:var(--mono);
   font-size:8px;color:var(--ink-3);background:var(--bg-3)}
@@ -163,9 +169,9 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .icab h1{margin:0;font-size:22px;font-weight:650;letter-spacing:-.025em;line-height:1.2}
 .metas{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 .meta{font-size:11.5px;color:var(--ink-2);background:var(--bg-2);border:1px solid var(--line);
-  border-radius:999px;padding:3px 10px}
+  border-radius:var(--rp);padding:3px 10px}
 .modo{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-2);
-  border:1px solid var(--line);border-radius:999px;padding:6px 12px;white-space:nowrap}
+  border:1px solid var(--line);border-radius:var(--r1);padding:6px 12px;white-space:nowrap}
 .modo:hover{border-color:var(--line-3)}
 .modo b{color:var(--ink);font-weight:650}
 .estado{display:flex;gap:var(--s3);padding:var(--s4);border:1px solid var(--line);border-radius:var(--r2);
@@ -182,23 +188,23 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .li{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:var(--s3);align-items:start;
   padding:var(--s3) var(--s4);border-bottom:1px solid var(--line-2)}
 .li:last-child{border-bottom:none}
-.sn{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;
+.sn{width:20px;height:20px;border-radius:var(--r1);display:flex;align-items:center;justify-content:center;
   font-size:11px;font-weight:700;flex:0 0 20px;margin-top:1px}
 .s-ok{background:var(--ok-soft);color:var(--ok)}.s-at{background:var(--warn-soft);color:var(--warn)}
 .s-er{background:var(--dan-soft);color:var(--dan)}.s-in{background:var(--bg-3);color:var(--ink-2)}
 .li .tx b{display:block;font-size:13.5px;font-weight:600;letter-spacing:-.005em}
 .li .tx span{display:block;font-size:12.5px;color:var(--ink-2);line-height:1.5;margin-top:2px}
-.li .ac{font-size:12.5px;color:var(--acc);font-weight:600;white-space:nowrap;padding:2px 5px;border-radius:3px}
+.li .ac{font-size:12.5px;color:var(--acc);font-weight:600;white-space:nowrap;padding:2px 5px;border-radius:var(--r1)}
 .li .ac:hover{background:var(--acc-soft)}
 .acoes{display:flex;gap:var(--s3);align-items:center;flex-wrap:wrap;margin-top:var(--s5)}
-.btn{height:var(--h2);padding:0 var(--s5);border-radius:999px;background:var(--ink);color:var(--bg);
+.btn{height:var(--h2);padding:0 var(--s5);border-radius:var(--r1);background:var(--ink);color:var(--bg);
   font-size:13.5px;font-weight:600;display:inline-flex;align-items:center;gap:8px;justify-content:center;
   white-space:nowrap;transition:background var(--d1) var(--curva)}
 .btn:hover{background:var(--acc);color:#fff}
 .btn.sec2{background:none;border:1px solid var(--line-3);color:var(--ink);font-weight:550}
 .btn.sec2:hover{background:var(--bg-2);border-color:var(--ink);color:var(--ink)}
 .btn.sm{height:var(--h1);padding:0 var(--s4);font-size:12.5px}
-.lnk{font-size:13px;color:var(--acc);font-weight:600;padding:4px 6px;border-radius:3px}
+.lnk{font-size:13px;color:var(--acc);font-weight:600;padding:4px 6px;border-radius:var(--r1)}
 .lnk:hover{background:var(--acc-soft)}
 .lnk.mudo{color:var(--ink-3);font-weight:550}
 .lnk.mudo:hover{color:var(--ink);background:var(--bg-2)}
@@ -206,8 +212,8 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
   background:var(--bg-2);border:1px solid var(--line-2);font-size:12.5px;color:var(--ink-2);
   line-height:1.55;margin-top:var(--s4)}
 .nota b{color:var(--ink)}
-.trilho{height:5px;border-radius:999px;background:var(--bg-3);overflow:hidden;margin:var(--s3) 0 var(--s2)}
-.trilho i{display:block;height:100%;background:var(--ink);border-radius:999px;transition:width .4s linear}
+.trilho{height:5px;border-radius:var(--rp);background:var(--bg-3);overflow:hidden;margin:var(--s3) 0 var(--s2)}
+.trilho i{display:block;height:100%;background:var(--ink);border-radius:var(--rp);transition:width .4s linear}
 .leg{display:flex;justify-content:space-between;gap:var(--s3);font-size:12.5px;color:var(--ink-2)}
 .leg .mn{font-family:var(--mono);font-size:10.5px;color:var(--ink-3)}
 .etapas{display:flex;flex-direction:column;gap:1px;margin-top:var(--s4)}
@@ -215,7 +221,7 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .etapa.feita{color:var(--ink-2)}.etapa.agora{color:var(--ink);font-weight:600}
 .etapa .mk{width:14px;text-align:center;font-size:11px}
 .pend{display:inline-flex;align-items:center;gap:9px;border:1px solid var(--warn);background:var(--warn-soft);
-  border-radius:999px;padding:8px 15px;font-size:13px;font-weight:600;color:var(--ink)}
+  border-radius:var(--r1);padding:8px 15px;font-size:13px;font-weight:600;color:var(--ink)}
 .pend .n{font-family:var(--mono);font-size:10px;color:var(--warn)}
 
 /* ═══ ESPAÇO DO LIVRO ═══ */
@@ -231,7 +237,7 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .dado:last-child{border-bottom:none}
 
 /* ═══ ESTANTE ═══ */
-.vista{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--bg-2)}
+.vista{display:inline-flex;border:1px solid var(--line);border-radius:var(--r1);overflow:hidden;background:var(--bg-2)}
 .vista button{padding:6px 14px;font-size:12.5px;color:var(--ink-2)}
 .vista button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 .grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(136px,1fr));gap:var(--s5)}
@@ -243,10 +249,10 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .bk .a{display:block;font-size:12px;color:var(--ink-3);margin-top:1px}
 .prat{margin-bottom:var(--s5)}
 .lombs{display:flex;align-items:flex-end;gap:2px;padding:0 var(--s5);min-height:150px}
-.lombs img{display:block;width:auto;border-radius:2px 2px 0 0;transition:transform var(--d2) var(--curva)}
+.lombs img{display:block;width:auto;border-radius:var(--r1) var(--r1) 0 0;transition:transform var(--d2) var(--curva)}
 .lombs button:hover img{transform:translateY(-9px)}
 .lombs button[aria-pressed="true"] img{transform:translateY(-15px)}
-.tabua{height:9px;background:var(--bg-3);border-bottom:4px solid var(--ink-4);border-radius:2px}
+.tabua{height:9px;background:var(--bg-3);border-bottom:4px solid var(--ink-4);border-radius:var(--r1)}
 .legenda{display:flex;align-items:baseline;gap:var(--s3);padding:var(--s3) var(--s5) 0;min-height:36px}
 
 /* ═══ PERFIL ═══ */
@@ -267,14 +273,14 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .row .tx{flex:1;min-width:0}
 .row .tx b{display:block;font-size:13.5px;font-weight:600}
 .row .tx span{display:block;font-size:12.5px;color:var(--ink-2);margin-top:2px;line-height:1.5}
-.sw{width:38px;height:22px;border-radius:999px;background:var(--line-3);position:relative;flex:0 0 38px;
+.sw{width:38px;height:22px;border-radius:var(--rp);background:var(--line-3);position:relative;flex:0 0 38px;
   transition:background var(--d1) var(--curva)}
 .sw i{position:absolute;top:2.5px;left:2.5px;width:17px;height:17px;border-radius:50%;background:var(--bg);
   transition:left var(--d1) var(--curva)}
 .sw[aria-pressed="true"]{background:var(--ink)}
 .sw[aria-pressed="true"] i{left:18.5px}
 .espelho{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;
-  border:1px solid var(--line);border-radius:3px;padding:2px 6px;color:var(--ink-3);white-space:nowrap}
+  border:1px solid var(--line);border-radius:var(--r1);padding:2px 6px;color:var(--ink-3);white-space:nowrap}
 
 /* ══════════════════════════════════════════════════════════
    CAMADA EDITORIAL — derivada do DOC.cc.
@@ -304,13 +310,13 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 /* botão do DOC: outline puro que inverte no hover, sem raio */
 .btnO{display:inline-flex;align-items:center;justify-content:center;padding:.7rem 1.25rem;
   border:1px solid var(--line-3);font-size:var(--t-ui);font-weight:500;color:var(--ink);
-  background:none;border-radius:0;transition:background var(--d1) var(--curva),color var(--d1) var(--curva),
+  background:none;border-radius:var(--r1);transition:background var(--d1) var(--curva),color var(--d1) var(--curva),
   border-color var(--d1) var(--curva)}
 .btnO:hover{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .btnO.forte{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .btnO.forte:hover{background:var(--acc);border-color:var(--acc);color:#fff}
 /* matriz de tag 2×2 do DOC */
-.tagE{display:inline-flex;align-items:center;border-radius:999px;padding:.25rem .625rem .375rem;
+.tagE{display:inline-flex;align-items:center;border-radius:var(--rp);padding:.25rem .625rem .375rem;
   font-size:var(--t-peq);background:var(--bg-3);border:1px solid var(--bg-3);color:var(--ink);
   transition:background var(--d1) var(--curva),border-color var(--d1) var(--curva)}
 .tagE:hover{background:var(--bg);border-color:var(--ink)}
@@ -366,8 +372,8 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 
 /* ═══ DOCK ═══ só nas superfícies espaciais */
 .dock{position:sticky;bottom:var(--s5);margin:var(--s6) auto 0;width:max-content;display:flex;gap:var(--s1);
-  background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:5px}
-.dock button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 15px;border-radius:999px;
+  background:var(--bg);border:1px solid var(--line);border-radius:var(--r2);padding:5px}
+.dock button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 15px;border-radius:var(--r1);
   font-size:11.5px;color:var(--ink-2)}
 .dock button:hover{background:var(--bg-2);color:var(--ink)}
 .dock button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
@@ -381,21 +387,21 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .fcab{display:flex;align-items:flex-start;gap:var(--s3);padding:var(--s4);border-bottom:1px solid var(--line-2)}
 .fcab .ct{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
 .fcab h2{margin:3px 0 0;font-size:17px;font-weight:650;letter-spacing:-.018em}
-.fx{width:30px;height:30px;border-radius:999px;display:flex;align-items:center;justify-content:center;
+.fx{width:30px;height:30px;border-radius:var(--r1);display:flex;align-items:center;justify-content:center;
   font-size:15px;color:var(--ink-2);border:1px solid var(--line);flex:0 0 30px}
 .fx:hover{background:var(--bg-2);color:var(--ink)}
 .fcorpo{padding:var(--s4)}
 .fpe{display:flex;gap:var(--s3);align-items:center;padding:var(--s4);border-top:1px solid var(--line-2);
   background:var(--bg-2);flex-wrap:wrap}
 .conf{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-2);
-  background:var(--bg-2);border:1px solid var(--line);border-radius:999px;padding:5px 12px}
+  background:var(--bg-2);border:1px solid var(--line);border-radius:var(--rp);padding:5px 12px}
 .conf b{color:var(--ink);font-weight:650}
 .pgs{display:flex;gap:var(--s3);justify-content:center;padding:var(--s4);background:var(--bg-2);
   border-radius:var(--r1);margin-bottom:var(--s4)}
-.pg{width:86px;height:120px;border:1px solid var(--line);border-radius:3px;background:var(--bg);position:relative;
+.pg{width:86px;height:120px;border:1px solid var(--line);border-radius:var(--r1);background:var(--bg);position:relative;
   display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;font-family:var(--mono);
   font-size:9px;color:var(--ink-3)}
-.pg i{position:absolute;inset:6px 6px 20px;border-radius:2px;
+.pg i{position:absolute;inset:6px 6px 20px;border-radius:var(--r1);
   background:repeating-linear-gradient(135deg,var(--bg-3) 0 7px,var(--bg-2) 7px 14px)}
 .pg.dup{width:172px}
 .seta{display:flex;align-items:center;font-size:19px;color:var(--ink-3)}
@@ -416,9 +422,9 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 
 /* ═══ PAINEL DE NOTAS ═══ */
 #notasbt{position:fixed;right:18px;bottom:18px;z-index:90;background:var(--ink);color:var(--bg);
-  border-radius:999px;padding:10px 17px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:9px}
+  border-radius:var(--r1);padding:10px 17px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:9px}
 #notasbt:hover{background:var(--acc);color:#fff}
-#notasbt .bdg{font-family:var(--mono);font-size:9px;background:var(--acc);color:#fff;border-radius:999px;
+#notasbt .bdg{font-family:var(--mono);font-size:9px;background:var(--acc);color:#fff;border-radius:var(--rp);
   padding:2px 7px}
 #notas{position:fixed;inset:0;z-index:95;background:var(--bg);display:flex;flex-direction:column}
 #notas[hidden]{display:none}
@@ -1271,6 +1277,23 @@ perfil — continua em grotesca e densidade de ferramenta, de propósito.</p>
 <tr><td class="n">Zero sombra</td><td>profundidade por borda translúcida</td><td>toda parte</td></tr>
 <tr><td class="n">Uma curva só</td><td><code>cubic-bezier(.16,1,.3,1)</code>, quatro durações</td><td>toda parte</td></tr>
 </tbody></table>
+<h3>O raio — um defeito que o Erik encontrou, e a regra que saiu dele</h3>
+<p>Ao trazer o botão reto do DOC para um produto cujos botões eram pílula, eu não reconciliei os dois.
+O resultado era <b>seis valores de raio convivendo</b> — 0, 2, 3, 4, 5, 8 e 999px —, e a pergunta
+"por que aqui é quadrado e ali é redondo" não tinha resposta, porque não havia regra.</p>
+<p>A regra que adotei não é sobre tela, é sobre <b>o que a coisa é</b>:</p>
+<table><thead><tr><th>Raio</th><th>É</th><th>Exemplo</th></tr></thead><tbody>
+<tr><td class="n">4px</td><td>ação e objeto pequeno</td><td>botão, campo de busca, seletor, miniatura de capa</td></tr>
+<tr><td class="n">8px</td><td>superfície</td><td>card, lista, folha, dock, capa grande</td></tr>
+<tr><td class="n">pílula</td><td>dado</td><td>tag, chip de metadado, trilho de progresso, interruptor</td></tr>
+<tr><td class="n">círculo</td><td>forma, não raio</td><td>avatar, ponto de estado</td></tr>
+</tbody></table>
+<p>O ganho não é arrumação: hoje o chip <b>"96 páginas"</b> e o botão <b>"Baixar"</b> tinham
+exatamente a mesma forma. Separando os dois, <b>a forma passa a dizer se aquilo faz alguma coisa</b>
+— antes de ler o texto. Sobraram quatro valores, e cada um tem um significado.</p>
+<p>Duas exceções, declaradas: o interruptor continua pílula porque a forma dele é funcional — um
+trilho com um botão correndo dentro —, e a lombada do livro mantém o arredondamento só no topo,
+porque é a borda de um objeto físico.</p>
 <h3>O que mudei em vez de copiar</h3>
 <p><b>O root em px.</b> O DOC fixa <code>html{font-size:14px}</code> e sobe até 20px por breakpoint.
 É o truque central da identidade deles e o preço é anular a preferência de tamanho de fonte do
