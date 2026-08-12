@@ -669,9 +669,10 @@ function vHome(){
 
   '<section class="faixaE" style="padding-top:var(--s7)"><div class="colE larga">'+
     '<span class="kicker">Mekora</span>'+
-    '<h1 class="displayE">Seus arquivos viram livros de verdade.</h1>'+
-    '<p class="leadE" style="max-width:34ch">Com capa, sumário navegável e texto que reflui na tela — '+
-    'do jeito que um livro comprado se comporta no Kindle.</p>'+
+    '<h1 class="displayE">Uma estante para os livros que não vêm de loja.</h1>'+
+    '<p class="leadE" style="max-width:38ch">PDF digitalizado, artigo, apostila, mangá. O Mekora prepara '+
+    'para o seu Kindle, guarda numa estante que é sua, e mantém o que você marcou junto do livro onde '+
+    'você marcou.</p>'+
     '<div class="tagsE" style="margin-top:var(--s6);gap:var(--s3)">'+
       '<button class="btnO forte" data-a="soltar">Preparar um arquivo</button>'+
       '<button class="btnO" data-a="rolar" data-v="como">Ver como funciona</button></div>'+
@@ -680,18 +681,22 @@ function vHome(){
   '</div></section>'+
 
   '<section class="faixaE"><div class="colE larga">'+
-    '<span class="kicker">O problema</span>'+
+    '<span class="kicker">Dois problemas, e o segundo é o que fica</span>'+
     '<h2 class="h1E" style="max-width:26ch">Um PDF no Kindle não é um livro. É uma foto de um livro.</h2>'+
     '<div class="duasE" style="margin-top:var(--s6)">'+
       '<div><p class="txtE">Você aumenta a letra e nada acontece, porque não há letra: há imagem. '+
       'A busca não encontra nada. Não existe sumário para pular capítulo. E a capa, na biblioteca do '+
       'aparelho, é um retângulo cinza com o nome do arquivo.</p>'+
-      '<p class="txtE mudo">Converter resolve isso, mas converter bem exige decidir umas dez coisas — '+
-      'e a maior parte dessas decisões o próprio arquivo já responde.</p></div>'+
+      '<p class="txtE">Converter resolve isso. Só que aí vem o segundo problema, e nenhum conversor '+
+      'resolve: <b>o livro convertido vira mais um arquivo numa pasta.</b> Você lê, marca alguma coisa, '+
+      'e seis meses depois não sabe em qual dos quarenta PDFs aquilo estava.</p>'+
+      '<p class="txtE mudo">A biblioteca do Kindle é feita para o que você comprou lá. Tudo o que você '+
+      'não comprou lá não tem casa.</p></div>'+
       '<figure class="figE" style="margin:0">'+
         '<img src="capas/capa-08.jpg" alt="Capa gerada pelo Mekora para um arquivo que não tinha nenhuma">'+
         '<figcaption>Um relatório de pesquisa sem capa. O Mekora monta uma com o título, o autor e o '+
-        'formato, na linguagem da sua estante.</figcaption></figure>'+
+        'formato, na linguagem da sua estante — porque uma estante só funciona se der para reconhecer '+
+        'os livros de longe.</figcaption></figure>'+
     '</div></div></section>'+
 
   '<section class="faixaE" id="como"><div class="colE larga">'+
@@ -709,6 +714,22 @@ function vHome(){
   '</div></section>'+
 
   '<section class="faixaE"><div class="colE larga">'+
+    '<span class="kicker">Depois de pronto</span>'+
+    '<h2 class="h1E" style="max-width:24ch">O livro não termina quando o arquivo fica pronto.</h2>'+
+    '<p class="txtE" style="margin-top:var(--s4);max-width:62ch">É aqui que o Mekora deixa de ser um '+
+    'conversor. O que você preparou vira um item com capa, ficha e origem — e o que você marcou fica '+
+    'preso ao trecho, não a um caderno separado que ninguém reabre.</p>'+
+    '<div class="duasE tres" style="margin-top:var(--s6)">'+
+      pB("A estante","Tudo o que você preparou, com capa — inclusive as que o Mekora montou para arquivos que não tinham nenhuma. Dá para achar de longe, que é o que uma estante precisa fazer.")+
+      pB("O que você marcou","Destaque e nota ficam no trecho de origem. Voltar ao livro seis meses depois devolve o que você pensou lendo aquilo, no lugar onde pensou.")+
+      pB("As conexões","O que você marcou em livros diferentes sobre o mesmo assunto se encontra. Sem você organizar pasta nenhuma.")+
+    '</div>'+
+    '<p class="txtE mudo" style="margin-top:var(--s5);font-size:var(--t-peq);line-height:1.6;max-width:62ch">'+
+    'A estante, o canvas e as conexões fazem parte da primeira versão. A leitura com destaque e nota '+
+    'está construída e em prova; nada aqui é prometido para depois sem estar escrito em Atualizações.</p>'+
+  '</div></section>'+
+
+  '<section class="faixaE"><div class="colE larga">'+
     '<span class="kicker">O que entra</span>'+
     '<div class="tagsE" style="margin-bottom:var(--s5)">'+
       ["PDF","EPUB","DOCX","TXT","CBZ","CBR","ZIP","JPG","PNG"].map(f=>'<span class="tagE'+
@@ -719,18 +740,36 @@ function vHome(){
       pB("Tradução","Um segundo arquivo no idioma que você escolher, sem tocar no original. Para quadrinhos ainda não — o texto vive dentro da imagem.")+
     '</div></div></section>'+
 
+  '<section class="faixaE"><div class="colE larga">'+
+    '<span class="kicker">Para quem</span>'+
+    '<div class="duasE" style="margin-top:var(--s3)">'+
+      '<div><h3 class="h3E">Quem lê por prazer</h3>'+
+      '<p class="txtE mudo" style="margin-top:var(--s2)">Você tem mangá em CBZ, livro que só existe em '+
+      'PDF e coisa que baixou e nunca conseguiu ler direito no aparelho. Cada um exige um ajuste '+
+      'diferente, e você não quer aprender nenhum deles.</p></div>'+
+      '<div><h3 class="h3E">Quem lê para estudar</h3>'+
+      '<p class="txtE mudo" style="margin-top:var(--s2)">Chegam vinte artigos de uma vez, todos '+
+      'digitalizados, todos sem sumário. Você vai marcar, vai voltar, e daqui a um semestre vai '+
+      'precisar achar de novo aquele parágrafo — sem lembrar em qual arquivo ele estava.</p></div>'+
+    '</div>'+
+    '<p class="txtE" style="margin-top:var(--s5);max-width:60ch">Nos dois casos o problema não é '+
+    'converter uma vez. É que <b>o acervo cresce e nada o segura.</b></p>'+
+  '</div></section>'+
+
   '<section class="faixaE"><div class="colE">'+
-    '<span class="kicker">Sobre a conta</span>'+
-    '<h2 class="h1E">Converter não exige conta. O acervo, sim.</h2>'+
-    '<p class="txtE" style="margin-top:var(--s4)">Você pode preparar um arquivo agora e baixar sem se '+
-    'cadastrar. A conta existe para o que vem depois: guardar o que você preparou, lembrar o endereço do '+
-    'seu Kindle e deixar você retomar de onde parou.</p>'+
+    '<span class="kicker">A conta</span>'+
+    '<h2 class="h1E">A conta é a estante. Converter você faz sem ela.</h2>'+
+    '<p class="txtE" style="margin-top:var(--s4)">Solte um arquivo agora, receba o resultado e baixe — '+
+    'sem cadastro, sem e-mail. A conta não é pedágio de conversão: ela é o lugar onde o acervo existe, '+
+    'onde o seu Kindle fica salvo e onde o que você marcou continua te esperando.</p>'+
     '<p class="txtE mudo">Sem conta, esta aba é o único endereço do seu trabalho. O preparo não morre se '+
     'você fechar — mas não haverá onde reencontrá-lo.</p>'+
   '</div></section>'+
 
   '<section class="faixaE" style="padding-bottom:var(--s8)"><div class="colE" style="text-align:center">'+
-    '<h2 class="h1E" style="max-width:20ch;margin:0 auto">Comece por um arquivo qualquer.</h2>'+
+    '<h2 class="h1E" style="max-width:22ch;margin:0 auto">Comece pelo arquivo que você nunca conseguiu ler direito.</h2>'+
+    '<p class="txtE mudo" style="margin:var(--s4) auto 0;max-width:44ch">Todo mundo tem um. '+
+    'Ele costuma ser um PDF digitalizado de 300 páginas.</p>'+
     '<div class="tagsE" style="justify-content:center;margin-top:var(--s5);gap:var(--s3)">'+
       '<button class="btnO forte" data-a="soltar">Preparar um arquivo</button>'+
       '<button class="btnO" data-a="folha" data-v="conta">Criar conta</button></div>'+
@@ -1553,7 +1592,39 @@ Kindle" não é, e por isso não aparece em lugar nenhum.</li>
 <div class="pq">A frase precisa dizer o limite, não só a intenção.</div></div></div>
 <div class="cpl"><span class="onde">Sem conta</span><div><div class="txt">Sem conta, esta aba é o único endereço</div>
 <div class="pq">Descreve a consequência real. Não ameaça perder trabalho, porque não se perde.</div></div></div>
-</div></div>`,
+</div>
+
+<h3>A Home foi reescrita — e o motivo importa antes do Figma</h3>
+<p>A primeira versão desta Home <b>vendia o conversor, não o produto</b>. Eu a escrevi a partir do fluxo
+de preparação que tinha acabado de construir, então ela herdou aquele escopo: seis faixas sobre
+converter, zero sobre a estante, o que você marcou e as conexões.</p>
+<p>O registro do projeto define o Mekora como <i>"ambiente pessoal de leitura e pesquisa que prepara
+documentos para Kindle e conecta biblioteca, notas, perguntas e dossiês como contexto reutilizável"</i>,
+e a <span class="mono">DEC-0018</span> pôs Estante, Canvas e Conexões dentro do MVP. A Home descrevia
+menos da metade disso — e justamente a metade que qualquer conversor gratuito também faz.</p>
+<p><b>O que mudou:</b> a promessa saiu de "seus arquivos viram livros" para <b>"uma estante para os
+livros que não vêm de loja"</b>, que nomeia o buraco real: a biblioteca do Kindle é para o que você
+comprou lá. Apareceu o segundo problema, que é o que fica — <i>o livro convertido vira mais um arquivo
+numa pasta</i>. Entrou a faixa "depois de pronto" e a faixa "para quem", com os dois leitores que você
+descreveu. E a conta deixou de pedir desculpa: <b>"a conta é a estante"</b> em vez de "converter não
+exige conta", que posicionava cadastro como fricção em vez de como o produto.</p>
+
+<h3>O que é estrutural e o que dá para trocar sem quebrar nada</h3>
+<p>Para você implementar no Figma sem retrabalho: <b>a coluna da esquerda é argumento</b> — se mudar,
+muda a decisão de produto junto. A da direita é redação e pode ser reescrita à vontade.</p>
+<table><thead><tr><th>Estrutural — não troque sozinho</th><th>Substituível</th></tr></thead><tbody>
+<tr><td class="n">"Uma estante para os livros que não vêm de loja" — é o posicionamento; sem ele o produto vira conversor</td><td>a formulação exata da frase</td></tr>
+<tr><td class="n">Os dois problemas, nessa ordem: o PDF não reflui, e depois vira arquivo perdido</td><td>os exemplos de cada um</td></tr>
+<tr><td class="n">"A conta é a estante" — define o que a conta é, e a ordem em que se pede</td><td>o texto de apoio</td></tr>
+<tr><td class="n">A faixa "para quem", com prazer e estudo separados</td><td>os dois retratos</td></tr>
+<tr><td class="n">Dizer que converter não exige conta, e dizer isso cedo</td><td>onde exatamente aparece</td></tr>
+<tr><td class="n">"Um PDF no Kindle não é uma foto de um livro" — a única frase que sobreviveu inteira das duas versões</td><td>—</td></tr>
+</tbody></table>
+<p><b>Uma coisa que segurei de propósito:</b> a Home não promete leitor, dossiê nem pergunta como
+prontos. O <span class="mono">capability_snapshot</span> marca biblioteca espacial e notas conectadas
+como protótipo de experiência, não como operacional. A faixa "depois de pronto" descreve o que o
+produto é sem datar o que ainda não está de pé, e diz onde isso fica escrito.</p>
+</div>`,
 dock:`<div class="w"><h2>A dock: uma sai, uma fica, uma vira outra coisa</h2>
 <p>A confusão é justa, porque hoje <b>existem três coisas diferentes chamadas dock</b> no produto, e
 elas não têm o mesmo destino.</p>
