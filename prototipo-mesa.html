@@ -379,6 +379,61 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .aparelho{display:flex;gap:var(--s4);align-items:center;padding:var(--s4);border:1px solid var(--line);
   border-radius:var(--r2);background:var(--bg-2);margin-top:var(--s5)}
 
+/* ══ VER TODAS AS PÁGINAS ══ */
+.ed2{display:grid;grid-template-columns:180px minmax(0,1fr) 240px;height:min(60vh,460px)}
+@media(max-width:900px){.ed2{grid-template-columns:1fr;height:auto}}
+.ed2 .filtros{border-right:1px solid var(--line-2);padding:var(--s3);overflow:auto;background:var(--bg)}
+.ed2 .filtros button{display:flex;justify-content:space-between;gap:var(--s2);width:100%;
+  padding:8px var(--s3);font-size:12.5px;color:var(--ink-2)}
+.ed2 .filtros button:hover{background:var(--bg-2)}
+.ed2 .filtros button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.ed2 .filtros .n{font-family:var(--mono);font-size:10px;opacity:.7}
+.pgrade{overflow:auto;padding:var(--s3);display:grid;gap:var(--s3);background:var(--bg-2);
+  grid-template-columns:repeat(auto-fill,minmax(72px,1fr));align-content:start}
+.pg2{position:relative;padding:2px;border:2px solid transparent;background:none}
+.pg2 .im{height:84px;background:var(--branco);border:1px solid var(--line);position:relative;overflow:hidden}
+.pg2 .im i{position:absolute;inset:5px;display:block;
+  background:repeating-linear-gradient(0deg,var(--line-2) 0 1px,transparent 1px 4px)}
+.pg2.semtexto .im i{background:repeating-linear-gradient(135deg,var(--dan-soft) 0 5px,transparent 5px 10px)}
+.pg2.dim .im{border-color:var(--warn)}
+.pg2.fora .im{opacity:.32}
+.pg2.girada .im i{transform:rotate(90deg) scale(.7)}
+.pg2 .lg{display:block;font-family:var(--mono);font-size:9px;color:var(--ink-3);text-align:center;margin-top:4px}
+.pg2[aria-pressed="true"]{border-color:var(--acc);background:var(--acc-soft)}
+.pg2 .tag2{position:absolute;top:5px;left:5px;font-family:var(--mono);font-size:8px;letter-spacing:.05em;
+  text-transform:uppercase;background:var(--ink);color:var(--bg);padding:1px 4px}
+.pg2 .tag2.al{background:var(--warn);color:#fff}
+.pg2 .tag2.er{background:var(--dan);color:#fff}
+.ed2 .painel{border-left:1px solid var(--line-2);padding:var(--s4);overflow:auto;background:var(--bg)}
+.ferr{display:flex;flex-direction:column;gap:2px;margin-bottom:var(--s4)}
+.ferr button{display:flex;align-items:center;gap:var(--s3);padding:8px var(--s3);font-size:12.5px;
+  color:var(--ink-2);border:1px solid var(--line)}
+.ferr button:hover:not([disabled]){border-color:var(--ink);color:var(--ink)}
+.ferr button[disabled]{opacity:.38;cursor:not-allowed}
+.ferr .k{margin-left:auto;font-family:var(--mono);font-size:9px;color:var(--ink-3);
+  border:1px solid var(--line);padding:0 4px}
+
+/* ══ PRÉ-VISUALIZAÇÃO NO APARELHO ══ */
+.prev{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:var(--s5);align-items:start}
+@media(max-width:820px){.prev{grid-template-columns:1fr}}
+.aparelhoQ{display:flex;flex-direction:column;align-items:center;gap:var(--s3)}
+.telaQ{width:100%;max-width:300px;aspect-ratio:1236/1680;background:var(--paper);border:1px solid var(--line-3);
+  padding:18px 16px;overflow:hidden;position:relative;color:#26221c}
+.telaQ.paisagem{aspect-ratio:1680/1236;max-width:400px}
+.telaQ .rolo2{height:100%;overflow:hidden}
+.telaQ p{margin:0 0 .75em;font-family:var(--serif);text-align:justify;hyphens:auto}
+.telaQ.pdf .rolo2{transform-origin:top left}
+.telaQ .marcaQ{position:absolute;left:16px;right:16px;bottom:6px;display:flex;justify-content:space-between;
+  font-family:var(--ui);font-size:8px;color:rgba(38,34,28,.5)}
+.medida{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.05em;color:var(--ink-3);text-align:center}
+.medida b{color:var(--ink)}
+.ctrls{display:flex;flex-direction:column;gap:var(--s4)}
+.ctrl b{display:block;font-size:12.5px;font-weight:600;margin-bottom:var(--s2)}
+.ctrl .opts{display:flex;flex-wrap:wrap;gap:var(--s1)}
+.ctrl .opts button{border:1px solid var(--line);padding:6px 11px;font-size:12px;color:var(--ink-2)}
+.ctrl .opts button:hover{border-color:var(--ink);color:var(--ink)}
+.ctrl .opts button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
 /* ═══ DOCK ═══ só nas superfícies espaciais */
 .dock{position:sticky;bottom:var(--s5);margin:var(--s6) auto 0;width:max-content;display:flex;gap:var(--s1);
   background:var(--bg);border:1px solid var(--line);border-radius:var(--r2);padding:5px}
@@ -525,8 +580,21 @@ const zero={
   fase:"analise",feito:0,pendMostrada:false,pendResolvida:false,enviado:false,
   traduzir:null,capaEsc:"gerada",feitoAberto:false,
   estante:"lista",lombSel:"01",perfil:"conta",folha:null,menu:false,aviso:null,manuais:0,avisoUso:true,
-  q:"",ajuda:null,dockSel:0,corpo:1,entre:1,largura:1
+  q:"",ajuda:null,dockSel:0,corpo:1,entre:1,largura:1,
+  sel:[],filtro:"todas",mud:[],fora:[],giradas:[],capaPag:1,
+  disp:1,fonte:2,orient:"retrato",formato:"epub",nome:null
 };
+/* 96 páginas de um PDF digitalizado. Os problemas são os mesmos que a análise
+   declarou na tela do item — a lista e a grade leem do mesmo lugar. */
+const PAGS=(function(){const a=[];for(let i=1;i<=96;i++){
+  a.push({n:i,semtexto:[12,57,83].includes(i),dim:[31,32,33,58,59].includes(i),capaCand:i<=5});}
+  return a;})();
+const DISP=[["Kindle básico","600 × 800","167 PPI"],["Paperwhite","1236 × 1680","300 PPI"],
+  ["Scribe","1860 × 2480","300 PPI"],["Outro leitor","livre","—"]];
+const CORPOS=[13,15,17,20,24];
+const TRECHO=["A expedição partiu de manhã, com o material dividido em três caixas e a certeza de que uma delas voltaria vazia. Nenhum registro anterior descrevia o acesso pelo lado leste; levamos isso como convite, e não como aviso.",
+"Anotar o que se vê é mais difícil do que parece: metade do trabalho é resistir a anotar o que se esperava ver. Adotamos a regra de escrever antes de conversar — duas horas por dia sem falar com ninguém, cada um com o próprio caderno.",
+"Fotografia a cada duzentos metros, sempre na mesma altura, sempre com a mesma lente. A repetição é o que transforma imagem em dado. O que não cabia na fotografia entrava no caderno, com hora e coordenada."];
 const AJUDA={
  "Começando":[["Primeiros passos","Solte um arquivo e confirme uma vez.","O Mekora abre o arquivo, mostra o que encontrou e o que vai fazer, e espera um clique seu. Não há assistente de várias etapas: é uma tela só."],
   ["Guiado e Personalizado","No Guiado você confirma. No Personalizado você ajusta.","Ao trocar para Personalizado, todos os campos já vêm preenchidos com o que o Guiado teria feito. Se você mexer e voltar, perguntamos o que fazer com as suas alterações."],
@@ -827,7 +895,9 @@ function cab(){
     '<div class="tx"><h1>'+esc(ARQ.nome)+'</h1><div class="metas">'+
     '<span class="meta">'+ARQ.fmt+'</span><span class="meta">'+ARQ.tam+'</span>'+
     '<span class="meta">'+ARQ.pgs+' páginas</span><span class="meta">'+ARQ.idioma+'</span></div></div>'+
-    '<button class="modo" data-a="modo">'+(S.modo==="guiado"?'<b>Guiado</b> · trocar':'<b>Personalizado</b> · voltar')+'</button></div>';
+    '<button class="modo" data-a="modo">'+(S.modo==="guiado"?'<b>Guiado</b> · trocar':'<b>Personalizado</b> · voltar')+'</button>'+
+    '<button class="icb" data-a="folha" data-v="controles" aria-label="Controles do arquivo" '+
+    'title="Controles do arquivo">⋮</button></div>';
 }
 function est(k,t,p){
   return '<div class="estado '+k+'"><i class="pt pt-'+(k==="ok"?"ok":k==="at"?"at":"go")+'"></i>'+
@@ -906,7 +976,9 @@ function vLivro(){
       '<img class="capao" src="'+capa(ARQ.capa)+'" alt="Capa de '+esc(ARQ.titulo)+'">'+
       '<div class="acoes" style="margin-top:var(--s4);flex-direction:column;align-items:stretch">'+
       '<button class="btn" data-a="ir" data-v="leitura">Ler</button>'+
-      '<button class="btn sec2" data-a="folha" data-v="envio">Enviar ao Kindle</button></div></div>'+
+      '<button class="btn sec2" data-a="folha" data-v="viewport">Ver no aparelho</button>'+
+      '<button class="btn sec2" data-a="folha" data-v="envio">Enviar ao Kindle</button>'+
+      '<button class="btn sec2" data-a="folha" data-v="controles">⋮ Controles do arquivo</button></div></div>'+
     '<div>'+
       '<h1>'+esc(ARQ.titulo)+'</h1><p class="autor">'+esc(ARQ.autor)+'</p>'+
       '<div class="barra"><span class="meta">EPUB · 8,4 MB</span><span class="meta">96 páginas</span>'+
@@ -1149,11 +1221,119 @@ function vFolha(){
       'área de configurações. Eles sobem a padrão da conta por ato deliberado, em Perfil › Preferências.</div></div>',
       '<button class="btnO" data-a="fechar">Fechar</button>');
   }
+  if(f==="controles")return folha("Arquivo",esc(S.nome||ARQ.nome),
+    '<div class="lista">'+
+      li("in","✎","Renomear","Muda só o nome do arquivo final. O original guarda o nome que tinha.","renomear","renomear")+
+      li("in","▦","Ver todas as 96 páginas","Conferir o reconhecimento, escolher capa, deixar página de fora.","abrir","paginas")+
+      li("in","▭","Pré-visualizar no aparelho","Ver como fica no Kindle antes de enviar, com o corpo de letra que você usa.","abrir","viewport")+
+      li("in","↓","Baixar","O EPUB preparado, ou o PDF original do jeito que chegou.","baixar","baixar-dois")+
+      li("in","↺","Refazer a preparação","Volta ao começo com o mesmo arquivo. Nada é enviado de novo.","refazer","refazer")+
+      li("er","✕","Remover da estante","O arquivo preparado e o original saem. Não dá para desfazer.","remover","remover")+
+    '</div>','<button class="btnO" data-a="fechar">Fechar</button>');
+  if(f==="remover")return folha("Irreversível","Remover da estante?",
+    '<p style="margin:0;font-size:var(--t-leitura);font-family:var(--serif);line-height:var(--lh-leitura);color:var(--ink-2)">'+
+    'Saem os dois: o EPUB preparado e o PDF original. As notas que você fez neste livro também.</p>'+
+    '<div class="nota"><span>◆</span><div>Se a intenção é só tirar da vista, <b>arquivar</b> mantém tudo e '+
+    'esconde da estante. Isso dá para desfazer.</div></div>',
+    '<button class="lnk mudo" data-a="aviso-x" data-v="Arquivado. Some da estante e continua na busca.">Arquivar</button>'+
+    '<button class="btnO forte" style="background:var(--dan);border-color:var(--dan);color:#fff" '+
+    'data-a="aviso-x" data-v="Removido. Num produto real isto pediria confirmação por e-mail.">Remover assim mesmo</button>');
+  if(f==="baixar-dois")return folha("Baixar","O que você quer levar",
+    '<div class="lista">'+
+      li("ok","✓","Diário 02.epub","8,4 MB · com capa, sumário e texto reconhecido. É o que o Kindle lê melhor.","baixar","baixar")+
+      li("in","·","Relatório de pesquisa — expedição 02.pdf","12,8 MB · o original, exatamente como chegou.","baixar","baixar")+
+    '</div>','<button class="btnO" data-a="fechar">Fechar</button>');
+  if(f==="paginas"){
+    const F=[["todas","Todas as páginas",96],["semtexto","Sem texto reconhecido",3],
+      ["dim","Dimensão diferente",5],["capa","Candidatas a capa",5],["fora","Deixadas de fora",S.fora.length]];
+    const lista=PAGS.filter(p=>S.filtro==="todas"||(S.filtro==="fora"?S.fora.includes(p.n):
+      S.filtro==="capa"?p.capaCand:p[S.filtro]));
+    const alvo=S.sel.length===1?PAGS[S.sel[0]-1]:null;
+    return folha("Organização avançada","96 páginas de "+esc(ARQ.nome),
+      '<div class="ed2"><div class="filtros">'+F.map(x=>'<button data-a="filtro" data-v="'+x[0]+'" '+
+        'aria-pressed="'+(S.filtro===x[0])+'"><span>'+x[1]+'</span><span class="n">'+x[2]+'</span></button>').join("")+
+        '<p style="font-size:11.5px;color:var(--ink-3);line-height:1.5;margin:var(--s3) 4px 0">'+
+        'Clique para selecionar. A seleção acumula — não precisa segurar tecla.</p></div>'+
+      '<div class="pgrade">'+lista.map(p=>'<button class="pg2'+
+        (p.semtexto?" semtexto":"")+(p.dim?" dim":"")+(S.fora.includes(p.n)?" fora":"")+
+        (S.giradas.includes(p.n)?" girada":"")+'" data-a="selp" data-v="'+p.n+'" '+
+        'aria-pressed="'+(S.sel.includes(p.n))+'"><span class="im"><i></i>'+
+        (S.capaPag===p.n?'<span class="tag2">capa</span>':p.semtexto?'<span class="tag2 er">sem texto</span>':
+         p.dim?'<span class="tag2 al">largura</span>':'')+
+        '</span><span class="lg">'+p.n+'</span></button>').join("")+'</div>'+
+      '<div class="painel"><b style="font-size:13.5px;display:block;margin-bottom:var(--s2)">'+
+        (S.sel.length===0?"Nenhuma página":S.sel.length===1?"Página "+S.sel[0]:S.sel.length+" páginas")+'</b>'+
+        (alvo?'<p style="font-size:12px;color:var(--ink-2);line-height:1.5;margin:0 0 var(--s3)">'+
+          (alvo.semtexto?"O reconhecimento devolveu ruído aqui — é uma fotografia.":
+           alvo.dim?"1200 × 1700 px, mais estreita que as outras 91.":
+           alvo.capaCand?"Está entre as cinco primeiras, então serve como capa.":
+           "1600 × 2400 px, dentro do padrão.")+'</p>':'')+
+        '<div class="ferr">'+
+          fer("Girar 90°","R",S.sel.length===0)+
+          fer("Usar como capa","C",S.sel.length!==1)+
+          fer("Deixar de fora","⌫",S.sel.length===0)+
+          fer("Restaurar","Z",S.sel.length===0)+
+        '</div>'+
+        '<span class="kicker" style="margin-bottom:var(--s2)">Alterações</span>'+
+        (S.mud.length===0?'<p style="font-size:12px;color:var(--ink-3);line-height:1.5">Nada mudou ainda. '+
+          'Tudo aqui é reversível até você aplicar.</p>':
+         '<ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px">'+
+         S.mud.map((m,i)=>'<li style="font-size:12px;color:var(--ink-2);display:flex;gap:7px">'+
+         '<span style="flex:1">'+esc(m)+'</span><button class="lnk" style="font-size:11px;padding:0" '+
+         'data-a="desfazer" data-v="'+i+'">desfazer</button></li>').join("")+'</ul>')+
+      '</div></div>',
+      '<span style="font-size:var(--t-peq);color:var(--ink-3);margin-right:auto">'+S.mud.length+
+      ' alteraç'+(S.mud.length===1?"ão":"ões")+' · nada foi gravado</span>'+
+      '<button class="lnk mudo" data-a="fechar">Cancelar</button>'+
+      '<button class="btnO forte" data-a="aplicar-pg">Aplicar</button>');
+  }
+  if(f==="viewport"){
+    const d=DISP[S.disp];
+    return folha("Antes de enviar","Como fica no "+d[0],
+      '<div class="prev"><div class="aparelhoQ">'+
+        '<div class="telaQ'+(S.orient==="paisagem"?" paisagem":"")+(S.formato==="pdf"?" pdf":"")+'" id="telaQ">'+
+          '<div class="rolo2" id="rolo2" style="font-size:'+CORPOS[S.fonte]+'px;line-height:'+
+          (S.formato==="pdf"?1.4:1.5)+'">'+
+          (S.formato==="pdf"?'<div style="transform:scale('+(S.orient==="paisagem"?.62:.46)+');'+
+            'transform-origin:top left;width:'+(S.orient==="paisagem"?161:217)+'%">':'')+
+          TRECHO.map(t=>'<p>'+esc(t)+'</p>').join("")+
+          (S.formato==="pdf"?'</div>':'')+'</div>'+
+          '<span class="marcaQ"><span>'+esc(ARQ.titulo)+'</span><span id="pagQ">—</span></span>'+
+        '</div>'+
+        '<p class="medida" id="medQ">medindo…</p>'+
+      '</div>'+
+      '<div class="ctrls">'+
+        ctrl("Aparelho",DISP.map((x,i)=>[x[0],"disp:"+i,S.disp===i]))+
+        ctrl("Corpo da letra",CORPOS.map((c,i)=>[c+"px","fonte:"+i,S.fonte===i]))+
+        ctrl("Orientação",[["Retrato","orient:retrato",S.orient==="retrato"],["Paisagem","orient:paisagem",S.orient==="paisagem"]])+
+        ctrl("Formato",[["EPUB","formato:epub",S.formato==="epub"],["PDF original","formato:pdf",S.formato==="pdf"]])+
+        '<div class="nota" style="margin-top:0"><span>◆</span><div>'+
+        (S.formato==="pdf"?'<b>No PDF o corpo da letra não faz nada.</b> A página é uma imagem: aumentar a letra '+
+          'só amplia a foto, e o texto sai da tela. É por isso que a conversão existe.':
+         'A contagem de páginas ao lado é <b>medida na própria tela</b>, não estimada: o texto é renderizado e '+
+         'dividido pela altura do aparelho.')+'</div></div>'+
+      '</div></div>',
+      '<button class="lnk mudo" data-a="fechar">Fechar</button>'+
+      '<button class="btnO forte" data-a="folha" data-v="envio">Enviar ao Kindle</button>');
+  }
+  if(f==="renomear")return folha("Arquivo","Renomear",
+    '<input id="campoNome" class="campoB" value="'+esc(S.nome||ARQ.saida)+'">'+
+    '<div class="nota"><span>◆</span><div>Muda só o nome do arquivo final e como ele aparece na estante. '+
+    'O original continua com o nome que tinha quando chegou.</div></div>',
+    '<button class="lnk mudo" data-a="fechar">Cancelar</button>'+
+    '<button class="btnO forte" data-a="salvar-nome">Salvar</button>');
   if(f==="aviso")return folha("Simulação",S.aviso||"Ação representada",
     '<p style="margin:0;font-size:14px;line-height:1.65;color:var(--ink-2)">Este é um protótipo: o controle existe, '+
     'tem estado e leva a algum lugar, mas nada é gravado e nenhum arquivo real é tocado.</p>',
     '<button class="btn" data-a="fechar">Entendi</button>');
   return "";
+}
+function fer(t,k,off){
+  return '<button data-a="ferr" data-v="'+esc(t)+'"'+(off?' disabled':'')+'>'+t+'<span class="k">'+k+'</span></button>';
+}
+function ctrl(rot,opts){
+  return '<div class="ctrl"><b>'+rot+'</b><div class="opts">'+opts.map(o=>
+    '<button data-a="prev" data-v="'+o[1]+'"'+(o[2]?' aria-pressed="true"':'')+'>'+o[0]+'</button>').join("")+'</div></div>';
 }
 function resultados(lista,q){
   if(!lista.length)return '<p style="margin:var(--s4) 0 0;font-size:var(--t-peq);color:var(--ink-3)">'+
@@ -1194,6 +1374,33 @@ function pinta(){
   if(S.lugar==="leitura")app.style.setProperty("--col",LARG[S.largura]);
   else app.style.removeProperty("--col");
   app.innerHTML=topo()+'<div class="corpo">'+corpo()+'</div>'+vFolha();
+  /* a contagem da pré-visualização é MEDIDA na própria tela do aparelho:
+     altura real do conteúdo dividida pela altura visível. Nada estimado. */
+  const rolo=document.getElementById("rolo2");
+  if(rolo){
+    const medir=()=>{
+      /* a altura útil vem da tela do aparelho, não de um height:100% que
+         depende do pai — assim a medição não muda de significado sozinha */
+      const tela=document.getElementById("telaQ");
+      if(tela){
+        const cs=getComputedStyle(tela);
+        const util=tela.clientHeight-parseFloat(cs.paddingTop||0)-parseFloat(cs.paddingBottom||0);
+        if(util>40)rolo.style.height=util+"px";
+      }
+      const alt=rolo.clientHeight||1,total=rolo.scrollHeight;
+      /* razão direta entre altura do conteúdo e altura visível — é o único
+         número aqui que não depende de interpretar estilo computado */
+      const telas=Math.max(1,Math.ceil(total/alt));
+      const m=document.getElementById("medQ"),p=document.getElementById("pagQ");
+      if(m)m.innerHTML=S.formato==="pdf"?
+        'A página não reflui — <b>o texto sai da tela</b>':
+        'Neste corpo, o trecho ocupa <b>'+telas+' tela'+(telas>1?"s":"")+'</b> — medido aqui, não estimado.'+
+        '<br><span style="opacity:.7">'+DISP[S.disp][1]+' · '+DISP[S.disp][2]+'</span>';
+      if(p)p.textContent=S.formato==="pdf"?"1 de 96":"1 de "+telas;
+    };
+    medir();                     /* leitura de clientHeight já força o layout */
+    setTimeout(medir,60);        /* segunda passada, depois de a fonte assentar */
+  }
   const campo=document.getElementById("campoBusca");
   if(campo){
     campo.focus();campo.setSelectionRange(campo.value.length,campo.value.length);
@@ -1269,6 +1476,26 @@ app.addEventListener("click",ev=>{
     case "lomb":S.lombSel=v;break;
     case "dobra":S.perfil=S.perfil===v?"":v;break;
     case "artigo":S.ajuda=v;break;
+    case "filtro":S.filtro=v;break;
+    case "selp":{const n=Number(v),i=S.sel.indexOf(n);if(i>=0)S.sel.splice(i,1);else S.sel.push(n);break;}
+    case "ferr":{
+      const q=S.sel.length,alvo=q===1?"página "+S.sel[0]:q+" páginas";
+      if(v==="Usar como capa")S.capaPag=S.sel[0];
+      if(v==="Deixar de fora")S.sel.forEach(n=>{if(!S.fora.includes(n))S.fora.push(n);});
+      if(v==="Girar 90°")S.sel.forEach(n=>{if(!S.giradas.includes(n))S.giradas.push(n);});
+      if(v==="Restaurar"){S.fora=S.fora.filter(n=>!S.sel.includes(n));S.giradas=S.giradas.filter(n=>!S.sel.includes(n));}
+      S.mud.push(v+" · "+alvo);S.sel=[];break;}
+    case "desfazer":{
+      const m=S.mud[Number(v)]||"";
+      if(m.indexOf("Deixar de fora")===0)S.fora=[];
+      if(m.indexOf("Girar")===0)S.giradas=[];
+      S.mud.splice(Number(v),1);break;}
+    case "aplicar-pg":S.folha=null;aviso(S.mud.length+" alteração(ões) aplicada(s) — reversíveis na estante");break;
+    case "prev":{const[k,val]=v.split(":");
+      S[k]=(k==="disp"||k==="fonte")?Number(val):val;break;}
+    case "salvar-nome":{const c=document.getElementById("campoNome");
+      if(c)S.nome=c.value;S.folha=null;break;}
+    case "aviso-x":S.folha=null;aviso(v);break;
     case "aa":{const[k,i]=v.split(":");
       if(k==="tema"){document.documentElement.setAttribute("data-tema",i==="1"?"escuro":"claro");S.tema=Number(i);}
       else S[k]=Number(i);break;}
