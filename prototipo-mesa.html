@@ -13,9 +13,14 @@
    (Caderno 03, seção 11).
    ════════════════════════════════════════════════════════════ */
 :root{
-  --bg:#ffffff;--bg-2:#f7f7f5;--bg-3:#f0efec;--nav:#f4f3f0;
-  --ink:#1a1917;--ink-2:#57534d;--ink-3:#706c65;--ink-4:#b5b0a8;
-  --line:rgba(26,25,23,.17);--line-2:rgba(26,25,23,.09);--line-3:rgba(26,25,23,.32);
+  /* ── EDITORIAL UTILITY ──
+     Off-white em vez de branco puro, preto levemente suavizado.
+     Isto sobrepõe a regra antiga de "o creme é só do leitor": se a estrutura
+     vai ser reta, ela não pode ser fria também. As camadas passam a vir do
+     fundo, não da borda — é o que permite tirar borda de quase tudo. */
+  --bg:#faf9f5;--bg-2:#f4f3ef;--bg-3:#edebe4;--nav:#f4f3ef;--branco:#ffffff;
+  --ink:#151515;--ink-2:#57534d;--ink-3:#6f6b64;--ink-4:#b5b0a8;
+  --line:rgba(21,21,21,.12);--line-2:rgba(21,21,21,.07);--line-3:rgba(21,21,21,.24);
   --acc:#c8481f;--acc-soft:#fdf0ea;
   --ok:#2f7d55;--ok-soft:#eef6f1;--warn:#a8701c;--warn-soft:#fdf4e6;--dan:#b23b2a;--dan-soft:#fdefec;
   --paper:#f1eee7;
@@ -23,14 +28,18 @@
      O DOC opera em múltiplos de 20 e usa 40 e 80 como respiro grande.
      Mantive isso e só troquei a base de 5px por 4px, que já era do Mekora. */
   --s1:4px;--s2:8px;--s3:12px;--s4:20px;--s5:30px;--s6:40px;--s7:60px;--s8:80px;
-  /* ── RAIO: a forma diz o que a coisa é, não em que tela ela está ──
-     --r1  ação e objeto pequeno: botão, controle, campo, miniatura
-     --r2  superfície: card, lista, folha, dock, imagem grande
-     --rp  dado: tag, chip de metadado, trilho, interruptor — pílula lê como
-           rótulo, e é isso que separa "isto informa" de "isto faz"
-     50%   círculo: avatar e ponto de estado. Não é raio, é forma. */
-  --r1:4px;--r2:8px;--rp:999px;--h1:2.2rem;--h2:2.6rem;
-  --curva:cubic-bezier(.16,1,.3,1);--d1:.12s;--d2:.24s;--d3:.42s;
+  /* ── RAIO ── estrutura é reta. O 4px era o pior dos dois mundos: perdia a
+     nitidez do 0 sem comprar a simpatia de uma curva de verdade.
+     --r1  0 — ação e estrutura: botão, campo, card, lista, folha
+     --r2  0 — superfície grande
+     --rm  2px — só mídia recortada, para o canto não brigar com a borda
+     --rp  pílula — dado: tag, chip, trilho, interruptor
+     50%   círculo — avatar e ponto. Não é raio, é forma.
+     Pílula e círculo são os 5% que quebram a regra, e é por serem raros
+     que eles funcionam: numa composição reta, uma curva vira sinal. */
+  --r1:0px;--r2:0px;--rm:2px;--rp:999px;--h1:2.2rem;--h2:2.6rem;
+  /* movimento amacia o que a geometria endureceu */
+  --curva:cubic-bezier(.16,1,.3,1);--d1:.16s;--d2:.26s;--d3:.42s;
   --ui:-apple-system,"Segoe UI",Inter,"Helvetica Neue",Arial,sans-serif;
   --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
@@ -62,6 +71,9 @@
   --acc:#e4613d;--acc-soft:#2a1d17;
   --ok:#8fb283;--ok-soft:#1c241d;--warn:#d3a448;--warn-soft:#282017;--dan:#e0705c;--dan-soft:#2a1a17;
 }
+/* comparação ao vivo — para julgar com o olho, não com o argumento */
+:root[data-raio="4"]{--r1:4px;--r2:8px;--rm:4px}
+:root[data-fundo="neutro"]{--bg:#ffffff;--bg-2:#f7f7f5;--bg-3:#f0efec;--branco:#ffffff}
 *{box-sizing:border-box}
 @media (prefers-reduced-motion:reduce){*{transition-duration:.001s!important;animation:none!important}}
 /* ══ A ESCALA FLUIDA DO DOC, SEM O PREÇO DELE ══
@@ -146,10 +158,11 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .gcab h2{margin:0;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
 .gcab .n{font-family:var(--mono);font-size:10px;color:var(--ink-3)}
 .linha{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:var(--s4);align-items:center;
-  padding:var(--s3) var(--s4);border:1px solid var(--line);border-radius:var(--r2);background:var(--bg);
-  margin-bottom:var(--s2);width:100%;transition:border-color var(--d1) var(--curva)}
-.linha:hover{border-color:var(--line-3);background:var(--bg-2)}
-.linha .capa{width:38px;height:50px;border-radius:var(--r1);border:1px solid var(--line);object-fit:cover;
+  padding:var(--s3) var(--s4);border-bottom:1px solid var(--line-2);background:var(--branco);
+  width:100%;transition:background var(--d1) var(--curva)}
+.linha:last-child{border-bottom:none}
+.linha:hover{background:var(--bg-2)}
+.linha .capa{width:38px;height:50px;border-radius:var(--rm);border:1px solid var(--line);object-fit:cover;
   object-position:top;background:var(--paper);display:block}
 .linha .capa.vazia{display:flex;align-items:center;justify-content:center;font-family:var(--mono);
   font-size:8px;color:var(--ink-3);background:var(--bg-3)}
@@ -163,7 +176,7 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
   padding:5px 9px 5px 5px;border-radius:var(--r1);margin-bottom:var(--s4)}
 .volta:hover{color:var(--acc);background:var(--bg-2)}
 .icab{display:flex;gap:var(--s4);align-items:flex-start;margin-bottom:var(--s5);flex-wrap:wrap}
-.icab .cp{width:74px;height:98px;border-radius:var(--r1);border:1px solid var(--line);object-fit:cover;
+.icab .cp{width:74px;height:98px;border-radius:var(--rm);border:1px solid var(--line);object-fit:cover;
   object-position:top;flex:0 0 74px;background:var(--paper)}
 .icab .tx{flex:1;min-width:220px}
 .icab h1{margin:0;font-size:22px;font-weight:650;letter-spacing:-.025em;line-height:1.2}
@@ -174,17 +187,18 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
   border:1px solid var(--line);border-radius:var(--r1);padding:6px 12px;white-space:nowrap}
 .modo:hover{border-color:var(--line-3)}
 .modo b{color:var(--ink);font-weight:650}
-.estado{display:flex;gap:var(--s3);padding:var(--s4);border:1px solid var(--line);border-radius:var(--r2);
-  background:var(--bg-2);margin-bottom:var(--s5);align-items:flex-start}
-.estado.ok{background:var(--ok-soft);border-color:var(--ok)}
-.estado.at{background:var(--warn-soft);border-color:var(--warn)}
+.estado{display:flex;gap:var(--s3);padding:var(--s4);border-radius:var(--r2);
+  background:var(--branco);margin-bottom:var(--s5);align-items:flex-start;
+  box-shadow:inset 2px 0 0 var(--ink)}
+.estado.ok{background:var(--ok-soft);box-shadow:inset 2px 0 0 var(--ok)}
+.estado.at{background:var(--warn-soft);box-shadow:inset 2px 0 0 var(--warn)}
 .estado .pt{margin-top:6px}
 .estado h2{margin:0;font-size:15px;font-weight:650;letter-spacing:-.012em}
 .estado p{margin:4px 0 0;font-size:13.5px;color:var(--ink-2);line-height:1.55;max-width:60ch}
 .sec{margin-bottom:var(--s5)}
 .sec>h3{margin:0 0 var(--s3);font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
   color:var(--ink-3)}
-.lista{border:1px solid var(--line);border-radius:var(--r2);overflow:hidden}
+.lista{background:var(--branco);border-radius:var(--r2);overflow:hidden}
 .li{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:var(--s3);align-items:start;
   padding:var(--s3) var(--s4);border-bottom:1px solid var(--line-2)}
 .li:last-child{border-bottom:none}
@@ -208,9 +222,9 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .lnk:hover{background:var(--acc-soft)}
 .lnk.mudo{color:var(--ink-3);font-weight:550}
 .lnk.mudo:hover{color:var(--ink);background:var(--bg-2)}
-.nota{display:flex;gap:var(--s3);align-items:flex-start;padding:var(--s3) var(--s4);border-radius:var(--r1);
-  background:var(--bg-2);border:1px solid var(--line-2);font-size:12.5px;color:var(--ink-2);
-  line-height:1.55;margin-top:var(--s4)}
+.nota{display:flex;gap:var(--s3);align-items:flex-start;padding:var(--s3) 0 0;
+  border-top:1px solid var(--line-2);font-size:12.5px;color:var(--ink-3);
+  line-height:1.55;margin-top:var(--s5)}
 .nota b{color:var(--ink)}
 .trilho{height:5px;border-radius:var(--rp);background:var(--bg-3);overflow:hidden;margin:var(--s3) 0 var(--s2)}
 .trilho i{display:block;height:100%;background:var(--ink);border-radius:var(--rp);transition:width .4s linear}
@@ -242,14 +256,14 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .vista button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 .grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(136px,1fr));gap:var(--s5)}
 .bk{text-align:left;display:block;width:100%}
-.bk img{display:block;width:100%;height:auto;border-radius:var(--r1);border:1px solid var(--line);
+.bk img{display:block;width:100%;height:auto;border-radius:var(--rm);border:1px solid var(--line);
   background:var(--paper);transition:transform var(--d2) var(--curva)}
 .bk:hover img{transform:translateY(-3px)}
 .bk .t{display:block;font-size:12.5px;font-weight:600;margin-top:9px;line-height:1.25}
 .bk .a{display:block;font-size:12px;color:var(--ink-3);margin-top:1px}
 .prat{margin-bottom:var(--s5)}
 .lombs{display:flex;align-items:flex-end;gap:2px;padding:0 var(--s5);min-height:150px}
-.lombs img{display:block;width:auto;border-radius:var(--r1) var(--r1) 0 0;transition:transform var(--d2) var(--curva)}
+.lombs img{display:block;width:auto;border-radius:var(--rm) var(--rm) 0 0;transition:transform var(--d2) var(--curva)}
 .lombs button:hover img{transform:translateY(-9px)}
 .lombs button[aria-pressed="true"] img{transform:translateY(-15px)}
 .tabua{height:9px;background:var(--bg-3);border-bottom:4px solid var(--ink-4);border-radius:var(--r1)}
@@ -261,13 +275,14 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .pcab .ava{width:64px;height:64px;font-size:22px}
 .pcab h1{margin:0;font-size:24px;font-weight:650;letter-spacing:-.025em}
 .pcab .h{font-size:13px;color:var(--ink-3);margin-top:3px}
-.dobra{border:1px solid var(--line);border-radius:var(--r2);margin-bottom:var(--s2);overflow:hidden}
+.dobra{border-bottom:1px solid var(--line-2);background:var(--branco);overflow:hidden}
+.dobra:first-of-type{border-top:1px solid var(--line-2)}
 .dobra>button{display:flex;align-items:center;gap:var(--s3);width:100%;padding:var(--s4)}
 .dobra>button:hover{background:var(--bg-2)}
 .dobra .nm{font-size:14.5px;font-weight:650}
 .dobra .rs{font-size:12.5px;color:var(--ink-2);margin-top:2px}
 .dobra .ch{margin-left:auto;color:var(--ink-3);font-size:11px}
-.dobra .in{padding:0 var(--s4) var(--s4);border-top:1px solid var(--line-2)}
+.dobra .in{padding:0 var(--s4) var(--s4);background:var(--bg)}
 .row{display:flex;align-items:center;gap:var(--s4);padding:var(--s3) 0;border-bottom:1px solid var(--line-2)}
 .row:last-child{border-bottom:none}
 .row .tx{flex:1;min-width:0}
@@ -335,7 +350,7 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .indiceE .metaI{margin-left:auto;font-family:var(--mono);font-size:var(--t-mono);color:var(--ink-3)}
 /* figura e legenda: legenda herda a largura da coluna, centralizada */
 .figE{margin:var(--s6) 0}
-.figE img{display:block;width:100%;height:auto;border-radius:var(--r1);border:1px solid var(--line)}
+.figE img{display:block;width:100%;height:auto;border-radius:var(--rm);border:1px solid var(--line)}
 .figE figcaption{width:100%;max-width:var(--col);margin:var(--s4) auto 0;text-align:center;
   font-size:var(--t-peq);line-height:1.5;color:var(--ink-3)}
 .duasE{display:grid;grid-template-columns:1fr;gap:var(--s6)}
@@ -421,6 +436,12 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .umenu .divi{height:1px;background:var(--line-2);margin:var(--s2) 0}
 
 /* ═══ PAINEL DE NOTAS ═══ */
+#ctl{position:fixed;left:18px;bottom:18px;z-index:90;display:flex;gap:1px;background:var(--line);
+  border:1px solid var(--line)}
+#ctl button{background:var(--branco);color:var(--ink-2);font-size:11.5px;padding:8px 13px;
+  font-family:var(--mono);letter-spacing:.05em}
+#ctl button:hover{background:var(--bg-2);color:var(--ink)}
+#ctl button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 #notasbt{position:fixed;right:18px;bottom:18px;z-index:90;background:var(--ink);color:var(--bg);
   border-radius:var(--r1);padding:10px 17px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:9px}
 #notasbt:hover{background:var(--acc);color:#fff}
@@ -458,6 +479,10 @@ td.n{color:var(--ink);font-weight:600}
 </head>
 <body>
 <div id="app"></div>
+<div id="ctl">
+  <button id="btRaio" type="button" aria-pressed="true">raio 0</button>
+  <button id="btFundo" type="button" aria-pressed="true">off-white</button>
+</div>
 <button id="notasbt" type="button">◇ notas<span class="bdg">copy · dock</span></button>
 <div id="notas" hidden></div>
 <script>
@@ -1277,7 +1302,30 @@ perfil — continua em grotesca e densidade de ferramenta, de propósito.</p>
 <tr><td class="n">Zero sombra</td><td>profundidade por borda translúcida</td><td>toda parte</td></tr>
 <tr><td class="n">Uma curva só</td><td><code>cubic-bezier(.16,1,.3,1)</code>, quatro durações</td><td>toda parte</td></tr>
 </tbody></table>
-<h3>O raio — um defeito que o Erik encontrou, e a regra que saiu dele</h3>
+<h3>Editorial Utility — por que o 4px virou 0</h3>
+<p>Sua pergunta seguinte foi a certa: <b>entre 4px e 0, por que não 0?</b> O 4px era o pior dos dois
+mundos — perdia a nitidez do reto sem comprar a simpatia de uma curva de verdade. Virou 0.</p>
+<p>O medo de ficar quadrado demais é justo, e a resposta não é devolver raio: é <b>substituir a função
+que o raio exercia</b>. Ele fazia quatro trabalhos, e cada um foi para outro lugar:</p>
+<table><thead><tr><th>O raio fazia</th><th>Agora faz</th></tr></thead><tbody>
+<tr><td class="n">Separar grupos</td><td>Espaço, alinhamento e divisória de 1px a 7% — não borda em volta de tudo</td></tr>
+<tr><td class="n">Criar camada</td><td>Fundo: <code>#faf9f5</code> geral, <code>#fff</code> no painel, <code>#f4f3ef</code> no recuado</td></tr>
+<tr><td class="n">Suavizar</td><td>Off-white em vez de branco puro, preto em <code>#151515</code>, linha a 12% de opacidade</td></tr>
+<tr><td class="n">Indicar interatividade</td><td>Movimento e mudança de fundo no hover, e a forma: pílula é dado, reto é ação</td></tr>
+</tbody></table>
+<p><b>O que tirei de borda:</b> as linhas da Mesa eram cinco caixas com borda própria, empilhadas —
+viraram um painel branco com divisórias. O bloco de estado perdeu a borda e ganhou uma barra de 2px
+à esquerda. As notas de rodapé perderam a caixa e ficaram com uma hairline em cima. As cinco dobras
+do Perfil eram cinco caixas; viraram uma lista. Borda sobrou onde há objeto de verdade: controle,
+folha sobre véu e a zona de soltar arquivo.</p>
+<p><b>A vantagem que este produto tem e outros não:</b> a Estante é feita de capas. Elas já trazem
+cor, textura e forma. Se o chrome for neutro e reto, ele funciona como galeria —
+<b>interface é estrutura, conteúdo é personalidade</b> — em vez de competir com aquilo que o usuário
+coloca dentro dele.</p>
+<p><b>Dá para julgar com o olho:</b> os dois botões no canto inferior esquerdo trocam
+<b>raio 0 × 4px</b> e <b>off-white × branco puro</b>, ao vivo, em qualquer tela. Era o único jeito
+honesto de responder essa pergunta.</p>
+<h3>A regra de raio que sobrou</h3>
 <p>Ao trazer o botão reto do DOC para um produto cujos botões eram pílula, eu não reconciliei os dois.
 O resultado era <b>seis valores de raio convivendo</b> — 0, 2, 3, 4, 5, 8 e 999px —, e a pergunta
 "por que aqui é quadrado e ali é redondo" não tinha resposta, porque não havia regra.</p>
@@ -1320,6 +1368,20 @@ function pintaNotas(){
   document.getElementById("fechaN").addEventListener("click",()=>{notas.hidden=true;});
 }
 document.getElementById("notasbt").addEventListener("click",()=>{notas.hidden=false;pintaNotas();});
+/* comparação ao vivo: raio 0 × 4, off-white × branco puro */
+(function(){
+  const R=document.documentElement,bR=document.getElementById("btRaio"),bF=document.getElementById("btFundo");
+  bR.addEventListener("click",()=>{
+    const zero=R.getAttribute("data-raio")!=="4";
+    R.setAttribute("data-raio",zero?"4":"0");
+    bR.textContent=zero?"raio 4":"raio 0";bR.setAttribute("aria-pressed",String(!zero));
+  });
+  bF.addEventListener("click",()=>{
+    const quente=R.getAttribute("data-fundo")!=="neutro";
+    R.setAttribute("data-fundo",quente?"neutro":"quente");
+    bF.textContent=quente?"branco puro":"off-white";bF.setAttribute("aria-pressed",String(!quente));
+  });
+})();
 
 pinta();
 </script>
