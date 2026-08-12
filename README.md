@@ -43,6 +43,37 @@ Contém:
 - as hipóteses que cada tela testa, e o que indicaria que falharam;
 - as dependências de produto que ainda bloqueiam parte do desenho.
 
+### Caderno 03 — Rodada final: UX/UI Exploration
+`caderno-03-rodada-final.html`
+
+A rodada que parte de todas as telas que existem hoje — as 26 capturas de 12 de agosto de 2026,
+preservadas em `telas-atuais/` — e vai até a arquitetura proposta, sem começar por componente.
+
+A conclusão que organiza o resto: **o Mekora está construído como duas aplicações que compartilham
+só o nome.** A preparação se comporta como página de produto; a biblioteca, como aplicativo. Elas
+não têm um elemento de interface em comum, e o caminho de uma para a outra é de mão única.
+
+Contém:
+
+- inventário das 26 telas, com veredito por tela (manter, fundir, virar estado, deixar de existir);
+- o mapa do fluxo atual, reconstruído sem inferir passagens que não estão desenhadas;
+- 34 achados classificados em P0, P1, P2 e P3, cada um com a tela em que foi observado;
+- a arquitetura proposta de navegação, e por que Configurações não precisa existir;
+- **22 telas propostas navegáveis** — sem conta, Mesa, item de documento, lote, quadrinho, editor
+  manual, pendências, ajuda, perfil, atualizações e onboarding —, com Guiado e Personalizado
+  funcionando;
+- oito comparações atual × proposta, com a captura original de um lado;
+- três dúvidas reais com duas ou três alternativas de arquitetura cada, e a escolha justificada;
+- o que recomendo manter, alterar, remover e adiar;
+- as seis respostas do Erik e o que cada uma mudou no desenho.
+
+**Revisão B, 12 de agosto de 2026.** As perguntas foram respondidas e duas respostas corrigiram o
+protótipo. O preparo roda no navegador, então a promessa *"pode fechar esta tela"* — escrita em três
+telas — era falsa e saiu, junto com um estado novo para o que fica interrompido quando a aba fecha.
+E como não há confirmação de que a direção de leitura pode ser detectada, a confiança declarada
+naquela pendência saiu também: ela virou uma pergunta com a evidência à vista. A regra que ficou:
+**confiança só quando existe medição; sem medição, o produto pergunta.**
+
 ## As três decisões centrais do Caderno 02
 
 **Conta é real e vira o cabeçalho de Preferências**, não um item da lista — ela é o contexto em que

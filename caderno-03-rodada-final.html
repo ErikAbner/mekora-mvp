@@ -1,0 +1,2621 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rodada final · UX/UI do Mekora</title>
+<style>
+/* ============================================================
+   Caderno 03 da série Mekora — Rodada final de UX/UI.
+   Mesma gramática dos cadernos 01 e 02:
+   serif = o argumento · mono = o instrumento · helvetica = o produto.
+   As telas propostas usam os tokens do produto (prototipo.html),
+   dentro de uma moldura, para que nunca se confundam com o caderno.
+   ============================================================ */
+:root{
+  --bench:#DDD8CC;--bench-2:#E7E3D9;--bench-3:#D2CCBE;--canvas:#F1EEE8;--card:#FCFBF8;
+  /* --ink-3 mede 4,53:1 sobre o --bench, que é o pior fundo do caderno.
+     Os tons mais claros usados nos cadernos 01 e 02 (#8A857C) medem 3,1:1 ali. */
+  --ink:#141311;--ink-2:#55504A;--ink-3:#635E55;--rule:#C6C0B1;--rule-2:#E4E0D6;
+  --accent:#C33B1E;--good:#3F6039;--warn:#8F6413;--crit:#B3350B;--shadow:20,19,17;--slab:#141311;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Mono","Liberation Mono",monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bench:#121110;--bench-2:#1B1917;--bench-3:#0C0B0A;--canvas:#201E1B;--card:#2A2724;
+    --ink:#F1EEE8;--ink-2:#B9B2A6;--ink-3:#948D81;--rule:#3B372F;--rule-2:#332F29;
+    --accent:#E4613D;--good:#8FB283;--warn:#D3A448;--crit:#E4613D;--shadow:0,0,0;--slab:#2A2724}
+}
+:root[data-theme="dark"]{--bench:#121110;--bench-2:#1B1917;--bench-3:#0C0B0A;--canvas:#201E1B;--card:#2A2724;
+  --ink:#F1EEE8;--ink-2:#B9B2A6;--ink-3:#948D81;--rule:#3B372F;--rule-2:#332F29;
+  --accent:#E4613D;--good:#8FB283;--warn:#D3A448;--crit:#E4613D;--shadow:0,0,0;--slab:#2A2724}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bench);color:var(--ink);font-family:var(--serif);-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{margin:0;text-wrap:balance}
+p,ul,ol{margin:0}
+button{font:inherit;color:inherit;background:none;border:none;padding:0;cursor:pointer;text-align:left}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+.lbl{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.mono{font-family:var(--mono)}
+.page{max-width:1180px;margin:0 auto;padding:44px 26px 120px;display:flex;flex-direction:column;gap:76px}
+
+/* ── índice fixo ─────────────────────────────────────────── */
+.toc{position:sticky;top:0;z-index:60;background:var(--bench);border-bottom:1px solid var(--rule);
+  padding:9px 26px;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;align-items:center}
+.toc::-webkit-scrollbar{display:none}
+.toc a{font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--ink-3);text-decoration:none;padding:6px 9px;border-radius:3px;white-space:nowrap}
+.toc a:hover{color:var(--ink);background:var(--bench-2)}
+.toc a.on{color:var(--accent);background:var(--bench-2)}
+.toc .sp{flex:1}
+.toc .tema{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--ink-3);border:1px solid var(--rule);border-radius:3px;padding:5px 8px;white-space:nowrap}
+.toc .tema:hover{color:var(--ink);border-color:var(--ink-3)}
+
+/* ── cabeçalho ───────────────────────────────────────────── */
+header.capa{display:flex;flex-direction:column;gap:20px;padding-top:26px}
+header.capa h1{font-size:clamp(34px,5.4vw,54px);font-weight:400;line-height:1.02;letter-spacing:-.018em;max-width:17ch}
+header.capa h1 em{font-style:italic;color:var(--accent)}
+.lede{font-size:17px;line-height:1.62;color:var(--ink-2);max-width:66ch}
+.lede b{font-weight:400;color:var(--ink);box-shadow:inset 0 -.42em 0 rgba(195,59,30,.14)}
+.fichas{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.ficha{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);
+  border:1px solid var(--rule);border-radius:999px;padding:5px 11px;background:var(--bench-2)}
+
+/* ── seções ──────────────────────────────────────────────── */
+section{display:flex;flex-direction:column;gap:26px;scroll-margin-top:56px}
+.sechead{display:flex;flex-direction:column;gap:11px;border-top:1px solid var(--rule);padding-top:16px}
+.sechead h2{font-size:clamp(23px,3vw,32px);font-weight:400;letter-spacing:-.015em;line-height:1.12;max-width:24ch}
+.sechead p{font-size:15.5px;line-height:1.62;color:var(--ink-2);max-width:70ch}
+h3.sub{font-family:var(--sans);font-size:14px;font-weight:700;letter-spacing:-.005em;color:var(--ink)}
+p.txt{font-size:15px;line-height:1.66;color:var(--ink-2);max-width:70ch}
+p.txt b,li b{font-weight:400;color:var(--ink)}
+ul.txt{font-size:15px;line-height:1.66;color:var(--ink-2);max-width:70ch;padding-left:20px;
+  display:flex;flex-direction:column;gap:5px}
+.duas{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px}
+
+/* ── blocos ──────────────────────────────────────────────── */
+.bloco{background:var(--card);border:1px solid var(--rule-2);border-radius:6px;padding:22px 24px;
+  display:flex;flex-direction:column;gap:13px}
+.bloco.escuro{background:var(--slab);border-color:var(--slab);color:#F1EEE8}
+.bloco.escuro p,.bloco.escuro li{color:rgba(241,238,232,.8)}
+.bloco.escuro .lbl{color:rgba(241,238,232,.5)}
+.bloco.escuro b{color:#F1EEE8}
+.regra{background:var(--bench-2);border-left:3px solid var(--accent);padding:16px 20px;border-radius:0 4px 4px 0}
+.regra p{font-size:16px;line-height:1.55;color:var(--ink)}
+blockquote{margin:0;font-size:19px;line-height:1.45;color:var(--ink);max-width:34ch;font-style:italic}
+
+/* ── tabelas ─────────────────────────────────────────────── */
+.tabwrap{overflow-x:auto;border:1px solid var(--rule-2);border-radius:6px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-family:var(--sans);font-size:12.5px;min-width:760px}
+th{text-align:left;font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:400;padding:11px 13px;border-bottom:1px solid var(--rule);white-space:nowrap;
+  position:sticky;top:0;background:var(--card)}
+td{padding:10px 13px;border-bottom:1px solid var(--rule-2);color:var(--ink-2);vertical-align:top;line-height:1.45}
+tr:last-child td{border-bottom:none}
+td.n{color:var(--ink);font-weight:600}
+tbody tr:hover td{background:var(--bench-2)}
+
+/* ── etiquetas de prioridade ─────────────────────────────── */
+.p{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.06em;padding:3px 6px;border-radius:3px;
+  white-space:nowrap;border:1px solid}
+.p0{color:#fff;background:var(--crit);border-color:var(--crit)}
+.p1{color:var(--crit);border-color:var(--crit);background:transparent}
+.p2{color:var(--warn);border-color:var(--warn);background:transparent}
+.p3{color:var(--ink-3);border-color:var(--rule);background:transparent}
+
+/* ── achados ─────────────────────────────────────────────── */
+.filtros{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.fbtn{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-2);
+  border:1px solid var(--rule);border-radius:999px;padding:6px 12px;background:var(--bench-2)}
+.fbtn:hover{border-color:var(--ink-3)}
+.fbtn[aria-pressed="true"]{background:var(--ink);color:var(--bench);border-color:var(--ink)}
+.achados{display:flex;flex-direction:column;gap:1px;background:var(--rule-2);border:1px solid var(--rule-2);border-radius:6px;overflow:hidden}
+.ach{background:var(--card);padding:16px 20px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:start}
+.ach .cp{display:flex;flex-direction:column;gap:6px}
+.ach h4{font-family:var(--sans);font-size:14px;font-weight:700;letter-spacing:-.005em;line-height:1.3}
+.ach p{font-size:14px;line-height:1.58;color:var(--ink-2);max-width:76ch}
+.ach .onde{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;color:var(--ink-3);text-transform:uppercase}
+.ach .ir{font-family:var(--mono);font-size:10px;color:var(--accent);white-space:nowrap;letter-spacing:.05em}
+.ach .ir:hover{text-decoration:underline}
+@media(max-width:680px){.ach{grid-template-columns:auto minmax(0,1fr)}.ach .ir{grid-column:2}}
+
+/* ── comparação atual × proposta ─────────────────────────── */
+.cmp{border:1px solid var(--rule-2);border-radius:6px;background:var(--card);overflow:hidden}
+.cmpbar{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--rule-2);flex-wrap:wrap}
+.cmpbar h4{font-family:var(--sans);font-size:13.5px;font-weight:700;flex:1;min-width:180px}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:999px;overflow:hidden;background:var(--bench-2)}
+.seg button{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;
+  padding:6px 13px;color:var(--ink-2)}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bench)}
+.cmpbody{padding:16px;background:var(--bench-2)}
+.cmpbody img{display:block;width:100%;height:auto;border:1px solid var(--rule);border-radius:4px;background:#fff}
+.cmpnota{padding:13px 16px;border-top:1px solid var(--rule-2);font-size:13.5px;line-height:1.55;color:var(--ink-2);
+  font-family:var(--sans)}
+.cmpnota b{color:var(--ink);font-weight:600}
+.lado{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:820px){.lado{grid-template-columns:1fr}}
+.ladocap{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);
+  margin-bottom:7px;display:block}
+
+/* ── diagrama ────────────────────────────────────────────── */
+.diagrama{background:var(--card);border:1px solid var(--rule-2);border-radius:6px;padding:20px;overflow-x:auto}
+.diagrama svg{display:block;min-width:720px;width:100%;height:auto}
+.dg-box{fill:var(--bench-2);stroke:var(--rule)}
+.dg-box-2{fill:var(--card);stroke:var(--rule)}
+.dg-t{font-family:var(--sans);font-size:11px;fill:var(--ink)}
+.dg-s{font-family:var(--mono);font-size:8.5px;fill:var(--ink-3);letter-spacing:.06em}
+.dg-l{stroke:var(--ink-3);fill:none}
+.dg-x{stroke:var(--crit);fill:none;stroke-dasharray:4 3}
+.dg-cap{font-family:var(--mono);font-size:9px;fill:var(--ink-3);letter-spacing:.09em;text-transform:uppercase}
+
+/* ── moldura do protótipo ────────────────────────────────── */
+.protowrap{border:1px solid var(--rule);border-radius:8px;overflow:hidden;background:var(--bench-3)}
+.protobar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--rule);
+  background:var(--bench-2);flex-wrap:wrap}
+.protobar .lbl{margin-right:4px}
+.pchip{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);
+  border:1px solid var(--rule);border-radius:999px;padding:5px 11px;background:var(--card)}
+.pchip:hover{border-color:var(--ink-3);color:var(--ink)}
+.pchip[aria-pressed="true"]{background:var(--ink);color:var(--bench);border-color:var(--ink)}
+.protobar .sp{flex:1}
+.protoinfo{font-family:var(--mono);font-size:9.5px;color:var(--ink-3);letter-spacing:.05em}
+.palco{background:#8f8878;padding:18px;display:flex;justify-content:center}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .palco{background:#0a0908}}
+:root[data-theme="dark"] .palco{background:#0a0908}
+.tela{width:100%;max-width:1080px;background:#fff;border-radius:10px;overflow:hidden;
+  box-shadow:0 18px 50px rgba(0,0,0,.28);color:#1a1917}
+.protonota{padding:13px 16px;border-top:1px solid var(--rule);background:var(--bench-2);
+  font-family:var(--sans);font-size:13px;line-height:1.55;color:var(--ink-2)}
+.protonota b{color:var(--ink);font-weight:600}
+
+/* ══════════════════════════════════════════════════════════
+   TOKENS DO PRODUTO — herdados de prototipo.html.
+   Vivem apenas dentro de .tela, para não contaminar o caderno.
+   ══════════════════════════════════════════════════════════ */
+.tela{
+  --bg:#ffffff;--bg-2:#f7f7f5;--bg-3:#f0efec;
+  --pink:#1a1917;--pink-2:#57534d;--pink-3:#706c65;--pink-4:#b5b0a8;
+  --line:#e6e4de;--line-2:#efede8;
+  --acc:#c8481f;--acc-soft:#fdf0ea;
+  --ok:#2f7d55;--ok-soft:#eef6f1;--warn2:#a8701c;--warn-soft:#fdf4e6;--dan:#b23b2a;--dan-soft:#fdefec;
+  --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;
+  --r1:6px;--r2:10px;
+  --ui:-apple-system,"Segoe UI",Inter,"Helvetica Neue",Arial,sans-serif;
+  --sf:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --mn:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  font-family:var(--ui);font-size:14px;line-height:1.45;
+}
+.tela *{box-sizing:border-box}
+.tela button{font:inherit;color:inherit;background:none;border:none;padding:0;cursor:pointer;text-align:left}
+.tela :focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:4px}
+
+/* ── moldura do produto ─────────────────────────────────── */
+.mk{display:flex;flex-direction:column;min-height:560px;background:var(--bg)}
+.mk-top{display:flex;align-items:center;gap:var(--s3);height:52px;flex:0 0 52px;padding:0 var(--s4);
+  border-bottom:1px solid var(--line);background:var(--bg)}
+.mk-marca{font-family:var(--sf);font-size:18px;letter-spacing:-.01em;padding:4px 6px;border-radius:var(--r1)}
+.mk-marca:hover{background:var(--bg-2)}
+.mk-lug{display:flex;gap:2px}
+.mk-lug button{padding:6px 12px;border-radius:var(--r1);color:var(--pink-2);font-size:13px}
+.mk-lug button:hover{background:var(--bg-2);color:var(--pink)}
+.mk-lug button[aria-current="true"]{background:var(--pink);color:#fff}
+.mk-top .sp{flex:1}
+.mk-busca{display:flex;align-items:center;gap:7px;height:30px;padding:0 var(--s3);border:1px solid var(--line);
+  border-radius:999px;color:var(--pink-3);font-size:12.5px;background:var(--bg-2);max-width:230px}
+.mk-busca:hover{border-color:var(--pink-4);color:var(--pink-2)}
+.mk-ic{width:28px;height:28px;border-radius:999px;display:flex;align-items:center;justify-content:center;
+  color:var(--pink-2);font-size:13px;border:1px solid transparent}
+.mk-ic:hover{background:var(--bg-2);border-color:var(--line)}
+.mk-ava{width:27px;height:27px;border-radius:50%;background:var(--pink);color:#fff;font-size:10.5px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;letter-spacing:.02em}
+.mk-body{flex:1;min-height:0;overflow:auto;position:relative;background:var(--bg)}
+.mk-pad{padding:var(--s5) var(--s6) var(--s6);max-width:820px;margin:0 auto}
+.mk-pad.larga{max-width:1000px}
+
+/* ── cabeçalho de item ──────────────────────────────────── */
+.mk-volta{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--pink-3);
+  padding:4px 8px 4px 4px;border-radius:var(--r1);margin-bottom:var(--s4)}
+.mk-volta:hover{color:var(--acc);background:var(--bg-2)}
+.mk-h{display:flex;align-items:flex-start;gap:var(--s4);margin-bottom:var(--s3);flex-wrap:wrap}
+.mk-h .t{flex:1;min-width:220px}
+.mk-h h1{margin:0;font-size:21px;font-weight:650;letter-spacing:-.02em;line-height:1.2}
+.mk-metas{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.mk-meta{font-size:11.5px;color:var(--pink-2);background:var(--bg-2);border:1px solid var(--line);
+  border-radius:999px;padding:3px 10px}
+.mk-modo{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--pink-2);
+  border:1px solid var(--line);border-radius:999px;padding:5px 11px;background:var(--bg)}
+.mk-modo:hover{border-color:var(--pink-4)}
+.mk-modo b{font-weight:650;color:var(--pink)}
+
+/* ── estado / faixa ─────────────────────────────────────── */
+.mk-estado{display:flex;align-items:flex-start;gap:var(--s3);padding:var(--s4);border-radius:var(--r2);
+  border:1px solid var(--line);background:var(--bg-2);margin-bottom:var(--s5)}
+.mk-estado.ok{background:var(--ok-soft);border-color:#cfe4d8}
+.mk-estado.at{background:var(--warn-soft);border-color:#f0e0c2}
+.mk-estado .pt{width:9px;height:9px;border-radius:50%;flex:0 0 9px;margin-top:5px;background:var(--pink-3)}
+.mk-estado.ok .pt{background:var(--ok)}
+.mk-estado.at .pt{background:var(--warn2)}
+.mk-estado h2{margin:0;font-size:14.5px;font-weight:650;letter-spacing:-.01em}
+.mk-estado p{margin:4px 0 0;font-size:13px;color:var(--pink-2);line-height:1.5;max-width:62ch}
+
+/* ── seções do item ─────────────────────────────────────── */
+.mk-sec{margin-bottom:var(--s5)}
+.mk-sec > h3{margin:0 0 var(--s3);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--pink-3)}
+.mk-lista{border:1px solid var(--line);border-radius:var(--r2);overflow:hidden;background:var(--bg)}
+.mk-li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:var(--s3);align-items:start;
+  padding:var(--s3) var(--s4);border-bottom:1px solid var(--line-2)}
+.mk-li:last-child{border-bottom:none}
+.mk-li .mk-sinal{width:18px;height:18px;border-radius:5px;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;flex:0 0 18px;margin-top:1px}
+.s-ok{background:var(--ok-soft);color:var(--ok)}
+.s-at{background:var(--warn-soft);color:var(--warn2)}
+.s-er{background:var(--dan-soft);color:var(--dan)}
+.s-in{background:var(--bg-3);color:var(--pink-2)}
+.mk-li .tx{min-width:0}
+.mk-li .tx b{display:block;font-size:13.5px;font-weight:600;letter-spacing:-.005em}
+.mk-li .tx span{display:block;font-size:12.5px;color:var(--pink-2);line-height:1.5;margin-top:2px}
+.mk-li .ac{font-size:12.5px;color:var(--acc);font-weight:600;white-space:nowrap;padding:2px 4px;border-radius:4px}
+.mk-li .ac:hover{background:var(--acc-soft)}
+@media(max-width:620px){.mk-li{grid-template-columns:auto minmax(0,1fr)}.mk-li .ac{grid-column:2}}
+
+/* ── botões ─────────────────────────────────────────────── */
+.mk-acoes{display:flex;gap:var(--s3);align-items:center;flex-wrap:wrap;margin-top:var(--s5)}
+.mk-btn{height:38px;padding:0 var(--s5);border-radius:999px;background:var(--pink);color:#fff;font-size:13.5px;
+  font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
+.mk-btn:hover{background:var(--acc)}
+.mk-btn.sec{background:var(--bg);border:1px solid var(--line);color:var(--pink);font-weight:550}
+.mk-btn.sec:hover{background:var(--bg-2);border-color:var(--pink-4)}
+.mk-btn.sm{height:30px;padding:0 var(--s4);font-size:12.5px}
+.mk-lnk{font-size:13px;color:var(--acc);font-weight:600;padding:4px 6px;border-radius:4px}
+.mk-lnk:hover{background:var(--acc-soft)}
+.mk-lnk.mudo{color:var(--pink-3);font-weight:550}
+.mk-lnk.mudo:hover{color:var(--pink);background:var(--bg-2)}
+
+/* ── Mesa ───────────────────────────────────────────────── */
+.mk-drop{border:1.5px dashed var(--pink-4);border-radius:var(--r2);padding:var(--s6);text-align:center;
+  background:var(--bg-2);display:flex;flex-direction:column;align-items:center;gap:var(--s3)}
+.mk-drop:hover{border-color:var(--acc);background:var(--acc-soft)}
+.mk-drop .tt{display:block;font-size:19px;font-weight:650;letter-spacing:-.02em}
+.mk-drop .ds{display:block;font-size:13px;color:var(--pink-2);max-width:46ch}
+.mk-drop .fmts{font-family:var(--mn);font-size:10px;color:var(--pink-3);letter-spacing:.06em}
+.mk-drop.fina{padding:var(--s4);flex-direction:row;justify-content:center;text-align:left;gap:var(--s4);align-items:center}
+.mk-drop.fina .tt{font-size:14px}
+.mk-passos{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:var(--s4);margin-top:var(--s5)}
+.mk-passo{border-left:2px solid var(--line);padding-left:var(--s3)}
+.mk-passo b{display:block;font-family:var(--mn);font-size:9.5px;letter-spacing:.1em;color:var(--pink-3);
+  text-transform:uppercase;margin-bottom:4px}
+.mk-passo span{font-size:13px;color:var(--pink-2);line-height:1.5}
+.mk-grupo{margin-bottom:var(--s5)}
+.mk-grupo > .cab{display:flex;align-items:baseline;gap:var(--s2);margin-bottom:var(--s3)}
+.mk-grupo > .cab h3{margin:0;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--pink-3)}
+.mk-grupo > .cab .ct{font-family:var(--mn);font-size:10px;color:var(--pink-3)}
+.mk-grupo > .cab .sp{flex:1}
+.mk-item{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:var(--s3);align-items:center;
+  padding:var(--s3) var(--s4);border:1px solid var(--line);border-radius:var(--r2);background:var(--bg);
+  margin-bottom:var(--s2);width:100%}
+.mk-item:hover{border-color:var(--pink-4);background:var(--bg-2)}
+.mk-item .cap{width:34px;height:44px;border-radius:3px;background:var(--bg-3);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;font-family:var(--mn);font-size:8px;color:var(--pink-3);
+  overflow:hidden}
+.mk-item .nm{font-size:13.5px;font-weight:600;letter-spacing:-.005em}
+.mk-item .st{font-size:12.5px;color:var(--pink-2);margin-top:2px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.mk-item .dir{display:flex;gap:var(--s2);align-items:center}
+.mk-pt{width:7px;height:7px;border-radius:50%;flex:0 0 7px;display:inline-block}
+.pt-ok{background:var(--ok)}.pt-at{background:var(--warn2)}.pt-er{background:var(--dan)}.pt-nd{background:var(--pink-4)}
+.pt-go{background:var(--pink);animation:mkpulse 1.4s ease-in-out infinite}
+@keyframes mkpulse{0%,100%{opacity:1}50%{opacity:.28}}
+@media (prefers-reduced-motion:reduce){.pt-go{animation:none}}
+
+/* ── barra de progresso honesta ─────────────────────────── */
+.mk-prog{margin-top:var(--s3)}
+.mk-trilho{height:5px;border-radius:999px;background:var(--bg-3);overflow:hidden}
+.mk-trilho i{display:block;height:100%;background:var(--pink);border-radius:999px;transition:width .5s linear}
+.mk-prog .leg{display:flex;justify-content:space-between;font-size:12px;color:var(--pink-2);margin-top:7px;gap:var(--s3)}
+.mk-prog .leg .mn{font-family:var(--mn);font-size:10.5px;color:var(--pink-3)}
+.mk-etapas{display:flex;flex-direction:column;gap:2px;margin-top:var(--s3)}
+.mk-etapa{display:flex;align-items:center;gap:var(--s3);font-size:12.5px;padding:5px 0;color:var(--pink-3)}
+.mk-etapa.feita{color:var(--pink-2)}
+.mk-etapa.agora{color:var(--pink);font-weight:600}
+.mk-etapa .mrk{width:14px;text-align:center;font-size:11px}
+
+/* ── pendências ─────────────────────────────────────────── */
+.mk-pend{display:flex;gap:var(--s2);flex-wrap:wrap}
+.mk-pendbtn{display:inline-flex;align-items:center;gap:8px;border:1px solid #f0e0c2;background:var(--warn-soft);
+  border-radius:999px;padding:7px 14px;font-size:13px;font-weight:600;color:var(--pink)}
+.mk-pendbtn:hover{border-color:var(--warn2)}
+.mk-pendbtn .n{font-family:var(--mn);font-size:10px;color:var(--warn2)}
+
+/* ── folha (sheet) ──────────────────────────────────────── */
+.mk-veu{position:absolute;inset:0;background:rgba(26,25,23,.42);display:flex;align-items:flex-start;
+  justify-content:center;padding:var(--s5);z-index:40;overflow:auto}
+.mk-folha{background:var(--bg);border-radius:var(--r2);width:100%;max-width:600px;overflow:hidden;
+  box-shadow:0 24px 60px rgba(26,25,23,.3)}
+.mk-folha.larga{max-width:960px}
+.mk-fcab{display:flex;align-items:center;gap:var(--s3);padding:var(--s4);border-bottom:1px solid var(--line-2)}
+.mk-fcab .ct{font-family:var(--mn);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--pink-3)}
+.mk-fcab h2{margin:2px 0 0;font-size:16px;font-weight:650;letter-spacing:-.015em}
+.mk-fcab .sp{flex:1}
+.mk-fx{width:28px;height:28px;border-radius:999px;display:flex;align-items:center;justify-content:center;
+  font-size:15px;color:var(--pink-2);border:1px solid var(--line)}
+.mk-fx:hover{background:var(--bg-2);color:var(--pink)}
+.mk-fcorpo{padding:var(--s4)}
+.mk-fpe{display:flex;gap:var(--s3);align-items:center;flex-wrap:wrap;padding:var(--s4);
+  border-top:1px solid var(--line-2);background:var(--bg-2)}
+.mk-fpe .sp{flex:1}
+.mk-conf{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--pink-2);
+  background:var(--bg-2);border:1px solid var(--line);border-radius:999px;padding:4px 11px}
+.mk-conf b{font-weight:650;color:var(--pink)}
+.mk-paginas{display:flex;gap:var(--s3);justify-content:center;padding:var(--s4) 0;background:var(--bg-2);
+  border-radius:var(--r1);margin-bottom:var(--s4)}
+.mk-pag{width:88px;height:124px;border:1px solid var(--line);border-radius:3px;background:#fff;position:relative;
+  display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;font-family:var(--mn);font-size:9px;
+  color:var(--pink-3);overflow:hidden}
+.mk-pag.dupla{width:176px}
+.mk-pag .art{position:absolute;inset:6px 6px 20px;border-radius:2px;
+  background:repeating-linear-gradient(135deg,#e9e7e2 0 7px,#f4f3f0 7px 14px)}
+.mk-pag.cor .art{background:repeating-linear-gradient(135deg,#f0dfd6 0 7px,#e6e9f0 7px 14px)}
+.mk-pag.ruim .art{background:repeating-linear-gradient(135deg,#f3e3e0 0 7px,#fbf5f4 7px 14px)}
+.mk-seta{display:flex;align-items:center;font-size:19px;color:var(--pink-3)}
+
+/* ── editor manual ──────────────────────────────────────── */
+.mk-ed{display:grid;grid-template-columns:168px minmax(0,1fr) 232px;height:470px}
+@media(max-width:900px){.mk-ed{grid-template-columns:1fr;height:auto}}
+.mk-edfil{border-right:1px solid var(--line-2);padding:var(--s3);overflow:auto;background:var(--bg-2)}
+.mk-edfil button{display:flex;justify-content:space-between;gap:var(--s2);width:100%;padding:7px var(--s3);
+  border-radius:var(--r1);font-size:12.5px;color:var(--pink-2);margin-bottom:1px}
+.mk-edfil button:hover{background:var(--bg-3)}
+.mk-edfil button[aria-pressed="true"]{background:var(--bg);color:var(--pink);font-weight:600;
+  box-shadow:0 1px 2px rgba(26,25,23,.08)}
+.mk-edfil .n{font-family:var(--mn);font-size:10px;color:var(--pink-3)}
+.mk-edgrade{overflow:auto;padding:var(--s3);display:grid;gap:var(--s3);
+  grid-template-columns:repeat(auto-fill,minmax(78px,1fr));align-content:start}
+.mk-th{position:relative;border:2px solid transparent;border-radius:5px;padding:2px;background:none}
+.mk-th .im{height:88px;border:1px solid var(--line);border-radius:3px;background:#fff;position:relative;overflow:hidden}
+.mk-th .im i{position:absolute;inset:5px;border-radius:2px;display:block;
+  background:repeating-linear-gradient(135deg,#e9e7e2 0 6px,#f4f3f0 6px 12px)}
+.mk-th.cor .im i{background:repeating-linear-gradient(135deg,#f0dfd6 0 6px,#e6e9f0 6px 12px)}
+.mk-th.ruim .im i{background:repeating-linear-gradient(135deg,#f3e3e0 0 6px,#fbf5f4 6px 12px)}
+.mk-th.morta .im i{background:var(--dan-soft)}
+.mk-th .lg{display:block;font-family:var(--mn);font-size:9px;color:var(--pink-3);text-align:center;margin-top:4px}
+.mk-th[aria-pressed="true"]{border-color:var(--acc);background:var(--acc-soft)}
+.mk-th .tag{position:absolute;top:5px;left:5px;font-family:var(--mn);font-size:8px;letter-spacing:.05em;
+  text-transform:uppercase;background:var(--pink);color:#fff;border-radius:3px;padding:1px 4px}
+.mk-th .tag.al{background:var(--warn2)}
+.mk-th .tag.er{background:var(--dan)}
+.mk-edpai{border-left:1px solid var(--line-2);padding:var(--s4);overflow:auto;background:var(--bg-2)}
+.mk-edpai h4{margin:0 0 var(--s2);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--pink-3)}
+.mk-edpai .sel{font-size:13.5px;font-weight:600;margin-bottom:var(--s3)}
+.mk-ferr{display:flex;flex-direction:column;gap:2px;margin-bottom:var(--s4)}
+.mk-ferr button{display:flex;align-items:center;gap:var(--s3);padding:7px var(--s3);border-radius:var(--r1);
+  font-size:12.5px;color:var(--pink-2);background:var(--bg);border:1px solid var(--line)}
+.mk-ferr button:hover{border-color:var(--pink-4);color:var(--pink)}
+.mk-ferr button[disabled]{opacity:.42;cursor:not-allowed}
+.mk-ferr .k{margin-left:auto;font-family:var(--mn);font-size:9px;color:var(--pink-3);border:1px solid var(--line);
+  border-radius:3px;padding:0 4px}
+
+/* ── painel de envio ────────────────────────────────────── */
+.mk-painel{border:1px solid var(--line);border-radius:var(--r2);padding:var(--s4);background:var(--bg-2);
+  margin-top:var(--s4)}
+.mk-painel h4{margin:0 0 var(--s3);font-size:13.5px;font-weight:650}
+.mk-disp{display:flex;align-items:center;gap:var(--s3);padding:var(--s3);border:1px solid var(--line);
+  border-radius:var(--r1);background:var(--bg);margin-bottom:var(--s2);width:100%}
+.mk-disp[aria-pressed="true"]{border-color:var(--pink);box-shadow:inset 0 0 0 1px var(--pink)}
+.mk-disp .nm{font-size:13px;font-weight:600}
+.mk-disp .ds{font-size:12px;color:var(--pink-2)}
+.mk-disp .mrk{margin-left:auto;font-size:12px;color:var(--ok)}
+
+/* ── ajuda, perfil, atualizações ────────────────────────── */
+.mk-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(228px,1fr));gap:var(--s4)}
+.mk-cx{border:1px solid var(--line);border-radius:var(--r2);padding:var(--s4);background:var(--bg)}
+.mk-cx h4{margin:0 0 var(--s2);font-size:13.5px;font-weight:650}
+.mk-cx ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px}
+.mk-cx li button{display:block;width:100%;padding:6px 8px;border-radius:var(--r1);font-size:12.5px;color:var(--pink-2)}
+.mk-cx li button:hover{background:var(--bg-2);color:var(--acc)}
+.mk-dobra{border:1px solid var(--line);border-radius:var(--r2);background:var(--bg);margin-bottom:var(--s2);overflow:hidden}
+.mk-dobra > button{display:flex;align-items:center;gap:var(--s3);width:100%;padding:var(--s4)}
+.mk-dobra > button:hover{background:var(--bg-2)}
+.mk-dobra .nm{font-size:14px;font-weight:650}
+.mk-dobra .rs{font-size:12.5px;color:var(--pink-2);margin-top:2px}
+.mk-dobra .ch{margin-left:auto;color:var(--pink-3);font-size:11px}
+.mk-dobra .in{padding:0 var(--s4) var(--s4);border-top:1px solid var(--line-2)}
+.mk-lin{display:flex;align-items:center;gap:var(--s4);padding:var(--s3) 0;border-bottom:1px solid var(--line-2)}
+.mk-lin:last-child{border-bottom:none}
+.mk-lin .tx{flex:1;min-width:0}
+.mk-lin .tx b{display:block;font-size:13px;font-weight:600}
+.mk-lin .tx span{display:block;font-size:12.5px;color:var(--pink-2);margin-top:2px;line-height:1.45}
+.mk-sw{width:38px;height:22px;border-radius:999px;background:var(--line);position:relative;flex:0 0 38px}
+.mk-sw i{position:absolute;top:2.5px;left:2.5px;width:17px;height:17px;border-radius:50%;background:#fff;
+  box-shadow:0 1px 3px rgba(26,25,23,.3);transition:left .16s}
+.mk-sw[aria-pressed="true"]{background:var(--pink)}
+.mk-sw[aria-pressed="true"] i{left:18.5px}
+.mk-tag{font-family:var(--mn);font-size:9px;letter-spacing:.06em;text-transform:uppercase;border-radius:3px;
+  padding:2px 6px;border:1px solid;white-space:nowrap}
+.t-novo{color:#fff;background:var(--pink);border-color:var(--pink)}
+.t-mel{color:var(--ok);border-color:var(--ok)}
+.t-cor{color:var(--pink-2);border-color:var(--line)}
+.t-exp{color:var(--warn2);border-color:var(--warn2);background:var(--warn-soft)}
+.mk-nota{display:flex;gap:var(--s3);align-items:flex-start;padding:var(--s3) var(--s4);border-radius:var(--r1);
+  background:var(--bg-2);border:1px solid var(--line-2);font-size:12.5px;color:var(--pink-2);line-height:1.5;
+  margin-top:var(--s4)}
+.mk-nota b{color:var(--pink)}
+
+/* ── miniaturas das propostas (comparação e alternativas) ─ */
+.mini{background:#fff;border:1px solid #e6e4de;border-radius:8px;overflow:hidden;color:#1a1917;
+  font-family:-apple-system,"Segoe UI",Inter,"Helvetica Neue",Arial,sans-serif;font-size:11px;line-height:1.4}
+.mini .mn-top{display:flex;align-items:center;gap:7px;padding:8px 10px;border-bottom:1px solid #e6e4de;flex-wrap:wrap}
+.mini .mn-top b{font-family:"Iowan Old Style",Palatino,Georgia,serif;font-size:13px;font-weight:400;margin-right:4px}
+.mini .mn-top span{color:#706c65;font-size:10.5px}
+.mini .mn-top span.on{background:#1a1917;color:#fff;border-radius:5px;padding:3px 8px}
+.mini .mn-top i{flex:1}
+.mini .mn-top .q{border:1px solid #e6e4de;border-radius:99px;padding:2px 8px;background:#f7f7f5}
+.mini .mn-top .av{background:#1a1917;color:#fff;border-radius:99px;width:18px;height:18px;display:inline-flex;
+  align-items:center;justify-content:center;font-size:8px;font-weight:700}
+.mini .mn-corpo{padding:12px}
+.mini h5{margin:0 0 3px;font-size:12.5px;font-weight:700;letter-spacing:-.01em}
+.mini p{margin:0;font-size:10.5px;color:#57534d;line-height:1.45}
+.mini .mn-chips{display:flex;gap:4px;flex-wrap:wrap;margin:6px 0}
+.mini .mn-chips span{border:1px solid #e6e4de;background:#f7f7f5;border-radius:99px;padding:1px 7px;font-size:9px;color:#57534d}
+.mini .mn-bloco{border:1px solid #e6e4de;border-radius:6px;padding:8px 10px;margin-top:8px;background:#fff}
+.mini .mn-bloco.suave{background:#f7f7f5}
+.mini .mn-bloco.ok{background:#eef6f1;border-color:#cfe4d8}
+.mini .mn-bloco.at{background:#fdf4e6;border-color:#f0e0c2}
+.mini .mn-rot{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:8px;letter-spacing:.09em;
+  text-transform:uppercase;color:#706c65;margin-bottom:5px;display:block}
+.mini .mn-lin{display:flex;gap:7px;align-items:flex-start;padding:4px 0;border-bottom:1px solid #efede8}
+.mini .mn-lin:last-child{border-bottom:none}
+.mini .mn-lin .s{width:14px;height:14px;border-radius:4px;flex:0 0 14px;display:flex;align-items:center;
+  justify-content:center;font-size:8px;font-weight:700;background:#f0efec;color:#57534d}
+.mini .mn-lin .s.ok{background:#eef6f1;color:#2f7d55}
+.mini .mn-lin .s.at{background:#fdf4e6;color:#a8701c}
+.mini .mn-lin .s.er{background:#fdefec;color:#b23b2a}
+.mini .mn-lin b{font-size:10.5px;font-weight:600;display:block}
+.mini .mn-lin em{font-style:normal;font-size:10px;color:#706c65;display:block}
+.mini .mn-acao{display:flex;gap:7px;align-items:center;margin-top:10px;flex-wrap:wrap}
+.mini .mn-btn{background:#1a1917;color:#fff;border-radius:99px;padding:5px 12px;font-size:10.5px;font-weight:650}
+.mini .mn-btn.sec{background:#fff;border:1px solid #e6e4de;color:#1a1917;font-weight:500}
+.mini .mn-btn.gh{color:#c8481f;font-weight:600}
+.mini .mn-bar{height:4px;border-radius:99px;background:#f0efec;overflow:hidden;margin:7px 0 5px}
+.mini .mn-bar i{display:block;height:100%;background:#1a1917;border-radius:99px}
+.mini .mn-seletores{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.mini .mn-seletores span{border:1px solid #e6e4de;border-radius:6px;padding:4px 9px;font-size:9.5px;color:#57534d;background:#fff}
+.mini .mn-abas{display:flex;gap:4px;margin:8px 0}
+.mini .mn-abas span{flex:1;text-align:center;border:1px solid #e6e4de;border-radius:6px;padding:6px 2px;
+  font-size:9px;color:#706c65;background:#f7f7f5}
+.mini .mn-abas span.on{background:#fff;color:#1a1917;font-weight:600}
+.mini .mn-dock{position:relative;margin-top:8px;border:1px solid #e6e4de;border-radius:99px;padding:5px 10px;
+  display:flex;gap:10px;justify-content:center;font-size:9.5px;color:#706c65;background:#fff;
+  box-shadow:0 4px 12px rgba(26,25,23,.1)}
+.minicap{font-family:var(--mono);font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);
+  display:block;margin-bottom:7px}
+
+/* ── alternativas ───────────────────────────────────────── */
+.alt{border:1px solid var(--rule-2);border-radius:6px;background:var(--card);margin-bottom:26px;overflow:hidden}
+.altcab{padding:18px 20px;border-bottom:1px solid var(--rule-2)}
+.altcab h3{font-family:var(--sans);font-size:15px;font-weight:700;letter-spacing:-.01em;margin-bottom:6px}
+.altcab p{font-size:14px;line-height:1.6;color:var(--ink-2);max-width:74ch}
+.altgrade{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1px;background:var(--rule-2)}
+.altcol{background:var(--card);padding:16px 18px}
+.altcol.venc{background:var(--bench-2);box-shadow:inset 0 3px 0 var(--accent)}
+.altcol h4{font-family:var(--sans);font-size:13px;font-weight:700;margin-bottom:4px}
+.altcol .tag{font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);
+  display:block;margin-bottom:9px}
+.altcol .tag.n{color:var(--ink-3)}
+.altcol > p{font-size:13px;line-height:1.55;color:var(--ink-2);margin-bottom:11px}
+.altcol .pro,.altcol .con{font-size:12.5px;line-height:1.5;color:var(--ink-2);display:flex;gap:7px;margin-top:5px}
+.altcol .pro span:first-child{color:var(--good);font-weight:700}
+.altcol .con span:first-child{color:var(--crit);font-weight:700}
+.altped{padding:16px 20px;border-top:1px solid var(--rule-2);background:var(--bench-2);font-family:var(--sans);
+  font-size:13.5px;line-height:1.6;color:var(--ink-2)}
+.altped b{color:var(--ink);font-weight:700}
+
+/* ── onboarding ─────────────────────────────────────────── */
+.mk-coach{position:absolute;z-index:45;max-width:290px;background:var(--pink);color:#fff;border-radius:var(--r2);
+  padding:var(--s4);box-shadow:0 18px 44px rgba(26,25,23,.34)}
+.mk-coach h4{margin:0 0 6px;font-size:13.5px;font-weight:650}
+.mk-coach p{margin:0;font-size:12.5px;line-height:1.5;color:rgba(255,255,255,.82)}
+.mk-coach .pe{display:flex;align-items:center;gap:var(--s3);margin-top:var(--s3)}
+.mk-coach .pe .sp{flex:1}
+.mk-coach .pe button{font-size:12px;color:rgba(255,255,255,.72)}
+.mk-coach .pe button:hover{color:#fff;text-decoration:underline}
+.mk-coach .pe .ok{background:#fff;color:var(--pink);border-radius:999px;padding:5px 13px;font-weight:650}
+.mk-check{position:absolute;right:var(--s4);bottom:var(--s4);z-index:30;background:var(--bg);border:1px solid var(--line);
+  border-radius:var(--r2);box-shadow:0 12px 32px rgba(26,25,23,.14);width:250px;overflow:hidden}
+.mk-check > .cb{display:flex;align-items:center;gap:var(--s2);padding:var(--s3) var(--s4);width:100%}
+.mk-check > .cb b{font-size:12.5px;font-weight:650}
+.mk-check > .cb .n{font-family:var(--mn);font-size:10px;color:var(--pink-3);margin-left:auto}
+.mk-check ul{list-style:none;margin:0;padding:0 var(--s4) var(--s3);border-top:1px solid var(--line-2)}
+.mk-check li{display:flex;gap:var(--s2);font-size:12.5px;color:var(--pink-2);padding:5px 0}
+.mk-check li.f{color:var(--pink-3);text-decoration:line-through}
+.mk-check .pe{display:flex;gap:var(--s3);padding:0 var(--s4) var(--s3)}
+.mk-check .pe button{font-size:11.5px;color:var(--pink-3)}
+.mk-check .pe button:hover{color:var(--acc);text-decoration:underline}
+</style>
+</head>
+<body>
+
+<nav class="toc" id="toc" aria-label="Índice do caderno">
+  <a href="#s0">0 · Método</a>
+  <a href="#s1">1 · Inventário</a>
+  <a href="#s2">2 · Mapa atual</a>
+  <a href="#s3">3 · Auditoria</a>
+  <a href="#s4">4 · A experiência</a>
+  <a href="#s5">5 · Navegação</a>
+  <a href="#s6">6 · Telas propostas</a>
+  <a href="#s7">7 · Atual × proposta</a>
+  <a href="#s8">8 · Alternativas</a>
+  <a href="#s9">9 · Decisões</a>
+  <a href="#s10">10 · Respostas</a>
+  <span class="sp"></span>
+  <button class="tema" id="tema" type="button">tema: sistema</button>
+</nav>
+
+<div class="page">
+
+<header class="capa">
+  <span class="lbl">Caderno 03 · rodada final · 12 de agosto de 2026</span>
+  <h1>Vinte e seis telas, <em>dois produtos</em> e nenhuma casa</h1>
+  <p class="lede">Esta rodada partiu de todas as telas que existem hoje. A conclusão que organiza todo o
+    resto não é sobre hierarquia, espaçamento ou componente: é que o Mekora está construído como
+    <b>duas aplicações diferentes que compartilham só o nome</b> — uma ferramenta de preparação que
+    se comporta como página de produto, e um espaço de biblioteca que se comporta como aplicativo.
+    Elas não têm um elemento de interface em comum, e o único caminho de uma para a outra é um botão
+    no fim de um fluxo.</p>
+  <p class="lede">O caderno segue a ordem que você pediu: primeiro qual experiência deveria existir,
+    depois qual fluxo a sustenta, e só então qual interface a representa. As telas propostas estão
+    montadas e funcionando na seção 6 — dá para abrir, alternar Guiado e Personalizado, resolver
+    pendências, abrir o editor manual e concluir.</p>
+  <div class="fichas">
+    <span class="ficha">26 telas inventariadas</span>
+    <span class="ficha">34 achados</span>
+    <span class="ficha">22 telas propostas</span>
+    <span class="ficha">8 comparações</span>
+    <span class="ficha">3 alternativas · 1 já fechada</span>
+  </div>
+
+  <div class="regra" style="border-left-color:var(--good)">
+    <span class="lbl">Revisão B · 12 de agosto de 2026, à tarde</span>
+    <p style="margin-top:8px">As seis perguntas da seção 10 foram respondidas, e duas respostas
+      corrigiram o protótipo. A mais séria: <b>o preparo roda no navegador</b>, então a promessa
+      "pode fechar esta tela" — que eu tinha escrito em três telas — era falsa e saiu. E como não
+      há confirmação de que a direção de leitura pode ser detectada, <b>a confiança declarada
+      naquela pendência saiu também</b>: ela virou uma pergunta com a evidência à vista. A seção 10
+      registra as seis respostas e o que cada uma mudou.</p>
+  </div>
+</header>
+
+<!-- ═══════════════════ 0 · MÉTODO ═══════════════════ -->
+<section id="s0">
+  <div class="sechead">
+    <span class="lbl">Seção 0</span>
+    <h2>A ordem em que decidi</h2>
+    <p>Nenhuma tela deste caderno começou por um componente. A regra que você deu — experiência,
+      depois fluxo, depois interface — é também o que separa o que aqui é proposta do que é opinião.</p>
+  </div>
+
+  <div class="duas">
+    <div class="bloco">
+      <span class="lbl">O que perguntei antes de desenhar</span>
+      <ol class="txt" style="padding-left:18px">
+        <li><b>Esta tela precisa existir?</b> Onze das vinte e seis não precisam.</li>
+        <li><b>Esta decisão precisa ser do usuário?</b> A maioria não: o sistema já sabe a resposta e
+          apresenta a pergunta mesmo assim.</li>
+        <li><b>O usuário sabe onde está?</b> Em nove telas, não — não há marca, volta, nem nome do
+          arquivo em que se trabalha.</li>
+        <li><b>O que acontece se der errado?</b> O erro de upload simplesmente desaparece entre uma
+          tela e a seguinte.</li>
+      </ol>
+    </div>
+    <div class="bloco escuro">
+      <span class="lbl">Os nove princípios, aplicados</span>
+      <p>Usei os princípios que você listou como critério de aprovação, não como decoração. Dois
+        deles reprovam sozinhos boa parte das telas atuais:</p>
+      <p><b>Exceção antes de configuração.</b> Hoje o produto mostra todos os controles
+        preventivamente — nomear, formato, qualidade, orientação, resolução, compressão, contraste,
+        brilho — e chama isso de Guiado.</p>
+      <p><b>Honestidade.</b> A tela de progresso já acerta: recusa porcentagem inventada e explica
+        por quê. É o melhor texto do produto inteiro. O resto da experiência ainda não segue a
+        mesma regra.</p>
+    </div>
+  </div>
+
+  <div class="regra">
+    <p><b>O que não fiz:</b> não redesenhei o que já funciona. A linguagem visual — geométrica,
+      preto e branco, cantos generosos, chips de metadado — está preservada. O que mudou foi
+      arquitetura, quantidade de decisões e o momento em que cada uma aparece.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════ 1 · INVENTÁRIO ═══════════════════ -->
+<section id="s1">
+  <div class="sechead">
+    <span class="lbl">Seção 1 · etapa 1 do briefing</span>
+    <h2>As vinte e seis telas, e o que cada uma faz</h2>
+    <p>Inventário completo antes de qualquer sugestão. A coluna <b>veredito</b> é a conclusão da
+      etapa 1: manter, fundir, virar estado de outra tela, ou deixar de existir.</p>
+  </div>
+
+  <div class="filtros" role="group" aria-label="Filtrar inventário por fluxo">
+    <button class="fbtn" data-inv="tudo" aria-pressed="true" type="button">Tudo (26)</button>
+    <button class="fbtn" data-inv="entrada" aria-pressed="false" type="button">Entrada</button>
+    <button class="fbtn" data-inv="doc" aria-pressed="false" type="button">Documento</button>
+    <button class="fbtn" data-inv="lote" aria-pressed="false" type="button">Lote</button>
+    <button class="fbtn" data-inv="hq" aria-pressed="false" type="button">Quadrinho</button>
+    <button class="fbtn" data-inv="bib" aria-pressed="false" type="button">Biblioteca</button>
+  </div>
+
+  <div class="tabwrap">
+    <table id="tabinv">
+      <thead><tr>
+        <th>Tela</th><th>Fluxo</th><th>Ação principal</th><th>Vem de</th><th>Vai para</th>
+        <th>Estado que representa</th><th>Veredito</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="duas">
+    <div class="bloco">
+      <span class="lbl">O que o inventário revelou</span>
+      <ul class="txt" style="padding-left:18px">
+        <li><b>Cinco telas são a mesma tela.</b> Preparação e Conversão do lote mostram o mesmo
+          painel de configuração e a mesma lista; só muda a aba destacada.</li>
+        <li><b>Três telas de conclusão fazem o mesmo trabalho</b> com textos quase idênticos e um
+          plural trocado.</li>
+        <li><b>Quatro telas não têm ação principal.</b> A de progresso não tem nenhum botão; a de
+          exportação mostra "Enviando…" sem que se tenha pedido para enviar.</li>
+        <li><b>Nenhuma tela de preparação leva à biblioteca</b>, exceto a última — e ela troca de
+          aplicação inteira ao fazê-lo.</li>
+      </ul>
+    </div>
+    <div class="bloco">
+      <span class="lbl">Elementos compartilhados — ou a falta deles</span>
+      <p class="txt">Entre os dois blocos do produto não há um único componente em comum. A tabela
+        abaixo é a evidência de que não se trata de inconsistência de acabamento, e sim de duas
+        arquiteturas.</p>
+      <div class="tabwrap" style="border-radius:4px">
+        <table style="min-width:0">
+          <thead><tr><th>Elemento</th><th>Preparação</th><th>Biblioteca</th></tr></thead>
+          <tbody>
+            <tr><td class="n">Marca</td><td>ausente</td><td>ausente</td></tr>
+            <tr><td class="n">Navegação</td><td>pílula no topo, 4 itens</td><td>dock flutuante, 6 itens</td></tr>
+            <tr><td class="n">Busca</td><td>não existe</td><td>campo central no topo</td></tr>
+            <tr><td class="n">Conta</td><td>"Entrar" em texto</td><td>avatar circular</td></tr>
+            <tr><td class="n">Onde estou</td><td>abas de etapa</td><td>breadcrumb</td></tr>
+            <tr><td class="n">Ajuda</td><td>item de menu</td><td>botão flutuante "?"</td></tr>
+            <tr><td class="n">Fundo</td><td>branco com pontos</td><td>branco com pontos</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="txt" style="font-size:13.5px">A última linha é a única coincidência — e é decorativa.</p>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <span class="lbl">As 26 capturas, preservadas</span>
+    <p class="txt" style="font-size:14px">Copiadas para <span class="mono">telas-atuais/</span> neste
+      repositório em 12 de agosto de 2026, antes de qualquer proposta. Depois que uma tela é
+      corrigida, o "antes" deixa de existir — e é ele que sustenta a comparação.
+      Clique para abrir em tamanho cheio.</p>
+    <div id="galeria" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(126px,1fr));gap:12px"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════ 2 · MAPA ATUAL ═══════════════════ -->
+<section id="s2">
+  <div class="sechead">
+    <span class="lbl">Seção 2</span>
+    <h2>O mapa que essas telas formam</h2>
+    <p>Reconstruído a partir das telas, sem inferir passagens que não estão desenhadas. As linhas
+      tracejadas em vermelho são travessias que existem no produto mas não têm volta.</p>
+  </div>
+
+  <div class="diagrama">
+    <svg viewBox="0 0 980 430" role="img" aria-label="Mapa do fluxo atual: dois blocos desconectados, preparação e biblioteca">
+      <text class="dg-cap" x="8" y="14">Bloco A · preparação — nav em pílula, sem marca, sem volta</text>
+      <rect class="dg-box" x="8" y="26" width="700" height="150" rx="6" opacity=".55"/>
+
+      <rect class="dg-box-2" x="24" y="52" width="112" height="52" rx="5"/>
+      <text class="dg-t" x="80" y="74" text-anchor="middle">Home</text>
+      <text class="dg-s" x="80" y="90" text-anchor="middle">DROPZONE</text>
+
+      <rect class="dg-box-2" x="168" y="52" width="112" height="52" rx="5"/>
+      <text class="dg-t" x="224" y="74" text-anchor="middle">Análise</text>
+      <text class="dg-s" x="224" y="90" text-anchor="middle">DIAGNÓSTICO</text>
+
+      <rect class="dg-box-2" x="312" y="52" width="112" height="52" rx="5"/>
+      <text class="dg-t" x="368" y="74" text-anchor="middle">Preparação</text>
+      <text class="dg-s" x="368" y="90" text-anchor="middle">CONFIGURAÇÃO</text>
+
+      <rect class="dg-box-2" x="456" y="52" width="112" height="52" rx="5"/>
+      <text class="dg-t" x="512" y="74" text-anchor="middle">Conversão</text>
+      <text class="dg-s" x="512" y="90" text-anchor="middle">A MESMA TELA</text>
+
+      <rect class="dg-box-2" x="600" y="52" width="92" height="52" rx="5"/>
+      <text class="dg-t" x="646" y="74" text-anchor="middle">Exportar</text>
+      <text class="dg-s" x="646" y="90" text-anchor="middle">ENVIO</text>
+
+      <path class="dg-l" d="M136 78 h32" marker-end="url(#ar)"/>
+      <path class="dg-l" d="M280 78 h32" marker-end="url(#ar)"/>
+      <path class="dg-l" d="M424 78 h32" marker-end="url(#ar)"/>
+      <path class="dg-l" d="M568 78 h32" marker-end="url(#ar)"/>
+
+      <rect class="dg-box-2" x="312" y="122" width="256" height="36" rx="5" stroke-dasharray="4 3"/>
+      <text class="dg-t" x="440" y="145" text-anchor="middle">Progresso — sem cabeçalho, sem abas, sem ação</text>
+
+      <text class="dg-cap" x="740" y="14">Bloco B · biblioteca</text>
+      <rect class="dg-box" x="740" y="26" width="232" height="150" rx="6" opacity=".55"/>
+      <rect class="dg-box-2" x="756" y="52" width="90" height="44" rx="5"/>
+      <text class="dg-t" x="801" y="79" text-anchor="middle">Canvas</text>
+      <rect class="dg-box-2" x="866" y="52" width="90" height="44" rx="5"/>
+      <text class="dg-t" x="911" y="79" text-anchor="middle">Estante</text>
+      <rect class="dg-box-2" x="756" y="112" width="200" height="44" rx="5"/>
+      <text class="dg-t" x="856" y="139" text-anchor="middle">Conexões · Estante 3D</text>
+
+      <rect class="dg-box-2" x="312" y="212" width="180" height="46" rx="5"/>
+      <text class="dg-t" x="402" y="232" text-anchor="middle">Conclusão</text>
+      <text class="dg-s" x="402" y="248" text-anchor="middle">3 VARIANTES QUASE IGUAIS</text>
+      <path class="dg-l" d="M646 106 v70 h-154" marker-end="url(#ar)"/>
+
+      <path class="dg-x" d="M492 235 H820 v-58" marker-end="url(#arx)"/>
+      <text class="dg-cap" x="560" y="228" fill="#B3350B">travessia sem volta — "abrir espaço do livro"</text>
+
+      <text class="dg-cap" x="8" y="300">O que não existe em lugar nenhum do mapa</text>
+      <rect class="dg-box" x="8" y="312" width="964" height="100" rx="6" stroke-dasharray="5 4" opacity=".4"/>
+      <text class="dg-t" x="28" y="340">· Uma casa: nenhuma tela tem marca, logotipo ou caminho de volta ao início.</text>
+      <text class="dg-t" x="28" y="362">· Um histórico: nada mostra o que foi preparado antes desta sessão.</text>
+      <text class="dg-t" x="28" y="384">· Um lugar para retomar: fechar a aba durante a conversão perde o trabalho.</text>
+      <text class="dg-t" x="28" y="406">· Uma volta da biblioteca para a preparação: o caminho é de mão única.</text>
+
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="currentColor" style="fill:#7C766C"/>
+        </marker>
+        <marker id="arx" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" style="fill:#B3350B"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="duas">
+    <div class="bloco">
+      <span class="lbl">Etapas que poderiam desaparecer</span>
+      <ul class="txt" style="padding-left:18px">
+        <li><b>Conversão</b> — repete Preparação. Some.</li>
+        <li><b>Preparação</b> — o que resta dela (nomear, formato, qualidade) é decisão automática
+          com exceção rara. Vira uma linha na Análise.</li>
+        <li><b>Exportar</b> — escolher formato depois de converter é retrabalho. A escolha de saída
+          é consequência do destino, não uma etapa.</li>
+        <li><b>Conclusão</b> — três telas para dizer "pronto". Vira estado do item.</li>
+      </ul>
+      <p class="txt" style="font-size:13.5px">Quatro abas viram <b>dois momentos</b>: revisar e receber.</p>
+    </div>
+    <div class="bloco">
+      <span class="lbl">Decisões que aparecem cedo demais</span>
+      <ul class="txt" style="padding-left:18px">
+        <li><b>Traduzir este documento? Sim</b> — pré-marcado, com Português → Português, num
+          recurso que o próprio registro do projeto classifica como pendente de validação de
+          qualidade.</li>
+        <li><b>Como nomear os arquivos</b> — antes de o usuário ver um único resultado.</li>
+        <li><b>Qualidade / compressão / resolução</b> — antes de existir um arquivo para comparar.</li>
+        <li><b>Título e autor em branco</b> — pedidos ao usuário depois de o sistema ter aberto e
+          analisado o arquivo.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ 3 · AUDITORIA ═══════════════════ -->
+<section id="s3">
+  <div class="sechead">
+    <span class="lbl">Seção 3 · etapas 2, 3 e 20 do briefing</span>
+    <h2>Trinta e quatro achados, em quatro pesos</h2>
+    <p>Cada achado aponta a tela em que foi observado. Nenhum é hipótese: todos estão visíveis nas
+      capturas. <b>P0</b> compromete o fluxo ou o entendimento; <b>P1</b> causa atrito real;
+      <b>P2</b> é acabamento; <b>P3</b> é ideia para depois.</p>
+  </div>
+
+  <div class="filtros" role="group" aria-label="Filtrar achados por prioridade">
+    <button class="fbtn" data-pri="tudo" aria-pressed="true" type="button">Todos (34)</button>
+    <button class="fbtn" data-pri="0" aria-pressed="false" type="button">P0 — estrutural (8)</button>
+    <button class="fbtn" data-pri="1" aria-pressed="false" type="button">P1 — importante (12)</button>
+    <button class="fbtn" data-pri="2" aria-pressed="false" type="button">P2 — refinamento (10)</button>
+    <button class="fbtn" data-pri="3" aria-pressed="false" type="button">P3 — futuro (4)</button>
+  </div>
+
+  <div class="achados" id="listaachados"></div>
+</section>
+
+<!-- ═══════════════════ 4 · A EXPERIÊNCIA ═══════════════════ -->
+<section id="s4">
+  <div class="sechead">
+    <span class="lbl">Seção 4 · o princípio central do briefing</span>
+    <h2>Qual experiência deveria existir</h2>
+    <p>Antes de qualquer fluxo ou tela. Esta é a frase que, se for aceita, decide sozinha metade
+      das perguntas abertas do produto.</p>
+  </div>
+
+  <div class="regra">
+    <blockquote>O Mekora não é um conversor com uma biblioteca anexada.<br>
+      É uma estante que sabe preparar o que chega nela.</blockquote>
+  </div>
+
+  <div class="duas">
+    <div class="bloco">
+      <span class="lbl">O que muda se isso for verdade</span>
+      <ul class="txt" style="padding-left:18px">
+        <li><b>O objeto central é o item, não a etapa.</b> O usuário abre um arquivo, não um assistente.
+          Análise, preparação e conversão são coisas que <i>acontecem com</i> o item — como um pacote
+          que muda de estado, não como páginas que se visitam.</li>
+        <li><b>Preparar não é um lugar.</b> Some a ideia de "fluxo de conversão" como área do
+          produto. O que existe é a Mesa, onde as coisas chegam, e a Estante, onde ficam.</li>
+        <li><b>O usuário decide duas vezes:</b> o que entra e para onde vai. Tudo entre as duas
+          decisões é do sistema, e só volta a ele quando há exceção.</li>
+        <li><b>Fechar a aba não perde nada.</b> Se o item é a unidade, o trabalho continua sem a tela.</li>
+      </ul>
+    </div>
+    <div class="bloco escuro">
+      <span class="lbl">O teste que aplico a cada tela proposta</span>
+      <p>Uma tela só entra neste caderno se responder as quatro perguntas sem que o usuário precise
+        clicar em nada:</p>
+      <p><b>Onde estou?</b> Marca, lugar e nome do arquivo, sempre visíveis.<br>
+        <b>O que aconteceu?</b> Uma frase em linguagem comum, no topo.<br>
+        <b>O que preciso fazer?</b> Uma ação dominante, nunca duas do mesmo peso.<br>
+        <b>E depois?</b> O próximo estado é nomeado antes de acontecer.</p>
+      <p style="font-size:13.5px">Das 26 telas atuais, <b>quatro</b> passam nesse teste. Duas delas
+        são a mesma tela.</p>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <span class="lbl">Guiado e Personalizado — a regra que os separa</span>
+    <div class="duas" style="gap:20px">
+      <div>
+        <h3 class="sub" style="margin-bottom:8px">Guiado</h3>
+        <p class="txt" style="font-size:14px">Nenhum controle. Só três coisas: <b>o que encontrei</b>,
+          <b>o que vou fazer</b> e <b>o que precisa de você</b>. Se não há exceção, a terceira não
+          aparece. O usuário lê e aperta um botão.</p>
+        <p class="txt" style="font-size:14px;margin-top:9px">Não existe seletor de nome, formato,
+          qualidade, resolução, compressão, contraste ou brilho. Existe uma linha dizendo o que foi
+          escolhido, com um "alterar" discreto que leva ao Personalizado.</p>
+      </div>
+      <div>
+        <h3 class="sub" style="margin-bottom:8px">Personalizado</h3>
+        <p class="txt" style="font-size:14px">Assumido deliberadamente. Abre com um aviso:
+          <b>"As decisões automáticas foram preservadas — ajuste o que quiser."</b> Nenhum campo
+          nasce vazio; todos vêm preenchidos com o que o Guiado teria feito.</p>
+        <p class="txt" style="font-size:14px;margin-top:9px">Ao voltar para Guiado, o produto não
+          descarta em silêncio: pergunta se mantém as alterações manuais ou volta ao recomendado, e
+          diz quantas são.</p>
+      </div>
+    </div>
+    <p class="txt" style="font-size:13.5px;border-top:1px solid var(--rule-2);padding-top:12px">
+      <b>Hoje o seletor não separa nada.</b> Nas capturas, "Guiado" está ativo em todas as telas —
+      inclusive nas que mostram nove controles avançados. Um seletor que não muda o que se vê é um
+      seletor que ensina o usuário a ignorá-lo.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════ 5 · NAVEGAÇÃO ═══════════════════ -->
+<section id="s5">
+  <div class="sechead">
+    <span class="lbl">Seção 5 · etapa 4 do briefing</span>
+    <h2>Arquitetura de navegação</h2>
+    <p>Você trouxe uma direção: Como funciona · Ajuda e recursos · Atualizações · Perfil, com
+      Configurações dissolvida dentro do Perfil. Concordo com a dissolução e discordo do resto —
+      pelo motivo abaixo.</p>
+  </div>
+
+  <div class="duas">
+    <div class="bloco">
+      <span class="lbl">O problema da lista proposta</span>
+      <p class="txt">Os quatro itens são <b>sobre</b> o produto: como ele funciona, onde pedir ajuda,
+        o que mudou nele, quem é você. Nenhum é um lugar <b>dentro</b> do produto. Uma navegação
+        principal feita só de meta-conteúdo deixa o trabalho sem endereço — que é exatamente o que
+        acontece hoje: não há como voltar para o arquivo que se estava preparando.</p>
+      <p class="txt" style="margin-top:10px">A pergunta certa não é "quais páginas existem", é
+        <b>"em quantos lugares uma pessoa trabalha"</b>. No Mekora são dois: onde as coisas chegam e
+        onde as coisas ficam.</p>
+    </div>
+    <div class="bloco">
+      <span class="lbl">A arquitetura que proponho</span>
+      <div class="tabwrap" style="border-radius:4px">
+        <table style="min-width:0">
+          <thead><tr><th>Nível</th><th>Itens</th><th>Por quê</th></tr></thead>
+          <tbody>
+            <tr><td class="n">Lugares</td><td>Mesa · Estante · Canvas · Conexões</td>
+              <td>Onde se trabalha. A marca à esquerda volta para a Mesa.</td></tr>
+            <tr><td class="n">Utilidades</td><td>Busca · Ajuda (?) · Conta</td>
+              <td>Sempre presentes, nunca competindo com os lugares.</td></tr>
+            <tr><td class="n">Dentro da conta</td><td>Perfil · Dispositivos · Preferências · Privacidade · Atualizações · Sair</td>
+              <td>Preferências pessoais vivem aqui, como você propôs. Atualizações também: é notícia sobre o produto, não um lugar de trabalho.</td></tr>
+            <tr><td class="n">Dentro da ajuda</td><td>Começando · Formatos · Entenda o processo · Resolver problemas · Avançados</td>
+              <td>Inclui rever o onboarding.</td></tr>
+            <tr><td class="n">Fora do app</td><td>Como funciona</td>
+              <td>É a página de entrada de quem não tem conta. Não é item de produto.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <span class="lbl">As perguntas de navegação que o briefing pede, respondidas</span>
+    <div class="duas" style="gap:18px 26px">
+      <ul class="txt" style="padding-left:18px;font-size:14px">
+        <li><b>Histórico</b> — não é item de menu. É a Estante filtrada por data, e a Mesa mostra os
+          recentes.</li>
+        <li><b>Projetos recentes</b> — os quatro últimos, na Mesa, com estado ao vivo.</li>
+        <li><b>Arquivos em andamento</b> — grupo próprio na Mesa; some quando vazio.</li>
+        <li><b>Resultados</b> — não existem como página. O resultado é o item no estado "pronto".</li>
+      </ul>
+      <ul class="txt" style="padding-left:18px;font-size:14px">
+        <li><b>Voltar à Home</b> — a marca, em todas as telas. É o que falta hoje.</li>
+        <li><b>Abrir projeto</b> — clique no item, em qualquer lugar onde ele apareça.</li>
+        <li><b>Navegar entre etapas</b> — não existe. Etapa virou estado; não se navega para um
+          estado, espera-se por ele.</li>
+        <li><b>A dock</b> — só nas superfícies espaciais (Canvas e Estante), onde há ferramentas de
+          manipulação. Na preparação ela cobre conteúdo e não tem função.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ 6 · TELAS PROPOSTAS ═══════════════════ -->
+<section id="s6">
+  <div class="sechead">
+    <span class="lbl">Seção 6 · etapa 18 do briefing</span>
+    <h2>As telas propostas, montadas e funcionando</h2>
+    <p>Vinte e uma telas navegáveis com dados fictícios verossímeis. As interações principais estão
+      vivas: alternar Guiado e Personalizado, abrir e confirmar pendências, abrir o editor manual,
+      simular erro, avançar o processamento, enviar ao Kindle, percorrer a ajuda e o onboarding.
+      <b>Tudo é simulação</b> — nada aqui toca o app operacional.</p>
+  </div>
+
+  <div class="protowrap">
+    <div class="protobar">
+      <span class="lbl">Cenário</span>
+      <button class="pchip" data-cena="sem-conta" type="button">Sem conta</button>
+      <button class="pchip" data-cena="mesa-nova" type="button">Mesa · primeiro uso</button>
+      <button class="pchip" data-cena="mesa" type="button">Mesa · uso recorrente</button>
+      <button class="pchip" data-cena="doc" type="button">Documento</button>
+      <button class="pchip" data-cena="lote" type="button">Lote</button>
+      <button class="pchip" data-cena="hq" type="button">Quadrinho</button>
+      <button class="pchip" data-cena="editor" type="button">Editor manual</button>
+      <button class="pchip" data-cena="ajuda" type="button">Ajuda</button>
+      <button class="pchip" data-cena="perfil" type="button">Perfil</button>
+      <button class="pchip" data-cena="novidades" type="button">Atualizações</button>
+      <span class="sp"></span>
+      <button class="pchip" id="btnreset" type="button">reiniciar</button>
+    </div>
+    <div class="palco">
+      <div class="tela" id="palco"><div class="mk"></div></div>
+    </div>
+    <p class="protonota" id="protonota"><b>Onde você está:</b> carregando o cenário…</p>
+  </div>
+
+  <div class="duas">
+    <div class="bloco">
+      <span class="lbl">O que está simulado, e é honesto dizer</span>
+      <ul class="txt" style="padding-left:18px;font-size:14px">
+        <li>Nenhum arquivo é lido. Os nomes, tamanhos e contagens são fictícios, mas escolhidos para
+          serem plausíveis: 96 páginas digitalizadas num livro de design, 120 páginas num volume de
+          mangá, 12 páginas coloridas no miolo.</li>
+        <li>Os tempos de processamento são acelerados para caber numa demonstração.</li>
+        <li>O envio ao Kindle não sai daqui. A tela diz exatamente o que o produto real poderia
+          dizer: que a Amazon aceitou, e que não há como saber se já chegou no aparelho.</li>
+        <li>Botões que representam um controle sem efeito nesta exploração dizem isso ao serem
+          clicados, em vez de não fazer nada.</li>
+      </ul>
+    </div>
+    <div class="bloco">
+      <span class="lbl">O que testar, se você tiver cinco minutos</span>
+      <ul class="txt" style="padding-left:18px;font-size:14px">
+        <li><b>Documento →</b> Preparar com estas recomendações. Uma pendência real aparece no meio
+          do processamento, e não antes.</li>
+        <li><b>Documento →</b> trocar para Personalizado, mexer em algo, voltar para Guiado. Repare
+          na pergunta.</li>
+        <li><b>Quadrinho →</b> Revisar 2 pendências. Uma de cada vez, com confiança contável.</li>
+        <li><b>Editor manual →</b> filtro "Precisam de atenção", selecione páginas, use uma
+          ferramenta, desfaça.</li>
+        <li><b>Lote →</b> simular falha repetida.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ 7 · ATUAL × PROPOSTA ═══════════════════ -->
+<section id="s7">
+  <div class="sechead">
+    <span class="lbl">Seção 7 · etapa 19 do briefing</span>
+    <h2>Atual × proposta, oito vezes</h2>
+    <p>O lado <b>Atual</b> é a captura real de 12 de agosto, preservada no repositório. O lado
+      <b>Proposta</b> é a mesma tela redesenhada. Cada par termina com o motivo — se não houver
+      motivo, a mudança não deveria existir.</p>
+  </div>
+  <div id="comparacoes"></div>
+</section>
+
+<!-- ═══════════════════ 8 · ALTERNATIVAS ═══════════════════ -->
+<section id="s8">
+  <div class="sechead">
+    <span class="lbl">Seção 8 · etapa 17 do briefing</span>
+    <h2>Três dúvidas reais, com alternativas de verdade</h2>
+    <p>Só entram aqui perguntas em que eu mudaria de opinião com um argumento seu. As alternativas
+      diferem em arquitetura e progressão, não em raio de borda.</p>
+  </div>
+  <div id="alternativas"></div>
+</section>
+
+<!-- ═══════════════════ 9 · DECISÕES ═══════════════════ -->
+<section id="s9">
+  <div class="sechead">
+    <span class="lbl">Seção 9</span>
+    <h2>O que eu recomendo manter, alterar, remover e adiar</h2>
+    <p>Recomendação, não decisão. A decisão é sua — e algumas dependem das respostas da seção 10.</p>
+  </div>
+
+  <div class="filtros" role="group" aria-label="Filtrar decisões">
+    <button class="fbtn" data-dec="tudo" aria-pressed="true" type="button">Tudo</button>
+    <button class="fbtn" data-dec="manter" aria-pressed="false" type="button">Manter</button>
+    <button class="fbtn" data-dec="alterar" aria-pressed="false" type="button">Alterar</button>
+    <button class="fbtn" data-dec="remover" aria-pressed="false" type="button">Remover</button>
+    <button class="fbtn" data-dec="adiar" aria-pressed="false" type="button">Adiar</button>
+  </div>
+  <div class="tabwrap"><table id="tabdec">
+    <thead><tr><th>Veredito</th><th>O quê</th><th>Por quê</th><th>Custo</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+
+  <div class="bloco escuro">
+    <span class="lbl">Se você fizer só três coisas desta rodada</span>
+    <p><b>1. Uma barra só.</b> Marca à esquerda que volta para a Mesa, os mesmos lugares nas quatro
+      superfícies. É a mudança mais barata e a que resolve mais achados: sozinha, ela encerra os
+      P0 números 1 e 2 e o P1 número 11.</p>
+    <p><b>2. O Guiado sem nenhum controle.</b> Tirar os nove seletores da vista guiada não exige
+      nada do backend — é esconder e recolocar em Personalizado, preenchidos.</p>
+    <p><b>3. Fundir Análise e Preparação numa tela de item.</b> Elimina duas telas, um formulário
+      vazio e a pergunta de tradução ligada por padrão.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════ 10 · EM ABERTO ═══════════════════ -->
+<section id="s10">
+  <div class="sechead">
+    <span class="lbl">Seção 10 · revisão B, 12 de agosto de 2026</span>
+    <h2>As seis respostas, e o que cada uma mudou</h2>
+    <p>As perguntas foram respondidas. Duas respostas corrigiram o protótipo — uma delas derrubou
+      uma promessa que eu tinha escrito em três telas e que era falsa. Registro aqui o que era
+      hipótese, o que passou a ser fato e o que mudou por causa disso.</p>
+  </div>
+
+  <div class="achados">
+    <article class="ach"><span class="p p0">R1</span><div class="cp">
+      <h4>Conta: existe se o usuário quiser, e é pedida antes das telas além da conversão</h4>
+      <p><b>Resposta:</b> a conta guarda arquivos e projetos e importa para o uso contínuo. Converter
+        não precisa dela. Melhor pedir antes de seguir para o resto, explicando o porquê.</p>
+      <p><b>O que mudou:</b> existe agora um cenário <b>Sem conta</b> no protótipo. A barra do topo
+        do usuário anônimo não mostra Estante, Canvas nem Conexões — mostrar lugares que não dá para
+        usar é pior do que não mostrar. A conta é pedida na tela de arquivo pronto, com o motivo em
+        três linhas verificáveis, e nunca antes de converter. Quem recusa continua usando.</p>
+      <span class="onde">era hipótese: "há conta, e o primeiro arquivo pode ser preparado antes dela" — confirmada e detalhada</span>
+    </div><a class="ir" href="#s6">ver cenário →</a></article>
+
+    <article class="ach"><span class="p p0">R2</span><div class="cp">
+      <h4>Roda no navegador — a promessa de fechar a aba saiu de três telas</h4>
+      <p><b>Resposta:</b> a ideia é rodar no navegador; a ferramenta deixou de ser local há muito tempo.</p>
+      <p><b>O que mudou:</b> eu tinha escrito <i>"pode fechar esta tela — o item aparece na Mesa quando
+        terminar"</i>. Isso é mentira se o trabalho acontece na aba. As três ocorrências saíram. No lugar:
+        "o preparo acontece aqui, no seu navegador — você pode circular pelo Mekora, mas fechar a aba
+        interrompe". O grupo da Mesa virou <b>Em andamento nesta aba</b>, e ganhou uma linha nova que
+        antes não existia em lugar nenhum do produto: um arquivo <b>interrompido</b>, com a página em que
+        parou e a ação de selecioná-lo de novo. A tela de preparo tem um aviso âmbar dizendo o mesmo.</p>
+      <span class="onde">era hipótese: "roda no servidor e sobrevive" — errada, e o protótipo estava mentindo por causa dela</span>
+    </div><a class="ir" href="#s6">ver cenário →</a></article>
+
+    <article class="ach"><span class="p p1">R3</span><div class="cp">
+      <h4>Direção de leitura: sem confirmação técnica, a confiança declarada saiu</h4>
+      <p><b>Resposta:</b> não houve trabalho nesse nível do código, então não dá para dizer se a
+        detecção é possível.</p>
+      <p><b>O que mudou:</b> "Confiança: alta — 108 das 120 páginas concordam" era um número que eu
+        inventei para ilustrar honestidade, e inventá-lo é exatamente o que o princípio proíbe. A
+        pendência virou <b>pergunta</b>: "Em que ordem estas páginas são lidas?", com as duas páginas
+        lado a lado e a instrução do que olhar — de que lado começa a primeira fala. Nenhuma confiança
+        é declarada, porque não há nenhuma. A pendência da página dupla ficou, mas trocou "confiança"
+        por <b>medição</b>: largura de imagem é aritmética, não estimativa.</p>
+      <span class="onde">nova regra do caderno: confiança só quando existe contagem; sem contagem, pergunta simples</span>
+    </div><a class="ir" href="#s6">ver cenário →</a></article>
+
+    <article class="ach"><span class="p p1">R4</span><div class="cp">
+      <h4>Leitor frequente, por prazer ou estudo — a alternativa C está fechada</h4>
+      <p><b>Resposta:</b> o usuário recorrente consome leitura com frequência, por prazer ou por estudo.</p>
+      <p><b>O que mudou:</b> a única condição que faria a Mesa perder para a entrada direta era uso
+        esporádico. Ela não se aplica. A <b>alternativa C2</b> deixa de ser recomendação e passa a
+        decisão fechada na seção 8. Consequência secundária: quem estuda chega com muitos arquivos de
+        uma vez, o que aumenta o peso do fluxo de lote — ele sobe de "importante" para tão central
+        quanto o de arquivo único.</p>
+      <span class="onde">era hipótese: "uso recorrente, com acervo crescendo" — confirmada</span>
+    </div><a class="ir" href="#s8">ver alternativa C →</a></article>
+
+    <article class="ach"><span class="p p2">R5</span><div class="cp">
+      <h4>Mesmo produto, preparo diferente — e é o preparo que justifica a separação</h4>
+      <p><b>Resposta:</b> são o mesmo produto; foram separados porque o processo de configurar o
+        arquivo é diferente.</p>
+      <p><b>O que mudou:</b> confirma o desenho e proíbe uma coisa. A diferença é de <b>preparo</b>,
+        não de produto — então ela aparece no conteúdo da análise e nas exceções, e nunca como uma
+        área separada, uma entrada separada ou uma pergunta inicial "que tipo de arquivo é este?".
+        O tipo é detectado, e o usuário descobre isso pelo fato de as perguntas certas aparecerem.</p>
+      <span class="onde">era hipótese: "mesmo produto, detecção automática do tipo" — confirmada</span>
+    </div><a class="ir" href="#s6">ver cenário →</a></article>
+
+    <article class="ach"><span class="p p3">R6</span><div class="cp">
+      <h4>Repositório cadastrado e publicado</h4>
+      <p><b>Resposta:</b> precisa ser reconhecido e enviado ao GitHub.</p>
+      <p><b>O que mudou:</b> o <span class="mono">github.com/ErikAbner/mekora</span> entrou em
+        <span class="mono">projects/mekora.json</span> como <span class="mono">supporting_artifact</span>
+        — a opção recomendada no <span class="mono">para-o-project-os.md</span>, item 1 —, e não como
+        quarto repositório. O motivo está lá: já existem duas explorações de experiência coexistindo
+        sem decisão registrada sobre qual continua, e entrar como repositório criaria uma terceira
+        candidata. O trabalho foi publicado no remoto, que já existia e estava sincronizado.</p>
+      <span class="onde">se você preferir a outra opção — quarto repositório —, é uma linha para trocar</span>
+    </div><span></span></article>
+  </div>
+
+  <div class="bloco">
+    <span class="lbl">O que continua em aberto depois destas respostas</span>
+    <ul class="txt" style="padding-left:18px;font-size:14px">
+      <li><b>"No navegador" tem duas leituras.</b> Pode significar que o Mekora é uma aplicação web
+        (e o preparo ainda roda em servidor), ou que o preparo roda mesmo dentro da aba, no seu
+        computador. O protótipo adotou a leitura conservadora — a que promete menos. Se o preparo
+        rodar em servidor, a promessa de fechar a aba pode voltar, e é uma frase para reescrever.
+        Se rodar na aba, existe um argumento de privacidade forte que o produto hoje não usa: o
+        arquivo não sai do seu computador.</li>
+      <li><b>A detecção de direção de leitura.</b> Se um dia houver um sinal contável, a pergunta
+        volta a poder ser uma recomendação — com o número real, nunca com um ilustrativo.</li>
+      <li><b>O <span class="mono">current_focus</span> do manifesto</b> ainda descreve trabalho
+        concluído em 2 de agosto. Não inventei um novo: é decisão sua, e está no
+        <span class="mono">para-o-project-os.md</span>, item 3.</li>
+    </ul>
+  </div>
+</section>
+
+</div><!-- /page -->
+<script>
+/* ══════════════════════════════════════════════════════════
+   Dados do inventário e da auditoria.
+   Tudo observado nas 26 capturas de 12/08/2026.
+   ══════════════════════════════════════════════════════════ */
+const INV=[
+ ["Home vazia (documento)","entrada","Enviar arquivo","—","Análise","Vazio, aguardando","Manter — vira Mesa"],
+ ["Home vazia (lote)","entrada","Enviar arquivos","—","Análise","Vazio, idêntica à anterior","Deixa de existir — é a mesma tela"],
+ ["Home vazia (quadrinho)","entrada","Enviar arquivo","—","Análise","Vazio, idêntica à anterior","Deixa de existir — é a mesma tela"],
+ ["Home com envio em curso","entrada","Acompanhar upload","Home","Análise","1 enviando · 1 na fila · 1 pronto · 1 com erro","Manter — vira faixa na Mesa"],
+ ["Envio em curso (variante)","entrada","Acompanhar upload","Home","Análise","Idêntica, largura diferente","Deixa de existir"],
+ ["Análise · documento","doc","Aplicar e continuar","Envio","Preparação","2 problemas, 3 recomendações","Manter — vira o item"],
+ ["Análise · lote","lote","Aplicar e continuar","Envio","Preparação","2 problemas para 4 arquivos","Manter, mas por arquivo"],
+ ["Análise · quadrinho","hq","Aplicar e continuar","Envio","Preparação","4 problemas, 3 recomendações","Manter — vira o item"],
+ ["Preparação · documento","doc","Preencher metadados","Análise","Conversão","Formulário vazio + tradução + capa","Fundir na Análise; campos propostos"],
+ ["Preparação · lote","lote","Configurar lote","Análise","Conversão","3 seletores + renomear","Vira Personalizado"],
+ ["Preparação · quadrinho","hq","Ajustar imagem","Análise","Conversão","Antes/depois + contraste + brilho","Vira Personalizado"],
+ ["Conversão · documento","doc","—","Preparação","Exportar","Progresso invertido","Vira estado do item"],
+ ["Conversão · lote","lote","Iniciar conversão","Preparação","Exportar","Repete a tela de Preparação","Deixa de existir"],
+ ["Conversão · quadrinho","hq","Iniciar conversão","Preparação","Exportar","Dispositivo + parâmetros + dock","Divide: dispositivo fica, parâmetros vão para Personalizado"],
+ ["Progresso · documento","doc","—","Conversão","Conclusão","4 etapas, sem cabeçalho","Vira faixa dentro do item"],
+ ["Progresso · quadrinho","hq","—","Conversão","Conclusão","5 etapas, sem cabeçalho","Vira faixa dentro do item"],
+ ["Conversão concluída · doc","doc","—","Progresso","Exportar","Sucesso e 'em andamento' juntos","Deixa de existir"],
+ ["Exportar · documento","doc","Enviar ao Kindle","Conversão","Conclusão","'Enviando…' sem ação do usuário","Manter — vira painel"],
+ ["Exportar · lote","lote","Baixar / renomear","Conversão","Conclusão","3 arquivos + envio","Manter — vira resultados"],
+ ["Exportar · quadrinho","hq","Escolher formato","Conversão","Conclusão","Formato decidido depois de converter","Reordenar: formato vem do destino"],
+ ["Conclusão · documento","doc","Abrir espaço do livro","Exportar","Biblioteca","Ilustração + 2 botões","Fundir nas outras duas"],
+ ["Conclusão · lote","lote","Abrir espaço do livro","Exportar","Biblioteca","Mesma tela, plural","Deixa de existir"],
+ ["Conclusão · quadrinho","hq","Abrir espaço do livro","Exportar","Biblioteca","Mesma tela","Deixa de existir"],
+ ["Canvas","bib","Organizar objetos","Dock","Estante","5 itens, 2 notas de exemplo","Manter"],
+ ["Estante · lista","bib","Abrir livro","Dock","Leitor","6 itens, inspetor à direita","Manter"],
+ ["Estante · 3D","bib","Abrir livro","Estante","Leitor","5 itens, prateleiras vazias","Manter como experimento declarado"]
+];
+const FLUXOS={entrada:"Entrada",doc:"Documento",lote:"Lote",hq:"Quadrinho",bib:"Biblioteca"};
+
+const ACH=[
+ [0,"Dois produtos sob uma marca só","Preparação e biblioteca não compartilham nenhum componente: navegação, busca, representação de conta, forma de dizer onde se está e acesso à ajuda são diferentes nos dois lados. Não é inconsistência de acabamento; são duas arquiteturas coexistindo.","todas as 26"],
+ [0,"O produto não tem casa","Nenhuma das 26 telas tem marca, logotipo ou caminho de volta ao início. O item de navegação mais próximo de uma casa é \"Como funciona\", que é conteúdo de apresentação.","todas as 26"],
+ [0,"O modo Guiado mostra a interface do Personalizado","Com \"Guiado\" ativo aparecem: como nomear arquivos, formato de saída, qualidade, orientação, resolução, compressão, contraste, brilho e modo mangá. O seletor não muda nada observável entre as telas.","preparação e conversão, os 3 fluxos"],
+ [0,"Duas etapas, uma tela só","Conversão do lote repete literalmente a tela de Preparação: mesmo título \"Configuração do lote\", mesmos três seletores, mesma lista de arquivos. Só muda a aba destacada e a barra de progresso.","lote · preparação e conversão"],
+ [0,"A decisão de formato chega depois do trabalho","Na conclusão do quadrinho o usuário escolhe entre CBZ, PDF e EPUB — depois de a conversão ter acontecido. Ou a escolha não tem efeito, ou obriga a refazer tudo.","quadrinho · exportar"],
+ [0,"O sistema declara uma ação que ninguém pediu","\"Enviando para o Kindle…\" aparece com o campo de e-mail vazio e sem nenhum botão de envio na tela. Não há CTA primário na tela de exportação.","documento e quadrinho · exportar"],
+ [0,"Tradução ligada por padrão","\"Traduzir esse documento?\" vem com Sim pré-selecionado e Português → Português. É a única pergunta com resposta pré-marcada no fluxo, e recai sobre a capacidade que o registro do projeto classifica como pendente de validação de qualidade.","documento · preparação"],
+ [0,"O lote promete independência e mostra o contrário","O texto diz \"cada arquivo segue o próprio pipeline e avança no seu ritmo\". Logo acima há uma única barra de etapas para os quatro arquivos, e um único botão que os move juntos.","lote · análise"],
+ [1,"Progresso invertido","A etapa em andamento fica embaixo, as futuras em cima, e os tempos decrescem de cima para baixo: 01:10, 01:00, 00:40, 00:20. Contraria a direção da barra de progresso que aparece nas outras telas.","documento e quadrinho · progresso"],
+ [1,"Sucesso e andamento na mesma tela","\"Finalizando arquivo — Em andamento\" convive com \"EPUB gerado com sucesso\" logo abaixo. Os dois estados não podem ser verdadeiros.","documento · conversão concluída"],
+ [1,"A tela de progresso perde o contexto","Some o cabeçalho do arquivo, somem as abas de etapa e some o seletor de modo. O usuário deixa de saber sobre o que está esperando.","documento e quadrinho · progresso"],
+ [1,"O erro de upload desaparece","\"Inviesados_pdf\" falha em 85% na Home, com barra vermelha. Na tela seguinte reaparece verde, concluído, e recebe botão de baixar. Nada reconcilia as duas versões.","home · envio → lote · preparação"],
+ [1,"Metadados em branco depois da análise","Título, autor e categoria vazios num arquivo que o sistema abriu, contou páginas e identificou o idioma. Nada é proposto para o usuário confirmar.","documento · preparação"],
+ [1,"Cinco miniaturas idênticas para escolher a capa","Rotuladas \"Capa (Pág 1)\", \"Página 2\", \"Página 3\", \"Página 3\", \"Página 3\". Três rótulos repetidos e nenhuma imagem que permita escolher.","documento e quadrinho · preparação"],
+ [1,"Escolha única com dois selecionados","\"Outro leitor\" e \"Personalizado\" aparecem marcados ao mesmo tempo na fileira de dispositivos de saída. A fileira é cortada à direita sem nenhuma indicação de que rola.","quadrinho · conversão"],
+ [1,"Títulos duplicados na mesma tela","\"Pré-visualização no leitor\" aparece duas vezes — a segunda sobre um bloco de parâmetros que não é pré-visualização. \"Escolha como enviar ao Kindle:\" também aparece duas vezes.","quadrinho · conversão; lote · exportar"],
+ [1,"A dock cobre o conteúdo","Na análise do quadrinho a barra flutuante tapa o primeiro problema encontrado — \"Arquivo de imagem corrompido\". Na preparação, tapa o centro do antes/depois.","quadrinho · análise e preparação"],
+ [1,"Números que não batem","119 páginas na análise e 120 na conclusão do mesmo arquivo. Cinco itens visíveis na Estante 3D e seis na lista. A fita \"24\" repetida em todas as capas, e \"24 notas\" no inspetor.","quadrinho; estante"],
+ [1,"Tema escuro pela metade","Busca, dock, botões de zoom, ajuda e sincronização permanecem claros no tema escuro. Os títulos dos cards ficam cinza-escuro sobre fundo escuro.","estante · escuro"],
+ [1,"A Estante 3D não comunica nada","Prateleiras cinza vazias e uma pilha de rótulos \"Livro\" fora do plano, à esquerda, sem relação visível com as prateleiras.","estante 3D, claro e escuro"],
+ [2,"O ícone de ver detalhes é um olho fechado","Um olho riscado significa esconder. O botão que ele acompanha revela.","todas as telas de fluxo"],
+ [2,"O ícone da etapa Conversão é um cifrão","Um símbolo de dinheiro numa etapa que não cobra nada.","todas as telas de fluxo"],
+ [2,"Duas caixas de sucesso diferentes","Uma sólida com borda verde, outra tracejada verde, para a mesma classe de mensagem.","documento · conversão concluída vs exportar"],
+ [2,"Maiúsculas e minúsculas inconsistentes","\"cancelar\" ao lado de \"Pausar\" e \"Ver log\"; \"96 Páginas\" e \"119 páginas\"; \"Cbz\", \"Pdf\", \"Epub para Kindle\".","conversão e exportar"],
+ [2,"Acentos ausentes no texto da interface","\"Automatico\", \"Compativel\", \"possivel\", \"Pre-visualizar\", e \"Sequênca Noturna\" numa capa.","preparação, conversão, estante"],
+ [2,"Dados de exemplo que não parecem reais","\"Enviesados_pdf\", \"Inviesados_pdf\", \"Another_pdf\", \"Another\". Na Estante, quatro capas diferentes com o mesmo título e o mesmo autor.","home, lote, estante"],
+ [2,"Breadcrumb decorativo dentro de um card","\"Mekora › Kindle › Serviço Amazon\" não navega para lugar nenhum e não descreve onde o usuário está.","documento e quadrinho · exportar"],
+ [2,"A marca de conclusão da barra não corresponde à etapa","O círculo com o visto para em posições que não batem com a aba destacada acima dele.","todas as telas de fluxo"],
+ [2,"Superfícies demais","Moldura tracejada, dentro dela um painel, dentro dele um card, dentro dele um item — três a quatro níveis de elevação para um conteúdo só, em quase todas as telas.","todas as telas de fluxo"],
+ [2,"Ilustração de conclusão genérica","Pessoa com laptop, sem relação com o arquivo, com o formato ou com o que aconteceu.","as 3 conclusões"],
+ [3,"O dossiê aparece do nada","\"O dossiê de pesquisa também está pronto\" na conclusão. Dossiê não apareceu em nenhum momento do fluxo.","as 3 conclusões"],
+ [3,"\"Motion\" sem função declarada","Botão fixo na barra da biblioteca, sem estado, sem destino visível.","canvas, estante"],
+ [3,"Estante 3D como modo de visualização","Vale como experimento; hoje entrega menos informação que a lista e ocupa o mesmo lugar hierárquico.","estante 3D"],
+ [3,"Tradução visual de quadrinhos","Fora desta rodada por decisão sua. Fica registrada como experimental e separada do fluxo útil de quadrinhos.","—"]
+];
+
+/* — inventário — */
+(function(){
+  const tb=document.querySelector("#tabinv tbody");
+  function pinta(f){
+    tb.innerHTML=INV.map(r=>{
+      if(f!=="tudo"&&r[1]!==f)return"";
+      return "<tr><td class=\"n\">"+r[0]+"</td><td>"+FLUXOS[r[1]]+"</td><td>"+r[2]+"</td><td>"+r[3]+
+        "</td><td>"+r[4]+"</td><td>"+r[5]+"</td><td>"+r[6]+"</td></tr>";
+    }).join("");
+  }
+  pinta("tudo");
+  document.querySelectorAll("[data-inv]").forEach(b=>b.addEventListener("click",()=>{
+    document.querySelectorAll("[data-inv]").forEach(o=>o.setAttribute("aria-pressed","false"));
+    b.setAttribute("aria-pressed","true");pinta(b.dataset.inv);
+  }));
+})();
+
+/* — galeria das capturas preservadas — */
+(function(){
+  const el=document.getElementById("galeria");if(!el)return;
+  const G=[["home-vazia","Home vazia"],["home-vazia-lote","Home vazia · lote"],["home-vazia-quadrinho","Home vazia · quadrinho"],
+    ["home-envio","Envio em curso"],["home-envio-lote","Envio em curso · variante"],
+    ["doc-preparacao","Doc · preparação"],["doc-conversao","Doc · progresso"],["doc-conversao-concluida","Doc · conversão concluída"],
+    ["doc-exportar","Doc · exportar"],["doc-conclusao","Doc · conclusão"],
+    ["lote-analise","Lote · análise"],["lote-preparacao","Lote · preparação"],["lote-conversao","Lote · conversão"],
+    ["lote-exportar","Lote · exportar"],["lote-conclusao","Lote · conclusão"],
+    ["hq-analise","HQ · análise"],["hq-preparacao","HQ · preparação"],["hq-conversao","HQ · conversão"],
+    ["hq-progresso","HQ · progresso"],["hq-exportar","HQ · exportar"],["hq-conclusao","HQ · conclusão"],
+    ["canvas","Canvas"],["estante-lista","Estante · lista"],["estante-lista-escuro","Estante · lista, escuro"],
+    ["estante-3d","Estante · 3D"],["estante-3d-escuro","Estante · 3D, escuro"]];
+  el.innerHTML=G.map(function(g){
+    return '<a href="telas-atuais/'+g[0]+'.png" target="_blank" rel="noopener" '+
+      'style="text-decoration:none;color:inherit;display:block">'+
+      '<img src="telas-atuais/'+g[0]+'.png" alt="'+g[1]+'" loading="lazy" '+
+      'style="display:block;width:100%;height:88px;object-fit:cover;object-position:top;'+
+      'border:1px solid var(--rule);border-radius:3px;background:#fff">'+
+      '<span style="display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.05em;'+
+      'text-transform:uppercase;color:var(--ink-3);margin-top:5px;line-height:1.35">'+g[1]+'</span></a>';
+  }).join("");
+})();
+
+/* — achados — */
+(function(){
+  const el=document.getElementById("listaachados");
+  function pinta(f){
+    el.innerHTML=ACH.map((a,i)=>{
+      if(f!=="tudo"&&String(a[0])!==f)return"";
+      return "<article class=\"ach\"><span class=\"p p"+a[0]+"\">P"+a[0]+"</span>"+
+        "<div class=\"cp\"><h4>"+(i+1)+". "+a[1]+"</h4><p>"+a[2]+"</p>"+
+        "<span class=\"onde\">observado em: "+a[3]+"</span></div>"+
+        "<a class=\"ir\" href=\"#s6\">ver proposta →</a></article>";
+    }).join("");
+  }
+  pinta("tudo");
+  document.querySelectorAll("[data-pri]").forEach(b=>b.addEventListener("click",()=>{
+    document.querySelectorAll("[data-pri]").forEach(o=>o.setAttribute("aria-pressed","false"));
+    b.setAttribute("aria-pressed","true");pinta(b.dataset.pri);
+  }));
+})();
+
+/* — tema — */
+(function(){
+  const b=document.getElementById("tema");const ordem=["sistema","claro","escuro"];let i=0;
+  b.addEventListener("click",()=>{
+    i=(i+1)%3;const m=ordem[i];
+    if(m==="sistema")document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme",m==="claro"?"light":"dark");
+    b.textContent="tema: "+m;
+  });
+})();
+
+/* — índice acompanha a rolagem — */
+(function(){
+  const links=[...document.querySelectorAll(".toc a")];
+  const alvos=links.map(l=>document.querySelector(l.getAttribute("href"))).filter(Boolean);
+  const io=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(!e.isIntersecting)return;
+      links.forEach(l=>l.classList.toggle("on",l.getAttribute("href")==="#"+e.target.id));
+    });
+  },{rootMargin:"-45% 0px -50% 0px"});
+  alvos.forEach(a=>io.observe(a));
+})();
+</script>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   PROTÓTIPO DAS TELAS PROPOSTAS
+   Tudo aqui é simulação. Nenhuma chamada de rede, nenhum
+   arquivo real, nenhuma porcentagem que o sistema não teria.
+   ══════════════════════════════════════════════════════════ */
+(function(){
+"use strict";
+const palco=document.getElementById("palco");
+const nota=document.getElementById("protonota");
+if(!palco)return;
+
+/* ── dados fictícios verossímeis ─────────────────────────── */
+const ARQ={
+  doc:{nome:"Leis universais de design.pdf",saida:"Leis universais de design.epub",fmt:"PDF",
+       tam:"12,8 MB",pgs:96,idioma:"Português",titulo:"Leis universais de design",
+       autor:"William Lidwell, Kritina Holden e Jill Butler"},
+  hq:{nome:"Vagabundo — volume 04.cbz",saida:"Vagabundo — volume 04.epub",fmt:"CBZ",
+      tam:"186 MB",pgs:120,idioma:"Japonês (romanizado)",titulo:"Vagabundo — volume 04",autor:"Takehiko Inoue"}
+};
+const LOTE=[
+  {n:"Leis universais de design.pdf",st:"pronto",d:"EPUB · 8,4 MB · sumário gerado"},
+  {n:"Padrões de leitura em tela.pdf",st:"indo",d:"Convertendo — 1 min 04 s"},
+  {n:"Anuário do design 2025.pdf",st:"pende",d:"Protegido por senha"},
+  {n:"Ensaios sobre forma.epub",st:"pronto",d:"EPUB · 2,1 MB · já era EPUB, só ajustei a capa"}
+];
+const PAGS=(function(){
+  const a=[];
+  for(let i=1;i<=120;i++){
+    const p={n:i,cor:false,dim:false,baixa:false,morta:false,dupla:false,capa:i===1};
+    if(i>=8&&i<=19)p.cor=true;
+    if([31,32,33,58,59].indexOf(i)>=0)p.dim=true;
+    if([76,101].indexOf(i)>=0)p.baixa=true;
+    if(i===87)p.morta=true;
+    if(i===44)p.dupla=true;
+    a.push(p);
+  }
+  return a;
+})();
+
+/* ── estado ──────────────────────────────────────────────── */
+const inicial={
+  cena:"mesa",lugar:"mesa",modo:"guiado",conta:true,
+  doc:{fase:"analise",feito:0,pendResolvida:false,pendMostrada:false,enviado:false,detalhes:false},
+  hq:{fase:"analise",feito:0,pend:{leitura:null,dupla:null},filtro:"todas",sel:[],mudancas:[]},
+  lote:{falhaAgrupada:false,linhas:JSON.parse(JSON.stringify(LOTE))},
+  folha:null,ajuda:null,perfil:"conta",coach:false,check:true,checkAberto:true,
+  manuais:0,aviso:null
+};
+let S=JSON.parse(JSON.stringify(inicial));
+let timer=null;
+
+function reset(cena){
+  clearInterval(timer);timer=null;
+  S=JSON.parse(JSON.stringify(inicial));
+  if(cena)aplicaCena(cena);
+  pinta();
+}
+function aplicaCena(c){
+  S.cena=c;S.folha=null;
+  if(c==="mesa-nova"){S.lugar="mesa";S.coach=false;S.check=false;}
+  else if(c==="sem-conta"){S.lugar="mesa";S.conta=false;S.coach=false;S.check=false;}
+  else if(c==="mesa"){S.lugar="mesa";}
+  else if(c==="doc"){S.lugar="item-doc";S.doc.fase="analise";}
+  else if(c==="lote"){S.lugar="item-lote";}
+  else if(c==="hq"){S.lugar="item-hq";S.hq.fase="analise";}
+  else if(c==="editor"){S.lugar="item-hq";S.hq.fase="analise";S.folha={t:"editor"};}
+  else if(c==="ajuda"){S.lugar="ajuda";}
+  else if(c==="perfil"){S.lugar="perfil";}
+  else if(c==="novidades"){S.lugar="novidades";}
+}
+const NOTAS={
+  "mesa-nova":"<b>Mesa, primeiro uso.</b> Sem hero de marketing, sem métricas. Uma zona de entrada e três linhas dizendo o que vai acontecer. Solte um arquivo (clique na zona) para ver o coachmark do primeiro item.",
+  "sem-conta":"<b>Sem conta — resposta 1.</b> Converter não exige conta, e a barra do topo não mostra lugares que não dá para usar. Solte um arquivo e vá até o fim: a conta é pedida no momento em que ela passa a fazer diferença, com o motivo escrito.",
+  "mesa":"<b>Mesa, uso recorrente.</b> Três grupos que somem quando vazios: precisa de você, em andamento, prontos. Clique em qualquer linha para abrir o item.",
+  "doc":"<b>Documento.</b> Análise e preparação fundidas numa tela só. Experimente: <i>Preparar com estas recomendações</i> → o processamento acontece aqui mesmo → aparece uma pendência real → conclusão. Troque para <i>Personalizado</i> no canto direito.",
+  "lote":"<b>Lote.</b> Cada arquivo tem estado e ação próprios; nenhuma barra única os força a andar juntos. Clique em <i>simular falha repetida</i> para ver o agrupamento de erro.",
+  "hq":"<b>Quadrinho.</b> 120 páginas, automatizadas. Duas pendências, uma de cada vez, com confiança contável — nunca porcentagem inventada. O editor manual não é etapa obrigatória.",
+  "editor":"<b>Editor manual / organização avançada.</b> A tela que já existia, reposicionada: filtros à esquerda, seleção múltipla, alterações contadas e reversíveis. Chega-se aqui por Personalizado, por <i>ver todas as páginas</i> ou por uma exceção específica.",
+  "ajuda":"<b>Ajuda e recursos.</b> Cinco grupos, resposta curta primeiro, e o onboarding pode ser revisto daqui.",
+  "perfil":"<b>Perfil.</b> Uma página só, com dobras. Preferências pessoais moram aqui; nada de páginas vazias para um ajuste.",
+  "novidades":"<b>Atualizações.</b> Changelog com quatro categorias. Serve principalmente para dizer, sem rodeio, o que ainda é instável."
+};
+
+/* ── utilitários ─────────────────────────────────────────── */
+const esc=s=>String(s).replace(/[&<>\"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+function sinal(k,ch){return '<span class="mk-sinal s-'+k+'">'+ch+'</span>';}
+
+/* ── topo ────────────────────────────────────────────────── */
+function topo(){
+  if(!S.conta){
+    /* Resposta 1: sem conta, a barra não exibe lugares que não dá para usar. */
+    return '<div class="mk-top">'+
+      '<button class="mk-marca" data-a="ir" data-v="mesa" title="Voltar ao início">Mekora</button>'+
+      '<span class="sp"></span>'+
+      '<button class="mk-lnk mudo" data-a="nada">Como funciona</button>'+
+      '<button class="mk-ic" data-a="ir" data-v="ajuda" title="Ajuda e recursos" aria-label="Ajuda e recursos">?</button>'+
+      '<button class="mk-btn sm sec" data-a="criar-conta">Entrar</button>'+
+      '</div>';
+  }
+  const lug=[["mesa","Mesa"],["estante","Estante"],["canvas","Canvas"],["conexoes","Conexões"]];
+  const atual=S.lugar.indexOf("item")===0?"mesa":(["ajuda","perfil","novidades"].indexOf(S.lugar)>=0?"":S.lugar);
+  return '<div class="mk-top">'+
+    '<button class="mk-marca" data-a="ir" data-v="mesa" title="Voltar à Mesa">Mekora</button>'+
+    '<div class="mk-lug">'+lug.map(l=>'<button data-a="ir" data-v="'+l[0]+'"'+
+      (atual===l[0]?' aria-current="true"':'')+'>'+l[1]+'</button>').join("")+'</div>'+
+    '<span class="sp"></span>'+
+    '<button class="mk-busca" data-a="nada"><span>⌕</span><span>Buscar em livros e arquivos</span></button>'+
+    '<button class="mk-ic" data-a="ir" data-v="ajuda" title="Ajuda e recursos" aria-label="Ajuda e recursos">?</button>'+
+    '<button class="mk-ic" data-a="menu-conta" aria-label="Conta"><span class="mk-ava">EA</span></button>'+
+    '</div>';
+}
+
+/* ── Mesa ────────────────────────────────────────────────── */
+function vMesaNova(){
+  return '<div class="mk-pad">'+
+    '<h1 style="margin:0 0 6px;font-size:23px;font-weight:650;letter-spacing:-.025em">Comece soltando um arquivo</h1>'+
+    '<p style="margin:0 0 24px;font-size:14px;color:var(--pink-2);max-width:56ch">'+
+      'O Mekora abre o arquivo, vê o que ele tem e prepara para leitura. Você confirma uma vez.'+
+      (S.conta?'':' <b style="font-weight:600;color:var(--pink)">Não é preciso ter conta para converter.</b>')+'</p>'+
+    '<button class="mk-drop" data-a="soltar" style="width:100%">'+
+      '<span class="tt">Solte um arquivo aqui</span>'+
+      '<span class="ds">ou clique para escolher no computador</span>'+
+      '<span class="fmts">PDF · EPUB · DOCX · CBZ · CBR · ZIP · imagens</span>'+
+    '</button>'+
+    '<div class="mk-passos">'+
+      '<div class="mk-passo"><b>Depois de soltar</b><span>Eu abro, conto as páginas e digo o que encontrei.</span></div>'+
+      '<div class="mk-passo"><b>Você confirma</b><span>Uma tela, uma lista, um botão. Só pergunto quando há dúvida real.</span></div>'+
+      '<div class="mk-passo"><b>No fim</b><span>Baixe o arquivo ou envie direto ao seu Kindle.</span></div>'+
+    '</div>'+
+  '</div>';
+}
+function vMesa(){
+  let h='<div class="mk-pad">'+
+    '<button class="mk-drop fina" data-a="soltar" style="width:100%;margin-bottom:28px">'+
+      '<span class="tt">Solte arquivos aqui</span>'+
+      '<span class="ds">ou clique para escolher · PDF, EPUB, DOCX, CBZ, CBR, ZIP</span>'+
+    '</button>';
+
+  h+='<div class="mk-grupo"><div class="cab"><h3>Precisa de você</h3><span class="ct">1</span></div>'+
+    item({nm:"Vagabundo — volume 04.cbz",st:"2 pendências · direção de leitura e página dupla",pt:"at",
+          acao:"Revisar",v:"item-hq"})+'</div>';
+
+  /* Resposta 2: o preparo roda no navegador. Nada continua depois que a aba fecha,
+     e a interface diz isso — inclusive mostrando o que ficou pelo caminho. */
+  h+='<div class="mk-grupo"><div class="cab"><h3>Em andamento nesta aba</h3><span class="ct">1</span>'+
+    '<span class="sp"></span><span class="ct">fechar a aba interrompe</span></div>'+
+    item({nm:"Padrões de leitura em tela.pdf",st:"Convertendo — 1 min 04 s",pt:"go",cap:"PDF",
+          acao:"Ver",v:"item-doc"})+
+    item({nm:"Compêndio do design 2024.pdf",st:"Interrompido quando a aba fechou, na página 38 de 210",pt:"er",cap:"PDF",
+          acao:"Selecionar de novo",v:"item-doc"})+'</div>';
+
+  h+='<div class="mk-grupo"><div class="cab"><h3>Prontos</h3><span class="ct">3</span><span class="sp"></span>'+
+    '<button class="mk-lnk mudo" data-a="ir" data-v="estante">Ver tudo na Estante →</button></div>'+
+    item({nm:"Leis universais de design.epub",st:"Enviado ao Kindle de Erik · hoje, 09:12",pt:"ok",acao:"Abrir",v:"item-doc"})+
+    item({nm:"Ensaios sobre forma.epub",st:"Baixado · ontem",pt:"ok",acao:"Abrir",v:"item-doc"})+
+    item({nm:"O detalhe de Flaubert.epub",st:"Na estante · 6 de agosto",pt:"ok",acao:"Abrir",v:"item-doc"})+
+    '</div>';
+  h+='</div>';
+  return h;
+}
+function item(o){
+  return '<button class="mk-item" data-a="ir" data-v="'+o.v+'">'+
+    '<span class="cap">'+(o.cap||(o.pt==="at"?"CBZ":"EPUB"))+'</span>'+
+    '<span><span class="nm">'+esc(o.nm)+'</span>'+
+      '<span class="st"><i class="mk-pt pt-'+o.pt+'"></i>'+esc(o.st)+'</span></span>'+
+    '<span class="dir"><span class="mk-lnk">'+o.acao+'</span></span></button>';
+}
+
+/* ── seletor de modo ─────────────────────────────────────── */
+function seletorModo(){
+  return '<button class="mk-modo" data-a="modo" title="Alternar entre Guiado e Personalizado">'+
+    (S.modo==="guiado"?'<b>Guiado</b> · trocar para Personalizado':'<b>Personalizado</b> · voltar ao Guiado')+
+    '</button>';
+}
+function cabItem(a,estado){
+  return '<button class="mk-volta" data-a="ir" data-v="mesa">‹ Mesa</button>'+
+    '<div class="mk-h"><div class="t"><h1>'+esc(a.nome)+'</h1>'+
+    '<div class="mk-metas"><span class="mk-meta">'+a.fmt+'</span><span class="mk-meta">'+a.tam+'</span>'+
+    '<span class="mk-meta">'+a.pgs+' páginas</span><span class="mk-meta">'+a.idioma+'</span></div></div>'+
+    seletorModo()+'</div>'+(estado||"");
+}
+function estado(k,t,p){
+  return '<div class="mk-estado '+(k||"")+'"><i class="pt"></i><div><h2>'+t+'</h2>'+
+    (p?'<p>'+p+'</p>':'')+'</div></div>';
+}
+/* ── item · documento ────────────────────────────────────── */
+function vDoc(){
+  const a=ARQ.doc,d=S.doc;
+  if(d.fase==="preparando")return docPreparando();
+  if(d.fase==="pronto")return docPronto();
+
+  let h='<div class="mk-pad">'+cabItem(a,
+    estado("","Analisado. Duas coisas mudam o resultado, e eu sei o que fazer com as duas.",
+      "Nada aqui bloqueia a preparação. Se você concordar, começo agora."));
+
+  h+='<div class="mk-sec"><h3>O que encontrei</h3><div class="mk-lista">'+
+    li("at","!","Texto em imagem","As 96 páginas são digitalizações. Sem reconhecimento de texto, o Kindle não busca palavras nem ajusta o tamanho da letra.","por quê","ajuda-ocr")+
+    li("at","!","Sumário sem links","Os títulos de capítulo existem no texto, mas não levam a lugar nenhum.","","")+
+    li("ok","✓","Nenhuma página corrompida","96 de 96 páginas abriram sem erro.","","")+
+    '</div></div>';
+
+  h+='<div class="mk-sec"><h3>O que vou fazer</h3><div class="mk-lista">'+
+    li("in","1","Reconhecer o texto em português","O idioma foi detectado no próprio arquivo.","","")+
+    li("in","2","Converter para EPUB","No EPUB o texto reflui: você muda o corpo da letra e o conteúdo se ajusta. Em PDF, não.","","")+
+    li("in","3","Gerar sumário navegável","A partir dos 14 títulos de capítulo encontrados.","","")+
+    li("in","4","Usar a página 1 como capa","É a única página do arquivo sem texto corrido.","alterar","capa")+
+    '</div></div>';
+
+  h+='<div class="mk-sec"><h3>Como vai aparecer na estante</h3><div class="mk-lista">'+
+    li("in","T","Título: "+esc(a.titulo),"Extraído das propriedades do arquivo.","alterar","meta")+
+    li("in","A","Autor: "+esc(a.autor),"Extraído das propriedades do arquivo.","alterar","meta")+
+    '</div></div>';
+
+  if(S.modo==="personalizado")h+=painelPersonalizado();
+
+  h+='<div class="mk-acoes"><button class="mk-btn" data-a="doc-preparar">Preparar com estas recomendações</button>'+
+    '<button class="mk-lnk mudo" data-a="modo">Ajustar manualmente</button></div>'+
+    '<div class="mk-nota"><span>◆</span><div>O preparo acontece aqui, no seu navegador. Você pode circular pelo Mekora enquanto isso, '+
+      'mas <b>manter esta aba aberta</b> — se ela fechar, o preparo para onde estava.</div></div>';
+  return h+'</div>';
+}
+function li(k,ch,t,d,acao,v){
+  return '<div class="mk-li">'+sinal(k,ch)+'<span class="tx"><b>'+t+'</b>'+(d?'<span>'+d+'</span>':'')+'</span>'+
+    (acao?'<button class="ac" data-a="li" data-v="'+v+'">'+acao+'</button>':'<span></span>')+'</div>';
+}
+function docPreparando(){
+  const a=ARQ.doc,f=S.doc.feito;
+  const etapas=[["Analisar",true],["Reconhecer o texto",f<96],["Converter para EPUB",false],
+                ["Gerar sumário",false],["Montar a capa",false]];
+  let h='<div class="mk-pad">'+cabItem(a,
+    estado("","Preparando — reconhecendo o texto","Sei contar esta etapa porque ela é página a página. As seguintes eu não sei contar, então mostro o tempo, não uma barra."));
+  h+='<div class="mk-sec"><div class="mk-prog"><div class="mk-trilho"><i style="width:'+Math.round(f/96*100)+'%"></i></div>'+
+    '<div class="leg"><span><b>'+f+' de 96 páginas</b> reconhecidas</span><span class="mn">'+
+    Math.floor(f/16)+' MIN '+String(Math.floor(f*1.7)%60).padStart(2,"0")+' S DECORRIDOS</span></div></div>'+
+    '<div class="mk-etapas">'+etapas.map(function(e,i){
+      const cls=i===0?"feita":(i===1&&f<96?"agora":"");
+      return '<div class="mk-etapa '+cls+'"><span class="mrk">'+(i===0?"✓":(i===1?"●":"○"))+'</span>'+e[0]+
+        (i===1?' <span style="color:var(--pink-3);font-weight:400">— página '+f+'</span>':'')+'</div>';
+    }).join("")+'</div></div>';
+  h+='<div class="mk-acoes"><button class="mk-btn sec" data-a="doc-cancelar">Cancelar preparação</button>'+
+    '<button class="mk-lnk mudo" data-a="ir" data-v="mesa">Continuar navegando no Mekora</button></div>';
+  h+='<div class="mk-nota"><span>◆</span><div><b>Honestidade:</b> nenhuma porcentagem aparece para etapas que não avançam linearmente. A barra acima conta páginas de verdade.</div></div>';
+  h+='<div class="mk-nota" style="background:var(--warn-soft);border-color:#f0e0c2"><span>◆</span><div>'+
+    'O trabalho roda nesta aba. Trocar de tela dentro do Mekora não atrapalha; <b>fechar a aba interrompe</b> na página '+f+
+    ' e o arquivo precisa ser selecionado de novo.</div></div>';
+  return h+'</div>';
+}
+function docPronto(){
+  const a=ARQ.doc,d=S.doc;
+  let h='<div class="mk-pad">'+cabItem(a,
+    estado("ok","Pronto. "+a.saida+" · 8,4 MB",
+      d.pendResolvida?"Três páginas ficaram sem reconhecimento de texto, como você decidiu. O resto está completo.":"96 páginas reconhecidas, sumário com 14 capítulos, capa montada."));
+
+  if(d.enviado){
+    h+='<div class="mk-estado ok" style="margin-top:-8px"><i class="pt"></i><div><h2>Enviado ao Kindle de Erik</h2>'+
+      '<p>A Amazon aceitou o arquivo às 09:12. Costuma aparecer no aparelho em poucos minutos, quando ele estiver conectado.</p></div></div>';
+  }
+
+  if(!S.conta){
+    /* Resposta 1: a conta é pedida aqui, com o motivo escrito, e nunca antes de converter. */
+    h+='<div class="mk-acoes"><button class="mk-btn" data-a="baixar">Baixar EPUB</button>'+
+      '<button class="mk-btn sec" data-a="abrir-envio">Enviar ao Kindle</button></div>'+
+      '<div class="mk-painel" style="margin-top:28px"><h4>Guardar este arquivo</h4>'+
+      '<p style="margin:0 0 14px;font-size:13px;color:var(--pink-2);line-height:1.55;max-width:58ch">'+
+        'Você já tem o arquivo — converter não exige conta e não vai exigir. A conta serve para o que vem depois: '+
+        'guardar o que você preparou, lembrar o endereço do seu Kindle e deixar você retomar de onde parou.</p>'+
+      '<div class="mk-lista" style="background:var(--bg)">'+
+        li("in","1","Estante, Canvas e Conexões","Só existem com conta: são o seu acervo, e ele precisa de um dono.","","")+
+        li("in","2","O seu Kindle fica salvo","Sem conta, o endereço é digitado a cada envio.","","")+
+        li("in","3","Sem conta, esta aba é tudo","Ao fechá-la, o histórico desta sessão some. O arquivo baixado continua seu.","","")+
+      '</div>'+
+      '<div class="mk-acoes" style="margin-top:16px"><button class="mk-btn" data-a="criar-conta">Criar conta</button>'+
+      '<button class="mk-lnk mudo" data-a="soltar">Preparar outro arquivo sem conta</button></div></div>';
+    return h+docDetalhes()+'</div>';
+  }
+  h+='<div class="mk-acoes">'+
+    (d.enviado?'<button class="mk-btn sec" data-a="baixar">Baixar EPUB</button>':
+      '<button class="mk-btn" data-a="abrir-envio">Enviar ao Kindle de Erik</button>'+
+      '<button class="mk-btn sec" data-a="baixar">Baixar EPUB</button>')+
+    '<button class="mk-lnk mudo" data-a="ir" data-v="estante">Abrir na estante</button></div>';
+
+  return h+docDetalhes()+'</div>';
+}
+function docDetalhes(){
+  let h='<div class="mk-sec" style="margin-top:28px"><button class="mk-lnk" data-a="detalhes">'+
+    (S.doc.detalhes?"▾":"▸")+' O que foi feito neste arquivo</button>';
+  if(S.doc.detalhes){
+    h+='<div class="mk-lista" style="margin-top:10px">'+
+      li("ok","✓","Texto reconhecido em 93 das 96 páginas","Três páginas eram fotografias sem texto legível.","","")+
+      li("ok","✓","Convertido de PDF para EPUB","Original preservado; nada foi apagado.","desfazer","undo")+
+      li("ok","✓","Sumário navegável com 14 capítulos","","desfazer","undo")+
+      li("ok","✓","Capa: página 1","","alterar","capa")+
+      li("ok","✓","Título e autor confirmados","Como estavam nas propriedades do arquivo.","alterar","meta")+
+      '</div>';
+  }
+  return h+'</div>';
+}
+function painelPersonalizado(){
+  return '<div class="mk-painel"><h4>Personalizado — as decisões automáticas foram preservadas</h4>'+
+    '<p style="margin:0 0 14px;font-size:12.5px;color:var(--pink-2);line-height:1.5">'+
+      'Nenhum campo nasce vazio. Tudo abaixo já está preenchido com o que o Guiado teria feito; ajuste só o que quiser.</p>'+
+    '<div class="mk-lin"><div class="tx"><b>Formato de saída</b><span>EPUB — escolhido porque o arquivo é texto corrido</span></div>'+
+      '<button class="mk-btn sm sec" data-a="manual">Alterar</button></div>'+
+    '<div class="mk-lin"><div class="tx"><b>Qualidade das imagens</b><span>Equilibrada — 300 PPI nas figuras, sem recompressão do texto</span></div>'+
+      '<button class="mk-btn sm sec" data-a="manual">Alterar</button></div>'+
+    '<div class="mk-lin"><div class="tx"><b>Nome do arquivo final</b><span>Derivado do original</span></div>'+
+      '<button class="mk-btn sm sec" data-a="manual">Alterar</button></div>'+
+    '<div class="mk-lin"><div class="tx"><b>Traduzir</b><span>Desligado. <b style="color:var(--warn2)">Experimental</b> — a qualidade ainda não foi validada.</span></div>'+
+      '<button class="mk-sw" data-a="manual" aria-pressed="false" aria-label="Traduzir"><i></i></button></div>'+
+    (S.manuais>0?'<div class="mk-nota" style="margin-top:14px"><span>◆</span><div>'+S.manuais+
+      ' ajuste'+(S.manuais>1?"s":"")+' manual'+(S.manuais>1?"is":"")+
+      '. Ao voltar ao Guiado eu pergunto o que fazer com '+(S.manuais>1?"eles":"ele")+' — nada é descartado em silêncio.</div></div>':'')+
+    '</div>';
+}
+
+/* ── item · lote ─────────────────────────────────────────── */
+function vLote(){
+  const L=S.lote.linhas;
+  const prontos=L.filter(function(l){return l.st==="pronto";}).length;
+  const indo=L.filter(function(l){return l.st==="indo";}).length;
+  const pende=L.filter(function(l){return l.st==="pende";}).length;
+
+  let h='<div class="mk-pad larga">'+
+    '<button class="mk-volta" data-a="ir" data-v="mesa">‹ Mesa</button>'+
+    '<div class="mk-h"><div class="t"><h1>Lote de '+L.length+' arquivos</h1>'+
+      '<div class="mk-metas"><span class="mk-meta">221,5 MB</span><span class="mk-meta">PDF · EPUB</span>'+
+      '<span class="mk-meta">iniciado às 08:54</span></div></div>'+seletorModo()+'</div>'+
+    estado(pende?"at":"", prontos+" prontos · "+indo+" preparando · "+pende+" precisa de você",
+      "Cada arquivo segue o próprio caminho. Um problema em um deles não segura os outros — e isto aqui é a interface dizendo a mesma coisa que o texto.");
+
+  h+='<div class="mk-sec"><div class="mk-lista">';
+  L.forEach(function(l,i){
+    const mapa={pronto:["ok","✓"],indo:["in","●"],pende:["at","!"],falhou:["er","✕"]};
+    const m=mapa[l.st];
+    let acao="";
+    if(l.st==="pronto")acao='<button class="ac" data-a="lote-abrir" data-v="'+i+'">Enviar</button>';
+    else if(l.st==="pende")acao='<button class="ac" data-a="lote-senha" data-v="'+i+'">Informar senha</button>';
+    else if(l.st==="falhou")acao='<button class="ac" data-a="lote-senha" data-v="'+i+'">Resolver</button>';
+    else acao='<span style="font-size:12px;color:var(--pink-3)">em curso</span>';
+    h+='<div class="mk-li">'+sinal(m[0],m[1])+'<span class="tx"><b>'+esc(l.n)+'</b><span>'+esc(l.d)+'</span></span>'+acao+'</div>';
+  });
+  h+='</div></div>';
+
+  if(S.lote.falhaAgrupada){
+    h+='<div class="mk-sec"><div class="mk-estado at"><i class="pt"></i><div>'+
+      '<h2>2 arquivos falharam pelo mesmo motivo</h2>'+
+      '<p>Anuário do design 2025.pdf e Compêndio 2024.pdf estão protegidos por senha. Informe uma vez e eu tento nos dois.</p>'+
+      '<div class="mk-acoes" style="margin-top:14px"><button class="mk-btn sm" data-a="lote-senha" data-v="0">Informar a senha</button>'+
+      '<button class="mk-lnk mudo" data-a="lote-seguir">Seguir sem eles</button></div></div></div></div>';
+  }
+
+  h+='<div class="mk-acoes"><button class="mk-btn" data-a="abrir-envio">Enviar os '+prontos+' prontos ao Kindle</button>'+
+    '<button class="mk-btn sec" data-a="baixar">Baixar tudo (.zip)</button>'+
+    (S.lote.falhaAgrupada?'':'<button class="mk-lnk mudo" data-a="lote-falha">simular falha repetida</button>')+
+    '</div>';
+  h+='<div class="mk-nota"><span>◆</span><div><b>O que sumiu daqui:</b> a barra única de etapas, as abas Análise/Preparação/Conversão/Exportar e o painel "Configuração do lote". Nenhuma delas descrevia o que estava acontecendo com um arquivo específico.</div></div>';
+  return h+'</div>';
+}
+
+/* ── item · quadrinho ────────────────────────────────────── */
+function vHQ(){
+  const a=ARQ.hq,q=S.hq;
+  if(q.fase==="preparando")return hqPreparando();
+  if(q.fase==="pronto")return hqPronto();
+  const pend=[];
+  if(q.pend.leitura===null)pend.push(["leitura","Direção de leitura"]);
+  if(q.pend.dupla===null)pend.push(["dupla","Possível página dupla"]);
+
+  let h='<div class="mk-pad">'+cabItem(a,
+    estado(pend.length?"at":"ok","120 páginas analisadas. "+(pend.length?pend.length+" coisas precisam de você.":"Nada mais precisa de você."),
+      "Ordenei as páginas, identifiquei a capa, separei as coloridas e marquei o que está fora do padrão. Você não precisa abrir página por página."));
+
+  h+='<div class="mk-sec"><h3>O que encontrei</h3><div class="mk-lista">'+
+    li("er","✕","1 imagem corrompida — página 87","Não abre em nenhum leitor. Vou deixá-la de fora e registrar a falha no arquivo final.","ver","editor")+
+    li("at","!","5 páginas com dimensões diferentes","31 a 33, 58 e 59 são mais estreitas. Vou igualar pela largura das outras 115.","ver","editor")+
+    li("at","!","2 páginas com resolução baixa","76 e 101 estão abaixo de 1300 px de altura. Vou mantê-las como estão — ampliar deixaria pior.","ver","editor")+
+    li("ok","✓","12 páginas coloridas — 8 a 19","Preservadas em cor; o resto vai em tons de cinza, que é o que o aparelho mostra.","","")+
+    '</div></div>';
+
+  h+='<div class="mk-sec"><h3>O que vou fazer</h3><div class="mk-lista">'+
+    li("in","1","Ordenar pelas numerações do arquivo","118 das 120 páginas têm número no nome; as duas restantes entraram pela posição.","","")+
+    li("in","2","Usar a página 1 como capa","É a única com proporção de capa e sem numeração.","alterar","editor")+
+    li("in","3","Preparar para o Kindle Paperwhite","1236 × 1680 · 300 PPI. É o aparelho salvo no seu perfil.","alterar","disp")+
+    li("in","4","Cortar as margens brancas","Ganha cerca de 8% de área útil de leitura.","","")+
+    '</div></div>';
+
+  if(pend.length){
+    h+='<div class="mk-sec"><h3>Precisa de você — '+pend.length+'</h3><div class="mk-pend">'+
+      pend.map(function(p){return '<button class="mk-pendbtn" data-a="pend" data-v="'+p[0]+'">'+
+        '<span class="n">'+(p[0]==="leitura"?"1":"2")+'</span>'+p[1]+' →</button>';}).join("")+'</div></div>';
+  }else{
+    h+='<div class="mk-sec"><h3>Resolvido por você</h3><div class="mk-lista">'+
+      li("ok","✓","Direção de leitura: "+(q.pend.leitura==="dir"?"direita para a esquerda":"esquerda para a direita"),"","alterar","leitura")+
+      li("ok","✓","Páginas 44 e 45: "+(q.pend.dupla==="manter"?"mantidas como página dupla":"tratadas como duas páginas"),"","alterar","dupla")+
+      '</div></div>';
+  }
+
+  if(S.modo==="personalizado")h+=painelPersonalizadoHQ();
+
+  h+='<div class="mk-acoes">'+
+    (pend.length?'<button class="mk-btn" data-a="pend" data-v="'+pend[0][0]+'">Revisar '+pend.length+' pendência'+(pend.length>1?"s":"")+'</button>'+
+       '<button class="mk-btn sec" data-a="hq-preparar">Preparar assim mesmo</button>':
+     '<button class="mk-btn" data-a="hq-preparar">Preparar com estas recomendações</button>')+
+    '<button class="mk-lnk mudo" data-a="li" data-v="editor">Ver todas as 120 páginas</button></div>';
+  return h+'</div>';
+}
+function painelPersonalizadoHQ(){
+  return '<div class="mk-painel"><h4>Personalizado — as decisões automáticas foram preservadas</h4>'+
+    '<div class="mk-lin"><div class="tx"><b>Aparelho de saída</b><span>Kindle Paperwhite · 1236 × 1680 · 300 PPI</span></div>'+
+      '<button class="mk-btn sm sec" data-a="manual">Alterar</button></div>'+
+    '<div class="mk-lin"><div class="tx"><b>Modo mangá</b><span>Ligado — consequência da direção de leitura confirmada</span></div>'+
+      '<button class="mk-sw" data-a="manual" aria-pressed="true" aria-label="Modo mangá"><i></i></button></div>'+
+    '<div class="mk-lin"><div class="tx"><b>Preencher a tela</b><span>Ligado — corta margens brancas até a borda</span></div>'+
+      '<button class="mk-sw" data-a="manual" aria-pressed="true" aria-label="Preencher a tela"><i></i></button></div>'+
+    '<div class="mk-lin"><div class="tx"><b>Contraste e brilho</b><span>Automático por página. Ajuste manual abre o editor.</span></div>'+
+      '<button class="mk-btn sm sec" data-a="li" data-v="editor">Abrir editor</button></div>'+
+    '<div class="mk-lin"><div class="tx"><b>Organização das páginas</b><span>120 páginas ordenadas automaticamente</span></div>'+
+      '<button class="mk-btn sm sec" data-a="li" data-v="editor">Organizar</button></div>'+
+    '</div>';
+}
+function hqPreparando(){
+  const f=S.hq.feito;
+  let h='<div class="mk-pad">'+cabItem(ARQ.hq,
+    estado("","Preparando — redimensionando as páginas","Esta etapa é contável: cada página é uma imagem. As seguintes — compactar e fechar o arquivo — não são, e por isso não ganham barra."));
+  h+='<div class="mk-sec"><div class="mk-prog"><div class="mk-trilho"><i style="width:'+Math.round(f/119*100)+'%"></i></div>'+
+    '<div class="leg"><span><b>'+f+' de 119 páginas</b> preparadas</span>'+
+    '<span class="mn">1 CORROMPIDA, DEIXADA DE FORA</span></div></div>'+
+    '<div class="mk-etapas">'+
+      '<div class="mk-etapa feita"><span class="mrk">✓</span>Ordenar as páginas</div>'+
+      '<div class="mk-etapa feita"><span class="mrk">✓</span>Aplicar os cortes de margem</div>'+
+      '<div class="mk-etapa agora"><span class="mrk">●</span>Redimensionar para o Paperwhite</div>'+
+      '<div class="mk-etapa"><span class="mrk">○</span>Compactar</div>'+
+      '<div class="mk-etapa"><span class="mrk">○</span>Fechar o arquivo final</div>'+
+    '</div></div>';
+  h+='<div class="mk-acoes"><button class="mk-btn sec" data-a="hq-cancelar">Cancelar</button>'+
+    '<button class="mk-lnk mudo" data-a="ir" data-v="mesa">Continuar navegando no Mekora</button></div>';
+  h+='<div class="mk-nota" style="background:var(--warn-soft);border-color:#f0e0c2"><span>◆</span><div>'+
+    '186 MB de imagens sendo preparadas nesta aba. <b>Fechar a aba interrompe</b> — e num quadrinho isso custa mais que num documento.</div></div>';
+  return h+'</div>';
+}
+function hqPronto(){
+  const q=S.hq;
+  let h='<div class="mk-pad">'+cabItem(ARQ.hq,
+    estado("ok","Pronto. "+ARQ.hq.saida+" · 94 MB","119 páginas preparadas para o Paperwhite. A página 87 ficou de fora porque a imagem está corrompida."));
+  h+='<div class="mk-acoes"><button class="mk-btn" data-a="abrir-envio">Enviar ao Kindle de Erik</button>'+
+    '<button class="mk-btn sec" data-a="baixar">Baixar</button>'+
+    '<button class="mk-lnk mudo" data-a="ir" data-v="estante">Abrir na estante</button></div>';
+  h+='<div class="mk-sec" style="margin-top:28px"><h3>O que foi feito</h3><div class="mk-lista">'+
+    li("ok","✓","Leitura da direita para a esquerda","Confirmado por você.","","")+
+    li("ok","✓","Páginas 44 e 45 "+(q.pend.dupla==="manter"?"mantidas como página dupla":"tratadas como duas páginas separadas"),"Confirmado por você.","desfazer","undo")+
+    li("ok","✓","5 páginas igualadas em largura","31 a 33, 58 e 59.","desfazer","undo")+
+    li("ok","✓","12 páginas coloridas preservadas","","","")+
+    li("er","✕","Página 87 removida","Imagem corrompida. O arquivo final tem 119 páginas.","","")+
+    '</div></div>';
+  return h+'</div>';
+}
+
+/* ── ajuda ───────────────────────────────────────────────── */
+const AJUDA={
+  "Começando":["Primeiros passos","Guiado e Personalizado","Meu primeiro lote","Meu primeiro quadrinho","Enviar ao Kindle"],
+  "Formatos":["PDF","DOCX","EPUB","CBZ e CBR","ZIP e imagens soltas"],
+  "Entenda o processo":["O que é reconhecimento de texto","O que a conversão muda","Como funciona o lote","Por que não mostramos porcentagem","Preparação para o aparelho"],
+  "Resolver problemas":["O arquivo não abre","O texto ficou errado","A capa não apareceu","Não chegou no Kindle","Páginas fora de ordem"],
+  "Recursos avançados":["Editor manual de páginas","Personalizado","Tradução (experimental)","O que ainda é instável"]
+};
+const RESP={
+  "Por que não mostramos porcentagem":["Porque na maior parte das etapas ela seria inventada.",
+    "Converter um livro não avança de forma linear: reconhecer texto leva tempo por página, mas compactar o arquivo acontece de uma vez. Uma barra que somasse as duas coisas mostraria um número que não corresponde a nada.\n\nO que mostramos: a etapa em que estamos, o tempo decorrido e — quando a etapa é contável — quantas páginas já ficaram prontas."],
+  "Guiado e Personalizado":["No Guiado você confirma. No Personalizado você ajusta.",
+    "O Guiado analisa o arquivo, decide o que fazer e mostra a decisão em texto. Não há seletores.\n\nAo trocar para Personalizado, todos os campos já vêm preenchidos com o que o Guiado teria feito — nada nasce vazio. Se você voltar ao Guiado depois de mexer, perguntamos o que fazer com as suas alterações."],
+  "Tradução (experimental)":["Está disponível, e a qualidade ainda não foi validada.",
+    "A tradução funciona, mas não passou por avaliação de qualidade. Por isso ela vem desligada, aparece só no modo Personalizado e é marcada como experimental em Atualizações.\n\nSe você usar, compare o resultado antes de enviar ao aparelho."]
+};
+function vAjuda(){
+  if(S.ajuda){
+    const r=RESP[S.ajuda]||["Resposta curta primeiro, detalhe depois.",
+      "Este artigo é um exemplo da estrutura: uma frase que resolve, um parágrafo que explica e um caminho para quem continuou com problema."];
+    return '<div class="mk-pad">'+
+      '<button class="mk-volta" data-a="ir" data-v="ajuda">‹ Ajuda e recursos</button>'+
+      '<h1 style="margin:0 0 12px;font-size:21px;font-weight:650;letter-spacing:-.02em">'+esc(S.ajuda)+'</h1>'+
+      '<p style="margin:0 0 16px;font-size:16px;line-height:1.5;font-weight:600">'+esc(r[0])+'</p>'+
+      '<p style="margin:0;font-size:14px;line-height:1.65;color:var(--pink-2);white-space:pre-line;max-width:62ch">'+esc(r[1])+'</p>'+
+      '<div class="mk-nota" style="margin-top:24px"><span>◆</span><div>Continuou com problema? <b>Abrir o arquivo em questão</b> costuma resolver mais rápido do que ler: a tela do item mostra o que aconteceu com ele.</div></div>'+
+      '</div>';
+  }
+  let h='<div class="mk-pad larga">'+
+    '<h1 style="margin:0 0 6px;font-size:23px;font-weight:650;letter-spacing:-.025em">Ajuda e recursos</h1>'+
+    '<p style="margin:0 0 20px;font-size:14px;color:var(--pink-2)">Resposta curta primeiro. Detalhe só para quem precisar.</p>'+
+    '<button class="mk-busca" data-a="nada" style="max-width:none;width:100%;height:38px;margin-bottom:24px">'+
+      '<span>⌕</span><span>Buscar na ajuda — ex.: "não chegou no Kindle"</span></button>'+
+    '<div class="mk-cols">';
+  Object.keys(AJUDA).forEach(function(g){
+    h+='<div class="mk-cx"><h4>'+g+'</h4><ul>'+AJUDA[g].map(function(t){
+      return '<li><button data-a="artigo" data-v="'+esc(t)+'">'+esc(t)+'</button></li>';}).join("")+'</ul></div>';
+  });
+  h+='</div>'+
+    '<div class="mk-nota"><span>◆</span><div><b>Rever o onboarding:</b> as dicas de primeiro uso podem ser reativadas aqui, sem apagar nada do seu trabalho. '+
+    '<button class="mk-lnk" data-a="rever-onb">Mostrar as dicas de novo</button></div></div>';
+  return h+'</div>';
+}
+
+/* ── perfil ──────────────────────────────────────────────── */
+function vPerfil(){
+  const dobras=[
+    ["conta","Conta","erik@exemplo.com · entrou em julho de 2026",
+      '<div class="mk-lin"><div class="tx"><b>Nome</b><span>Erik Abner</span></div><button class="mk-btn sm sec" data-a="manual">Alterar</button></div>'+
+      '<div class="mk-lin"><div class="tx"><b>E-mail</b><span>erik@exemplo.com</span></div><button class="mk-btn sm sec" data-a="manual">Alterar</button></div>'+
+      '<div class="mk-lin"><div class="tx"><b>Senha</b><span>Alterada em 2 de agosto</span></div><button class="mk-btn sm sec" data-a="manual">Alterar</button></div>'],
+    ["disp","Dispositivos Kindle","1 aparelho salvo · Paperwhite",
+      '<div class="mk-lin"><div class="tx"><b>Kindle de Erik</b><span>Paperwhite · 1236 × 1680 · erik_abc@kindle.com</span></div>'+
+        '<span class="mk-tag t-mel">padrão</span></div>'+
+      '<div class="mk-lin"><div class="tx"><b>Adicionar aparelho</b><span>Precisa do endereço @kindle.com e de autorizar o remetente na Amazon</span></div>'+
+        '<button class="mk-btn sm sec" data-a="manual">Adicionar</button></div>'+
+      '<div class="mk-nota" style="margin-top:4px"><span>◆</span><div>É este aparelho que define o tamanho das páginas nos quadrinhos. Trocar aqui muda a recomendação nos próximos arquivos.</div></div>'],
+    ["pref","Preferências","Modo padrão, downloads e movimento",
+      '<div class="mk-lin"><div class="tx"><b>Modo padrão ao abrir um arquivo</b><span>Guiado</span></div><button class="mk-btn sm sec" data-a="manual">Alterar</button></div>'+
+      '<div class="mk-lin"><div class="tx"><b>Baixar automaticamente quando ficar pronto</b><span>Desligado</span></div>'+
+        '<button class="mk-sw" data-a="manual" aria-pressed="false" aria-label="Baixar automaticamente"><i></i></button></div>'+
+      '<div class="mk-lin"><div class="tx"><b>Reduzir movimento</b><span>Segue a preferência do sistema</span></div>'+
+        '<button class="mk-sw" data-a="manual" aria-pressed="false" aria-label="Reduzir movimento"><i></i></button></div>'],
+    ["priv","Privacidade","O que fica guardado e por quanto tempo",
+      '<div class="mk-lin"><div class="tx"><b>Arquivos originais</b><span>Apagados 24 horas depois de preparados. O resultado fica na sua estante.</span></div>'+
+        '<button class="mk-btn sm sec" data-a="manual">Alterar</button></div>'+
+      '<div class="mk-lin"><div class="tx"><b>Baixar meus dados</b><span>Estante, notas e histórico de preparação</span></div>'+
+        '<button class="mk-btn sm sec" data-a="manual">Baixar</button></div>'+
+      '<div class="mk-lin"><div class="tx"><b>Apagar a conta</b><span>Irreversível. Pedimos confirmação por e-mail antes.</span></div>'+
+        '<button class="mk-btn sm sec" data-a="manual">Apagar</button></div>']
+  ];
+  let h='<div class="mk-pad">'+
+    '<div style="display:flex;align-items:center;gap:16px;margin-bottom:24px">'+
+      '<span class="mk-ava" style="width:52px;height:52px;font-size:18px">EA</span>'+
+      '<div><h1 style="margin:0;font-size:21px;font-weight:650;letter-spacing:-.02em">Erik Abner</h1>'+
+      '<p style="margin:3px 0 0;font-size:13px;color:var(--pink-2)">erik@exemplo.com · 34 itens na estante</p></div></div>';
+  dobras.forEach(function(d){
+    const ab=S.perfil===d[0];
+    h+='<div class="mk-dobra"><button data-a="dobra" data-v="'+d[0]+'" aria-expanded="'+ab+'">'+
+      '<span><span class="nm">'+d[1]+'</span><span class="rs">'+d[2]+'</span></span><span class="ch">'+(ab?"▾":"▸")+'</span></button>'+
+      (ab?'<div class="in">'+d[3]+'</div>':'')+'</div>';
+  });
+  h+='<div class="mk-nota"><span>◆</span><div><b>Não existe uma área de Configurações.</b> O que tem contexto mora onde o efeito acontece; o que não tem mora aqui. É a mesma regra do caderno 02.</div></div>';
+  return h+'</div>';
+}
+
+/* ── atualizações ────────────────────────────────────────── */
+function vNovidades(){
+  const N=[
+    ["exp","Experimental","Tradução de quadrinhos","Detecta os balões, lê o texto e recompõe traduzido. Funciona em páginas simples e erra em arte densa. Fica no Personalizado, desligada por padrão, e não entra no fluxo guiado enquanto a qualidade não for validada."],
+    ["novo","Novo","Pendências em vez de configuração","Quando há dúvida real — página dupla, direção de leitura — aparece uma pendência com a recomendação e o motivo. Quando não há, não aparece nada."],
+    ["novo","Novo","A Mesa","Um lugar onde o trabalho em curso continua existindo depois que você fecha a aba."],
+    ["mel","Melhorado","Progresso honesto","Barra só onde há o que contar. Nas outras etapas, a etapa e o tempo decorrido."],
+    ["mel","Melhorado","Editor manual de páginas","Filtros por tipo de problema, seleção múltipla e contagem de alterações reversíveis."],
+    ["cor","Corrigido","O erro de envio não desaparece mais","Um arquivo que falhou no upload continua marcado como falho até você resolver."],
+    ["cor","Corrigido","Contagem de páginas consistente","A análise e a conclusão passaram a ler o mesmo número."]
+  ];
+  const rot={novo:"Novo",mel:"Melhorado",cor:"Corrigido",exp:"Experimental"};
+  let h='<div class="mk-pad">'+
+    '<h1 style="margin:0 0 6px;font-size:23px;font-weight:650;letter-spacing:-.025em">Atualizações</h1>'+
+    '<p style="margin:0 0 24px;font-size:14px;color:var(--pink-2);max-width:56ch">'+
+      'O que mudou, e principalmente o que ainda não é confiável. Um recurso marcado como experimental pode mudar ou sair.</p>'+
+    '<p style="font-family:var(--mn);font-size:10px;letter-spacing:.09em;color:var(--pink-3);margin-bottom:12px">12 DE AGOSTO DE 2026</p>'+
+    '<div class="mk-lista">';
+  N.forEach(function(n){
+    h+='<div class="mk-li"><span class="mk-tag t-'+n[0]+'">'+rot[n[0]]+'</span>'+
+      '<span class="tx"><b>'+n[2]+'</b><span>'+n[3]+'</span></span>'+
+      (n[0]==="exp"?'<button class="ac" data-a="artigo" data-v="Tradução (experimental)">entender</button>':'<span></span>')+'</div>';
+  });
+  h+='</div><div class="mk-nota"><span>◆</span><div>Esta é a página que torna a honestidade visível: um recurso instável precisa ter um lugar onde isso está escrito, fora do fluxo em que ele aparece.</div></div>';
+  return h+'</div>';
+}
+
+/* ── estante e canvas (existentes, preservados) ──────────── */
+function vEstante(){
+  const livros=[["Leis universais de design","William Lidwell","EPUB","preparado hoje"],
+    ["Vagabundo — volume 04","Takehiko Inoue","EPUB","preparado hoje"],
+    ["Ensaios sobre forma","Ana Duarte","EPUB","ontem"],
+    ["O detalhe de Flaubert","Roland Barthes","EPUB","6 de agosto"],
+    ["Censo de fauna urbana","Marina Prado","PDF","4 de agosto"],
+    ["Sequência noturna","Ana Duarte","EPUB","2 de agosto"]];
+  let h='<div class="mk-pad larga">'+
+    '<div style="display:flex;align-items:baseline;gap:12px;margin-bottom:20px">'+
+    '<h1 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-.025em">Estante</h1>'+
+    '<span style="font-family:var(--mn);font-size:10.5px;color:var(--pink-3)">6 ITENS</span><span style="flex:1"></span>'+
+    '<button class="mk-btn sm sec" data-a="nada">Recentes ⌄</button></div>'+
+    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:20px">';
+  livros.forEach(function(l,i){
+    h+='<button data-a="ir" data-v="item-doc" style="text-align:left">'+
+      '<span style="display:block;position:relative;width:100%;padding-bottom:140%;border-radius:5px;'+
+      'background:'+(i%2?"#f0efec":"#e9e7e2")+';border:1px solid var(--line);overflow:hidden">'+
+      '<span style="position:absolute;inset:12px;display:flex;flex-direction:column;justify-content:space-between">'+
+      '<span style="font-family:var(--mn);font-size:9px;color:var(--pink-3);letter-spacing:.06em">'+l[2]+'</span>'+
+      '<span style="font-size:12px;font-weight:700;line-height:1.2;color:var(--pink)">'+esc(l[0])+'</span></span></span>'+
+      '<span style="display:block;font-size:12.5px;font-weight:600;margin-top:8px;line-height:1.25">'+esc(l[0])+'</span>'+
+      '<span style="display:block;font-size:12px;color:var(--pink-3);margin-top:1px">'+esc(l[1])+'</span></button>';
+  });
+  h+='</div><div class="mk-nota"><span>◆</span><div>A Estante é o mesmo lugar de sempre — preservada. O que mudou é que agora existe um caminho de ida e volta entre ela e a preparação: cada capa abre o item, e o item tem "‹ Mesa" no topo.</div></div>';
+  return h+'</div>';
+}
+function vCanvas(nome){
+  return '<div class="mk-pad larga"><h1 style="margin:0 0 8px;font-size:23px;font-weight:650;letter-spacing:-.025em">'+nome+'</h1>'+
+    '<p style="margin:0 0 20px;font-size:14px;color:var(--pink-2);max-width:60ch">Preservado das rodadas anteriores e fora do escopo desta. Está aqui para mostrar que a barra do topo é a mesma nas quatro superfícies — hoje ela muda completamente entre a preparação e a biblioteca.</p>'+
+    '<div style="border:1px dashed var(--line);border-radius:var(--r2);padding:40px;text-align:center;color:var(--pink-3);font-size:13px">'+
+    'A superfície espacial continua como está.<br>A dock de ferramentas aparece aqui — e só aqui.</div></div>';
+}
+/* ── editor manual / organização avançada ───────────────── */
+const FILTROS=[["todas","Todas as páginas",120],["pend","Precisam de atenção",9],
+  ["cor","Coloridas",12],["dim","Dimensão diferente",5],["baixa","Resolução baixa",2],["morta","Corrompidas",1]];
+function paginasFiltradas(){
+  const f=S.hq.filtro;
+  return PAGS.filter(function(p){
+    if(f==="todas")return true;
+    if(f==="pend")return p.dim||p.baixa||p.morta||p.dupla;
+    if(f==="cor")return p.cor;
+    if(f==="dim")return p.dim;
+    if(f==="baixa")return p.baixa;
+    if(f==="morta")return p.morta;
+    return true;
+  });
+}
+function vEditor(){
+  const sel=S.hq.sel,lista=paginasFiltradas();
+  let h='<div class="mk-veu" data-a="fechar-veu"><div class="mk-folha larga" data-stop="1">'+
+    '<div class="mk-fcab"><div><span class="ct">Organização avançada · não é etapa do Guiado</span>'+
+      '<h2>'+esc(ARQ.hq.nome)+' — 120 páginas</h2></div><span class="sp"></span>'+
+      '<button class="mk-fx" data-a="fechar" aria-label="Fechar o editor">✕</button></div>'+
+    '<div class="mk-ed">';
+
+  h+='<div class="mk-edfil">';
+  FILTROS.forEach(function(f){
+    h+='<button data-a="ed-filtro" data-v="'+f[0]+'" aria-pressed="'+(S.hq.filtro===f[0])+'">'+
+      '<span>'+f[1]+'</span><span class="n">'+f[2]+'</span></button>';
+  });
+  h+='<p style="font-size:11.5px;color:var(--pink-3);line-height:1.5;margin-top:14px;padding:0 4px">'+
+    'Clique para selecionar. Shift não é necessário: a seleção é acumulativa.</p></div>';
+
+  h+='<div class="mk-edgrade">';
+  lista.slice(0,120).forEach(function(p){
+    const cls=[p.cor?"cor":"",p.baixa?"ruim":"",p.morta?"morta":""].join(" ");
+    let tag="";
+    if(p.capa)tag='<span class="tag">capa</span>';
+    else if(p.morta)tag='<span class="tag er">falha</span>';
+    else if(p.dupla)tag='<span class="tag al">dupla</span>';
+    else if(p.dim)tag='<span class="tag al">largura</span>';
+    else if(p.baixa)tag='<span class="tag al">baixa</span>';
+    else if(p.cor)tag='<span class="tag" style="background:var(--ok)">cor</span>';
+    h+='<button class="mk-th '+cls+'" data-a="ed-sel" data-v="'+p.n+'" aria-pressed="'+(sel.indexOf(p.n)>=0)+'">'+
+      '<span class="im"><i></i>'+tag+'</span><span class="lg">'+(p.capa?"capa":p.n)+'</span></button>';
+  });
+  h+='</div>';
+
+  const alvo=sel.length===1?PAGS[sel[0]-1]:null;
+  h+='<div class="mk-edpai"><h4>Seleção</h4>'+
+    '<div class="sel">'+(sel.length===0?"Nenhuma página":(sel.length===1?"Página "+sel[0]:sel.length+" páginas"))+'</div>'+
+    (alvo?'<p style="font-size:12px;color:var(--pink-2);line-height:1.5;margin:0 0 14px">'+
+      (alvo.morta?"Imagem corrompida — não abre.":alvo.dim?"1200 × 1700 px — mais estreita que as outras 115.":
+       alvo.baixa?"980 × 1240 px — abaixo do mínimo do aparelho.":alvo.cor?"Colorida. Será preservada em cor.":
+       alvo.capa?"Página 1, usada como capa.":"1600 × 2400 px — dentro do padrão.")+'</p>':'')+
+    '<div class="mk-ferr">'+
+      ferr("Girar 90°","R",sel.length===0)+
+      ferr("Marcar como capa","C",sel.length!==1)+
+      ferr("Marcar como página dupla","D",sel.length===0)+
+      ferr("Deixar de fora","⌫",sel.length===0)+
+      ferr("Mover para…","M",sel.length===0)+
+    '</div>'+
+    '<h4>Alterações</h4>'+
+    (S.hq.mudancas.length===0?
+      '<p style="font-size:12px;color:var(--pink-3);line-height:1.5">Nada foi alterado ainda. Tudo aqui é reversível até você aplicar.</p>':
+      '<ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px">'+
+      S.hq.mudancas.map(function(m,i){return '<li style="font-size:12px;color:var(--pink-2);display:flex;gap:8px">'+
+        '<span>·</span><span style="flex:1">'+esc(m)+'</span>'+
+        '<button class="mk-lnk" style="font-size:11px;padding:0" data-a="ed-desfazer" data-v="'+i+'">desfazer</button></li>';}).join("")+'</ul>')+
+    '</div>';
+
+  h+='</div>'+
+    '<div class="mk-fpe"><span style="font-size:12.5px;color:var(--pink-2)">'+
+      S.hq.mudancas.length+' alteraç'+(S.hq.mudancas.length===1?"ão":"ões")+' · nada foi gravado ainda</span>'+
+      '<span class="sp"></span>'+
+      '<button class="mk-lnk mudo" data-a="fechar">Cancelar</button>'+
+      '<button class="mk-btn" data-a="ed-aplicar">Aplicar ao arquivo</button></div>'+
+    '</div></div>';
+  return h;
+}
+function ferr(t,k,off){
+  return '<button data-a="ed-ferr" data-v="'+esc(t)+'"'+(off?' disabled':'')+'>'+t+'<span class="k">'+k+'</span></button>';
+}
+
+/* ── folhas (pendências, envio, conta) ──────────────────── */
+function pagMini(n,cls,rot){
+  return '<span class="mk-pag '+(cls||"")+'"><i class="art"></i>'+rot+'</span>';
+}
+function vFolha(){
+  const f=S.folha;if(!f)return"";
+  if(f.t==="editor")return vEditor();
+
+  if(f.t==="pend-leitura"){
+    /* Resposta 3: não há confirmação técnica de que dá para detectar isto.
+       Então a tela não declara confiança nenhuma — pergunta, e mostra o que
+       o usuário precisa olhar para responder em dois segundos. */
+    return folha("Pergunta 1 de 2","Em que ordem estas páginas são lidas?",
+      '<div class="mk-paginas">'+pagMini(45,"","página 45")+'<span class="mk-seta">?</span>'+pagMini(44,"","página 44")+'</div>'+
+      '<p style="margin:0 0 14px;font-size:14px;line-height:1.6;color:var(--pink-2)">'+
+        'Esta eu não sei responder sozinho, então pergunto. Olhe as duas páginas acima: '+
+        '<b style="font-weight:600;color:var(--pink)">de que lado começa a primeira fala?</b> '+
+        'Mangás japoneses começam pela direita; quadrinhos americanos e europeus, pela esquerda.</p>'+
+      '<div class="mk-nota" style="margin-top:0"><span>◆</span><div>Errar aqui não estraga nada: o leitor vira as páginas na ordem trocada, '+
+        'e dá para corrigir depois pela estante, sem preparar de novo.</div></div>',
+      '<button class="mk-lnk mudo" data-a="pend-alterar" data-v="leitura">Esquerda → direita</button>',
+      '<button class="mk-btn" data-a="pend-ok" data-v="leitura">Direita → esquerda</button>');
+  }
+  if(f.t==="pend-dupla"){
+    /* Aqui a confiança é medida, não estimada: largura de imagem é aritmética. */
+    return folha("Pergunta 2 de 2","Páginas 44 e 45 formam uma imagem só?",
+      '<div class="mk-paginas">'+pagMini(44,"dupla","44–45")+'</div>'+
+      '<p style="margin:0 0 12px;font-size:14px;line-height:1.6;color:var(--pink-2)">'+
+        'Medi: estas duas têm <b style="font-weight:600;color:var(--pink)">3200 px de largura</b>, o dobro das outras 118. '+
+        'Isso costuma indicar uma ilustração feita para ocupar as duas páginas.</p>'+
+      '<span class="mk-conf">Medição, não estimativa: <b>2 de 120 páginas</b> têm largura dupla</span>'+
+      '<p style="margin:14px 0 0;font-size:12.5px;color:var(--pink-3);line-height:1.5">'+
+        'Manter junto deixa a imagem inteira, porém menor no aparelho. Separar deixa cada metade maior e corta a arte no meio.</p>',
+      '<button class="mk-lnk mudo" data-a="pend-alterar" data-v="dupla">Separar em duas páginas</button>',
+      '<button class="mk-btn" data-a="pend-ok" data-v="dupla">Manter como imagem única</button>');
+  }
+  if(f.t==="criar-conta"){
+    return folha("Conta","Criar conta no Mekora",
+      '<p style="margin:0 0 14px;font-size:14px;line-height:1.6;color:var(--pink-2)">'+
+        'Nesta exploração a conta é criada na hora, sem formulário, para você ver o que muda: '+
+        'a barra do topo ganha os quatro lugares, a Mesa passa a guardar o histórico e o Kindle fica salvo.</p>'+
+      '<div class="mk-nota" style="margin-top:0"><span>◆</span><div>No produto real isto seria e-mail e senha, ou entrada por provedor — '+
+        'e o arquivo já preparado seria levado junto para a conta recém-criada, sem refazer o trabalho.</div></div>',
+      '<button class="mk-lnk mudo" data-a="fechar">Continuar sem conta</button>',
+      '<button class="mk-btn" data-a="conta-criar">Criar conta e continuar</button>');
+  }
+  if(f.t==="pend-doc"){
+    return folha("Pendência durante a preparação","3 páginas sem texto reconhecido",
+      '<div class="mk-paginas">'+pagMini(0,"ruim","12")+pagMini(0,"ruim","57")+pagMini(0,"ruim","83")+'</div>'+
+      '<p style="margin:0 0 12px;font-size:14px;line-height:1.6;color:var(--pink-2)">'+
+        'As páginas 12, 57 e 83 são fotografias. Não há texto legível nelas — o reconhecimento devolveu ruído.</p>'+
+      '<span class="mk-conf">Confiança: <b>alta</b> — as três estão abaixo do limite em todas as tentativas</span>'+
+      '<p style="margin:14px 0 0;font-size:12.5px;color:var(--pink-3);line-height:1.5">'+
+        'Continuo agora mesmo: as páginas ficam no livro como imagem, apenas sem busca de texto.</p>',
+      '<button class="mk-lnk mudo" data-a="pend-doc-retry">Tentar de novo em alta qualidade</button>',
+      '<button class="mk-btn" data-a="pend-doc-ok">Seguir sem elas</button>');
+  }
+  if(f.t==="envio"){
+    return folha("Envio","Enviar ao Kindle",
+      (S.conta?'<button class="mk-disp" aria-pressed="true" data-a="nada">'+
+        '<span><span class="nm">Kindle de Erik</span><span class="ds">Paperwhite · erik_abc@kindle.com</span></span>'+
+        '<span class="mrk">✓ padrão</span></button>':
+       '<div class="mk-disp" style="cursor:default;flex-direction:column;align-items:stretch;gap:8px">'+
+        '<span class="nm">Endereço do seu Kindle</span>'+
+        '<span style="border:1px solid var(--line);border-radius:var(--r1);padding:0 10px;height:34px;'+
+        'display:flex;align-items:center;color:var(--pink-3);font-size:12.5px;background:var(--bg-2)">seu_nome@kindle.com</span>'+
+        '<span class="ds">Sem conta, o endereço é digitado a cada envio.</span></div>')+
+      '<button class="mk-disp" data-a="nada"><span><span class="nm">Usar outro endereço</span>'+
+        '<span class="ds">Precisa estar autorizado na sua conta da Amazon</span></span></button>'+
+      '<button class="mk-disp" data-a="nada"><span><span class="nm">Cabo USB</span>'+
+        '<span class="ds">Abre a pasta do aparelho quando ele estiver conectado</span></span></button>'+
+      '<div class="mk-nota" style="margin-top:14px"><span>◆</span><div>O envio passa pelo serviço da Amazon. '+
+        'Nós avisamos quando ele aceitar o arquivo — <b>não temos como saber</b> se já apareceu no aparelho.</div></div>',
+      '<button class="mk-lnk mudo" data-a="fechar">Cancelar</button>',
+      '<button class="mk-btn" data-a="enviar">Enviar agora</button>');
+  }
+  if(f.t==="volta-guiado"){
+    return folha("Trocar de modo","Você alterou "+S.manuais+" ajuste"+(S.manuais>1?"s":""),
+      '<p style="margin:0;font-size:14px;line-height:1.6;color:var(--pink-2)">'+
+        'Voltar ao Guiado normalmente significa usar de novo o que eu recomendei. '+
+        'Como você mexeu em '+S.manuais+' coisa'+(S.manuais>1?"s":"")+', prefiro perguntar antes de desfazer.</p>'+
+      '<div class="mk-nota" style="margin-top:16px"><span>◆</span><div>Se você mantiver, o modo continua Guiado na aparência — sem controles — mas respeitando o que você escolheu.</div></div>',
+      '<button class="mk-lnk mudo" data-a="guiado-descartar">Voltar ao recomendado</button>',
+      '<button class="mk-btn" data-a="guiado-manter">Manter minhas alterações</button>');
+  }
+  if(f.t==="conta"){
+    const its=[["Perfil","perfil"],["Dispositivos Kindle","perfil"],["Preferências","perfil"],
+      ["Privacidade","perfil"],["Atualizações","novidades"],["Ajuda e recursos","ajuda"]];
+    return folha("Conta","Erik Abner · erik@exemplo.com",
+      '<div class="mk-lista">'+its.map(function(i){
+        return '<div class="mk-li">'+sinal("in","·")+'<span class="tx"><b>'+i[0]+'</b></span>'+
+          '<button class="ac" data-a="ir" data-v="'+i[1]+'">abrir</button></div>';}).join("")+'</div>'+
+      '<div class="mk-nota" style="margin-top:14px"><span>◆</span><div>Tudo o que era "Configurações" está aqui dentro. '+
+        'A navegação principal fica livre para os lugares onde se trabalha.</div></div>',
+      '','<button class="mk-btn sec" data-a="fechar">Fechar</button>');
+  }
+  if(f.t==="senha"){
+    return folha("Arquivo protegido","Anuário do design 2025.pdf",
+      '<p style="margin:0 0 14px;font-size:14px;line-height:1.6;color:var(--pink-2)">'+
+        'Este PDF pede senha para abrir. Sem ela não consigo ler as páginas — e não guardo a senha depois de usar.</p>'+
+      '<div style="border:1px solid var(--line);border-radius:var(--r1);padding:0 12px;height:38px;display:flex;'+
+        'align-items:center;color:var(--pink-3);font-size:13px;background:var(--bg-2)">Senha do arquivo</div>'+
+      (S.lote.falhaAgrupada?'<div class="mk-nota" style="margin-top:14px"><span>◆</span>'+
+        '<div>Tento nos <b>2 arquivos</b> com o mesmo problema.</div></div>':''),
+      '<button class="mk-lnk mudo" data-a="lote-seguir">Seguir sem este arquivo</button>',
+      '<button class="mk-btn" data-a="fechar">Tentar abrir</button>');
+  }
+  if(f.t==="aviso"){
+    return folha("Simulação",S.aviso||"Ação simulada",
+      '<p style="margin:0;font-size:14px;line-height:1.6;color:var(--pink-2)">'+
+        'Esta é uma exploração visual: o botão existe, tem estado e leva a um lugar, mas nada é gravado e nenhum arquivo real é tocado. '+
+        'O comportamento que ele representa está descrito no caderno.</p>','',
+      '<button class="mk-btn" data-a="fechar">Entendi</button>');
+  }
+  return "";
+}
+function folha(ct,tit,corpo,sec,pri){
+  return '<div class="mk-veu" data-a="fechar-veu"><div class="mk-folha" data-stop="1">'+
+    '<div class="mk-fcab"><div><span class="ct">'+ct+'</span><h2>'+tit+'</h2></div><span class="sp"></span>'+
+    '<button class="mk-fx" data-a="fechar" aria-label="Fechar">✕</button></div>'+
+    '<div class="mk-fcorpo">'+corpo+'</div>'+
+    '<div class="mk-fpe"><span class="sp"></span>'+(sec||"")+(pri||"")+'</div></div></div>';
+}
+
+/* ── onboarding ─────────────────────────────────────────── */
+function vCoach(){
+  if(!S.coach)return"";
+  return '<div class="mk-coach" style="top:130px;left:50%;transform:translateX(-50%)">'+
+    '<h4>Isto é o item</h4>'+
+    '<p>Tudo sobre este arquivo mora aqui: o que encontrei, o que vou fazer e o resultado. '+
+    'Você não precisa percorrer etapas — elas acontecem nesta mesma tela.</p>'+
+    '<div class="pe"><button data-a="coach-nunca">não mostrar de novo</button><span class="sp"></span>'+
+    '<button class="ok" data-a="coach-ok">Entendi</button></div></div>';
+}
+function vCheck(){
+  if(!S.check)return"";
+  const passos=[["Enviar o primeiro arquivo",true],["Revisar a análise",S.lugar.indexOf("item")===0],
+    ["Confirmar a preparação",S.doc.fase!=="analise"],["Receber o resultado",S.doc.fase==="pronto"],
+    ["Enviar ao Kindle",S.doc.enviado]];
+  const feitos=passos.filter(function(p){return p[1];}).length;
+  let h='<div class="mk-check"><button class="cb" data-a="check-abrir"><b>Primeiros passos</b>'+
+    '<span class="n">'+feitos+'/5</span></button>';
+  if(S.checkAberto){
+    h+='<ul>'+passos.map(function(p){return '<li class="'+(p[1]?"f":"")+'"><span>'+(p[1]?"✓":"○")+'</span>'+p[0]+'</li>';}).join("")+'</ul>'+
+      '<div class="pe"><button data-a="check-pular">pular</button><button data-a="check-nunca">não mostrar de novo</button></div>';
+  }
+  return h+'</div>';
+}
+
+/* ── render ──────────────────────────────────────────────── */
+function corpo(){
+  if(S.lugar==="mesa")return(S.cena==="mesa-nova"||!S.conta)?vMesaNova():vMesa();
+  if(S.lugar==="item-doc")return vDoc();
+  if(S.lugar==="item-lote")return vLote();
+  if(S.lugar==="item-hq")return vHQ();
+  if(S.lugar==="estante")return vEstante();
+  if(S.lugar==="canvas")return vCanvas("Canvas");
+  if(S.lugar==="conexoes")return vCanvas("Conexões");
+  if(S.lugar==="ajuda")return vAjuda();
+  if(S.lugar==="perfil")return vPerfil();
+  if(S.lugar==="novidades")return vNovidades();
+  return vMesa();
+}
+function pinta(){
+  palco.innerHTML='<div class="mk">'+topo()+'<div class="mk-body">'+corpo()+vCoach()+vCheck()+'</div>'+vFolha()+'</div>';
+  if(nota)nota.innerHTML=NOTAS[S.cena]||NOTAS.mesa;
+  document.querySelectorAll("[data-cena]").forEach(function(b){
+    b.setAttribute("aria-pressed",String(b.dataset.cena===S.cena));
+  });
+}
+
+/* ── ações ───────────────────────────────────────────────── */
+function aviso(t){S.aviso=t;S.folha={t:"aviso"};}
+function tickDoc(){
+  clearInterval(timer);
+  timer=setInterval(function(){
+    S.doc.feito+=6;
+    if(S.doc.feito>=48&&!S.doc.pendMostrada&&!S.doc.pendResolvida){
+      S.doc.pendMostrada=true;clearInterval(timer);timer=null;S.folha={t:"pend-doc"};pinta();return;
+    }
+    if(S.doc.feito>=96){S.doc.feito=96;clearInterval(timer);timer=null;S.doc.fase="pronto";}
+    pinta();
+  },320);
+}
+function tickHQ(){
+  clearInterval(timer);
+  timer=setInterval(function(){
+    S.hq.feito+=7;
+    if(S.hq.feito>=119){S.hq.feito=119;clearInterval(timer);timer=null;S.hq.fase="pronto";}
+    pinta();
+  },300);
+}
+palco.addEventListener("click",function(ev){
+  const alvo=ev.target.closest("[data-a]");if(!alvo)return;
+  const a=alvo.dataset.a,v=alvo.dataset.v;
+  if(a==="fechar-veu"&&ev.target.closest("[data-stop]"))return;
+  switch(a){
+    case "nada":aviso("Controle representado, sem efeito no protótipo");break;
+    case "fechar":case "fechar-veu":S.folha=null;S.aviso=null;break;
+    case "ir":
+      S.folha=null;S.ajuda=null;
+      if(v==="mesa"){S.lugar="mesa";if(S.cena==="mesa-nova")S.cena="mesa";}
+      else S.lugar=v;
+      if(v==="ajuda")S.cena="ajuda";if(v==="perfil")S.cena="perfil";if(v==="novidades")S.cena="novidades";
+      break;
+    case "soltar":S.lugar="item-doc";S.cena="doc";S.coach=true;S.check=true;break;
+    case "menu-conta":S.folha={t:"conta"};break;
+    case "criar-conta":S.folha={t:"criar-conta"};break;
+    case "conta-criar":S.conta=true;S.folha=null;S.cena="mesa";S.lugar="item-doc";break;
+    case "modo":
+      if(S.modo==="guiado"){S.modo="personalizado";}
+      else if(S.manuais>0){S.folha={t:"volta-guiado"};}
+      else S.modo="guiado";
+      break;
+    case "manual":S.manuais++;aviso("Ajuste manual registrado — "+S.manuais+" no total");break;
+    case "guiado-manter":S.modo="guiado";S.folha=null;aviso("Alterações mantidas. O Guiado passa a respeitá-las.");break;
+    case "guiado-descartar":S.modo="guiado";S.manuais=0;S.folha=null;break;
+    case "li":
+      if(v==="editor"){S.folha={t:"editor"};S.cena="editor";}
+      else if(v==="ajuda-ocr"){S.lugar="ajuda";S.ajuda="O que é reconhecimento de texto";S.cena="ajuda";}
+      else if(v==="leitura"){S.folha={t:"pend-leitura"};}
+      else if(v==="dupla"){S.folha={t:"pend-dupla"};}
+      else aviso("Edição em linha do campo");
+      break;
+    case "doc-preparar":S.doc.fase="preparando";S.doc.feito=0;tickDoc();break;
+    case "doc-cancelar":clearInterval(timer);timer=null;S.doc.fase="analise";S.doc.feito=0;S.doc.pendMostrada=false;break;
+    case "pend-doc-ok":S.doc.pendResolvida=true;S.folha=null;tickDoc();break;
+    case "pend-doc-retry":S.doc.pendResolvida=true;S.folha=null;aviso("Nova tentativa em alta qualidade — leva mais 40 s");tickDoc();break;
+    case "detalhes":S.doc.detalhes=!S.doc.detalhes;break;
+    case "abrir-envio":S.folha={t:"envio"};break;
+    case "enviar":S.folha=null;S.doc.enviado=true;break;
+    case "baixar":aviso("Download iniciado");break;
+    case "pend":S.folha={t:"pend-"+v};break;
+    case "pend-ok":S.hq.pend[v]=(v==="leitura"?"dir":"manter");S.folha=null;proximaPend();break;
+    case "pend-alterar":S.hq.pend[v]=(v==="leitura"?"esq":"separar");S.folha=null;proximaPend();break;
+    case "hq-preparar":S.hq.fase="preparando";S.hq.feito=0;tickHQ();break;
+    case "hq-cancelar":clearInterval(timer);timer=null;S.hq.fase="analise";S.hq.feito=0;break;
+    case "ed-filtro":S.hq.filtro=v;break;
+    case "ed-sel":{
+      const n=Number(v),i=S.hq.sel.indexOf(n);
+      if(i>=0)S.hq.sel.splice(i,1);else S.hq.sel.push(n);
+      break;}
+    case "ed-ferr":{
+      const q=S.hq.sel.length;
+      S.hq.mudancas.push(v+" · "+(q===1?"página "+S.hq.sel[0]:q+" páginas"));
+      S.hq.sel=[];break;}
+    case "ed-desfazer":S.hq.mudancas.splice(Number(v),1);break;
+    case "ed-aplicar":S.folha=null;aviso(S.hq.mudancas.length+" alteração(ões) aplicada(s) ao arquivo — reversíveis na estante");break;
+    case "artigo":S.lugar="ajuda";S.ajuda=v;S.cena="ajuda";S.folha=null;break;
+    case "rever-onb":S.check=true;S.checkAberto=true;S.coach=false;aviso("Dicas reativadas. Elas voltam a aparecer no próximo arquivo.");break;
+    case "dobra":S.perfil=(S.perfil===v?"":v);break;
+    case "coach-ok":S.coach=false;break;
+    case "coach-nunca":S.coach=false;S.check=false;break;
+    case "check-abrir":S.checkAberto=!S.checkAberto;break;
+    case "check-pular":S.checkAberto=false;break;
+    case "check-nunca":S.check=false;break;
+    case "lote-falha":S.lote.falhaAgrupada=true;S.lote.linhas[2].st="falhou";S.lote.linhas[2].d="Protegido por senha — igual ao Compêndio 2024.pdf";break;
+    case "lote-senha":S.folha={t:"senha"};break;
+    case "lote-seguir":S.folha=null;S.lote.falhaAgrupada=false;S.lote.linhas[2].st="falhou";
+      S.lote.linhas[2].d="Deixado de fora do lote, por sua escolha";break;
+    case "lote-abrir":S.folha={t:"envio"};break;
+  }
+  pinta();
+});
+document.addEventListener("keydown",function(ev){
+  if(ev.key==="Escape"&&S.folha){S.folha=null;S.aviso=null;pinta();}
+});
+function proximaPend(){
+  if(S.hq.pend.leitura===null){S.folha={t:"pend-leitura"};}
+  else if(S.hq.pend.dupla===null){S.folha={t:"pend-dupla"};}
+}
+document.querySelectorAll("[data-cena]").forEach(function(b){
+  b.addEventListener("click",function(){reset(b.dataset.cena);});
+});
+const btnr=document.getElementById("btnreset");
+if(btnr)btnr.addEventListener("click",function(){reset(S.cena);});
+reset("mesa");
+window.__mkCena=function(c){reset(c);};
+})();
+</script>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   Comparações, alternativas e decisões.
+   ══════════════════════════════════════════════════════════ */
+(function(){
+"use strict";
+const barra='<div class="mini"><div class="mn-top"><b>Mekora</b><span class="on">Mesa</span>'+
+  '<span>Estante</span><span>Canvas</span><span>Conexões</span><i></i>'+
+  '<span class="q">⌕ buscar</span><span class="q">?</span><span class="av">EA</span></div>';
+
+const CMP=[
+{t:"1. Navegação global",img:"telas-atuais/home-vazia.png",cena:"mesa",
+ prop:barra+'<div class="mn-corpo"><span class="mn-rot">A mesma barra nas quatro superfícies</span>'+
+   '<p>A marca à esquerda é o caminho de volta. Os quatro lugares são onde se trabalha. Busca, ajuda e conta ficam à direita, sem competir.</p>'+
+   '<div class="mn-bloco suave"><span class="mn-rot">Dentro da conta</span>'+
+   '<p>Perfil · Dispositivos · Preferências · Privacidade · Atualizações · Sair</p></div></div></div>',
+ pq:"A barra atual tem quatro itens e nenhum deles é um lugar do produto: são meta-conteúdo. Sem marca e sem volta, o usuário que abre um arquivo não tem como sair dele. Esta é a mudança mais barata do caderno e a que encerra mais achados de uma vez."},
+
+{t:"2. A Home",img:"telas-atuais/home-envio.png",cena:"mesa",
+ prop:barra+'<div class="mn-corpo">'+
+   '<div class="mn-bloco suave" style="margin-top:0;text-align:center;padding:12px"><b style="font-size:11.5px">Solte arquivos aqui</b>'+
+   '<p style="font-size:9.5px">ou clique para escolher</p></div>'+
+   '<div class="mn-bloco at"><span class="mn-rot">Precisa de você — 1</span>'+
+   '<div class="mn-lin"><span class="s at">!</span><span><b>Vagabundo — volume 04.cbz</b><em>2 pendências</em></span></div></div>'+
+   '<div class="mn-bloco"><span class="mn-rot">Em andamento — 1</span>'+
+   '<div class="mn-lin"><span class="s">●</span><span><b>Padrões de leitura em tela.pdf</b><em>Convertendo — 1 min 04 s</em></span></div></div>'+
+   '<div class="mn-bloco"><span class="mn-rot">Prontos — 3</span>'+
+   '<div class="mn-lin"><span class="s ok">✓</span><span><b>Leis universais de design.epub</b><em>Enviado ao Kindle · 09:12</em></span></div></div></div></div>',
+ pq:"A Home atual é uma fila de upload: ela mostra bytes chegando e some quando o trabalho começa de verdade. A Mesa mostra o trabalho, não o transporte — e os três grupos desaparecem quando estão vazios, então o primeiro uso continua sendo só a zona de entrada."},
+
+{t:"3. Análise e preparação do documento",img:"telas-atuais/doc-preparacao.png",cena:"doc",
+ prop:barra+'<div class="mn-corpo"><span class="mn-rot">‹ Mesa</span>'+
+   '<h5>Leis universais de design.pdf</h5>'+
+   '<div class="mn-chips"><span>PDF</span><span>12,8 MB</span><span>96 páginas</span><span>Português</span></div>'+
+   '<div class="mn-bloco suave"><b style="font-size:11px">Analisado. Duas coisas mudam o resultado, e eu sei o que fazer com as duas.</b></div>'+
+   '<div class="mn-bloco"><span class="mn-rot">O que encontrei</span>'+
+   '<div class="mn-lin"><span class="s at">!</span><span><b>Texto em imagem</b><em>96 páginas digitalizadas</em></span></div>'+
+   '<div class="mn-lin"><span class="s at">!</span><span><b>Sumário sem links</b></span></div>'+
+   '<div class="mn-lin"><span class="s ok">✓</span><span><b>Nenhuma página corrompida</b></span></div></div>'+
+   '<div class="mn-bloco"><span class="mn-rot">O que vou fazer</span>'+
+   '<div class="mn-lin"><span class="s">1</span><span><b>Reconhecer o texto em português</b></span></div>'+
+   '<div class="mn-lin"><span class="s">2</span><span><b>Converter para EPUB</b></span></div>'+
+   '<div class="mn-lin"><span class="s">T</span><span><b>Título: Leis universais de design</b><em>já preenchido — alterar</em></span></div></div>'+
+   '<div class="mn-acao"><span class="mn-btn">Preparar com estas recomendações</span><span class="mn-btn gh">Ajustar manualmente</span></div></div></div>',
+ pq:"Duas telas viram uma. O formulário vazio vira duas linhas já preenchidas com o que o sistema extraiu do arquivo — o usuário confirma em vez de digitar. E a pergunta \"Traduzir esse documento? Sim\" sai do caminho: tradução é experimental e mora no Personalizado, desligada."},
+
+{t:"4. O que o modo Guiado mostra",img:"telas-atuais/lote-preparacao.png",cena:"doc",
+ prop:'<div class="mini"><div class="mn-corpo" style="padding:12px">'+
+   '<span class="mn-rot">Guiado · nenhum controle</span>'+
+   '<div class="mn-bloco" style="margin-top:0"><div class="mn-lin"><span class="s">1</span>'+
+     '<span><b>Formato: EPUB</b><em>porque o arquivo é texto corrido</em></span></div>'+
+   '<div class="mn-lin"><span class="s">2</span><span><b>Qualidade: equilibrada</b><em>300 PPI nas figuras</em></span></div>'+
+   '<div class="mn-lin"><span class="s">3</span><span><b>Nome: derivado do original</b></span></div></div>'+
+   '<div class="mn-acao"><span class="mn-btn">Preparar</span><span class="mn-btn gh">Ajustar manualmente →</span></div>'+
+   '<div class="mn-bloco suave"><span class="mn-rot">Personalizado · o mesmo, editável</span>'+
+   '<div class="mn-seletores"><span>EPUB ⌄</span><span>Equilibrada ⌄</span><span>Derivar ⌄</span></div>'+
+   '<p style="margin-top:7px">Nenhum campo nasce vazio: todos já vêm com o que o Guiado teria feito.</p></div>'+
+   '</div></div>',
+ pq:"Hoje os mesmos três seletores aparecem com \"Guiado\" ativo — mais orientação, resolução, compressão, contraste, brilho e modo mangá nas telas de quadrinho. O Guiado passa a dizer o que foi decidido, em texto, com um caminho para mudar. Nada some do produto: muda de lugar."},
+
+{t:"5. Progresso",img:"telas-atuais/doc-conversao.png",cena:"doc",
+ prop:barra+'<div class="mn-corpo"><span class="mn-rot">‹ Mesa</span>'+
+   '<h5>Leis universais de design.pdf</h5>'+
+   '<div class="mn-chips"><span>PDF</span><span>96 páginas</span></div>'+
+   '<div class="mn-bloco suave"><b style="font-size:11px">Preparando — reconhecendo o texto</b>'+
+   '<div class="mn-bar"><i style="width:44%"></i></div>'+
+   '<p><b style="font-weight:700">42 de 96 páginas</b> reconhecidas · 1 min 12 s decorridos</p></div>'+
+   '<div class="mn-bloco"><div class="mn-lin"><span class="s ok">✓</span><span><b>Analisar</b></span></div>'+
+   '<div class="mn-lin"><span class="s">●</span><span><b>Reconhecer o texto</b><em>página 42</em></span></div>'+
+   '<div class="mn-lin"><span class="s">○</span><span><em>Converter · sumário · capa</em></span></div></div>'+
+   '<div class="mn-bloco at"><p>O preparo roda nesta aba. Circular pelo Mekora não atrapalha; <b>fechar a aba interrompe</b> na página 42.</p></div></div></div>',
+ pq:"A tela atual perde o cabeçalho, as abas e o nome do arquivo, e inverte a ordem: a etapa em curso fica embaixo e os tempos decrescem para cima. Aqui a ordem é a de leitura, o contexto permanece, e a barra só existe onde há coisa contável — que é a única leitura honesta de progresso neste produto."},
+
+{t:"6. Lote",img:"telas-atuais/lote-analise.png",cena:"lote",
+ prop:barra+'<div class="mn-corpo"><span class="mn-rot">‹ Mesa</span>'+
+   '<h5>Lote de 4 arquivos</h5>'+
+   '<div class="mn-bloco suave"><b style="font-size:11px">2 prontos · 1 preparando · 1 precisa de você</b></div>'+
+   '<div class="mn-bloco">'+
+   '<div class="mn-lin"><span class="s ok">✓</span><span><b>Leis universais de design.pdf</b><em>EPUB · 8,4 MB</em></span></div>'+
+   '<div class="mn-lin"><span class="s">●</span><span><b>Padrões de leitura em tela.pdf</b><em>Convertendo — 1 min 04 s</em></span></div>'+
+   '<div class="mn-lin"><span class="s at">!</span><span><b>Anuário do design 2025.pdf</b><em>Protegido por senha — informar</em></span></div>'+
+   '<div class="mn-lin"><span class="s ok">✓</span><span><b>Ensaios sobre forma.epub</b><em>já era EPUB, só ajustei a capa</em></span></div></div>'+
+   '<div class="mn-acao"><span class="mn-btn">Enviar os 2 prontos</span><span class="mn-btn sec">Baixar tudo</span></div></div></div>',
+ pq:"O texto da tela atual promete que \"cada arquivo segue o próprio pipeline\" e a interface logo acima mostra uma barra única movendo os quatro juntos. Aqui a promessa e a forma dizem a mesma coisa: estado por arquivo, ação por arquivo, e o que falhou não segura o que está pronto."},
+
+{t:"7. Exceções do quadrinho",img:"telas-atuais/hq-analise.png",cena:"hq",
+ prop:'<div class="mini"><div class="mn-corpo" style="padding:12px">'+
+   '<span class="mn-rot">Pendência 1 de 2</span><h5>Direção de leitura</h5>'+
+   '<div class="mn-bloco suave" style="display:flex;gap:8px;justify-content:center;padding:12px">'+
+     '<span style="width:44px;height:60px;border:1px solid #e6e4de;border-radius:2px;background:repeating-linear-gradient(135deg,#e9e7e2 0 5px,#f4f3f0 5px 10px)"></span>'+
+     '<span style="align-self:center;color:#706c65">←</span>'+
+     '<span style="width:44px;height:60px;border:1px solid #e6e4de;border-radius:2px;background:repeating-linear-gradient(135deg,#e9e7e2 0 5px,#f4f3f0 5px 10px)"></span></div>'+
+   '<p style="margin-top:8px">Esta eu não sei responder sozinho, então pergunto: <b>de que lado começa a primeira fala?</b> '+
+   'Mangás japoneses começam pela direita.</p>'+
+   '<div class="mn-acao"><span class="mn-btn">Direita → esquerda</span><span class="mn-btn gh">Esquerda → direita</span></div></div></div>',
+ pq:"Hoje os problemas aparecem como etiquetas coloridas sem ação — \"5 páginas com dimensões diferentes\" não leva a lugar nenhum e a dock cobre a primeira delas. A pendência resolve uma coisa por vez, mostra as páginas em questão e oferece as duas saídas. <b>Revisão B:</b> como não há confirmação de que a direção de leitura pode ser detectada, esta deixou de ser uma recomendação com confiança e virou uma pergunta com a evidência à vista — o produto diz o que olhar em vez de afirmar o que não sabe. A pendência da página dupla continua sendo recomendação, porque largura de imagem é medição."},
+
+{t:"8. Conclusão",img:"telas-atuais/doc-conclusao.png",cena:"doc",
+ prop:barra+'<div class="mn-corpo"><span class="mn-rot">‹ Mesa</span>'+
+   '<h5>Leis universais de design.pdf</h5>'+
+   '<div class="mn-bloco ok"><b style="font-size:11px">Pronto. Leis universais de design.epub · 8,4 MB</b>'+
+   '<p>96 páginas reconhecidas, sumário com 14 capítulos, capa montada.</p></div>'+
+   '<div class="mn-acao"><span class="mn-btn">Enviar ao Kindle de Erik</span><span class="mn-btn sec">Baixar</span>'+
+   '<span class="mn-btn gh">Abrir na estante</span></div>'+
+   '<div class="mn-bloco"><span class="mn-rot">▾ O que foi feito</span>'+
+   '<div class="mn-lin"><span class="s ok">✓</span><span><b>Texto reconhecido em 93 de 96 páginas</b></span></div>'+
+   '<div class="mn-lin"><span class="s ok">✓</span><span><b>Convertido para EPUB</b><em>original preservado — desfazer</em></span></div></div></div></div>',
+ pq:"As três telas de conclusão atuais dizem a mesma frase com uma ilustração de banco de imagens e prometem um dossiê que nunca apareceu no fluxo. Aqui a conclusão é o item no estado pronto: mesmo cabeçalho, mesmo lugar, o que foi feito visível e reversível, e o envio como ação e não como estado que aconteceu sozinho."}
+];
+
+(function(){
+  const el=document.getElementById("comparacoes");if(!el)return;
+  el.innerHTML=CMP.map(function(c,i){
+    return '<div class="cmp" data-i="'+i+'">'+
+      '<div class="cmpbar"><h4>'+c.t+'</h4>'+
+      '<div class="seg" role="group" aria-label="Comparar">'+
+        '<button data-m="atual" aria-pressed="false" type="button">Atual</button>'+
+        '<button data-m="prop" aria-pressed="true" type="button">Proposta</button>'+
+        '<button data-m="lado" aria-pressed="false" type="button">Lado a lado</button></div>'+
+      '<button class="fbtn" data-cena-ir="'+c.cena+'" type="button">abrir no protótipo →</button></div>'+
+      '<div class="cmpbody"></div>'+
+      '<p class="cmpnota"><b>Por quê:</b> '+c.pq+'</p></div>';
+  }).join("");
+  function pinta(cx,i,m){
+    const c=CMP[i],b=cx.querySelector(".cmpbody");
+    if(m==="atual")b.innerHTML='<span class="ladocap">Atual · captura de 12 de agosto de 2026</span>'+
+      '<img src="'+c.img+'" alt="Tela atual: '+c.t+'" loading="lazy">';
+    else if(m==="prop")b.innerHTML='<span class="ladocap">Proposta</span>'+c.prop;
+    else b.innerHTML='<div class="lado"><div><span class="ladocap">Atual</span>'+
+      '<img src="'+c.img+'" alt="Tela atual: '+c.t+'" loading="lazy"></div>'+
+      '<div><span class="ladocap">Proposta</span>'+c.prop+'</div></div>';
+    cx.querySelectorAll(".seg button").forEach(function(x){x.setAttribute("aria-pressed",String(x.dataset.m===m));});
+    b.querySelectorAll("img").forEach(function(im){
+      im.addEventListener("error",function(){
+        const s=im.getAttribute("src");
+        im.insertAdjacentHTML("afterend",'<p style="font-family:var(--sans);font-size:12.5px;line-height:1.5;'+
+          'color:var(--ink-3);border:1px dashed var(--rule);border-radius:4px;padding:14px;margin:0">'+
+          'A captura <span class="mono">'+s+'</span> não carregou aqui. Ela está preservada na pasta '+
+          '<span class="mono">telas-atuais/</span>, ao lado deste arquivo — abra o caderno direto do disco para vê-la.</p>');
+        im.remove();
+      });
+    });
+  }
+  el.querySelectorAll(".cmp").forEach(function(cx){
+    const i=Number(cx.dataset.i);
+    pinta(cx,i,"prop");
+    cx.querySelectorAll(".seg button").forEach(function(b){
+      b.addEventListener("click",function(){pinta(cx,i,b.dataset.m);});
+    });
+  });
+  el.querySelectorAll("[data-cena-ir]").forEach(function(b){
+    b.addEventListener("click",function(){
+      if(window.__mkCena)window.__mkCena(b.dataset.cenaIr);
+      document.getElementById("s6").scrollIntoView({behavior:"smooth"});
+    });
+  });
+})();
+
+/* ── alternativas ────────────────────────────────────────── */
+const ALT=[
+{p:"A. Onde mora a análise",
+ d:"A análise é o momento em que o produto ganha ou perde a confiança do usuário. Ela pode ser uma parada, um resumo ou uma revelação — e as três produzem produtos diferentes.",
+ op:[
+  {n:"A1 · Análise como página",tag:"como está hoje",venc:false,
+   m:'<div class="mini"><div class="mn-corpo"><div class="mn-abas"><span class="on">Análise</span><span>Prep.</span><span>Conv.</span><span>Exp.</span></div>'+
+     '<div class="mn-bloco" style="margin-top:0"><span class="mn-rot">Diagnóstico</span><p>Problemas, recomendações e um botão para avançar de aba.</p></div></div></div>',
+   pro:["Cada etapa tem endereço próprio e é fácil de explicar."],
+   con:["Cria quatro páginas para um trabalho que é contínuo.","Obriga o usuário a avançar manualmente algo que o sistema já faria.","Perde o contexto do arquivo a cada troca."]},
+  {n:"A2 · Análise como resumo dentro do item",tag:"recomendada",venc:true,
+   m:'<div class="mini"><div class="mn-corpo"><h5>Leis universais de design.pdf</h5>'+
+     '<div class="mn-bloco suave" style="margin-top:6px"><b style="font-size:10.5px">Analisado. Duas coisas mudam o resultado.</b></div>'+
+     '<div class="mn-bloco"><span class="mn-rot">Encontrei · vou fazer · precisa de você</span>'+
+     '<p>Três listas curtas, uma tela, um botão.</p></div></div></div>',
+   pro:["Uma tela responde as quatro perguntas do usuário.","O item permanece; nada troca de contexto.","O botão único é a etapa seguinte inteira."],
+   con:["Uma tela mais longa em arquivos com muitos problemas.","Exige disciplina de copy: cada linha precisa valer a rolagem."]},
+  {n:"A3 · Análise como painel progressivo",tag:"guardar para depois",venc:false,
+   m:'<div class="mini"><div class="mn-corpo"><div class="mn-bloco" style="margin-top:0">'+
+     '<div class="mn-lin"><span class="s ok">✓</span><span><b>96 páginas</b><em>lidas</em></span></div>'+
+     '<div class="mn-lin"><span class="s ok">✓</span><span><b>Texto em imagem</b><em>detectado agora</em></span></div>'+
+     '<div class="mn-lin"><span class="s">●</span><span><em>procurando o sumário…</em></span></div></div>'+
+     '<p style="margin-top:7px">Os achados aparecem enquanto a análise acontece.</p></div></div>',
+   pro:["Transforma espera em informação.","Demonstra competência sem precisar dizer que é competente."],
+   con:["Só funciona se a análise real for incremental e razoavelmente lenta.","Alto risco de virar espetáculo: se a análise dura 2 s, é teatro.","Difícil de acertar sem saber a duração real."]}],
+ esc:"Fico com <b>A2</b>. É a única que respeita o princípio de continuidade — o usuário permanece no mesmo objeto do começo ao fim — e é também a mais barata: não depende de nenhuma mudança no que o backend já faz. <b>A3</b> é uma boa ideia presa a uma dependência que não conheço: se a análise real leva menos de três segundos, ela vira animação decorativa e reprova no princípio de utilidade antes de espetáculo. Vale reabrir quando houver medição do tempo real de análise."},
+
+{p:"B. Como revisar as exceções",
+ d:"Quando o sistema tem dúvida, ele precisa perguntar. A forma da pergunta muda quanto o usuário entende e quanto tempo perde.",
+ op:[
+  {n:"B1 · Lista de pendências",tag:"",venc:false,
+   m:'<div class="mini"><div class="mn-corpo"><div class="mn-bloco at" style="margin-top:0">'+
+     '<div class="mn-lin"><span class="s at">!</span><span><b>Direção de leitura</b><em>recomendo direita → esquerda</em></span></div>'+
+     '<div class="mn-lin"><span class="s at">!</span><span><b>Página dupla — 44 e 45</b><em>recomendo manter</em></span></div>'+
+     '<div class="mn-lin"><span class="s at">!</span><span><b>Capa provável</b><em>recomendo página 1</em></span></div></div>'+
+     '<div class="mn-acao"><span class="mn-btn">Aceitar todas</span><span class="mn-btn sec">Revisar uma a uma</span></div></div></div>',
+   pro:["Mostra o volume total de uma vez.","Permite aceitar tudo num clique quando a pessoa confia."],
+   con:["Cada linha precisa caber numa frase, e algumas não cabem.","Sem a imagem da página, a decisão fica abstrata."]},
+  {n:"B2 · Um card por vez",tag:"recomendada",venc:true,
+   m:'<div class="mini"><div class="mn-corpo"><span class="mn-rot">Pendência 1 de 2</span>'+
+     '<h5>Direção de leitura</h5>'+
+     '<div class="mn-bloco suave" style="height:44px;display:flex;align-items:center;justify-content:center;color:#706c65">páginas 45 ← 44</div>'+
+     '<p style="margin-top:7px">Motivo, confiança contável, e as duas saídas.</p>'+
+     '<div class="mn-acao"><span class="mn-btn">Confirmar</span><span class="mn-btn gh">Alterar</span></div></div></div>',
+   pro:["Uma decisão por vez, com a imagem ao lado do argumento.","Cabe a explicação do porquê sem poluir.","Sequência com fim declarado: 1 de 2, 2 de 2."],
+   con:["Ruim acima de umas cinco pendências: vira carrossel.","Esconde o volume total se não houver contador."]},
+  {n:"B3 · Direto sobre as páginas",tag:"",venc:false,
+   m:'<div class="mini"><div class="mn-corpo"><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px">'+
+     Array.from({length:10}).map(function(_,i){return '<span style="height:28px;border:1px solid '+(i===3?"#a8701c":"#e6e4de")+
+       ';border-radius:2px;background:'+(i===3?"#fdf4e6":"#f7f7f5")+'"></span>';}).join("")+'</div>'+
+     '<p style="margin-top:7px">As pendências aparecem marcadas na grade das 120 páginas.</p></div></div>',
+   pro:["Ótimo quando a exceção é sobre uma página específica.","Dá noção do todo e da proporção do problema."],
+   con:["Exige que o usuário cace o que está marcado.","Não cabe explicação nem confiança junto da miniatura.","Vira o editor manual, que não deve ser obrigatório."]}],
+ esc:"Fico com <b>B2</b> como forma padrão, com <b>B1</b> aparecendo automaticamente quando houver mais de quatro pendências — e com <b>B3</b> embutido dentro do card sempre que a exceção for de página, que é o caso da dupla. Não é meio-termo: é reconhecer que a quantidade de exceções muda a forma certa, e que isso o sistema sabe antes de mostrar."},
+
+{p:"C. O que é a Home",
+ d:"Hoje a Home é uma página de produto com uma zona de upload. A pergunta é para quem ela existe: para quem chega pela primeira vez, ou para quem já tem coisas dentro.",
+ op:[
+  {n:"C1 · Entrada com zona de envio",tag:"como está hoje",venc:false,
+   m:'<div class="mini"><div class="mn-corpo" style="text-align:center;padding:16px 12px">'+
+     '<h5>Prepare e organize seus arquivos para o Kindle</h5>'+
+     '<p style="margin:5px 0 9px">Envie documentos, livros e quadrinhos</p>'+
+     '<div class="mn-bloco suave" style="padding:14px"><b style="font-size:10.5px">Arraste arquivos ou clique</b></div></div></div>',
+   pro:["Direto ao ponto para quem nunca usou.","Uma ação só, impossível errar."],
+   con:["Idêntica na décima visita, quando já não ensina nada.","Não dá acesso ao que já foi feito.","O título vende o produto para quem já comprou."]},
+  {n:"C2 · Mesa",tag:"recomendada",venc:true,
+   m:'<div class="mini"><div class="mn-corpo"><div class="mn-bloco suave" style="margin-top:0;text-align:center;padding:9px">'+
+     '<b style="font-size:10.5px">Solte arquivos aqui</b></div>'+
+     '<div class="mn-bloco at"><span class="mn-rot">Precisa de você</span><p>1 arquivo</p></div>'+
+     '<div class="mn-bloco"><span class="mn-rot">Em andamento</span><p>1 arquivo</p></div>'+
+     '<div class="mn-bloco"><span class="mn-rot">Prontos</span><p>3 arquivos</p></div></div></div>',
+   pro:["Cresce com o uso: vazia no primeiro dia, útil no trigésimo.","Os grupos somem quando vazios, então nunca há caixa oca.","Dá endereço ao trabalho em curso — o que hoje não existe."],
+   con:["Exige que o trabalho sobreviva ao fechar a aba.","Se o uso for esporádico, os grupos ficam quase sempre vazios."]},
+  {n:"C3 · Estante como início",tag:"",venc:false,
+   m:'<div class="mini"><div class="mn-corpo"><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">'+
+     Array.from({length:8}).map(function(_,i){return '<span style="height:38px;border:1px solid #e6e4de;border-radius:3px;background:'+
+       (i%2?"#f0efec":"#e9e7e2")+'"></span>';}).join("")+'</div>'+
+     '<p style="margin-top:7px">O acervo primeiro; preparar é um botão no canto.</p></div></div>',
+   pro:["Coerente com a tese \"é uma estante que sabe preparar\".","Recompensa quem já tem acervo."],
+   con:["Hostil no primeiro uso: uma estante vazia não ensina nada.","Empurra a ação principal do produto para um canto.","Some com o trabalho em curso, que não é livro ainda."]}],
+ esc:"<b>Decidida — C2.</b> A razão não é estética: a Mesa é a única das três com um estado bom para o dia 1 e para o dia 100. <b>C1</b> vira ruído no segundo uso; <b>C3</b> só funciona depois que o acervo existe. A Mesa começa parecida com a C1 — só a zona de entrada e três linhas — e ganha grupos conforme há o que mostrar. A única condição que faria C1 ganhar era uso esporádico, e a <b>resposta 4</b> fechou isso: o usuário recorrente é um leitor frequente, por prazer ou por estudo. Consequência que veio junto: quem estuda chega com vários arquivos de uma vez, então o fluxo de lote deixa de ser secundário."}
+];
+
+(function(){
+  const el=document.getElementById("alternativas");if(!el)return;
+  el.innerHTML=ALT.map(function(a){
+    return '<div class="alt"><div class="altcab"><h3>'+a.p+'</h3><p>'+a.d+'</p></div>'+
+      '<div class="altgrade">'+a.op.map(function(o){
+        return '<div class="altcol'+(o.venc?" venc":"")+'"><h4>'+o.n+'</h4>'+
+          '<span class="tag'+(o.venc?"":" n")+'">'+(o.tag||"alternativa")+'</span>'+
+          o.m+'<div style="margin-top:11px">'+
+          o.pro.map(function(p){return '<p class="pro"><span>+</span><span>'+p+'</span></p>';}).join("")+
+          o.con.map(function(p){return '<p class="con"><span>−</span><span>'+p+'</span></p>';}).join("")+
+          '</div></div>';
+      }).join("")+'</div>'+
+      '<p class="altped"><b>Escolha:</b> '+a.esc+'</p></div>';
+  }).join("");
+})();
+
+/* ── decisões ────────────────────────────────────────────── */
+const DEC=[
+ ["manter","A linguagem visual","Geométrica, preto e branco, chips de metadado, cantos generosos. Ela funciona e é reconhecível.","nenhum"],
+ ["manter","A tela de progresso honesta","O texto que recusa porcentagem inventada é o melhor do produto. Vira regra geral, não exceção.","nenhum"],
+ ["manter","O editor manual de páginas","Não descartar. Reposicionar como organização avançada, alcançável por três caminhos e obrigatório por nenhum.","baixo"],
+ ["manter","Canvas, Estante e Conexões","Fora do escopo desta rodada. Ganham a mesma barra do resto.","baixo"],
+ ["manter","A dock","Só em Canvas e Estante, onde há ferramentas espaciais.","baixo"],
+ ["alterar","A navegação global","Marca à esquerda que volta à Mesa; quatro lugares; busca, ajuda e conta à direita. Como funciona sai do app.","baixo"],
+ ["alterar","A Home","Vira Mesa: entrada + precisa de você + em andamento + prontos, com grupos que somem quando vazios.","médio"],
+ ["alterar","Análise e Preparação","Fundem numa tela de item. Metadados propostos, não pedidos em branco.","médio"],
+ ["alterar","O modo Guiado","Nenhum controle. Uma linha por decisão, com \"alterar\" que leva ao Personalizado preenchido.","baixo"],
+ ["alterar","O lote","Estado e ação por arquivo; falhas iguais agrupadas; nada de barra única.","médio"],
+ ["alterar","O quadrinho guiado","Importar → analisar → preparar → revisar exceções → exportar. Nenhuma administração manual de páginas.","médio"],
+ ["alterar","A confiança declarada","Só quando existe medição (\"2 de 120 páginas têm largura dupla\"). Sem medição, o produto pergunta em vez de recomendar — e não declara confiança nenhuma.","baixo"],
+ ["alterar","O aviso de que o preparo roda na aba","Consequência da resposta 2. Precisa aparecer na tela de preparo e ter um estado próprio para o que foi interrompido.","médio"],
+ ["alterar","O momento de pedir conta","Depois de converter, nunca antes; com o motivo escrito. Sem conta, a barra não mostra lugares inutilizáveis.","médio"],
+ ["alterar","A conclusão","Vira estado do item, com o que foi feito visível e reversível.","baixo"],
+ ["alterar","O tema escuro","Barra, dock e botões flutuantes precisam do mesmo tratamento que o conteúdo.","baixo"],
+ ["remover","A etapa Conversão","É a tela de Preparação repetida.","nenhum"],
+ ["remover","As abas de etapa","Etapa virou estado. Não se navega para um estado.","nenhum"],
+ ["remover","Duas das três telas de conclusão","Diziam a mesma coisa com plural trocado.","nenhum"],
+ ["remover","A pergunta de tradução no fluxo guiado","Vai para Personalizado, desligada, marcada como experimental.","nenhum"],
+ ["remover","A escolha de formato depois de converter","O formato é consequência do destino, e é decidido antes.","baixo"],
+ ["remover","O breadcrumb decorativo do card de envio","Não navega e não diz onde se está.","nenhum"],
+ ["remover","A ilustração genérica de conclusão","E a promessa do dossiê que nunca apareceu no fluxo.","nenhum"],
+ ["adiar","Tradução visual de quadrinhos","Fica como experimental declarado em Atualizações, fora do fluxo útil de quadrinhos.","—"],
+ ["adiar","Estante 3D","Experimento honesto; hoje entrega menos que a lista. Manter, marcar como tal.","—"],
+ ["adiar","Análise progressiva (A3)","Depende de saber quanto tempo a análise real leva.","—"],
+ ["adiar","\"Motion\" na barra da biblioteca","Sem função declarada. Ou ganha uma, ou sai.","—"]
+];
+(function(){
+  const tb=document.querySelector("#tabdec tbody");if(!tb)return;
+  const rot={manter:"Manter",alterar:"Alterar",remover:"Remover",adiar:"Adiar"};
+  const cls={manter:"p3",alterar:"p1",remover:"p0",adiar:"p2"};
+  function pinta(f){
+    tb.innerHTML=DEC.map(function(d){
+      if(f!=="tudo"&&d[0]!==f)return"";
+      return '<tr><td><span class="p '+cls[d[0]]+'">'+rot[d[0]]+'</span></td><td class="n">'+d[1]+
+        '</td><td>'+d[2]+'</td><td>'+d[3]+'</td></tr>';
+    }).join("");
+  }
+  pinta("tudo");
+  document.querySelectorAll("[data-dec]").forEach(function(b){
+    b.addEventListener("click",function(){
+      document.querySelectorAll("[data-dec]").forEach(function(o){o.setAttribute("aria-pressed","false");});
+      b.setAttribute("aria-pressed","true");pinta(b.dataset.dec);
+    });
+  });
+})();
+})();
+</script>
+</body>
+</html>
