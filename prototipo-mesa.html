@@ -55,21 +55,15 @@
 }
 @media (min-width:1200px){:root{--col:42.1875rem}}
 @media (min-width:1600px){:root{--col:48.4375rem}}
-@media (prefers-color-scheme:dark){
-  :root:not([data-tema="claro"]){
-    --bg:#161513;--bg-2:#1e1c1a;--bg-3:#252320;--nav:#1b1917;
-    --ink:#f1eee8;--ink-2:#b9b2a6;--ink-3:#948d81;--ink-4:#6b655c;
-    --line:hsla(40,20%,96%,.18);--line-2:hsla(40,20%,96%,.10);--line-3:hsla(40,20%,96%,.32);
-    --acc:#e4613d;--acc-soft:#2a1d17;
-    --ok:#8fb283;--ok-soft:#1c241d;--warn:#d3a448;--warn-soft:#282017;--dan:#e0705c;--dan-soft:#2a1a17;
-  }
-}
+/* O escuro nao segue o sistema: um prototipo de revisao abre na paleta que
+   esta sendo decidida. Ele existe abaixo, e entra so quando pedido. */
 :root[data-tema="escuro"]{
   --bg:#161513;--bg-2:#1e1c1a;--bg-3:#252320;--nav:#1b1917;
   --ink:#f1eee8;--ink-2:#b9b2a6;--ink-3:#948d81;--ink-4:#6b655c;
   --line:hsla(40,20%,96%,.18);--line-2:hsla(40,20%,96%,.10);--line-3:hsla(40,20%,96%,.32);
   --acc:#e4613d;--acc-soft:#2a1d17;
   --ok:#8fb283;--ok-soft:#1c241d;--warn:#d3a448;--warn-soft:#282017;--dan:#e0705c;--dan-soft:#2a1a17;
+    --branco:#1e1c1a;--paper:#201e1b;
 }
 /* comparação ao vivo — para julgar com o olho, não com o argumento */
 :root[data-raio="4"]{--r1:4px;--r2:8px;--rm:4px}
@@ -408,6 +402,14 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .fcorpo{padding:var(--s4)}
 .fpe{display:flex;gap:var(--s3);align-items:center;padding:var(--s4);border-top:1px solid var(--line-2);
   background:var(--bg-2);flex-wrap:wrap}
+.campoB{width:100%;font:inherit;font-size:1.05rem;color:var(--ink);background:var(--bg-2);
+  border:1px solid var(--line);border-radius:var(--r1);padding:.7rem .8rem}
+.campoB:focus{outline:2px solid var(--acc);outline-offset:-1px;background:var(--branco)}
+.segE{display:inline-flex;border:1px solid var(--line);border-radius:var(--r1);overflow:hidden}
+.segE button{padding:6px 12px;font-size:12.5px;color:var(--ink-2);border-right:1px solid var(--line)}
+.segE button:last-child{border-right:none}
+.segE button:hover{background:var(--bg-2);color:var(--ink)}
+.segE button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 .conf{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-2);
   background:var(--bg-2);border:1px solid var(--line);border-radius:var(--rp);padding:5px 12px}
 .conf b{color:var(--ink);font-weight:650}
@@ -482,6 +484,7 @@ td.n{color:var(--ink);font-weight:600}
 <div id="ctl">
   <button id="btRaio" type="button" aria-pressed="true">raio 0</button>
   <button id="btFundo" type="button" aria-pressed="true">off-white</button>
+  <button id="btTema" type="button" aria-pressed="true">tema claro</button>
 </div>
 <button id="notasbt" type="button">◇ notas<span class="bdg">copy · dock</span></button>
 <div id="notas" hidden></div>
@@ -521,7 +524,25 @@ const zero={
   lugar:"home",cena:"trabalho",conta:false,modo:"guiado",dentro:false,cap:0,
   fase:"analise",feito:0,pendMostrada:false,pendResolvida:false,enviado:false,
   traduzir:null,capaEsc:"gerada",feitoAberto:false,
-  estante:"lista",lombSel:"01",perfil:"conta",folha:null,menu:false,aviso:null,manuais:0,avisoUso:true
+  estante:"lista",lombSel:"01",perfil:"conta",folha:null,menu:false,aviso:null,manuais:0,avisoUso:true,
+  q:"",ajuda:null,dockSel:0,corpo:1,entre:1,largura:1
+};
+const AJUDA={
+ "Começando":[["Primeiros passos","Solte um arquivo e confirme uma vez.","O Mekora abre o arquivo, mostra o que encontrou e o que vai fazer, e espera um clique seu. Não há assistente de várias etapas: é uma tela só."],
+  ["Guiado e Personalizado","No Guiado você confirma. No Personalizado você ajusta.","Ao trocar para Personalizado, todos os campos já vêm preenchidos com o que o Guiado teria feito. Se você mexer e voltar, perguntamos o que fazer com as suas alterações."],
+  ["Enviar ao Kindle","Precisa autorizar o remetente na Amazon, uma vez.","Depois disso o endereço fica salvo no seu perfil e o envio é um clique. Avisamos quando a Amazon aceitar o arquivo — não temos como saber se já chegou no aparelho."]],
+ "Formatos":[["PDF","O caso mais comum, e o que mais muda.","Se o PDF for digitalizado, cada página é uma imagem: sem reconhecimento de texto o Kindle não busca nada nem ajusta a letra. É a primeira coisa que verificamos."],
+  ["EPUB","Já é o formato certo. Ainda assim há trabalho.","Capa, sumário e metadados costumam faltar ou vir errados. Arrumamos isso sem reconverter o conteúdo."],
+  ["CBZ, CBR e ZIP","Quadrinho é imagem, e imagem tem regras próprias.","Ordem das páginas, capa, direção de leitura, página dupla e o tamanho exato do seu aparelho."]],
+ "Entenda o processo":[["O que é reconhecimento de texto","Sem ele, o Kindle vê seu livro como uma pilha de fotos.","Num PDF digitalizado cada página é uma imagem. O reconhecimento lê essa imagem e devolve o texto — é o que permite buscar uma palavra e mudar o corpo da letra."],
+  ["Por que não mostramos porcentagem","Porque na maior parte das etapas ela seria inventada.","Reconhecer texto avança página a página e dá para contar. Compactar o arquivo acontece de uma vez. Uma barra que somasse as duas mostraria um número que não corresponde a nada."],
+  ["O que acontece se eu fechar a aba","Nada. O preparo não é feito no seu computador.","Com conta, o item volta a aparecer na Mesa. Sem conta, o trabalho termina do mesmo jeito — mas não haverá onde reencontrá-lo."]],
+ "Resolver problemas":[["O arquivo não abre","Quase sempre é senha ou arquivo truncado.","PDF protegido pede a senha uma vez e não a guardamos. Arquivo truncado costuma vir de download interrompido: baixe de novo."],
+  ["A capa não apareceu","Se o arquivo não tinha capa, geramos uma.","Ela usa o título, o autor e o formato. Dá para trocar pela página 1 ou por uma imagem sua, no item."],
+  ["Páginas fora de ordem","Acontece em quadrinho quando os nomes não têm número.","Ordenamos pelo nome do arquivo. Quando ele não ajuda, a organização avançada deixa você arrastar."]],
+ "Avançados":[["Editor manual de páginas","Não é etapa obrigatória, e nunca vai ser.","Chega-se a ele pelo Personalizado, por 'ver todas as páginas' ou por uma exceção específica."],
+  ["Tradução","Gera um segundo arquivo. O original fica intacto.","Para quadrinhos não está disponível: o texto vive dentro da imagem, e isso ainda não passou em teste de qualidade."],
+  ["O que ainda é instável","Está sempre escrito, na página de Atualizações.","Um recurso experimental pode mudar ou sair. Preferimos dizer isso a deixar você descobrir sozinho."]]
 };
 let S=Object.assign({},zero),timer=null;
 function reset(cena){
@@ -541,12 +562,12 @@ function topo(){
   if(S.conta){
     l1+='<nav>'+lug.map(x=>'<button data-a="ir" data-v="'+x[0]+'"'+(at===x[0]?' aria-current="true"':'')+
       '>'+x[1]+'</button>').join("")+'</nav><span class="sp"></span>'+
-      '<button class="busca" data-a="nada"><span>⌕</span><span>Buscar</span><span class="kbd">⌘K</span></button>'+
-      '<button class="icb" data-a="nada" aria-label="Ajuda">?</button>'+
+      '<button class="busca" data-a="folha" data-v="busca"><span>⌕</span><span>Buscar</span><span class="kbd">⌘K</span></button>'+
+      '<button class="icb" data-a="folha" data-v="ajuda" aria-label="Ajuda">?</button>'+
       '<button class="uctl" data-a="menu" aria-expanded="'+S.menu+'"><span class="ava">EA</span><span class="ch">▾</span></button>';
   }else{
-    l1+='<span class="sp"></span><button class="lnk mudo" data-a="nada">Como funciona</button>'+
-      '<button class="icb" data-a="nada" aria-label="Ajuda">?</button>'+
+    l1+='<span class="sp"></span><button class="lnk mudo" data-a="ir" data-v="home">Como funciona</button>'+
+      '<button class="icb" data-a="folha" data-v="ajuda" aria-label="Ajuda">?</button>'+
       '<button class="btn sm sec2" data-a="folha" data-v="conta">Entrar</button>';
   }
   l1+='</div>';
@@ -562,11 +583,11 @@ function topo(){
 }
 function menuConta(){
   const its=[["Perfil e conta","perfil","◍"],["Dispositivos Kindle","perfil","▭"],["Preferências","perfil","≡"],
-    ["Privacidade","perfil","⚿"],["Atualizações","perfil","✦"],["Ajuda e recursos","","?"]];
+    ["Privacidade","perfil","⚿"],["Atualizações","perfil","✦"],["Ajuda e recursos","@ajuda","?"]];
   return '<div class="umenu"><div class="id"><span class="ava">EA</span><div>'+
     '<div class="n">Erik Abner</div><div class="e">erik@exemplo.com</div></div></div><ul>'+
-    its.map(i=>'<li><button data-a="'+(i[1]?"ir":"nada")+'"'+(i[1]?' data-v="'+i[1]+'"':'')+
-      '><span class="ic">'+i[2]+'</span>'+i[0]+'</button></li>').join("")+
+    its.map(i=>'<li><button data-a="'+(i[1]==="@ajuda"?"folha":"ir")+'" data-v="'+
+      (i[1]==="@ajuda"?"ajuda":i[1])+'"><span class="ic">'+i[2]+'</span>'+i[0]+'</button></li>').join("")+
     '<li class="divi"></li><li><button data-a="nada"><span class="ic">→</span>Sair</button></li></ul></div>';
 }
 
@@ -676,7 +697,7 @@ function vLeitura(){
   let h='<div class="leituraTopo"><button class="lnk mudo" data-a="ir-livro">‹ '+esc(ARQ.titulo)+'</button>'+
     '<span class="sp"></span>'+
     '<button class="lnk mudo" data-a="folha" data-v="sumario">Sumário</button>'+
-    '<button class="lnk mudo" data-a="nada">Aa</button>'+
+    '<button class="lnk mudo" data-a="folha" data-v="aa">Aa</button>'+
     '<span class="mono" style="font-size:var(--t-mono);color:var(--ink-3)">'+prog+'%</span>'+
     '<div class="fio"><i style="width:'+prog+'%"></i></div></div>';
 
@@ -945,7 +966,7 @@ function vCanvas(nome){
     dock(["Nota","Mídia","Conectar","Organizar","Filtrar"],-1)+'</div>';
 }
 function dock(its,on){
-  return '<div class="dock">'+its.map((t,i)=>'<button data-a="nada"'+(i===on?' aria-pressed="true"':'')+
+  return '<div class="dock">'+its.map((t,i)=>'<button data-a="dock" data-v="'+i+'"'+((on<0?i===S.dockSel:i===on)?' aria-pressed="true"':'')+
     '>'+t+'</button>').join("")+'</div>';
 }
 
@@ -1088,11 +1109,61 @@ function vFolha(){
     'color:var(--ink-2)">A nota de rodapé do original virou marca clicável no texto. No PDF ela era um '+
     'número que não levava a lugar nenhum — o Kindle não sabia que existia relação entre os dois.</p>',
     '<button class="btnO" data-a="fechar">Fechar</button>');
+  if(f==="busca"){
+    const q=S.q.trim().toLowerCase();
+    const achados=q?ACERVO.filter(b=>(b.t+" "+b.a+" "+b.f).toLowerCase().includes(q)):ACERVO.slice(0,5);
+    return folha("Buscar","Buscar em livros e arquivos",
+      '<input id="campoBusca" class="campoB" placeholder="Título, autor, formato…" value="'+esc(S.q)+'" autocomplete="off">'+
+      '<div id="resBusca">'+resultados(achados,q)+'</div>',
+      '<span style="font-size:var(--t-peq);color:var(--ink-3)">Enter abre o primeiro · Esc fecha</span>');
+  }
+  if(f==="ajuda"){
+    if(S.ajuda){
+      const g=Object.keys(AJUDA).find(k=>AJUDA[k].some(a=>a[0]===S.ajuda));
+      const art=AJUDA[g].find(a=>a[0]===S.ajuda);
+      return folha("Ajuda · "+g,art[0],
+        '<p style="margin:0 0 var(--s4);font-size:1.05rem;line-height:1.45;font-weight:600">'+art[1]+'</p>'+
+        '<p style="margin:0;font-family:var(--serif);font-size:var(--t-leitura);line-height:var(--lh-leitura);'+
+        'color:var(--ink-2)">'+art[2]+'</p>',
+        '<button class="lnk mudo" data-a="folha" data-v="ajuda">‹ Todos os assuntos</button>'+
+        '<button class="btnO" data-a="fechar">Entendi</button>');
+    }
+    return folha("Ajuda e recursos","O que você precisa saber",
+      Object.keys(AJUDA).map(g=>'<div style="margin-bottom:var(--s5)">'+
+        '<span class="kicker" style="margin-bottom:var(--s2)">'+g+'</span>'+
+        '<ol class="indiceE" style="margin:0">'+AJUDA[g].map(a=>
+          '<li><button data-a="artigo" data-v="'+esc(a[0])+'"><span class="nomeI">'+esc(a[0])+
+          '</span><span class="metaI">'+esc(a[1].slice(0,34))+'…</span></button></li>').join("")+'</ol></div>').join(""),
+      '<button class="btnO" data-a="fechar">Fechar</button>');
+  }
+  if(f==="aa"){
+    const seg=(rot,chave,vals)=>'<div class="row"><div class="tx"><b>'+rot+'</b></div>'+
+      '<span class="segE">'+vals.map((v,i)=>'<button data-a="aa" data-v="'+chave+':'+i+'"'+
+        (S[chave]===i?' aria-pressed="true"':'')+'>'+v+'</button>').join("")+'</span></div>';
+    return folha("Leitura","Como você quer ler",
+      seg("Corpo do texto","corpo",["Menor","Padrão","Maior"])+
+      seg("Entrelinha","entre",["Justa","Padrão","Solta"])+
+      seg("Largura da coluna","largura",["Estreita","Padrão","Larga"])+
+      seg("Tema","tema",["Claro","Escuro"])+
+      '<div class="nota"><span>◆</span><div>Estes ajustes moram aqui, onde o efeito acontece — não numa '+
+      'área de configurações. Eles sobem a padrão da conta por ato deliberado, em Perfil › Preferências.</div></div>',
+      '<button class="btnO" data-a="fechar">Fechar</button>');
+  }
   if(f==="aviso")return folha("Simulação",S.aviso||"Ação representada",
     '<p style="margin:0;font-size:14px;line-height:1.65;color:var(--ink-2)">Este é um protótipo: o controle existe, '+
     'tem estado e leva a algum lugar, mas nada é gravado e nenhum arquivo real é tocado.</p>',
     '<button class="btn" data-a="fechar">Entendi</button>');
   return "";
+}
+function resultados(lista,q){
+  if(!lista.length)return '<p style="margin:var(--s4) 0 0;font-size:var(--t-peq);color:var(--ink-3)">'+
+    'Nada com “'+esc(q)+'”. A busca cobre título, autor e formato — ainda não o texto dentro dos livros.</p>';
+  return '<div class="lista" style="margin-top:var(--s4)">'+lista.map(b=>
+    '<button class="linha" data-a="ir-livro" style="grid-template-columns:30px minmax(0,1fr) auto">'+
+    '<img class="capa" src="'+capa(b.c)+'" alt="" style="width:30px;height:40px">'+
+    '<span><span class="nm">'+esc(b.t)+'</span><span class="st">'+esc(b.a)+' · '+b.f+'</span></span>'+
+    '<span class="ac">Abrir</span></button>').join("")+'</div>'+
+    (q?'':'<p style="margin:var(--s3) 0 0;font-size:var(--t-peq);color:var(--ink-3)">Recentes.</p>');
 }
 function folha(ct,tit,corpo,pe){
   return '<div class="veu" data-a="fechar-veu"><div class="folha" data-stop="1">'+
@@ -1116,7 +1187,26 @@ function corpo(){
 }
 function pinta(){
   const y=app.querySelector(".corpo")?app.querySelector(".corpo").scrollTop:0;
+  /* os ajustes de leitura agem sobre as variáveis, não sobre cada regra */
+  const CORPO=["1.02rem","1.16rem","1.3rem"],ENTRE=["1.5","1.62","1.78"],LARG=["30rem","42.1875rem","52rem"];
+  app.style.setProperty("--t-leitura",CORPO[S.corpo]);
+  app.style.setProperty("--lh-leitura",ENTRE[S.entre]);
+  if(S.lugar==="leitura")app.style.setProperty("--col",LARG[S.largura]);
+  else app.style.removeProperty("--col");
   app.innerHTML=topo()+'<div class="corpo">'+corpo()+'</div>'+vFolha();
+  const campo=document.getElementById("campoBusca");
+  if(campo){
+    campo.focus();campo.setSelectionRange(campo.value.length,campo.value.length);
+    campo.addEventListener("input",()=>{
+      S.q=campo.value;
+      const q=S.q.trim().toLowerCase();
+      const ach=q?ACERVO.filter(b=>(b.t+" "+b.a+" "+b.f).toLowerCase().includes(q)):ACERVO.slice(0,5);
+      document.getElementById("resBusca").innerHTML=resultados(ach,q);
+    });
+    campo.addEventListener("keydown",e=>{
+      if(e.key==="Enter"){const p=document.querySelector("#resBusca .linha");if(p)p.click();}
+    });
+  }
   const c=app.querySelector(".corpo");
   if(c){
     c.scrollTop=y;
@@ -1157,7 +1247,7 @@ app.addEventListener("click",ev=>{
     case "cap":{S.cap=Number(v);S.folha=null;pinta();
       const el=document.getElementById("cap"+v);
       if(el)el.scrollIntoView({behavior:"smooth",block:"start"});return;}
-    case "folha":S.folha=v;break;
+    case "folha":S.folha=v;if(v==="ajuda")S.ajuda=null;if(v==="busca")S.q="";break;
     case "fechar-aviso":S.avisoUso=false;break;
     case "modo":
       if(S.modo==="guiado")S.modo="personalizado";
@@ -1178,11 +1268,19 @@ app.addEventListener("click",ev=>{
     case "vista":S.estante=v;break;
     case "lomb":S.lombSel=v;break;
     case "dobra":S.perfil=S.perfil===v?"":v;break;
+    case "artigo":S.ajuda=v;break;
+    case "aa":{const[k,i]=v.split(":");
+      if(k==="tema"){document.documentElement.setAttribute("data-tema",i==="1"?"escuro":"claro");S.tema=Number(i);}
+      else S[k]=Number(i);break;}
+    case "dock":S.dockSel=Number(v);break;
     case "criar-conta":S.conta=true;S.folha=null;S.cena="trabalho";S.lugar="mesa";break;
   }
   pinta();
 });
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&(S.folha||S.menu)){S.folha=null;S.menu=false;pinta();}});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&(S.folha||S.menu)){S.folha=null;S.menu=false;pinta();return;}
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"&&S.conta){e.preventDefault();S.folha="busca";S.q="";pinta();}
+});
 
 /* ═══ PAINEL ◇ NOTAS ═══ */
 const NT={
@@ -1380,6 +1478,13 @@ document.getElementById("notasbt").addEventListener("click",()=>{notas.hidden=fa
     const quente=R.getAttribute("data-fundo")!=="neutro";
     R.setAttribute("data-fundo",quente?"neutro":"quente");
     bF.textContent=quente?"branco puro":"off-white";bF.setAttribute("aria-pressed",String(!quente));
+  });
+  const bT=document.getElementById("btTema");
+  bT.addEventListener("click",()=>{
+    const claro=R.getAttribute("data-tema")!=="escuro";
+    R.setAttribute("data-tema",claro?"escuro":"claro");
+    bT.textContent=claro?"tema escuro":"tema claro";bT.setAttribute("aria-pressed",String(!claro));
+    S.tema=claro?1:0;
   });
 })();
 

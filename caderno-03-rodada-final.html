@@ -22,8 +22,8 @@
   --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Mono","Liberation Mono",monospace;
 }
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){--bench:#121110;--bench-2:#1B1917;--bench-3:#0C0B0A;--canvas:#201E1B;--card:#2A2724;
+/* o escuro entra por escolha, no botao do indice — nao pelo sistema */
+:root[data-theme="nunca-automatico"]{--bench:#121110;--bench-2:#1B1917;--bench-3:#0C0B0A;--canvas:#201E1B;--card:#2A2724;
     --ink:#F1EEE8;--ink-2:#B9B2A6;--ink-3:#948D81;--rule:#3B372F;--rule-2:#332F29;
     --accent:#E4613D;--good:#8FB283;--warn:#D3A448;--crit:#E4613D;--shadow:0,0,0;--slab:#2A2724}
 }
@@ -692,7 +692,7 @@ tbody tr:hover td{background:var(--bench-2)}
   <a href="#s10">10 · Respostas</a>
   <a href="#s11">11 · O sistema</a>
   <span class="sp"></span>
-  <button class="tema" id="tema" type="button">tema: sistema</button>
+  <button class="tema" id="tema" type="button">tema: claro</button>
 </nav>
 
 <div class="page">
@@ -1716,11 +1716,10 @@ const ACH=[
 
 /* — tema — */
 (function(){
-  const b=document.getElementById("tema");const ordem=["sistema","claro","escuro"];let i=0;
+  const b=document.getElementById("tema");const ordem=["claro","escuro"];let i=0;
   b.addEventListener("click",()=>{
-    i=(i+1)%3;const m=ordem[i];
-    if(m==="sistema")document.documentElement.removeAttribute("data-theme");
-    else document.documentElement.setAttribute("data-theme",m==="claro"?"light":"dark");
+    i=(i+1)%2;const m=ordem[i];
+    document.documentElement.setAttribute("data-theme",m==="claro"?"light":"dark");
     b.textContent="tema: "+m;
   });
 })();
