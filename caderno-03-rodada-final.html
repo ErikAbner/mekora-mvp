@@ -578,13 +578,14 @@ tbody tr:hover td{background:var(--bench-2)}
   </div>
 
   <div class="regra" style="border-left-color:var(--good)">
-    <span class="lbl">Revisão B · 12 de agosto de 2026, à tarde</span>
-    <p style="margin-top:8px">As seis perguntas da seção 10 foram respondidas, e duas respostas
-      corrigiram o protótipo. A mais séria: <b>o preparo roda no navegador</b>, então a promessa
-      "pode fechar esta tela" — que eu tinha escrito em três telas — era falsa e saiu. E como não
-      há confirmação de que a direção de leitura pode ser detectada, <b>a confiança declarada
-      naquela pendência saiu também</b>: ela virou uma pergunta com a evidência à vista. A seção 10
-      registra as seis respostas e o que cada uma mudou.</p>
+    <span class="lbl">Revisão C · 12 de agosto de 2026</span>
+    <p style="margin-top:8px">As perguntas da seção 10 foram respondidas e o protótipo foi corrigido
+      duas vezes. A correção que ficou: o Makora é uma aplicação web com servidor, então
+      <b>fechar a aba não mata o preparo</b> — o que se perde sem conta é o endereço do trabalho, não
+      o trabalho. E como não há confirmação de que a direção de leitura pode ser detectada,
+      <b>a confiança declarada naquela pendência saiu</b>: virou uma pergunta com a evidência à vista.
+      Com a instrumentação aprovada, essa pergunta passa a ser o instrumento que constrói a
+      recomendação futura. A seção 10 registra tudo, inclusive as duas hipóteses que errei no caminho.</p>
   </div>
 </header>
 
@@ -1109,13 +1110,19 @@ tbody tr:hover td{background:var(--bench-2)}
     <article class="ach"><span class="p p0">R2</span><div class="cp">
       <h4>Roda no navegador — a promessa de fechar a aba saiu de três telas</h4>
       <p><b>Resposta:</b> a ideia é rodar no navegador; a ferramenta deixou de ser local há muito tempo.</p>
-      <p><b>O que mudou:</b> eu tinha escrito <i>"pode fechar esta tela — o item aparece na Mesa quando
-        terminar"</i>. Isso é mentira se o trabalho acontece na aba. As três ocorrências saíram. No lugar:
-        "o preparo acontece aqui, no seu navegador — você pode circular pelo Mekora, mas fechar a aba
-        interrompe". O grupo da Mesa virou <b>Em andamento nesta aba</b>, e ganhou uma linha nova que
-        antes não existia em lugar nenhum do produto: um arquivo <b>interrompido</b>, com a página em que
-        parou e a ação de selecioná-lo de novo. A tela de preparo tem um aviso âmbar dizendo o mesmo.</p>
-      <span class="onde">era hipótese: "roda no servidor e sobrevive" — errada, e o protótipo estava mentindo por causa dela</span>
+      <p><b>Revisão B:</b> li "rodar no navegador" como "o preparo acontece dentro da aba" e tirei a
+        promessa de todas as telas, trocando por um aviso âmbar de interrupção.</p>
+      <p><b>Revisão C — corrigido de novo, no outro sentido.</b> "É uma aplicação web, meio que um
+        website" quer dizer que o Makora deixou de ser aplicativo instalado, não que o trabalho é feito
+        na sua máquina. Existe servidor: o próprio registro do projeto fala do contrato com a API e de
+        uma entidade de processamento. Então <b>fechar a aba não mata o trabalho</b> — os avisos âmbar
+        saíram. O que se perde é outra coisa, e é aqui que esta resposta encontra a resposta 1:
+        <b>sem conta, o que some não é o preparo, é o endereço dele.</b> O texto agora muda conforme o
+        usuário tem conta ou não, e o terceiro motivo para criar conta ficou muito mais forte do que
+        eu tinha escrito. Na Mesa, no lugar do arquivo interrompido entrou uma <b>retomada</b> —
+        "conexão caiu na página 38 de 210, retomando de onde parou" —, que representa uma capacidade
+        que o app já tem e que nenhuma das 26 telas atuais mostra.</p>
+      <span class="onde">duas hipóteses erradas seguidas: primeiro servidor sem checar, depois navegador por excesso de correção. O texto certo só apareceu quando as duas respostas foram lidas juntas.</span>
     </div><a class="ir" href="#s6">ver cenário →</a></article>
 
     <article class="ach"><span class="p p1">R3</span><div class="cp">
@@ -1166,20 +1173,42 @@ tbody tr:hover td{background:var(--bench-2)}
     </div><span></span></article>
   </div>
 
+  <div class="bloco escuro">
+    <span class="lbl">Revisão C · as três pendências fechadas</span>
+    <p><b>Aplicação web, com servidor.</b> Fechar a aba não mata o preparo. Os avisos âmbar saíram e
+      a Mesa ganhou uma retomada no lugar da interrupção. A consequência boa é que as respostas 1 e 2
+      se encaixam: sem conta não se perde trabalho, perde-se o caminho de volta até ele.</p>
+    <p><b>Instrumentação aprovada.</b> Traqueamento e mapa de calor entram para descobrir onde as
+      pessoas travam e quais erros se repetem. Isso resolve a pendência da direção de leitura por um
+      caminho melhor do que o técnico: <b>as respostas às pendências são o dado que falta.</b> Cada
+      vez que alguém responde "direita para a esquerda" num arquivo que o Makora não soube ler, isso
+      é um exemplo rotulado. A pergunta de hoje é o instrumento que constrói a recomendação de amanhã
+      — e só quando houver número real ela deixa de ser pergunta.</p>
+    <p><b>Manifesto corrigido.</b> O <span class="mono">current_focus</span> deixou de descrever
+      trabalho concluído em 2 de agosto.</p>
+  </div>
+
   <div class="bloco">
-    <span class="lbl">O que continua em aberto depois destas respostas</span>
+    <span class="lbl">O que a instrumentação obriga a desenhar — e onde ela pode estragar o produto</span>
     <ul class="txt" style="padding-left:18px;font-size:14px">
-      <li><b>"No navegador" tem duas leituras.</b> Pode significar que o Mekora é uma aplicação web
-        (e o preparo ainda roda em servidor), ou que o preparo roda mesmo dentro da aba, no seu
-        computador. O protótipo adotou a leitura conservadora — a que promete menos. Se o preparo
-        rodar em servidor, a promessa de fechar a aba pode voltar, e é uma frase para reescrever.
-        Se rodar na aba, existe um argumento de privacidade forte que o produto hoje não usa: o
-        arquivo não sai do seu computador.</li>
-      <li><b>A detecção de direção de leitura.</b> Se um dia houver um sinal contável, a pergunta
-        volta a poder ser uma recomendação — com o número real, nunca com um ilustrativo.</li>
-      <li><b>O <span class="mono">current_focus</span> do manifesto</b> ainda descreve trabalho
-        concluído em 2 de agosto. Não inventei um novo: é decisão sua, e está no
-        <span class="mono">para-o-project-os.md</span>, item 3.</li>
+      <li><b>Mapa de calor num produto que abre arquivos pessoais tem uma linha que não se cruza:</b>
+        medir a interface, nunca o conteúdo. Nada de gravação de sessão sobre a área de pré-visualização,
+        nada de texto de OCR, nada de nome de arquivo em evento. Isso está escrito no protótipo, em
+        Perfil › Privacidade, com as palavras que o usuário leria — e um interruptor que funciona.</li>
+      <li><b>O guardrail do projeto já diz isso</b> em outras palavras: não acessar documentos pessoais
+        nem conteúdo de storage. Instrumentação é o lugar mais fácil de furar esse guardrail sem
+        perceber, porque quase toda ferramenta de heatmap grava a tela inteira por padrão.</li>
+      <li><b>Consentimento no momento certo, não num banner.</b> A primeira pendência respondida é o
+        momento em que "usar minhas respostas para o Makora aprender" faz sentido — antes disso é
+        abstrato, e um banner na entrada só ensina a clicar em aceitar.</li>
+      <li><b>Honestidade continua valendo depois de haver dado.</b> Quando a amostra for pequena, o
+        produto segue perguntando, e segue dizendo que pergunta porque não sabe. Trocar a pergunta por
+        uma recomendação cedo demais é o mesmo erro do "108 das 120", só que com aparência de método.</li>
+      <li><b>O que medir primeiro,</b> se a instrumentação for para servir a esta rodada: quantos
+        usuários abrem o Personalizado (mede se o Guiado está resolvendo), quantos abandonam na
+        análise (mede se a lista é longa demais), quanto tempo leva uma pendência, e quantas vezes a
+        recomendação é alterada em vez de confirmada — este último é o número que diz se o Makora
+        está acertando ou só sendo obedecido.</li>
     </ul>
   </div>
 </section>
@@ -1485,14 +1514,15 @@ function vMesa(){
     item({nm:"Vagabundo — volume 04.cbz",st:"2 pendências · direção de leitura e página dupla",pt:"at",
           acao:"Revisar",v:"item-hq"})+'</div>';
 
-  /* Resposta 2: o preparo roda no navegador. Nada continua depois que a aba fecha,
-     e a interface diz isso — inclusive mostrando o que ficou pelo caminho. */
-  h+='<div class="mk-grupo"><div class="cab"><h3>Em andamento nesta aba</h3><span class="ct">1</span>'+
-    '<span class="sp"></span><span class="ct">fechar a aba interrompe</span></div>'+
+  /* Aplicação web: o trabalho não morre com a aba. O que se perde sem conta é o
+     endereço dele. A linha de retomada existe porque offline_retry já é capacidade
+     operacional do app e nenhuma das 26 telas atuais mostra isso. */
+  h+='<div class="mk-grupo"><div class="cab"><h3>Em andamento</h3><span class="ct">2</span>'+
+    '<span class="sp"></span><span class="ct">continua mesmo com a aba fechada</span></div>'+
     item({nm:"Padrões de leitura em tela.pdf",st:"Convertendo — 1 min 04 s",pt:"go",cap:"PDF",
           acao:"Ver",v:"item-doc"})+
-    item({nm:"Compêndio do design 2024.pdf",st:"Interrompido quando a aba fechou, na página 38 de 210",pt:"er",cap:"PDF",
-          acao:"Selecionar de novo",v:"item-doc"})+'</div>';
+    item({nm:"Compêndio do design 2024.pdf",st:"Conexão caiu na página 38 de 210 · retomando de onde parou",pt:"at",cap:"PDF",
+          acao:"Ver",v:"item-doc"})+'</div>';
 
   h+='<div class="mk-grupo"><div class="cab"><h3>Prontos</h3><span class="ct">3</span><span class="sp"></span>'+
     '<button class="mk-lnk mudo" data-a="ir" data-v="estante">Ver tudo na Estante →</button></div>'+
@@ -1560,8 +1590,11 @@ function vDoc(){
 
   h+='<div class="mk-acoes"><button class="mk-btn" data-a="doc-preparar">Preparar com estas recomendações</button>'+
     '<button class="mk-lnk mudo" data-a="modo">Ajustar manualmente</button></div>'+
-    '<div class="mk-nota"><span>◆</span><div>O preparo acontece aqui, no seu navegador. Você pode circular pelo Mekora enquanto isso, '+
-      'mas <b>manter esta aba aberta</b> — se ela fechar, o preparo para onde estava.</div></div>';
+    '<div class="mk-nota"><span>◆</span><div>'+
+      (S.conta?'O preparo continua mesmo se você fechar a aba — ele acontece do lado do Mekora, não no seu computador. '+
+        'Você reencontra este arquivo na Mesa.':
+       'O preparo continua mesmo se você fechar a aba. <b>Mas sem conta, você perde o caminho de volta até ele</b> — '+
+        'o trabalho não para, o endereço é que some.')+'</div></div>';
   return h+'</div>';
 }
 function li(k,ch,t,d,acao,v){
@@ -1585,9 +1618,10 @@ function docPreparando(){
   h+='<div class="mk-acoes"><button class="mk-btn sec" data-a="doc-cancelar">Cancelar preparação</button>'+
     '<button class="mk-lnk mudo" data-a="ir" data-v="mesa">Continuar navegando no Mekora</button></div>';
   h+='<div class="mk-nota"><span>◆</span><div><b>Honestidade:</b> nenhuma porcentagem aparece para etapas que não avançam linearmente. A barra acima conta páginas de verdade.</div></div>';
-  h+='<div class="mk-nota" style="background:var(--warn-soft);border-color:#f0e0c2"><span>◆</span><div>'+
-    'O trabalho roda nesta aba. Trocar de tela dentro do Mekora não atrapalha; <b>fechar a aba interrompe</b> na página '+f+
-    ' e o arquivo precisa ser selecionado de novo.</div></div>';
+  h+='<div class="mk-nota"><span>◆</span><div>'+
+    (S.conta?'Pode fechar a aba: o trabalho não é feito no seu computador, e o item volta a aparecer na Mesa quando terminar.':
+      '<b>Sem conta, feche a aba e você perde este endereço.</b> O preparo termina do mesmo jeito — mas não haverá Mesa onde reencontrá-lo.')+
+    '</div></div>';
   return h+'</div>';
 }
 function docPronto(){
@@ -1612,7 +1646,7 @@ function docPronto(){
       '<div class="mk-lista" style="background:var(--bg)">'+
         li("in","1","Estante, Canvas e Conexões","Só existem com conta: são o seu acervo, e ele precisa de um dono.","","")+
         li("in","2","O seu Kindle fica salvo","Sem conta, o endereço é digitado a cada envio.","","")+
-        li("in","3","Sem conta, esta aba é tudo","Ao fechá-la, o histórico desta sessão some. O arquivo baixado continua seu.","","")+
+        li("in","3","Sem conta, esta aba é o único endereço","O preparo não morre se você fechar — mas não haverá Mesa onde reencontrá-lo. O arquivo já baixado continua seu.","","")+
       '</div>'+
       '<div class="mk-acoes" style="margin-top:16px"><button class="mk-btn" data-a="criar-conta">Criar conta</button>'+
       '<button class="mk-lnk mudo" data-a="soltar">Preparar outro arquivo sem conta</button></div></div>';
@@ -1779,8 +1813,9 @@ function hqPreparando(){
     '</div></div>';
   h+='<div class="mk-acoes"><button class="mk-btn sec" data-a="hq-cancelar">Cancelar</button>'+
     '<button class="mk-lnk mudo" data-a="ir" data-v="mesa">Continuar navegando no Mekora</button></div>';
-  h+='<div class="mk-nota" style="background:var(--warn-soft);border-color:#f0e0c2"><span>◆</span><div>'+
-    '186 MB de imagens sendo preparadas nesta aba. <b>Fechar a aba interrompe</b> — e num quadrinho isso custa mais que num documento.</div></div>';
+  h+='<div class="mk-nota"><span>◆</span><div>'+
+    '186 MB de imagens, e o trabalho não é feito no seu computador. Pode fechar a aba — num quadrinho isso importa mais, '+
+    'porque a preparação é longa.</div></div>';
   return h+'</div>';
 }
 function hqPronto(){
@@ -1863,9 +1898,17 @@ function vPerfil(){
         '<button class="mk-sw" data-a="manual" aria-pressed="false" aria-label="Baixar automaticamente"><i></i></button></div>'+
       '<div class="mk-lin"><div class="tx"><b>Reduzir movimento</b><span>Segue a preferência do sistema</span></div>'+
         '<button class="mk-sw" data-a="manual" aria-pressed="false" aria-label="Reduzir movimento"><i></i></button></div>'],
-    ["priv","Privacidade","O que fica guardado e por quanto tempo",
+    ["priv","Privacidade","O que fica guardado, o que é medido e por quanto tempo",
       '<div class="mk-lin"><div class="tx"><b>Arquivos originais</b><span>Apagados 24 horas depois de preparados. O resultado fica na sua estante.</span></div>'+
         '<button class="mk-btn sm sec" data-a="manual">Alterar</button></div>'+
+      '<div class="mk-lin"><div class="tx"><b>Ajudar a melhorar o Makora</b>'+
+        '<span>Registramos <b>onde você clica e onde trava</b> — nunca o conteúdo dos seus arquivos, nem o texto que sai do reconhecimento. '+
+        'É o que nos deixa ver que um erro se repete em muita gente, e não só na sua conta.</span></div>'+
+        '<button class="mk-sw" data-a="manual" aria-pressed="true" aria-label="Ajudar a melhorar o Makora"><i></i></button></div>'+
+      '<div class="mk-lin"><div class="tx"><b>Usar minhas respostas de pendência</b>'+
+        '<span>Quando você responde "estas páginas são lidas da direita para a esquerda", isso vira exemplo para o Makora aprender a acertar sozinho. '+
+        'Guardamos a resposta e as dimensões das páginas — não as imagens.</span></div>'+
+        '<button class="mk-sw" data-a="manual" aria-pressed="true" aria-label="Usar minhas respostas de pendência"><i></i></button></div>'+
       '<div class="mk-lin"><div class="tx"><b>Baixar meus dados</b><span>Estante, notas e histórico de preparação</span></div>'+
         '<button class="mk-btn sm sec" data-a="manual">Baixar</button></div>'+
       '<div class="mk-lin"><div class="tx"><b>Apagar a conta</b><span>Irreversível. Pedimos confirmação por e-mail antes.</span></div>'+
@@ -1892,6 +1935,8 @@ function vNovidades(){
     ["exp","Experimental","Tradução de quadrinhos","Detecta os balões, lê o texto e recompõe traduzido. Funciona em páginas simples e erra em arte densa. Fica no Personalizado, desligada por padrão, e não entra no fluxo guiado enquanto a qualidade não for validada."],
     ["novo","Novo","Pendências em vez de configuração","Quando há dúvida real — página dupla, direção de leitura — aparece uma pendência com a recomendação e o motivo. Quando não há, não aparece nada."],
     ["novo","Novo","A Mesa","Um lugar onde o trabalho em curso continua existindo depois que você fecha a aba."],
+    ["novo","Novo","Medimos onde você trava","Passamos a registrar cliques e pontos de travamento na interface — nunca o conteúdo dos seus arquivos. Dá para desligar em Perfil › Privacidade, e o que é coletado está escrito lá."],
+    ["exp","Experimental","Aprender com as suas respostas","As respostas que você dá às pendências viram exemplos para o Makora deixar de perguntar. Enquanto a amostra for pequena, ele continua perguntando — e vai continuar dizendo que pergunta porque não sabe."],
     ["mel","Melhorado","Progresso honesto","Barra só onde há o que contar. Nas outras etapas, a etapa e o tempo decorrido."],
     ["mel","Melhorado","Editor manual de páginas","Filtros por tipo de problema, seleção múltipla e contagem de alterações reversíveis."],
     ["cor","Corrigido","O erro de envio não desaparece mais","Um arquivo que falhou no upload continua marcado como falho até você resolver."],
@@ -2379,7 +2424,7 @@ const CMP=[
    '<div class="mn-bloco"><div class="mn-lin"><span class="s ok">✓</span><span><b>Analisar</b></span></div>'+
    '<div class="mn-lin"><span class="s">●</span><span><b>Reconhecer o texto</b><em>página 42</em></span></div>'+
    '<div class="mn-lin"><span class="s">○</span><span><em>Converter · sumário · capa</em></span></div></div>'+
-   '<div class="mn-bloco at"><p>O preparo roda nesta aba. Circular pelo Mekora não atrapalha; <b>fechar a aba interrompe</b> na página 42.</p></div></div></div>',
+   '<p style="margin-top:8px">Pode fechar a aba: o trabalho não é feito no seu computador. O item volta a aparecer na Mesa.</p></div></div>',
  pq:"A tela atual perde o cabeçalho, as abas e o nome do arquivo, e inverte a ordem: a etapa em curso fica embaixo e os tempos decrescem para cima. Aqui a ordem é a de leitura, o contexto permanece, e a barra só existe onde há coisa contável — que é a única leitura honesta de progresso neste produto."},
 
 {t:"6. Lote",img:"telas-atuais/lote-analise.png",cena:"lote",
@@ -2580,7 +2625,10 @@ const DEC=[
  ["alterar","O lote","Estado e ação por arquivo; falhas iguais agrupadas; nada de barra única.","médio"],
  ["alterar","O quadrinho guiado","Importar → analisar → preparar → revisar exceções → exportar. Nenhuma administração manual de páginas.","médio"],
  ["alterar","A confiança declarada","Só quando existe medição (\"2 de 120 páginas têm largura dupla\"). Sem medição, o produto pergunta em vez de recomendar — e não declara confiança nenhuma.","baixo"],
- ["alterar","O aviso de que o preparo roda na aba","Consequência da resposta 2. Precisa aparecer na tela de preparo e ter um estado próprio para o que foi interrompido.","médio"],
+ ["alterar","O que a interface promete sobre fechar a aba","O preparo continua no servidor. Sem conta, o que some é o endereço do trabalho — e é esse o argumento mais forte para criar conta.","baixo"],
+ ["alterar","Mostrar a retomada","Repetição após queda de conexão já é capacidade do app e não aparece em nenhuma das 26 telas. Vira uma linha viva na Mesa.","baixo"],
+ ["adiar","Instrumentação: traqueamento e mapa de calor","Aprovado como direção. Mede a interface, nunca o conteúdo; consentimento no momento da primeira pendência, não em banner de entrada.","—"],
+ ["adiar","Respostas de pendência como dado","O caminho honesto de \"pergunto porque não sei\" até \"recomendo porque medi\". Só troca de forma quando houver número real.","—"],
  ["alterar","O momento de pedir conta","Depois de converter, nunca antes; com o motivo escrito. Sem conta, a barra não mostra lugares inutilizáveis.","médio"],
  ["alterar","A conclusão","Vira estado do item, com o que foi feito visível e reversível.","baixo"],
  ["alterar","O tema escuro","Barra, dock e botões flutuantes precisam do mesmo tratamento que o conteúdo.","baixo"],

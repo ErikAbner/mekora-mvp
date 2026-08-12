@@ -67,12 +67,17 @@ Contém:
 - o que recomendo manter, alterar, remover e adiar;
 - as seis respostas do Erik e o que cada uma mudou no desenho.
 
-**Revisão B, 12 de agosto de 2026.** As perguntas foram respondidas e duas respostas corrigiram o
-protótipo. O preparo roda no navegador, então a promessa *"pode fechar esta tela"* — escrita em três
-telas — era falsa e saiu, junto com um estado novo para o que fica interrompido quando a aba fecha.
-E como não há confirmação de que a direção de leitura pode ser detectada, a confiança declarada
-naquela pendência saiu também: ela virou uma pergunta com a evidência à vista. A regra que ficou:
+**Revisão C, 12 de agosto de 2026.** As perguntas foram respondidas e o protótipo foi corrigido duas
+vezes. O Makora é uma aplicação web com servidor: **fechar a aba não mata o preparo** — o que se
+perde sem conta é o endereço do trabalho, não o trabalho, e isso amarra a pergunta da conta com a do
+processamento. Como não há confirmação de que a direção de leitura pode ser detectada, a confiança
+declarada naquela pendência saiu: virou uma pergunta com a evidência à vista. A regra que ficou:
 **confiança só quando existe medição; sem medição, o produto pergunta.**
+
+Com traqueamento e mapa de calor aprovados, essa pergunta deixa de ser só uma limitação: **as
+respostas às pendências são o dado que falta** para um dia recomendar com número real. O caderno
+registra o que isso obriga a desenhar — medir a interface e nunca o conteúdo, consentimento no
+momento da primeira pendência, e continuar perguntando enquanto a amostra for pequena.
 
 ## As três decisões centrais do Caderno 02
 
