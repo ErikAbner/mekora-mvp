@@ -398,6 +398,35 @@ tbody tr:hover td{background:var(--bench-2)}
 .mk-ferr .k{margin-left:auto;font-family:var(--mn);font-size:9px;color:var(--pink-3);border:1px solid var(--line);
   border-radius:3px;padding:0 4px}
 
+/* ── acervo real: capas e lombadas ──────────────────────── */
+.mk-capa{display:block;width:100%;height:auto;border-radius:3px;border:1px solid var(--line);
+  background:#f1eee7;transition:transform .24s cubic-bezier(.16,1,.3,1)}
+.mk-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:var(--s5)}
+.mk-livro{text-align:left;display:block;width:100%}
+.mk-livro:hover .mk-capa{transform:translateY(-3px)}
+.mk-livro .t{display:block;font-size:12.5px;font-weight:600;margin-top:9px;line-height:1.25;letter-spacing:-.005em}
+.mk-livro .a{display:block;font-size:12px;color:var(--pink-3);margin-top:1px}
+.mk-livro .f{display:block;font-family:var(--mn);font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--pink-3);margin-top:4px}
+.mk-mini{width:34px;height:44px;border-radius:3px;border:1px solid var(--line);object-fit:cover;
+  object-position:top;display:block;background:#f1eee7}
+
+/* estante 3D — o conserto do achado 20 */
+.mk-est3d{display:flex;flex-direction:column;gap:var(--s5)}
+.mk-prat{display:flex;flex-direction:column}
+.mk-livros{display:flex;align-items:flex-end;gap:2px;padding:0 22px;min-height:150px}
+.mk-lomb{display:block;width:auto;border-radius:2px 2px 0 0;cursor:pointer;
+  transition:transform .24s cubic-bezier(.16,1,.3,1)}
+.mk-lomb:hover{transform:translateY(-9px)}
+.mk-lombbt[aria-pressed="true"] .mk-lomb{transform:translateY(-15px)}
+.mk-tabua{height:9px;background:#dfdbd2;border-bottom:4px solid #bdb7a9;border-radius:2px}
+.mk-legenda{display:flex;align-items:baseline;gap:var(--s3);padding:var(--s3) 22px 0;min-height:34px}
+.mk-legenda b{font-size:13px;font-weight:600}
+.mk-legenda span{font-size:12px;color:var(--pink-3)}
+.mk-vista{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--bg-2)}
+.mk-vista button{padding:5px 13px;font-size:12px;color:var(--pink-2)}
+.mk-vista button[aria-pressed="true"]{background:var(--pink);color:#fff}
+
 /* ── painel de envio ────────────────────────────────────── */
 .mk-painel{border:1px solid var(--line);border-radius:var(--r2);padding:var(--s4);background:var(--bg-2);
   margin-top:var(--s4)}
@@ -1146,6 +1175,8 @@ tbody tr:hover td{background:var(--bench-2)}
         <li><b>Editor manual →</b> filtro "Precisam de atenção", selecione páginas, use uma
           ferramenta, desfaça.</li>
         <li><b>Lote →</b> simular falha repetida.</li>
+        <li><b>Estante → Estante</b> (o seletor à direita): a versão 3D reconstruída com as lombadas
+          reais. Clique numa delas.</li>
       </ul>
     </div>
   </div>
@@ -1400,7 +1431,7 @@ tbody tr:hover td{background:var(--bench-2)}
           </div>
           <div class="f60l">
             <span class="marca">Mekora</span>
-            <span class="nome">Leis universais de design.pdf</span>
+            <span class="nome">Relatório de pesquisa — expedição 02.pdf</span>
             <span class="pt"></span><span class="lug">pronto · EPUB · 8,4 MB</span>
             <span class="sp"></span><span class="lug">Enviar ao Kindle</span>
           </div>
@@ -1408,7 +1439,7 @@ tbody tr:hover td{background:var(--bench-2)}
       </div>
       <div class="f60rolo" id="f60rolo">
         <div class="f60conteudo">
-          <h4>Leis universais de design.pdf</h4>
+          <h4>Relatório de pesquisa — expedição 02.pdf</h4>
           <p>Analisado. Duas coisas mudam o resultado, e eu sei o que fazer com as duas.</p>
           <p>Texto em imagem: as 96 páginas são digitalizações. Sem reconhecimento, o Kindle não busca
             palavras nem ajusta o tamanho da letra.</p>
@@ -1442,7 +1473,7 @@ tbody tr:hover td{background:var(--bench-2)}
       <div class="especime">
         <div><span class="rot">Serifa · o que se lê</span>
           <p style="font-family:var(--serif);font-size:19px;line-height:1.45;margin:0">
-            Leis universais de design</p>
+            Diário 02</p>
           <p style="font-family:var(--serif);font-size:15px;line-height:1.6;color:var(--ink-2);margin:6px 0 0">
             Título de item, corpo do leitor, e nada mais. É a única família que carrega conteúdo.</p></div>
         <div><span class="rot">Grotesca · o que opera</span>
@@ -1507,6 +1538,46 @@ tbody tr:hover td{background:var(--bench-2)}
       (o <span class="mono">:focus-visible</span> aqui ainda é o do navegador), densidade alternativa
       para o lote com muitos arquivos, e o comportamento em toque — que é onde a faixa contextual
       costuma quebrar, porque não há hover para antecipar a troca.</p>
+  </div>
+
+  <div class="bloco">
+    <span class="lbl">O acervo real — e o que ele ensinou sobre o produto</span>
+    <p class="txt" style="font-size:14px">As 14 capas e 14 lombadas já existiam e estão agora em
+      <span class="mono">capas/</span>, ao lado do caderno. Elas trouxeram duas coisas que nenhuma
+      captura de tela tinha mostrado.</p>
+    <p class="txt" style="font-size:14px"><b>Uma capacidade que o protótipo não tinha.</b> Uma das
+      capas diz, escrito na própria arte: <i>"relatório de pesquisa sem capa, gerado automaticamente
+      pelo sistema"</i>. O Mekora monta capa para arquivo que não tem — e isso é muito melhor do que
+      a fileira de cinco miniaturas idênticas que a tela atual oferece para escolher capa. O momento
+      está construído no cenário <b>Documento</b>: a capa vem pronta, com o motivo, e dá para trocar.</p>
+    <p class="txt" style="font-size:14px"><b>O conserto da Estante 3D.</b> As lombadas existiam desde
+      6 de agosto. A tela que a auditoria reprovou — prateleiras cinzas vazias e uma pilha de rótulos
+      "Livro" solta fora do plano — estava a um <span class="mono">&lt;img&gt;</span> de funcionar.</p>
+
+    <div style="border-top:1px solid var(--rule-2);padding-top:16px;margin-top:4px">
+      <h3 class="sub" style="margin-bottom:9px">Três defeitos nos próprios arquivos</h3>
+      <p class="txt" style="font-size:13.5px">Não são defeitos de tela: estão dentro das imagens, e
+        por isso não têm conserto em CSS. Anoto para não passarem despercebidos até virarem produto.</p>
+      <div class="tabwrap" style="border-radius:4px;margin-top:11px">
+        <table style="min-width:0">
+          <thead><tr><th>Arquivo</th><th>O que está escrito</th><th>Deveria</th></tr></thead>
+          <tbody>
+            <tr><td class="n mono">capa-08.jpg</td>
+              <td>"gerado automaticamente pelo sistema <b>MAKORA</b>"</td>
+              <td>Mekora — a <span class="mono">DEC-0013</span> diz que qualquer artefato com "Makora" está errado</td></tr>
+            <tr><td class="n mono">capa-03.jpg<br>lombada-04.png</td>
+              <td>"Sequên<b>c</b>a Noturna"</td>
+              <td>Sequência. É o achado nº 25 da auditoria, e ele está na arte, não na interface</td></tr>
+            <tr><td class="n mono">lombada-14.png</td>
+              <td>"APRESENTAÇÃO INSTITUCIONA"</td>
+              <td>O L final não coube na lombada. O texto precisa caber ou reduzir</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="txt" style="font-size:13px;margin-top:11px">Mantive os três como estão no protótipo —
+        corrigir imagem que não é minha seria apagar a evidência, e o "antes" é o que sustenta a
+        comparação. É a mesma regra do <span class="mono">telas-atuais/</span>.</p>
+    </div>
   </div>
 </section>
 
@@ -1682,17 +1753,39 @@ if(!palco)return;
 
 /* ── dados fictícios verossímeis ─────────────────────────── */
 const ARQ={
-  doc:{nome:"Leis universais de design.pdf",saida:"Leis universais de design.epub",fmt:"PDF",
-       tam:"12,8 MB",pgs:96,idioma:"Português",titulo:"Leis universais de design",
-       autor:"William Lidwell, Kritina Holden e Jill Butler"},
+  doc:{nome:"Relatório de pesquisa — expedição 02.pdf",saida:"Diário 02.epub",fmt:"PDF",
+       tam:"12,8 MB",pgs:96,idioma:"Português",titulo:"Diário 02",
+       autor:"Ana Duarte",capa:"11",capaGerada:"08"},
   hq:{nome:"Vagabundo — volume 04.cbz",saida:"Vagabundo — volume 04.epub",fmt:"CBZ",
       tam:"186 MB",pgs:120,idioma:"Japonês (romanizado)",titulo:"Vagabundo — volume 04",autor:"Takehiko Inoue"}
 };
+/* Acervo real. As 14 capas e 14 lombadas vieram prontas do projeto e estão
+   em capas/. A ordem das lombadas é a da pasta original; o título de cada
+   uma foi lido da própria arte. */
+const ACERVO=[
+ {c:"01",t:"Estudo de Viabilidade",a:"Ana Duarte",f:"EPUB",q:"14 notas",l:"03",h:196},
+ {c:"02",t:"Malha Urbana",a:"Ana Duarte",f:"EPUB",q:"preparado hoje",l:"02",h:182},
+ {c:"03",t:"Sequênca Noturna",a:"Ana Duarte",f:"EPUB",q:"6 notas",l:"04",h:204},
+ {c:"04",t:"Censo de Fauna",a:"Ana Duarte",f:"EPUB",q:"lido em julho",l:"05",h:174},
+ {c:"05",t:"Malha Urbana",a:"Ana Duarte",f:"EPUB",q:"outra edição",l:"06",h:190},
+ {c:"06",t:"Ensaio Visual",a:"Ana Duarte",f:"TXT",q:"2 notas",l:"07",h:166},
+ {c:"07",t:"Ensaio Visual",a:"Ana Duarte",f:"TXT",q:"variante vertical",l:"08",h:198},
+ {c:"08",t:"Arquivo",a:"Ana Duarte",f:"PDF",q:"capa gerada pelo Mekora",l:"09",h:186},
+ {c:"09",t:"Ata da reunião",a:"Ana Duarte",f:"PDF",q:"pesquisa",l:"10",h:172},
+ {c:"10",t:"Arquivo",a:"Ana Duarte",f:"XLSX",q:"planilha",l:"11",h:200},
+ {c:"11",t:"Diário 02",a:"Ana Duarte",f:"PDF",q:"registro de campo",l:"12",h:178},
+ {c:"12",t:"Ata da reunião",a:"Ana Duarte",f:"PDF",q:"pesquisa",l:"13",h:192},
+ {c:"13",t:"Briefing de Marca",a:"Ana Duarte",f:"PDF",q:"1 nota",l:"01",h:168},
+ {c:"14",t:"Apresentação Institucional",a:"Ana Duarte",f:"PDF",q:"pesquisa",l:"14",h:206}
+];
+const capa=n=>"capas/capa-"+n+".jpg";
+const lombada=n=>"capas/lombada-"+n+".png";
+
 const LOTE=[
-  {n:"Leis universais de design.pdf",st:"pronto",d:"EPUB · 8,4 MB · sumário gerado"},
-  {n:"Padrões de leitura em tela.pdf",st:"indo",d:"Convertendo — 1 min 04 s"},
-  {n:"Anuário do design 2025.pdf",st:"pende",d:"Protegido por senha"},
-  {n:"Ensaios sobre forma.epub",st:"pronto",d:"EPUB · 2,1 MB · já era EPUB, só ajustei a capa"}
+  {n:"Relatório de pesquisa — expedição 02.pdf",st:"pronto",d:"EPUB · 8,4 MB · sumário gerado"},
+  {n:"Censo de Fauna — digitalização.pdf",st:"indo",d:"Convertendo — 1 min 04 s"},
+  {n:"Briefing de Marca — anexo.pdf",st:"pende",d:"Protegido por senha"},
+  {n:"Apresentação Institucional.epub",st:"pronto",d:"EPUB · 2,1 MB · já era EPUB, só ajustei a capa"}
 ];
 const PAGS=(function(){
   const a=[];
@@ -1711,7 +1804,7 @@ const PAGS=(function(){
 /* ── estado ──────────────────────────────────────────────── */
 const IDIOMAS={en:"inglês",es:"espanhol",fr:"francês",de:"alemão",ja:"japonês"};
 const inicial={
-  cena:"mesa",lugar:"mesa",modo:"guiado",conta:true,avisoUso:true,
+  cena:"mesa",lugar:"mesa",modo:"guiado",conta:true,avisoUso:true,estante:"lista",lombada:"01",
   doc:{fase:"analise",feito:0,pendResolvida:false,pendMostrada:false,enviado:false,detalhes:false,traducao:null},
   hq:{fase:"analise",feito:0,pend:{leitura:null,dupla:null},filtro:"todas",sel:[],mudancas:[]},
   lote:{falhaAgrupada:false,linhas:JSON.parse(JSON.stringify(LOTE))},
@@ -1823,23 +1916,24 @@ function vMesa(){
      operacional do app e nenhuma das 26 telas atuais mostra isso. */
   h+='<div class="mk-grupo"><div class="cab"><h3>Em andamento</h3><span class="ct">2</span>'+
     '<span class="sp"></span><span class="ct">continua mesmo com a aba fechada</span></div>'+
-    item({nm:"Padrões de leitura em tela.pdf",st:"Convertendo — 1 min 04 s",pt:"go",cap:"PDF",
+    item({nm:"Censo de Fauna — digitalização.pdf",st:"Convertendo — 1 min 04 s",pt:"go",cap:"PDF",
           acao:"Ver",v:"item-doc"})+
-    item({nm:"Compêndio do design 2024.pdf",st:"Conexão caiu na página 38 de 210 · retomando de onde parou",pt:"at",cap:"PDF",
+    item({nm:"Ensaio Visual — rascunho.pdf",st:"Conexão caiu na página 38 de 210 · retomando de onde parou",pt:"at",cap:"PDF",
           acao:"Ver",v:"item-doc"})+'</div>';
 
   h+='<div class="mk-grupo"><div class="cab"><h3>Prontos</h3><span class="ct">3</span><span class="sp"></span>'+
     '<button class="mk-lnk mudo" data-a="ir" data-v="estante">Ver tudo na Estante →</button></div>'+
-    item({nm:"Leis universais de design.epub",st:"Enviado ao Kindle de Erik · hoje, 09:12",pt:"ok",acao:"Abrir",v:"item-doc"})+
-    item({nm:"Ensaios sobre forma.epub",st:"Baixado · ontem",pt:"ok",acao:"Abrir",v:"item-doc"})+
-    item({nm:"O detalhe de Flaubert.epub",st:"Na estante · 6 de agosto",pt:"ok",acao:"Abrir",v:"item-doc"})+
+    item({nm:"Estudo de Viabilidade.epub",st:"Enviado ao Kindle de Erik · hoje, 09:12",pt:"ok",capa:"01",acao:"Abrir",v:"item-doc"})+
+    item({nm:"Censo de Fauna.epub",st:"Baixado · ontem",pt:"ok",capa:"04",acao:"Abrir",v:"item-doc"})+
+    item({nm:"Diário 02.pdf",st:"Na estante · 6 de agosto · capa gerada pelo Mekora",pt:"ok",capa:"11",acao:"Abrir",v:"item-doc"})+
     '</div>';
   h+='</div>';
   return h;
 }
 function item(o){
   return '<button class="mk-item" data-a="ir" data-v="'+o.v+'">'+
-    '<span class="cap">'+(o.cap||(o.pt==="at"?"CBZ":"EPUB"))+'</span>'+
+    (o.capa?'<img class="mk-mini" src="'+capa(o.capa)+'" alt="">':
+      '<span class="cap">'+(o.cap||(o.pt==="at"?"CBZ":"EPUB"))+'</span>')+
     '<span><span class="nm">'+esc(o.nm)+'</span>'+
       '<span class="st"><i class="mk-pt pt-'+o.pt+'"></i>'+esc(o.st)+'</span></span>'+
     '<span class="dir"><span class="mk-lnk">'+o.acao+'</span></span></button>';
@@ -1852,8 +1946,10 @@ function seletorModo(){
     '</button>';
 }
 function cabItem(a,estado){
+  const cp=a.capa?'<img class="mk-mini" src="'+capa(S.doc.capaEscolhida==="gerada"&&a.capaGerada?a.capaGerada:a.capa)+
+    '" alt="" style="width:50px;height:66px;flex:0 0 50px">':'';
   return '<button class="mk-volta" data-a="ir" data-v="mesa">‹ Mesa</button>'+
-    '<div class="mk-h"><div class="t"><h1>'+esc(a.nome)+'</h1>'+
+    '<div class="mk-h">'+cp+'<div class="t"><h1>'+esc(a.nome)+'</h1>'+
     '<div class="mk-metas"><span class="mk-meta">'+a.fmt+'</span><span class="mk-meta">'+a.tam+'</span>'+
     '<span class="mk-meta">'+a.pgs+' páginas</span><span class="mk-meta">'+a.idioma+'</span></div></div>'+
     seletorModo()+'</div>'+(estado||"");
@@ -1882,7 +1978,13 @@ function vDoc(){
     li("in","1","Reconhecer o texto em português","O idioma foi detectado no próprio arquivo.","","")+
     li("in","2","Converter para EPUB","No EPUB o texto reflui: você muda o corpo da letra e o conteúdo se ajusta. Em PDF, não.","","")+
     li("in","3","Gerar sumário navegável","A partir dos 14 títulos de capítulo encontrados.","","")+
-    li("in","4","Usar a página 1 como capa","É a única página do arquivo sem texto corrido.","alterar","capa")+
+    /* As próprias capas do projeto declaram esta capacidade: uma delas diz, na arte,
+       "relatório de pesquisa sem capa, gerado automaticamente pelo sistema".
+       Substitui o defeito nº 14 — cinco miniaturas idênticas para escolher a capa. */
+    li("in","4",S.doc.capaEscolhida==="pagina"?"Usar a página 1 como capa":"Gerar uma capa",
+      S.doc.capaEscolhida==="pagina"?"Escolhido por você.":
+        "O arquivo não tem capa. Monto uma com o título, o autor e o formato, na mesma linguagem da sua estante.",
+      "ver","capa")+
     /* DEC-0013: tradução é funcionalidade principal para texto — mas é decisão de saída,
        nunca uma pergunta pré-respondida com "Sim", que foi o defeito P0 nº 7. */
     li(S.doc.traducao?"ok":"in",S.doc.traducao?"✓":"5",
@@ -2036,7 +2138,7 @@ function vLote(){
   if(S.lote.falhaAgrupada){
     h+='<div class="mk-sec"><div class="mk-estado at"><i class="pt"></i><div>'+
       '<h2>2 arquivos falharam pelo mesmo motivo</h2>'+
-      '<p>Anuário do design 2025.pdf e Compêndio 2024.pdf estão protegidos por senha. Informe uma vez e eu tento nos dois.</p>'+
+      '<p>Briefing de Marca — anexo.pdf e Ensaio Visual — rascunho.pdf estão protegidos por senha. Informe uma vez e eu tento nos dois.</p>'+
       '<div class="mk-acoes" style="margin-top:14px"><button class="mk-btn sm" data-a="lote-senha" data-v="0">Informar a senha</button>'+
       '<button class="mk-lnk mudo" data-a="lote-seguir">Seguir sem eles</button></div></div></div></div>';
   }
@@ -2274,29 +2376,44 @@ function vNovidades(){
 
 /* ── estante e canvas (existentes, preservados) ──────────── */
 function vEstante(){
-  const livros=[["Leis universais de design","William Lidwell","EPUB","preparado hoje"],
-    ["Vagabundo — volume 04","Takehiko Inoue","EPUB","preparado hoje"],
-    ["Ensaios sobre forma","Ana Duarte","EPUB","ontem"],
-    ["O detalhe de Flaubert","Roland Barthes","EPUB","6 de agosto"],
-    ["Censo de fauna urbana","Marina Prado","PDF","4 de agosto"],
-    ["Sequência noturna","Ana Duarte","EPUB","2 de agosto"]];
   let h='<div class="mk-pad larga">'+
-    '<div style="display:flex;align-items:baseline;gap:12px;margin-bottom:20px">'+
+    '<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">'+
     '<h1 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-.025em">Estante</h1>'+
-    '<span style="font-family:var(--mn);font-size:10.5px;color:var(--pink-3)">6 ITENS</span><span style="flex:1"></span>'+
-    '<button class="mk-btn sm sec" data-a="nada">Recentes ⌄</button></div>'+
-    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:20px">';
-  livros.forEach(function(l,i){
-    h+='<button data-a="ir" data-v="item-doc" style="text-align:left">'+
-      '<span style="display:block;position:relative;width:100%;padding-bottom:140%;border-radius:5px;'+
-      'background:'+(i%2?"#f0efec":"#e9e7e2")+';border:1px solid var(--line);overflow:hidden">'+
-      '<span style="position:absolute;inset:12px;display:flex;flex-direction:column;justify-content:space-between">'+
-      '<span style="font-family:var(--mn);font-size:9px;color:var(--pink-3);letter-spacing:.06em">'+l[2]+'</span>'+
-      '<span style="font-size:12px;font-weight:700;line-height:1.2;color:var(--pink)">'+esc(l[0])+'</span></span></span>'+
-      '<span style="display:block;font-size:12.5px;font-weight:600;margin-top:8px;line-height:1.25">'+esc(l[0])+'</span>'+
-      '<span style="display:block;font-size:12px;color:var(--pink-3);margin-top:1px">'+esc(l[1])+'</span></button>';
-  });
-  h+='</div><div class="mk-nota"><span>◆</span><div>A Estante é o mesmo lugar de sempre — preservada. O que mudou é que agora existe um caminho de ida e volta entre ela e a preparação: cada capa abre o item, e o item tem "‹ Mesa" no topo.</div></div>';
+    '<span style="font-family:var(--mn);font-size:10.5px;color:var(--pink-3)">'+ACERVO.length+' ITENS</span>'+
+    '<span style="flex:1"></span>'+
+    '<span class="mk-vista"><button data-a="vista" data-v="lista" aria-pressed="'+(S.estante==="lista")+'">Lista</button>'+
+    '<button data-a="vista" data-v="3d" aria-pressed="'+(S.estante==="3d")+'">Estante</button></span></div>';
+
+  if(S.estante==="lista"){
+    h+='<div class="mk-grade">'+ACERVO.map(function(b){
+      return '<button class="mk-livro" data-a="ir" data-v="item-doc">'+
+        '<img class="mk-capa" src="'+capa(b.c)+'" alt="Capa de '+esc(b.t)+'" loading="lazy">'+
+        '<span class="t">'+esc(b.t)+'</span><span class="a">'+esc(b.a)+'</span>'+
+        '<span class="f">'+b.f+' · '+esc(b.q)+'</span></button>';
+    }).join("")+'</div>';
+    h+='<div class="mk-nota"><span>◆</span><div>Os quatro cards da Estante atual mostravam capas diferentes com '+
+      '<b>o mesmo título e o mesmo autor</b> — era o achado nº 26. Aqui cada capa carrega o próprio título, lido da arte.</div></div>';
+  }else{
+    /* Conserto do achado 20: a Estante 3D mostrava prateleiras cinzas vazias e
+       uma pilha de rótulos "Livro" fora do plano. As lombadas já existiam. */
+    const sel=S.lombada;
+    const prats=[ACERVO.slice(0,5),ACERVO.slice(5,10),ACERVO.slice(10)];
+    h+='<div class="mk-est3d">'+prats.map(function(p){
+      return '<div class="mk-prat"><div class="mk-livros">'+p.map(function(b){
+        return '<button class="mk-lombbt" data-a="lombada" data-v="'+b.c+'" aria-pressed="'+(sel===b.c)+'" '+
+          'title="'+esc(b.t)+'"><img class="mk-lomb" src="'+lombada(b.l)+'" alt="Lombada de '+esc(b.t)+'" '+
+          'style="height:'+b.h+'px" loading="lazy"></button>';
+      }).join("")+'</div><div class="mk-tabua"></div></div>';
+    }).join("")+'</div>';
+    const b=ACERVO.filter(function(x){return x.c===sel;})[0];
+    h+='<div class="mk-legenda">'+(b?'<b>'+esc(b.t)+'</b><span>'+esc(b.a)+' · '+b.f+' · '+esc(b.q)+'</span>'+
+      '<span style="flex:1"></span><button class="mk-lnk" data-a="ir" data-v="item-doc">Abrir</button>':
+      '<span>Passe o mouse ou clique numa lombada.</span>')+'</div>';
+    h+='<div class="mk-nota"><span>◆</span><div>Hoje esta tela mostra prateleiras cinzas vazias e uma pilha de rótulos '+
+      '"Livro" solta à esquerda, fora do plano — era o achado nº 20. <b>As lombadas já existiam no projeto.</b> '+
+      'A prateleira ganha profundidade por uma borda inferior mais escura, não por sombra: é a regra 1 do sistema '+
+      'sobrevivendo ao caso onde ela é mais difícil.</div></div>';
+  }
   return h+'</div>';
 }
 function vCanvas(nome){
@@ -2423,6 +2540,30 @@ function vFolha(){
       '<button class="mk-lnk mudo" data-a="pend-alterar" data-v="dupla">Separar em duas páginas</button>',
       '<button class="mk-btn" data-a="pend-ok" data-v="dupla">Manter como imagem única</button>');
   }
+  if(f.t==="capa"){
+    const esc1=S.doc.capaEscolhida||"gerada";
+    return folha("Capa","Este arquivo não tem capa",
+      '<div style="display:flex;gap:var(--s4);align-items:flex-start">'+
+        '<img src="'+capa(esc1==="pagina"?ARQ.doc.capa:ARQ.doc.capaGerada)+'" alt="Capa proposta" '+
+          'style="width:150px;height:auto;border:1px solid var(--line);border-radius:4px;flex:0 0 150px">'+
+        '<div><p style="margin:0 0 12px;font-size:14px;line-height:1.6;color:var(--pink-2)">'+
+          'Montei uma com o título, o autor e o formato, na mesma linguagem das outras capas da sua estante. '+
+          'Ela vai para o EPUB e para a biblioteca do Kindle.</p>'+
+        '<div class="mk-lista">'+
+          '<div class="mk-li">'+sinal(esc1==="gerada"?"ok":"in",esc1==="gerada"?"✓":"·")+
+            '<span class="tx"><b>Manter a capa gerada</b><span>Recomendado.</span></span>'+
+            '<button class="ac" data-a="capa-ok" data-v="gerada">'+(esc1==="gerada"?"em uso":"usar")+'</button></div>'+
+          '<div class="mk-li">'+sinal(esc1==="pagina"?"ok":"in",esc1==="pagina"?"✓":"·")+
+            '<span class="tx"><b>Usar a página 1 do arquivo</b><span>Ela tem texto corrido — vai ficar ilegível como miniatura.</span></span>'+
+            '<button class="ac" data-a="capa-ok" data-v="pagina">'+(esc1==="pagina"?"em uso":"usar")+'</button></div>'+
+          '<div class="mk-li">'+sinal("in","·")+'<span class="tx"><b>Enviar uma imagem</b></span>'+
+            '<button class="ac" data-a="nada">escolher</button></div>'+
+        '</div></div></div>'+
+      '<div class="mk-nota" style="margin-top:16px"><span>◆</span><div>Hoje esta decisão é uma fileira de '+
+        '<b>cinco miniaturas idênticas</b> rotuladas "Capa (Pág 1), Página 2, Página 3, Página 3, Página 3" — '+
+        'três rótulos repetidos e nenhuma imagem que permita escolher. Era o achado nº 14.</div></div>',
+      '','<button class="mk-btn" data-a="fechar">Fechar</button>');
+  }
   if(f.t==="traduzir"){
     const langs=[["en","Inglês"],["es","Espanhol"],["fr","Francês"],["de","Alemão"],["ja","Japonês"]];
     return folha("Saída","Traduzir este documento",
@@ -2503,7 +2644,7 @@ function vFolha(){
       '','<button class="mk-btn sec" data-a="fechar">Fechar</button>');
   }
   if(f.t==="senha"){
-    return folha("Arquivo protegido","Anuário do design 2025.pdf",
+    return folha("Arquivo protegido","Briefing de Marca — anexo.pdf",
       '<p style="margin:0 0 14px;font-size:14px;line-height:1.6;color:var(--pink-2)">'+
         'Este PDF pede senha para abrir. Sem ela não consigo ler as páginas — e não guardo a senha depois de usar.</p>'+
       '<div style="border:1px solid var(--line);border-radius:var(--r1);padding:0 12px;height:38px;display:flex;'+
@@ -2617,6 +2758,9 @@ palco.addEventListener("click",function(ev){
     case "traduzir-ok":S.doc.traducao=v;S.folha=null;break;
     case "traduzir-nao":S.doc.traducao=null;S.folha=null;break;
     case "aviso-uso":S.avisoUso=false;break;
+    case "vista":S.estante=v;break;
+    case "capa-ok":S.doc.capaEscolhida=v;S.folha=null;break;
+    case "lombada":S.lombada=v;break;
     case "conta-criar":S.conta=true;S.folha=null;S.cena="mesa";S.lugar="item-doc";break;
     case "modo":
       if(S.modo==="guiado"){S.modo="personalizado";}
@@ -2627,7 +2771,8 @@ palco.addEventListener("click",function(ev){
     case "guiado-manter":S.modo="guiado";S.folha=null;aviso("Alterações mantidas. O Guiado passa a respeitá-las.");break;
     case "guiado-descartar":S.modo="guiado";S.manuais=0;S.folha=null;break;
     case "li":
-      if(v==="editor"){S.folha={t:"editor"};S.cena="editor";}
+      if(v==="capa"){S.folha={t:"capa"};}
+      else if(v==="editor"){S.folha={t:"editor"};S.cena="editor";}
       else if(v==="ajuda-ocr"){S.lugar="ajuda";S.ajuda="O que é reconhecimento de texto";S.cena="ajuda";}
       else if(v==="leitura"){S.folha={t:"pend-leitura"};}
       else if(v==="dupla"){S.folha={t:"pend-dupla"};}
@@ -2666,7 +2811,7 @@ palco.addEventListener("click",function(ev){
     case "check-abrir":S.checkAberto=!S.checkAberto;break;
     case "check-pular":S.checkAberto=false;break;
     case "check-nunca":S.check=false;break;
-    case "lote-falha":S.lote.falhaAgrupada=true;S.lote.linhas[2].st="falhou";S.lote.linhas[2].d="Protegido por senha — igual ao Compêndio 2024.pdf";break;
+    case "lote-falha":S.lote.falhaAgrupada=true;S.lote.linhas[2].st="falhou";S.lote.linhas[2].d="Protegido por senha — igual ao Ensaio Visual — rascunho.pdf";break;
     case "lote-senha":S.folha={t:"senha"};break;
     case "lote-seguir":S.folha=null;S.lote.falhaAgrupada=false;S.lote.linhas[2].st="falhou";
       S.lote.linhas[2].d="Deixado de fora do lote, por sua escolha";break;
@@ -2716,14 +2861,14 @@ const CMP=[
    '<div class="mn-bloco at"><span class="mn-rot">Precisa de você — 1</span>'+
    '<div class="mn-lin"><span class="s at">!</span><span><b>Vagabundo — volume 04.cbz</b><em>2 pendências</em></span></div></div>'+
    '<div class="mn-bloco"><span class="mn-rot">Em andamento — 1</span>'+
-   '<div class="mn-lin"><span class="s">●</span><span><b>Padrões de leitura em tela.pdf</b><em>Convertendo — 1 min 04 s</em></span></div></div>'+
+   '<div class="mn-lin"><span class="s">●</span><span><b>Censo de Fauna — digitalização.pdf</b><em>Convertendo — 1 min 04 s</em></span></div></div>'+
    '<div class="mn-bloco"><span class="mn-rot">Prontos — 3</span>'+
-   '<div class="mn-lin"><span class="s ok">✓</span><span><b>Leis universais de design.epub</b><em>Enviado ao Kindle · 09:12</em></span></div></div></div></div>',
+   '<div class="mn-lin"><span class="s ok">✓</span><span><b>Diário 02.epub</b><em>Enviado ao Kindle · 09:12</em></span></div></div></div></div>',
  pq:"A Home atual é uma fila de upload: ela mostra bytes chegando e some quando o trabalho começa de verdade. A Mesa mostra o trabalho, não o transporte — e os três grupos desaparecem quando estão vazios, então o primeiro uso continua sendo só a zona de entrada."},
 
 {t:"3. Análise e preparação do documento",img:"telas-atuais/doc-preparacao.png",cena:"doc",
  prop:barra+'<div class="mn-corpo"><span class="mn-rot">‹ Mesa</span>'+
-   '<h5>Leis universais de design.pdf</h5>'+
+   '<h5>Relatório de pesquisa — expedição 02.pdf</h5>'+
    '<div class="mn-chips"><span>PDF</span><span>12,8 MB</span><span>96 páginas</span><span>Português</span></div>'+
    '<div class="mn-bloco suave"><b style="font-size:11px">Analisado. Duas coisas mudam o resultado, e eu sei o que fazer com as duas.</b></div>'+
    '<div class="mn-bloco"><span class="mn-rot">O que encontrei</span>'+
@@ -2733,7 +2878,7 @@ const CMP=[
    '<div class="mn-bloco"><span class="mn-rot">O que vou fazer</span>'+
    '<div class="mn-lin"><span class="s">1</span><span><b>Reconhecer o texto em português</b></span></div>'+
    '<div class="mn-lin"><span class="s">2</span><span><b>Converter para EPUB</b></span></div>'+
-   '<div class="mn-lin"><span class="s">T</span><span><b>Título: Leis universais de design</b><em>já preenchido — alterar</em></span></div></div>'+
+   '<div class="mn-lin"><span class="s">T</span><span><b>Título: Diário 02</b><em>já preenchido — alterar</em></span></div></div>'+
    '<div class="mn-acao"><span class="mn-btn">Preparar com estas recomendações</span><span class="mn-btn gh">Ajustar manualmente</span></div></div></div>',
  pq:"Duas telas viram uma. O formulário vazio vira duas linhas já preenchidas com o que o sistema extraiu do arquivo — o usuário confirma em vez de digitar. E a pergunta \"Traduzir esse documento? Sim\" sai do caminho: tradução é experimental e mora no Personalizado, desligada."},
 
@@ -2753,7 +2898,7 @@ const CMP=[
 
 {t:"5. Progresso",img:"telas-atuais/doc-conversao.png",cena:"doc",
  prop:barra+'<div class="mn-corpo"><span class="mn-rot">‹ Mesa</span>'+
-   '<h5>Leis universais de design.pdf</h5>'+
+   '<h5>Relatório de pesquisa — expedição 02.pdf</h5>'+
    '<div class="mn-chips"><span>PDF</span><span>96 páginas</span></div>'+
    '<div class="mn-bloco suave"><b style="font-size:11px">Preparando — reconhecendo o texto</b>'+
    '<div class="mn-bar"><i style="width:44%"></i></div>'+
@@ -2769,10 +2914,10 @@ const CMP=[
    '<h5>Lote de 4 arquivos</h5>'+
    '<div class="mn-bloco suave"><b style="font-size:11px">2 prontos · 1 preparando · 1 precisa de você</b></div>'+
    '<div class="mn-bloco">'+
-   '<div class="mn-lin"><span class="s ok">✓</span><span><b>Leis universais de design.pdf</b><em>EPUB · 8,4 MB</em></span></div>'+
-   '<div class="mn-lin"><span class="s">●</span><span><b>Padrões de leitura em tela.pdf</b><em>Convertendo — 1 min 04 s</em></span></div>'+
-   '<div class="mn-lin"><span class="s at">!</span><span><b>Anuário do design 2025.pdf</b><em>Protegido por senha — informar</em></span></div>'+
-   '<div class="mn-lin"><span class="s ok">✓</span><span><b>Ensaios sobre forma.epub</b><em>já era EPUB, só ajustei a capa</em></span></div></div>'+
+   '<div class="mn-lin"><span class="s ok">✓</span><span><b>Relatório de pesquisa — expedição 02.pdf</b><em>EPUB · 8,4 MB</em></span></div>'+
+   '<div class="mn-lin"><span class="s">●</span><span><b>Censo de Fauna — digitalização.pdf</b><em>Convertendo — 1 min 04 s</em></span></div>'+
+   '<div class="mn-lin"><span class="s at">!</span><span><b>Briefing de Marca — anexo.pdf</b><em>Protegido por senha — informar</em></span></div>'+
+   '<div class="mn-lin"><span class="s ok">✓</span><span><b>Apresentação Institucional.epub</b><em>já era EPUB, só ajustei a capa</em></span></div></div>'+
    '<div class="mn-acao"><span class="mn-btn">Enviar os 2 prontos</span><span class="mn-btn sec">Baixar tudo</span></div></div></div>',
  pq:"O texto da tela atual promete que \"cada arquivo segue o próprio pipeline\" e a interface logo acima mostra uma barra única movendo os quatro juntos. Aqui a promessa e a forma dizem a mesma coisa: estado por arquivo, ação por arquivo, e o que falhou não segura o que está pronto."},
 
@@ -2790,8 +2935,8 @@ const CMP=[
 
 {t:"8. Conclusão",img:"telas-atuais/doc-conclusao.png",cena:"doc",
  prop:barra+'<div class="mn-corpo"><span class="mn-rot">‹ Mesa</span>'+
-   '<h5>Leis universais de design.pdf</h5>'+
-   '<div class="mn-bloco ok"><b style="font-size:11px">Pronto. Leis universais de design.epub · 8,4 MB</b>'+
+   '<h5>Relatório de pesquisa — expedição 02.pdf</h5>'+
+   '<div class="mn-bloco ok"><b style="font-size:11px">Pronto. Diário 02.epub · 8,4 MB</b>'+
    '<p>96 páginas reconhecidas, sumário com 14 capítulos, capa montada.</p></div>'+
    '<div class="mn-acao"><span class="mn-btn">Enviar ao Kindle de Erik</span><span class="mn-btn sec">Baixar</span>'+
    '<span class="mn-btn gh">Abrir na estante</span></div>'+
@@ -2860,7 +3005,7 @@ const ALT=[
    pro:["Cada etapa tem endereço próprio e é fácil de explicar."],
    con:["Cria quatro páginas para um trabalho que é contínuo.","Obriga o usuário a avançar manualmente algo que o sistema já faria.","Perde o contexto do arquivo a cada troca."]},
   {n:"A2 · Análise como resumo dentro do item",tag:"recomendada",venc:true,
-   m:'<div class="mini"><div class="mn-corpo"><h5>Leis universais de design.pdf</h5>'+
+   m:'<div class="mini"><div class="mn-corpo"><h5>Relatório de pesquisa — expedição 02.pdf</h5>'+
      '<div class="mn-bloco suave" style="margin-top:6px"><b style="font-size:10.5px">Analisado. Duas coisas mudam o resultado.</b></div>'+
      '<div class="mn-bloco"><span class="mn-rot">Encontrei · vou fazer · precisa de você</span>'+
      '<p>Três listas curtas, uma tela, um botão.</p></div></div></div>',
@@ -2957,15 +3102,18 @@ const ALT=[
 
   /* o mesmo componente, uma fonte só — é o que torna a comparação honesta */
   const COMP=
-    '<p class="tit">Leis universais de design.pdf</p>'+
+    '<div style="display:flex;gap:14px;align-items:flex-start">'+
+    '<img src="capas/capa-11.jpg" alt="" style="width:56px;height:auto;border-radius:var(--r-1);'+
+      'border:1px solid var(--fio-2);flex:0 0 56px" loading="lazy">'+
+    '<div style="min-width:0"><p class="tit">Relatório de pesquisa — expedição 02.pdf</p>'+
     '<div class="chips"><span class="chip">PDF</span><span class="chip">12,8 MB</span>'+
-      '<span class="chip">96 páginas</span><span class="chip">Português</span></div>'+
+      '<span class="chip">96 páginas</span><span class="chip">Português</span></div></div></div>'+
     '<div class="est" style="margin-top:16px"><i class="pt" style="background:var(--ok);margin-top:5px"></i>'+
-      '<div><b>Pronto. Leis universais de design.epub · 8,4 MB</b>'+
+      '<div><b>Pronto. Diário 02.epub · 8,4 MB</b>'+
       '<span>96 páginas reconhecidas, sumário com 14 capítulos, capa montada.</span></div></div>'+
     '<div class="sup" style="margin-top:12px">'+
       '<div class="lin"><span class="cap">EPUB</span>'+
-        '<span><span class="nm">Leis universais de design.epub</span>'+
+        '<span><span class="nm">Diário 02.epub</span>'+
         '<span class="st"><i class="pt" style="background:var(--ok)"></i>Enviado ao Kindle · 09:12</span></span>'+
         '<span><button class="bt sec" type="button">Baixar</button></span></div>'+
       '<div class="lin"><span class="cap">CBZ</span>'+
@@ -2973,7 +3121,7 @@ const ALT=[
         '<span class="st"><i class="pt" style="background:var(--aten)"></i>2 pendências</span></span>'+
         '<span><button class="bt" type="button">Revisar</button></span></div>'+
       '<div class="lin"><span class="cap">PDF</span>'+
-        '<span><span class="nm">Compêndio do design 2024.pdf</span>'+
+        '<span><span class="nm">Ensaio Visual — rascunho.pdf</span>'+
         '<span class="st"><i class="pt" style="background:var(--erro)"></i>Conexão caiu na página 38 de 210</span></span>'+
         '<span><span class="num">RETOMANDO</span></span></div>'+
     '</div>'+

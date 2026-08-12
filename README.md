@@ -70,6 +70,12 @@ Contém:
   sistema atual ao lado, a prova de inversão no tema escuro, a faixa contextual de 60px funcionando
   e a tabela de tokens que vira o design system.
 
+As telas foram reconstruídas com **o acervo real** — 14 capas e 14 lombadas, em `capas/`. Elas
+trouxeram uma capacidade que nenhuma captura tinha mostrado: uma das capas diz, na própria arte,
+*"gerado automaticamente pelo sistema"*. O Mekora monta capa para arquivo que não tem — o que é
+muito melhor do que a fileira de cinco miniaturas idênticas da tela atual. E a Estante 3D reprovada
+na auditoria estava a um `<img>` de funcionar: as lombadas existiam desde 6 de agosto.
+
 **Revisão C, 12 de agosto de 2026.** As perguntas foram respondidas e o protótipo foi corrigido duas
 vezes. O Mekora é uma aplicação web com servidor: **fechar a aba não mata o preparo** — o que se
 perde sem conta é o endereço do trabalho, não o trabalho, e isso amarra a pergunta da conta com a do
