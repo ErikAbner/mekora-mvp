@@ -253,6 +253,39 @@ select.sel{height:var(--h1);border:1px solid var(--line);border-radius:var(--r1)
 .ktag.on span{opacity:.7}
 .kcx{font-family:var(--mono);font-size:9.5px;color:var(--ink-3);margin-left:auto}
 .knuvem{display:flex;flex-wrap:wrap;gap:7px;max-width:760px;margin:var(--s4) 0 var(--s3)}
+/* ═══ REDE ═══ o nó é o objeto, com rótulo legível — não uma bolinha */
+.rwrap{max-width:980px;margin:var(--s3) 0;border:1px solid var(--line);border-radius:var(--r1);
+  background:var(--bg);overflow-x:auto}
+.rede{display:block;width:100%;min-width:740px;height:auto}
+.rl{fill:none;stroke:var(--ink-3);stroke-width:1.1;opacity:.4}
+.rl.tema{stroke-dasharray:3 3}
+.rl.apagada{opacity:.07}
+.rl.viva{opacity:.95;stroke:var(--ink);stroke-width:1.7}
+.rn{cursor:pointer}
+.rn .rbox{fill:var(--bg);stroke:var(--line);stroke-width:1}
+.rn.livro .rbox{fill:var(--bg-2)}
+.rn.assunto .rbox{fill:var(--ink);stroke:var(--ink)}
+.rn:hover .rbox,.rn:focus-visible .rbox{stroke:var(--ink);stroke-width:1.8}
+.rn:focus-visible{outline:none}
+.rn:focus-visible .rbox{stroke:var(--acc);stroke-width:2.4}
+.rn.sel .rbox{stroke:var(--acc);stroke-width:2.2}
+.rn.apagado{opacity:.16}
+.rt{font-family:var(--ui);fill:var(--ink);pointer-events:none}
+.rt.livro{font-size:11.5px;font-weight:600}
+.rt.assunto{font-size:11.5px;font-weight:600;fill:var(--bg);letter-spacing:.01em}
+.rt.nota{font-size:11px}
+.rt.nota2{font-size:11px;fill:var(--ink-2)}
+.rlegenda{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s3);max-width:980px;
+  margin-top:var(--s4);font-size:11.5px;color:var(--ink-2)}
+.rlegenda span{display:inline-flex;align-items:center;gap:6px}
+.rle{width:13px;height:11px;border-radius:3px;border:1px solid var(--line);background:var(--bg);display:inline-block}
+.rle.livro{background:var(--bg-2)}
+.rle.assunto{background:var(--ink);border-color:var(--ink)}
+.rle.lorigem,.rle.ltema{height:0;border-radius:0;border:0;border-top:1.4px solid var(--ink-3);width:18px}
+.rle.ltema{border-top-style:dashed}
+.rlsep{width:1px;height:14px;background:var(--line);margin:0 2px}
+.rlegenda .lnk{margin-left:auto}
+@media (max-width:640px){.rlegenda .lnk{margin-left:0}}
 /* assuntos: a unidade da área, não a nota */
 .ktemas{display:grid;grid-template-columns:repeat(auto-fill,minmax(238px,1fr));gap:var(--s3);
   max-width:760px;margin-top:var(--s4)}
@@ -759,6 +792,77 @@ function conexoesDe(k){
   .sort(function(x,y){return y.forca-x.forca})}
 function estadoConex(a,b){var id=[a,b].sort().join("|");
  return st.conex[id]||"sugerida"}
+/* ═══════════════════════════════════════════════════════════════
+   REDE — o nó é o objeto, não uma bolinha
+   No grafo comum o nó é anônimo até o hover: a forma não carrega
+   informação nenhuma. Aqui livro, ideia e assunto aparecem com o que
+   são, e a linha só liga. Custa espaço; em troca a rede se lê parada.
+   As arestas são as mesmas de sempre — origem e tag, sem inferência.
+   ═══════════════════════════════════════════════════════════════ */
+function grafoDe(itens){
+ var nos=[],ar=[],idx={};
+ function por(id,tipo,rot,extra){
+  if(idx[id]!==undefined)return idx[id];
+  idx[id]=nos.length;nos.push(Object.assign({id:id,tipo:tipo,rot:rot,gr:0},extra||{}));
+  return idx[id]}
+ itens.forEach(function(c){
+  var ni=por("n:"+c.k,"nota",c.no,{k:c.k,li:c.li});
+  var bi=por("b:"+c.li,"livro",LIVROS[c.li].t,{cor:LIVROS[c.li].c});
+  ar.push({a:bi,b:ni,tipo:"origem"});
+  c.tg.forEach(function(t){
+   var ti=por("t:"+t,"assunto",t);
+   ar.push({a:ni,b:ti,tipo:"tema"})})});
+ ar.forEach(function(e){nos[e.a].gr++;nos[e.b].gr++});
+ return{nos:nos,ar:ar}}
+/* Layout determinístico: mesma entrada, mesmo desenho — a pessoa
+   reconhece o próprio mapa entre uma visita e outra. */
+function posicionar(g,W,H){
+ var n=g.nos.length;if(!n)return;
+ g.nos.forEach(function(o,i){
+  var a=i*2*Math.PI/n,r=Math.min(W,H)*.36;
+  o.x=W/2+Math.cos(a)*r;o.y=H/2+Math.sin(a)*r;
+  /* a caixa é o nó: a repulsão precisa saber o tamanho dela */
+  o.w=o.tipo==="assunto"?Math.max(58,o.rot.length*8+22)
+    :o.tipo==="livro"?Math.max(112,Math.min(190,o.rot.length*7.2+26))
+    :188;
+  /* alturas pensadas para o toque: o SVG encolhe na tela estreita e
+     26px de caixa viravam 22px de alvo real */
+  o.h=o.tipo==="nota"?56:o.tipo==="livro"?36:34});
+ for(var it=0;it<420;it++){
+  var t=1-it/420;
+  /* atração pelas arestas */
+  g.ar.forEach(function(e){
+   var A=g.nos[e.a],B=g.nos[e.b],dx=B.x-A.x,dy=B.y-A.y,
+    d=Math.max(1,Math.sqrt(dx*dx+dy*dy)),alvo=e.tipo==="origem"?150:120,
+    f=(d-alvo)*.012*t;
+   A.x+=dx/d*f;A.y+=dy/d*f;B.x-=dx/d*f;B.y-=dy/d*f});
+  /* repulsão entre caixas, considerando a área ocupada */
+  for(var i=0;i<n;i++)for(var j=i+1;j<n;j++){
+   var A2=g.nos[i],B2=g.nos[j],dx2=B2.x-A2.x,dy2=B2.y-A2.y,
+    d2=Math.max(1,Math.sqrt(dx2*dx2+dy2*dy2)),
+    min=(A2.w+B2.w)/2*.62+(A2.h+B2.h)/2*.5+18;
+   if(d2<min){var f2=(min-d2)*.5*t;
+    A2.x-=dx2/d2*f2;A2.y-=dy2/d2*f2;B2.x+=dx2/d2*f2;B2.y+=dy2/d2*f2}}
+  /* volta ao centro, fraca, só para não escapar do quadro */
+  g.nos.forEach(function(o){o.x+=(W/2-o.x)*.006*t;o.y+=(H/2-o.y)*.006*t})}
+ /* separação final por caixa: a sobreposição de rótulo é o que mata a leitura */
+ for(var p=0;p<90;p++){var mexeu=false;
+  for(var i3=0;i3<n;i3++)for(var j3=i3+1;j3<n;j3++){
+   var A3=g.nos[i3],B3=g.nos[j3],
+    ox=(A3.w+B3.w)/2+14-Math.abs(B3.x-A3.x),
+    oy=(A3.h+B3.h)/2+10-Math.abs(B3.y-A3.y);
+   if(ox>0&&oy>0){mexeu=true;
+    if(ox<oy){var s=(B3.x>A3.x?1:-1)*ox/2;A3.x-=s;B3.x+=s}
+    else{var s2=(B3.y>A3.y?1:-1)*oy/2;A3.y-=s2;B3.y+=s2}}}
+  if(!mexeu)break}
+ /* encaixa no quadro sem deformar o desenho */
+ var xs=g.nos.map(function(o){return o.x}),ys=g.nos.map(function(o){return o.y}),
+  ws=g.nos.map(function(o){return o.w}),hs=g.nos.map(function(o){return o.h});
+ var x0=Math.min.apply(null,xs.map(function(x,i){return x-ws[i]/2})),
+  x1=Math.max.apply(null,xs.map(function(x,i){return x+ws[i]/2})),
+  y0=Math.min.apply(null,ys.map(function(y,i){return y-hs[i]/2})),
+  y1=Math.max.apply(null,ys.map(function(y,i){return y+hs[i]/2}));
+ g.caixa={x:x0-16,y:y0-16,w:(x1-x0)+32,h:(y1-y0)+32}}
 function tagsTodas(){var m={};
  CONHEC.forEach(function(c){c.tg.forEach(function(t){m[t]=(m[t]||0)+1})});
  return Object.keys(m).sort(function(a,b){return m[b]-m[a]||a.localeCompare(b)})
@@ -776,7 +880,7 @@ var st={rota:"lib",cat:"geral",menu:false,ctx:null,pal:null,palq:"",bs:"",hit:nu
  fmtprog:"tempo",escopo:"livro",lq:"",leu:null,valoresLivro:{},
  /* variantes em comparação */
  mNota:"C",mDst:"A",mRev:"A",mConh:"B",mGrid:"A",labSec:"novo",escolhendoCor:null,limiar:null,
- kView:"tag",kAberto:null,kFiltro:null,kPergunta:"",kVazio:"n",conex:{}};
+ kView:"rede",kAberto:null,kFiltro:null,kPergunta:"",kVazio:"n",conex:{},kNo:null};
 /* ─── O leitor nunca abre vazio ───────────────────────────────
    Sem nenhuma anotação, metade das funções não tem o que mostrar:
    margem, painel, revisão, conexões e a ponte para o Conhecimento
@@ -1012,7 +1116,8 @@ function vSimples(titulo,texto,catPonte,rotuloPonte){
 function itensConhec(){
  return st.kVazio==="0"?[]:st.kVazio==="1"?CONHEC.slice(0,1):CONHEC}
 function cabecaConhec(itens){
- var vistas=[["tag","Por assunto","o que se acumulou em cada um"],
+ var vistas=[["rede","Rede","como tudo se liga"],
+   ["tag","Por assunto","o que se acumulou em cada um"],
    ["dossie","Por pergunta","o que tenho sobre isso"],
    ["livro","Por livro","o que sobrou de cada um"],
    ["tempo","Por tempo","o que andei pensando"]];
@@ -1086,12 +1191,66 @@ function vConhecimento(){
    return'<div class="kgrupo"><span class="kliv grande"><i style="background:'+b.c+'"></i>'+esc(b.t)+'</span>'+
     '<span class="klbl">'+porliv[li].length+' de '+b.n+' anotações levadas</span></div>'+
     porliv[li].map(function(c){return cartaoConhec(c,false)}).join("")}).join("")+'</div>'}
+ else if(v==="rede")h+=vRede(lista);
  else if(v==="tag")h+=vAssuntos(lista);
  else{
   h+=vDossie(lista)}
  return h+'<div class="acts" style="margin-top:var(--s6)">'+
   '<button class="btn sec" data-a="ponte" data-c="conhecimento">Gerenciar preferências de conhecimento →</button>'+
   '</div></div></div></div>'}
+function vRede(lista){
+ if(lista.length<2)return'<p class="vaziop">A rede precisa de pelo menos duas ideias para ligar alguma coisa. '+
+  'Com uma só, ela seria um ponto — e um ponto não é um mapa.</p>';
+ var g=grafoDe(lista),W=980,H=Math.max(460,240+g.nos.length*17);
+ posicionar(g,W,H);
+ var sel=st.kNo,viz={};
+ if(sel!==null&&sel!==undefined){viz[sel]=true;
+  g.ar.forEach(function(e){if(e.a===sel)viz[e.b]=true;if(e.b===sel)viz[e.a]=true})}
+ function apaga(i){return sel!==null&&sel!==undefined&&!viz[i]}
+ var c=g.caixa;
+ var linhas=g.ar.map(function(e){
+  var A=g.nos[e.a],B=g.nos[e.b],
+   viva=sel===null||sel===undefined||(viz[e.a]&&viz[e.b]&&(e.a===sel||e.b===sel)),
+   mx=(A.x+B.x)/2,my=(A.y+B.y)/2-Math.abs(B.x-A.x)*.08;
+  return'<path d="M'+A.x.toFixed(1)+' '+A.y.toFixed(1)+' Q'+mx.toFixed(1)+' '+my.toFixed(1)+
+   ' '+B.x.toFixed(1)+' '+B.y.toFixed(1)+'" class="rl '+e.tipo+(viva?" viva":" apagada")+'"/>'}).join("");
+ var caixas=g.nos.map(function(o,i){
+  var cls="rn "+o.tipo+(apaga(i)?" apagado":"")+(sel===i?" sel":"");
+  var x=(o.x-o.w/2).toFixed(1),y=(o.y-o.h/2).toFixed(1);
+  var corpo="";
+  if(o.tipo==="livro")corpo='<rect class="rcapa" x="'+x+'" y="'+y+'" width="7" height="'+o.h+
+   '" rx="1.5" fill="'+o.cor+'"/>'+
+   '<text x="'+(o.x-o.w/2+15).toFixed(1)+'" y="'+(o.y+4).toFixed(1)+'" class="rt livro">'+
+   esc(cortar(o.rot,24))+'</text>';
+  else if(o.tipo==="assunto")corpo='<text x="'+o.x.toFixed(1)+'" y="'+(o.y+4).toFixed(1)+
+   '" class="rt assunto" text-anchor="middle">'+esc(o.rot)+'</text>';
+  else corpo='<text x="'+(o.x-o.w/2+11).toFixed(1)+'" y="'+(o.y-6).toFixed(1)+'" class="rt nota">'+
+   esc(cortar(o.rot,30))+'</text>'+
+   '<text x="'+(o.x-o.w/2+11).toFixed(1)+'" y="'+(o.y+10).toFixed(1)+'" class="rt nota2">'+
+   esc(cortar(o.rot.slice(30),30))+'</text>';
+  return'<g class="'+cls+'" data-a="kno" data-i="'+i+'" tabindex="0" role="button" '+
+   'aria-label="'+esc(({livro:"Livro: ",nota:"Ideia: ",assunto:"Assunto: "})[o.tipo]+o.rot.slice(0,60))+'">'+
+   '<rect class="rbox" x="'+x+'" y="'+y+'" width="'+o.w+'" height="'+o.h+'" rx="'+
+   (o.tipo==="assunto"?o.h/2:5)+'"/>'+corpo+'</g>'}).join("");
+ var n=g.nos.filter(function(o){return o.tipo==="nota"}).length,
+  b=g.nos.filter(function(o){return o.tipo==="livro"}).length,
+  t=g.nos.filter(function(o){return o.tipo==="assunto"}).length;
+ return'<div class="rlegenda">'+
+  '<span><i class="rle livro"></i>'+b+' livros</span>'+
+  '<span><i class="rle nota"></i>'+n+' ideias</span>'+
+  '<span><i class="rle assunto"></i>'+t+' assuntos</span>'+
+  '<span class="rlsep"></span>'+
+  '<span><i class="rle lorigem"></i>saiu deste livro</span>'+
+  '<span><i class="rle ltema"></i>toca neste assunto</span>'+
+  (sel!==null&&sel!==undefined?'<button class="lnk" data-a="kno" data-i="">ver a rede inteira</button>':"")+
+  '</div>'+
+  '<div class="rwrap"><svg class="rede" viewBox="'+c.x.toFixed(0)+' '+c.y.toFixed(0)+' '+
+  c.w.toFixed(0)+' '+c.h.toFixed(0)+'" role="img" aria-label="Rede de '+b+' livros, '+n+' ideias e '+t+' assuntos">'+
+  linhas+caixas+'</svg></div>'+
+  '<p class="notadica" style="max-width:640px">Toque num item para isolar a vizinhança dele. '+
+  'As ligações são as de sempre: <b>de onde a ideia saiu</b> e <b>que assunto ela toca</b>. '+
+  'Nenhuma linha foi inferida — se duas ideias não se ligam aqui, é porque você não usou a mesma palavra.</p>'}
+function cortar(s,n){s=String(s||"");return s.length>n?s.slice(0,n-1)+"…":s}
 /* ─── A VISTA POR ASSUNTO ────────────────────────────────────────
    A primeira versão abria numa lista cronológica de notas, e era isso
    que ela parecia: várias notas. O assunto e as conexões ficavam atrás
@@ -1864,7 +2023,10 @@ function auditarTela(){
    var rg=document.createRange();rg.selectNodeContents(e);
    var lt=rg.getBoundingClientRect().width;
    if(lt>e.clientWidth+2)r.cortado.push(rotuloEl(e)+" — texto de "+Math.round(lt)+"px em "+e.clientWidth+"px")}
-  if(toque&&(e.tagName==="BUTTON"||e.tagName==="A")&&bb.height<30&&!e.closest("#lab"))
+  /* role="button" também é alvo de toque: os nós da rede são <g>, e a
+     versão anterior desta checagem não os enxergava */
+  if(toque&&(e.tagName==="BUTTON"||e.tagName==="A"||e.getAttribute("role")==="button")&&
+     bb.height<30&&!e.closest("#lab"))
    r.alvo.push(rotuloEl(e)+" — "+Math.round(bb.height)+"px de altura")});
  r.transbordo=document.documentElement.scrollWidth>larguraTela()+1;
  ["contraste","html","cortado","alvo"].forEach(function(k){
@@ -1900,6 +2062,11 @@ function labConteudo(){
   bloco("Breakpoint derivado da tipografia","aceito",
    '<p class="nota">Os 1180px eram herdados. Agora o limiar sai da tipografia em uso — '+
    '<b>'+limiarMargem()+'px</b> no corpo atual. Mude o corpo no Aa e o número muda junto.</p>')+
+  bloco("Rede de conexões","candidato",
+   '<p class="nota">Vista nova no Conhecimento, e agora a primeira. Grafo de verdade — mas o nó não é bolinha: '+
+   'é o livro com a capa, a ideia com o começo do texto, o assunto com a palavra. Toque num deles para isolar a vizinhança.</p>'+
+   '<p class="nota"><b>Onde ver:</b> aba <b>Conhecimento</b> → primeira coluna, <i>Rede</i>.</p>'+
+   testar("Abrir a rede",{rota:"conhecimento",leitor:false,kView:"rede",kVazio:"n",kNo:null}))+
   bloco("Três coisas reprovadas pelo uso","aceito",
    '<p class="nota"><b>A faixa de capítulo em bleed saiu.</b> O título ia até a borda e ficava a ~450px do texto — '+
    'o olho tinha de sair da coluna e voltar a cada capítulo. Agora só a régua atravessa; o título alinha com o '+
@@ -2089,6 +2256,19 @@ function labConteudo(){
  if(s==="conhecarea")return'<p class="nota">A área que faltava. Desenhada contra o '+
   '<b>mapa de capacidades</b> do Project OS, não contra suposição: lá ela é <b>classe C</b> em tudo — '+
   'notas, tags, rede e dossiê existem só como protótipo, sem modelo persistente.</p>'+
+  bloco("A rede: o nó é o objeto, não uma bolinha","candidato",
+   '<p class="nota">A primeira versão listava as relações em texto, e não era isso que se esperava de uma rede. '+
+   'Mas o grafo comum tem um defeito próprio: <b>o nó é anônimo até o hover</b> — a bolinha não carrega '+
+   'informação nenhuma, e é preciso perguntar a cada uma quem ela é.</p>'+
+   '<p class="nota">Aqui livro, ideia e assunto aparecem <b>com o que são</b>: capa e título, o começo da nota, '+
+   'a palavra. A linha só liga. Custa espaço — 24 nós ocupam 740×760 — e em troca a rede se lê parada, '+
+   'sem passar o mouse em nada.</p>'+
+   '<p class="nota">Dois tipos de linha, e nenhuma inferida: <b>contínua</b> é de onde a ideia saiu, '+
+   '<b>tracejada</b> é o assunto que ela toca. Se duas ideias não se ligam, é porque você não usou a mesma palavra.</p>'+
+   '<p class="nota">O layout é determinístico: mesma entrada, mesmo desenho. Você reencontra o próprio mapa '+
+   'entre uma visita e outra, em vez de um arranjo novo a cada abertura. Verificado: <b>zero sobreposição</b> '+
+   'de caixas, e alvo mínimo de 32px no celular.</p>'+
+   testar("Abrir a rede",{rota:"conhecimento",leitor:false,kView:"rede",kVazio:"n",kNo:null}))+
   bloco("A regra que veio do mapa, não de mim","aceito",
    '<p class="nota">O mapa é literal: <i>“o nome ‘rede neural’ excede a evidência: o protótipo mostra grafo '+
    'determinístico por tags, não IA”</i>, com a recomendação <b>“começar determinístico por tags; não prometer IA”</b>.</p>'+
@@ -2173,6 +2353,7 @@ function labConteudo(){
    ["Faixa de capítulo em bleed","rejeitado","<b>Reprovada pelo uso.</b> O título ia até a borda da tela e ficava a ~450px do texto: para lê-lo o olho saía da coluna e voltava, a cada capítulo. Bleed serve para imagem, que se lê de longe. Agora só a <b>régua</b> atravessa (1585px) e o título alinha com o texto — desvio medido: 0px nos quatro capítulos."],
    ["Painel lateral como editor de nota","rejeitado","<b>Não sobreviveu à comparação lado a lado.</b> Era o mesmo editor, maior, com dois botões a mais — e cobrava um clique por eles. Um passo que entrega dois botões e nenhuma capacidade nova não é um modelo. Os botões vieram para o compositor; o painel ficou com o que só ele faz: a lista do livro."],
    ["Um editor de nota só","provavel","O compositor sobre o trecho passa a ser o único lugar de escrever, com Salvar, Apagar e a ponte para o Conhecimento. De três modelos para dois — e o segundo (margem) só existe no desktop largo."],
+   ["Rede com nó legível em vez de bolinha","candidato","O grafo comum esconde o nó atrás do hover: a bolinha não carrega informação. Aqui o nó é o objeto — capa e título, começo da nota, a palavra. Custa espaço (24 nós em 740×760) e em troca se lê parado. Layout determinístico: o mesmo mapa entre visitas. Falta testar com 50+ ideias, onde o espaço deixa de sobrar."],
    ["Conhecimento organizado por assunto","provavel","<b>Correção de rota.</b> A área abria numa lista cronológica e era isso que parecia: várias notas. O assunto e as conexões ficavam atrás de um clique. Agora o assunto é a unidade e o que se acumulou nele aparece de saída."],
    ["Nem toda ideia tem assunto","aceito","Duas das dez do acervo não têm, e ficam num grupo próprio no fim em vez de sumir ou receber uma tag forçada. Forçar uma gaveta seria pior que admitir que ainda não há."],
    ["Conhecimento recebe só o que foi levado","candidato","<b>A tese da área.</b> Destacar não manda nada; a ponte no fim da nota manda. A vista Por livro mostra a diferença sem explicar — “3 de 9 anotações levadas”. Falta saber se a pessoa entende a separação sem ler o texto do estado vazio."],
@@ -2372,8 +2553,9 @@ $("app").addEventListener("click",function(e){
  else if(a==="conhecimento"){st.nota=null;marcar("conhec");
    aviso("Nota enviada ao Conhecimento — vira um objeto conectável")}
  /* ── Conhecimento ── */
- else if(a==="kview"){st.kView=el.dataset.v;st.kAberto=null;
+ else if(a==="kview"){st.kView=el.dataset.v;st.kAberto=null;st.kNo=null;
    if(el.dataset.v!=="tag")st.kFiltro=null}
+ else if(a==="kno"){var iv=el.dataset.i;st.kNo=iv===""?null:+iv}
  else if(a==="kabrir"){st.kAberto=st.kAberto===el.dataset.k?null:el.dataset.k}
  else if(a==="ktag"){st.kFiltro=el.dataset.t||null;
    if(el.dataset.t)st.kView="tag"}
@@ -2492,8 +2674,10 @@ $("app").addEventListener("change",function(e){var s=e.target.closest("select[da
  setv(s.dataset.k,s.value,"cfg");draw()});
 addEventListener("keydown",function(e){
  /* destaque e nota de margem operáveis por teclado, não só por mouse */
- if((e.key==="Enter"||e.key===" ")&&e.target.matches&&e.target.matches('mark[data-a],.notamg,.mgrupo')){
-  e.preventDefault();e.target.click();return}
+ if((e.key==="Enter"||e.key===" ")&&e.target.matches&&e.target.matches('mark[data-a],.notamg,.mgrupo,.rn')){
+  /* <g> de SVG não tem .click() em todo navegador: dispara o evento na mão */
+  e.preventDefault();
+  e.target.dispatchEvent(new MouseEvent("click",{bubbles:true}));return}
  if(e.key==="ArrowRight"&&e.target.matches&&e.target.matches("mark[data-a]")){
   var nt=document.querySelector('.notamg[data-id="'+e.target.dataset.k+'"]');
   if(nt){e.preventDefault();nt.focus()}return}
