@@ -19,13 +19,27 @@
   --acc:#c8481f;--acc-soft:#fdf0ea;
   --ok:#2f7d55;--ok-soft:#eef6f1;--warn:#a8701c;--warn-soft:#fdf4e6;--dan:#b23b2a;--dan-soft:#fdefec;
   --paper:#f1eee7;
-  --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:48px;
-  --r1:4px;--r2:8px;--h1:32px;--h2:38px;
+  /* ── espaço: base 20px como no DOC, com meio-passo de 10 ──
+     O DOC opera em múltiplos de 20 e usa 40 e 80 como respiro grande.
+     Mantive isso e só troquei a base de 5px por 4px, que já era do Mekora. */
+  --s1:4px;--s2:8px;--s3:12px;--s4:20px;--s5:30px;--s6:40px;--s7:60px;--s8:80px;
+  --r1:4px;--r2:8px;--h1:2.2rem;--h2:2.6rem;
   --curva:cubic-bezier(.16,1,.3,1);--d1:.12s;--d2:.24s;--d3:.42s;
   --ui:-apple-system,"Segoe UI",Inter,"Helvetica Neue",Arial,sans-serif;
   --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+
+  /* ── medida editorial ── as três larguras do DOC: 575 → 675 → 775 ── */
+  --col:35.9375rem;
+  /* ── escala tipográfica: quanto maior o texto, menor a entrelinha ── */
+  --t-display:clamp(2.6rem,1.6rem + 3.4vw,5.2rem);
+  --t-h1:2.15rem;--t-h2:1.5rem;--t-h3:1.14rem;
+  --t-leitura:1.16rem;--t-ui:.94rem;--t-peq:.83rem;--t-mono:.68rem;
+  --lh-display:.94;--lh-h1:1.06;--lh-h2:1.2;--lh-h3:1.34;--lh-leitura:1.62;--lh-ui:1.5;
+  --tr-display:-.03em;--tr-h1:-.025em;--tr-h2:-.015em;
 }
+@media (min-width:1200px){:root{--col:42.1875rem}}
+@media (min-width:1600px){:root{--col:48.4375rem}}
 @media (prefers-color-scheme:dark){
   :root:not([data-tema="claro"]){
     --bg:#161513;--bg-2:#1e1c1a;--bg-3:#252320;--nav:#1b1917;
@@ -44,9 +58,20 @@
 }
 *{box-sizing:border-box}
 @media (prefers-reduced-motion:reduce){*{transition-duration:.001s!important;animation:none!important}}
+/* ══ A ESCALA FLUIDA DO DOC, SEM O PREÇO DELE ══
+   O DOC.cc fixa o root em px por breakpoint (14 → 20px) e escala tudo junto.
+   O efeito é ótimo e o preço é anular a preferência de tamanho de fonte do
+   navegador — inaceitável num produto para quem lê muito, que é justamente
+   quem aumenta a fonte. Aqui o clamp está em rem: 87,5% a 125% do tamanho
+   que a PESSOA escolheu. A identidade é a mesma; a preferência sobrevive. */
+html{font-size:clamp(.875rem,.82rem + .28vw,1.25rem)}
 html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:14px;
-  -webkit-font-smoothing:antialiased;overflow:hidden}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:var(--t-ui);
+  line-height:var(--lh-ui);-webkit-font-smoothing:antialiased;overflow:hidden}
+/* link nunca sublinha: borda inferior translúcida que escurece no hover */
+a,.linkE{color:inherit;text-decoration:none;border-bottom:1px solid var(--line);
+  transition:border-color var(--d1) var(--curva)}
+a:hover,.linkE:hover{border-bottom-color:var(--ink)}
 button{font:inherit;color:inherit;background:none;border:none;padding:0;cursor:pointer;text-align:left}
 :focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:var(--r1)}
 .mono{font-family:var(--mono)}
@@ -251,6 +276,94 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .espelho{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;
   border:1px solid var(--line);border-radius:3px;padding:2px 6px;color:var(--ink-3);white-space:nowrap}
 
+/* ══════════════════════════════════════════════════════════
+   CAMADA EDITORIAL — derivada do DOC.cc.
+   Vale na Home e dentro do arquivo, que são as duas superfícies
+   onde se lê. O aparato do produto (Mesa, item, perfil) continua
+   em grotesca e densidade de ferramenta.
+   ══════════════════════════════════════════════════════════ */
+.ed{padding:0 var(--s4)}
+.colE{width:100%;max-width:var(--col);margin:0 auto}
+.colE.larga{max-width:calc(var(--col) + 12rem)}
+.faixaE{padding:var(--s8) 0}
+.faixaE+.faixaE{border-top:1px solid var(--line-2)}
+.displayE{font-family:var(--ui);font-size:var(--t-display);line-height:var(--lh-display);
+  letter-spacing:var(--tr-display);font-weight:700;margin:0;text-wrap:balance}
+.h1E{font-family:var(--serif);font-size:var(--t-h1);line-height:var(--lh-h1);letter-spacing:var(--tr-h1);
+  font-weight:400;margin:0}
+.h2E{font-family:var(--ui);font-size:var(--t-h2);line-height:var(--lh-h2);letter-spacing:var(--tr-h2);
+  font-weight:700;margin:0}
+.h3E{font-family:var(--ui);font-size:var(--t-h3);line-height:var(--lh-h3);font-weight:700;margin:0}
+.kicker{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-3);display:block;margin-bottom:var(--s4)}
+.leadE{font-family:var(--serif);font-size:var(--t-leitura);line-height:var(--lh-leitura);color:var(--ink-2);
+  margin:var(--s4) 0 0}
+.txtE{font-family:var(--serif);font-size:var(--t-leitura);line-height:var(--lh-leitura);color:var(--ink);
+  margin:0 0 1.05em}
+.txtE.mudo{color:var(--ink-2)}
+/* botão do DOC: outline puro que inverte no hover, sem raio */
+.btnO{display:inline-flex;align-items:center;justify-content:center;padding:.7rem 1.25rem;
+  border:1px solid var(--line-3);font-size:var(--t-ui);font-weight:500;color:var(--ink);
+  background:none;border-radius:0;transition:background var(--d1) var(--curva),color var(--d1) var(--curva),
+  border-color var(--d1) var(--curva)}
+.btnO:hover{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btnO.forte{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btnO.forte:hover{background:var(--acc);border-color:var(--acc);color:#fff}
+/* matriz de tag 2×2 do DOC */
+.tagE{display:inline-flex;align-items:center;border-radius:999px;padding:.25rem .625rem .375rem;
+  font-size:var(--t-peq);background:var(--bg-3);border:1px solid var(--bg-3);color:var(--ink);
+  transition:background var(--d1) var(--curva),border-color var(--d1) var(--curva)}
+.tagE:hover{background:var(--bg);border-color:var(--ink)}
+.tagE.main{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.tagE.main:hover{background:var(--ink-2);border-color:var(--ink-2)}
+.tagsE{display:flex;gap:.625rem;flex-wrap:wrap}
+/* índice numerado com divisória — o padrão de lista ordenada do DOC */
+.indiceE{list-style:none;margin:var(--s5) 0 0;padding:0;counter-reset:i}
+.indiceE li{counter-increment:i;border-bottom:1px solid var(--line-2)}
+.indiceE li button{display:flex;align-items:baseline;gap:var(--s4);width:100%;padding:.75rem 0;
+  font-size:var(--t-ui);color:var(--ink)}
+.indiceE li button:hover .nomeI{border-bottom-color:var(--ink)}
+.indiceE .numI{font-family:var(--mono);font-size:var(--t-mono);color:var(--ink-3);
+  min-width:2.2rem}
+.indiceE .nomeI{border-bottom:1px solid transparent;transition:border-color var(--d1) var(--curva)}
+.indiceE .metaI{margin-left:auto;font-family:var(--mono);font-size:var(--t-mono);color:var(--ink-3)}
+/* figura e legenda: legenda herda a largura da coluna, centralizada */
+.figE{margin:var(--s6) 0}
+.figE img{display:block;width:100%;height:auto;border-radius:var(--r1);border:1px solid var(--line)}
+.figE figcaption{width:100%;max-width:var(--col);margin:var(--s4) auto 0;text-align:center;
+  font-size:var(--t-peq);line-height:1.5;color:var(--ink-3)}
+.duasE{display:grid;grid-template-columns:1fr;gap:var(--s6)}
+@media (min-width:1000px){.duasE{grid-template-columns:repeat(2,1fr);gap:var(--s4)}}
+.duasE.tres{grid-template-columns:1fr}
+@media (min-width:1000px){.duasE.tres{grid-template-columns:repeat(3,1fr)}}
+
+/* ══ LEITURA DENTRO DO ARQUIVO ══ */
+.leituraTopo{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:var(--s4);padding:.7rem var(--s4)}
+.leituraTopo .tt{font-family:var(--serif);font-size:var(--t-ui);white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis}
+.fio{position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--line-2)}
+.fio i{display:block;height:100%;background:var(--ink)}
+.lsec{scroll-margin-top:70px}
+.lsec+.lsec{margin-top:var(--s8)}
+/* a régua atravessa, o título não sai da coluna — a correção de 2026-08-11 */
+.lcap{position:relative;display:flex;justify-content:space-between;align-items:baseline;gap:var(--s4);
+  font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-3);padding:var(--s6) 0 var(--s4);margin-bottom:var(--s3)}
+.lsec+.lsec .lcap::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:100vw;height:1px;background:var(--line)}
+.lq{margin:var(--s6) 0;padding:0;border:0;font-family:var(--serif);font-size:1.34rem;line-height:1.34;
+  color:var(--ink);width:117%;max-width:none;margin-left:-8.5%}
+@media (max-width:760px){.lq{width:100%;margin-left:0}}
+.lq::before{content:"";display:block;width:34px;height:1px;background:currentColor;opacity:.35;
+  margin-bottom:.7em}
+.lnota{font-family:var(--ui);font-size:var(--t-peq);line-height:1.5;color:var(--ink-2);
+  width:93%;margin-left:7%;margin-bottom:1.05em}
+.marcaN{font-size:.62em;vertical-align:super;color:var(--acc);margin-left:.2em;line-height:1}
+.lfimE{margin-top:var(--s8);padding-top:var(--s5);border-top:1px solid var(--line)}
+.aparelho{display:flex;gap:var(--s4);align-items:center;padding:var(--s4);border:1px solid var(--line);
+  border-radius:var(--r2);background:var(--bg-2);margin-top:var(--s5)}
+
 /* ═══ DOCK ═══ só nas superfícies espaciais */
 .dock{position:sticky;bottom:var(--s5);margin:var(--s6) auto 0;width:max-content;display:flex;gap:var(--s1);
   background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:5px}
@@ -373,7 +486,8 @@ const ARQ={nome:"Relatório de pesquisa — expedição 02.pdf",saida:"Diário 0
   tam:"12,8 MB",pgs:96,idioma:"Português",titulo:"Diário 02",autor:"Ana Duarte",capa:"11",gerada:"08"};
 
 const zero={
-  lugar:"mesa",cena:"trabalho",conta:true,modo:"guiado",dentro:false,
+  /* Quem chega sem conhecer o produto cai na Home, não dentro da ferramenta. */
+  lugar:"home",cena:"trabalho",conta:false,modo:"guiado",dentro:false,cap:0,
   fase:"analise",feito:0,pendMostrada:false,pendResolvida:false,enviado:false,
   traduzir:null,capaEsc:"gerada",feitoAberto:false,
   estante:"lista",lombSel:"01",perfil:"conta",folha:null,menu:false,aviso:null,manuais:0,avisoUso:true
@@ -388,10 +502,11 @@ function reset(cena){
 
 /* ═══ TOPO ═══ o mesmo do prototipo.html, com a faixa contextual */
 function topo(){
-  const noItem=S.lugar==="item"||S.lugar==="livro";
+  const noItem=S.lugar==="item"||S.lugar==="livro"||S.lugar==="leitura";
   const lug=[["mesa","Mesa"],["estante","Estante"],["canvas","Canvas"],["conexoes","Conexões"]];
   const at=noItem?"mesa":S.lugar;
-  let l1='<div class="tlin"><button class="marca" data-a="ir" data-v="mesa" title="Voltar à Mesa">Mekora</button>';
+  let l1='<div class="tlin"><button class="marca" data-a="ir" data-v="'+(S.conta?"mesa":"home")+
+    '" title="'+(S.conta?"Voltar à Mesa":"Início")+'">Mekora</button>';
   if(S.conta){
     l1+='<nav>'+lug.map(x=>'<button data-a="ir" data-v="'+x[0]+'"'+(at===x[0]?' aria-current="true"':'')+
       '>'+x[1]+'</button>').join("")+'</nav><span class="sp"></span>'+
@@ -422,6 +537,143 @@ function menuConta(){
     its.map(i=>'<li><button data-a="'+(i[1]?"ir":"nada")+'"'+(i[1]?' data-v="'+i[1]+'"':'')+
       '><span class="ic">'+i[2]+'</span>'+i[0]+'</button></li>').join("")+
     '<li class="divi"></li><li><button data-a="nada"><span class="ic">→</span>Sair</button></li></ul></div>';
+}
+
+/* ═══ HOME ═══ para quem ainda não sabe o que é isto.
+   É a superfície mais editorial do produto, e por isso é onde o
+   sistema do DOC.cc entra inteiro: display grande com entrelinha
+   fechada, coluna de leitura, ritmo de 80px, botão outline,
+   lista numerada com divisória, legenda na largura da coluna. */
+function vHome(){
+  return '<div class="ed">'+
+
+  '<section class="faixaE" style="padding-top:var(--s7)"><div class="colE larga">'+
+    '<span class="kicker">Mekora</span>'+
+    '<h1 class="displayE">Seus arquivos viram livros de verdade.</h1>'+
+    '<p class="leadE" style="max-width:34ch">Com capa, sumário navegável e texto que reflui na tela — '+
+    'do jeito que um livro comprado se comporta no Kindle.</p>'+
+    '<div class="tagsE" style="margin-top:var(--s6);gap:var(--s3)">'+
+      '<button class="btnO forte" data-a="soltar">Preparar um arquivo</button>'+
+      '<button class="btnO" data-a="rolar" data-v="como">Ver como funciona</button></div>'+
+    '<p style="margin:var(--s4) 0 0;font-size:var(--t-peq);color:var(--ink-3)">'+
+      'Não é preciso criar conta para converter.</p>'+
+  '</div></section>'+
+
+  '<section class="faixaE"><div class="colE larga">'+
+    '<span class="kicker">O problema</span>'+
+    '<h2 class="h1E" style="max-width:26ch">Um PDF no Kindle não é um livro. É uma foto de um livro.</h2>'+
+    '<div class="duasE" style="margin-top:var(--s6)">'+
+      '<div><p class="txtE">Você aumenta a letra e nada acontece, porque não há letra: há imagem. '+
+      'A busca não encontra nada. Não existe sumário para pular capítulo. E a capa, na biblioteca do '+
+      'aparelho, é um retângulo cinza com o nome do arquivo.</p>'+
+      '<p class="txtE mudo">Converter resolve isso, mas converter bem exige decidir umas dez coisas — '+
+      'e a maior parte dessas decisões o próprio arquivo já responde.</p></div>'+
+      '<figure class="figE" style="margin:0">'+
+        '<img src="capas/capa-08.jpg" alt="Capa gerada pelo Mekora para um arquivo que não tinha nenhuma">'+
+        '<figcaption>Um relatório de pesquisa sem capa. O Mekora monta uma com o título, o autor e o '+
+        'formato, na linguagem da sua estante.</figcaption></figure>'+
+    '</div></div></section>'+
+
+  '<section class="faixaE" id="como"><div class="colE larga">'+
+    '<span class="kicker">Como funciona</span>'+
+    '<h2 class="h2E" style="max-width:22ch">Quatro passos, e só um deles é seu.</h2>'+
+    '<ol class="indiceE">'+
+      pI("01","Você solta o arquivo","PDF, EPUB, DOCX, CBZ, CBR, ZIP ou imagens")+
+      pI("02","O Mekora abre e vê o que tem dentro","páginas, idioma, capítulos, se o texto é texto")+
+      pI("03","Mostra o que encontrou e o que vai fazer","uma tela, uma lista, um botão")+
+      pI("04","Você recebe","baixa o arquivo ou manda direto para o Kindle")+
+    '</ol>'+
+    '<p class="txtE mudo" style="margin-top:var(--s5);font-size:var(--t-peq);line-height:1.6">'+
+      'Quando há dúvida de verdade — uma página dupla num quadrinho, a direção de leitura de um mangá — '+
+      'ele pergunta, uma coisa por vez, mostrando a página. Quando não há, não pergunta nada.</p>'+
+  '</div></section>'+
+
+  '<section class="faixaE"><div class="colE larga">'+
+    '<span class="kicker">O que entra</span>'+
+    '<div class="tagsE" style="margin-bottom:var(--s5)">'+
+      ["PDF","EPUB","DOCX","TXT","CBZ","CBR","ZIP","JPG","PNG"].map(f=>'<span class="tagE'+
+      (f==="PDF"?" main":"")+'">'+f+'</span>').join("")+'</div>'+
+    '<div class="duasE tres">'+
+      pB("Documento e livro","Reconhecimento de texto quando as páginas são digitalizações, conversão para EPUB, sumário a partir dos capítulos e capa.")+
+      pB("Quadrinho e mangá","Ordenação das páginas, capa, direção de leitura, páginas duplas e preparo para o tamanho exato do seu aparelho.")+
+      pB("Tradução","Um segundo arquivo no idioma que você escolher, sem tocar no original. Para quadrinhos ainda não — o texto vive dentro da imagem.")+
+    '</div></div></section>'+
+
+  '<section class="faixaE"><div class="colE">'+
+    '<span class="kicker">Sobre a conta</span>'+
+    '<h2 class="h1E">Converter não exige conta. O acervo, sim.</h2>'+
+    '<p class="txtE" style="margin-top:var(--s4)">Você pode preparar um arquivo agora e baixar sem se '+
+    'cadastrar. A conta existe para o que vem depois: guardar o que você preparou, lembrar o endereço do '+
+    'seu Kindle e deixar você retomar de onde parou.</p>'+
+    '<p class="txtE mudo">Sem conta, esta aba é o único endereço do seu trabalho. O preparo não morre se '+
+    'você fechar — mas não haverá onde reencontrá-lo.</p>'+
+  '</div></section>'+
+
+  '<section class="faixaE" style="padding-bottom:var(--s8)"><div class="colE" style="text-align:center">'+
+    '<h2 class="h1E" style="max-width:20ch;margin:0 auto">Comece por um arquivo qualquer.</h2>'+
+    '<div class="tagsE" style="justify-content:center;margin-top:var(--s5);gap:var(--s3)">'+
+      '<button class="btnO forte" data-a="soltar">Preparar um arquivo</button>'+
+      '<button class="btnO" data-a="folha" data-v="conta">Criar conta</button></div>'+
+  '</div></section>'+
+  '</div>';
+}
+function pI(n,t,m){
+  return '<li><button data-a="soltar"><span class="numI">'+n+'</span>'+
+    '<span class="nomeI">'+t+'</span><span class="metaI">'+m+'</span></button></li>';
+}
+function pB(t,d){
+  return '<div><h3 class="h3E">'+t+'</h3><p class="txtE mudo" style="margin-top:var(--s2);font-size:var(--t-peq);line-height:1.6">'+d+'</p></div>';
+}
+
+/* ═══ LEITURA DENTRO DO ARQUIVO ═══
+   A superfície onde o sistema do DOC.cc faz mais diferença: medida
+   de 575 → 675 → 775, régua que atravessa na fronteira de capítulo
+   sem tirar o título da coluna, citação escapando 17% e nota
+   subordinada a 93%, legenda na largura da coluna. */
+const CAPS=[
+ {n:"Chegada",p:["A expedição partiu de manhã, com o material dividido em três caixas e a certeza de que uma delas voltaria vazia.",
+   "Nenhum registro anterior descrevia o acesso pelo lado leste. Levamos isso como convite, e não como aviso."]},
+ {n:"O registro de campo",p:["Anotar o que se vê é mais difícil do que parece: metade do trabalho é resistir a anotar o que se esperava ver.",
+   "Adotamos a regra de escrever antes de conversar. Duas horas por dia sem falar com ninguém, cada um com o próprio caderno."]},
+ {n:"Método",p:["Fotografia a cada duzentos metros, sempre na mesma altura, sempre com a mesma lente. A repetição é o que transforma imagem em dado.",
+   "O que não cabia na fotografia entrava no caderno, com hora e coordenada."]},
+ {n:"O que ficou",p:["No fim, o que sobrou não foram as conclusões. Foi o material bruto: 96 páginas de anotação, 340 fotografias e uma lista de perguntas que ninguém tinha feito antes de sair.",
+   "É por isso que este diário existe em vez de um relatório."]}
+];
+function vLeitura(){
+  const prog=Math.round((S.cap+1)/CAPS.length*100);
+  let h='<div class="leituraTopo"><button class="lnk mudo" data-a="ir-livro">‹ '+esc(ARQ.titulo)+'</button>'+
+    '<span class="sp"></span>'+
+    '<button class="lnk mudo" data-a="folha" data-v="sumario">Sumário</button>'+
+    '<button class="lnk mudo" data-a="nada">Aa</button>'+
+    '<span class="mono" style="font-size:var(--t-mono);color:var(--ink-3)">'+prog+'%</span>'+
+    '<div class="fio"><i style="width:'+prog+'%"></i></div></div>';
+
+  h+='<div class="ed" style="padding-bottom:var(--s8)"><div class="colE">';
+  CAPS.forEach((c,i)=>{
+    h+='<section class="lsec" id="cap'+i+'"><div class="lcap"><span>'+esc(c.n)+'</span>'+
+      '<span>Capítulo '+(i+1)+' de '+CAPS.length+'</span></div>';
+    c.p.forEach((p,j)=>{
+      h+='<p class="txtE">'+esc(p)+(i===1&&j===0?'<button class="marcaN" data-a="folha" data-v="nota">1</button>':'')+'</p>';
+    });
+    if(i===0)h+='<blockquote class="lq">A repetição é o que transforma imagem em dado.</blockquote>';
+    if(i===2)h+='<figure class="figE"><img src="capas/capa-11.jpg" alt="Capa do Diário 02">'+
+      '<figcaption>Registro de campo, expedição 02. A legenda herda a largura da coluna e fica '+
+      'centrada — é assim que uma imagem larga não quebra o ritmo da leitura.</figcaption></figure>';
+    if(i===1)h+='<p class="lnota">Nota de campo: as duas horas de silêncio foram a única regra que '+
+      'sobreviveu à segunda semana.</p>';
+    h+='</section>';
+  });
+  h+='<div class="lfimE"><span class="kicker">Fim do que foi preparado</span>'+
+    '<p class="txtE mudo">Você está lendo o EPUB que o Mekora gerou a partir de um PDF digitalizado de '+
+    '96 páginas. O original continua guardado.</p>'+
+    '<div class="aparelho"><i class="pt pt-ok"></i><div style="flex:1">'+
+      '<b style="display:block;font-size:var(--t-ui)">Também está no seu Kindle</b>'+
+      '<span style="font-size:var(--t-peq);color:var(--ink-2)">Enviado hoje, 09:12. Se você ler por lá, '+
+      'a página em que parou volta para cá.</span></div>'+
+      '<button class="btnO" data-a="nada">Continuar no Kindle</button></div>'+
+  '</div></div></div>';
+  return h;
 }
 
 /* ═══ MESA ═══ */
@@ -601,7 +853,7 @@ function vLivro(){
     '<div class="livro"><div>'+
       '<img class="capao" src="'+capa(ARQ.capa)+'" alt="Capa de '+esc(ARQ.titulo)+'">'+
       '<div class="acoes" style="margin-top:var(--s4);flex-direction:column;align-items:stretch">'+
-      '<button class="btn" data-a="nada">Ler</button>'+
+      '<button class="btn" data-a="ir" data-v="leitura">Ler</button>'+
       '<button class="btn sec2" data-a="folha" data-v="envio">Enviar ao Kindle</button></div></div>'+
     '<div>'+
       '<h1>'+esc(ARQ.titulo)+'</h1><p class="autor">'+esc(ARQ.autor)+'</p>'+
@@ -791,6 +1043,20 @@ function vFolha(){
     '<p style="margin:0;font-size:14px;line-height:1.65;color:var(--ink-2)">Num PDF digitalizado cada página é '+
     'uma imagem. O reconhecimento lê essa imagem e devolve o texto — é o que permite buscar uma palavra, mudar '+
     'o corpo da letra e o conteúdo refluir na tela.</p>','<button class="btn sec2" data-a="fechar">Entendi</button>');
+  if(f==="sumario")return folha("Navegação","Sumário",
+    '<p style="margin:0 0 var(--s4);font-size:var(--t-peq);color:var(--ink-3);line-height:1.6">'+
+    'Gerado a partir dos títulos encontrados no arquivo. Não existia no PDF original.</p>'+
+    '<ol class="indiceE" style="margin:0">'+CAPS.map((c,i)=>
+      '<li><button data-a="cap" data-v="'+i+'"><span class="numI">'+String(i+1).padStart(2,"0")+'</span>'+
+      '<span class="nomeI">'+esc(c.n)+'</span>'+
+      '<span class="metaI">'+(i===S.cap?"onde você está":"")+'</span></button></li>').join("")+'</ol>',
+    '<button class="btnO" data-a="fechar">Fechar</button>');
+  if(f==="nota")return folha("Nota","Sobre o silêncio de duas horas",
+    '<blockquote class="lq" style="width:100%;margin:0 0 var(--s4)">Anotar o que se vê é mais difícil do que parece.</blockquote>'+
+    '<p style="margin:0;font-family:var(--serif);font-size:var(--t-leitura);line-height:var(--lh-leitura);'+
+    'color:var(--ink-2)">A nota de rodapé do original virou marca clicável no texto. No PDF ela era um '+
+    'número que não levava a lugar nenhum — o Kindle não sabia que existia relação entre os dois.</p>',
+    '<button class="btnO" data-a="fechar">Fechar</button>');
   if(f==="aviso")return folha("Simulação",S.aviso||"Ação representada",
     '<p style="margin:0;font-size:14px;line-height:1.65;color:var(--ink-2)">Este é um protótipo: o controle existe, '+
     'tem estado e leva a algum lugar, mas nada é gravado e nenhum arquivo real é tocado.</p>',
@@ -806,6 +1072,8 @@ function folha(ct,tit,corpo,pe){
 
 /* ═══ RENDER ═══ */
 function corpo(){
+  if(S.lugar==="home")return vHome();
+  if(S.lugar==="leitura")return vLeitura();
   if(S.lugar==="mesa")return vMesa();
   if(S.lugar==="item")return vItem();
   if(S.lugar==="livro")return vLivro();
@@ -853,6 +1121,11 @@ app.addEventListener("click",ev=>{
     case "ir-livro":S.lugar="livro";S.folha=null;S.dentro=false;break;
     case "abrir-item":S.lugar="item";S.folha=null;S.dentro=false;break;
     case "soltar":S.lugar="item";S.cena="trabalho";S.dentro=false;break;
+    case "rolar":{const alvo=document.getElementById(v);
+      if(alvo)alvo.scrollIntoView({behavior:"smooth",block:"start"});return;}
+    case "cap":{S.cap=Number(v);S.folha=null;pinta();
+      const el=document.getElementById("cap"+v);
+      if(el)el.scrollIntoView({behavior:"smooth",block:"start"});return;}
     case "folha":S.folha=v;break;
     case "fechar-aviso":S.avisoUso=false;break;
     case "modo":
@@ -978,11 +1251,45 @@ de existir.</li>
 pessoal</b> e continuam sendo a fonte deles. Este protótipo cobre a chegada do arquivo, a ficha do
 livro e o perfil. Os dois usam os mesmos tokens porque são o mesmo produto.</p></div>`
 };
-let abaN="copy";
+NT.sistema=`<div class="w"><h2>O que veio do DOC.cc, e onde está aplicado</h2>
+<p>Na rodada anterior eu escrevi sobre o sistema deles e entreguei um produto que não o usava.
+Aqui ele está aplicado — e as duas superfícies onde ele de fato serve são a <b>Home</b> e a
+<b>leitura dentro do arquivo</b>, porque são as duas onde se lê. O aparato do produto — Mesa, item,
+perfil — continua em grotesca e densidade de ferramenta, de propósito.</p>
+<h3>Adotado</h3>
+<table><thead><tr><th>Do DOC</th><th>Como está aqui</th><th>Onde ver</th></tr></thead><tbody>
+<tr><td class="n">Escala fluida por root</td><td><code>clamp(.875rem, .82rem + .28vw, 1.25rem)</code> no <code>html</code> — tudo o mais em rem, e a escala inteira cresce com a tela</td><td>toda parte; estique a janela</td></tr>
+<tr><td class="n">Entrelinha fecha quando o corpo cresce</td><td>display .94 · h1 1.06 · h2 1.2 · h3 1.34 · leitura 1.62 · interface 1.5</td><td>Home, título contra corpo</td></tr>
+<tr><td class="n">Medida editorial</td><td>575 → 675 → 775px conforme a tela, sempre centrada</td><td>leitura e Home</td></tr>
+<tr><td class="n">Ritmo vertical de 80px entre módulos</td><td><code>--s8</code>, com divisória de 1px entre faixas</td><td>Home</td></tr>
+<tr><td class="n">Gutter de 20 e 40</td><td>base 4 do Mekora, degraus operacionais em 20 e 40</td><td>toda parte</td></tr>
+<tr><td class="n">Link por borda inferior</td><td>nunca <code>text-decoration</code>; a borda escurece no hover</td><td>Home, sumário</td></tr>
+<tr><td class="n">Botão outline que inverte</td><td>sem raio, 1px, vira sólido no hover</td><td>Home, leitura</td></tr>
+<tr><td class="n">Matriz de tag 2×2</td><td>default e main, claro e invertido</td><td>Home, "o que entra"</td></tr>
+<tr><td class="n">Lista ordenada como índice</td><td>número em mono, divisória de 1px por item, meta à direita</td><td>Home, "como funciona"; sumário</td></tr>
+<tr><td class="n">Legenda na largura da coluna</td><td>imagem larga, legenda estreita e centrada</td><td>leitura, capítulo 3</td></tr>
+<tr><td class="n">Zero sombra</td><td>profundidade por borda translúcida</td><td>toda parte</td></tr>
+<tr><td class="n">Uma curva só</td><td><code>cubic-bezier(.16,1,.3,1)</code>, quatro durações</td><td>toda parte</td></tr>
+</tbody></table>
+<h3>O que mudei em vez de copiar</h3>
+<p><b>O root em px.</b> O DOC fixa <code>html{font-size:14px}</code> e sobe até 20px por breakpoint.
+É o truque central da identidade deles e o preço é anular a preferência de tamanho de fonte do
+navegador — inaceitável num produto para quem lê muito, que é exatamente quem aumenta a fonte.
+Aqui o <code>clamp</code> está em <b>rem</b>: 87,5% a 125% do tamanho que a pessoa escolheu.
+Mesma identidade, preferência preservada.</p>
+<p><b>As durações.</b> .8s a 1.3s é ritmo de revista. Numa ferramenta virou .12 / .24 / .42s.</p>
+<p><b>A base de espaço.</b> 4px, que já era do Mekora, com os degraus operacionais de 20 e 40 do DOC.</p>
+<h3>O que continua recusado, e por medição</h3>
+<p>Medida de 50 caracteres e entrelinha 1,30 foram testadas em 11 de agosto e reprovadas: ritmo de
+ensaio de oito minutos, com retorno de linha a cada ~8 palavras — cansa em 300 páginas. O bleed de
+título chegou a entrar e <b>você o reprovou no dia seguinte</b>, porque o olho tinha de sair da coluna
+e voltar a cada capítulo. Sobrou a régua atravessando na fronteira de capítulo, com o título alinhado
+ao texto — está na leitura, entre um capítulo e outro.</p></div>`;
+let abaN="sistema";
 const notas=document.getElementById("notas");
 function pintaNotas(){
   notas.innerHTML='<div class="ncab"><span class="lbl">◇ notas desta exploração</span>'+
-    '<div class="nabas">'+[["copy","Copy"],["dock","A dock"],["fluxos","Fluxos"]].map(x=>
+    '<div class="nabas">'+[["sistema","Sistema"],["copy","Copy"],["dock","A dock"],["fluxos","Fluxos"]].map(x=>
       '<button data-n="'+x[0]+'" aria-pressed="'+(abaN===x[0])+'">'+x[1]+'</button>').join("")+'</div>'+
     '<span class="sp"></span><button class="btn sm sec2" id="fechaN">Voltar ao produto</button></div>'+
     '<div class="ncorpo">'+NT[abaN]+'</div>';
