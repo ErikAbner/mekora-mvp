@@ -1,5 +1,21 @@
 # Para o Project OS — pendente de filtro
 
+> **Resolvido em 2026-08-12.** O Erik julgou os itens no chat e eles foram aplicados:
+>
+> - **item 1** — o repositório entrou em `projects/mekora.json` como `supporting_artifact`
+>   `cadernos_de_exploracao`, que era a opção recomendada;
+> - **item 3** — `last_reviewed`, `last_reviewed_from` e `current_focus` corrigidos, este último com
+>   o critério gravado ao lado em `current_focus_basis`;
+> - **item 4** — virou **DEC-0011**; os outros dois candidatos ficaram deliberadamente sem registro,
+>   com a razão anotada dentro dela para ninguém reavaliar do zero;
+> - **item 5** — a avaliação do DOC.cc ganhou documento próprio em
+>   `docs/references/doc-cc-avaliado-2026-08-12.md`, agora incluindo o sistema e não só a tipografia.
+>
+> Continua aberto o **item 2**: as duas rodadas de 11/08 seguem sem run registrado. Da rodada final
+> em diante todo trabalho abriu e fechou run.
+>
+> O texto abaixo fica como estava, porque é o registro do que foi proposto.
+
 **Nada disto foi escrito no `erik-project-os`.** É um rascunho para você aprovar item a item no chat.
 Os itens são independentes: dá para aceitar uns e recusar outros sem quebrar os demais.
 

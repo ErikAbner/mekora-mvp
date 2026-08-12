@@ -513,6 +513,117 @@ tbody tr:hover td{background:var(--bench-2)}
   font-size:13.5px;line-height:1.6;color:var(--ink-2)}
 .altped b{color:var(--ink);font-weight:700}
 
+/* ══════════════════════════════════════════════════════════
+   SISTEMA CANDIDATO — seção 11.
+   Os dois sistemas vivem lado a lado para poderem ser julgados
+   com o mesmo componente. .-a é o que o protótipo usa hoje;
+   .-b é o candidato. .-dark prova qual dos dois inverte sozinho.
+   ══════════════════════════════════════════════════════════ */
+.sis{
+  --tinta:#1a1917;--tinta-2:#57534d;--tinta-3:#706c65;--papel:#ffffff;--papel-2:#f7f7f5;
+  --acento:#c8481f;--ok:#2f7d55;--aten:#a8701c;--erro:#b23b2a;
+  --fio-1:#efede8;--fio-2:#e6e4de;--fio-3:#d5d2ca;--fio-4:#b5b0a8;
+  --sombra-1:0 1px 2px rgba(26,25,23,.07);--sombra-2:0 8px 24px rgba(26,25,23,.12);
+  --r-1:6px;--r-2:10px;--r-3:999px;
+  --e-1:4px;--e-2:8px;--e-3:12px;--e-4:16px;--e-6:24px;--e-8:32px;
+  --curva:cubic-bezier(.2,0,.2,1);--d-1:.16s;--d-2:.24s;--d-3:.32s;
+  --g:-apple-system,"Segoe UI",Inter,"Helvetica Neue",Arial,sans-serif;
+  --s:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --m:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  background:var(--papel);color:var(--tinta);font-family:var(--g);font-size:13.5px;line-height:1.45;
+  padding:var(--e-6);border-radius:var(--r-2);
+}
+/* ── candidato ── */
+.sis.-b{
+  --fio-1:rgba(26,25,23,.09);--fio-2:rgba(26,25,23,.17);--fio-3:rgba(26,25,23,.32);--fio-4:rgba(26,25,23,.52);
+  --sombra-1:none;--sombra-2:none;
+  --r-1:4px;--r-2:8px;
+  --curva:cubic-bezier(.16,1,.3,1);--d-1:.12s;--d-2:.24s;--d-3:.42s;
+}
+/* ── inversão: só o candidato consegue, e é o ponto ── */
+.sis.-dark{--tinta:#f1eee8;--tinta-2:#b9b2a6;--tinta-3:#948d81;--papel:#161513;--papel-2:#1e1c1a;--acento:#e4613d}
+.sis.-b.-dark{--fio-1:hsla(40,20%,96%,.10);--fio-2:hsla(40,20%,96%,.18);
+  --fio-3:hsla(40,20%,96%,.32);--fio-4:hsla(40,20%,96%,.5)}
+/* revelador: pinta a sombra de vermelho onde ela existir */
+.sis.-vermelho{--sombra-1:0 2px 7px rgba(178,59,42,.6);--sombra-2:0 10px 26px rgba(178,59,42,.55)}
+.sis.-b.-vermelho{--sombra-1:none;--sombra-2:none}
+.sis * {box-sizing:border-box}
+.sis button{font:inherit;color:inherit;background:none;border:none;padding:0;cursor:pointer;text-align:left}
+
+.sis .sup{border:1px solid var(--fio-2);border-radius:var(--r-2);background:var(--papel);
+  box-shadow:var(--sombra-1);overflow:hidden;transition:border-color var(--d-2) var(--curva)}
+.sis .sup + .sup{margin-top:var(--e-3)}
+.sis .lin{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:var(--e-3);align-items:center;
+  padding:var(--e-3) var(--e-4);border-bottom:1px solid var(--fio-1)}
+.sis .lin:last-child{border-bottom:none}
+.sis .cap{width:34px;height:44px;border-radius:var(--r-1);background:var(--papel-2);
+  border:1px solid var(--fio-2);display:flex;align-items:center;justify-content:center;
+  font-family:var(--m);font-size:8px;color:var(--tinta-3)}
+.sis .nm{font-size:13.5px;font-weight:600;letter-spacing:-.005em;display:block}
+.sis .st{font-size:12.5px;color:var(--tinta-2);margin-top:2px;display:flex;align-items:center;gap:7px}
+.sis .pt{width:7px;height:7px;border-radius:50%;flex:0 0 7px;display:inline-block}
+.sis .bt{height:32px;padding:0 var(--e-4);border-radius:var(--r-3);background:var(--tinta);color:var(--papel);
+  font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;
+  transition:background-color var(--d-1) var(--curva)}
+.sis .bt:hover{background:var(--acento)}
+.sis .bt.sec{background:none;border:1px solid var(--fio-3);color:var(--tinta);font-weight:500}
+.sis .bt.sec:hover{background:none;border-color:var(--fio-4)}
+.sis .est{display:flex;gap:var(--e-3);padding:var(--e-4);border:1px solid var(--fio-2);border-radius:var(--r-2);
+  background:var(--papel-2);box-shadow:var(--sombra-1)}
+.sis .est b{display:block;font-size:14px;letter-spacing:-.01em}
+.sis .est span{display:block;font-size:12.5px;color:var(--tinta-2);margin-top:3px;line-height:1.5}
+.sis .chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--fio-2);border-radius:var(--r-3);
+  padding:3px 10px;font-size:11.5px;color:var(--tinta-2);background:var(--papel-2)}
+.sis .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:var(--e-2)}
+.sis .tit{font-family:var(--s);font-size:19px;letter-spacing:-.01em;margin:0 0 2px}
+.sis .num{font-family:var(--m);font-size:10.5px;color:var(--tinta-3);letter-spacing:.05em}
+.sis .aviso{display:flex;gap:var(--e-3);padding:var(--e-3) var(--e-4);border-radius:var(--r-1);
+  border:1px solid var(--fio-1);background:var(--papel-2);font-size:12.5px;color:var(--tinta-2);margin-top:var(--e-3)}
+
+/* palco A/B */
+.ab{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:900px){.ab{grid-template-columns:1fr}}
+.abcol > .cap2{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+.abcol .cap2 b{font-family:var(--sans);font-size:12.5px;font-weight:700}
+.abcol .cap2 span{font-family:var(--mono);font-size:9.5px;color:var(--ink-3);letter-spacing:.06em;text-transform:uppercase}
+
+/* faixa contextual de 60px */
+.faixa60{border:1px solid var(--rule-2);border-radius:6px;overflow:hidden;background:var(--card)}
+.f60cab{height:56px;position:relative;overflow:hidden;border-bottom:1px solid rgba(26,25,23,.17);
+  background:#fff;color:#1a1917}
+.f60cam{position:absolute;inset:0;display:flex;flex-direction:column;
+  transition:transform .42s cubic-bezier(.16,1,.3,1)}
+.f60cab.-dentro .f60cam{transform:translateY(-56px)}
+.f60l{height:56px;flex:0 0 56px;display:flex;align-items:center;gap:12px;padding:0 16px;
+  font-family:-apple-system,"Segoe UI",Inter,Arial,sans-serif;font-size:13px}
+.f60l .marca{font-family:var(--serif);font-size:17px}
+.f60l .lug{color:rgba(26,25,23,.55);font-size:12.5px}
+.f60l .lug.on{color:#1a1917;font-weight:600}
+.f60l .sp{flex:1}
+.f60l .nome{font-weight:600;font-size:13.5px;letter-spacing:-.005em}
+.f60l .pt{width:7px;height:7px;border-radius:50%;background:#2f7d55;display:inline-block}
+.f60rolo{height:230px;overflow-y:auto;background:#fff;color:#1a1917}
+.f60conteudo{padding:20px 16px 40px;font-family:-apple-system,"Segoe UI",Inter,Arial,sans-serif}
+.f60conteudo h4{font-family:var(--serif);font-size:21px;font-weight:400;letter-spacing:-.015em;margin:0 0 6px}
+.f60conteudo p{font-size:13px;line-height:1.6;color:#57534d;margin:0 0 12px;max-width:56ch}
+.f60marca{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;
+  color:rgba(26,25,23,.4);border-top:1px dashed rgba(26,25,23,.17);padding-top:8px;margin-top:20px;display:block}
+
+/* régua de espaço e curva */
+.regua{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap}
+.regua i{display:block;background:var(--ink);border-radius:2px;flex:0 0 auto}
+.regua figure{margin:0;text-align:center}
+.regua figcaption{font-family:var(--mono);font-size:9px;color:var(--ink-3);margin-top:6px;letter-spacing:.05em}
+.pista{height:38px;border:1px solid var(--rule-2);border-radius:999px;background:var(--bench-2);position:relative;overflow:hidden}
+.pista i{position:absolute;top:5px;left:5px;width:26px;height:26px;border-radius:50%;background:var(--accent);
+  transition:transform 1ms linear}
+.pista.-vai i{transform:translateX(calc(100% + 0px))}
+.especime{display:flex;flex-direction:column;gap:12px}
+.especime > div{border-bottom:1px solid var(--rule-2);padding-bottom:12px}
+.especime > div:last-child{border-bottom:none;padding-bottom:0}
+.especime .rot{font-family:var(--mono);font-size:9px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-3);display:block;margin-bottom:5px}
+
 /* ── onboarding ─────────────────────────────────────────── */
 .mk-coach{position:absolute;z-index:45;max-width:290px;background:var(--pink);color:#fff;border-radius:var(--r2);
   padding:var(--s4);box-shadow:0 18px 44px rgba(26,25,23,.34)}
@@ -550,6 +661,7 @@ tbody tr:hover td{background:var(--bench-2)}
   <a href="#s8">8 · Alternativas</a>
   <a href="#s9">9 · Decisões</a>
   <a href="#s10">10 · Respostas</a>
+  <a href="#s11">11 · O sistema</a>
   <span class="sp"></span>
   <button class="tema" id="tema" type="button">tema: sistema</button>
 </nav>
@@ -578,9 +690,18 @@ tbody tr:hover td{background:var(--bench-2)}
   </div>
 
   <div class="regra" style="border-left-color:var(--good)">
+    <span class="lbl">Revisão D · 12 de agosto de 2026 · cinco decisões registradas</span>
+    <p style="margin-top:8px">As respostas viraram <b>DEC-0011 a DEC-0015</b> no registro do projeto:
+      as duas explorações de experiência são fontes e nenhuma é descartada; o produto se chama
+      <b>Mekora</b> e o MVP inclui Estante, Canvas e Conexões; a arquitetura de experiência desta
+      rodada foi aceita inteira; a instrumentação mede a interface e nunca o conteúdo; e a âncora
+      semântica manda no leitor. A <b>seção 11</b> é nova: o sistema visual candidato, aplicado.</p>
+  </div>
+
+  <div class="regra" style="border-left-color:var(--good)">
     <span class="lbl">Revisão C · 12 de agosto de 2026</span>
     <p style="margin-top:8px">As perguntas da seção 10 foram respondidas e o protótipo foi corrigido
-      duas vezes. A correção que ficou: o Makora é uma aplicação web com servidor, então
+      duas vezes. A correção que ficou: o Mekora é uma aplicação web com servidor, então
       <b>fechar a aba não mata o preparo</b> — o que se perde sem conta é o endereço do trabalho, não
       o trabalho. E como não há confirmação de que a direção de leitura pode ser detectada,
       <b>a confiança declarada naquela pendência saiu</b>: virou uma pergunta com a evidência à vista.
@@ -1113,7 +1234,7 @@ tbody tr:hover td{background:var(--bench-2)}
       <p><b>Revisão B:</b> li "rodar no navegador" como "o preparo acontece dentro da aba" e tirei a
         promessa de todas as telas, trocando por um aviso âmbar de interrupção.</p>
       <p><b>Revisão C — corrigido de novo, no outro sentido.</b> "É uma aplicação web, meio que um
-        website" quer dizer que o Makora deixou de ser aplicativo instalado, não que o trabalho é feito
+        website" quer dizer que o Mekora deixou de ser aplicativo instalado, não que o trabalho é feito
         na sua máquina. Existe servidor: o próprio registro do projeto fala do contrato com a API e de
         uma entidade de processamento. Então <b>fechar a aba não mata o trabalho</b> — os avisos âmbar
         saíram. O que se perde é outra coisa, e é aqui que esta resposta encontra a resposta 1:
@@ -1169,7 +1290,7 @@ tbody tr:hover td{background:var(--bench-2)}
         quarto repositório. O motivo está lá: já existem duas explorações de experiência coexistindo
         sem decisão registrada sobre qual continua, e entrar como repositório criaria uma terceira
         candidata. O trabalho foi publicado no remoto, que já existia e estava sincronizado.</p>
-      <span class="onde">se você preferir a outra opção — quarto repositório —, é uma linha para trocar</span>
+      <span class="onde">registrado em DEC-0013 · o nome é Mekora, e "Makora" foi corrigido em todo o caderno</span>
     </div><span></span></article>
   </div>
 
@@ -1181,7 +1302,7 @@ tbody tr:hover td{background:var(--bench-2)}
     <p><b>Instrumentação aprovada.</b> Traqueamento e mapa de calor entram para descobrir onde as
       pessoas travam e quais erros se repetem. Isso resolve a pendência da direção de leitura por um
       caminho melhor do que o técnico: <b>as respostas às pendências são o dado que falta.</b> Cada
-      vez que alguém responde "direita para a esquerda" num arquivo que o Makora não soube ler, isso
+      vez que alguém responde "direita para a esquerda" num arquivo que o Mekora não soube ler, isso
       é um exemplo rotulado. A pergunta de hoje é o instrumento que constrói a recomendação de amanhã
       — e só quando houver número real ela deixa de ser pergunta.</p>
     <p><b>Manifesto corrigido.</b> O <span class="mono">current_focus</span> deixou de descrever
@@ -1199,7 +1320,7 @@ tbody tr:hover td{background:var(--bench-2)}
         nem conteúdo de storage. Instrumentação é o lugar mais fácil de furar esse guardrail sem
         perceber, porque quase toda ferramenta de heatmap grava a tela inteira por padrão.</li>
       <li><b>Consentimento no momento certo, não num banner.</b> A primeira pendência respondida é o
-        momento em que "usar minhas respostas para o Makora aprender" faz sentido — antes disso é
+        momento em que "usar minhas respostas para o Mekora aprender" faz sentido — antes disso é
         abstrato, e um banner na entrada só ensina a clicar em aceitar.</li>
       <li><b>Honestidade continua valendo depois de haver dado.</b> Quando a amostra for pequena, o
         produto segue perguntando, e segue dizendo que pergunta porque não sabe. Trocar a pergunta por
@@ -1207,9 +1328,185 @@ tbody tr:hover td{background:var(--bench-2)}
       <li><b>O que medir primeiro,</b> se a instrumentação for para servir a esta rodada: quantos
         usuários abrem o Personalizado (mede se o Guiado está resolvendo), quantos abandonam na
         análise (mede se a lista é longa demais), quanto tempo leva uma pendência, e quantas vezes a
-        recomendação é alterada em vez de confirmada — este último é o número que diz se o Makora
+        recomendação é alterada em vez de confirmada — este último é o número que diz se o Mekora
         está acertando ou só sendo obedecido.</li>
     </ul>
+  </div>
+</section>
+
+<!-- ═══════════════════ 11 · O SISTEMA ═══════════════════ -->
+<section id="s11">
+  <div class="sechead">
+    <span class="lbl">Seção 11 · o sistema candidato, para virar design system</span>
+    <h2>Seis regras, aplicadas ao mesmo componente</h2>
+    <p>O que trouxe do DOC.cc não foi o visual — foi o método de superfície. Aqui ele está aplicado
+      no componente real do Mekora, ao lado do sistema que o protótipo usa hoje, para você julgar com
+      a mesma matéria dos dois lados. Nenhuma dessas regras é sobre gosto: cada uma fecha um achado
+      da auditoria.</p>
+  </div>
+
+  <div class="duas">
+    <div class="bloco">
+      <span class="lbl">O que peguei</span>
+      <ul class="txt" style="padding-left:18px;font-size:14px">
+        <li><b>Zero sombra.</b> Profundidade vem de uma borda de 1px.</li>
+        <li><b>Borda translúcida</b> em vez de cinza sólido.</li>
+        <li><b>Uma curva só</b> para o produto inteiro.</li>
+        <li><b>A faixa de 60px</b> que troca de conteúdo por deslizamento.</li>
+      </ul>
+    </div>
+    <div class="bloco">
+      <span class="lbl">O que adaptei</span>
+      <ul class="txt" style="padding-left:18px;font-size:14px">
+        <li><b>As durações.</b> O DOC usa .8s a 1.3s — ritmo de revista. Numa ferramenta isso é
+          lento: cortei para .12 / .24 / .42s. A curva é a deles, o tempo não.</li>
+        <li><b>A escala de espaço.</b> Fica em base 4, que é a do Mekora, não em base 5.</li>
+        <li><b>O root em px.</b> Não vai. Anula a preferência de fonte do navegador — e o usuário
+          daqui é justamente quem aumenta a fonte.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <span class="lbl">Regra 1 e 2 · sem sombra, e a borda que sabe se inverter</span>
+    <p class="txt" style="font-size:14px">O mesmo componente, gerado do mesmo código, sob os dois
+      sistemas. Ligue o tema escuro: <b>o sistema de hoje precisa de uma cor nova para cada
+      elemento; o candidato só troca o fundo.</b> É esse o conserto do achado nº 19 — o tema escuro
+      pela metade — e do nº 29, as superfícies empilhadas.</p>
+    <div class="filtros" style="margin:4px 0 14px">
+      <button class="fbtn" id="btnEscuro" aria-pressed="false" type="button">tema escuro</button>
+      <button class="fbtn" id="btnSombra" aria-pressed="false" type="button">mostrar as sombras em vermelho</button>
+    </div>
+    <div class="ab" id="palcoAB"></div>
+    <p class="txt" style="font-size:13.5px;margin-top:14px"><b>O que olhar:</b> no escuro, o lado A
+      mantém bordas claras que somem no fundo e o card interno continua parecendo recortado. O lado B
+      mantém a mesma hierarquia porque a borda é uma porcentagem do que está atrás dela, não uma cor.</p>
+  </div>
+
+  <div class="bloco">
+    <span class="lbl">Regra 3 · a faixa de 60px que responde "onde estou"</span>
+    <p class="txt" style="font-size:14px">A ideia do DOC.cc, aplicada ao problema P0 nº 2 do Mekora.
+      A barra tem altura fixa e <span class="mono">overflow:hidden</span>; dentro dela, duas camadas
+      deslizam. Fora do item, ela mostra os lugares. Dentro, mostra o arquivo e o estado dele.
+      <b>Role a caixa abaixo.</b></p>
+    <div class="faixa60">
+      <div class="f60cab" id="f60cab">
+        <div class="f60cam">
+          <div class="f60l">
+            <span class="marca">Mekora</span>
+            <span class="lug on">Mesa</span><span class="lug">Estante</span>
+            <span class="lug">Canvas</span><span class="lug">Conexões</span>
+            <span class="sp"></span><span class="lug">⌕</span><span class="lug">?</span>
+          </div>
+          <div class="f60l">
+            <span class="marca">Mekora</span>
+            <span class="nome">Leis universais de design.pdf</span>
+            <span class="pt"></span><span class="lug">pronto · EPUB · 8,4 MB</span>
+            <span class="sp"></span><span class="lug">Enviar ao Kindle</span>
+          </div>
+        </div>
+      </div>
+      <div class="f60rolo" id="f60rolo">
+        <div class="f60conteudo">
+          <h4>Leis universais de design.pdf</h4>
+          <p>Analisado. Duas coisas mudam o resultado, e eu sei o que fazer com as duas.</p>
+          <p>Texto em imagem: as 96 páginas são digitalizações. Sem reconhecimento, o Kindle não busca
+            palavras nem ajusta o tamanho da letra.</p>
+          <p>Sumário sem links: os títulos de capítulo existem no texto, mas não levam a lugar nenhum.</p>
+          <p>Nenhuma página corrompida — 96 de 96 abriram sem erro.</p>
+          <span class="f60marca">↑ role até aqui: o cabeçalho trocou de conteúdo sem trocar de altura</span>
+          <p>O nome do arquivo e o estado dele passam a ocupar a faixa, e continuam ali por toda a
+            leitura da página. A pergunta "sobre o que estou esperando" deixa de depender de rolar
+            para cima — que é exatamente o que a tela de progresso atual obriga a fazer, e ela nem
+            tem para onde voltar.</p>
+          <p>Custo: zero pixel de tela. A faixa já existia.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="duas">
+    <div class="bloco">
+      <span class="lbl">Regra 4 · uma curva, quatro tempos</span>
+      <p class="txt" style="font-size:13.5px">Todo movimento do Mekora usa
+        <span class="mono">cubic-bezier(.16,1,.3,1)</span>. O que muda entre um caso e outro é só a
+        duração. É isso que faz o canvas parecer <b>um lugar</b> e não uma coleção de animações.</p>
+      <div style="display:flex;flex-direction:column;gap:9px;margin-top:6px" id="pistas"></div>
+      <button class="fbtn" id="btnMover" type="button" style="margin-top:12px">mover os quatro</button>
+      <p class="txt" style="font-size:12.5px;margin-top:12px">Com <span class="mono">prefers-reduced-motion</span>
+        as quatro caem para 1ms. Isso não é acessório: se navegar virar deslocamento pelo canvas,
+        é a diferença entre o produto ser usável e não ser.</p>
+    </div>
+    <div class="bloco">
+      <span class="lbl">Regra 5 · três papéis tipográficos, sem exceção</span>
+      <div class="especime">
+        <div><span class="rot">Serifa · o que se lê</span>
+          <p style="font-family:var(--serif);font-size:19px;line-height:1.45;margin:0">
+            Leis universais de design</p>
+          <p style="font-family:var(--serif);font-size:15px;line-height:1.6;color:var(--ink-2);margin:6px 0 0">
+            Título de item, corpo do leitor, e nada mais. É a única família que carrega conteúdo.</p></div>
+        <div><span class="rot">Grotesca · o que opera</span>
+          <p style="font-family:var(--sans);font-size:13.5px;line-height:1.5;margin:0;color:var(--ink-2)">
+            Botão, rótulo, estado, navegação, ajuda. Tudo que é aparato do produto e não é o conteúdo
+            que a pessoa veio ler.</p></div>
+        <div><span class="rot">Mono · o que se mede</span>
+          <p class="mono" style="font-size:12px;line-height:1.5;margin:0;color:var(--ink-2)">
+            96 páginas · 8,4 MB · 1236 × 1680 · 2 de 120<br>
+            Número, contagem, dimensão e prova. Nunca prosa.</p></div>
+      </div>
+      <p class="txt" style="font-size:13px;margin-top:12px">Já é a língua do Mekora — o
+        <span class="mono">prototipo.html</span> separa o leitor da interface, e os cadernos rodam em
+        serifa para o argumento e mono para o instrumento. O DOC.cc confirma a estrutura;
+        <b>não é motivo para mudar nada.</b></p>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <span class="lbl">Regra 6 · base 4, com um passo operacional</span>
+    <p class="txt" style="font-size:14px">Sete degraus, e um deles carrega quase tudo: <b>16px</b> é
+      o padding de superfície, o gutter e o espaço entre linhas de lista. Os outros existem para
+      exceção, não para variedade.</p>
+    <div class="regua" id="regua" style="margin-top:6px"></div>
+  </div>
+
+  <div class="bloco">
+    <span class="lbl">Os tokens — é isto que vai para o design system</span>
+    <div class="tabwrap" style="border-radius:4px">
+      <table>
+        <thead><tr><th>Token</th><th>Valor</th><th>Papel</th><th>Fecha o achado</th></tr></thead>
+        <tbody>
+          <tr><td class="n mono">--fio-1</td><td class="mono">rgba(26,25,23,.09)</td><td>divisória dentro de uma superfície</td><td>29</td></tr>
+          <tr><td class="n mono">--fio-2</td><td class="mono">rgba(26,25,23,.17)</td><td>borda de superfície — substitui toda sombra</td><td>29, 19</td></tr>
+          <tr><td class="n mono">--fio-3</td><td class="mono">rgba(26,25,23,.32)</td><td>borda de controle: campo, botão secundário</td><td>—</td></tr>
+          <tr><td class="n mono">--fio-4</td><td class="mono">rgba(26,25,23,.52)</td><td>borda de ação em foco ou hover</td><td>—</td></tr>
+          <tr><td class="n mono">--fio-* invertido</td><td class="mono">hsla(40,20%,96%,.10 → .50)</td><td>os mesmos quatro, no escuro</td><td>19</td></tr>
+          <tr><td class="n mono">--sombra-*</td><td class="mono">none</td><td>não existe sombra no sistema</td><td>29</td></tr>
+          <tr><td class="n mono">--r-1 / --r-2 / --r-3</td><td class="mono">4px / 8px / 999px</td><td>imagem e controle / superfície / pílula</td><td>—</td></tr>
+          <tr><td class="n mono">--curva</td><td class="mono">cubic-bezier(.16,1,.3,1)</td><td>a única do produto</td><td>—</td></tr>
+          <tr><td class="n mono">--d-1 / --d-2 / --d-3</td><td class="mono">.12s / .24s / .42s</td><td>estado / superfície / deslocamento</td><td>—</td></tr>
+          <tr><td class="n mono">--d-viagem</td><td class="mono">.7s</td><td>deslocamento pelo canvas — e sempre pulável</td><td>—</td></tr>
+          <tr><td class="n mono">--e-1 … --e-8</td><td class="mono">4 · 8 · 12 · 16 · 24 · 32</td><td>base 4, passo operacional 16</td><td>—</td></tr>
+          <tr><td class="n mono">--acento</td><td class="mono">#c8481f → #e4613d</td><td>único hue; já é o do Mekora</td><td>—</td></tr>
+          <tr><td class="n mono">--ok / --aten / --erro</td><td class="mono">#2f7d55 · #a8701c · #b23b2a</td><td>estado, nunca decoração</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="bloco escuro">
+    <span class="lbl">Funciona? O que eu diria depois de montar</span>
+    <p><b>As regras 1, 2 e 3 se pagam sozinhas.</b> Tirar a sombra e tornar a borda translúcida não é
+      preferência estética: é o que faz o tema escuro parar de exigir uma decisão por elemento, e é o
+      que dissolve as quatro camadas empilhadas que a auditoria encontrou em quase toda tela. A faixa
+      de 60px resolve "onde estou" sem custar espaço.</p>
+    <p><b>A regra 4 é a que mais importa para o que você quer construir.</b> Se navegar for
+      deslocar-se pelo canvas, ter uma curva só é o que separa "um lugar" de "várias animações". E é
+      também onde o sistema pode matar o produto: <b>a viagem precisa ser pulável desde o primeiro
+      dia</b> — busca e teclado cortam direto para o destino, sem trajeto.</p>
+    <p><b>O que este sistema ainda não tem, e um design system precisa:</b> estados de foco visíveis
+      (o <span class="mono">:focus-visible</span> aqui ainda é o do navegador), densidade alternativa
+      para o lote com muitos arquivos, e o comportamento em toque — que é onde a faixa contextual
+      costuma quebrar, porque não há hover para antecipar a troca.</p>
   </div>
 </section>
 
@@ -1412,9 +1709,10 @@ const PAGS=(function(){
 })();
 
 /* ── estado ──────────────────────────────────────────────── */
+const IDIOMAS={en:"inglês",es:"espanhol",fr:"francês",de:"alemão",ja:"japonês"};
 const inicial={
-  cena:"mesa",lugar:"mesa",modo:"guiado",conta:true,
-  doc:{fase:"analise",feito:0,pendResolvida:false,pendMostrada:false,enviado:false,detalhes:false},
+  cena:"mesa",lugar:"mesa",modo:"guiado",conta:true,avisoUso:true,
+  doc:{fase:"analise",feito:0,pendResolvida:false,pendMostrada:false,enviado:false,detalhes:false,traducao:null},
   hq:{fase:"analise",feito:0,pend:{leitura:null,dupla:null},filtro:"todas",sel:[],mudancas:[]},
   lote:{falhaAgrupada:false,linhas:JSON.parse(JSON.stringify(LOTE))},
   folha:null,ajuda:null,perfil:"conta",coach:false,check:true,checkAberto:true,
@@ -1501,6 +1799,12 @@ function vMesaNova(){
       '<div class="mk-passo"><b>Você confirma</b><span>Uma tela, uma lista, um botão. Só pergunto quando há dúvida real.</span></div>'+
       '<div class="mk-passo"><b>No fim</b><span>Baixe o arquivo ou envie direto ao seu Kindle.</span></div>'+
     '</div>'+
+    /* DEC-0015: informa sem bloquear. Não é portão, não pede clique para continuar. */
+    (S.avisoUso?'<div class="mk-nota" style="margin-top:28px"><span>◆</span><div>'+
+      'Registramos <b>onde você clica e onde trava</b> nesta interface, para descobrir o que está '+
+      'confuso. Nunca o conteúdo dos seus arquivos. '+
+      '<button class="mk-lnk" data-a="ir" data-v="perfil" style="padding:0">Ver o que é guardado</button> · '+
+      '<button class="mk-lnk mudo" data-a="aviso-uso" style="padding:0">dispensar</button></div></div>':'')+
   '</div>';
 }
 function vMesa(){
@@ -1579,6 +1883,13 @@ function vDoc(){
     li("in","2","Converter para EPUB","No EPUB o texto reflui: você muda o corpo da letra e o conteúdo se ajusta. Em PDF, não.","","")+
     li("in","3","Gerar sumário navegável","A partir dos 14 títulos de capítulo encontrados.","","")+
     li("in","4","Usar a página 1 como capa","É a única página do arquivo sem texto corrido.","alterar","capa")+
+    /* DEC-0013: tradução é funcionalidade principal para texto — mas é decisão de saída,
+       nunca uma pergunta pré-respondida com "Sim", que foi o defeito P0 nº 7. */
+    li(S.doc.traducao?"ok":"in",S.doc.traducao?"✓":"5",
+      S.doc.traducao?"Traduzir para "+IDIOMAS[S.doc.traducao]:"Idioma: português, como no original",
+      S.doc.traducao?"O EPUB sai traduzido. O original continua na estante, intacto — dá para ler os dois.":
+        "Nada é traduzido a não ser que você peça.",
+      S.doc.traducao?"alterar":"traduzir","traduzir")+
     '</div></div>';
 
   h+='<div class="mk-sec"><h3>Como vai aparecer na estante</h3><div class="mk-lista">'+
@@ -1684,8 +1995,10 @@ function painelPersonalizado(){
       '<button class="mk-btn sm sec" data-a="manual">Alterar</button></div>'+
     '<div class="mk-lin"><div class="tx"><b>Nome do arquivo final</b><span>Derivado do original</span></div>'+
       '<button class="mk-btn sm sec" data-a="manual">Alterar</button></div>'+
-    '<div class="mk-lin"><div class="tx"><b>Traduzir</b><span>Desligado. <b style="color:var(--warn2)">Experimental</b> — a qualidade ainda não foi validada.</span></div>'+
-      '<button class="mk-sw" data-a="manual" aria-pressed="false" aria-label="Traduzir"><i></i></button></div>'+
+    '<div class="mk-lin"><div class="tx"><b>Traduzir</b><span>'+
+      (S.doc.traducao?"Sai também em "+IDIOMAS[S.doc.traducao]+", num segundo arquivo.":"Desligado. O EPUB sai no idioma do original.")+
+      '</span></div><button class="mk-btn sm sec" data-a="li" data-v="traduzir">'+
+      (S.doc.traducao?"Alterar":"Escolher idioma")+'</button></div>'+
     (S.manuais>0?'<div class="mk-nota" style="margin-top:14px"><span>◆</span><div>'+S.manuais+
       ' ajuste'+(S.manuais>1?"s":"")+' manual'+(S.manuais>1?"is":"")+
       '. Ao voltar ao Guiado eu pergunto o que fazer com '+(S.manuais>1?"eles":"ele")+' — nada é descartado em silêncio.</div></div>':'')+
@@ -1901,12 +2214,12 @@ function vPerfil(){
     ["priv","Privacidade","O que fica guardado, o que é medido e por quanto tempo",
       '<div class="mk-lin"><div class="tx"><b>Arquivos originais</b><span>Apagados 24 horas depois de preparados. O resultado fica na sua estante.</span></div>'+
         '<button class="mk-btn sm sec" data-a="manual">Alterar</button></div>'+
-      '<div class="mk-lin"><div class="tx"><b>Ajudar a melhorar o Makora</b>'+
+      '<div class="mk-lin"><div class="tx"><b>Ajudar a melhorar o Mekora</b>'+
         '<span>Registramos <b>onde você clica e onde trava</b> — nunca o conteúdo dos seus arquivos, nem o texto que sai do reconhecimento. '+
         'É o que nos deixa ver que um erro se repete em muita gente, e não só na sua conta.</span></div>'+
-        '<button class="mk-sw" data-a="manual" aria-pressed="true" aria-label="Ajudar a melhorar o Makora"><i></i></button></div>'+
+        '<button class="mk-sw" data-a="manual" aria-pressed="true" aria-label="Ajudar a melhorar o Mekora"><i></i></button></div>'+
       '<div class="mk-lin"><div class="tx"><b>Usar minhas respostas de pendência</b>'+
-        '<span>Quando você responde "estas páginas são lidas da direita para a esquerda", isso vira exemplo para o Makora aprender a acertar sozinho. '+
+        '<span>Quando você responde "estas páginas são lidas da direita para a esquerda", isso vira exemplo para o Mekora aprender a acertar sozinho. '+
         'Guardamos a resposta e as dimensões das páginas — não as imagens.</span></div>'+
         '<button class="mk-sw" data-a="manual" aria-pressed="true" aria-label="Usar minhas respostas de pendência"><i></i></button></div>'+
       '<div class="mk-lin"><div class="tx"><b>Baixar meus dados</b><span>Estante, notas e histórico de preparação</span></div>'+
@@ -1932,11 +2245,12 @@ function vPerfil(){
 /* ── atualizações ────────────────────────────────────────── */
 function vNovidades(){
   const N=[
-    ["exp","Experimental","Tradução de quadrinhos","Detecta os balões, lê o texto e recompõe traduzido. Funciona em páginas simples e erra em arte densa. Fica no Personalizado, desligada por padrão, e não entra no fluxo guiado enquanto a qualidade não for validada."],
+    ["novo","Novo","Tradução de documentos","Escolha um idioma e receba um segundo arquivo traduzido — o original continua na estante, intacto. Não é uma pergunta no meio do caminho: é uma decisão sobre o que você vai receber."],
+    ["exp","Experimental","Tradução de quadrinhos e mangás","Aqui o texto vive dentro da imagem: é preciso achar o balão, ler, apagar e recompor. Funciona em página simples e erra em arte densa. <b>Não está disponível</b> — e não fica atrás de um interruptor escondido enquanto não passar em teste de qualidade."],
     ["novo","Novo","Pendências em vez de configuração","Quando há dúvida real — página dupla, direção de leitura — aparece uma pendência com a recomendação e o motivo. Quando não há, não aparece nada."],
     ["novo","Novo","A Mesa","Um lugar onde o trabalho em curso continua existindo depois que você fecha a aba."],
     ["novo","Novo","Medimos onde você trava","Passamos a registrar cliques e pontos de travamento na interface — nunca o conteúdo dos seus arquivos. Dá para desligar em Perfil › Privacidade, e o que é coletado está escrito lá."],
-    ["exp","Experimental","Aprender com as suas respostas","As respostas que você dá às pendências viram exemplos para o Makora deixar de perguntar. Enquanto a amostra for pequena, ele continua perguntando — e vai continuar dizendo que pergunta porque não sabe."],
+    ["exp","Experimental","Aprender com as suas respostas","As respostas que você dá às pendências viram exemplos para o Mekora deixar de perguntar. Enquanto a amostra for pequena, ele continua perguntando — e vai continuar dizendo que pergunta porque não sabe."],
     ["mel","Melhorado","Progresso honesto","Barra só onde há o que contar. Nas outras etapas, a etapa e o tempo decorrido."],
     ["mel","Melhorado","Editor manual de páginas","Filtros por tipo de problema, seleção múltipla e contagem de alterações reversíveis."],
     ["cor","Corrigido","O erro de envio não desaparece mais","Um arquivo que falhou no upload continua marcado como falho até você resolver."],
@@ -2108,6 +2422,25 @@ function vFolha(){
         'Manter junto deixa a imagem inteira, porém menor no aparelho. Separar deixa cada metade maior e corta a arte no meio.</p>',
       '<button class="mk-lnk mudo" data-a="pend-alterar" data-v="dupla">Separar em duas páginas</button>',
       '<button class="mk-btn" data-a="pend-ok" data-v="dupla">Manter como imagem única</button>');
+  }
+  if(f.t==="traduzir"){
+    const langs=[["en","Inglês"],["es","Espanhol"],["fr","Francês"],["de","Alemão"],["ja","Japonês"]];
+    return folha("Saída","Traduzir este documento",
+      '<p style="margin:0 0 14px;font-size:14px;line-height:1.6;color:var(--pink-2)">'+
+        'A tradução gera <b>um segundo EPUB</b>. O original fica na sua estante do jeito que está — '+
+        'você não troca um pelo outro, fica com os dois.</p>'+
+      '<div class="mk-lista">'+langs.map(function(l){
+        return '<div class="mk-li">'+sinal(S.doc.traducao===l[0]?"ok":"in",S.doc.traducao===l[0]?"✓":"·")+
+          '<span class="tx"><b>'+l[1]+'</b></span>'+
+          '<button class="ac" data-a="traduzir-ok" data-v="'+l[0]+'">'+
+          (S.doc.traducao===l[0]?"escolhido":"escolher")+'</button></div>';}).join("")+'</div>'+
+      '<div class="mk-nota" style="margin-top:14px"><span>◆</span><div>'+
+        'Traduzir um livro inteiro não é o mesmo que traduzir uma frase: nomes próprios, citações e '+
+        'trocadilhos saem piores que o resto. <b>Vale conferir antes de mandar para o aparelho.</b> '+
+        'Para quadrinhos e mangás a tradução não está disponível — o texto vive dentro da imagem, e '+
+        'isso ainda não passou em teste de qualidade.</div></div>',
+      (S.doc.traducao?'<button class="mk-lnk mudo" data-a="traduzir-nao">Não traduzir</button>':''),
+      '<button class="mk-btn sec" data-a="fechar">Fechar</button>');
   }
   if(f.t==="criar-conta"){
     return folha("Conta","Criar conta no Mekora",
@@ -2281,6 +2614,9 @@ palco.addEventListener("click",function(ev){
     case "soltar":S.lugar="item-doc";S.cena="doc";S.coach=true;S.check=true;break;
     case "menu-conta":S.folha={t:"conta"};break;
     case "criar-conta":S.folha={t:"criar-conta"};break;
+    case "traduzir-ok":S.doc.traducao=v;S.folha=null;break;
+    case "traduzir-nao":S.doc.traducao=null;S.folha=null;break;
+    case "aviso-uso":S.avisoUso=false;break;
     case "conta-criar":S.conta=true;S.folha=null;S.cena="mesa";S.lugar="item-doc";break;
     case "modo":
       if(S.modo==="guiado"){S.modo="personalizado";}
@@ -2295,6 +2631,7 @@ palco.addEventListener("click",function(ev){
       else if(v==="ajuda-ocr"){S.lugar="ajuda";S.ajuda="O que é reconhecimento de texto";S.cena="ajuda";}
       else if(v==="leitura"){S.folha={t:"pend-leitura"};}
       else if(v==="dupla"){S.folha={t:"pend-dupla"};}
+      else if(v==="traduzir"){S.folha={t:"traduzir"};}
       else aviso("Edição em linha do campo");
       break;
     case "doc-preparar":S.doc.fase="preparando";S.doc.feito=0;tickDoc();break;
@@ -2609,6 +2946,102 @@ const ALT=[
       }).join("")+'</div>'+
       '<p class="altped"><b>Escolha:</b> '+a.esc+'</p></div>';
   }).join("");
+})();
+
+/* ══════════════════════════════════════════════════════════
+   Seção 11 — o sistema candidato, demonstrado.
+   ══════════════════════════════════════════════════════════ */
+(function(){
+  const palco=document.getElementById("palcoAB");
+  if(!palco)return;
+
+  /* o mesmo componente, uma fonte só — é o que torna a comparação honesta */
+  const COMP=
+    '<p class="tit">Leis universais de design.pdf</p>'+
+    '<div class="chips"><span class="chip">PDF</span><span class="chip">12,8 MB</span>'+
+      '<span class="chip">96 páginas</span><span class="chip">Português</span></div>'+
+    '<div class="est" style="margin-top:16px"><i class="pt" style="background:var(--ok);margin-top:5px"></i>'+
+      '<div><b>Pronto. Leis universais de design.epub · 8,4 MB</b>'+
+      '<span>96 páginas reconhecidas, sumário com 14 capítulos, capa montada.</span></div></div>'+
+    '<div class="sup" style="margin-top:12px">'+
+      '<div class="lin"><span class="cap">EPUB</span>'+
+        '<span><span class="nm">Leis universais de design.epub</span>'+
+        '<span class="st"><i class="pt" style="background:var(--ok)"></i>Enviado ao Kindle · 09:12</span></span>'+
+        '<span><button class="bt sec" type="button">Baixar</button></span></div>'+
+      '<div class="lin"><span class="cap">CBZ</span>'+
+        '<span><span class="nm">Vagabundo — volume 04.cbz</span>'+
+        '<span class="st"><i class="pt" style="background:var(--aten)"></i>2 pendências</span></span>'+
+        '<span><button class="bt" type="button">Revisar</button></span></div>'+
+      '<div class="lin"><span class="cap">PDF</span>'+
+        '<span><span class="nm">Compêndio do design 2024.pdf</span>'+
+        '<span class="st"><i class="pt" style="background:var(--erro)"></i>Conexão caiu na página 38 de 210</span></span>'+
+        '<span><span class="num">RETOMANDO</span></span></div>'+
+    '</div>'+
+    '<div class="aviso"><span>◆</span><div>O preparo continua mesmo se você fechar a aba — ele não é '+
+      'feito no seu computador.</div></div>';
+
+  palco.innerHTML=
+    '<div class="abcol"><span class="cap2"><b>A — o sistema de hoje</b>'+
+      '<span>sombra · borda sólida · raio 6/10</span></span>'+
+      '<div class="sis -a" id="sisA">'+COMP+'</div></div>'+
+    '<div class="abcol"><span class="cap2"><b>B — o candidato</b>'+
+      '<span>sem sombra · borda translúcida · raio 4/8</span></span>'+
+      '<div class="sis -b" id="sisB">'+COMP+'</div></div>';
+
+  const alvos=[document.getElementById("sisA"),document.getElementById("sisB")];
+  function alterna(btn,cls){
+    const on=btn.getAttribute("aria-pressed")!=="true";
+    btn.setAttribute("aria-pressed",String(on));
+    alvos.forEach(function(a){a.classList.toggle(cls,on);});
+  }
+  document.getElementById("btnEscuro").addEventListener("click",function(){alterna(this,"-dark");});
+  document.getElementById("btnSombra").addEventListener("click",function(){alterna(this,"-vermelho");});
+
+  /* faixa contextual: a troca acontece quando o conteúdo passa do cabeçalho */
+  const rolo=document.getElementById("f60rolo"),cab=document.getElementById("f60cab");
+  if(rolo&&cab)rolo.addEventListener("scroll",function(){
+    cab.classList.toggle("-dentro",rolo.scrollTop>44);
+  });
+
+  /* movimento: uma curva, quatro tempos */
+  const TEMPOS=[["--d-1",120,"estado — cor de botão, marca de seleção"],
+    ["--d-2",240,"superfície — abrir, fechar, revelar"],
+    ["--d-3",420,"deslocamento — a faixa trocando de conteúdo"],
+    ["--d-viagem",700,"viagem — a câmera se aproximando de um item no canvas"]];
+  const cx=document.getElementById("pistas");
+  if(cx){
+    cx.innerHTML=TEMPOS.map(function(t){
+      return '<div><div class="pista" data-ms="'+t[1]+'"><i></i></div>'+
+        '<span class="mono" style="font-size:9.5px;color:var(--ink-3);letter-spacing:.05em;'+
+        'display:block;margin-top:5px">'+t[0]+' · '+t[1]+'MS · '+t[2].toUpperCase()+'</span></div>';
+    }).join("");
+    const reduz=window.matchMedia("(prefers-reduced-motion: reduce)");
+    document.getElementById("btnMover").addEventListener("click",function(){
+      cx.querySelectorAll(".pista").forEach(function(p){
+        const bola=p.querySelector("i"),ms=reduz.matches?1:Number(p.dataset.ms);
+        p.classList.remove("-vai");
+        bola.style.transition="transform 1ms linear";
+        void bola.offsetWidth;
+        bola.style.transition="transform "+ms+"ms cubic-bezier(.16,1,.3,1)";
+        bola.style.transform="translateX("+(p.clientWidth-36)+"px)";
+        setTimeout(function(){
+          bola.style.transition="transform "+ms+"ms cubic-bezier(.16,1,.3,1)";
+          bola.style.transform="translateX(0)";
+        },ms+320);
+      });
+      this.textContent=reduz.matches?"movimento reduzido: as quatro em 1ms":"mover os quatro";
+    });
+  }
+
+  /* régua de espaço */
+  const reg=document.getElementById("regua");
+  if(reg)reg.innerHTML=[["--e-1",4],["--e-2",8],["--e-3",12],["--e-4",16],["--e-6",24],["--e-8",32]]
+    .map(function(e){
+      const forte=e[1]===16;
+      return '<figure><i style="width:'+e[1]+'px;height:'+(e[1]*1.6+16)+'px;'+
+        (forte?'background:var(--accent)':'')+'"></i>'+
+        '<figcaption'+(forte?' style="color:var(--accent)"':'')+'>'+e[1]+'</figcaption></figure>';
+    }).join("");
 })();
 
 /* ── decisões ────────────────────────────────────────────── */

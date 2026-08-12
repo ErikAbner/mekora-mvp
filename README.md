@@ -65,10 +65,13 @@ Contém:
 - oito comparações atual × proposta, com a captura original de um lado;
 - três dúvidas reais com duas ou três alternativas de arquitetura cada, e a escolha justificada;
 - o que recomendo manter, alterar, remover e adiar;
-- as seis respostas do Erik e o que cada uma mudou no desenho.
+- as seis respostas do Erik e o que cada uma mudou no desenho;
+- **o sistema visual candidato** (seção 11): seis regras aplicadas ao mesmo componente, com o
+  sistema atual ao lado, a prova de inversão no tema escuro, a faixa contextual de 60px funcionando
+  e a tabela de tokens que vira o design system.
 
 **Revisão C, 12 de agosto de 2026.** As perguntas foram respondidas e o protótipo foi corrigido duas
-vezes. O Makora é uma aplicação web com servidor: **fechar a aba não mata o preparo** — o que se
+vezes. O Mekora é uma aplicação web com servidor: **fechar a aba não mata o preparo** — o que se
 perde sem conta é o endereço do trabalho, não o trabalho, e isso amarra a pergunta da conta com a do
 processamento. Como não há confirmação de que a direção de leitura pode ser detectada, a confiança
 declarada naquela pendência saiu: virou uma pergunta com a evidência à vista. A regra que ficou:
