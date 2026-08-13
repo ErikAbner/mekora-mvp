@@ -667,17 +667,32 @@ function menuConta(){
 function vHome(){
   return '<div class="ed">'+
 
+  /* O H1 diz o serviço. O posicionamento — a estante — vem na segunda frase.
+     A versão anterior abria pelo posicionamento e o leitor não sabia o que a
+     ferramenta fazia; era linha para quem já conhece a categoria. */
   '<section class="faixaE" style="padding-top:var(--s7)"><div class="colE larga">'+
     '<span class="kicker">Mekora</span>'+
-    '<h1 class="displayE">Uma estante para os livros que não vêm de loja.</h1>'+
-    '<p class="leadE" style="max-width:38ch">PDF digitalizado, artigo, apostila, mangá. O Mekora prepara '+
-    'para o seu Kindle, guarda numa estante que é sua, e mantém o que você marcou junto do livro onde '+
-    'você marcou.</p>'+
+    '<h1 class="displayE">Seus PDFs, mangás e artigos viram livros no Kindle.</h1>'+
+    '<p class="leadE" style="max-width:40ch">Com capa, sumário e texto que se ajusta à tela. '+
+    'E depois ficam numa estante sua — porque a biblioteca do Kindle guarda só o que você comprou lá.</p>'+
     '<div class="tagsE" style="margin-top:var(--s6);gap:var(--s3)">'+
       '<button class="btnO forte" data-a="soltar">Preparar um arquivo</button>'+
       '<button class="btnO" data-a="rolar" data-v="como">Ver como funciona</button></div>'+
     '<p style="margin:var(--s4) 0 0;font-size:var(--t-peq);color:var(--ink-3)">'+
       'Não é preciso criar conta para converter.</p>'+
+  '</div></section>'+
+
+  /* mostrar antes de explicar: é a coisa mais compreensível que o produto tem */
+  '<section class="faixaE" style="padding-top:0"><div class="colE larga">'+
+    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:var(--s4);'+
+    'align-items:end">'+
+      ACERVO.slice(0,7).map(b=>'<img src="'+capa(b.c)+'" alt="Capa de '+esc(b.t)+'" loading="lazy" '+
+      'style="width:100%;height:auto;border:1px solid var(--line);border-radius:var(--rm);background:var(--paper)">').join("")+
+    '</div>'+
+    '<p style="width:100%;max-width:var(--col);margin:var(--s4) auto 0;text-align:center;'+
+    'font-size:var(--t-peq);line-height:1.55;color:var(--ink-3)">'+
+    'Uma estante do Mekora. A terceira e a sexta capa foram <b>montadas por ele</b> — os arquivos '+
+    'chegaram sem nenhuma, e sem capa não existe estante, existe pasta.</p>'+
   '</div></section>'+
 
   '<section class="faixaE"><div class="colE larga">'+
@@ -730,18 +745,7 @@ function vHome(){
   '</div></section>'+
 
   '<section class="faixaE"><div class="colE larga">'+
-    '<span class="kicker">O que entra</span>'+
-    '<div class="tagsE" style="margin-bottom:var(--s5)">'+
-      ["PDF","EPUB","DOCX","TXT","CBZ","CBR","ZIP","JPG","PNG"].map(f=>'<span class="tagE'+
-      (f==="PDF"?" main":"")+'">'+f+'</span>').join("")+'</div>'+
-    '<div class="duasE tres">'+
-      pB("Documento e livro","Reconhecimento de texto quando as páginas são digitalizações, conversão para EPUB, sumário a partir dos capítulos e capa.")+
-      pB("Quadrinho e mangá","Ordenação das páginas, capa, direção de leitura, páginas duplas e preparo para o tamanho exato do seu aparelho.")+
-      pB("Tradução","Um segundo arquivo no idioma que você escolher, sem tocar no original. Para quadrinhos ainda não — o texto vive dentro da imagem.")+
-    '</div></div></section>'+
-
-  '<section class="faixaE"><div class="colE larga">'+
-    '<span class="kicker">Para quem</span>'+
+    '<span class="kicker">Para quem, e o que entra</span>'+
     '<div class="duasE" style="margin-top:var(--s3)">'+
       '<div><h3 class="h3E">Quem lê por prazer</h3>'+
       '<p class="txtE mudo" style="margin-top:var(--s2)">Você tem mangá em CBZ, livro que só existe em '+
@@ -754,23 +758,23 @@ function vHome(){
     '</div>'+
     '<p class="txtE" style="margin-top:var(--s5);max-width:60ch">Nos dois casos o problema não é '+
     'converter uma vez. É que <b>o acervo cresce e nada o segura.</b></p>'+
+    '<div class="tagsE" style="margin-top:var(--s5)">'+
+      ["PDF","EPUB","DOCX","TXT","CBZ","CBR","ZIP","JPG","PNG"].map(f=>'<span class="tagE'+
+      (f==="PDF"?" main":"")+'">'+f+'</span>').join("")+'</div>'+
+    '<p class="txtE mudo" style="margin-top:var(--s3);font-size:var(--t-peq)">Documento vira EPUB com '+
+    'texto reconhecido e sumário. Quadrinho vira arquivo no tamanho exato do seu aparelho. '+
+    'Tradução gera um segundo arquivo, sem tocar no original — para quadrinhos ainda não.</p>'+
   '</div></section>'+
 
-  '<section class="faixaE"><div class="colE">'+
-    '<span class="kicker">A conta</span>'+
-    '<h2 class="h1E">A conta é a estante. Converter você faz sem ela.</h2>'+
-    '<p class="txtE" style="margin-top:var(--s4)">Solte um arquivo agora, receba o resultado e baixe — '+
-    'sem cadastro, sem e-mail. A conta não é pedágio de conversão: ela é o lugar onde o acervo existe, '+
-    'onde o seu Kindle fica salvo e onde o que você marcou continua te esperando.</p>'+
-    '<p class="txtE mudo">Sem conta, esta aba é o único endereço do seu trabalho. O preparo não morre se '+
-    'você fechar — mas não haverá onde reencontrá-lo.</p>'+
-  '</div></section>'+
-
-  '<section class="faixaE" style="padding-bottom:var(--s8)"><div class="colE" style="text-align:center">'+
-    '<h2 class="h1E" style="max-width:22ch;margin:0 auto">Comece pelo arquivo que você nunca conseguiu ler direito.</h2>'+
-    '<p class="txtE mudo" style="margin:var(--s4) auto 0;max-width:44ch">Todo mundo tem um. '+
-    'Ele costuma ser um PDF digitalizado de 300 páginas.</p>'+
-    '<div class="tagsE" style="justify-content:center;margin-top:var(--s5);gap:var(--s3)">'+
+  '<section class="faixaE" style="padding-bottom:var(--s8)"><div class="colE">'+
+    '<span class="kicker">Para começar</span>'+
+    '<h2 class="h1E" style="max-width:24ch">Comece pelo arquivo que você nunca conseguiu ler direito.</h2>'+
+    '<p class="txtE" style="margin-top:var(--s4)">Todo mundo tem um — costuma ser um PDF digitalizado '+
+    'de trezentas páginas. Solte ele agora, receba o resultado e baixe: <b>sem cadastro, sem e-mail.</b></p>'+
+    '<p class="txtE mudo">A conta entra depois, e ela é a estante: o lugar onde o acervo existe, onde o '+
+    'seu Kindle fica salvo e onde o que você marcou continua te esperando. Sem conta, esta aba é o único '+
+    'endereço do seu trabalho.</p>'+
+    '<div class="tagsE" style="margin-top:var(--s5);gap:var(--s3)">'+
       '<button class="btnO forte" data-a="soltar">Preparar um arquivo</button>'+
       '<button class="btnO" data-a="folha" data-v="conta">Criar conta</button></div>'+
   '</div></section>'+
