@@ -513,6 +513,72 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .pendencia{display:flex;gap:var(--s3);align-items:flex-start;padding:var(--s3) var(--s4);
   border:1px dashed var(--line-3);font-size:12.5px;color:var(--ink-2);line-height:1.55;margin-top:var(--s4)}
 
+/* ══ CENTRAL DE AJUDA ══ orientada por tarefa, não por índice de tópicos */
+.htarefas{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1px;
+  background:var(--line-2);border-top:1px solid var(--line-2);border-bottom:1px solid var(--line-2);
+  margin:var(--s5) 0}
+.htarefa{background:var(--branco);padding:var(--s4);text-align:left;display:flex;flex-direction:column;gap:6px}
+.htarefa:hover{background:var(--bg-2)}
+.htarefa .n{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.13em;color:var(--ink-3)}
+.htarefa .t{font-size:15px;font-weight:650;letter-spacing:-.01em;line-height:1.25}
+.htarefa .d{font-size:12.5px;color:var(--ink-2);line-height:1.55}
+.htarefa .cta{font-size:12.5px;color:var(--acc);font-weight:600;margin-top:auto;padding-top:var(--s2)}
+.hcat{margin-bottom:var(--s6)}
+.hcat>h3{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 var(--s2);padding-bottom:var(--s2);border-bottom:1px solid var(--line-2)}
+.hitem{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s4);align-items:baseline;
+  width:100%;text-align:left;padding:var(--s3) 0;border-bottom:1px solid var(--line-2)}
+.hitem:last-child{border-bottom:none}
+.hitem:hover{background:var(--bg-2)}
+.hitem .t{font-size:14px;font-weight:600;display:block}
+.hitem .d{font-size:12.5px;color:var(--ink-2);line-height:1.55;display:block;margin-top:3px}
+.hitem .ch{font-size:12px;color:var(--ink-3)}
+
+/* ══ ASSISTENTE DE CONEXÃO DO KINDLE ══
+   Etapa frágil: aqui a redundância vale mais que o minimalismo. */
+.wcont{max-width:520px;margin:0 auto}
+.wpasso{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-3);display:block;margin-bottom:var(--s3)}
+.wh{font-family:var(--serif);font-size:1.7rem;line-height:1.15;letter-spacing:-.02em;font-weight:400;
+  margin:0 0 var(--s3);text-wrap:balance}
+.wp{font-size:14px;line-height:1.62;color:var(--ink-2);margin:0 0 var(--s4);max-width:52ch}
+.wp b{color:var(--ink)}
+.wetapas{display:flex;flex-direction:column;gap:1px;margin:var(--s5) 0}
+.wetapa{display:grid;grid-template-columns:34px minmax(0,1fr);gap:var(--s3);padding:var(--s3) 0;
+  border-bottom:1px solid var(--line-2);align-items:baseline}
+.wetapa:last-child{border-bottom:none}
+.wetapa .n{font-family:var(--mono);font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.wetapa .t{font-size:13.5px}
+.wetapa.feita .n,.wetapa.feita .t{color:var(--ink-3)}
+.wetapa.agora .t{font-weight:650}
+/* representação esquemática da tela da Amazon — não é captura, e não finge ser */
+.wamz{border:1px solid var(--line-3);background:var(--bg-2);padding:var(--s4);margin:var(--s4) 0;
+  font-family:var(--ui);font-size:12.5px}
+.wamz .cab{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-3);border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:var(--s3);
+  display:flex;justify-content:space-between}
+.wamz .lin{padding:7px 0;color:var(--ink-2);border-bottom:1px solid var(--line-2)}
+.wamz .lin:last-child{border-bottom:none}
+.wamz .lin.alvo{background:var(--warn-soft);box-shadow:inset 2px 0 0 var(--warn);
+  padding-left:9px;margin-left:-9px;color:var(--ink);font-weight:600}
+.wamz .lin.alvo::after{content:" ←";color:var(--warn);font-weight:700}
+.wamz .em{font-family:var(--mono);font-size:11.5px}
+.wcam{display:flex;flex-direction:column;gap:2px;margin:var(--s4) 0;font-size:12.5px;color:var(--ink-2)}
+.wcam span{padding:6px 0}
+.wcam span+span::before{content:"↓";display:block;color:var(--ink-3);font-size:11px;margin-bottom:4px}
+.wcam span:last-child{font-weight:650;color:var(--ink)}
+.wend{border:1px solid var(--line-3);background:var(--branco);padding:var(--s5);text-align:center;margin:var(--s4) 0}
+.wend b{display:block;font-family:var(--mono);font-size:1.15rem;letter-spacing:.01em;word-break:break-all;
+  margin-bottom:var(--s3)}
+.wverif{border-top:1px solid var(--line-2);padding-top:var(--s4);margin-top:var(--s4)}
+.wverif p{font-size:13px;color:var(--ink-2);margin:0 0 var(--s3)}
+.wok{display:flex;gap:var(--s3);align-items:flex-start;padding:var(--s3) var(--s4);background:var(--ok-soft);
+  box-shadow:inset 2px 0 0 var(--ok);margin-bottom:var(--s2)}
+.wok b{display:block;font-size:13.5px}
+.wok span{font-family:var(--mono);font-size:12px;color:var(--ink-2);word-break:break-all}
+.werr{padding:var(--s3) var(--s4);background:var(--dan-soft);box-shadow:inset 2px 0 0 var(--dan);
+  font-size:13px;line-height:1.55;margin-top:var(--s3)}
+
 /* ═══ DOCK ═══ só nas superfícies espaciais */
 .dock{position:sticky;bottom:var(--s5);margin:var(--s6) auto 0;width:max-content;display:flex;gap:var(--s1);
   background:var(--bg);border:1px solid var(--line);border-radius:var(--r2);padding:5px}
@@ -669,6 +735,7 @@ const zero={
     {id:"a2",nome:"Scribe do escritório",modelo:"Scribe",email:"erik_scribe@kindle.com",uso:"6 de agosto",princ:false}
   ],
   apEdit:null,apRasc:{},histVazio:false,histErro:false,
+  wiz:{p:0,email:"",nome:"",copiou:false,diferente:false},
   prefs:{modo:"guiado",onboarding:"auto",movimento:"auto",tema:"claro",baixar:"nao",formato:"auto"},
   processando:true
 };
@@ -704,25 +771,87 @@ const CORPOS=[13,15,17,20,24];
 const TRECHO=["A expedição partiu de manhã, com o material dividido em três caixas e a certeza de que uma delas voltaria vazia. Nenhum registro anterior descrevia o acesso pelo lado leste; levamos isso como convite, e não como aviso.",
 "Anotar o que se vê é mais difícil do que parece: metade do trabalho é resistir a anotar o que se esperava ver. Adotamos a regra de escrever antes de conversar — duas horas por dia sem falar com ninguém, cada um com o próprio caderno.",
 "Fotografia a cada duzentos metros, sempre na mesma altura, sempre com a mesma lente. A repetição é o que transforma imagem em dado. O que não cabia na fotografia entrava no caderno, com hora e coordenada."];
-const AJUDA={
- "Começando":[["Primeiros passos","Solte um arquivo e confirme uma vez.","O Mekora abre o arquivo, mostra o que encontrou e o que vai fazer, e espera um clique seu. Não há assistente de várias etapas: é uma tela só."],
-  ["Guiado e Personalizado","No Guiado você confirma. No Personalizado você ajusta.","Ao trocar para Personalizado, todos os campos já vêm preenchidos com o que o Guiado teria feito. Se você mexer e voltar, perguntamos o que fazer com as suas alterações."],
-  ["Enviar ao Kindle","Precisa autorizar o remetente na Amazon, uma vez.","Depois disso o endereço fica salvo no seu perfil e o envio é um clique. Avisamos quando a Amazon aceitar o arquivo — não temos como saber se já chegou no aparelho."],
-  ["Como encontrar meu endereço Kindle","Está na Amazon, em Conteúdo e dispositivos.","Entre na sua conta da Amazon, abra Conteúdo e dispositivos, vá em Dispositivos e escolha o seu Kindle. O endereço aparece como algo terminado em @kindle.com — não é o seu e-mail de login. Na mesma tela, em Preferências, adicione envio@mekora.app à lista de remetentes aprovados: sem isso o aparelho recusa o arquivo."]],
- "Formatos":[["PDF","O caso mais comum, e o que mais muda.","Se o PDF for digitalizado, cada página é uma imagem: sem reconhecimento de texto o Kindle não busca nada nem ajusta a letra. É a primeira coisa que verificamos."],
-  ["EPUB","Já é o formato certo. Ainda assim há trabalho.","Capa, sumário e metadados costumam faltar ou vir errados. Arrumamos isso sem reconverter o conteúdo."],
-  ["CBZ, CBR e ZIP","Quadrinho é imagem, e imagem tem regras próprias.","Ordem das páginas, capa, direção de leitura, página dupla e o tamanho exato do seu aparelho."]],
- "Entenda o processo":[["O que é reconhecimento de texto","Sem ele, o Kindle vê seu livro como uma pilha de fotos.","Num PDF digitalizado cada página é uma imagem. O reconhecimento lê essa imagem e devolve o texto — é o que permite buscar uma palavra e mudar o corpo da letra."],
-  ["Por que não mostramos porcentagem","Porque na maior parte das etapas ela seria inventada.","Reconhecer texto avança página a página e dá para contar. Compactar o arquivo acontece de uma vez. Uma barra que somasse as duas mostraria um número que não corresponde a nada."],
-  ["O que acontece se eu fechar a aba","Nada. O preparo não é feito no seu computador.","Com conta, o item volta a aparecer na Mesa. Sem conta, o trabalho termina do mesmo jeito — mas não haverá onde reencontrá-lo."],
-  ["Como o Mekora trata meus arquivos","O original fica; o conteúdo não é lido por ninguém.","O arquivo que você envia é guardado para permitir refazer a preparação com outras opções, sem enviar de novo. O resultado fica na sua estante e sai quando você remove o livro. O texto que sai do reconhecimento serve ao seu arquivo e não é usado para mais nada; o prazo exato de retenção do original ainda não foi decidido, e está marcado como pendente em Privacidade em vez de ser prometido aqui."]],
- "Resolver problemas":[["O arquivo não abre","Quase sempre é senha ou arquivo truncado.","PDF protegido pede a senha uma vez e não a guardamos. Arquivo truncado costuma vir de download interrompido: baixe de novo."],
-  ["A capa não apareceu","Se o arquivo não tinha capa, geramos uma.","Ela usa o título, o autor e o formato. Dá para trocar pela página 1 ou por uma imagem sua, no item."],
-  ["Páginas fora de ordem","Acontece em quadrinho quando os nomes não têm número.","Ordenamos pelo nome do arquivo. Quando ele não ajuda, a organização avançada deixa você arrastar."]],
- "Avançados":[["Editor manual de páginas","Não é etapa obrigatória, e nunca vai ser.","Chega-se a ele pelo Personalizado, por 'ver todas as páginas' ou por uma exceção específica."],
-  ["Tradução","Gera um segundo arquivo. O original fica intacto.","Para quadrinhos não está disponível: o texto vive dentro da imagem, e isso ainda não passou em teste de qualidade."],
-  ["O que ainda é instável","Está sempre escrito, na página de Atualizações.","Um recurso experimental pode mudar ou sair. Preferimos dizer isso a deixar você descobrir sozinho."]]
-};
+const AJUDA=[
+ {
+  "c": "Formatos",
+  "t": "Por que alguns PDFs precisam de OCR",
+  "r": "Porque neles não existe texto: existe foto de texto.",
+  "x": "Num PDF digitalizado cada página é uma imagem. O Kindle não acha palavra nenhuma na busca, e aumentar a letra só amplia a foto.\n\nO reconhecimento lê essa imagem e devolve o texto de verdade. É o que permite buscar, marcar um trecho e mudar o corpo da letra sem o conteúdo sair da tela."
+ },
+ {
+  "c": "Formatos",
+  "t": "PDF, EPUB e a diferença que importa",
+  "r": "O EPUB se ajusta à tela. O PDF tem tamanho fixo.",
+  "x": "Num EPUB o texto reflui: você escolhe o corpo da letra e o conteúdo se reorganiza. Num PDF a página é uma folha de tamanho fixo, e o aparelho só consegue aproximar ou afastar.\n\nPor isso o Mekora converte para EPUB quando o arquivo é texto corrido. Em quadrinho a lógica é outra: ali a página é a arte, e o que importa é o tamanho exato do seu aparelho."
+ },
+ {
+  "c": "Formatos",
+  "t": "CBZ, CBR e pastas de imagens",
+  "r": "São quadrinhos: um monte de imagem em ordem.",
+  "x": "O trabalho aqui não é converter texto, é acertar a ordem das páginas, descobrir qual é a capa, ver se a leitura é da direita para a esquerda e ajustar cada imagem ao tamanho do seu Kindle.\n\nQuando alguma dessas coisas tem dúvida real, o Mekora pergunta — uma de cada vez, mostrando a página."
+ },
+ {
+  "c": "Entenda o processo",
+  "t": "O que acontece com seus arquivos durante o processamento",
+  "r": "O original fica guardado; o conteúdo não é lido por ninguém.",
+  "x": "O arquivo que você envia é guardado para permitir refazer a preparação com outras opções, sem você enviar de novo. O resultado fica na sua estante e sai quando você remove o livro.\n\nO texto que sai do reconhecimento serve ao seu arquivo e não é usado para mais nada. O prazo exato de retenção do original ainda não foi decidido, e está marcado como pendente em Perfil › Privacidade em vez de ser prometido aqui."
+ },
+ {
+  "c": "Entenda o processo",
+  "t": "Por que não mostramos porcentagem",
+  "r": "Porque na maior parte das etapas ela seria inventada.",
+  "x": "Reconhecer texto avança página a página e dá para contar. Compactar o arquivo acontece de uma vez só. Uma barra que somasse as duas mostraria um número que não corresponde a nada.\n\nEntão mostramos a etapa, o tempo decorrido e — quando a etapa é contável — quantas páginas já ficaram prontas."
+ },
+ {
+  "c": "Entenda o processo",
+  "t": "Posso fechar a aba no meio?",
+  "r": "Pode. O preparo não é feito no seu computador.",
+  "x": "Com conta, o item volta a aparecer na Mesa quando terminar. Sem conta, o trabalho termina do mesmo jeito — mas não haverá onde reencontrá-lo, porque aquela aba era o único endereço dele."
+ },
+ {
+  "c": "Resolver problemas",
+  "t": "Mandei para o Kindle e não chegou",
+  "r": "Quase sempre é o remetente não autorizado.",
+  "x": "A Amazon só entrega documentos de endereços que você autorizou, e recusa os outros em silêncio — sem aviso nenhum para você.\n\nO assistente de conexão resolve isso em um passo: Perfil › Dispositivos Kindle › Conectar meu Kindle. Se já estiver autorizado, vale conferir se o endereço cadastrado é o do aparelho certo, porque cada Kindle tem o seu."
+ },
+ {
+  "c": "Resolver problemas",
+  "t": "O arquivo não abre",
+  "r": "Costuma ser senha ou download interrompido.",
+  "x": "PDF protegido pede a senha uma vez, e nós não a guardamos depois de usar. Arquivo truncado quase sempre vem de download que parou no meio: baixar de novo resolve.\n\nSe o arquivo abre em outro programa e não aqui, isso é defeito nosso — vale reportar."
+ },
+ {
+  "c": "Resolver problemas",
+  "t": "A capa não apareceu",
+  "r": "Se o arquivo não tinha capa, o Mekora monta uma.",
+  "x": "Ela usa o título, o autor e o formato, na mesma linguagem das outras capas da sua estante. Dá para trocar pela primeira página do arquivo ou por uma imagem sua, no próprio item.\n\nSe a capa existe no arquivo e mesmo assim não apareceu, quase sempre ela está numa página que o arquivo não marcou como capa — o editor de páginas deixa apontar qual é."
+ },
+ {
+  "c": "Resolver problemas",
+  "t": "As páginas estão fora de ordem",
+  "r": "Acontece em quadrinho quando os nomes não têm número.",
+  "x": "O Mekora ordena pelo nome do arquivo dentro do CBZ. Quando o nome não ajuda, ele avisa que ordenou pela posição — e aí vale abrir a organização avançada e arrastar."
+ },
+ {
+  "c": "Avançado",
+  "t": "Quando usar o Guiado e quando usar o Personalizado",
+  "r": "No Guiado você confirma. No Personalizado você ajusta.",
+  "x": "O Guiado analisa o arquivo, decide o que fazer e mostra a decisão em texto, sem nenhum controle à vista. Serve para a grande maioria dos arquivos.\n\nO Personalizado abre com tudo já preenchido com o que o Guiado teria feito — nada nasce vazio. Vale quando você quer outro formato de saída, outra qualidade, ou quer organizar as páginas na mão. Se você mexer e voltar para o Guiado, perguntamos o que fazer com as suas alterações em vez de descartá-las."
+ },
+ {
+  "c": "Avançado",
+  "t": "Organizar as páginas na mão",
+  "r": "Não é etapa obrigatória, e nunca vai ser.",
+  "x": "Chega-se a ela por três caminhos: pelo modo Personalizado, por 'ver todas as páginas' no item, ou por uma pendência específica que precisa da sua decisão.\n\nLá dá para filtrar só o que tem problema, selecionar várias páginas de uma vez, girar, marcar capa e deixar página de fora. Tudo é reversível até você aplicar."
+ },
+ {
+  "c": "Avançado",
+  "t": "Tradução",
+  "r": "Gera um segundo arquivo. O original fica intacto.",
+  "x": "Você escolhe o idioma na tela do item e recebe dois arquivos: o original e o traduzido.\n\nTraduzir um livro inteiro não é traduzir uma frase — nomes próprios, citações e trocadilhos saem piores que o resto, e vale conferir antes de mandar para o aparelho. Para quadrinhos a tradução não está disponível: o texto vive dentro da imagem, e isso ainda não passou em teste de qualidade."
+ }
+];
+
 let S=Object.assign({},zero),timer=null;
 function reset(cena){
   clearInterval(timer);timer=null;S=Object.assign({},zero);
@@ -1338,12 +1467,16 @@ function pConta(){
     campo("email","E-mail","erik@exemplo.com","É por onde entramos em contato e como você entra.",true)+
     campo("entrada","Na conta desde","6 de agosto de 2026","",false)+
   '</div>';
-  h+='<div class="pendencia"><span>◆</span><div><b>Decisão de produto pendente.</b> Senha, entrada por '+
-    'provedor e verificação em duas etapas não aparecem aqui porque <b>autenticação ainda não existe</b> no '+
-    'produto — o registro marca <span class="mono">authentication: not_implemented</span>. Desenhar uma tela '+
-    'de segurança agora seria inventar o que ela protege.</div></div>';
-  h+='<div class="pendencia"><span>◆</span><div>Não há plano nem cobrança no registro do projeto, então não '+
-    'existe seção de assinatura. Se um dia existir, ela entra aqui — e não numa área nova.</div></div>';
+  /* Slot arquitetural, não tela. Enquanto o método de autenticação não for
+     escolhido, desenhar senha, provedor ou sessões produz trabalho descartável. */
+  h+='<div class="grupoP" style="margin-top:var(--s6)"><h3>Segurança e acesso</h3>'+
+    '<div style="background:var(--branco);padding:var(--s4);display:flex;gap:var(--s3);align-items:flex-start">'+
+    '<span class="selo pend" style="margin-top:2px">decisão pendente</span>'+
+    '<div><b style="display:block;font-size:13.5px">O modelo de autenticação ainda não foi escolhido</b>'+
+    '<span style="display:block;font-size:12.5px;color:var(--ink-2);line-height:1.55;margin-top:4px">'+
+    'Senha, entrada por provedor, link mágico e verificação em duas etapas dependem dessa escolha — e parte '+
+    'da experiência pode nem ser nossa, se o método vier de um serviço. Este espaço fica reservado, e vazio, '+
+    'até a decisão existir. Está registrada como <span class="mono">AUTH-001</span>.</span></div></div></div>';
   return h;
 }
 function pDisp(){
@@ -1355,9 +1488,9 @@ function pDisp(){
   if(S.aparelhos.length===0){
     h+='<div class="vazio"><b>Nenhum Kindle cadastrado</b>'+
       '<p>Guardar o endereço aqui deixa o envio a um clique. Sem ele, o Mekora pergunta o endereço a cada vez.</p>'+
-      '<button class="btnO forte" data-a="folha" data-v="ap-novo">Adicionar um Kindle</button></div>'+
-      '<button class="lnk" data-a="artigo-ctx" data-v="Como encontrar meu endereço Kindle" '+
-      'style="margin-top:var(--s4);display:inline-block">Como encontrar meu endereço Kindle?</button>';
+      '<button class="btnO forte" data-a="folha" data-v="wiz">Conectar meu Kindle</button></div>'+
+      '<button class="lnk" data-a="folha" data-v="wiz" '+
+      'style="margin-top:var(--s4);display:inline-block">Não sei o endereço do meu Kindle</button>';
     return h;
   }
   h+='<div style="background:var(--branco)">'+S.aparelhos.map(a=>
@@ -1368,9 +1501,9 @@ function pDisp(){
     '<div class="acoes" style="margin:0">'+
     (a.princ?'':'<button class="lnk mudo" data-a="ap-princ" data-v="'+a.id+'">tornar principal</button>')+
     '<button class="lnk" data-a="ap-editar" data-v="'+a.id+'">editar</button></div></div>').join("")+'</div>';
-  h+='<div class="acoes"><button class="btnO" data-a="folha" data-v="ap-novo">Adicionar outro Kindle</button>'+
-    '<button class="lnk mudo" data-a="artigo-ctx" data-v="Como encontrar meu endereço Kindle">'+
-    'Como encontrar meu endereço Kindle?</button></div>';
+  h+='<div class="acoes"><button class="btnO" data-a="folha" data-v="wiz">Conectar outro Kindle</button>'+
+    '<button class="lnk mudo" data-a="folha" data-v="wiz">'+
+    'Não sei o endereço do meu Kindle</button></div>';
   h+='<div class="nota"><span>◆</span><div>O aparelho principal é o que define o tamanho das páginas quando '+
     'o arquivo é um quadrinho, e é para ele que o botão de enviar aponta sem perguntar.</div></div>';
   return h;
@@ -1605,24 +1738,43 @@ function vFolha(){
       '<div id="resBusca">'+resultados(achados,q)+'</div>',
       '<span style="font-size:var(--t-peq);color:var(--ink-3)">Enter abre o primeiro · Esc fecha</span>');
   }
+  /* Central orientada por tarefa. A versao anterior era indice de topicos com a
+     descricao cortada em 34 caracteres — o corte nao era densidade, era defeito:
+     microcopia truncada aumenta a duvida em vez de reduzir. */
   if(f==="ajuda"){
     if(S.ajuda){
-      const g=Object.keys(AJUDA).find(k=>AJUDA[k].some(a=>a[0]===S.ajuda));
-      const art=AJUDA[g].find(a=>a[0]===S.ajuda);
-      return folha("Ajuda · "+g,art[0],
-        '<p style="margin:0 0 var(--s4);font-size:1.05rem;line-height:1.45;font-weight:600">'+art[1]+'</p>'+
-        '<p style="margin:0;font-family:var(--serif);font-size:var(--t-leitura);line-height:var(--lh-leitura);'+
-
-'color:var(--ink-2)">'+art[2]+'</p>',
+      const art=AJUDA.find(a=>a.t===S.ajuda);
+      if(!art)return folha("Ajuda","Assunto nao encontrado",
+        '<p class="wp">Este link aponta para um artigo que mudou de nome.</p>',
+        '<button class="btnO" data-a="folha" data-v="ajuda">Ver todos os assuntos</button>');
+      return folha("Ajuda · "+art.c,art.t,
+        '<div class="wcont" style="margin:0">'+
+        '<p style="margin:0 0 var(--s4);font-size:1.08rem;line-height:1.4;font-weight:650;'+
+        'letter-spacing:-.01em">'+esc(art.r)+'</p>'+
+        art.x.split(String.fromCharCode(10,10)).map(p=>'<p style="margin:0 0 1em;font-family:var(--serif);'+
+          'font-size:var(--t-leitura);line-height:var(--lh-leitura);color:var(--ink-2)">'+esc(p)+'</p>').join("")+
+        '</div>',
         '<button class="lnk mudo" data-a="folha" data-v="ajuda">‹ Todos os assuntos</button>'+
-        '<button class="btnO" data-a="fechar">Entendi</button>');
+        (/Kindle|chegou/.test(art.t)?'<button class="btnO forte" data-a="folha" data-v="wiz">Conectar meu Kindle</button>':
+         '<button class="btnO" data-a="fechar">Entendi</button>'));
     }
-    return folha("Ajuda e recursos","O que você precisa saber",
-      Object.keys(AJUDA).map(g=>'<div style="margin-bottom:var(--s5)">'+
-        '<span class="kicker" style="margin-bottom:var(--s2)">'+g+'</span>'+
-        '<ol class="indiceE" style="margin:0">'+AJUDA[g].map(a=>
-          '<li><button data-a="artigo" data-v="'+esc(a[0])+'"><span class="nomeI">'+esc(a[0])+
-          '</span><span class="metaI">'+esc(a[1].slice(0,34))+'…</span></button></li>').join("")+'</ol></div>').join(""),
+    const TAREFAS=[
+      ["01","Conectar meu Kindle","Encontrar o endereco do aparelho e autorizar o Mekora a enviar. Leva dois minutos, e so se faz uma vez.","wiz","Comecar →"],
+      ["02","Preparar meu primeiro arquivo","Solte um PDF, veja o que o Mekora encontrou e confirme uma vez.","@soltar","Ir para a Mesa →"],
+      ["03","Meu envio nao chegou","Quase sempre e o remetente nao autorizado — a Amazon recusa em silencio.","art:Mandei para o Kindle e não chegou","Ver o que fazer →"],
+      ["04","Quando usar cada modo","A diferenca entre Guiado e Personalizado, e quando vale trocar.","art:Quando usar o Guiado e quando usar o Personalizado","Entender →"]
+    ];
+    const cats=[...new Set(AJUDA.map(a=>a.c))];
+    return folha("Ajuda e recursos","Por onde voce quer comecar",
+      '<button class="campoB" data-a="nada" style="text-align:left;color:var(--ink-3);cursor:pointer">'+
+      '⌕  Buscar na ajuda — ex.: “nao chegou no Kindle”</button>'+
+      '<div class="htarefas">'+TAREFAS.map(t=>'<button class="htarefa" data-a="ajuda-tarefa" data-v="'+esc(t[3])+'">'+
+        '<span class="n">'+t[0]+'</span><span class="t">'+t[1]+'</span><span class="d">'+t[2]+'</span>'+
+        '<span class="cta">'+t[4]+'</span></button>').join("")+'</div>'+
+      cats.map(c=>'<div class="hcat"><h3>'+c+'</h3>'+
+        AJUDA.filter(a=>a.c===c).map(a=>'<button class="hitem" data-a="artigo" data-v="'+esc(a.t)+'">'+
+          '<span><span class="t">'+esc(a.t)+'</span><span class="d">'+esc(a.r)+'</span></span>'+
+          '<span class="ch">›</span></button>').join("")+'</div>').join(""),
       '<button class="btnO" data-a="fechar">Fechar</button>');
   }
   if(f==="aa"){
@@ -1743,6 +1895,109 @@ function vFolha(){
     'O original continua com o nome que tinha quando chegou.</div></div>',
     '<button class="lnk mudo" data-a="fechar">Cancelar</button>'+
     '<button class="btnO forte" data-a="salvar-nome">Salvar</button>');
+  /* ═══ ASSISTENTE ═══ o objetivo não é "encontrar um endereço": é conectar
+     o Kindle. São duas tarefas, e elas estavam misturadas num parágrafo só. */
+  if(f==="wiz"){
+    const w=S.wiz,ETAPAS=["Encontrar o endereço","Trazer para o Mekora","Autorizar o Mekora","Confirmar"];
+    const passo=(n)=>'<span class="wpasso">Configuração · passo '+n+' de 4</span>';
+    const etapas=(at)=>'<div class="wetapas">'+ETAPAS.map((e,i)=>
+      '<div class="wetapa '+(i<at?"feita":i===at?"agora":"")+'"><span class="n">'+
+      String(i+1).padStart(2,"0")+'</span><span class="t">'+e+(i<at?' ✓':'')+'</span></div>').join("")+'</div>';
+
+    if(w.p===0)return folha("Kindle","Vamos conectar seu Kindle",
+      '<div class="wcont"><p class="wp">Você só precisa fazer isso <b>uma vez</b>. São duas coisas: '+
+      'encontrar o endereço do seu Kindle, e autorizar o Mekora a mandar arquivos para ele.</p>'+
+      etapas(0)+
+      '<p class="wp" style="font-size:12.5px;margin:0">Leva menos de dois minutos, e parte disso acontece '+
+      'no site da Amazon.</p></div>',
+      '<button class="lnk mudo" data-a="fechar">Fazer depois</button>'+
+      '<button class="lnk mudo" data-a="wiz" data-v="p:3">Já sei meu endereço</button>'+
+      '<button class="btnO forte" data-a="wiz" data-v="p:1">Começar</button>');
+
+    if(w.p===1)return folha("Kindle","Abra as configurações na Amazon",
+      '<div class="wcont">'+passo(1)+
+      '<p class="wp">O endereço do seu Kindle mora na Amazon, não aqui. Vamos abrir a página onde ele fica.</p>'+
+      '<div class="acoes" style="margin:0 0 var(--s4)"><button class="btnO forte" data-a="nada">'+
+      'Abrir a Amazon numa aba nova</button></div>'+
+      '<span class="wpasso">O caminho lá dentro</span>'+
+      '<div class="wcam"><span>Gerencie seu conteúdo e dispositivos</span>'+
+      '<span>Preferências</span><span>Configurações de documentos pessoais</span></div>'+
+      '<p class="wp" style="font-size:12.5px">A Amazon muda o desenho dessa área de vez em quando. '+
+      'Os nomes acima são o que procurar — se a sua tela estiver diferente, o passo seguinte tem uma saída.</p>'+
+      '</div>',
+      '<button class="lnk mudo" data-a="wiz" data-v="p:0">‹ Voltar</button>'+
+      '<button class="btnO forte" data-a="wiz" data-v="p:2">Já estou nessa tela</button>');
+
+    if(w.p===2){
+      if(w.diferente)return folha("Kindle","Sua tela está diferente",
+        '<div class="wcont">'+passo(1)+
+        '<p class="wp">Acontece: a Amazon reorganiza essa área com alguma frequência. O que não muda é '+
+        '<b>o que você procura</b> — uma seção sobre documentos pessoais, e dentro dela os endereços de e-mail.</p>'+
+        '<span class="wpasso">Palavras que costumam aparecer</span>'+
+        '<div class="wamz"><div class="lin">Documentos pessoais</div>'+
+        '<div class="lin">Send to Kindle</div><div class="lin">E-mail de envio</div>'+
+        '<div class="lin">Lista de remetentes aprovados</div></div>'+
+        '<p class="wp" style="font-size:12.5px">Qualquer uma delas leva ao mesmo lugar. Se nada aparecer, '+
+        'a busca do site da Amazon por <b>documentos pessoais</b> costuma resolver.</p></div>',
+        '<button class="lnk mudo" data-a="wiz" data-v="diferente:0">‹ Voltar</button>'+
+        '<button class="btnO forte" data-a="wiz" data-v="p:3">Achei, continuar</button>');
+      return folha("Kindle","Encontre o endereço do seu Kindle",
+        '<div class="wcont">'+passo(1)+
+        '<p class="wp">Cada aparelho tem um endereço próprio, terminado em <b>@kindle.com</b>. '+
+        '<b>Não é o e-mail com que você entra na Amazon.</b></p>'+
+        '<div class="wamz"><div class="cab"><span>Representação · Amazon</span><span>seus dispositivos</span></div>'+
+        '<div class="lin alvo">Kindle Paperwhite<br><span class="em">erik_123@kindle.com</span></div>'+
+        '<div class="lin">Kindle Scribe<br><span class="em">erik_456@kindle.com</span></div></div>'+
+        '<div class="wverif"><p><b>Está vendo algo parecido com isso?</b></p>'+
+        '<div class="acoes" style="margin:0"><button class="btnO" data-a="wiz" data-v="p:3">Sim, achei o endereço</button>'+
+        '<button class="lnk mudo" data-a="wiz" data-v="diferente:1">Minha tela está diferente</button></div></div>'+
+        '</div>',
+        '<button class="lnk mudo" data-a="wiz" data-v="p:1">‹ Voltar</button>');
+    }
+    if(w.p===3){
+      const v=(w.email||"").trim(),vazio=v==="",ok=/^[^@\s]+@kindle\.com$/i.test(v);
+      return folha("Kindle","Cole o endereço aqui",
+        '<div class="wcont">'+passo(2)+
+        '<p class="wp">É o endereço que você acabou de encontrar na Amazon.</p>'+
+        '<input id="wizEmail" class="campoB" value="'+esc(v)+'" placeholder="erik_123@kindle.com" autocomplete="off">'+
+        (ok?'<div class="wok" style="margin-top:var(--s3)"><i class="pt pt-ok" style="margin-top:5px"></i>'+
+          '<div><b>Parece certo</b><span>'+esc(v)+'</span></div></div>':'')+
+        (!vazio&&!ok?'<div class="werr">Este não parece um endereço de Kindle. Ele termina em '+
+          '<b>@kindle.com</b> — o e-mail da sua conta Amazon não serve aqui.'+
+          '<div class="acoes" style="margin-top:var(--s3)"><button class="lnk" data-a="wiz" data-v="p:2">'+
+          'Ver de novo onde encontrar</button></div></div>':'')+
+        '<div class="campo" style="border:none;padding:var(--s4) 0 0"><span class="k">Como você chama</span>'+
+        '<div class="campoedit"><input id="wizNome" value="'+esc(w.nome||"")+
+        '" placeholder="Kindle da sala" autocomplete="off"></div><span></span></div>'+
+        '</div>',
+        '<button class="lnk mudo" data-a="wiz" data-v="p:2">‹ Voltar</button>'+
+        '<button class="btnO forte"'+(ok?'':' disabled style="opacity:.4;cursor:not-allowed"')+
+        ' data-a="'+(ok?"wiz":"nada")+'" data-v="p:4">Continuar</button>');
+    }
+    if(w.p===4)return folha("Kindle","Falta autorizar o Mekora",
+      '<div class="wcont">'+passo(3)+
+      '<p class="wp">A Amazon só entrega arquivos de remetentes que você autorizou. Sem isso, o Kindle '+
+      '<b>recusa em silêncio</b> — e é o motivo mais comum de um envio não chegar.</p>'+
+      '<div class="wend"><b>envio@mekora.app</b>'+
+      '<button class="btnO" data-a="wiz" data-v="copiou:1">'+(w.copiou?"✓ Copiado":"Copiar endereço")+'</button></div>'+
+      '<span class="wpasso">Onde colar, na mesma área da Amazon</span>'+
+      '<div class="wcam"><span>Preferências</span><span>Configurações de documentos pessoais</span>'+
+      '<span>Lista de e-mails aprovados</span><span>Adicionar um novo endereço</span></div></div>',
+      '<button class="lnk mudo" data-a="wiz" data-v="p:3">‹ Voltar</button>'+
+      '<button class="btnO forte" data-a="wiz-fim">Já adicionei</button>');
+
+    return folha("Kindle","Pronto",
+      '<div class="wcont">'+passo(4)+
+      '<div class="wok"><i class="pt pt-ok" style="margin-top:5px"></i><div><b>Kindle cadastrado</b>'+
+      '<span>'+esc(w.email||"")+'</span></div></div>'+
+      '<div class="wok"><i class="pt pt-ok" style="margin-top:5px"></i><div><b>Mekora marcado como autorizado</b>'+
+      '<span>envio@mekora.app</span></div></div>'+
+      '<p class="wp" style="margin-top:var(--s4)">O segundo item é o que <b>você</b> nos disse — não temos '+
+      'como verificar do nosso lado. Um arquivo de teste é a única forma de saber agora, em vez de descobrir '+
+      'depois de preparar um livro inteiro.</p></div>',
+      '<button class="lnk mudo" data-a="wiz-salvar" data-v="sem-teste">Concluir sem testar</button>'+
+      '<button class="btnO forte" data-a="wiz-salvar" data-v="teste">Enviar um arquivo de teste</button>');
+  }
   if(f==="ap-novo"||f==="ap-edit"){
     const ed=f==="ap-edit",a=ed?S.aparelhos.find(x=>x.id===S.apEdit):null;
     const r=S.apRasc||{};
@@ -1765,8 +2020,8 @@ function vFolha(){
       'aponta, e é ele que define o tamanho das páginas nos quadrinhos.</span></span></button>'+
       '<div class="nota"><span>◆</span><div>Depois de salvar, autorize <b>envio@mekora.app</b> na sua conta '+
       'da Amazon — sem isso o Kindle recusa o arquivo. '+
-      '<button class="lnk" data-a="artigo-ctx" data-v="Como encontrar meu endereço Kindle" style="padding:0">'+
-      'Como encontro esse endereço?</button></div></div>',
+      '<button class="lnk" data-a="folha" data-v="wiz" style="padding:0">'+
+      'Não sei onde encontrar — me guie</button></div></div>',
       (ed?'<button class="lnk mudo" style="color:var(--dan);margin-right:auto" data-a="folha" data-v="ap-remover">Remover</button>':'')+
       '<button class="lnk mudo" data-a="fechar">'+(ed?"Cancelar":"Fazer depois")+'</button>'+
       '<button class="btnO forte" data-a="ap-salvar">Salvar</button>');
@@ -1922,6 +2177,15 @@ function pinta(){
     medir();                     /* leitura de clientHeight já força o layout */
     setTimeout(medir,60);        /* segunda passada, depois de a fonte assentar */
   }
+  /* o assistente valida enquanto se digita: o botão liga sozinho quando o
+     endereço fecha em @kindle.com, e a mensagem de erro aparece antes do clique */
+  const we=document.getElementById("wizEmail");
+  if(we){
+    we.focus();we.setSelectionRange(we.value.length,we.value.length);
+    we.addEventListener("input",()=>{S.wiz.email=we.value;pinta();});
+    const wn=document.getElementById("wizNome");
+    if(wn)wn.addEventListener("input",()=>{S.wiz.nome=wn.value;});
+  }
   /* confirmação por digitação: o botão só liga quando a palavra confere */
   const pc=document.getElementById("pcampo");
   if(pc&&S.folha==="apagar-conta"){
@@ -2003,6 +2267,11 @@ app.addEventListener("click",ev=>{
     case "lomb":S.lombSel=v;break;
     case "dobra":S.perfil=S.perfil===v?"":v;break;
     case "artigo":S.ajuda=v;break;
+    case "ajuda-tarefa":
+      if(v==="wiz"){S.folha="wiz";S.wiz={p:0,email:"",nome:"",copiou:false,diferente:false};}
+      else if(v==="@soltar"){S.folha=null;S.ajuda=null;S.lugar="mesa";}
+      else if(v.indexOf("art:")===0){S.ajuda=v.slice(4);}
+      break;
     case "filtro":S.filtro=v;break;
     case "selp":{const n=Number(v),i=S.sel.indexOf(n);if(i>=0)S.sel.splice(i,1);else S.sel.push(n);break;}
     case "ferr":{
@@ -2035,6 +2304,24 @@ app.addEventListener("click",ev=>{
       S.pest="salvando";pinta();
       setTimeout(()=>{S.pest=Math.random()<0.001?"erro":"salvo";pinta();},700);
       return;}
+    case "wiz":{
+      const[k,val]=v.split(":");
+      const ce=document.getElementById("wizEmail"),cn=document.getElementById("wizNome");
+      if(ce)S.wiz.email=ce.value;
+      if(cn)S.wiz.nome=cn.value;
+      if(k==="p")S.wiz.p=Number(val);
+      if(k==="diferente")S.wiz.diferente=val==="1";
+      if(k==="copiou")S.wiz.copiou=true;
+      break;}
+    case "wiz-fim":S.wiz.p=5;break;
+    case "wiz-salvar":{
+      const w=S.wiz;
+      S.aparelhos.push({id:"a"+(S.aparelhos.length+1),nome:(w.nome||"").trim()||"Kindle",
+        modelo:"Kindle",email:w.email.trim(),uso:"ainda não usado",princ:S.aparelhos.length===0});
+      S.folha=null;S.lugar="perfil";S.psec="disp";S.pest="ap-salvo";
+      S.wiz={p:0,email:"",nome:"",copiou:false,diferente:false};
+      if(v==="teste")aviso("Arquivo de teste enviado. Se ele não aparecer no aparelho em alguns minutos, a autorização do remetente é o primeiro lugar para olhar.");
+      break;}
     case "ap-editar":S.apEdit=v;S.apRasc={};S.folha="ap-edit";break;
     case "ap-rasc":S.apRasc.princ=!S.apRasc.princ;break;
     case "ap-princ":S.aparelhos.forEach(a=>a.princ=a.id===v);S.pest="ap-salvo";break;
