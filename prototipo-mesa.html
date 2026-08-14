@@ -576,6 +576,19 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .mvazio h2{font-family:var(--serif);font-size:1.5rem;font-weight:400;letter-spacing:-.015em;margin:0 0 var(--s3)}
 .mvazio p{font-size:14px;line-height:1.62;color:var(--ink-2);margin:0 0 var(--s4)}
 
+/* ══ ATUALIZAÇÕES ══ */
+.nov{display:grid;grid-template-columns:116px minmax(0,1fr);gap:var(--s4);align-items:start;
+  padding:var(--s4) 0;border-bottom:1px solid var(--line-2)}
+.nov:last-child{border-bottom:none}
+.nov b{display:block;font-size:14.5px;font-weight:650;letter-spacing:-.01em}
+.nov p{margin:5px 0 0;font-size:13px;color:var(--ink-2);line-height:1.6;max-width:58ch}
+@media(max-width:620px){.nov{grid-template-columns:1fr;gap:var(--s2)}}
+.instavel{border:1px solid var(--warn);background:var(--warn-soft);padding:var(--s4);margin-top:var(--s6)}
+.instavel h3{margin:0 0 var(--s3);font-size:14.5px;font-weight:650}
+.instavel .li2{padding:var(--s3) 0;border-top:1px solid rgba(168,112,28,.25)}
+.instavel .li2 b{display:block;font-size:13.5px}
+.instavel .li2 p{margin:4px 0 0;font-size:12.5px;color:var(--ink-2);line-height:1.55}
+
 /* ══ CENTRAL DE AJUDA ══ orientada por tarefa, não por índice de tópicos */
 .htarefas{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1px;
   background:var(--line-2);border-top:1px solid var(--line-2);border-bottom:1px solid var(--line-2);
@@ -1586,6 +1599,59 @@ const PSECS=[["visao","Visão geral"],["conta","Conta"],["disp","Dispositivos Ki
 function alterados(){return Object.keys(PADRAO).filter(k=>S.prefs[k]!==PADRAO[k]);}
 function principal(){return S.aparelhos.find(a=>a.princ)||null;}
 
+/* Atualizações. O trabalho principal desta página não é anunciar o que ficou
+   pronto: é dizer, sem rodeio, o que ainda não é confiável. Um recurso
+   experimental precisa ter um lugar onde isso está escrito, fora do fluxo
+   em que ele aparece. */
+const NOVIDADES=[
+ ["14 de agosto de 2026",[
+  ["novo","Assistente para conectar o Kindle",
+   "Antes era um artigo de ajuda com dois assuntos misturados no mesmo parágrafo. Agora são cinco passos, um de cada vez, com validação do endereço e um arquivo de teste no fim — porque a Amazon recusa remetente não autorizado em silêncio, e é o motivo mais comum de um envio não chegar."],
+  ["novo","A Mesa mostra o que precisa de você, e o que você estava lendo",
+   "Cada item diz o tipo do problema e a consequência dele, em vez de só o nome do arquivo. E o livro em leitura voltou para a primeira tela: o ciclo não termina quando o arquivo fica pronto."],
+  ["mel","Ajuda por tarefa, não por índice",
+   "As descrições deixaram de ser cortadas no meio — isso não era densidade, era defeito. E os títulos passaram de nome técnico para a dúvida real: \"o que é reconhecimento de texto\" virou \"por que alguns PDFs precisam de OCR\"."],
+  ["cor","Atualizações abre",
+   "Este botão existia no menu e não fazia nada: a página era referenciada e nunca tinha sido escrita. Encontrado por você."]]],
+ ["12 de agosto de 2026",[
+  ["novo","Capa gerada para arquivo que não tem",
+   "Montada com o título, o autor e o formato, na linguagem da sua estante. Dá para trocar pela primeira página ou por uma imagem sua."],
+  ["novo","Pendências em vez de configuração",
+   "Quando há dúvida real — página dupla, direção de leitura —, o Mekora pergunta uma coisa por vez, mostrando a página. Quando não há, não pergunta nada."],
+  ["mel","Progresso honesto",
+   "Barra só onde existe o que contar. Nas outras etapas, a etapa e o tempo decorrido — nunca uma porcentagem que o sistema não tem."],
+  ["cor","O erro de envio não desaparece mais",
+   "Um arquivo que falhou continua marcado como falho até você resolver. Antes ele sumia entre uma tela e a seguinte."]]]
+];
+function vNovidades(){
+  const rot={novo:"Novo",mel:"Melhorado",cor:"Corrigido",exp:"Experimental"};
+  const cls={novo:"ok",mel:"",cor:"",exp:"al"};
+  let h='<div class="pad">'+
+    '<button class="volta" data-a="psec" data-v="visao">‹ Perfil e conta</button>'+
+    '<h1 class="t">Atualizações</h1>'+
+    '<p class="sub">O que mudou — e, principalmente, o que ainda não é confiável.</p>';
+  NOVIDADES.forEach(g=>{
+    h+='<div class="msec"><h2>'+g[0]+'</h2>'+g[1].map(n=>
+      '<div class="nov"><span class="selo '+cls[n[0]]+'">'+rot[n[0]]+'</span>'+
+      '<div><b>'+esc(n[1])+'</b><p>'+esc(n[2])+'</p></div></div>').join("")+'</div>';
+  });
+  h+='<div class="instavel"><h3>O que ainda não está de pé</h3>'+
+    '<div class="li2"><b>Tradução de quadrinhos e mangás — não disponível</b>'+
+    '<p>Aqui o texto vive dentro da imagem: é preciso achar o balão, ler, apagar e recompor. Funciona em '+
+    'página simples e erra em arte densa. Não está atrás de um interruptor escondido — está fora, e vai '+
+    'continuar fora até passar em teste de qualidade. Para documentos de texto, a tradução funciona e é '+
+    'uma das funcionalidades principais.</p></div>'+
+    '<div class="li2"><b>Entrar e sair da conta — decisão pendente</b>'+
+    '<p>O método de acesso ainda não foi escolhido, então não existe tela de senha, de provedor nem de '+
+    'sessões. Preferimos deixar o espaço declarado e vazio a desenhar algo que talvez nem exista. '+
+    '<button class="lnk" data-a="psec" data-v="conta" style="padding:0">Ver em Conta</button></p></div>'+
+    '<div class="li2"><b>Por quanto tempo guardamos o arquivo original — decisão pendente</b>'+
+    '<p>Ele fica enquanto o livro existir, porque é o que permite refazer a preparação sem você enviar de '+
+    'novo. O prazo exato ainda não foi decidido, e não vamos escrever um número antes de decidir. '+
+    '<button class="lnk" data-a="psec" data-v="priv" style="padding:0">Ver em Privacidade</button></p></div>'+
+    '</div>';
+  return h+'</div>';
+}
 function vPerfil(){
   if(S.psec==="novidades")return vNovidades();
   const sec=S.psec;
