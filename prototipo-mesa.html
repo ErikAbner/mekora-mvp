@@ -513,6 +513,69 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .pendencia{display:flex;gap:var(--s3);align-items:flex-start;padding:var(--s3) var(--s4);
   border:1px dashed var(--line-3);font-size:12.5px;color:var(--ink-2);line-height:1.55;margin-top:var(--s4)}
 
+/* ══ MESA ══ estado à esquerda, matéria à direita.
+   Sem card, sem sombra, sem KPI: número, rótulo e divisória. */
+.mduas{display:grid;grid-template-columns:290px minmax(0,1fr);gap:var(--s7);align-items:start}
+@media(max-width:900px){.mduas{grid-template-columns:1fr;gap:var(--s6)}}
+.mresumo{display:flex;gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  margin-bottom:var(--s6)}
+.mresumo button{flex:1;padding:var(--s4) var(--s3) var(--s4) 0;text-align:left;
+  border-right:1px solid var(--line-2)}
+.mresumo button:last-child{border-right:none;padding-right:0}
+.mresumo button:hover .n{color:var(--acc)}
+.mresumo .n{display:block;font-size:1.7rem;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums;
+  transition:color var(--d1) var(--curva)}
+.mresumo .l{display:block;font-size:12px;color:var(--ink-3);margin-top:7px;line-height:1.35}
+.mresumo.fina button{padding:var(--s3) var(--s3) var(--s3) 0}
+.mresumo.fina .n{font-size:1.25rem}
+.msec{margin-bottom:var(--s7)}
+.msec>h2{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 var(--s3);padding-bottom:var(--s2);border-bottom:1px solid var(--line-2);
+  display:flex;gap:var(--s2);align-items:baseline}
+.msec>h2 .ct{margin-left:auto;font-size:11px;letter-spacing:.06em}
+.mpend{padding:var(--s4) 0;border-bottom:1px solid var(--line-2)}
+.mpend:last-child{border-bottom:none}
+.mpend .tipo{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.1em;text-transform:uppercase;
+  color:var(--warn);display:block;margin-bottom:5px}
+.mpend .nm{font-size:15px;font-weight:650;letter-spacing:-.01em;display:block}
+.mpend .cons{font-size:13px;color:var(--ink-2);line-height:1.55;margin:5px 0 0;max-width:56ch}
+.mpend .acao{margin-top:var(--s3)}
+.mprep{padding:var(--s4) 0;border-bottom:1px solid var(--line-2)}
+.mprep:last-child{border-bottom:none}
+.mprep .nm{font-size:14px;font-weight:600;display:block}
+.mprep .et{font-size:13px;color:var(--ink-2);margin-top:4px;display:flex;gap:var(--s3);align-items:baseline;flex-wrap:wrap}
+.mprep .et .t{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.mprep .bg{font-size:12px;color:var(--ink-3);margin-top:5px;display:block}
+.mcont{display:grid;grid-template-columns:88px minmax(0,1fr);gap:var(--s4);align-items:start}
+.mcont img{width:88px;height:auto;border:1px solid var(--line);border-radius:var(--rm);background:var(--paper)}
+.mcont h3{font-family:var(--serif);font-size:1.45rem;line-height:1.15;letter-spacing:-.015em;font-weight:400;margin:0}
+.mcont .meta{font-size:12.5px;color:var(--ink-3);margin-top:6px}
+.mcont .prog{height:2px;background:var(--line);margin:var(--s3) 0 var(--s2);max-width:240px}
+.mcont .prog i{display:block;height:100%;background:var(--ink)}
+.mprontos{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:var(--s4)}
+.mpronto{text-align:left;display:block}
+.mpronto img{width:100%;height:auto;border:1px solid var(--line);border-radius:var(--rm);background:var(--paper);
+  transition:transform var(--d2) var(--curva)}
+.mpronto:hover img{transform:translateY(-3px)}
+.mpronto .t{display:block;font-size:12.5px;font-weight:600;margin-top:8px;line-height:1.25}
+.mpronto .q{display:block;font-size:11.5px;color:var(--ink-3);margin-top:2px}
+.mcapas{display:flex;gap:var(--s2);align-items:flex-end}
+.mcapas img{width:58px;height:auto;border:1px solid var(--line);border-radius:var(--rm);background:var(--paper)}
+@media(max-width:520px){.mcapas img:nth-child(n+5){display:none}}
+.msolta{display:flex;gap:var(--s4);align-items:center;padding:var(--s4) 0;border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);margin-bottom:var(--s6);flex-wrap:wrap}
+.msolta .tx{flex:1;min-width:200px}
+.msolta .tt{font-size:14px;font-weight:650;display:block}
+.msolta .fm{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.07em;color:var(--ink-3);
+  display:block;margin-top:4px}
+.msolta.arrastando{box-shadow:inset 0 0 0 2px var(--acc);background:var(--acc-soft)}
+.mestados{display:flex;gap:var(--s3);align-items:center;flex-wrap:wrap;padding-top:var(--s5);
+  border-top:1px solid var(--line-2);margin-top:var(--s7)}
+.mestados .lb{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.1em;color:var(--ink-3)}
+.mvazio{padding:var(--s7) 0;max-width:44ch}
+.mvazio h2{font-family:var(--serif);font-size:1.5rem;font-weight:400;letter-spacing:-.015em;margin:0 0 var(--s3)}
+.mvazio p{font-size:14px;line-height:1.62;color:var(--ink-2);margin:0 0 var(--s4)}
+
 /* ══ CENTRAL DE AJUDA ══ orientada por tarefa, não por índice de tópicos */
 .htarefas{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1px;
   background:var(--line-2);border-top:1px solid var(--line-2);border-bottom:1px solid var(--line-2);
@@ -685,6 +748,7 @@ td.n{color:var(--ink);font-weight:600}
   <button id="btRaio" type="button" aria-pressed="true">raio 0</button>
   <button id="btFundo" type="button" aria-pressed="true">off-white</button>
   <button id="btTema" type="button" aria-pressed="true">tema claro</button>
+  <button id="btMesa" type="button" aria-pressed="true">mesa C</button>
 </div>
 <button id="notasbt" type="button">◇ notas<span class="bdg">copy · dock</span></button>
 <div id="notas" hidden></div>
@@ -736,6 +800,7 @@ const zero={
   ],
   apEdit:null,apRasc:{},histVazio:false,histErro:false,
   wiz:{p:0,email:"",nome:"",copiou:false,diferente:false},
+  mesaVar:"c",mesaEstado:"com-pendencia",
   prefs:{modo:"guiado",onboarding:"auto",movimento:"auto",tema:"claro",baixar:"nao",formato:"auto"},
   processando:true
 };
@@ -1092,7 +1157,137 @@ function vLeitura(){
 }
 
 /* ═══ MESA ═══ */
+/* ═══════════════════════════════════════════════════════════
+   MESA — quatro composições comparáveis.
+   "atual" fica preservada; A, B e C são as explorações.
+   O seletor vive nos controles de revisão, não no produto.
+   ═══════════════════════════════════════════════════════════ */
+const LENDO={capa:"01",titulo:"Estudo de Viabilidade",autor:"Ana Duarte",quando:"ontem",prog:32,notas:14};
+const PRONTOS=[
+  {capa:"11",t:"Diário 02",q:"há 12 minutos",fmt:"EPUB"},
+  {capa:"04",t:"Censo de Fauna",q:"hoje, 08:40",fmt:"EPUB"}
+];
+const PENDS=[
+  {tipo:"decisão necessária",nm:"Relatório de pesquisa — expedição 02.pdf",
+   cons:"O arquivo não tem capa. Montei uma com o título e o autor — vale conferir antes de mandar para o aparelho.",
+   acao:"Ver a capa proposta",a:"abrir-item",peso:1},
+  {tipo:"não deu para ler",nm:"Anuário 2025.pdf",
+   cons:"O PDF pede senha. Sem ela não consigo abrir as páginas, e ele fica parado.",
+   acao:"Informar a senha",a:"folha",v:"ap-remover",peso:2}
+];
+const PREPS=[
+  {nm:"Censo de Fauna — digitalização.pdf",et:"Reconhecendo o texto",t:"1 min 04 s",
+   bg:"Continua mesmo se você fechar esta aba.",acao:"Acompanhar",a:"abrir-item"},
+  {nm:"Ensaio Visual — rascunho.pdf",et:"A conexão caiu na página 38 de 210",t:"retomando sozinho",
+   bg:"Não é preciso fazer nada — se falhar de novo, eu aviso aqui.",acao:"Ver detalhes",a:"abrir-item"}
+];
+function mDados(){
+  const e=S.mesaEstado;
+  return {
+    pends: e==="com-pendencia"?PENDS: e==="novo"||e==="vazio"?[]:[],
+    preps: (e==="com-pendencia"||e==="sem-pendencia")?PREPS:[],
+    prontos: (e==="com-pendencia"||e==="sem-pendencia")?PRONTOS:[],
+    acervo: (e==="novo"||e==="vazio")?0:ACERVO.length,
+    lendo: (e==="com-pendencia"||e==="sem-pendencia")?LENDO:null
+  };
+}
 function vMesa(){
+  if(S.cena==="nova"||!S.conta)return mesaNova();
+  const v=S.mesaVar||"c";
+  if(v==="atual")return mesaAtual();
+  const d=mDados();
+  if(d.acervo===0&&!d.preps.length)return mesaVazia();
+  let h='<div class="pad'+(v==="c"?" larga":"")+'">'+mCab()+mSolta();
+  if(v==="a")h+=mResumo(d)+mPend(d)+mPrep(d)+mProntos(d)+mEstante(d);
+  if(v==="b")h+=mContinuar(d)+mPend(d)+mPrep(d)+mProntos(d)+mEstante(d);
+  if(v==="c")h+='<div class="mduas"><div>'+mResumo(d,true)+mPend(d)+mPrep(d)+'</div>'+
+    '<div>'+mContinuar(d)+mProntos(d)+mEstante(d)+'</div></div>';
+  return h+mEstados()+'</div>';
+}
+function mCab(){
+  return '<div style="display:flex;align-items:flex-end;gap:var(--s4);flex-wrap:wrap;margin-bottom:var(--s5)">'+
+    '<div style="flex:1;min-width:220px"><h1 class="t">Sua mesa</h1>'+
+    '<p class="sub" style="margin:0">O que chegou, o que está sendo preparado e o que já pode ser lido.</p></div>'+
+    '<button class="btnO forte" data-a="soltar">Preparar arquivo</button></div>';
+}
+function mSolta(){
+  return '<button class="msolta" data-a="soltar"><span class="tx">'+
+    '<span class="tt">Ou solte um arquivo aqui</span>'+
+    '<span class="fm">PDF · EPUB · DOCX · CBZ · CBR · ZIP · imagens</span></span>'+
+    '<span class="lnk mudo">escolher no computador →</span></button>';
+}
+function mResumo(d,fina){
+  const its=[[d.pends.length,d.pends.length===1?"precisa de você":"precisam de você","pend"],
+    [d.preps.length,d.preps.length===1?"em preparo":"em preparo","prep"],
+    [d.acervo,"na estante","estante"]];
+  return '<div class="mresumo'+(fina?" fina":"")+'">'+its.map(i=>
+    '<button data-a="mesa-ir" data-v="'+i[2]+'"><span class="n">'+i[0]+'</span>'+
+    '<span class="l">'+i[1]+'</span></button>').join("")+'</div>';
+}
+function mPend(d){
+  if(!d.pends.length)return"";
+  return '<div class="msec" id="mpend"><h2>Precisa de você<span class="ct">'+d.pends.length+'</span></h2>'+
+    d.pends.map(p=>'<div class="mpend"><span class="tipo">'+p.tipo+'</span>'+
+      '<span class="nm">'+esc(p.nm)+'</span><p class="cons">'+esc(p.cons)+'</p>'+
+      '<div class="acao"><button class="btnO" data-a="'+p.a+'"'+(p.v?' data-v="'+p.v+'"':'')+'>'+
+      p.acao+' →</button></div></div>').join("")+'</div>';
+}
+function mPrep(d){
+  if(!d.preps.length)return"";
+  return '<div class="msec" id="mprep"><h2>Sendo preparados<span class="ct">'+d.preps.length+'</span></h2>'+
+    d.preps.map(p=>'<div class="mprep"><span class="nm">'+esc(p.nm)+'</span>'+
+      '<span class="et">'+esc(p.et)+'<span class="t">'+esc(p.t)+'</span></span>'+
+      '<span class="bg">'+esc(p.bg)+'</span>'+
+      '<div style="margin-top:var(--s3)"><button class="lnk" data-a="'+p.a+'">'+p.acao+' →</button></div>'+
+      '</div>').join("")+'</div>';
+}
+function mContinuar(d){
+  if(!d.lendo)return"";
+  const l=d.lendo;
+  return '<div class="msec"><h2>Continue de onde parou</h2>'+
+    '<div class="mcont"><img src="'+capa(l.capa)+'" alt="Capa de '+esc(l.titulo)+'">'+
+    '<div><h3>'+esc(l.titulo)+'</h3>'+
+    '<p class="meta">'+esc(l.autor)+' · última leitura '+l.quando+'</p>'+
+    '<div class="prog"><i style="width:'+l.prog+'%"></i></div>'+
+    '<p class="meta">'+l.prog+'% lido · '+l.notas+' notas suas</p>'+
+    '<div class="acoes" style="margin-top:var(--s3)">'+
+    '<button class="btnO forte" data-a="ir" data-v="leitura">Continuar leitura →</button>'+
+    '<button class="lnk mudo" data-a="ir-livro">Abrir as notas</button></div></div></div></div>';
+}
+function mProntos(d){
+  if(!d.prontos.length)return"";
+  return '<div class="msec"><h2>Ficaram prontos<span class="ct">agora há pouco</span></h2>'+
+    '<div class="mprontos">'+d.prontos.map(p=>'<button class="mpronto" data-a="ir-livro">'+
+      '<img src="'+capa(p.capa)+'" alt="Capa de '+esc(p.t)+'" loading="lazy">'+
+      '<span class="t">'+esc(p.t)+'</span><span class="q">'+p.fmt+' · '+esc(p.q)+'</span></button>').join("")+
+    '</div></div>';
+}
+function mEstante(d){
+  if(!d.acervo)return"";
+  return '<div class="msec" id="mestante"><h2>Na estante<span class="ct">'+d.acervo+' itens</span></h2>'+
+    '<div class="mcapas">'+ACERVO.slice(0,7).map(b=>'<img src="'+capa(b.c)+'" alt="Capa de '+esc(b.t)+
+      '" loading="lazy">').join("")+'</div>'+
+    '<div style="margin-top:var(--s3)"><button class="lnk" data-a="ir" data-v="estante">Ver a estante →</button></div>'+
+    '</div>';
+}
+function mesaVazia(){
+  return '<div class="pad">'+mCab()+
+    '<div class="mvazio"><h2>A mesa está limpa.</h2>'+
+    '<p>Nada esperando por você, nada em preparo. Quando um arquivo chegar, ele aparece aqui — '+
+    'e continua aparecendo até virar livro na estante.</p>'+
+    '<button class="btnO forte" data-a="soltar">Preparar um arquivo</button></div>'+
+    mEstados()+'</div>';
+}
+function mEstados(){
+  const E=[["com-pendencia","com pendência"],["sem-pendencia","sem pendência"],
+    ["vazio","tudo vazio"],["novo","usuário novo"]];
+  return '<div class="mestados"><span class="lb">ESTADOS</span>'+
+    E.map(e=>'<button class="lnk'+(S.mesaEstado===e[0]?"":" mudo")+'" data-a="mesa-estado" data-v="'+e[0]+
+      '">'+e[1]+'</button>').join("")+'</div>';
+}
+
+/* ── a Mesa atual, preservada como quarta opção de comparação ── */
+function mesaAtual(){
   if(S.cena==="nova")return mesaNova();
   let h='<div class="pad">'+
     '<h1 class="t">Sua mesa</h1>'+
@@ -2266,6 +2461,14 @@ app.addEventListener("click",ev=>{
     case "vista":S.estante=v;break;
     case "lomb":S.lombSel=v;break;
     case "dobra":S.perfil=S.perfil===v?"":v;break;
+    case "mesa-estado":S.mesaEstado=v;S.cena=v==="novo"?"nova":"trabalho";break;
+    case "mesa-ir":{
+      const alvo={pend:"mpend",prep:"mprep",estante:"mestante"}[v];
+      if(v==="estante"&&S.mesaVar!=="atual"){const el=document.getElementById("mestante");
+        if(el){el.scrollIntoView({behavior:"smooth",block:"start"});return;}}
+      const el=document.getElementById(alvo);
+      if(el){el.scrollIntoView({behavior:"smooth",block:"start"});return;}
+      break;}
     case "artigo":S.ajuda=v;break;
     case "ajuda-tarefa":
       if(v==="wiz"){S.folha="wiz";S.wiz={p:0,email:"",nome:"",copiou:false,diferente:false};}
@@ -2608,6 +2811,18 @@ document.getElementById("notasbt").addEventListener("click",()=>{notas.hidden=fa
     const quente=R.getAttribute("data-fundo")!=="neutro";
     R.setAttribute("data-fundo",quente?"neutro":"quente");
     bF.textContent=quente?"branco puro":"off-white";bF.setAttribute("aria-pressed",String(!quente));
+  });
+  /* comparação das composições da Mesa, ao vivo */
+  const bM=document.getElementById("btMesa"),VARS=["c","a","b","atual"],
+    NOMES={c:"mesa C · workspace",a:"mesa A · operacional",b:"mesa B · continuidade",atual:"mesa atual"};
+  bM.textContent=NOMES[S.mesaVar]||"mesa C";
+  bM.addEventListener("click",()=>{
+    const i=VARS.indexOf(S.mesaVar);
+    S.mesaVar=VARS[(i+1)%VARS.length];
+    bM.textContent=NOMES[S.mesaVar];
+    bM.setAttribute("aria-pressed",String(S.mesaVar!=="atual"));
+    if(S.lugar!=="mesa"){S.lugar="mesa";}
+    pinta();
   });
   const bT=document.getElementById("btTema");
   bT.addEventListener("click",()=>{

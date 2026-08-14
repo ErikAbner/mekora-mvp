@@ -692,6 +692,7 @@ tbody tr:hover td{background:var(--bench-2)}
   <a href="#s10">10 · Respostas</a>
   <a href="#s11">11 · O sistema</a>
   <a href="#s12">12 · Perfil e conta</a>
+  <a href="#s13">13 · A Mesa</a>
   <span class="sp"></span>
   <button class="tema" id="tema" type="button">tema: claro</button>
 </nav>
@@ -1716,6 +1717,103 @@ tbody tr:hover td{background:var(--bench-2)}
       navegador, sistema e cidade só entram se existirem de verdade.</p>
     <p><b>Plano e cobrança.</b> Não constam no registro do projeto, então não há seção de assinatura.
       Se existirem, entram na Conta — não numa área nova.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════ 13 · A MESA ═══════════════════ -->
+<section id="s13">
+  <div class="sechead">
+    <span class="lbl">Seção 13 · três composições comparáveis</span>
+    <h2>A Mesa não era simples demais. Era plana demais.</h2>
+    <p>A diferença importa: simplicidade é escolher o que mostrar; planura é mostrar tudo com o mesmo
+      peso. A Mesa tinha três grupos usando <b>exatamente o mesmo componente</b> — mesma altura, mesma
+      capa, mesma tipografia, mesmo botão à direita. Um arquivo travado esperando decisão parecia igual
+      a um livro pronto de três dias atrás.</p>
+  </div>
+
+  <div class="duas">
+    <div class="bloco">
+      <span class="lbl">O que estava errado</span>
+      <ul class="txt" style="padding-left:18px;font-size:14px">
+        <li><b>Nenhuma hierarquia.</b> Três seções, um componente só. O que exige ação e o que já
+          terminou tinham o mesmo desenho.</li>
+        <li><b>Três CTAs genéricos:</b> "Ver", "Ver", "Abrir". Nenhum dizia o que ia acontecer.</li>
+        <li><b>A pendência não dizia a consequência.</b> "Analisado · o arquivo não tem capa" descreve
+          um fato, não o que se perde se ficar assim.</li>
+        <li><b>O ciclo quebrava em "pronto".</b> O produto tem leitor, destaques e notas, e a Mesa não
+          oferecia nenhuma forma de retomar. Depois de preparar, não havia por que voltar.</li>
+        <li><b>A estante virou três linhas de texto</b> num produto que tem catorze capas — a coisa mais
+          reconhecível do acervo aparecia como lista.</li>
+        <li><b>O dropzone dominava o topo</b> com tratamento de SaaS, na frente do que precisava de
+          atenção.</li>
+        <li><b>Sem resumo.</b> Não dava para saber de relance quanta coisa havia.</li>
+      </ul>
+    </div>
+    <div class="bloco">
+      <span class="lbl">O que entrou, o que saiu, o que ficou</span>
+      <div class="tabwrap" style="border-radius:4px">
+        <table style="min-width:0">
+          <thead><tr><th></th><th>O quê</th></tr></thead>
+          <tbody>
+            <tr><td class="n">Ficou</td><td>os três grupos, a navegação, o upload por arrastar</td></tr>
+            <tr><td class="n">Saiu</td><td>o dropzone tracejado de largura inteira; os CTAs genéricos; o mesmo componente para tudo</td></tr>
+            <tr><td class="n">Entrou</td><td>resumo de três números clicáveis; tipo e consequência em cada pendência; etapa, tempo e a garantia de segundo plano em cada preparo; <b>continuar de onde parou</b>; os que ficaram prontos, com capa; a estante em capas; quatro estados</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="txt" style="font-size:13.5px">Nenhum gráfico, nenhum KPI, nenhuma porcentagem inventada.
+        O único número com barra é o progresso de leitura, que é real e é do usuário.</p>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <span class="lbl">As três explorações</span>
+    <div class="tabwrap" style="border-radius:4px">
+      <table>
+        <thead><tr><th>Alternativa</th><th>Prioridade</th><th>Vantagem</th><th>Risco</th><th>Perfil</th></tr></thead>
+        <tbody>
+          <tr><td class="n">A · Operacional</td>
+            <td>pendências → preparos → prontos → estante, em coluna única</td>
+            <td>nada escapa; a ordem é a da urgência</td>
+            <td>num dia sem pendência a tela abre vazia e burocrática; parece fila de trabalho</td>
+            <td>quem prepara em lote, estuda, chega com vinte artigos</td></tr>
+          <tr><td class="n">B · Continuidade</td>
+            <td>continuar lendo primeiro, depois o operacional</td>
+            <td>fecha o ciclo: o produto vira lugar de leitura, não de conversão</td>
+            <td>quem entrou para preparar um arquivo passa pela leitura antes; e a pendência desce</td>
+            <td>leitor por prazer, uso diário</td></tr>
+          <tr><td class="n">C · Workspace</td>
+            <td>duas colunas: estado à esquerda, matéria à direita</td>
+            <td>responde as seis perguntas <b>sem rolar</b>; é a única que usa as capas</td>
+            <td>colapsa em tela estreita; precisa de conteúdo dos dois lados para não desequilibrar</td>
+            <td>desktop, acervo já formado</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="bloco escuro">
+    <span class="lbl">Recomendada · C, com a espinha de A</span>
+    <p><b>Por que C.</b> A pergunta que decide não é estética: <i>a Mesa responde às seis perguntas sem
+      rolar?</i> Em coluna única, com pendência, preparo, leitura, prontos e estante, não responde —
+      alguma coisa sempre fica abaixo da dobra. A composição em duas colunas é a única que cabe.</p>
+    <p>E é a única que usa <b>as capas</b>. É isso que faz a tela parecer uma mesa e não uma fila: de um
+      lado o aparato — números, pendências, o que está rodando; do outro a matéria — o livro que você
+      estava lendo, os que ficaram prontos, a estante. O usuário volta pelo lado direito; o lado
+      esquerdo é o que o segura quando há algo travado.</p>
+    <p><b>O que peguei de A:</b> a ordem interna da coluna esquerda é a dela — resumo, pendência,
+      preparo, nessa ordem de urgência. <b>O que peguei de B:</b> "continuar de onde parou" é a primeira
+      coisa da coluna direita, e é a melhor ideia das três. Ela não some; muda de lugar.</p>
+    <p><b>Onde C perde e eu aceito:</b> abaixo de 900px vira coluna única e volta a ser A com leitura no
+      meio. Para um produto de desktop com acervo, é troca justa — mas se a medição mostrar uso
+      majoritariamente estreito, a recomendação passa a ser B.</p>
+  </div>
+
+  <div class="regra">
+    <p><b>Comparar ao vivo:</b> em <span class="mono">prototipo-mesa.html</span>, o botão do canto
+      inferior esquerdo cicla <b>mesa C → A → B → atual</b> na própria tela. No fim da Mesa, quatro
+      botões trocam os estados: com pendência, sem pendência, tudo vazio e usuário novo. A Mesa antiga
+      continua inteira, como quarta opção.</p>
   </div>
 </section>
 
