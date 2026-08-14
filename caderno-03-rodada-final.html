@@ -691,6 +691,7 @@ tbody tr:hover td{background:var(--bench-2)}
   <a href="#s9">9 · Decisões</a>
   <a href="#s10">10 · Respostas</a>
   <a href="#s11">11 · O sistema</a>
+  <a href="#s12">12 · Perfil e conta</a>
   <span class="sp"></span>
   <button class="tema" id="tema" type="button">tema: claro</button>
 </nav>
@@ -1578,6 +1579,143 @@ tbody tr:hover td{background:var(--bench-2)}
         corrigir imagem que não é minha seria apagar a evidência, e o "antes" é o que sustenta a
         comparação. É a mesma regra do <span class="mono">telas-atuais/</span>.</p>
     </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ 12 · PERFIL E CONTA ═══════════════════ -->
+<section id="s12">
+  <div class="sechead">
+    <span class="lbl">Seção 12 · conclusão da exploração de conta</span>
+    <h2>Perfil deixou de ser um índice</h2>
+    <p>A área existia como cinco dobras que abriam listas curtas — um sumário de destinos, não um lugar.
+      Esta seção registra o que estava incompleto, a arquitetura escolhida para o menu, e o que passou a
+      existir. <b>As telas estão no protótipo</b>, em <span class="mono">prototipo-mesa.html</span> →
+      avatar → Perfil e conta.</p>
+  </div>
+
+  <div class="duas">
+    <div class="bloco">
+      <span class="lbl">O que estava incompleto</span>
+      <div class="tabwrap" style="border-radius:4px">
+        <table style="min-width:0">
+          <thead><tr><th>Área</th><th>Existia</th><th>Faltava</th></tr></thead>
+          <tbody>
+            <tr><td class="n">Menu de usuário</td><td>7 itens, 4 deles atalhos para seções do Perfil</td><td>a análise que justificasse a duplicação</td></tr>
+            <tr><td class="n">Perfil</td><td>5 dobras com listas</td><td>estado, atividade, e algo que pedisse atenção</td></tr>
+            <tr><td class="n">Conta</td><td>3 linhas com "Alterar" inerte</td><td>edição, salvando, salvo, erro, campo imutável</td></tr>
+            <tr><td class="n">Dispositivos</td><td>1 aparelho fixo</td><td>vazio, vários, principal, adicionar, editar, remover, validação</td></tr>
+            <tr><td class="n">Preferências</td><td>3 linhas soltas</td><td>agrupamento, padrão, alterado, restaurar</td></tr>
+            <tr><td class="n">Privacidade</td><td>3 linhas com um prazo inventado</td><td>controle de dados, ações destrutivas, e honestidade sobre o que não foi decidido</td></tr>
+            <tr><td class="n">Histórico</td><td>3 linhas de exemplo</td><td>propósito declarado, vazio, erro, detalhe</td></tr>
+            <tr><td class="n">Sair</td><td>botão sem efeito</td><td>o que fazer com preparo em curso</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="bloco escuro">
+      <span class="lbl">A divergência que encontrei, e como resolvi</span>
+      <p>O <b>caderno 02</b> decidiu, em 11 de agosto: <i>"Perfil não deve existir — num produto de uso
+        individual, a biblioteca e as notas já são a representação da pessoa. Gatilho para reabrir: o dia
+        em que houver compartilhamento."</i> A <b>DEC-0019</b>, de 12 de agosto, pôs o Perfil no produto
+        absorvendo Configurações.</p>
+      <p>Prevalece a mais recente, como manda o processo — mas o caderno 02 continua certo sobre o que
+        importa. A régua dele: <i>"Conta é quem você é para o serviço. Preferências é como o Mekora se
+        comporta para você. Perfil seria quem você é para os outros — e ainda não existem outros."</i></p>
+      <p><b>Resolução:</b> a área se chama <b>Perfil e conta</b> e é administrativa. Não há página
+        pública, bio, foto para terceiros nem índice de conteúdo — nada do que o caderno 02 recusou foi
+        construído. O gatilho dele segue de pé: se um dia houver compartilhamento, aí nasce um perfil
+        público, e ele será outra coisa.</p>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <span class="lbl">A decisão de arquitetura · duas alternativas, comparadas</span>
+    <p class="txt" style="font-size:14px">A tela tinha uma página de Perfil com seções <b>e</b> um menu
+      com atalhos para as mesmas seções. Antes de escolher, medi o que a duplicação compra.</p>
+    <div class="lado" style="margin-top:14px">
+      <div>
+        <span class="ladocap">A — menu curto · adotada</span>
+        <div class="mini"><div class="mn-corpo">
+          <span class="mn-rot">Conta</span>
+          <div class="mn-lin"><span class="s">◍</span><span><b>Perfil e conta</b></span></div>
+          <span class="mn-rot" style="margin-top:10px">Produto</span>
+          <div class="mn-lin"><span class="s">✦</span><span><b>Atualizações</b></span></div>
+          <div class="mn-lin"><span class="s">?</span><span><b>Ajuda e recursos</b></span></div>
+          <div class="mn-lin" style="border-top:1px solid #e6e4de;margin-top:6px;padding-top:8px">
+            <span class="s">→</span><span><b>Sair</b></span></div>
+        </div></div>
+        <p class="txt" style="font-size:13px;margin-top:10px"><b>+</b> quatro decisões em vez de sete.
+          A visão geral do Perfil mostra o estado — dois aparelhos, uma preferência fora do padrão — e
+          leva mais rápido do que um atalho às cegas.<br>
+          <b>−</b> um clique a mais para quem sabe exatamente onde quer chegar.</p>
+      </div>
+      <div>
+        <span class="ladocap">B — menu com atalhos · descartada</span>
+        <div class="mini"><div class="mn-corpo">
+          <div class="mn-lin"><span class="s">◍</span><span><b>Perfil e conta</b></span></div>
+          <div class="mn-lin"><span class="s">▭</span><span><b>Dispositivos Kindle</b></span></div>
+          <div class="mn-lin"><span class="s">≡</span><span><b>Preferências</b></span></div>
+          <div class="mn-lin"><span class="s">⚿</span><span><b>Privacidade</b></span></div>
+          <div class="mn-lin"><span class="s">✦</span><span><b>Atualizações</b></span></div>
+          <div class="mn-lin"><span class="s">?</span><span><b>Ajuda e recursos</b></span></div>
+          <div class="mn-lin"><span class="s">→</span><span><b>Sair</b></span></div>
+        </div></div>
+        <p class="txt" style="font-size:13px;margin-top:10px"><b>+</b> um clique a menos para quem já sabe.<br>
+          <b>−</b> sete itens sem hierarquia, misturando conta, produto e sessão. E o custo real: obriga
+          a escolher <b>antes</b> de ver o estado. Quem abre o menu para "ver as preferências" não sabe
+          que há duas fora do padrão — a visão geral diria isso.</p>
+      </div>
+    </div>
+    <p class="txt" style="font-size:13.5px;margin-top:14px"><b>Por que A.</b> Nenhum destino aqui é de
+      uso frequente: conta e privacidade se visitam a cada meses, dispositivos depois do primeiro
+      cadastro quase nunca. <b>Atalho para destino raro é peso permanente por ganho eventual.</b> A
+      agrupação em Conta / Produto / Sessão veio junto, porque as três naturezas não deviam estar na
+      mesma lista lisa.</p>
+  </div>
+
+  <div class="bloco">
+    <span class="lbl">O que passou a existir — e como chegar</span>
+    <div class="duas" style="gap:18px 26px">
+      <ul class="txt" style="padding-left:18px;font-size:14px">
+        <li><b>Visão geral</b> — identidade, cinco seções com o estado real de cada uma, o que precisa de
+          atenção, e as três últimas mudanças.</li>
+        <li><b>Conta</b> — edição no lugar, com salvando, salvo e erro. "Na conta desde" é marcado como
+          <i>não muda</i>. Senha e verificação em duas etapas <b>não foram desenhadas</b>: o registro
+          marca autenticação como não implementada, e desenhar segurança antes de existir o que proteger
+          é inventar.</li>
+        <li><b>Dispositivos</b> — vazio, um, vários, principal, adicionar com validação de
+          <span class="mono">@kindle.com</span>, editar, remover com consequência concreta e reeleição
+          automática do principal.</li>
+      </ul>
+      <ul class="txt" style="padding-left:18px;font-size:14px">
+        <li><b>Preferências</b> — três grupos por significado, cada ajuste com padrão declarado, selo de
+          <i>alterado</i> e restaurar individual ou geral. Corpo da letra e contraste <b>não estão aqui</b>:
+          moram no leitor e no editor.</li>
+        <li><b>Privacidade</b> — o que é guardado, o que é medido, o que nunca é medido, e o controle.
+          O prazo de retenção está marcado como <b>pendente</b>, não inventado.</li>
+        <li><b>Histórico</b> — só da conta, com vazio, erro e detalhe. Não duplica o histórico dos
+          arquivos, que vive na Mesa e na Estante.</li>
+        <li><b>Sair</b> — sem confirmação por hábito; com aviso quando há preparo em curso, explicando
+          que nada se perde.</li>
+      </ul>
+    </div>
+    <div class="regra" style="margin-top:16px">
+      <p><b>Como abrir:</b> <span class="mono">prototipo-mesa.html</span> → Entrar → avatar no canto
+      direito → <b>Perfil e conta</b>. O trilho da esquerda troca de seção. Em Histórico há três botões
+      para forçar os estados <i>com registros</i>, <i>vazio</i> e <i>erro</i>.</p>
+    </div>
+  </div>
+
+  <div class="bloco escuro">
+    <span class="lbl">O que ficou pendente, e depende de você ou do backend</span>
+    <p><b>Prazo de retenção do arquivo original.</b> Está escrito na tela como pendente. Eu tinha
+      inventado "apagados 24 horas depois" numa versão anterior — isso saiu, porque política inventada
+      em protótipo vira promessa no produto.</p>
+    <p><b>Autenticação.</b> Enquanto <span class="mono">authentication: not_implemented</span>, não há
+      senha, sessão nem origem de acesso para mostrar. O histórico diz "neste navegador" e nada além —
+      navegador, sistema e cidade só entram se existirem de verdade.</p>
+    <p><b>Plano e cobrança.</b> Não constam no registro do projeto, então não há seção de assinatura.
+      Se existirem, entram na Conta — não numa área nova.</p>
   </div>
 </section>
 

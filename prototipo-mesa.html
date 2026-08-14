@@ -434,6 +434,85 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .ctrl .opts button:hover{border-color:var(--ink);color:var(--ink)}
 .ctrl .opts button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 
+/* ══ PERFIL E CONTA ══ */
+.umenu .grp{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-3);padding:var(--s3) var(--s3) var(--s1)}
+.parea{display:grid;grid-template-columns:206px minmax(0,1fr);gap:var(--s7);align-items:start}
+@media(max-width:860px){.parea{grid-template-columns:1fr;gap:var(--s5)}.prail{display:none}}
+.prail{position:sticky;top:var(--s4);display:flex;flex-direction:column;gap:1px}
+.prail button{display:flex;align-items:center;gap:var(--s3);padding:9px var(--s3);font-size:13.5px;
+  color:var(--ink-2);border-left:2px solid transparent}
+.prail button:hover{background:var(--bg-2);color:var(--ink)}
+.prail button[aria-current="true"]{border-left-color:var(--ink);color:var(--ink);font-weight:650;background:var(--bg-2)}
+.prail .pt{margin-left:auto}
+.pcards{display:flex;flex-direction:column;background:var(--branco)}
+.pcard{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s4);align-items:center;
+  padding:var(--s4);border-bottom:1px solid var(--line-2);width:100%;text-align:left}
+.pcard:last-child{border-bottom:none}
+.pcard:hover{background:var(--bg-2)}
+.pcard .nm{font-size:14.5px;font-weight:650;display:block}
+.pcard .rs{font-size:12.5px;color:var(--ink-2);margin-top:3px;display:block;line-height:1.5}
+.pcard .ch{color:var(--ink-3);font-size:12px}
+.atencao{display:flex;gap:var(--s3);align-items:flex-start;padding:var(--s4);background:var(--warn-soft);
+  box-shadow:inset 2px 0 0 var(--warn);margin-bottom:var(--s5)}
+.atencao b{display:block;font-size:14px}
+.atencao p{margin:3px 0 0;font-size:13px;color:var(--ink-2);line-height:1.5}
+.campo{display:grid;grid-template-columns:150px minmax(0,1fr) auto;gap:var(--s4);align-items:center;
+  padding:var(--s4) 0;border-bottom:1px solid var(--line-2)}
+.campo:last-of-type{border-bottom:none}
+.campo .k{font-size:12.5px;color:var(--ink-3)}
+.campo .v{font-size:14px}
+.campo .v small{display:block;font-size:12px;color:var(--ink-3);margin-top:3px;line-height:1.45}
+@media(max-width:620px){.campo{grid-template-columns:1fr;gap:var(--s2)}}
+.campoedit{display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap;width:100%}
+.campoedit input{flex:1;min-width:180px;font:inherit;font-size:14px;color:var(--ink);background:var(--bg-2);
+  border:1px solid var(--line-3);border-radius:var(--r1);padding:.5rem .6rem}
+.campoedit input:focus{outline:2px solid var(--acc);outline-offset:-1px;background:var(--branco)}
+.selo{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:var(--t-mono);
+  letter-spacing:.06em;text-transform:uppercase;border-radius:var(--rp);padding:3px 9px;
+  border:1px solid var(--line);color:var(--ink-3)}
+.selo.ok{border-color:var(--ok);color:var(--ok)}
+.selo.al{border-color:var(--warn);color:var(--warn)}
+.selo.pend{border-color:var(--line-3);color:var(--ink-2);background:var(--bg-2)}
+.ap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s4);align-items:center;
+  padding:var(--s4);border-bottom:1px solid var(--line-2);background:var(--branco)}
+.ap:last-child{border-bottom:none}
+.ap .nm{font-size:14.5px;font-weight:650;display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap}
+.ap .em{font-family:var(--mono);font-size:12px;color:var(--ink-2);margin-top:4px;display:block;word-break:break-all}
+.ap .us{font-size:12.5px;color:var(--ink-3);margin-top:3px;display:block}
+.vazio{padding:var(--s7) var(--s4);text-align:center;background:var(--branco)}
+.vazio b{display:block;font-size:15px;margin-bottom:var(--s2)}
+.vazio p{margin:0 auto var(--s4);font-size:13.5px;color:var(--ink-2);max-width:46ch;line-height:1.6}
+.grupoP{margin-bottom:var(--s6)}
+.grupoP>h3{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 var(--s3)}
+.opcao{display:grid;grid-template-columns:auto minmax(0,1fr);gap:var(--s3);padding:var(--s3) var(--s4);
+  width:100%;text-align:left;background:var(--branco);border-bottom:1px solid var(--line-2);align-items:start}
+.opcao:last-child{border-bottom:none}
+.opcao:hover{background:var(--bg-2)}
+.radio{width:16px;height:16px;border-radius:50%;border:1px solid var(--line-3);margin-top:2px;flex:0 0 16px;
+  display:flex;align-items:center;justify-content:center}
+.opcao[aria-pressed="true"] .radio{border-color:var(--ink);border-width:5px}
+.opcao .nm{font-size:13.5px;font-weight:600}
+.opcao .ds{font-size:12.5px;color:var(--ink-2);margin-top:2px;line-height:1.5;display:block}
+.histdia{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-3);padding:var(--s5) 0 var(--s2);border-bottom:1px solid var(--line-2)}
+.histl{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:var(--s4);align-items:baseline;
+  padding:var(--s3) 0;border-bottom:1px solid var(--line-2);width:100%;text-align:left}
+.histl:hover{background:var(--bg-2)}
+.histl .h{font-family:var(--mono);font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.histl .t{font-size:13.5px}
+.histl .o{font-size:12px;color:var(--ink-3)}
+@media(max-width:620px){.histl{grid-template-columns:56px minmax(0,1fr)}.histl .o{grid-column:2}}
+.perigo{border:1px solid var(--dan);padding:var(--s4);background:var(--dan-soft)}
+.perigo b{display:block;font-size:14px;margin-bottom:var(--s2)}
+.perigo p{margin:0 0 var(--s3);font-size:13px;color:var(--ink-2);line-height:1.55}
+.btnD{height:var(--h2);padding:0 var(--s5);border:1px solid var(--dan);color:var(--dan);background:none;
+  font-size:13.5px;font-weight:600;display:inline-flex;align-items:center}
+.btnD:hover{background:var(--dan);color:#fff}
+.pendencia{display:flex;gap:var(--s3);align-items:flex-start;padding:var(--s3) var(--s4);
+  border:1px dashed var(--line-3);font-size:12.5px;color:var(--ink-2);line-height:1.55;margin-top:var(--s4)}
+
 /* ═══ DOCK ═══ só nas superfícies espaciais */
 .dock{position:sticky;bottom:var(--s5);margin:var(--s6) auto 0;width:max-content;display:flex;gap:var(--s1);
   background:var(--bg);border:1px solid var(--line);border-radius:var(--r2);padding:5px}
@@ -582,8 +661,38 @@ const zero={
   estante:"lista",lombSel:"01",perfil:"conta",folha:null,menu:false,aviso:null,manuais:0,avisoUso:true,
   q:"",ajuda:null,dockSel:0,corpo:1,entre:1,largura:1,
   sel:[],filtro:"todas",mud:[],fora:[],giradas:[],capaPag:1,
-  disp:1,fonte:2,orient:"retrato",formato:"epub",nome:null
+  disp:1,fonte:2,orient:"retrato",formato:"epub",nome:null,
+  /* ── PERFIL ── uma seção por vez, e o estado de cada fluxo ao lado ── */
+  psec:"visao",pedit:null,prasc:"",pest:null,perro:false,
+  aparelhos:[
+    {id:"a1",nome:"Kindle de Erik",modelo:"Paperwhite",email:"erik_abc@kindle.com",uso:"hoje, 09:12",princ:true},
+    {id:"a2",nome:"Scribe do escritório",modelo:"Scribe",email:"erik_scribe@kindle.com",uso:"6 de agosto",princ:false}
+  ],
+  apEdit:null,apRasc:{},histVazio:false,histErro:false,
+  prefs:{modo:"guiado",onboarding:"auto",movimento:"auto",tema:"claro",baixar:"nao",formato:"auto"},
+  processando:true
 };
+/* padrões de fábrica — é o que torna possível dizer "alterado" e "restaurar" */
+const PADRAO={modo:"guiado",onboarding:"auto",movimento:"auto",tema:"claro",baixar:"nao",formato:"auto"};
+const ROTULO={
+  modo:{guiado:"Guiado",personalizado:"Personalizado"},
+  onboarding:{auto:"Aparece quando é útil",nunca:"Não mostrar"},
+  movimento:{auto:"Seguir o sistema",reduzido:"Reduzido",completo:"Completo"},
+  tema:{claro:"Claro",escuro:"Escuro"},
+  baixar:{nao:"Não baixar sozinho",sim:"Baixar quando ficar pronto"},
+  formato:{auto:"Decidir pelo arquivo",epub:"Sempre EPUB"}
+};
+/* Histórico DE CONTA, não de projetos: o diário do que você mudou.
+   O caderno 02 chamou Preferências de "espelho e memória" — isto é a memória.
+   O histórico operacional dos arquivos vive na Mesa e na Estante, e não se duplica aqui. */
+const HIST=[
+  ["hoje","09:12","Kindle de Erik definido como aparelho principal","Dispositivos","neste navegador"],
+  ["hoje","09:04","Capa gerada aceita em Relatório de pesquisa — expedição 02","Preferências","neste navegador"],
+  ["ontem","19:41","Modo padrão alterado de Personalizado para Guiado","Preferências","neste navegador"],
+  ["ontem","19:04","Scribe do escritório adicionado","Dispositivos","neste navegador"],
+  ["6 de agosto","11:20","Nome alterado para Erik Abner","Conta","neste navegador"],
+  ["6 de agosto","11:18","Conta criada","Conta","neste navegador"]
+];
 /* 96 páginas de um PDF digitalizado. Os problemas são os mesmos que a análise
    declarou na tela do item — a lista e a grade leem do mesmo lugar. */
 const PAGS=(function(){const a=[];for(let i=1;i<=96;i++){
@@ -598,13 +707,15 @@ const TRECHO=["A expedição partiu de manhã, com o material dividido em três 
 const AJUDA={
  "Começando":[["Primeiros passos","Solte um arquivo e confirme uma vez.","O Mekora abre o arquivo, mostra o que encontrou e o que vai fazer, e espera um clique seu. Não há assistente de várias etapas: é uma tela só."],
   ["Guiado e Personalizado","No Guiado você confirma. No Personalizado você ajusta.","Ao trocar para Personalizado, todos os campos já vêm preenchidos com o que o Guiado teria feito. Se você mexer e voltar, perguntamos o que fazer com as suas alterações."],
-  ["Enviar ao Kindle","Precisa autorizar o remetente na Amazon, uma vez.","Depois disso o endereço fica salvo no seu perfil e o envio é um clique. Avisamos quando a Amazon aceitar o arquivo — não temos como saber se já chegou no aparelho."]],
+  ["Enviar ao Kindle","Precisa autorizar o remetente na Amazon, uma vez.","Depois disso o endereço fica salvo no seu perfil e o envio é um clique. Avisamos quando a Amazon aceitar o arquivo — não temos como saber se já chegou no aparelho."],
+  ["Como encontrar meu endereço Kindle","Está na Amazon, em Conteúdo e dispositivos.","Entre na sua conta da Amazon, abra Conteúdo e dispositivos, vá em Dispositivos e escolha o seu Kindle. O endereço aparece como algo terminado em @kindle.com — não é o seu e-mail de login. Na mesma tela, em Preferências, adicione envio@mekora.app à lista de remetentes aprovados: sem isso o aparelho recusa o arquivo."]],
  "Formatos":[["PDF","O caso mais comum, e o que mais muda.","Se o PDF for digitalizado, cada página é uma imagem: sem reconhecimento de texto o Kindle não busca nada nem ajusta a letra. É a primeira coisa que verificamos."],
   ["EPUB","Já é o formato certo. Ainda assim há trabalho.","Capa, sumário e metadados costumam faltar ou vir errados. Arrumamos isso sem reconverter o conteúdo."],
   ["CBZ, CBR e ZIP","Quadrinho é imagem, e imagem tem regras próprias.","Ordem das páginas, capa, direção de leitura, página dupla e o tamanho exato do seu aparelho."]],
  "Entenda o processo":[["O que é reconhecimento de texto","Sem ele, o Kindle vê seu livro como uma pilha de fotos.","Num PDF digitalizado cada página é uma imagem. O reconhecimento lê essa imagem e devolve o texto — é o que permite buscar uma palavra e mudar o corpo da letra."],
   ["Por que não mostramos porcentagem","Porque na maior parte das etapas ela seria inventada.","Reconhecer texto avança página a página e dá para contar. Compactar o arquivo acontece de uma vez. Uma barra que somasse as duas mostraria um número que não corresponde a nada."],
-  ["O que acontece se eu fechar a aba","Nada. O preparo não é feito no seu computador.","Com conta, o item volta a aparecer na Mesa. Sem conta, o trabalho termina do mesmo jeito — mas não haverá onde reencontrá-lo."]],
+  ["O que acontece se eu fechar a aba","Nada. O preparo não é feito no seu computador.","Com conta, o item volta a aparecer na Mesa. Sem conta, o trabalho termina do mesmo jeito — mas não haverá onde reencontrá-lo."],
+  ["Como o Mekora trata meus arquivos","O original fica; o conteúdo não é lido por ninguém.","O arquivo que você envia é guardado para permitir refazer a preparação com outras opções, sem enviar de novo. O resultado fica na sua estante e sai quando você remove o livro. O texto que sai do reconhecimento serve ao seu arquivo e não é usado para mais nada; o prazo exato de retenção do original ainda não foi decidido, e está marcado como pendente em Privacidade em vez de ser prometido aqui."]],
  "Resolver problemas":[["O arquivo não abre","Quase sempre é senha ou arquivo truncado.","PDF protegido pede a senha uma vez e não a guardamos. Arquivo truncado costuma vir de download interrompido: baixe de novo."],
   ["A capa não apareceu","Se o arquivo não tinha capa, geramos uma.","Ela usa o título, o autor e o formato. Dá para trocar pela página 1 ou por uma imagem sua, no item."],
   ["Páginas fora de ordem","Acontece em quadrinho quando os nomes não têm número.","Ordenamos pelo nome do arquivo. Quando ele não ajuda, a organização avançada deixa você arrastar."]],
@@ -626,7 +737,8 @@ function topo(){
   const lug=[["mesa","Mesa"],["estante","Estante"],["canvas","Canvas"],["conexoes","Conexões"]];
   const at=noItem?"mesa":S.lugar;
   let l1='<div class="tlin"><button class="marca" data-a="ir" data-v="'+(S.conta?"mesa":"home")+
-    '" title="'+(S.conta?"Voltar à Mesa":"Início")+'">Mekora</button>';
+
+'" title="'+(S.conta?"Voltar à Mesa":"Início")+'">Mekora</button>';
   if(S.conta){
     l1+='<nav>'+lug.map(x=>'<button data-a="ir" data-v="'+x[0]+'"'+(at===x[0]?' aria-current="true"':'')+
       '>'+x[1]+'</button>').join("")+'</nav><span class="sp"></span>'+
@@ -649,14 +761,22 @@ function topo(){
   return '<div class="topo'+(S.dentro&&noItem?' -dentro':'')+'"><div class="tcam">'+l1+l2+'</div></div>'+
     (S.menu?menuConta():"");
 }
+/* Menu de usuário — quatro destinos, agrupados por natureza.
+   Os atalhos diretos para Conta, Dispositivos, Preferências e Privacidade
+   saíram: nenhum deles é de uso frequente, e um menu de sete itens fazia o
+   usuário escolher antes de saber o que precisava. A visão geral do Perfil
+   mostra o estado e leva mais rápido do que um atalho às cegas.
+   As duas arquiteturas estão comparadas no Caderno 03. */
 function menuConta(){
-  const its=[["Perfil e conta","perfil","◍"],["Dispositivos Kindle","perfil","▭"],["Preferências","perfil","≡"],
-    ["Privacidade","perfil","⚿"],["Atualizações","perfil","✦"],["Ajuda e recursos","@ajuda","?"]];
   return '<div class="umenu"><div class="id"><span class="ava">EA</span><div>'+
-    '<div class="n">Erik Abner</div><div class="e">erik@exemplo.com</div></div></div><ul>'+
-    its.map(i=>'<li><button data-a="'+(i[1]==="@ajuda"?"folha":"ir")+'" data-v="'+
-      (i[1]==="@ajuda"?"ajuda":i[1])+'"><span class="ic">'+i[2]+'</span>'+i[0]+'</button></li>').join("")+
-    '<li class="divi"></li><li><button data-a="nada"><span class="ic">→</span>Sair</button></li></ul></div>';
+    '<div class="n">Erik Abner</div><div class="e">erik@exemplo.com</div></div></div>'+
+    '<ul><li class="grp">Conta</li>'+
+    '<li><button data-a="ir" data-v="perfil"><span class="ic">◍</span>Perfil e conta</button></li>'+
+    '<li class="divi"></li><li class="grp">Produto</li>'+
+    '<li><button data-a="psec" data-v="novidades"><span class="ic">✦</span>Atualizações</button></li>'+
+    '<li><button data-a="folha" data-v="ajuda"><span class="ic">?</span>Ajuda e recursos</button></li>'+
+    '<li class="divi"></li>'+
+    '<li><button data-a="sair"><span class="ic">→</span>Sair</button></li></ul></div>';
 }
 
 /* ═══ HOME ═══ para quem ainda não sabe o que é isto.
@@ -685,12 +805,14 @@ function vHome(){
   /* mostrar antes de explicar: é a coisa mais compreensível que o produto tem */
   '<section class="faixaE" style="padding-top:0"><div class="colE larga">'+
     '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:var(--s4);'+
-    'align-items:end">'+
+
+'align-items:end">'+
       ACERVO.slice(0,7).map(b=>'<img src="'+capa(b.c)+'" alt="Capa de '+esc(b.t)+'" loading="lazy" '+
       'style="width:100%;height:auto;border:1px solid var(--line);border-radius:var(--rm);background:var(--paper)">').join("")+
     '</div>'+
     '<p style="width:100%;max-width:var(--col);margin:var(--s4) auto 0;text-align:center;'+
-    'font-size:var(--t-peq);line-height:1.55;color:var(--ink-3)">'+
+
+'font-size:var(--t-peq);line-height:1.55;color:var(--ink-3)">'+
     'Uma estante do Mekora. A terceira e a sexta capa foram <b>montadas por ele</b> — os arquivos '+
     'chegaram sem nenhuma, e sem capa não existe estante, existe pasta.</p>'+
   '</div></section>'+
@@ -760,7 +882,8 @@ function vHome(){
     'converter uma vez. É que <b>o acervo cresce e nada o segura.</b></p>'+
     '<div class="tagsE" style="margin-top:var(--s5)">'+
       ["PDF","EPUB","DOCX","TXT","CBZ","CBR","ZIP","JPG","PNG"].map(f=>'<span class="tagE'+
-      (f==="PDF"?" main":"")+'">'+f+'</span>').join("")+'</div>'+
+
+(f==="PDF"?" main":"")+'">'+f+'</span>').join("")+'</div>'+
     '<p class="txtE mudo" style="margin-top:var(--s3);font-size:var(--t-peq)">Documento vira EPUB com '+
     'texto reconhecido e sumário. Quadrinho vira arquivo no tamanho exato do seu aparelho. '+
     'Tradução gera um segundo arquivo, sem tocar no original — para quadrinhos ainda não.</p>'+
@@ -1076,7 +1199,8 @@ function vCanvas(nome){
     '<p class="sub">Superfície espacial. É aqui — e só aqui — que a dock existe: ela segura ferramentas de '+
     'manipulação direta, que precisam ficar perto das mãos.</p>'+
     '<div style="border:1px dashed var(--line);border-radius:var(--r2);padding:var(--s7);text-align:center;'+
-    'color:var(--ink-3);font-size:13.5px">Preservado do protótipo da área pessoal.<br>'+
+
+'color:var(--ink-3);font-size:13.5px">Preservado do protótipo da área pessoal.<br>'+
     'O que muda aqui é só a barra do topo, que passou a ser a mesma das outras telas.</div>'+
     dock(["Nota","Mídia","Conectar","Organizar","Filtrar"],-1)+'</div>';
 }
@@ -1129,6 +1253,253 @@ function vPerfil(){
     'que competia com os lugares onde se trabalha, e o que ela guardava está aqui dentro ou no ponto de uso.</div></div>';
   return h+'</div>';
 }
+/* ═══ PERFIL E CONTA ═══
+   Visão geral + seções. Não é sidebar de settings: a visão geral mostra
+   estado, não índice, e é ela que leva. O trilho à esquerda existe só no
+   desktop, para trocar de seção sem voltar. */
+const PSECS=[["visao","Visão geral"],["conta","Conta"],["disp","Dispositivos Kindle"],
+  ["pref","Preferências"],["priv","Privacidade"],["hist","Histórico"]];
+function alterados(){return Object.keys(PADRAO).filter(k=>S.prefs[k]!==PADRAO[k]);}
+function principal(){return S.aparelhos.find(a=>a.princ)||null;}
+
+function vPerfil(){
+  if(S.psec==="novidades")return vNovidades();
+  const sec=S.psec;
+  let h='<div class="pad larga">';
+  if(sec!=="visao")h+='<button class="volta" data-a="psec" data-v="visao">‹ Perfil e conta</button>';
+  h+='<div class="pcab"><span class="ava">EA</span><div><h1>Erik Abner</h1>'+
+    '<div class="h">erik@exemplo.com · na conta desde 6 de agosto de 2026</div></div></div>';
+  h+='<div class="parea"><div class="prail">'+PSECS.map(p=>{
+      const al=p[0]==="pref"&&alterados().length;
+      return '<button data-a="psec" data-v="'+p[0]+'" aria-current="'+(sec===p[0])+'">'+p[1]+
+        (al?'<span class="pt pt-at" title="'+al+' alterado"></span>':'')+'</button>';
+    }).join("")+'</div><div>'+
+    (sec==="visao"?pVisao():sec==="conta"?pConta():sec==="disp"?pDisp():
+     sec==="pref"?pPref():sec==="priv"?pPriv():pHist())+
+    '</div></div></div>';
+  return h;
+}
+function pVisao(){
+  const p=principal(),al=alterados();
+  let h='';
+  if(!p)h+='<div class="atencao"><i class="pt pt-at" style="margin-top:5px"></i><div>'+
+    '<b>Nenhum Kindle cadastrado</b><p>Sem um aparelho salvo, cada envio pede o endereço de novo.</p>'+
+    '<div class="acoes" style="margin-top:var(--s3)"><button class="btnO" data-a="folha" data-v="ap-novo">'+
+    'Adicionar um Kindle</button></div></div></div>';
+  h+='<div class="pcards">'+
+    pC("conta","Conta","Erik Abner · erik@exemplo.com","")+
+    pC("disp","Dispositivos Kindle",S.aparelhos.length===0?"Nenhum aparelho":
+       S.aparelhos.length+" aparelho"+(S.aparelhos.length>1?"s":"")+(p?" · "+p.nome+" é o principal":""),
+       S.aparelhos.length?"":"at")+
+    pC("pref","Preferências","Modo "+ROTULO.modo[S.prefs.modo].toLowerCase()+" · movimento "+
+       ROTULO.movimento[S.prefs.movimento].toLowerCase()+(al.length?" · "+al.length+" fora do padrão":""),
+       al.length?"al":"")+
+    pC("priv","Privacidade","O que é guardado, o que é medido, por quanto tempo","")+
+    pC("hist","Histórico","O que você mudou nesta conta, e de onde","")+
+  '</div>';
+  h+='<div class="grupoP" style="margin-top:var(--s6)"><h3>Atividade recente</h3>'+
+    HIST.slice(0,3).map(x=>'<button class="histl" data-a="hist-abrir" data-v="'+esc(x[2])+'">'+
+      '<span class="h">'+x[1]+'</span><span class="t">'+esc(x[2])+'</span>'+
+      '<span class="o">'+x[3]+'</span></button>').join("")+
+    '<button class="lnk mudo" data-a="psec" data-v="hist" style="margin-top:var(--s3)">Ver o histórico →</button></div>';
+  h+='<div class="nota"><span>◆</span><div><b>Não existe uma área de Configurações.</b> Ela era um item de '+
+    'menu que competia com os lugares onde se trabalha. O que muda o comportamento de uma tela mora naquela '+
+    'tela e sobe a padrão aqui por ato deliberado — é a regra do caderno 02.</div></div>';
+  return h;
+}
+function pC(v,nm,rs,estado){
+  return '<button class="pcard" data-a="psec" data-v="'+v+'"><span><span class="nm">'+nm+'</span>'+
+    '<span class="rs">'+rs+'</span></span><span class="ch">'+
+    (estado==="at"?'<span class="selo al">precisa de você</span> ':estado==="al"?'<span class="selo al">alterado</span> ':'')+'›</span></button>';
+}
+function pConta(){
+  const campo=(k,rot,val,extra,editavel)=>{
+    if(S.pedit===k)return '<div class="campo"><span class="k">'+rot+'</span>'+
+      '<div class="campoedit"><input id="pcampo" value="'+esc(S.prasc)+'" autocomplete="off">'+
+      '</div><div class="acoes" style="margin:0">'+
+      '<button class="btnO forte" data-a="p-salvar" data-v="'+k+'">Salvar</button>'+
+      '<button class="lnk mudo" data-a="p-cancelar">Cancelar</button></div></div>';
+    return '<div class="campo"><span class="k">'+rot+'</span>'+
+      '<span class="v">'+esc(val)+(extra?'<small>'+extra+'</small>':'')+'</span>'+
+      (editavel?'<button class="lnk" data-a="p-editar" data-v="'+k+'">alterar</button>':
+        '<span class="selo">não muda</span>')+'</div>';
+  };
+  let h='';
+  if(S.pest==="salvo")h+='<div class="estado ok" style="margin-bottom:var(--s5)"><i class="pt pt-ok"></i>'+
+    '<div><h2>Salvo</h2><p>A alteração já vale, e está registrada no histórico.</p></div></div>';
+  if(S.pest==="erro")h+='<div class="estado at" style="margin-bottom:var(--s5)"><i class="pt pt-er"></i>'+
+    '<div><h2>Não consegui salvar</h2><p>A conexão caiu no meio. O valor antigo continua valendo — '+
+    'tente de novo, nada se perdeu.</p><div class="acoes" style="margin-top:var(--s3)">'+
+    '<button class="btnO" data-a="p-editar" data-v="nome">Tentar de novo</button></div></div></div>';
+  if(S.pest==="salvando")h+='<div class="estado" style="margin-bottom:var(--s5)"><i class="pt pt-go"></i>'+
+    '<div><h2>Salvando…</h2></div></div>';
+  h+='<div style="background:var(--branco);padding:0 var(--s4)">'+
+    campo("nome","Nome",S.nome&&S.pedit!=="nome"?S.nome:"Erik Abner","Aparece só para você.",true)+
+    campo("email","E-mail","erik@exemplo.com","É por onde entramos em contato e como você entra.",true)+
+    campo("entrada","Na conta desde","6 de agosto de 2026","",false)+
+  '</div>';
+  h+='<div class="pendencia"><span>◆</span><div><b>Decisão de produto pendente.</b> Senha, entrada por '+
+    'provedor e verificação em duas etapas não aparecem aqui porque <b>autenticação ainda não existe</b> no '+
+    'produto — o registro marca <span class="mono">authentication: not_implemented</span>. Desenhar uma tela '+
+    'de segurança agora seria inventar o que ela protege.</div></div>';
+  h+='<div class="pendencia"><span>◆</span><div>Não há plano nem cobrança no registro do projeto, então não '+
+    'existe seção de assinatura. Se um dia existir, ela entra aqui — e não numa área nova.</div></div>';
+  return h;
+}
+function pDisp(){
+  let h='';
+  if(S.pest==="ap-salvo")h+='<div class="estado ok" style="margin-bottom:var(--s5)"><i class="pt pt-ok"></i>'+
+    '<div><h2>Aparelho salvo</h2><p>Ele já aparece como opção de envio.</p></div></div>';
+  if(S.pest==="ap-removido")h+='<div class="estado ok" style="margin-bottom:var(--s5)"><i class="pt pt-ok"></i>'+
+    '<div><h2>Aparelho removido</h2><p>Os arquivos que você já enviou continuam no aparelho.</p></div></div>';
+  if(S.aparelhos.length===0){
+    h+='<div class="vazio"><b>Nenhum Kindle cadastrado</b>'+
+      '<p>Guardar o endereço aqui deixa o envio a um clique. Sem ele, o Mekora pergunta o endereço a cada vez.</p>'+
+      '<button class="btnO forte" data-a="folha" data-v="ap-novo">Adicionar um Kindle</button></div>'+
+      '<button class="lnk" data-a="artigo-ctx" data-v="Como encontrar meu endereço Kindle" '+
+      'style="margin-top:var(--s4);display:inline-block">Como encontrar meu endereço Kindle?</button>';
+    return h;
+  }
+  h+='<div style="background:var(--branco)">'+S.aparelhos.map(a=>
+    '<div class="ap"><div><span class="nm">'+esc(a.nome)+
+    (a.princ?' <span class="selo ok">principal</span>':'')+'</span>'+
+    '<span class="em">'+esc(a.email)+'</span>'+
+    '<span class="us">'+esc(a.modelo)+' · último envio '+esc(a.uso)+'</span></div>'+
+    '<div class="acoes" style="margin:0">'+
+    (a.princ?'':'<button class="lnk mudo" data-a="ap-princ" data-v="'+a.id+'">tornar principal</button>')+
+    '<button class="lnk" data-a="ap-editar" data-v="'+a.id+'">editar</button></div></div>').join("")+'</div>';
+  h+='<div class="acoes"><button class="btnO" data-a="folha" data-v="ap-novo">Adicionar outro Kindle</button>'+
+    '<button class="lnk mudo" data-a="artigo-ctx" data-v="Como encontrar meu endereço Kindle">'+
+    'Como encontrar meu endereço Kindle?</button></div>';
+  h+='<div class="nota"><span>◆</span><div>O aparelho principal é o que define o tamanho das páginas quando '+
+    'o arquivo é um quadrinho, e é para ele que o botão de enviar aponta sem perguntar.</div></div>';
+  return h;
+}
+function pPref(){
+  const al=alterados();
+  const grupo=(tit,itens)=>'<div class="grupoP"><h3>'+tit+'</h3><div>'+itens+'</div></div>';
+  const escolha=(k,rot,ds,ops)=>{
+    const mudou=S.prefs[k]!==PADRAO[k];
+    return '<div style="background:var(--branco);margin-bottom:var(--s2)">'+
+      '<div style="padding:var(--s4) var(--s4) var(--s2);display:flex;gap:var(--s3);align-items:baseline;flex-wrap:wrap">'+
+      '<b style="font-size:14px">'+rot+'</b>'+(mudou?'<span class="selo al">alterado</span>':'')+
+      (mudou?'<button class="lnk mudo" data-a="pref-restaura" data-v="'+k+'" style="margin-left:auto">restaurar padrão</button>':'')+
+      (ds?'<p style="width:100%;margin:4px 0 0;font-size:12.5px;color:var(--ink-2);line-height:1.55">'+ds+'</p>':'')+'</div>'+
+      ops.map(o=>'<button class="opcao" data-a="pref" data-v="'+k+':'+o[0]+'" aria-pressed="'+(S.prefs[k]===o[0])+'">'+
+        '<span class="radio"></span><span><span class="nm">'+o[1]+'</span>'+
+        (o[2]?'<span class="ds">'+o[2]+'</span>':'')+'</span></button>').join("")+'</div>';
+  };
+  let h='';
+  if(al.length)h+='<div class="atencao" style="background:var(--bg-2);box-shadow:inset 2px 0 0 var(--ink)">'+
+    '<i class="pt" style="background:var(--ink);margin-top:5px"></i><div><b>'+al.length+
+    ' preferência'+(al.length>1?"s":"")+' fora do padrão</b>'+
+    '<p>'+al.map(k=>ROTULO[k][S.prefs[k]]).join(" · ")+'</p>'+
+    '<div class="acoes" style="margin-top:var(--s3)"><button class="btnO" data-a="folha" data-v="pref-reset">'+
+    'Restaurar tudo ao padrão</button></div></div></div>';
+  h+=grupo("Experiência",
+    escolha("modo","Modo ao abrir um arquivo",
+      "Vale para os <b>próximos</b> arquivos. Nada muda no que já está preparado ou em preparo.",
+      [["guiado","Guiado","O Mekora decide, mostra a decisão em texto e pede confirmação uma vez."],
+       ["personalizado","Personalizado","Abre com os controles à vista, já preenchidos com o que o Guiado faria."]])+
+    escolha("onboarding","Dicas de primeiro uso","",
+      [["auto","Aparecem quando são úteis","Somem sozinhas depois que você faz a coisa uma vez."],
+       ["nunca","Não mostrar","Dá para reativar em Ajuda e recursos."]]));
+  h+=grupo("Arquivos e resultados",
+    escolha("baixar","Quando um arquivo fica pronto","",
+      [["nao","Não baixar sozinho","Você é avisado na Mesa e decide."],
+       ["sim","Baixar quando ficar pronto","O navegador pode perguntar onde salvar a cada vez."]])+
+    escolha("formato","Formato de saída","",
+      [["auto","Decidir pelo arquivo","Texto vira EPUB; quadrinho vira arquivo de imagem no tamanho do aparelho."],
+       ["epub","Sempre EPUB","Mesmo em quadrinho, o que costuma piorar o resultado."]]));
+  h+=grupo("Interface",
+    escolha("movimento","Movimento",
+      "Não é decoração: o movimento explica de onde uma tela veio, no canvas e nas folhas que abrem por cima.",
+      [["auto","Seguir o sistema","Respeita a preferência de redução de movimento do seu computador."],
+       ["reduzido","Reduzido","Transições viram troca imediata. Nada se move."],
+       ["completo","Completo","Mesmo se o sistema pedir redução."]])+
+    escolha("tema","Tema","",[["claro","Claro",""],["escuro","Escuro",""]]));
+  h+='<div class="nota"><span>◆</span><div>Só entra aqui o ajuste que vale para <b>tudo o que vier depois</b>. '+
+    'Corpo da letra, entrelinha e largura da coluna moram no leitor, no <b>Aa</b>; contraste e brilho moram no '+
+    'editor de páginas. Preferências é espelho, não fonte — a regra é do caderno 02.</div></div>';
+  return h;
+}
+function pPriv(){
+  let h='';
+  if(S.pest==="hist-limpo")h+='<div class="estado ok" style="margin-bottom:var(--s5)"><i class="pt pt-ok"></i>'+
+    '<div><h2>Histórico apagado</h2><p>Os seus livros e preferências continuam intactos.</p></div></div>';
+  h+='<div class="grupoP"><h3>Seus arquivos</h3><div style="background:var(--branco);padding:0 var(--s4)">'+
+    '<div class="campo"><span class="k">O original</span><span class="v">Guardado enquanto o livro existir'+
+    '<small>É ele que permite refazer a preparação com outras opções, sem você enviar de novo.</small></span>'+
+    '<span class="selo pend">pendente</span></div>'+
+    '<div class="campo"><span class="k">O resultado</span><span class="v">Fica na sua estante'+
+    '<small>Sai quando você remove o livro.</small></span><span></span></div>'+
+    '<div class="campo"><span class="k">Conteúdo</span><span class="v">Não é lido por pessoa nenhuma'+
+    '<small>O texto que sai do reconhecimento serve ao seu arquivo e não é usado para mais nada.</small></span>'+
+    '<span></span></div></div>'+
+    '<div class="pendencia"><span>◆</span><div><b>Prazo de retenção ainda não decidido.</b> Marquei como '+
+    'pendente em vez de escrever um número: uma política de privacidade inventada no protótipo vira promessa '+
+    'no produto. <button class="lnk" data-a="artigo-ctx" data-v="Como o Mekora trata meus arquivos" '+
+    'style="padding:0">Como o Mekora trata meus arquivos?</button></div></div></div>';
+  h+='<div class="grupoP"><h3>Dados de uso</h3><div style="background:var(--branco);padding:0 var(--s4)">'+
+    '<div class="campo"><span class="k">O que é medido</span><span class="v">Onde você clica e onde trava'+
+    '<small>Serve para descobrir o que está confuso na interface.</small></span>'+
+    '<button class="sw" data-a="nada" aria-pressed="true" aria-label="Medir uso"><i></i></button></div>'+
+    '<div class="campo"><span class="k">O que nunca é medido</span><span class="v">O conteúdo dos seus arquivos'+
+    '<small>Nem o texto que sai do reconhecimento, nem o nome dos arquivos em evento de uso.</small></span>'+
+    '<span class="selo ok">regra fixa</span></div>'+
+    '<div class="campo"><span class="k">Suas respostas de pendência</span>'+
+    '<span class="v">Viram exemplo para o Mekora aprender'+
+    '<small>Guardamos a resposta e as medidas das páginas — não as imagens.</small></span>'+
+    '<button class="sw" data-a="nada" aria-pressed="true" aria-label="Usar minhas respostas"><i></i></button></div></div>'+
+    '<p style="font-size:12.5px;color:var(--ink-3);line-height:1.55;margin-top:var(--s3)">'+
+    'Esta parte não é pendente: está registrada como decisão do projeto — a instrumentação mede a interface e '+
+    'nunca o conteúdo.</p></div>';
+  h+='<div class="grupoP"><h3>Seus dados</h3><div style="background:var(--branco)">'+
+    '<div class="ap"><div><span class="nm">Baixar tudo o que é seu</span>'+
+    '<span class="us">Estante, preferências, dispositivos e histórico, num arquivo só.</span></div>'+
+    '<button class="btnO" data-a="aviso-x" data-v="Preparando o arquivo. Avisamos por e-mail quando estiver pronto.">Baixar</button></div>'+
+    '<div class="ap"><div><span class="nm">Apagar o histórico da conta</span>'+
+    '<span class="us">Some o diário do que você mudou. Livros, preferências e dispositivos ficam.</span></div>'+
+    '<button class="btnO" data-a="folha" data-v="limpar-hist">Apagar</button></div></div></div>';
+  h+='<div class="perigo"><b>Apagar a conta</b>'+
+    '<p>Sai tudo: a estante, os arquivos originais, o que você marcou, os dispositivos e o histórico. '+
+    'Não há como desfazer, e não guardamos cópia.</p>'+
+    '<button class="btnD" data-a="folha" data-v="apagar-conta">Apagar minha conta</button></div>';
+  return h;
+}
+function pHist(){
+  if(S.histErro)return '<div class="vazio"><b>Não consegui carregar o histórico</b>'+
+    '<p>O resto da sua conta está funcionando normalmente — é só esta lista que não veio.</p>'+
+    '<button class="btnO forte" data-a="hist-estado" data-v="ok">Tentar de novo</button></div>'+
+    estadosHist();
+  if(S.histVazio)return '<div class="vazio"><b>Nada mudou ainda</b>'+
+    '<p>Aqui aparece o que você alterar na conta: preferências, dispositivos, nome. '+
+    'O que aconteceu com os seus arquivos fica na Mesa e na Estante — este histórico não duplica aquele.</p>'+
+    '<button class="btnO" data-a="psec" data-v="pref">Ir para Preferências</button></div>'+
+    estadosHist();
+  let h='<p style="font-size:13px;color:var(--ink-2);line-height:1.6;margin:0 0 var(--s3);max-width:60ch">'+
+    'O que você mudou <b>nesta conta</b>, e de onde. O histórico dos seus arquivos — o que foi preparado, '+
+    'convertido e enviado — fica na Mesa e na Estante, e não é repetido aqui.</p>';
+  let dia="";
+  HIST.forEach(x=>{
+    if(x[0]!==dia){dia=x[0];h+='<div class="histdia">'+dia+'</div>';}
+    h+='<button class="histl" data-a="hist-abrir" data-v="'+esc(x[2])+'">'+
+      '<span class="h">'+x[1]+'</span><span class="t">'+esc(x[2])+'</span>'+
+      '<span class="o">'+x[3]+' · '+x[4]+'</span></button>';
+  });
+  h+='<div class="pendencia"><span>◆</span><div>Seis registros não pedem busca nem filtro. Se um dia o '+
+    'histórico crescer a ponto de exigir, isso entra — e não antes, porque filtro em lista curta é peso sem uso.'+
+    '</div></div>';
+  return h+estadosHist();
+}
+function estadosHist(){
+  return '<div class="acoes" style="margin-top:var(--s5)">'+
+    '<span style="font-family:var(--mono);font-size:var(--t-mono);color:var(--ink-3);letter-spacing:.06em">'+
+    'ESTADOS PARA TESTAR</span>'+
+    '<button class="lnk mudo" data-a="hist-estado" data-v="ok">com registros</button>'+
+    '<button class="lnk mudo" data-a="hist-estado" data-v="vazio">vazio</button>'+
+    '<button class="lnk mudo" data-a="hist-estado" data-v="erro">erro</button></div>';
+}
 function rowP(t,d,tag,bt){
   return '<div class="row"><div class="tx"><b>'+t+'</b><span>'+d+'</span></div>'+
     (tag?'<span class="espelho">'+tag+'</span>':'')+
@@ -1145,7 +1516,8 @@ function vFolha(){
   if(f==="capa")return folha("Capa","Este arquivo não tem capa",
     '<div style="display:flex;gap:var(--s4);align-items:flex-start">'+
     '<img src="'+capa(ARQ.gerada)+'" alt="Capa gerada" style="width:140px;border:1px solid var(--line);'+
-    'border-radius:var(--r1);flex:0 0 140px">'+
+
+'border-radius:var(--r1);flex:0 0 140px">'+
     '<div><p style="margin:0 0 var(--s3);font-size:14px;line-height:1.6;color:var(--ink-2)">'+
     'Montei uma com o título, o autor e o formato, na mesma linguagem das outras capas da sua estante. '+
     'Ela vai para o EPUB e para a biblioteca do Kindle.</p>'+
@@ -1221,7 +1593,8 @@ function vFolha(){
   if(f==="nota")return folha("Nota","Sobre o silêncio de duas horas",
     '<blockquote class="lq" style="width:100%;margin:0 0 var(--s4)">Anotar o que se vê é mais difícil do que parece.</blockquote>'+
     '<p style="margin:0;font-family:var(--serif);font-size:var(--t-leitura);line-height:var(--lh-leitura);'+
-    'color:var(--ink-2)">A nota de rodapé do original virou marca clicável no texto. No PDF ela era um '+
+
+'color:var(--ink-2)">A nota de rodapé do original virou marca clicável no texto. No PDF ela era um '+
     'número que não levava a lugar nenhum — o Kindle não sabia que existia relação entre os dois.</p>',
     '<button class="btnO" data-a="fechar">Fechar</button>');
   if(f==="busca"){
@@ -1239,7 +1612,8 @@ function vFolha(){
       return folha("Ajuda · "+g,art[0],
         '<p style="margin:0 0 var(--s4);font-size:1.05rem;line-height:1.45;font-weight:600">'+art[1]+'</p>'+
         '<p style="margin:0;font-family:var(--serif);font-size:var(--t-leitura);line-height:var(--lh-leitura);'+
-        'color:var(--ink-2)">'+art[2]+'</p>',
+
+'color:var(--ink-2)">'+art[2]+'</p>',
         '<button class="lnk mudo" data-a="folha" data-v="ajuda">‹ Todos os assuntos</button>'+
         '<button class="btnO" data-a="fechar">Entendi</button>');
     }
@@ -1298,8 +1672,10 @@ function vFolha(){
         '<p style="font-size:11.5px;color:var(--ink-3);line-height:1.5;margin:var(--s3) 4px 0">'+
         'Clique para selecionar. A seleção acumula — não precisa segurar tecla.</p></div>'+
       '<div class="pgrade">'+lista.map(p=>'<button class="pg2'+
-        (p.semtexto?" semtexto":"")+(p.dim?" dim":"")+(S.fora.includes(p.n)?" fora":"")+
-        (S.giradas.includes(p.n)?" girada":"")+'" data-a="selp" data-v="'+p.n+'" '+
+
+(p.semtexto?" semtexto":"")+(p.dim?" dim":"")+(S.fora.includes(p.n)?" fora":"")+
+
+(S.giradas.includes(p.n)?" girada":"")+'" data-a="selp" data-v="'+p.n+'" '+
         'aria-pressed="'+(S.sel.includes(p.n))+'"><span class="im"><i></i>'+
         (S.capaPag===p.n?'<span class="tag2">capa</span>':p.semtexto?'<span class="tag2 er">sem texto</span>':
          p.dim?'<span class="tag2 al">largura</span>':'')+
@@ -1336,9 +1712,11 @@ function vFolha(){
       '<div class="prev"><div class="aparelhoQ">'+
         '<div class="telaQ'+(S.orient==="paisagem"?" paisagem":"")+(S.formato==="pdf"?" pdf":"")+'" id="telaQ">'+
           '<div class="rolo2" id="rolo2" style="font-size:'+CORPOS[S.fonte]+'px;line-height:'+
-          (S.formato==="pdf"?1.4:1.5)+'">'+
+
+(S.formato==="pdf"?1.4:1.5)+'">'+
           (S.formato==="pdf"?'<div style="transform:scale('+(S.orient==="paisagem"?.62:.46)+');'+
-            'transform-origin:top left;width:'+(S.orient==="paisagem"?161:217)+'%">':'')+
+
+'transform-origin:top left;width:'+(S.orient==="paisagem"?161:217)+'%">':'')+
           TRECHO.map(t=>'<p>'+esc(t)+'</p>').join("")+
           (S.formato==="pdf"?'</div>':'')+'</div>'+
           '<span class="marcaQ"><span>'+esc(ARQ.titulo)+'</span><span id="pagQ">—</span></span>'+
@@ -1365,6 +1743,106 @@ function vFolha(){
     'O original continua com o nome que tinha quando chegou.</div></div>',
     '<button class="lnk mudo" data-a="fechar">Cancelar</button>'+
     '<button class="btnO forte" data-a="salvar-nome">Salvar</button>');
+  if(f==="ap-novo"||f==="ap-edit"){
+    const ed=f==="ap-edit",a=ed?S.aparelhos.find(x=>x.id===S.apEdit):null;
+    const r=S.apRasc||{};
+    const invalido=r.email!==undefined&&r.email!==""&&!/@kindle\.com$/.test(r.email);
+    return folha(ed?"Dispositivo":"Novo dispositivo",ed?esc(a.nome):"Adicionar um Kindle",
+      '<div class="campo" style="border:none;padding-top:0"><span class="k">Como você chama</span>'+
+      '<div class="campoedit"><input id="apNome" value="'+esc(r.nome!==undefined?r.nome:(a?a.nome:""))+
+
+'" placeholder="Kindle da sala" autocomplete="off"></div><span></span></div>'+
+      '<div class="campo"><span class="k">Endereço Kindle</span>'+
+      '<div class="campoedit"><input id="apEmail" value="'+esc(r.email!==undefined?r.email:(a?a.email:""))+
+
+'" placeholder="alguma-coisa@kindle.com" autocomplete="off"'+
+      (invalido?' style="border-color:var(--dan)"':'')+'></div><span></span></div>'+
+      (invalido?'<p style="margin:0 0 var(--s3);font-size:12.5px;color:var(--dan);line-height:1.5">'+
+        'Falta o final <b>@kindle.com</b>. É o endereço que a Amazon dá ao aparelho, não o seu e-mail de login.</p>':'')+
+      '<button class="opcao" data-a="ap-rasc" data-v="princ" aria-pressed="'+(r.princ||(a&&a.princ))+'" '+
+      'style="border:1px solid var(--line);margin-top:var(--s2)"><span class="radio"></span>'+
+      '<span><span class="nm">Usar como principal</span><span class="ds">É para ele que o botão de enviar '+
+      'aponta, e é ele que define o tamanho das páginas nos quadrinhos.</span></span></button>'+
+      '<div class="nota"><span>◆</span><div>Depois de salvar, autorize <b>envio@mekora.app</b> na sua conta '+
+      'da Amazon — sem isso o Kindle recusa o arquivo. '+
+      '<button class="lnk" data-a="artigo-ctx" data-v="Como encontrar meu endereço Kindle" style="padding:0">'+
+      'Como encontro esse endereço?</button></div></div>',
+      (ed?'<button class="lnk mudo" style="color:var(--dan);margin-right:auto" data-a="folha" data-v="ap-remover">Remover</button>':'')+
+      '<button class="lnk mudo" data-a="fechar">'+(ed?"Cancelar":"Fazer depois")+'</button>'+
+      '<button class="btnO forte" data-a="ap-salvar">Salvar</button>');
+  }
+  if(f==="ap-remover"){
+    const a=S.aparelhos.find(x=>x.id===S.apEdit)||S.aparelhos[0];
+    const era=a&&a.princ,outro=S.aparelhos.find(x=>x.id!==a.id);
+    return folha("Remover","Remover "+esc(a?a.nome:"aparelho")+"?",
+      '<p style="margin:0;font-size:var(--t-leitura);font-family:var(--serif);line-height:var(--lh-leitura);color:var(--ink-2)">'+
+      'Ele deixa de aparecer como opção de envio. <b>Os arquivos que você já enviou continuam no aparelho</b> — '+
+      'remover aqui não apaga nada lá.</p>'+
+      (era&&outro?'<div class="nota"><span>◆</span><div>Era o principal. '+esc(outro.nome)+
+        ' assume o lugar, e passa a definir o tamanho das páginas nos quadrinhos.</div></div>':'')+
+      (era&&!outro?'<div class="nota"><span>◆</span><div>Era o único aparelho. Sem nenhum, cada envio volta a '+
+        'pedir o endereço.</div></div>':''),
+      '<button class="lnk mudo" data-a="fechar">Manter</button>'+
+      '<button class="btnD" data-a="ap-remove-ok">Remover</button>');
+  }
+  if(f==="pref-reset")return folha("Preferências","Restaurar tudo ao padrão?",
+    '<p style="margin:0 0 var(--s3);font-size:14px;line-height:1.6;color:var(--ink-2)">Volta '+
+    alterados().length+' preferência'+(alterados().length>1?"s":"")+' ao que vinha de fábrica:</p>'+
+    '<div class="lista">'+alterados().map(k=>'<div class="li"><span class="sn s-in">·</span>'+
+      '<span class="tx"><b>'+ROTULO[k][S.prefs[k]]+' → '+ROTULO[k][PADRAO[k]]+'</b></span><span></span></div>').join("")+'</div>'+
+    '<div class="nota"><span>◆</span><div>Não mexe em arquivo nenhum, nem no que já está preparado.</div></div>',
+    '<button class="lnk mudo" data-a="fechar">Cancelar</button>'+
+    '<button class="btnO forte" data-a="pref-reset-ok">Restaurar</button>');
+  if(f==="limpar-hist")return folha("Histórico","Apagar o histórico da conta?",
+    '<p style="margin:0;font-size:var(--t-leitura);font-family:var(--serif);line-height:var(--lh-leitura);color:var(--ink-2)">'+
+    'Some o registro do que você mudou — seis entradas. <b>A sua estante, as preferências e os dispositivos '+
+    'continuam exatamente como estão.</b></p>'+
+    '<div class="nota"><span>◆</span><div>É a única coisa que se apaga aqui, e ela não guarda nada sobre os '+
+    'seus arquivos.</div></div>',
+    '<button class="lnk mudo" data-a="fechar">Manter</button>'+
+    '<button class="btnD" data-a="hist-limpar-ok">Apagar histórico</button>');
+  if(f==="apagar-conta"){
+    const ok=(S.prasc||"").trim().toLowerCase()==="apagar";
+    return folha("Irreversível","Apagar a conta de Erik Abner",
+      '<p style="margin:0 0 var(--s4);font-size:var(--t-leitura);font-family:var(--serif);'+
+
+'line-height:var(--lh-leitura);color:var(--ink-2)">Sai tudo, e não guardamos cópia:</p>'+
+      '<div class="lista">'+
+        li("er","✕","14 livros da estante","Com as capas, incluindo as que o Mekora montou.","","")+
+        li("er","✕","Os arquivos originais","Não dá para refazer a preparação depois.","","")+
+        li("er","✕","O que você marcou","Destaques e notas, presos aos trechos.","","")+
+        li("er","✕","2 dispositivos e o histórico","","","")+
+      '</div>'+
+      '<p style="margin:var(--s4) 0 var(--s2);font-size:13.5px">Para confirmar, escreva <b>apagar</b>:</p>'+
+      '<input id="pcampo" class="campoB" value="'+esc(S.prasc||"")+'" autocomplete="off" placeholder="apagar">'+
+      '<div class="nota"><span>◆</span><div>Depois disto mandamos um e-mail para <b>erik@exemplo.com</b> com '+
+      'um link de confirmação. A conta só sai quando você clicar nele — dá para desistir até lá.</div></div>',
+      '<button class="lnk mudo" data-a="fechar">Cancelar</button>'+
+      '<button class="btnD"'+(ok?'':' disabled style="opacity:.4;cursor:not-allowed"')+
+      ' data-a="'+(ok?"conta-apagar-ok":"nada")+'">Apagar minha conta</button>');
+  }
+  if(f==="sair-processando")return folha("Sair","Há um arquivo sendo preparado",
+    '<p style="margin:0;font-size:var(--t-leitura);font-family:var(--serif);line-height:var(--lh-leitura);color:var(--ink-2)">'+
+    '<b>Censo de Fauna — digitalização.pdf</b> está no meio do reconhecimento de texto. O trabalho continua '+
+    'do lado do Mekora mesmo se você sair — quando entrar de novo, ele estará na Mesa, pronto ou em curso.</p>'+
+    '<div class="nota"><span>◆</span><div>Não perde nada. Só não dá para acompanhar de fora da conta.</div></div>',
+    '<button class="lnk mudo" data-a="fechar">Ficar</button>'+
+    '<button class="btnO forte" data-a="sair-ok">Sair mesmo assim</button>');
+  if(f==="hist-item"){
+    const x=HIST.find(y=>y[2]===S.prasc)||HIST[0];
+    return folha("Histórico · "+x[0]+", "+x[1],esc(x[2]),
+      '<div style="background:var(--branco);padding:0 var(--s4)">'+
+      '<div class="campo"><span class="k">Onde</span><span class="v">'+x[3]+'</span><span></span></div>'+
+      '<div class="campo"><span class="k">Quando</span><span class="v">'+x[0]+', '+x[1]+'</span><span></span></div>'+
+      '<div class="campo"><span class="k">De onde</span><span class="v">'+x[4]+
+      '<small>É o que dá para saber com honestidade hoje.</small></span><span></span></div></div>'+
+      '<div class="pendencia"><span>◆</span><div>Navegador, sistema e cidade só apareceriam aqui se '+
+      'existissem de verdade. Como autenticação ainda não está implementada, não há sessão para descrever — '+
+      'inventar essa telemetria seria preencher a interface com o que o produto não sabe.</div></div>',
+      '<button class="btnO" data-a="psec" data-v="'+(x[3]==="Dispositivos"?"disp":x[3]==="Conta"?"conta":"pref")+
+
+'">Ir para '+x[3]+'</button>');
+  }
   if(f==="aviso")return folha("Simulação",S.aviso||"Ação representada",
     '<p style="margin:0;font-size:14px;line-height:1.65;color:var(--ink-2)">Este é um protótipo: o controle existe, '+
     'tem estado e leva a algum lugar, mas nada é gravado e nenhum arquivo real é tocado.</p>',
@@ -1405,7 +1883,7 @@ function corpo(){
   if(S.lugar==="estante")return vEstante();
   if(S.lugar==="canvas")return vCanvas("Canvas");
   if(S.lugar==="conexoes")return vCanvas("Conexões");
-  if(S.lugar==="perfil")return vPerfil();
+  if(S.lugar==="perfil"||S.lugar==="novidades")return vPerfil();
   return vMesa();
 }
 function pinta(){
@@ -1444,6 +1922,12 @@ function pinta(){
     medir();                     /* leitura de clientHeight já força o layout */
     setTimeout(medir,60);        /* segunda passada, depois de a fonte assentar */
   }
+  /* confirmação por digitação: o botão só liga quando a palavra confere */
+  const pc=document.getElementById("pcampo");
+  if(pc&&S.folha==="apagar-conta"){
+    pc.focus();pc.setSelectionRange(pc.value.length,pc.value.length);
+    pc.addEventListener("input",()=>{S.prasc=pc.value;pinta();});
+  }else if(pc){pc.focus();pc.setSelectionRange(pc.value.length,pc.value.length);}
   const campo=document.getElementById("campoBusca");
   if(campo){
     campo.focus();campo.setSelectionRange(campo.value.length,campo.value.length);
@@ -1539,6 +2023,58 @@ app.addEventListener("click",ev=>{
     case "salvar-nome":{const c=document.getElementById("campoNome");
       if(c)S.nome=c.value;S.folha=null;break;}
     case "aviso-x":S.folha=null;aviso(v);break;
+    /* ── Perfil e conta ── */
+    case "psec":S.psec=v;S.lugar="perfil";S.pedit=null;S.pest=null;S.folha=null;break;
+    case "p-editar":S.pedit=v;S.pest=null;S.prasc=v==="nome"?(S.nome||"Erik Abner"):"erik@exemplo.com";break;
+    case "p-cancelar":S.pedit=null;S.prasc="";S.pest=null;break;
+    case "p-salvar":{
+      const c=document.getElementById("pcampo"),val=c?c.value.trim():"";
+      S.pedit=null;
+      if(v==="email"&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(val)){S.pest="erro";break;}
+      if(v==="nome"&&val)S.nome=val;
+      S.pest="salvando";pinta();
+      setTimeout(()=>{S.pest=Math.random()<0.001?"erro":"salvo";pinta();},700);
+      return;}
+    case "ap-editar":S.apEdit=v;S.apRasc={};S.folha="ap-edit";break;
+    case "ap-rasc":S.apRasc.princ=!S.apRasc.princ;break;
+    case "ap-princ":S.aparelhos.forEach(a=>a.princ=a.id===v);S.pest="ap-salvo";break;
+    case "ap-salvar":{
+      const n=document.getElementById("apNome"),e=document.getElementById("apEmail");
+      const nome=(n?n.value:"").trim(),email=(e?e.value:"").trim();
+      S.apRasc={nome:nome,email:email,princ:S.apRasc.princ};
+      if(!/@kindle\.com$/.test(email))break;              /* mantém a folha, com o erro à vista */
+      if(S.folha==="ap-edit"){
+        const a=S.aparelhos.find(x=>x.id===S.apEdit);
+        a.nome=nome||a.nome;a.email=email;
+        if(S.apRasc.princ)S.aparelhos.forEach(x=>x.princ=x.id===a.id);
+      }else{
+        const novo={id:"a"+(S.aparelhos.length+1),nome:nome||"Kindle",modelo:"Kindle",email:email,
+          uso:"ainda não usado",princ:S.apRasc.princ||S.aparelhos.length===0};
+        if(novo.princ)S.aparelhos.forEach(x=>x.princ=false);
+        S.aparelhos.push(novo);
+      }
+      S.folha=null;S.apRasc={};S.pest="ap-salvo";S.psec="disp";break;}
+    case "ap-remove-ok":{
+      const i=S.aparelhos.findIndex(x=>x.id===S.apEdit);
+      const era=i>=0&&S.aparelhos[i].princ;
+      if(i>=0)S.aparelhos.splice(i,1);
+      if(era&&S.aparelhos.length)S.aparelhos[0].princ=true;
+      S.folha=null;S.apEdit=null;S.pest="ap-removido";break;}
+    case "pref":{const[k,val]=v.split(":");S.prefs[k]=val;
+      if(k==="tema")document.documentElement.setAttribute("data-tema",val==="escuro"?"escuro":"claro");
+      break;}
+    case "pref-restaura":S.prefs[v]=PADRAO[v];
+      if(v==="tema")document.documentElement.setAttribute("data-tema","claro");break;
+    case "pref-reset-ok":Object.keys(PADRAO).forEach(k=>S.prefs[k]=PADRAO[k]);
+      document.documentElement.setAttribute("data-tema","claro");S.folha=null;break;
+    case "hist-estado":S.histVazio=v==="vazio";S.histErro=v==="erro";break;
+    case "hist-abrir":S.prasc=v;S.folha="hist-item";break;
+    case "hist-limpar-ok":S.folha=null;S.pest="hist-limpo";S.histVazio=true;S.psec="priv";break;
+    case "conta-apagar-ok":S.folha=null;S.prasc="";
+      aviso("E-mail de confirmação enviado para erik@exemplo.com. A conta só sai quando você clicar no link.");break;
+    case "artigo-ctx":S.folha="ajuda";S.ajuda=v;break;
+    case "sair":if(S.processando){S.folha="sair-processando";}else{S.conta=false;S.lugar="home";}break;
+    case "sair-ok":S.folha=null;S.conta=false;S.lugar="home";S.psec="visao";break;
     case "aa":{const[k,i]=v.split(":");
       if(k==="tema"){document.documentElement.setAttribute("data-tema",i==="1"?"escuro":"claro");S.tema=Number(i);}
       else S[k]=Number(i);break;}
@@ -1561,10 +2097,12 @@ ordem, e nunca prometer o que o sistema não pode cumprir.</p>
 <h3>As cinco regras de voz</h3>
 <ul>
 <li><b>Primeira pessoa para o sistema, segunda para você.</b> "Eu abro, conto as páginas e digo o que
+
 encontrei" — não "o sistema realiza a análise". O produto age; a pessoa decide.</li>
 <li><b>Nunca declarar o que não é medido.</b> "3 de 96 páginas abaixo do limite" pode; "confiança alta"
 não pode, a menos que exista contagem.</li>
 <li><b>Toda promessa é verificável.</b> "A Amazon aceitou o arquivo" é verificável. "Chegou no seu
+
 Kindle" não é, e por isso não aparece em lugar nenhum.</li>
 <li><b>O motivo vem junto quando muda a decisão.</b> "Converter para EPUB" sozinho não ensina;
 "no EPUB o texto reflui, em PDF não" ensina, e é a diferença entre confirmar e obedecer.</li>
@@ -1603,14 +2141,17 @@ Kindle" não é, e por isso não aparece em lugar nenhum.</li>
 de preparação que tinha acabado de construir, então ela herdou aquele escopo: seis faixas sobre
 converter, zero sobre a estante, o que você marcou e as conexões.</p>
 <p>O registro do projeto define o Mekora como <i>"ambiente pessoal de leitura e pesquisa que prepara
+
 documentos para Kindle e conecta biblioteca, notas, perguntas e dossiês como contexto reutilizável"</i>,
 e a <span class="mono">DEC-0018</span> pôs Estante, Canvas e Conexões dentro do MVP. A Home descrevia
 menos da metade disso — e justamente a metade que qualquer conversor gratuito também faz.</p>
 <p><b>O que mudou:</b> a promessa saiu de "seus arquivos viram livros" para <b>"uma estante para os
+
 livros que não vêm de loja"</b>, que nomeia o buraco real: a biblioteca do Kindle é para o que você
 comprou lá. Apareceu o segundo problema, que é o que fica — <i>o livro convertido vira mais um arquivo
 numa pasta</i>. Entrou a faixa "depois de pronto" e a faixa "para quem", com os dois leitores que você
 descreveu. E a conta deixou de pedir desculpa: <b>"a conta é a estante"</b> em vez de "converter não
+
 exige conta", que posicionava cadastro como fricção em vez de como o produto.</p>
 
 <h3>O que é estrutural e o que dá para trocar sem quebrar nada</h3>
