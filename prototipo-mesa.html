@@ -513,8 +513,65 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .pendencia{display:flex;gap:var(--s3);align-items:flex-start;padding:var(--s3) var(--s4);
   border:1px dashed var(--line-3);font-size:12.5px;color:var(--ink-2);line-height:1.55;margin-top:var(--s4)}
 
-/* ══ MESA ══ estado à esquerda, matéria à direita.
-   Sem card, sem sombra, sem KPI: número, rótulo e divisória. */
+/* ══ MESA REDUZIDA ══ uma página editorial que por acaso é interativa.
+   Quatro níveis com peso diferente: foco, exceção, estado do sistema,
+   biblioteca. O tratamento visual é o que separa as categorias — dar o
+   mesmo peso a todas foi o que produziu a sensação de painel. */
+.mlede{font-family:var(--serif);font-size:clamp(1.6rem,1.1rem + 1.5vw,2.5rem);line-height:1.14;
+  letter-spacing:-.02em;font-weight:400;margin:0;max-width:20ch;text-wrap:balance}
+.mtopo{display:flex;align-items:flex-end;gap:var(--s6);flex-wrap:wrap;
+  padding-bottom:var(--s7);margin-bottom:var(--s7);border-bottom:1px solid var(--line)}
+.mtopo .tx{flex:1;min-width:280px}
+.meyebrow{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3);display:block;margin-bottom:var(--s4)}
+/* 1 · foco — um item dominante, tratado como matéria de capa */
+.mfoco{display:grid;grid-template-columns:190px minmax(0,1fr);gap:var(--s6);align-items:start;
+  margin-bottom:var(--s8)}
+@media(max-width:680px){.mfoco{grid-template-columns:1fr;gap:var(--s4)}.mfoco img{max-width:150px}}
+.mfoco img{width:100%;height:auto;border:1px solid var(--line);background:var(--paper)}
+.mfoco h2{font-family:var(--serif);font-size:clamp(1.5rem,1.1rem + 1vw,2.1rem);line-height:1.1;
+  letter-spacing:-.02em;font-weight:400;margin:0 0 var(--s3)}
+.mfoco .onde{font-size:15px;line-height:1.6;color:var(--ink);margin:0 0 var(--s2)}
+.mfoco .desde{font-size:13.5px;line-height:1.6;color:var(--ink-3);margin:0 0 var(--s5)}
+/* 2 · exceção — chama atenção, e só existe quando existe */
+.mexc{border-top:1px solid var(--line);padding-top:var(--s4);margin-bottom:var(--s7)}
+.mexc .cab{display:flex;align-items:baseline;gap:var(--s3);margin-bottom:var(--s4)}
+.mexc .cab .r{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.16em;text-transform:uppercase;
+  color:var(--warn)}
+.mexc .cab .n{font-family:var(--mono);font-size:var(--t-mono);color:var(--ink-3);margin-left:auto}
+.mexc .it+.it{margin-top:var(--s5);padding-top:var(--s5);border-top:1px solid var(--line-2)}
+.mexc .nm{font-size:16px;font-weight:650;letter-spacing:-.01em;display:block}
+.mexc .pq{font-size:14px;color:var(--ink-2);line-height:1.6;margin:6px 0 var(--s4);max-width:52ch}
+/* 3 · estado do sistema — informa sem chamar */
+.mest{border-top:1px solid var(--line);padding-top:var(--s4);margin-bottom:var(--s7)}
+.mest .cab{display:flex;align-items:baseline;gap:var(--s3);margin-bottom:var(--s3)}
+.mest .cab .r{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3)}
+.mest .cab .n{font-family:var(--mono);font-size:var(--t-mono);color:var(--ink-3);margin-left:auto}
+.mest .it{display:flex;gap:var(--s3);align-items:baseline;flex-wrap:wrap;padding:7px 0;font-size:13.5px;
+  color:var(--ink-2)}
+.mest .it b{font-weight:600;color:var(--ink)}
+.mest .it .t{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.mest .it button{margin-left:auto}
+/* 4 · biblioteca — amostra, não cópia da Estante */
+.mbib{border-top:1px solid var(--line);padding-top:var(--s4)}
+.mbib .cab{display:flex;align-items:baseline;gap:var(--s3);margin-bottom:var(--s4)}
+.mbib .cab .r{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3)}
+.mbib .cab .n{font-family:var(--mono);font-size:var(--t-mono);color:var(--ink-3)}
+.mbib .cab .lnk{margin-left:auto}
+.mbib .capas{display:flex;gap:var(--s4);align-items:flex-end;flex-wrap:wrap}
+.mbib .capas button{display:block}
+.mbib .capas img{width:82px;height:auto;border:1px solid var(--line);background:var(--paper);
+  transition:transform var(--d2) var(--curva)}
+.mbib .capas button:hover img{transform:translateY(-4px)}
+/* a Mesa inteira vira área de solta ao arrastar */
+#app.-arrastando .corpo{box-shadow:inset 0 0 0 2px var(--acc)}
+.msoltando{position:absolute;inset:0;background:var(--acc-soft);display:flex;align-items:center;
+  justify-content:center;z-index:50;pointer-events:none}
+.msoltando span{font-family:var(--serif);font-size:1.6rem;letter-spacing:-.015em}
+
+/* ══ MESA (explorações A, B, C — preservadas no seletor) ══ */
 .mduas{display:grid;grid-template-columns:290px minmax(0,1fr);gap:var(--s7);align-items:start}
 @media(max-width:900px){.mduas{grid-template-columns:1fr;gap:var(--s6)}}
 .mresumo{display:flex;gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
@@ -582,14 +639,49 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .ed.-grot .txtE,.ed.-grot .lq{font-family:var(--ui)}
 .ed.-semdst .marcaN,.ed.-semdst .lnota{display:none}
 .txtE{margin-bottom:var(--esp-par,1.05em)}
+.aacols{display:grid;grid-template-columns:minmax(0,280px) minmax(0,1fr);gap:var(--s6)}
+@media(max-width:760px){.aacols{grid-template-columns:1fr}.aaprev{display:none}}
+.aactl{max-height:min(58vh,520px);overflow-y:auto;padding-right:var(--s3)}
 .aagrupo{margin-bottom:var(--s5)}
-.aagrupo>h4{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.13em;text-transform:uppercase;
-  color:var(--ink-3);margin:0 0 var(--s2);padding-bottom:var(--s2);border-bottom:1px solid var(--line-2)}
-.aalin{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s4);align-items:center;
-  padding:var(--s3) 0;border-bottom:1px solid var(--line-2)}
-.aalin:last-child{border-bottom:none}
-.aalin .k{font-size:13.5px}
-.aalin .k small{display:block;font-size:12px;color:var(--ink-3);margin-top:2px;line-height:1.45}
+.aagrupo>h4{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 var(--s3)}
+.especs{display:flex;gap:var(--s2);flex-wrap:wrap}
+.espec{flex:1;min-width:64px;border:1px solid var(--line);padding:var(--s3) var(--s2);text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:7px;transition:border-color var(--d1) var(--curva)}
+.espec:hover{border-color:var(--line-3)}
+.espec[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.espec .am{height:26px;display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.espec .rt{font-size:11px;color:var(--ink-3);line-height:1.2}
+.espec[aria-pressed="true"] .rt{color:var(--ink)}
+/* espécimes desenhados: a amostra mostra o efeito, não o nome dele */
+.espec .lin{display:block;width:26px;height:16px;background-repeat:repeat-y;background-size:100% 100%}
+.espec .lin.j{background-image:repeating-linear-gradient(var(--ink) 0 1px,transparent 1px 3px)}
+.espec .lin.p{background-image:repeating-linear-gradient(var(--ink) 0 1px,transparent 1px 5px)}
+.espec .lin.s{background-image:repeating-linear-gradient(var(--ink) 0 1px,transparent 1px 8px)}
+.espec .col{display:block;height:18px;background:var(--ink)}
+.espec .col.e{width:10px}.espec .col.p{width:20px}.espec .col.l{width:30px}
+.espec .par{display:block;width:26px;height:18px;background-repeat:no-repeat;
+  background-image:linear-gradient(var(--ink),var(--ink)),linear-gradient(var(--ink),var(--ink));
+  background-size:100% 5px,100% 5px}
+.espec .par.j{background-position:0 2px,0 10px}
+.espec .par.p{background-position:0 0,0 13px}
+.espec .par.s{background-position:0 0,0 16px}
+.espec .al{display:block;width:26px;height:16px;background-repeat:no-repeat;
+  background-image:linear-gradient(var(--ink),var(--ink)),linear-gradient(var(--ink),var(--ink)),
+  linear-gradient(var(--ink),var(--ink));background-size:100% 3px,100% 3px,100% 3px;
+  background-position:0 0,0 6px,0 12px}
+.espec .al.e{background-size:100% 3px,100% 3px,62% 3px}
+.espec .tm{display:block;width:22px;height:22px;border:1px solid var(--line-3)}
+.espec .tm.c{background:#faf9f5}.espec .tm.e{background:#161513}
+.aaprev{border-left:1px solid var(--line-2);padding-left:var(--s6);max-height:min(58vh,520px);overflow:hidden}
+@media(max-width:760px){.aaprev{border-left:none;padding-left:0}}
+.aaprev .cap{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);display:block;margin-bottom:var(--s4)}
+.aaprev .pv p{font-family:var(--serif);font-size:var(--t-leitura);line-height:var(--lh-leitura);
+  color:var(--ink);margin:0 0 var(--esp-par,1.05em)}
+.aaprev .pv.-just p{text-align:justify;hyphens:auto}
+.aaprev .pv.-esq p{text-align:left}
+.aaprev .pv.-grot p{font-family:var(--ui)}
 .aaesc{border:1px solid var(--line-3);padding:var(--s4);margin-top:var(--s5)}
 .aaesc .tt{font-size:13.5px;font-weight:650;display:block;margin-bottom:var(--s3)}
 .aaesc .cons{font-size:12.5px;color:var(--ink-2);line-height:1.55;margin:var(--s3) 0 0}
@@ -831,7 +923,7 @@ const zero={
   ],
   apEdit:null,apRasc:{},histVazio:false,histErro:false,
   wiz:{p:0,email:"",nome:"",copiou:false,diferente:false},
-  mesaVar:"c",mesaEstado:"com-pendencia",
+  mesaVar:"reduzida",mesaEstado:"com-pendencia",
   /* leitura: tudo o que muda como o arquivo é lido nesta tela.
      escopo é o ato deliberado que faz um ajuste subir a padrão da conta. */
   leit:{fonte:"serifa",align:"justificado",espaco:1,destaques:"mostrar",progresso:"porcentagem",escopo:"livro"},
@@ -1229,9 +1321,56 @@ function mDados(){
     lendo: (e==="com-pendencia"||e==="sem-pendencia")?LENDO:null
   };
 }
+/* A Mesa mostra o que merece atenção agora. O resto mora na Estante, no
+   Canvas, nas Conexões ou dentro do próprio arquivo. */
+function mesaReduzida(){
+  const d=mDados();
+  if(!d.acervo&&!d.preps.length&&!d.lendo)return mesaVazia();
+  let h='<div class="pad">'+
+    '<div class="mtopo"><div class="tx"><span class="meyebrow">Mesa</span>'+
+    '<h1 class="mlede">Uma estante para aquilo que ainda está em movimento.</h1></div>'+
+    '<button class="btnO forte" data-a="soltar">Preparar arquivo →</button></div>';
+
+  if(d.lendo){
+    const l=d.lendo;
+    h+='<div class="mfoco"><img src="'+capa(l.capa)+'" alt="Capa de '+esc(l.titulo)+'">'+
+      '<div><span class="meyebrow">Continue</span>'+
+      '<h2>'+esc(l.titulo)+'</h2>'+
+      '<p class="onde">Você parou na página 84.</p>'+
+      '<p class="desde">3 notas desde a última leitura · '+esc(l.autor)+'</p>'+
+      '<div class="acoes" style="margin:0"><button class="btnO forte" data-a="ir" data-v="leitura">'+
+      'Continuar lendo →</button><button class="lnk mudo" data-a="ir-livro">Ver as notas</button></div>'+
+      '</div></div>';
+  }
+  if(d.pends.length){
+    h+='<div class="mexc"><div class="cab"><span class="r">Precisa de você</span>'+
+      '<span class="n">'+String(d.pends.length).padStart(2,"0")+'</span></div>'+
+      d.pends.map(p=>'<div class="it"><span class="nm">'+esc(p.nm)+'</span>'+
+        '<p class="pq">'+esc(p.cons)+'</p>'+
+        '<button class="btnO" data-a="'+p.a+'"'+(p.v?' data-v="'+p.v+'"':'')+'>'+p.acao+' →</button></div>').join("")+
+      '</div>';
+  }
+  if(d.preps.length){
+    h+='<div class="mest"><div class="cab"><span class="r">Em preparo</span>'+
+      '<span class="n">'+String(d.preps.length).padStart(2,"0")+'</span></div>'+
+      d.preps.map(p=>'<div class="it"><b>'+esc(p.nm.replace(/\.(pdf|epub|cbz)$/i,""))+'</b>'+
+        esc(p.et)+'<span class="t">'+esc(p.t)+'</span>'+
+        '<button class="lnk mudo" data-a="'+p.a+'">'+p.acao+'</button></div>').join("")+
+      '</div>';
+  }
+  if(d.acervo){
+    h+='<div class="mbib"><div class="cab"><span class="r">Na estante</span>'+
+      '<span class="n">'+d.acervo+'</span>'+
+      '<button class="lnk" data-a="ir" data-v="estante">Ver estante →</button></div>'+
+      '<div class="capas">'+ACERVO.slice(0,5).map(b=>'<button data-a="ir-livro" title="'+esc(b.t)+'">'+
+        '<img src="'+capa(b.c)+'" alt="Capa de '+esc(b.t)+'" loading="lazy"></button>').join("")+'</div></div>';
+  }
+  return h+mEstados()+'</div>';
+}
 function vMesa(){
   if(S.cena==="nova"||!S.conta)return mesaNova();
-  const v=S.mesaVar||"c";
+  const v=S.mesaVar||"reduzida";
+  if(v==="reduzida")return mesaReduzida();
   if(v==="atual")return mesaAtual();
   const d=mDados();
   if(d.acervo===0&&!d.preps.length)return mesaVazia();
@@ -1469,8 +1608,7 @@ function itemPreparando(){
     '</div></div>'+
     '<div class="acoes"><button class="btn sec2" data-a="cancelar">Cancelar</button>'+
     '<button class="lnk mudo" data-a="ir" data-v="mesa">Continuar navegando</button></div>'+
-    '<div class="nota"><span>◆</span><div>Nenhuma porcentagem aparece para etapa que não avança linearmente. '+
-      'A barra acima conta páginas de verdade.</div></div>';
+    '';
   return h+'</div>';
 }
 function itemPronto(){
@@ -1524,9 +1662,7 @@ function vLivro(){
         '<div class="dado"><span class="k">No Kindle</span><span>'+(S.enviado?"Enviado hoje, 09:12":"Ainda não enviado")+'</span></div>'+
       '</div>'+
       '<div class="sec"><h3>Leitura e notas</h3>'+
-      '<div class="nota" style="margin-top:0"><span>◆</span><div>O leitor, os destaques, as notas de margem e a '+
-      'área de Conhecimento já existem e continuam no <b>protótipo da área pessoal</b> — este aqui cobre a chegada '+
-      'do arquivo e a ficha do livro. Os dois são a mesma moldura, de propósito.</div></div></div>'+
+      ''
     '</div></div></div>';
 }
 
@@ -1560,10 +1696,7 @@ function vCanvas(nome){
   return '<div class="pad larga"><h1 class="t">'+nome+'</h1>'+
     '<p class="sub">Superfície espacial. É aqui — e só aqui — que a dock existe: ela segura ferramentas de '+
     'manipulação direta, que precisam ficar perto das mãos.</p>'+
-    '<div style="border:1px dashed var(--line);border-radius:var(--r2);padding:var(--s7);text-align:center;'+
-
-'color:var(--ink-3);font-size:13.5px">Preservado do protótipo da área pessoal.<br>'+
-    'O que muda aqui é só a barra do topo, que passou a ser a mesma das outras telas.</div>'+
+    ''
     dock(["Nota","Mídia","Conectar","Organizar","Filtrar"],-1)+'</div>';
 }
 function dock(its,on){
@@ -1586,11 +1719,10 @@ function vPerfil(){
      rowP("Modo ao abrir um arquivo","Guiado","","Alterar")+
      rowSw("Baixar sozinho quando ficar pronto","Desligado. Você continua sendo avisado na Mesa.",false)+
      rowSw("Reduzir movimento","Segue a preferência do seu sistema.",false)+
-     '<div class="nota"><span>◆</span><div>Tipografia do leitor, densidade da estante e OCR moram '+
-     '<b>onde o efeito acontece</b> e sobem a padrão por ato deliberado. Aqui fica só o que não tem contexto '+
-     '— é a regra do caderno 02.</div></div>'],
+     '<div class="nota"><span>◆</span><div>O tamanho da letra, a coluna e o tema você escolhe dentro do '+
+     'livro, no <b>Aa</b> — e de lá pode fazer valer para todos.</div></div>'],
    ["priv","Privacidade","O que é guardado, o que é medido, por quanto tempo",
-     rowP("Arquivos originais","Apagados 24 horas depois de preparados. O resultado fica na sua estante.","","Alterar")+
+     rowP("Arquivos originais","Ficam guardados enquanto o livro existir — é o que permite refazer o preparo sem enviar de novo.","","Alterar")+
      rowSw("Ajudar a melhorar o Mekora","Registramos onde você clica e onde trava — nunca o conteúdo dos seus arquivos, nem o texto que sai do reconhecimento.",true)+
      rowSw("Usar minhas respostas de pendência","Quando você responde uma dúvida, isso vira exemplo para o Mekora aprender a acertar sozinho. Guardamos a resposta e as medidas das páginas, não as imagens.",true)+
      rowP("Baixar meus dados","Estante, notas e histórico de preparação","","Baixar")+
@@ -1611,8 +1743,7 @@ function vPerfil(){
       '<span><span class="nm">'+d[1]+'</span><span class="rs">'+d[2]+'</span></span>'+
       '<span class="ch">'+(ab?"▾":"▸")+'</span></button>'+(ab?'<div class="in">'+d[3]+'</div>':'')+'</div>';
   });
-  h+='<div class="nota"><span>◆</span><div><b>Não existe uma área de Configurações.</b> Ela era um item de menu '+
-    'que competia com os lugares onde se trabalha, e o que ela guardava está aqui dentro ou no ponto de uso.</div></div>';
+  h+='';
   return h+'</div>';
 }
 /* ═══ PERFIL E CONTA ═══
@@ -1717,9 +1848,7 @@ function pVisao(){
       '<span class="h">'+x[1]+'</span><span class="t">'+esc(x[2])+'</span>'+
       '<span class="o">'+x[3]+'</span></button>').join("")+
     '<button class="lnk mudo" data-a="psec" data-v="hist" style="margin-top:var(--s3)">Ver o histórico →</button></div>';
-  h+='<div class="nota"><span>◆</span><div><b>Não existe uma área de Configurações.</b> Ela era um item de '+
-    'menu que competia com os lugares onde se trabalha. O que muda o comportamento de uma tela mora naquela '+
-    'tela e sobe a padrão aqui por ato deliberado — é a regra do caderno 02.</div></div>';
+  h+='';
   return h;
 }
 function pC(v,nm,rs,estado){
@@ -1837,9 +1966,7 @@ function pPref(){
        ["reduzido","Reduzido","Transições viram troca imediata. Nada se move."],
        ["completo","Completo","Mesmo se o sistema pedir redução."]])+
     escolha("tema","Tema","",[["claro","Claro",""],["escuro","Escuro",""]]));
-  h+='<div class="nota"><span>◆</span><div>Só entra aqui o ajuste que vale para <b>tudo o que vier depois</b>. '+
-    'Corpo da letra, entrelinha e largura da coluna moram no leitor, no <b>Aa</b>; contraste e brilho moram no '+
-    'editor de páginas. Preferências é espelho, não fonte — a regra é do caderno 02.</div></div>';
+  h+='';
   return h;
 }
 function pPriv(){
@@ -1870,19 +1997,7 @@ function pPriv(){
     '<span class="v">Viram exemplo para o Mekora aprender'+
     '<small>Guardamos a resposta e as medidas das páginas — não as imagens.</small></span>'+
     '<button class="sw" data-a="nada" aria-pressed="true" aria-label="Usar minhas respostas"><i></i></button></div></div>'+
-    '<p style="font-size:12.5px;color:var(--ink-3);line-height:1.55;margin-top:var(--s3)">'+
-    'Esta parte não é pendente: está registrada como decisão do projeto — a instrumentação mede a interface e '+
-    'nunca o conteúdo.</p></div>';
-  h+='<div class="grupoP"><h3>Seus dados</h3><div style="background:var(--branco)">'+
-    '<div class="ap"><div><span class="nm">Baixar tudo o que é seu</span>'+
-    '<span class="us">Estante, preferências, dispositivos e histórico, num arquivo só.</span></div>'+
-    '<button class="btnO" data-a="aviso-x" data-v="Preparando o arquivo. Avisamos por e-mail quando estiver pronto.">Baixar</button></div>'+
-    '<div class="ap"><div><span class="nm">Apagar o histórico da conta</span>'+
-    '<span class="us">Some o diário do que você mudou. Livros, preferências e dispositivos ficam.</span></div>'+
-    '<button class="btnO" data-a="folha" data-v="limpar-hist">Apagar</button></div></div></div>';
-  h+='<div class="perigo"><b>Apagar a conta</b>'+
-    '<p>Sai tudo: a estante, os arquivos originais, o que você marcou, os dispositivos e o histórico. '+
-    'Não há como desfazer, e não guardamos cópia.</p>'+
+    ''
     '<button class="btnD" data-a="folha" data-v="apagar-conta">Apagar minha conta</button></div>';
   return h;
 }
@@ -1906,9 +2021,7 @@ function pHist(){
       '<span class="h">'+x[1]+'</span><span class="t">'+esc(x[2])+'</span>'+
       '<span class="o">'+x[3]+' · '+x[4]+'</span></button>';
   });
-  h+='<div class="pendencia"><span>◆</span><div>Seis registros não pedem busca nem filtro. Se um dia o '+
-    'histórico crescer a ponto de exigir, isso entra — e não antes, porque filtro em lista curta é peso sem uso.'+
-    '</div></div>';
+  h+='';
   return h+estadosHist();
 }
 function estadosHist(){
@@ -2067,45 +2180,61 @@ function vFolha(){
      Preferencias; o recado nao era o mecanismo. O mecanismo e o ESCOPO aqui
      embaixo: e por ele que um ajuste sobe a padrao da conta, e e o que permite
      Preferencias ser espelho em vez de fonte. Herdado do leitor da area pessoal. */
+  /* Controle editorial de leitura: espécime à esquerda, prévia real à direita.
+     A escolha deixa de ser abstrata — vê-se o resultado enquanto se escolhe. */
   if(f==="aa"){
     const L=S.leit;
-    const seg=(rot,ds,chave,vals,atual)=>'<div class="aalin"><span class="k">'+rot+
-      (ds?'<small>'+ds+'</small>':'')+'</span><span class="segE">'+vals.map(v=>
-      '<button data-a="aa" data-v="'+chave+':'+v[0]+'"'+(String(atual)===String(v[0])?' aria-pressed="true"':'')+
-      '>'+v[1]+'</button>').join("")+'</span></div>';
+    const grupo=(rot,opcoes)=>'<div class="aagrupo"><h4>'+rot+'</h4><div class="especs">'+opcoes+'</div></div>';
+    const esp=(chave,val,amostra,rot,atual)=>'<button class="espec" data-a="aa" data-v="'+chave+':'+val+'"'+
+      (String(atual)===String(val)?' aria-pressed="true"':'')+'><span class="am">'+amostra+'</span>'+
+      '<span class="rt">'+rot+'</span></button>';
     const mudou=L.fonte!=="serifa"||L.align!=="justificado"||L.espaco!==1||S.corpo!==1||S.entre!==1||
       S.largura!==1||L.destaques!=="mostrar"||L.progresso!=="porcentagem";
+    const previa='<div class="aaprev"><span class="cap">Capítulo 04</span>'+
+      '<div class="pv '+(L.align==="justificado"?"-just":"-esq")+(L.fonte==="grotesca"?" -grot":"")+'">'+
+      CAPS[3].p.map(p=>'<p>'+esc(p)+'</p>').join("")+'</div></div>';
     return folha("Leitura","Como você quer ler",
-      '<div class="aagrupo"><h4>Texto</h4>'+
-      seg("Tipografia","Serifa cansa menos em texto longo; grotesca lê melhor em tela pequena.",
-        "fonte",[["serifa","Serifa"],["grotesca","Grotesca"]],L.fonte)+
-      seg("Corpo do texto","","corpo",[[0,"Menor"],[1,"Padrão"],[2,"Maior"]],S.corpo)+
-      seg("Entrelinha","","entre",[[0,"Justa"],[1,"Padrão"],[2,"Solta"]],S.entre)+
-      seg("Alinhamento","Justificado fecha o bloco; à esquerda evita rios de espaço em coluna estreita.",
-        "align",[["justificado","Justificado"],["esquerda","À esquerda"]],L.align)+
-      '</div>'+
-      '<div class="aagrupo"><h4>Página</h4>'+
-      seg("Largura da coluna","","largura",[[0,"Estreita"],[1,"Padrão"],[2,"Larga"]],S.largura)+
-      seg("Espaço entre parágrafos","","espaco",[[0,"Junto"],[1,"Padrão"],[2,"Solto"]],L.espaco)+
-      seg("Tema","","tema",[["claro","Claro"],["escuro","Escuro"]],S.tema===1?"escuro":"claro")+
-      '</div>'+
-      '<div class="aagrupo"><h4>Leitura</h4>'+
-      seg("Seus destaques e notas","Escondê-los não apaga nada — some só a marcação na página.",
-        "destaques",[["mostrar","Mostrar"],["ocultar","Ocultar"]],L.destaques)+
-      seg("Progresso no topo","","progresso",[["porcentagem","Porcentagem"],["capitulo","Capítulo"],
-        ["nada","Nada"]],L.progresso)+
-      '</div>'+
+      '<div class="aacols"><div class="aactl">'+
+      grupo("Tamanho",
+        esp("corpo",0,'<span style="font-size:13px">Aa</span>',"menor",S.corpo)+
+        esp("corpo",1,'<span style="font-size:17px">Aa</span>',"padrão",S.corpo)+
+        esp("corpo",2,'<span style="font-size:22px">Aa</span>',"maior",S.corpo))+
+      grupo("Tipografia",
+        esp("fonte","serifa",'<span style="font-family:var(--serif);font-size:19px">Aa</span>',"serifa",L.fonte)+
+        esp("fonte","grotesca",'<span style="font-family:var(--ui);font-size:19px">Aa</span>',"grotesca",L.fonte))+
+      grupo("Entrelinha",
+        esp("entre",0,'<i class="lin j"></i>',"justa",S.entre)+
+        esp("entre",1,'<i class="lin p"></i>',"padrão",S.entre)+
+        esp("entre",2,'<i class="lin s"></i>',"solta",S.entre))+
+      grupo("Coluna",
+        esp("largura",0,'<i class="col e"></i>',"estreita",S.largura)+
+        esp("largura",1,'<i class="col p"></i>',"padrão",S.largura)+
+        esp("largura",2,'<i class="col l"></i>',"larga",S.largura))+
+      grupo("Parágrafos",
+        esp("espaco",0,'<i class="par j"></i>',"junto",L.espaco)+
+        esp("espaco",1,'<i class="par p"></i>',"padrão",L.espaco)+
+        esp("espaco",2,'<i class="par s"></i>',"solto",L.espaco))+
+      grupo("Alinhamento",
+        esp("align","justificado",'<i class="al j"></i>',"justificado",L.align)+
+        esp("align","esquerda",'<i class="al e"></i>',"à esquerda",L.align))+
+      grupo("Tema",
+        esp("tema","claro",'<i class="tm c"></i>',"claro",S.tema===1?"escuro":"claro")+
+        esp("tema","escuro",'<i class="tm e"></i>',"escuro",S.tema===1?"escuro":"claro"))+
+      grupo("Seus destaques",
+        esp("destaques","mostrar",'<span style="font-size:15px">1<sup style="color:var(--acc)">•</sup></span>',"mostrar",L.destaques)+
+        esp("destaques","ocultar",'<span style="font-size:15px;opacity:.4">1</span>',"ocultar",L.destaques))+
+      grupo("Progresso no topo",
+        esp("progresso","porcentagem",'<span style="font-family:var(--mono);font-size:12px">32%</span>',"porcentagem",L.progresso)+
+        esp("progresso","capitulo",'<span style="font-family:var(--mono);font-size:11px">cap. 4</span>',"capítulo",L.progresso)+
+        esp("progresso","nada",'<span style="font-size:15px;opacity:.35">—</span>',"nada",L.progresso))+
+      '</div>'+previa+'</div>'+
       '<div class="aaesc"><span class="tt">Onde isto vale</span>'+
       '<span class="segE"><button data-a="aa" data-v="escopo:livro"'+(L.escopo==="livro"?' aria-pressed="true"':'')+
       '>Só neste livro</button><button data-a="aa" data-v="escopo:todos"'+(L.escopo==="todos"?' aria-pressed="true"':'')+
       '>Em todos os livros</button></span>'+
       '<p class="cons">'+(L.escopo==="livro"?
-        'Vale só para <b>'+esc(ARQ.titulo)+'</b>. Os outros livros continuam como estão.':
-        'Passa a valer para todos os livros, inclusive os próximos. É assim que um ajuste vira padrão da '+
-        'conta — por ato deliberado, e não porque você mexeu uma vez.')+'</p></div>'+
-      '<div class="nota"><span>◆</span><div>Estes ajustes moram aqui, onde o efeito acontece. '+
-      '<b>Perfil › Preferências</b> guarda o que não tem contexto e reflete o que subiu daqui — '+
-      'ele é espelho, não fonte.</div></div>',
+        'Vale só para <b>'+esc(ARQ.titulo)+'</b>. Os outros continuam como estão.':
+        'Passa a valer para todos os seus livros, inclusive os próximos.')+'</p></div>',
       (mudou?'<button class="lnk mudo" data-a="aa" data-v="restaurar:1" style="margin-right:auto">Restaurar padrão</button>':'')+
       '<button class="btnO" data-a="fechar">Fechar</button>');
   }
@@ -2513,6 +2642,16 @@ function pinta(){
     pc.focus();pc.setSelectionRange(pc.value.length,pc.value.length);
     pc.addEventListener("input",()=>{S.prasc=pc.value;pinta();});
   }else if(pc){pc.focus();pc.setSelectionRange(pc.value.length,pc.value.length);}
+  /* arrastar sobre a Mesa transforma a própria página em área de solta —
+     no lugar do dropzone permanente que ocupava o topo */
+  if(S.lugar==="mesa"&&S.conta){
+    let dentro=0;
+    app.addEventListener("dragenter",e=>{e.preventDefault();dentro++;app.classList.add("-arrastando");});
+    app.addEventListener("dragover",e=>e.preventDefault());
+    app.addEventListener("dragleave",()=>{if(--dentro<=0)app.classList.remove("-arrastando");});
+    app.addEventListener("drop",e=>{e.preventDefault();dentro=0;app.classList.remove("-arrastando");
+      S.lugar="item";S.dentro=false;pinta();});
+  }
   const campo=document.getElementById("campoBusca");
   if(campo){
     campo.focus();campo.setSelectionRange(campo.value.length,campo.value.length);
@@ -2949,9 +3088,9 @@ document.getElementById("notasbt").addEventListener("click",()=>{notas.hidden=fa
     bF.textContent=quente?"branco puro":"off-white";bF.setAttribute("aria-pressed",String(!quente));
   });
   /* comparação das composições da Mesa, ao vivo */
-  const bM=document.getElementById("btMesa"),VARS=["c","a","b","atual"],
-    NOMES={c:"mesa C · workspace",a:"mesa A · operacional",b:"mesa B · continuidade",atual:"mesa atual"};
-  bM.textContent=NOMES[S.mesaVar]||"mesa C";
+  const bM=document.getElementById("btMesa"),VARS=["reduzida","c","a","b","atual"],
+    NOMES={reduzida:"mesa · reduzida",c:"mesa C · workspace",a:"mesa A · operacional",b:"mesa B · continuidade",atual:"mesa atual"};
+  bM.textContent=NOMES[S.mesaVar]||"mesa · reduzida";
   bM.addEventListener("click",()=>{
     const i=VARS.indexOf(S.mesaVar);
     S.mesaVar=VARS[(i+1)%VARS.length];
