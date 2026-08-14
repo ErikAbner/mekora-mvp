@@ -576,6 +576,24 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .mvazio h2{font-family:var(--serif);font-size:1.5rem;font-weight:400;letter-spacing:-.015em;margin:0 0 var(--s3)}
 .mvazio p{font-size:14px;line-height:1.62;color:var(--ink-2);margin:0 0 var(--s4)}
 
+/* ══ LEITURA ══ os ajustes agem por variável, e a superfície obedece */
+.ed.-esq .txtE,.ed.-esq .lnota{text-align:left}
+.ed.-just .txtE{text-align:justify;hyphens:auto}
+.ed.-grot .txtE,.ed.-grot .lq{font-family:var(--ui)}
+.ed.-semdst .marcaN,.ed.-semdst .lnota{display:none}
+.txtE{margin-bottom:var(--esp-par,1.05em)}
+.aagrupo{margin-bottom:var(--s5)}
+.aagrupo>h4{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 var(--s2);padding-bottom:var(--s2);border-bottom:1px solid var(--line-2)}
+.aalin{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s4);align-items:center;
+  padding:var(--s3) 0;border-bottom:1px solid var(--line-2)}
+.aalin:last-child{border-bottom:none}
+.aalin .k{font-size:13.5px}
+.aalin .k small{display:block;font-size:12px;color:var(--ink-3);margin-top:2px;line-height:1.45}
+.aaesc{border:1px solid var(--line-3);padding:var(--s4);margin-top:var(--s5)}
+.aaesc .tt{font-size:13.5px;font-weight:650;display:block;margin-bottom:var(--s3)}
+.aaesc .cons{font-size:12.5px;color:var(--ink-2);line-height:1.55;margin:var(--s3) 0 0}
+
 /* ══ ATUALIZAÇÕES ══ */
 .nov{display:grid;grid-template-columns:116px minmax(0,1fr);gap:var(--s4);align-items:start;
   padding:var(--s4) 0;border-bottom:1px solid var(--line-2)}
@@ -814,6 +832,9 @@ const zero={
   apEdit:null,apRasc:{},histVazio:false,histErro:false,
   wiz:{p:0,email:"",nome:"",copiou:false,diferente:false},
   mesaVar:"c",mesaEstado:"com-pendencia",
+  /* leitura: tudo o que muda como o arquivo é lido nesta tela.
+     escopo é o ato deliberado que faz um ajuste subir a padrão da conta. */
+  leit:{fonte:"serifa",align:"justificado",espaco:1,destaques:"mostrar",progresso:"porcentagem",escopo:"livro"},
   prefs:{modo:"guiado",onboarding:"auto",movimento:"auto",tema:"claro",baixar:"nao",formato:"auto"},
   processando:true
 };
@@ -1139,10 +1160,14 @@ function vLeitura(){
     '<span class="sp"></span>'+
     '<button class="lnk mudo" data-a="folha" data-v="sumario">Sumário</button>'+
     '<button class="lnk mudo" data-a="folha" data-v="aa">Aa</button>'+
-    '<span class="mono" style="font-size:var(--t-mono);color:var(--ink-3)">'+prog+'%</span>'+
+    (S.leit.progresso==="nada"?'':
+     '<span class="mono" style="font-size:var(--t-mono);color:var(--ink-3)">'+
+     (S.leit.progresso==="capitulo"?"cap. "+(S.cap+1)+" de "+CAPS.length:prog+"%")+'</span>')+
     '<div class="fio"><i style="width:'+prog+'%"></i></div></div>';
 
-  h+='<div class="ed" style="padding-bottom:var(--s8)"><div class="colE">';
+  const cls=" -"+(S.leit.align==="justificado"?"just":"esq")+
+    (S.leit.fonte==="grotesca"?" -grot":"")+(S.leit.destaques==="ocultar"?" -semdst":"");
+  h+='<div class="ed'+cls+'" style="padding-bottom:var(--s8)"><div class="colE">';
   CAPS.forEach((c,i)=>{
     h+='<section class="lsec" id="cap'+i+'"><div class="lcap"><span>'+esc(c.n)+'</span>'+
       '<span>Capítulo '+(i+1)+' de '+CAPS.length+'</span></div>';
@@ -2038,17 +2063,50 @@ function vFolha(){
           '<span class="ch">›</span></button>').join("")+'</div>').join(""),
       '<button class="btnO" data-a="fechar">Fechar</button>');
   }
+  /* Painel de leitura. Antes tinha quatro controles e um recado apontando para
+     Preferencias; o recado nao era o mecanismo. O mecanismo e o ESCOPO aqui
+     embaixo: e por ele que um ajuste sobe a padrao da conta, e e o que permite
+     Preferencias ser espelho em vez de fonte. Herdado do leitor da area pessoal. */
   if(f==="aa"){
-    const seg=(rot,chave,vals)=>'<div class="row"><div class="tx"><b>'+rot+'</b></div>'+
-      '<span class="segE">'+vals.map((v,i)=>'<button data-a="aa" data-v="'+chave+':'+i+'"'+
-        (S[chave]===i?' aria-pressed="true"':'')+'>'+v+'</button>').join("")+'</span></div>';
+    const L=S.leit;
+    const seg=(rot,ds,chave,vals,atual)=>'<div class="aalin"><span class="k">'+rot+
+      (ds?'<small>'+ds+'</small>':'')+'</span><span class="segE">'+vals.map(v=>
+      '<button data-a="aa" data-v="'+chave+':'+v[0]+'"'+(String(atual)===String(v[0])?' aria-pressed="true"':'')+
+      '>'+v[1]+'</button>').join("")+'</span></div>';
+    const mudou=L.fonte!=="serifa"||L.align!=="justificado"||L.espaco!==1||S.corpo!==1||S.entre!==1||
+      S.largura!==1||L.destaques!=="mostrar"||L.progresso!=="porcentagem";
     return folha("Leitura","Como você quer ler",
-      seg("Corpo do texto","corpo",["Menor","Padrão","Maior"])+
-      seg("Entrelinha","entre",["Justa","Padrão","Solta"])+
-      seg("Largura da coluna","largura",["Estreita","Padrão","Larga"])+
-      seg("Tema","tema",["Claro","Escuro"])+
-      '<div class="nota"><span>◆</span><div>Estes ajustes moram aqui, onde o efeito acontece — não numa '+
-      'área de configurações. Eles sobem a padrão da conta por ato deliberado, em Perfil › Preferências.</div></div>',
+      '<div class="aagrupo"><h4>Texto</h4>'+
+      seg("Tipografia","Serifa cansa menos em texto longo; grotesca lê melhor em tela pequena.",
+        "fonte",[["serifa","Serifa"],["grotesca","Grotesca"]],L.fonte)+
+      seg("Corpo do texto","","corpo",[[0,"Menor"],[1,"Padrão"],[2,"Maior"]],S.corpo)+
+      seg("Entrelinha","","entre",[[0,"Justa"],[1,"Padrão"],[2,"Solta"]],S.entre)+
+      seg("Alinhamento","Justificado fecha o bloco; à esquerda evita rios de espaço em coluna estreita.",
+        "align",[["justificado","Justificado"],["esquerda","À esquerda"]],L.align)+
+      '</div>'+
+      '<div class="aagrupo"><h4>Página</h4>'+
+      seg("Largura da coluna","","largura",[[0,"Estreita"],[1,"Padrão"],[2,"Larga"]],S.largura)+
+      seg("Espaço entre parágrafos","","espaco",[[0,"Junto"],[1,"Padrão"],[2,"Solto"]],L.espaco)+
+      seg("Tema","","tema",[["claro","Claro"],["escuro","Escuro"]],S.tema===1?"escuro":"claro")+
+      '</div>'+
+      '<div class="aagrupo"><h4>Leitura</h4>'+
+      seg("Seus destaques e notas","Escondê-los não apaga nada — some só a marcação na página.",
+        "destaques",[["mostrar","Mostrar"],["ocultar","Ocultar"]],L.destaques)+
+      seg("Progresso no topo","","progresso",[["porcentagem","Porcentagem"],["capitulo","Capítulo"],
+        ["nada","Nada"]],L.progresso)+
+      '</div>'+
+      '<div class="aaesc"><span class="tt">Onde isto vale</span>'+
+      '<span class="segE"><button data-a="aa" data-v="escopo:livro"'+(L.escopo==="livro"?' aria-pressed="true"':'')+
+      '>Só neste livro</button><button data-a="aa" data-v="escopo:todos"'+(L.escopo==="todos"?' aria-pressed="true"':'')+
+      '>Em todos os livros</button></span>'+
+      '<p class="cons">'+(L.escopo==="livro"?
+        'Vale só para <b>'+esc(ARQ.titulo)+'</b>. Os outros livros continuam como estão.':
+        'Passa a valer para todos os livros, inclusive os próximos. É assim que um ajuste vira padrão da '+
+        'conta — por ato deliberado, e não porque você mexeu uma vez.')+'</p></div>'+
+      '<div class="nota"><span>◆</span><div>Estes ajustes moram aqui, onde o efeito acontece. '+
+      '<b>Perfil › Preferências</b> guarda o que não tem contexto e reflete o que subiu daqui — '+
+      'ele é espelho, não fonte.</div></div>',
+      (mudou?'<button class="lnk mudo" data-a="aa" data-v="restaurar:1" style="margin-right:auto">Restaurar padrão</button>':'')+
       '<button class="btnO" data-a="fechar">Fechar</button>');
   }
   if(f==="controles")return folha("Arquivo",esc(S.nome||ARQ.nome),
@@ -2406,8 +2464,10 @@ function pinta(){
   const y=app.querySelector(".corpo")?app.querySelector(".corpo").scrollTop:0;
   /* os ajustes de leitura agem sobre as variáveis, não sobre cada regra */
   const CORPO=["1.02rem","1.16rem","1.3rem"],ENTRE=["1.5","1.62","1.78"],LARG=["30rem","42.1875rem","52rem"];
+  const ESP=[".55em","1.05em","1.7em"];
   app.style.setProperty("--t-leitura",CORPO[S.corpo]);
   app.style.setProperty("--lh-leitura",ENTRE[S.entre]);
+  app.style.setProperty("--esp-par",ESP[S.leit.espaco]);
   if(S.lugar==="leitura")app.style.setProperty("--col",LARG[S.largura]);
   else app.style.removeProperty("--col");
   app.innerHTML=topo()+'<div class="corpo">'+corpo()+'</div>'+vFolha();
@@ -2631,9 +2691,19 @@ app.addEventListener("click",ev=>{
     case "artigo-ctx":S.folha="ajuda";S.ajuda=v;break;
     case "sair":if(S.processando){S.folha="sair-processando";}else{S.conta=false;S.lugar="home";}break;
     case "sair-ok":S.folha=null;S.conta=false;S.lugar="home";S.psec="visao";break;
-    case "aa":{const[k,i]=v.split(":");
-      if(k==="tema"){document.documentElement.setAttribute("data-tema",i==="1"?"escuro":"claro");S.tema=Number(i);}
-      else S[k]=Number(i);break;}
+    case "aa":{
+      const[k,val]=v.split(":");
+      if(k==="tema"){document.documentElement.setAttribute("data-tema",val);S.tema=val==="escuro"?1:0;}
+      else if(k==="corpo"||k==="entre"||k==="largura")S[k]=Number(val);
+      else if(k==="espaco")S.leit.espaco=Number(val);
+      else if(k==="restaurar"){
+        S.corpo=1;S.entre=1;S.largura=1;S.tema=0;
+        document.documentElement.setAttribute("data-tema","claro");
+        S.leit={fonte:"serifa",align:"justificado",espaco:1,destaques:"mostrar",
+          progresso:"porcentagem",escopo:S.leit.escopo};
+      }
+      else S.leit[k]=val;
+      break;}
     case "dock":S.dockSel=Number(v);break;
     case "criar-conta":S.conta=true;S.folha=null;S.cena="trabalho";S.lugar="mesa";break;
   }
