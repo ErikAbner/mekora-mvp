@@ -271,6 +271,17 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .vista{display:inline-flex;border:1px solid var(--line);border-radius:var(--r1);overflow:hidden;background:var(--bg-2)}
 .vista button{padding:6px 14px;font-size:12.5px;color:var(--ink-2)}
 .vista button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+/* filtro colado na colecao que ele filtra, escrito por extenso. Nao e
+   irmao do seletor de vista: aquele muda COMO se ve, este muda O QUE se ve.
+   Por isso ele nao divide a linha com ele — fica embaixo, sobre o acervo. */
+.filtroL{display:flex;flex-wrap:wrap;gap:var(--s2) var(--s5);align-items:baseline;
+  border-top:1px solid var(--line-2);border-bottom:1px solid var(--line-2);
+  padding:var(--s3) 0;margin-bottom:var(--s5)}
+.filtroL button{font-size:13px;color:var(--ink-3);padding:2px 0}
+.filtroL button:hover{color:var(--ink)}
+.filtroL button[aria-pressed="true"]{color:var(--ink);font-weight:600}
+.filtroL .n{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--ink-4);margin-left:5px}
+.filtroL button[aria-pressed="true"] .n{color:var(--ink-3)}
 .grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(136px,1fr));gap:var(--s5)}
 .bk{text-align:left;display:block;width:100%}
 .bk img{display:block;width:100%;height:auto;border-radius:var(--rm);border:1px solid var(--line);
@@ -1097,7 +1108,7 @@ const zero={
     {id:"a1",nome:"Kindle de Erik",modelo:"Paperwhite",email:"erik_abc@kindle.com",uso:"hoje, 09:12",princ:true},
     {id:"a2",nome:"Scribe do escritório",modelo:"Scribe",email:"erik_scribe@kindle.com",uso:"6 de agosto",princ:false}
   ],
-  apEdit:null,apRasc:{},histVazio:false,histErro:false,qMarcado:"",deLivro:false,dstAberto:null,
+  apEdit:null,apRasc:{},histVazio:false,histErro:false,qMarcado:"",deLivro:false,dstAberto:null,fEstante:"tudo",
   wiz:{p:0,email:"",nome:"",copiou:false,diferente:false},
   mesaVar:"reduzida",mesaEstado:"com-pendencia",perg:null,usb:{p:0,pct:0,t:null},
   /* destaque e nota. Object.assign e raso, entao dst, selE e rasc sao
@@ -2074,29 +2085,50 @@ function faltam(meus){
 }
 
 /* ═══ ESTANTE ═══ */
+/* Os quatro recortes saem do proprio acervo e a contagem e feita na hora:
+   um filtro que anuncia um numero que ninguem consegue produzir e o mesmo
+   erro de confianca inventada, so que em miniatura. "Ainda nao enviados"
+   ficou de fora porque nao existe campo — e nao se inventa um. */
+const FILTROS=[
+  ["tudo","Tudo",()=>true],
+  ["nota","Com nota",b=>/nota/.test(b.q)],
+  ["pdf","PDF",b=>b.f==="PDF"],
+  ["epub","EPUB",b=>b.f==="EPUB"]
+];
 function vEstante(){
+  const f=FILTROS.find(x=>x[0]===(S.fEstante||"tudo"))||FILTROS[0];
+  const acervo=ACERVO.filter(f[2]);
   let h='<div class="pad larga">'+
-    '<div style="display:flex;align-items:center;gap:var(--s4);flex-wrap:wrap;margin-bottom:var(--s5)">'+
-    '<div><h1 class="t">Estante</h1><p class="sub" style="margin:0">14 itens · tudo que já foi preparado.</p></div>'+
+    '<div style="display:flex;align-items:center;gap:var(--s4);flex-wrap:wrap;margin-bottom:var(--s4)">'+
+    '<div><h1 class="t">Estante</h1><p class="sub" style="margin:0">'+ACERVO.length+
+      ' itens \u00b7 tudo que j\u00e1 foi preparado.</p></div>'+
     '<span class="sp"></span>'+
     '<span class="vista"><button data-a="vista" data-v="lista" aria-pressed="'+(S.estante==="lista")+'">Capas</button>'+
-    '<button data-a="vista" data-v="3d" aria-pressed="'+(S.estante==="3d")+'">Estante</button></span></div>';
+    '<button data-a="vista" data-v="3d" aria-pressed="'+(S.estante==="3d")+'">Estante</button></span></div>'+
+    '<div class="filtroL">'+FILTROS.map(x=>
+      '<button data-a="f-estante" data-v="'+x[0]+'" aria-pressed="'+(f[0]===x[0])+'">'+x[1]+
+      '<span class="n">'+ACERVO.filter(x[2]).length+'</span></button>').join("")+'</div>';
+  if(!acervo.length)
+    return h+'<p class="sub">Nenhum item com esse recorte.</p></div>';
   if(S.estante==="lista"){
-    h+='<div class="grade">'+ACERVO.map(b=>'<button class="bk" data-a="ir-livro">'+
+    h+='<div class="grade">'+acervo.map(b=>'<button class="bk" data-a="ir-livro">'+
       '<img src="'+capa(b.c)+'" alt="Capa de '+esc(b.t)+'" loading="lazy">'+
-      '<span class="t">'+esc(b.t)+'</span><span class="a">'+esc(b.a)+' · '+b.f+'</span></button>').join("")+'</div>';
+      '<span class="t">'+esc(b.t)+'</span><span class="a">'+esc(b.a)+' \u00b7 '+b.f+'</span></button>').join("")+'</div>';
   }else{
-    const prats=[ACERVO.slice(0,5),ACERVO.slice(5,10),ACERVO.slice(10)];
-    h+=prats.map(p=>'<div class="prat"><div class="lombs">'+p.map(b=>
+    const n=Math.ceil(acervo.length/5);
+    const prats=[];for(let k=0;k<n;k++)prats.push(acervo.slice(k*5,k*5+5));
+    h+=prats.map(pr=>'<div class="prat"><div class="lombs">'+pr.map(b=>
       '<button data-a="lomb" data-v="'+b.c+'" aria-pressed="'+(S.lombSel===b.c)+'" title="'+esc(b.t)+'">'+
       '<img src="'+lomb(b.l)+'" alt="Lombada de '+esc(b.t)+'" style="height:'+b.h+'px" loading="lazy"></button>').join("")+
       '</div><div class="tabua"></div></div>').join("");
-    const b=ACERVO.find(x=>x.c===S.lombSel);
+    const b=acervo.find(x=>x.c===S.lombSel);
     h+='<div class="legenda">'+(b?'<b style="font-size:14px">'+esc(b.t)+'</b>'+
-      '<span style="font-size:12.5px;color:var(--ink-3)">'+esc(b.a)+' · '+b.f+' · '+esc(b.q)+'</span>'+
+      '<span style="font-size:12.5px;color:var(--ink-3)">'+esc(b.a)+' \u00b7 '+b.f+' \u00b7 '+esc(b.q)+'</span>'+
       '<span class="sp"></span><button class="lnk" data-a="ir-livro">Abrir</button>':'')+'</div>';
   }
-  h+=dock(["Capas","Estante","Filtrar","Organizar"],S.estante==="lista"?0:1);
+  /* a dock saiu daqui: ela repetia Capas/Estante, que ja estao no seletor
+     acima, e a justificativa dela era manipulacao direta perto das maos —
+     isso e Canvas. Trocar de vista e filtrar nao sao manipulacao. */
   return h+'</div>';
 }
 function vCanvas(nome){
@@ -3363,6 +3395,7 @@ app.addEventListener("click",ev=>{
     case "baixar":aviso("Download iniciado");break;
     case "feito":S.feitoAberto=!S.feitoAberto;break;
     case "vista":S.estante=v;break;
+    case "f-estante":S.fEstante=v;S.lombSel=null;break;
     case "lomb":S.lombSel=v;break;
     case "dobra":S.perfil=S.perfil===v?"":v;break;
     case "mesa-estado":S.mesaEstado=v;S.cena=v==="novo"?"nova":"trabalho";break;
