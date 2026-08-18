@@ -686,6 +686,65 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .aaesc .tt{font-size:13.5px;font-weight:650;display:block;margin-bottom:var(--s3)}
 .aaesc .cons{font-size:12.5px;color:var(--ink-2);line-height:1.55;margin:var(--s3) 0 0}
 
+
+/* ══ PERGUNTAS QUE GUIAM A LEITURA ══
+   Derivadas dos títulos do próprio arquivo — determinístico, não inventado.
+   O usuário acrescenta as dele. Cada destaque pode responder uma. */
+.pgs2{border-top:1px solid var(--line);padding-top:var(--s4);margin-top:var(--s6)}
+.pg2i{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:var(--s3);align-items:start;
+  padding:var(--s4) 0;border-bottom:1px solid var(--line-2);width:100%;text-align:left}
+.pg2i:last-child{border-bottom:none}
+.pg2i:hover{background:var(--bg-2)}
+.pg2i .n{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-top:3px}
+.pg2i .q{font-family:var(--serif);font-size:1.06rem;line-height:1.35;letter-spacing:-.01em;display:block}
+.pg2i .r{font-size:12.5px;color:var(--ink-3);margin-top:5px;display:block}
+.pg2i .r.tem{color:var(--ok)}
+.pg2i .ch{font-size:12px;color:var(--ink-3);margin-top:4px}
+.pgorig{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-3);border:1px solid var(--line);padding:2px 7px;white-space:nowrap}
+/* barra de pergunta dentro da leitura */
+.qbar{position:sticky;top:56px;z-index:15;background:var(--bg-2);border-bottom:1px solid var(--line);
+  padding:var(--s3) var(--s4);display:flex;gap:var(--s3);align-items:baseline;flex-wrap:wrap}
+.qbar .lb{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-3)}
+.qbar .q{font-family:var(--serif);font-size:1.02rem;flex:1;min-width:200px}
+.dossie{border-top:1px solid var(--line);padding-top:var(--s5);margin-top:var(--s7)}
+.dossie .q{font-family:var(--serif);font-size:1.24rem;line-height:1.3;margin:0 0 var(--s3)}
+.dossie .tr{border-left:2px solid var(--ink);padding-left:var(--s4);margin:0 0 var(--s4)}
+.dossie .tr p{font-family:var(--serif);font-size:15px;line-height:1.6;margin:0;color:var(--ink-2)}
+.dossie .tr cite{font-family:var(--mono);font-size:11px;color:var(--ink-3);font-style:normal;
+  display:block;margin-top:7px}
+
+/* ══ KINDLE POR CABO ══ */
+.usb{display:flex;flex-direction:column;align-items:center;gap:var(--s4);padding:var(--s6) 0}
+.usbfig{display:flex;align-items:center;gap:var(--s5)}
+.usbap{width:74px;height:100px;border:1px solid var(--line-3);background:var(--paper);position:relative}
+.usbap i{position:absolute;inset:7px 7px 14px;display:block;
+  background:repeating-linear-gradient(0deg,var(--line) 0 1px,transparent 1px 5px)}
+.usbap.-on{border-color:var(--ink)}
+.usbfio{width:88px;height:1px;background:var(--line-3);position:relative}
+.usbfio i{position:absolute;top:-2px;left:0;width:5px;height:5px;border-radius:50%;background:var(--ink);
+  animation:corre 1.5s linear infinite}
+.usbfio.-volta i{animation-direction:reverse}
+@keyframes corre{from{left:0}to{left:83px}}
+@media (prefers-reduced-motion:reduce){.usbfio i{animation:none;left:40px}}
+.usbmk{width:74px;height:74px;border:1px solid var(--line-3);display:flex;align-items:center;
+  justify-content:center;font-family:var(--serif);font-size:15px}
+.usbst{font-size:14px;color:var(--ink-2);text-align:center;min-height:22px}
+.usbst b{color:var(--ink)}
+.usbtr{width:100%;max-width:300px;height:2px;background:var(--line);overflow:hidden}
+.usbtr i{display:block;height:100%;background:var(--ink);transition:width .3s linear}
+.usbach{width:100%;border-top:1px solid var(--line-2);margin-top:var(--s4)}
+.usbl{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:var(--s3);align-items:center;
+  padding:var(--s3) 0;border-bottom:1px solid var(--line-2)}
+.usbl:last-child{border-bottom:none}
+.usbl img{width:34px;height:44px;object-fit:cover;object-position:top;border:1px solid var(--line)}
+.usbl .nm{font-size:13.5px;font-weight:600;display:block}
+.usbl .ds{font-size:12.5px;color:var(--ink-2);display:block;margin-top:2px}
+.usbl .st2{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--ink-3);white-space:nowrap}
+.usbl .st2.novo{color:var(--ok)}
+.usbl .st2.conf{color:var(--warn)}
+
 /* ══ ATUALIZAÇÕES ══ */
 .nov{display:grid;grid-template-columns:116px minmax(0,1fr);gap:var(--s4);align-items:start;
   padding:var(--s4) 0;border-bottom:1px solid var(--line-2)}
@@ -923,7 +982,7 @@ const zero={
   ],
   apEdit:null,apRasc:{},histVazio:false,histErro:false,
   wiz:{p:0,email:"",nome:"",copiou:false,diferente:false},
-  mesaVar:"reduzida",mesaEstado:"com-pendencia",
+  mesaVar:"reduzida",mesaEstado:"com-pendencia",perg:null,usb:{p:0,pct:0,t:null},
   /* leitura: tudo o que muda como o arquivo é lido nesta tela.
      escopo é o ato deliberado que faz um ajuste subir a padrão da conta. */
   leit:{fonte:"serifa",align:"justificado",espaco:1,destaques:"mostrar",progresso:"porcentagem",escopo:"livro"},
@@ -1257,6 +1316,11 @@ function vLeitura(){
      (S.leit.progresso==="capitulo"?"cap. "+(S.cap+1)+" de "+CAPS.length:prog+"%")+'</span>')+
     '<div class="fio"><i style="width:'+prog+'%"></i></div></div>';
 
+  if(S.perg!==null&&S.perg!==undefined&&PERGUNTAS[S.perg]){
+    h+='<div class="qbar"><span class="lb">Lendo para responder</span>'+
+      '<span class="q">'+esc(PERGUNTAS[S.perg].q)+'</span>'+
+      '<button class="lnk mudo" data-a="perg-sair">sair da pergunta</button></div>';
+  }
   const cls=" -"+(S.leit.align==="justificado"?"just":"esq")+
     (S.leit.fonte==="grotesca"?" -grot":"")+(S.leit.destaques==="ocultar"?" -semdst":"");
   h+='<div class="ed'+cls+'" style="padding-bottom:var(--s8)"><div class="colE">';
@@ -1292,6 +1356,25 @@ function vLeitura(){
    "atual" fica preservada; A, B e C são as explorações.
    O seletor vive nos controles de revisão, não no produto.
    ═══════════════════════════════════════════════════════════ */
+
+/* Perguntas: as quatro primeiras saem dos títulos dos capítulos do próprio
+   arquivo — determinístico, e por isso dizível. As outras são do usuário. */
+const PERGUNTAS=[
+ {q:"O que a expedição esperava encontrar antes de sair?",o:"titulo",cap:0,tr:[]},
+ {q:"Que método de registro foi adotado, e por quê?",o:"titulo",cap:1,
+  tr:[{t:"Adotamos a regra de escrever antes de conversar. Duas horas por dia sem falar com ninguém, cada um com o próprio caderno.",c:"Capítulo 2"}]},
+ {q:"O que a repetição fotográfica produz que uma foto isolada não produz?",o:"titulo",cap:2,
+  tr:[{t:"A repetição é o que transforma imagem em dado.",c:"Capítulo 3"}]},
+ {q:"O que sobrou no fim, e por que isso virou um diário?",o:"titulo",cap:3,tr:[]},
+ {q:"Isso serve para o capítulo de método da minha pesquisa?",o:"minha",cap:null,tr:[]}
+];
+/* My Clippings.txt do aparelho — o que o Kindle guarda de verdade */
+const CLIPS=[
+ {capa:"01",livro:"Estudo de Viabilidade",n:6,novo:4,st:"novo"},
+ {capa:"11",livro:"Diário 02",n:3,novo:3,st:"novo"},
+ {capa:"04",livro:"Censo de Fauna",n:2,novo:0,st:"iguais"},
+ {capa:null,livro:"Manual de campo (não está na estante)",n:5,novo:5,st:"conflito"}
+];
 const LENDO={capa:"01",titulo:"Estudo de Viabilidade",autor:"Ana Duarte",quando:"ontem",prog:32,notas:14};
 const PRONTOS=[
   {capa:"11",t:"Diário 02",q:"há 12 minutos",fmt:"EPUB"},
@@ -1661,6 +1744,22 @@ function vLivro(){
         '<div class="dado"><span class="k">Texto</span><span>Reconhecido em 93 de 96 páginas</span></div>'+
         '<div class="dado"><span class="k">No Kindle</span><span>'+(S.enviado?"Enviado hoje, 09:12":"Ainda não enviado")+'</span></div>'+
       '</div>'+
+      '<div class="pgs2"><div style="display:flex;align-items:baseline;gap:var(--s3);margin-bottom:var(--s2)">'+
+      '<span class="meyebrow" style="margin:0">Perguntas que guiam esta leitura</span>'+
+      '<span class="pgorig" style="margin-left:auto">4 vieram dos capítulos</span></div>'+
+      '<p style="font-size:13px;color:var(--ink-2);line-height:1.6;margin:0 0 var(--s3);max-width:56ch">'+
+      'Tiradas dos títulos do próprio arquivo. Servem para você ler procurando alguma coisa — e o que você '+
+      'marcar fica preso à pergunta que respondeu.</p>'+
+      PERGUNTAS.map((p,i)=>'<button class="pg2i" data-a="pergunta" data-v="'+i+'">'+
+        '<span class="n">'+String(i+1).padStart(2,"0")+'</span>'+
+        '<span><span class="q">'+esc(p.q)+'</span>'+
+        '<span class="r'+(p.tr.length?" tem":"")+'">'+(p.tr.length?
+          p.tr.length+' trecho'+(p.tr.length>1?"s":"")+' marcado'+(p.tr.length>1?"s":""):
+          'nada marcado ainda')+' · '+(p.o==="titulo"?"do capítulo "+(p.cap+1):"sua")+'</span></span>'+
+        '<span class="ch">›</span></button>').join("")+
+      '<div class="acoes" style="margin-top:var(--s4)">'+
+      '<button class="btnO" data-a="ir" data-v="leitura">Ler procurando estas respostas →</button>'+
+      '<button class="lnk mudo" data-a="nada">Escrever uma pergunta</button></div></div>'+
       '<div class="sec"><h3>Leitura e notas</h3>'+
       ''
     '</div></div></div>';
@@ -1917,6 +2016,7 @@ function pDisp(){
     (a.princ?'':'<button class="lnk mudo" data-a="ap-princ" data-v="'+a.id+'">tornar principal</button>')+
     '<button class="lnk" data-a="ap-editar" data-v="'+a.id+'">editar</button></div></div>').join("")+'</div>';
   h+='<div class="acoes"><button class="btnO" data-a="folha" data-v="wiz">Conectar outro Kindle</button>'+
+    '<button class="btnO" data-a="folha" data-v="usb">Trazer notas do Kindle</button>'+
     '<button class="lnk mudo" data-a="folha" data-v="wiz">'+
     'Não sei o endereço do meu Kindle</button></div>';
   h+='<div class="nota"><span>◆</span><div>O aparelho principal é o que define o tamanho das páginas quando '+
@@ -2080,7 +2180,9 @@ function vFolha(){
     li("ok","✓","Kindle de Erik","Paperwhite · erik_abc@kindle.com — o aparelho salvo no seu perfil.","","")+
     li("in","·","Usar outro endereço","Precisa estar autorizado na sua conta da Amazon.","","")+
     li("in","·","Cabo USB","Abre a pasta do aparelho quando ele estiver conectado.","","")+
-    '</div><div class="nota"><span>◆</span><div>O envio passa pelo serviço da Amazon. Avisamos quando ele '+
+    '</div><div class="acoes" style="margin:var(--s4) 0 0">'+
+    '<button class="lnk" data-a="folha" data-v="viewport">Ver como fica no aparelho antes →</button></div>'+
+    '<div class="nota"><span>◆</span><div>O envio passa pelo serviço da Amazon. Avisamos quando ele '+
     '<b>aceitar</b> o arquivo — não temos como saber se já apareceu no aparelho.</div></div>',
     '<button class="lnk mudo" data-a="fechar">Cancelar</button><button class="btn" data-a="enviar">Enviar agora</button>');
   if(f==="pend")return folha("Durante a preparação","3 páginas sem texto reconhecido",
@@ -2242,8 +2344,7 @@ function vFolha(){
     '<div class="lista">'+
       li("in","✎","Renomear","Muda só o nome do arquivo final. O original guarda o nome que tinha.","renomear","renomear")+
       li("in","▦","Ver todas as 96 páginas","Conferir o reconhecimento, escolher capa, deixar página de fora.","abrir","paginas")+
-      li("in","▭","Pré-visualizar no aparelho","Ver como fica no Kindle antes de enviar, com o corpo de letra que você usa.","abrir","viewport")+
-      li("in","↓","Baixar","O EPUB preparado, ou o PDF original do jeito que chegou.","baixar","baixar-dois")+
+           li("in","↓","Baixar","O EPUB preparado, ou o PDF original do jeito que chegou.","baixar","baixar-dois")+
       li("in","↺","Refazer a preparação","Volta ao começo com o mesmo arquivo. Nada é enviado de novo.","refazer","refazer")+
       li("er","✕","Remover da estante","O arquivo preparado e o original saem. Não dá para desfazer.","remover","remover")+
     '</div>','<button class="btnO" data-a="fechar">Fechar</button>');
@@ -2325,8 +2426,8 @@ function vFolha(){
       '</div>'+
       '<div class="ctrls">'+
         ctrl("Aparelho",DISP.map((x,i)=>[x[0],"disp:"+i,S.disp===i]))+
-        ctrl("Corpo da letra",CORPOS.map((c,i)=>[c+"px","fonte:"+i,S.fonte===i]))+
-        ctrl("Orientação",[["Retrato","orient:retrato",S.orient==="retrato"],["Paisagem","orient:paisagem",S.orient==="paisagem"]])+
+        ctrl("No menor corpo que você usa",CORPOS.map((c,i)=>[c+"px","fonte:"+i,S.fonte===i]))+
+        
         ctrl("Formato",[["EPUB","formato:epub",S.formato==="epub"],["PDF original","formato:pdf",S.formato==="pdf"]])+
         '<div class="nota" style="margin-top:0"><span>◆</span><div>'+
         (S.formato==="pdf"?'<b>No PDF o corpo da letra não faz nada.</b> A página é uma imagem: aumentar a letra '+
@@ -2546,6 +2647,69 @@ function vFolha(){
 
 '">Ir para '+x[3]+'</button>');
   }
+  if(f==="usb"){
+    const U=S.usb,ap=principal();
+    if(U.p===0)return folha("Kindle","Conectar o Kindle no cabo",
+      '<div class="usb"><div class="usbfig"><div class="usbmk">Mekora</div>'+
+      '<div class="usbfio"></div><div class="usbap"><i></i></div></div>'+
+      '<p class="usbst">Ligue o cabo e desbloqueie o aparelho. Ele aparece como um disco no computador.</p>'+
+      '</div>'+
+      '<div class="nota"><span>◆</span><div>Pelo cabo dá para fazer as duas coisas: <b>levar</b> os arquivos '+
+      'preparados e <b>trazer</b> o que você marcou lendo. Pelo e-mail só dá para levar.</div></div>',
+      '<button class="lnk mudo" data-a="fechar">Agora não</button>'+
+      '<button class="btnO forte" data-a="usb" data-v="1">O aparelho está conectado</button>');
+    if(U.p===1)return folha("Kindle","Lendo o aparelho",
+      '<div class="usb"><div class="usbfig"><div class="usbmk">Mekora</div>'+
+      '<div class="usbfio -volta"><i></i></div><div class="usbap -on"><i></i></div></div>'+
+      '<p class="usbst"><b>'+esc(ap?ap.nome:"Kindle")+'</b> reconhecido · lendo <span class="mono">My Clippings.txt</span></p>'+
+      '<div class="usbtr"><i style="width:'+U.pct+'%"></i></div>'+
+      '<p class="usbst" style="font-size:12.5px;color:var(--ink-3)">É o arquivo onde o Kindle guarda tudo o '+
+      'que você destacou. Não mexemos em mais nada do aparelho.</p></div>',
+      '<button class="lnk mudo" data-a="fechar">Cancelar</button>');
+    if(U.p===2){
+      const novos=CLIPS.reduce((a,c)=>a+c.novo,0);
+      return folha("Kindle","Encontrei "+novos+" destaques novos",
+        '<p style="margin:0 0 var(--s4);font-size:14px;line-height:1.6;color:var(--ink-2)">'+
+        'Em '+CLIPS.length+' livros. Os que você já tinha aqui não entram de novo.</p>'+
+        '<div class="usbach">'+CLIPS.map(c=>'<div class="usbl">'+
+          (c.capa?'<img src="'+capa(c.capa)+'" alt="">':'<span class="usbl-x" style="width:34px;height:44px;'+
+            'border:1px dashed var(--line-3)"></span>')+
+          '<span><span class="nm">'+esc(c.livro)+'</span>'+
+          '<span class="ds">'+c.n+' destaques no aparelho'+(c.novo?', '+c.novo+' que ainda não estão aqui':'')+'</span></span>'+
+          '<span class="st2 '+(c.st==="novo"?"novo":c.st==="conflito"?"conf":"")+'">'+
+          (c.st==="novo"?"vai entrar":c.st==="iguais"?"já tenho":"sem livro")+'</span></div>').join("")+'</div>'+
+        '<div class="nota"><span>◆</span><div><b>Manual de campo</b> não está na sua estante — ele foi lido no '+
+        'Kindle e veio de outro lugar. Dá para guardar os destaques mesmo assim, soltos, ou deixar de fora.</div></div>',
+        '<button class="lnk mudo" data-a="fechar">Deixar de fora</button>'+
+        '<button class="btnO forte" data-a="usb-importar">Trazer os '+novos+' destaques</button>');
+    }
+    return folha("Kindle","Pronto",
+      '<div class="usb"><div class="usbfig"><div class="usbmk">Mekora</div>'+
+      '<div class="usbfio"></div><div class="usbap -on"><i></i></div></div>'+
+      '<p class="usbst"><b>12 destaques</b> guardados, presos ao trecho de origem em cada livro.</p></div>'+
+      '<div class="nota"><span>◆</span><div>O aparelho continua conectado. Se quiser, aproveite para '+
+      '<b>levar</b> os prontos que ainda não foram.</div></div>',
+      '<button class="lnk mudo" data-a="usb-fim">Concluir</button>'+
+      '<button class="btnO forte" data-a="usb-fim">Levar 2 livros para o aparelho</button>');
+  }
+  if(f==="pergunta"){
+    const p=PERGUNTAS[S.perg||0];
+    return folha("Pergunta "+String((S.perg||0)+1).padStart(2,"0"),p.q,
+      '<div class="dossie" style="border:none;padding:0;margin:0">'+
+      (p.tr.length?
+        p.tr.map(t=>'<div class="tr"><p>'+esc(t.t)+'</p><cite>'+esc(t.c)+' · '+esc(ARQ.titulo)+'</cite></div>').join("")+
+        '<p style="font-size:13px;color:var(--ink-2);line-height:1.6;margin:0">Cada trecho aqui foi marcado '+
+        'por você enquanto lia com esta pergunta aberta. O dossiê é isto: o que você achou, junto, '+
+        'sem você ter organizado nada.</p>':
+        '<p style="font-family:var(--serif);font-size:var(--t-leitura);line-height:var(--lh-leitura);'+
+        'color:var(--ink-2);margin:0">Nada marcado ainda. Abra o livro com esta pergunta e o que você '+
+        'destacar aparece aqui.</p>')+
+      '</div>'+
+      (p.o==="titulo"?'<div class="nota"><span>◆</span><div>Esta pergunta veio do título do capítulo '+
+        (p.cap+1)+'. Se ela não for útil, dá para apagar — as suas continuam.</div></div>':''),
+      '<button class="lnk mudo" data-a="nada">Apagar pergunta</button>'+
+      '<button class="btnO forte" data-a="ler-pergunta" data-v="'+(S.perg||0)+'">Ler com esta pergunta →</button>');
+  }
   if(f==="aviso")return folha("Simulação",S.aviso||"Ação representada",
     '<p style="margin:0;font-size:14px;line-height:1.65;color:var(--ink-2)">Este é um protótipo: o controle existe, '+
     'tem estado e leva a algum lugar, mas nada é gravado e nenhum arquivo real é tocado.</p>',
@@ -2734,6 +2898,18 @@ app.addEventListener("click",ev=>{
       const el=document.getElementById(alvo);
       if(el){el.scrollIntoView({behavior:"smooth",block:"start"});return;}
       break;}
+    case "pergunta":S.perg=Number(v);S.folha="pergunta";break;
+    case "ler-pergunta":S.perg=Number(v);S.folha=null;S.lugar="leitura";S.dentro=false;break;
+    case "perg-sair":S.perg=null;break;
+    case "usb":{
+      const et=Number(v);S.usb.p=et;
+      if(et===1){clearInterval(S.usb.t);S.usb.pct=0;
+        S.usb.t=setInterval(()=>{S.usb.pct+=9;
+          if(S.usb.pct>=100){S.usb.pct=100;clearInterval(S.usb.t);S.usb.t=null;S.usb.p=2;}
+          pinta();},170);}
+      break;}
+    case "usb-importar":S.usb.p=3;S.usb.import=S.usb.import||[];break;
+    case "usb-fim":S.folha=null;S.usb={p:0,pct:0,t:null};aviso("12 destaques novos entraram na estante, presos aos trechos de origem.");break;
     case "artigo":S.ajuda=v;break;
     case "ajuda-tarefa":
       if(v==="wiz"){S.folha="wiz";S.wiz={p:0,email:"",nome:"",copiou:false,diferente:false};}
