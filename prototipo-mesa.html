@@ -251,17 +251,24 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .fonte{font-size:12.5px;line-height:1.55;color:var(--ink-3);margin:var(--s2) 0 0}
 .fonte b{color:var(--ink-2);font-weight:550}
 .acoes.-mudas{margin-top:var(--s3);gap:var(--s4)}
-.grpM.-perg{font-family:var(--serif);font-size:1.06rem;line-height:1.35;letter-spacing:-.01em;
-  text-transform:none;color:var(--ink);border-top:1px solid var(--line-2);padding-top:var(--s4);
-  margin:var(--s6) 0 var(--s4);display:flex;align-items:baseline;gap:var(--s3);flex-wrap:wrap}
-.grpM.-perg:first-of-type{margin-top:var(--s4);border-top:none;padding-top:0}
-.grpM.-perg .n{font-family:var(--mono);font-size:11px;letter-spacing:.09em;color:var(--ink-3);flex:0 0 auto}
-.grpM.-perg .o{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.09em;
-  text-transform:uppercase;color:var(--ink-3);margin-left:auto;flex:0 0 auto}
+/* a regua fina diz "isto e so seu": nao ha voz de autor atras. 2px em tinta
+   e barra de citacao — tem fonte. 1px translucido nao tem. Junto com a
+   ausencia do simbolo de volta, sao os dois unicos sinais. Sem rotulo. */
+.dossie .tr.-livre{border-left-width:1px;border-left-color:var(--line-3);margin-top:var(--s6)}
+.dossie .tr.-livre:first-child{margin-top:0}
+.dossie .tr.-livre .o{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink-3);display:block;margin-top:6px}
+.dossie .tr.-livre .campo{display:block;width:100%;min-height:3.4em;resize:vertical;
+  font-family:var(--serif);font-size:var(--t-leitura);line-height:var(--lh-leitura);color:var(--ink);
+  background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:var(--r1);
+  padding:0 0 var(--s2)}
+.dossie .tr.-livre .campo:focus{outline:0;border-bottom-color:var(--ink)}
+.dossie .tr.-livre .campo::placeholder{color:var(--ink-4)}
+.dossie .tr.-livre .pe{display:flex;align-items:center;gap:var(--s3);margin-top:var(--s2)}
+.dossie .tr[id]{scroll-margin-top:var(--s6)}
 .faltam{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--s2) var(--s3);
   border-top:1px solid var(--line-2);margin-top:var(--s6);padding-top:var(--s4);
   font-size:12.5px;color:var(--ink-3)}
-.faltam .pgorig{margin-left:auto}
 .dossie .tr p{max-width:34em}
 .dossie .tr .cheio{font-family:var(--serif);font-size:15px;line-height:1.6;color:var(--ink-2);
   margin:var(--s3) 0 0;max-width:34em}
@@ -747,7 +754,8 @@ body.-selecionando #notasbt{display:none}
 
 /* as duas listas reusam .dossie .tr e so trocam os papeis por estado:
    com nota, a nota e o corpo e o trecho vira a volta. */
-.dossie .tr.-ideia p{font-size:var(--t-leitura);line-height:var(--lh-leitura);color:var(--ink)}
+.dossie .tr.-ideia p,.dossie .tr.-livre p{font-size:var(--t-leitura);
+  line-height:var(--lh-leitura);color:var(--ink)}
 .dossie .tr .volta{font-family:var(--serif);font-style:italic;font-size:13px;
   color:var(--ink-3);display:block;margin-top:var(--s2);text-align:left}
 .dossie .tr .volta:hover{color:var(--ink)}
@@ -835,7 +843,6 @@ body.-selecionando #notasbt{display:none}
 .pg2i .n{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-top:3px}
 .pg2i .q{font-family:var(--serif);font-size:1.06rem;line-height:1.35;letter-spacing:-.01em;display:block}
 .pg2i .r{font-size:12.5px;color:var(--ink-3);margin-top:5px;display:block}
-.pg2i .r.tem{color:var(--ok)}
 .pg2i .ch{font-size:12px;color:var(--ink-3);margin-top:4px}
 .pgorig{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.08em;text-transform:uppercase;
   color:var(--ink-3);border:1px solid var(--line);padding:2px 7px;white-space:nowrap}
@@ -1125,7 +1132,7 @@ const zero={
   mesaVar:"reduzida",mesaEstado:"com-pendencia",perg:null,usb:{p:0,pct:0,t:null},
   /* destaque e nota. Object.assign e raso, entao dst, selE e rasc sao
      recriados a mao em reset() — senao a marcacao vaza entre cenas. */
-  dst:[],selE:null,notaAberta:null,rasc:{},dstUndo:null,erroNota:false,guardando:null,tirando:null,
+  dst:[],selE:null,notaAberta:null,rasc:{},dstUndo:null,erroNota:false,guardando:null,tirando:null,apagando:null,escNovo:null,paraLivro:false,
   /* leitura: tudo o que muda como o arquivo é lido nesta tela.
      escopo é o ato deliberado que faz um ajuste subir a padrão da conta. */
   leit:{fonte:"serifa",align:"justificado",espaco:1,destaques:"mostrar",progresso:"porcentagem",escopo:"livro"},
@@ -1248,7 +1255,7 @@ const AJUDA=[
 let S=Object.assign({},zero),timer=null,ultimoLugar=null;
 function reset(cena){
   clearInterval(timer);timer=null;S=Object.assign({},zero);
-  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardando=null;S.tirando=null;
+  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardando=null;S.tirando=null;S.apagando=null;S.escNovo=null;S.paraLivro=false;
   if(cena==="nova"){S.cena="nova";}
   if(cena==="sem-conta"){S.cena="nova";S.conta=false;}
   pinta();
@@ -1381,7 +1388,7 @@ function vHome(){
     'preso ao trecho, não a um caderno separado que ninguém reabre.</p>'+
     '<div class="duasE tres" style="margin-top:var(--s6)">'+
       pB("A estante","Tudo o que você preparou, com capa — inclusive as que o Mekora montou para arquivos que não tinham nenhuma. Dá para achar de longe, que é o que uma estante precisa fazer.")+
-      pB("O que você marcou","Destaque e nota ficam no trecho de origem. Voltar ao livro seis meses depois devolve o que você pensou lendo aquilo, no lugar onde pensou.")+
+      pB("O que você escreveu","Destaque e nota ficam no trecho de origem, e voltar ao livro devolve o que você pensou no lugar onde pensou. O que é sobre o livro inteiro fica no livro, sem trecho nenhum.")+
       pB("As conexões","O que você marcou em livros diferentes sobre o mesmo assunto se encontra. Sem você organizar pasta nenhuma.")+
     '</div>'+
     '<p class="txtE mudo" style="margin-top:var(--s5);font-size:var(--t-peq);line-height:1.6;max-width:62ch">'+
@@ -1460,14 +1467,17 @@ function vLeitura(){
      (S.leit.progresso==="capitulo"?"cap. "+(S.cap+1)+" de "+CAPS.length:prog+"%")+'</span>')+
     '<div class="fio"><i style="width:'+prog+'%"></i></div></div>';
 
-  if(S.perg!==null&&S.perg!==undefined&&PERGUNTAS[S.perg]){
-    const n=trechos(S.perg).length;
-    h+='<div class="qbar"><span class="lb">Lendo para responder</span>'+
-      '<span class="q">'+esc(PERGUNTAS[S.perg].q)+'</span>'+
-      (n?'<button class="cont" data-a="folha" data-v="pergunta">'+n+' trecho'+(n>1?"s":"")+
-         ' marcado'+(n>1?"s":"")+'</button>'
-        :'<span class="cont">nada marcado ainda</span>')+
-      '<button class="lnk mudo" data-a="perg-sair">sair da pergunta</button></div>';
+  const sob=S.perg?escK(S.perg):null;
+  if(sob){
+    const n=filhos(S.perg).length;
+    /* o contador levava a uma folha que renderizava o mesmo acervo de novo.
+       Agora ele volta ao escrito na lista do livro, que E o dossie. E o ramo
+       zerado deixa de ser um <span> sem saida. */
+    h+='<div class="qbar"><span class="lb">Lendo sob</span>'+
+      '<span class="q">'+esc(sob.nota)+'</span>'+
+      '<button class="cont" data-a="ir-esc" data-v="'+S.perg+'">'+
+        (n?n+' trecho'+(n>1?"s":"")+' marcado'+(n>1?"s":""):'nada marcado ainda')+'</button>'+
+      '<button class="lnk mudo" data-a="perg-sair">sair</button></div>';
   }
   const cls=" -"+(S.leit.align==="justificado"?"just":"esq")+
     (S.leit.fonte==="grotesca"?" -grot":"")+(S.leit.destaques==="ocultar"?" -semdst":"");
@@ -1525,7 +1535,7 @@ function barraSel(){
       '<button class="mudo" data-a="dst-copiar" data-v="'+d.k+'">Copiar com a origem</button>'+
       '<button class="mudo" data-a="dst-tirar" data-v="'+d.k+'">Tirar o destaque</button></div>';
   }
-  const dest=S.perg!=null?"vai para a pergunta aberta":"fica solto no livro";
+  const dest=S.perg?"vai para a pergunta aberta":"fica solto";
   return '<div class="selE" '+est+' role="menu">'+
     '<span class="dest">'+dest+'</span>'+
     '<button data-a="dst-criar" data-v="destacar">Destacar</button>'+
@@ -1539,15 +1549,6 @@ function barraSel(){
    O seletor vive nos controles de revisão, não no produto.
    ═══════════════════════════════════════════════════════════ */
 
-/* Perguntas: as quatro primeiras saem dos títulos dos capítulos do próprio
-   arquivo — determinístico, e por isso dizível. As outras são do usuário. */
-const PERGUNTAS=[
- {q:"O que a expedição esperava encontrar antes de sair?",o:"titulo",cap:0},
- {q:"Que método de registro foi adotado, e por quê?",o:"titulo",cap:1},
- {q:"O que a repetição fotográfica produz que uma foto isolada não produz?",o:"titulo",cap:2},
- {q:"O que sobrou no fim, e por que isso virou um diário?",o:"titulo",cap:3},
- {q:"Isso serve para o capítulo de método da minha pesquisa?",o:"minha",cap:null}
-];
 /* My Clippings.txt do aparelho — o que o Kindle guarda de verdade */
 const CLIPS=[
  {capa:"01",livro:"Estudo de Viabilidade",n:6,novo:4,st:"novo"},
@@ -1558,31 +1559,72 @@ const CLIPS=[
 /* ═══ DESTAQUE E NOTA ═══
    Endereco semantico: {cap,par,ini,fim} em offsets de caractere sobre
    CAPS[cap].p[par]. Nunca coordenada de tela — DEC-0016. */
+/* O endereco tem GRAO, e o grao e onde ele para:
+     trecho   cap,par,ini,fim   tem volta ao paragrafo
+     capitulo cap, resto null   tem volta ao capitulo
+     livro    tudo null         nao tem volta
+   Nao ha campo de tipo. As formas sao derivadas de dois bits: ancora e nota. */
+function escrito(cap,par,frag,nota,origem,k){
+  const tem=cap!=null&&par!=null&&frag;
+  let ini=null,fim=null;
+  if(tem){
+    const t=CAPS[cap].p[par],i=t.indexOf(frag);
+    if(i<0)console.warn("semente sem ancora em",cap,par,frag.slice(0,40));
+    ini=i<0?0:i;fim=i<0?t.length:i+frag.length;
+  }
+  return {k:k||("d"+cap+par),livro:ARQ.titulo,cap:(cap===undefined?null:cap),
+    par:(tem?par:null),ini:ini,fim:fim,perg:null,nota:nota||"",origem:origem||"leitura"};
+}
 function semente(cap,par,frag,perg,nota,origem){
-  const t=CAPS[cap].p[par],i=t.indexOf(frag);
-  /* -1 marcaria o paragrafo inteiro sem ninguem perceber */
-  if(i<0)console.warn("semente sem ancora em",cap,par,frag.slice(0,40));
-  return {k:"d"+cap+par,livro:ARQ.titulo,cap:cap,par:par,
-    ini:i<0?0:i,fim:i<0?t.length:i+frag.length,
-    perg:(perg===undefined?null:perg),nota:nota||"",origem:origem||"leitura"};
+  const d=escrito(cap,par,frag,nota,origem);d.perg=(perg===undefined?null:perg);return d;
 }
 function sementes(){
-  return [
-    semente(1,1,"Adotamos a regra de escrever antes de conversar. Duas horas por dia sem falar com ninguém, cada um com o próprio caderno.",1),
-    semente(2,0,"A repetição é o que transforma imagem em dado.",2),
-    semente(3,0,"Foi o material bruto: 96 páginas de anotação, 340 fotografias e uma lista de perguntas que ninguém tinha feito antes de sair.",
-      null,"O argumento do diário inteiro está aqui: o que valeu não foi a conclusão, foi o que sobrou bruto.")
+  /* As quatro derivadas dos titulos dos capitulos e a quinta, que sempre foi
+     anotacao livre com ponto de interrogacao no fim, deixam de ser um array a
+     parte: sao escritos sem ancora, no mesmo acervo. */
+  const q=[
+    escrito(0,null,null,"O que a expedi\u00e7\u00e3o esperava encontrar antes de sair?","titulo","q0"),
+    escrito(1,null,null,"Que m\u00e9todo de registro foi adotado, e por qu\u00ea?","titulo","q1"),
+    escrito(2,null,null,"O que a repeti\u00e7\u00e3o fotogr\u00e1fica produz que uma foto isolada n\u00e3o produz?","titulo","q2"),
+    escrito(3,null,null,"O que sobrou no fim, e por que isso virou um di\u00e1rio?","titulo","q3"),
+    escrito(null,null,null,"Isso serve para o cap\u00edtulo de m\u00e9todo da minha pesquisa?","livro","q4")
   ];
+  return q.concat([
+    semente(1,1,"Adotamos a regra de escrever antes de conversar. Duas horas por dia sem falar com ningu\u00e9m, cada um com o pr\u00f3prio caderno.","q1"),
+    semente(2,0,"A repeti\u00e7\u00e3o \u00e9 o que transforma imagem em dado.","q2",
+      "É a frase que separa registro de coleta. Uma foto é lembrança; a série é medida."),
+    /* a tese sobre o livro inteiro nasce SEM ancora: ela nao era daquele trecho */
+    escrito(3,null,null,"O argumento do di\u00e1rio inteiro est\u00e1 aqui: o que valeu n\u00e3o foi a conclus\u00e3o, foi o que sobrou bruto.","livro","e0")
+  ]);
 }
 S.dst=sementes();   /* aqui, e nao junto do let S: sementes() le CAPS */
-const dstK=k=>S.dst.find(d=>d.k===k);
-/* os trechos de uma pergunta sao DERIVADOS dos destaques. Tirar um destaque
-   nao deixa referencia morta em lugar nenhum: nao ha o que limpar. */
-const trechos=i=>S.dst.filter(d=>d.perg===i).sort((a,b)=>a.cap-b.cap||a.par-b.par||a.ini-b.ini);
-const dstTexto=d=>{const t=CAPS[d.cap]&&CAPS[d.cap].p[d.par];return t?t.slice(d.ini,d.fim):"";};
-const dstCap=d=>"Capítulo "+(d.cap+1);
-function cortaQ(i,n){const q=PERGUNTAS[i]?PERGUNTAS[i].q:"";
-  return q.length>n?q.slice(0,n).replace(/\s+\S*$/,"")+"…":q;}
+const ancora=d=>d.ini!=null;
+const escK=k=>S.dst.find(d=>d.k===k);
+const dstK=escK;
+/* ORDEM: o que e sobre o livro inteiro vem primeiro; depois tudo na ordem do
+   livro; dentro de um capitulo, o que e sobre o capitulo vem antes dos trechos
+   dele. Sem esta clausula, cap:null devolve NaN e o item se espalha. */
+function ordem(a,b){
+  const ga=a.cap==null?0:1,gb=b.cap==null?0:1;
+  if(ga!==gb)return ga-gb;
+  if(ga===0)return 0;
+  if(a.cap!==b.cap)return a.cap-b.cap;
+  const pa=a.par==null?0:1,pb=b.par==null?0:1;
+  if(pa!==pb)return pa-pb;
+  if(pa===0)return 0;
+  return (a.par-b.par)||(a.ini-b.ini);
+}
+/* filhos e DERIVADO: apagar uma pergunta nao deixa filho orfao, e tirar um
+   trecho nao deixa referencia morta. perg guarda CHAVE, nunca indice — com
+   indice, o primeiro apagar reindexaria e moveria os trechos em silencio. */
+const filhos=k=>S.dst.filter(d=>d.perg===k).sort(ordem);
+const escTxt=d=>{if(!ancora(d))return"";const t=CAPS[d.cap]&&CAPS[d.cap].p[d.par];
+  return t?t.slice(d.ini,d.fim):"";};
+const dstTexto=escTxt;
+/* null+1 === 1 em JS: o dstCap antigo nao estourava, ele MENTIA "Capitulo 1" */
+const escEnd=d=>d.cap!=null?"Cap\u00edtulo "+(d.cap+1):ARQ.titulo;
+const dstCap=escEnd;
+const semAncora=()=>S.dst.filter(d=>d.livro===ARQ.titulo&&!ancora(d)).sort(ordem);
 /* o paragrafo e emitido fatiado pelos destaques que caem nele */
 function paragrafo(cap,par,txt){
   const ds=S.dst.filter(d=>d.cap===cap&&d.par===par).sort((a,b)=>a.ini-b.ini);
@@ -1606,7 +1648,8 @@ function notasDo(cap,par){
     .sort((a,b)=>a.ini-b.ini).map(notaE).join("");
 }
 function notaE(d){
-  const onde=d.perg!=null?'sob “'+esc(cortaQ(d.perg,30))+'”':"solta no livro";
+  const pai=d.perg?escK(d.perg):null;
+  const onde=!ancora(d)?"sobre o livro":(pai?'sob “'+esc(pai.nota.slice(0,30))+'…”':"solta");
   if(S.notaAberta!==d.k)
     return '<div class="notaE"><p>'+esc(d.nota)+'</p><div class="pe">'+
       '<button class="lnk mudo" data-a="dst-nota" data-v="'+d.k+'">Editar</button>'+
@@ -1619,7 +1662,12 @@ function notaE(d){
       '<button class="lnk" data-a="dst-guardar" data-v="'+d.k+'" style="padding:0">Tentar de novo</button></p>':"")+
     '<div class="pe"><button class="lnk" data-a="dst-guardar" data-v="'+d.k+'">Pronto</button>'+
     (d.nota?'<button class="lnk mudo" data-a="dst-apagar-nota" data-v="'+d.k+'">Apagar a nota</button>':"")+
-    '<span class="sp"></span><span class="dest">'+onde+'</span></div></div>';
+    '<span class="sp"></span>'+
+    /* o destino era texto morto no rodape. Vira o controle, no mesmo lugar,
+       com o mesmo tamanho: escolher onde a escrita mora ENQUANTO a caneta
+       esta na mao, antes de o registro existir. Nenhuma ancora falsa entra. */
+    '<button class="lnk mudo dest" data-a="esc-grao" data-v="'+d.k+'">'+
+      (S.paraLivro||!ancora(d)?"sobre o livro":"no trecho")+'</button></div></div>';
 }
 const LENDO={capa:"01",titulo:"Estudo de Viabilidade",autor:"Ana Duarte",quando:"ontem",prog:32,notas:14};
 const PRONTOS=[
@@ -2010,90 +2058,105 @@ function vLivro(){
 }
 
 function acoesDst(d){
+  if(!ancora(d))
+    /* sem ancora nao ha trecho para onde ir, e navegar seria mentira */
+    return '<div class="acs">'+
+      '<button class="lnk mudo" data-a="dst-editar" data-v="'+d.k+'">editar</button>'+
+      '<button class="lnk mudo sob" data-a="ler-pergunta" data-v="'+d.k+'">ler com isto \u2192</button>'+
+      '<button class="lnk mudo sob" data-a="dst-copiar" data-v="'+d.k+'">copiar com a origem</button>'+
+      '<span class="sp" style="flex:1"></span>'+
+      '<button class="lnk sob tirar" data-a="esc-apagar" data-v="'+d.k+'">apagar</button></div>';
   return '<div class="acs">'+
     '<button class="lnk mudo" data-a="dst-ir" data-v="'+d.k+'">ir ao trecho</button>'+
     '<button class="lnk mudo sob" data-a="dst-editar" data-v="'+d.k+'">'+
       (d.nota?"editar a nota":"anotar")+'</button>'+
-    /* trocar a pergunta era inalcancavel depois de atribuida, e a folha ja
-       sabia devolver o trecho para solto. A acao existia e nao tinha porta. */
     '<button class="lnk mudo sob" data-a="dst-sob" data-v="'+d.k+'">'+
-      (d.perg==null?"guardar sob uma pergunta":"trocar a pergunta")+'</button>'+
+      (d.perg?"trocar a pergunta":"guardar sob uma pergunta")+'</button>'+
     '<button class="lnk mudo sob" data-a="dst-copiar" data-v="'+d.k+'">copiar com a origem</button>'+
     '<span class="sp" style="flex:1"></span>'+
     '<button class="lnk sob tirar" data-a="dst-tirar" data-v="'+d.k+'">tirar</button></div>';
 }
 function itemMarcado(d,ideia){
-  const cap=esc(dstCap(d));
-  const sob=d.perg!=null?' \u00b7 '+esc(cortaQ(d.perg,26)):"";
+  const end=esc(escEnd(d));
   const kd=d.origem==="kindle"?'<span class="kd">do Kindle</span>':"";
-  const corte=dstTexto(d).length>64?"\u2026":"";
-  if(ideia){
-    /* ver o trecho inteiro nao pode custar sair da lista: e justamente o caso
-       em que se quer a nota e o trecho na mesma tela. Abre no lugar. */
-    const ab=S.dstAberto===d.k;
-    return '<div class="tr -ideia"><p>'+esc(d.nota)+'</p>'+
-      '<button class="volta" data-a="dst-abrirtr" data-v="'+d.k+'" aria-expanded="'+ab+'">\u21a9 '+
-      (ab?esc(dstTexto(d).slice(0,64))+corte:esc(dstTexto(d).slice(0,64))+corte)+'</button>'+
-      (ab?'<p class="cheio">\u201c'+esc(dstTexto(d))+'\u201d</p>':'')+
-      '<cite>'+cap+sob+'</cite>'+kd+acoesDst(d)+'</div>';
+  /* SEM ANCORA: mesmo corpo da nota de trecho, regua de 1px, e nenhum retorno.
+     A ausencia do simbolo de volta e a regua fina sao os dois sinais — nao ha
+     rotulo, selo nem icone dizendo "sem trecho". */
+  if(!ancora(d)){
+    if(S.notaAberta===d.k)return notaLivre(d);
+    const org=d.origem==="titulo"?'<span class="o">do t\u00edtulo do cap. '+(d.cap+1)+'</span>':"";
+    return '<div class="tr -livre" id="e-'+d.k+'"><p>'+esc(d.nota)+'</p>'+
+      '<cite>'+end+'</cite>'+org+acoesDst(d)+'</div>';
   }
-  return '<div class="tr"><p>'+esc(dstTexto(d))+'</p>'+
-    '<cite>'+cap+sob+'</cite>'+kd+acoesDst(d)+'</div>';
+  const pai=d.perg?escK(d.perg):null;
+  const sob=pai?' \u00b7 '+esc(pai.nota.slice(0,26))+'\u2026':"";
+  const corte=escTxt(d).length>64?"\u2026":"";
+  if(ideia){
+    const ab=S.dstAberto===d.k;
+    return '<div class="tr -ideia" id="e-'+d.k+'"><p>'+esc(d.nota)+'</p>'+
+      '<button class="volta" data-a="dst-abrirtr" data-v="'+d.k+'" aria-expanded="'+ab+'">\u21a9 '+
+      esc(escTxt(d).slice(0,64))+corte+'</button>'+
+      (ab?'<p class="cheio">\u201c'+esc(escTxt(d))+'\u201d</p>':'')+
+      '<cite>'+end+sob+'</cite>'+kd+acoesDst(d)+'</div>';
+  }
+  return '<div class="tr" id="e-'+d.k+'"><p>'+esc(escTxt(d))+'</p>'+
+    '<cite>'+end+sob+'</cite>'+kd+acoesDst(d)+'</div>';
+}
+/* o compositor sem ancora: mesmo campo, mesmo Pronto, outra superficie */
+function notaLivre(d){
+  const rasc=S.rasc[d.k]!==undefined?S.rasc[d.k]:d.nota;
+  return '<div class="tr -livre" id="e-'+d.k+'">'+
+    '<textarea class="campo" id="campoNota" aria-label="Sua anota\u00e7\u00e3o" '+
+    'placeholder="O que voc\u00ea quer guardar sobre este livro">'+esc(rasc)+'</textarea>'+
+    '<div class="pe"><button class="lnk" data-a="dst-guardar" data-v="'+d.k+'">Pronto</button>'+
+    '<span class="sp" style="flex:1"></span>'+
+    '<span class="dest">'+esc(escEnd(d))+'</span></div></div>';
 }
 function secMarcado(){
-  const meus=S.dst.filter(d=>d.livro===ARQ.titulo)
-    .sort((a,b)=>a.cap-b.cap||a.par-b.par||a.ini-b.ini);
-  /* a rede de desfazer vem ANTES de qualquer retorno: tirar o ultimo destaque
-     nao pode ser a unica remocao sem volta do produto. */
-  const desfaz=S.dstUndo?'<div class="desfezL"><span>Trecho tirado.</span>'+
+  const meus=S.dst.filter(d=>d.livro===ARQ.titulo).sort(ordem);
+  /* a rede de desfazer vem ANTES de qualquer retorno */
+  const desfaz=S.dstUndo?'<div class="desfezL"><span>'+
+    (ancora(S.dstUndo.d)?"Trecho tirado.":"Apagado.")+'</span>'+
     '<button class="lnk" data-a="dst-desfazer" style="padding:0">desfazer</button></div>':"";
-  let h='<div class="sec" id="marcado" style="margin-top:var(--s7)"><h3>O que voc\u00ea marcou</h3>'+desfaz;
-  if(!meus.length)
+  let h='<div class="sec" id="marcado" style="margin-top:var(--s7)"><h3>O que ficou</h3>'+desfaz;
+  const q=(S.qMarcado||"").toLowerCase().trim();
+  const passa=d=>!q||((d.nota||"")+" "+escTxt(d)).toLowerCase().indexOf(q)>-1;
+  /* um pai entra se ele OU um filho casa: senao a busca esconderia o dossie */
+  const pais=meus.filter(d=>!ancora(d)&&(!q||passa(d)||filhos(d.k).some(passa)));
+  const soltos=meus.filter(d=>ancora(d)&&!d.perg&&passa(d));
+  const comNota=meus.filter(d=>ancora(d)&&d.nota).length;
+  const marcados=meus.filter(ancora).length;
+  if(!meus.length&&!S.escNovo)
     return h+'<p style="font-size:13px;color:var(--ink-2);line-height:1.6;max-width:58ch;margin:0">'+
-      'Nada marcado ainda. O que voc\u00ea destacar lendo aparece aqui, preso ao trecho \u2014 e as '+
-      'perguntas abaixo foram tiradas dos t\u00edtulos do pr\u00f3prio arquivo.</p>'+faltam(meus)+'</div>';
-  const ideias=meus.filter(d=>d.nota).length;
-  h+='<p class="saldo">'+meus.length+' marcados'+(ideias?' \u00b7 '+ideias+' com nota':'')+'</p>'+
+      '<b>Nada aqui ainda.</b> O que voc\u00ea destacar lendo aparece preso ao trecho. '+
+      'O que voc\u00ea escrever sobre o livro aparece sem trecho nenhum.</p>'+
+      '<div style="margin-top:var(--s4)"><button class="lnk mudo" data-a="esc-novo" '+
+      'style="padding:0">Escrever sobre o livro</button></div></div>';
+  const cl=[];
+  if(marcados)cl.push(marcados+' marcado'+(marcados>1?"s":""));
+  if(comNota)cl.push(comNota+' com nota');
+  if(pais.length)cl.push(pais.length+' anota\u00e7'+(pais.length>1?"\u00f5es":"\u00e3o"));
+  h+=(cl.length?'<p class="saldo">'+cl.join(" \u00b7 ")+'</p>':'')+
     '<div class="dossie" style="border:none;padding:0;margin:0">';
   if(meus.length>8)
-    h+='<input class="campoB" id="buscaMarcado" placeholder="Buscar no que voc\u00ea marcou" '+
+    h+='<input class="campoB" id="buscaMarcado" placeholder="Buscar no que voc\u00ea escreveu" '+
       'value="'+esc(S.qMarcado||"")+'" style="margin-bottom:var(--s4)">';
-  const q=(S.qMarcado||"").toLowerCase().trim();
-  const passa=d=>!q||(d.nota+" "+dstTexto(d)).toLowerCase().indexOf(q)>-1;
-  /* agrupado pela pergunta que o trecho responde. Antes eram DUAS listas do
-     mesmo acervo, uma indexada por pergunta e outra por nota — completude
-     resolvida com interface. Nota e sem nota ja se distinguem pela forma. */
-  const grupos=PERGUNTAS.map((p,i)=>({i:i,itens:meus.filter(d=>d.perg===i&&passa(d))}))
-    .filter(g=>g.itens.length);
-  const soltos=meus.filter(d=>d.perg==null&&passa(d));
-  if(soltos.length)grupos.push({i:null,itens:soltos});
-  if(!grupos.length)
+  if(q&&!pais.length&&!soltos.length)
     h+='<p style="font-size:13px;color:var(--ink-3);margin:0">Nada com \u201c'+esc(q)+'\u201d.</p>';
-  const varios=grupos.length>1;
-  grupos.forEach(g=>{
-    if(varios)h+=g.i===null
-      ?'<div class="grpM -perg"><span class="n">\u2014</span><span>Solto no livro</span></div>'
-      :'<div class="grpM -perg"><span class="n">'+String(g.i+1).padStart(2,"0")+'</span>'+
-       '<span>'+esc(PERGUNTAS[g.i].q)+'</span><span class="o">'+
-       (PERGUNTAS[g.i].o==="titulo"?"do cap\u00edtulo "+(PERGUNTAS[g.i].cap+1):"sua")+'</span></div>';
-    /* dentro do grupo, o que voce escreveu vem antes do que voce so marcou */
-    h+=g.itens.slice().sort((a,b)=>(b.nota?1:0)-(a.nota?1:0))
-      .map(d=>itemMarcado(d,!!d.nota)).join("");
+  /* o pai e um ITEM da lista, nao um cabecalho de secao: uma pergunta sem
+     trecho nao some, ela so nao tem nada embaixo. Nao ha segunda lista. */
+  pais.forEach(d=>{
+    h+=itemMarcado(d,true);
+    h+=filhos(d.k).filter(passa).map(f=>itemMarcado(f,!!f.nota)).join("");
   });
-  return h+'</div>'+faltam(meus)+'</div>';
-}
-/* o que ainda nao tem trecho e informacao: some sozinho quando deixar de ser */
-function faltam(meus){
-  const vazias=PERGUNTAS.map((p,i)=>i).filter(i=>!meus.some(d=>d.perg===i));
-  const daEstrutura=PERGUNTAS.filter(p=>p.o==="titulo").length;
-  if(!vazias.length)
-    return '<div class="faltam"><button class="lnk mudo" data-a="nada" style="padding:0">Escrever uma pergunta</button>'+
-      '<span class="pgorig">'+daEstrutura+' vieram dos cap\u00edtulos</span></div>';
-  return '<div class="faltam"><span>Ainda sem nada marcado:</span>'+
-    vazias.map(i=>'<button class="lnk mudo" data-a="ler-pergunta" data-v="'+i+'" style="padding:0">'+
-      esc(cortaQ(i,38))+' \u2192</button>').join("")+
-    '<button class="lnk mudo" data-a="nada" style="padding:0">Escrever uma pergunta</button>'+
-    '<span class="pgorig">'+daEstrutura+' vieram dos cap\u00edtulos</span></div>';
+  if(S.escNovo)h+=notaLivre({k:S.escNovo,cap:null,nota:""});
+  if(soltos.length)
+    h+=(pais.length?'<div class="grpM">Solto no livro</div>':'')+
+      soltos.map(d=>itemMarcado(d,!!d.nota)).join("");
+  if(!S.escNovo)
+    h+='<div class="faltam"><button class="lnk mudo" data-a="esc-novo" style="padding:0">'+
+      'Escrever sobre o livro</button></div>';
+  return h+'</div></div>';
 }
 
 /* ═══ ESTANTE ═══ */
@@ -2980,7 +3043,7 @@ function vFolha(){
       '<div class="lista">'+
         li("er","✕","14 livros da estante","Com as capas, incluindo as que o Mekora montou.","","")+
         li("er","✕","Os arquivos originais","Não dá para refazer a preparação depois.","","")+
-        li("er","✕","O que você marcou","Destaques e notas, presos aos trechos.","","")+
+        li("er","✕","O que você escreveu","Notas presas a trechos, anotações sobre os livros, e as perguntas que você criou.","","")+
         li("er","✕","2 dispositivos e o histórico","","","")+
       '</div>'+
       '<p style="margin:var(--s4) 0 var(--s2);font-size:13.5px">Para confirmar, escreva <b>apagar</b>:</p>'+
@@ -3058,60 +3121,36 @@ function vFolha(){
       '<button class="lnk mudo" data-a="usb-fim">Concluir</button>'+
       '<button class="btnO forte" data-a="usb-fim">Levar 2 livros para o aparelho</button>');
   }
-  if(f==="pergunta"){
-    /* S.perg||0 transformava "sem pergunta" na pergunta 01 */
-    const iP=(S.perg==null?0:S.perg),p=PERGUNTAS[iP];
-    const tr=trechos(iP).slice().sort((x,z)=>(z.nota?1:0)-(x.nota?1:0));
-    return folha("Pergunta "+String(iP+1).padStart(2,"0"),p.q,
-      '<div class="dossie" style="border:none;padding:0;margin:0">'+
-      (tr.length?
-        tr.map(d=>'<div class="tr'+(d.nota?" -ideia":"")+'">'+
-          (d.nota?'<p>'+esc(d.nota)+'</p><button class="volta" data-a="dst-ir" data-v="'+d.k+'">\u21a9 '+
-             esc(dstTexto(d).slice(0,64))+(dstTexto(d).length>64?"\u2026":"")+'</button>'
-                 :'<p>'+esc(dstTexto(d))+'</p><button class="lnk mudo" data-a="dst-ir" data-v="'+d.k+
-             '" style="padding:0;margin-top:var(--s2)">ir ao trecho</button>')+
-          '<cite>'+esc(dstCap(d))+' \u00b7 '+esc(ARQ.titulo)+'</cite></div>').join("")+
-        '<p style="font-size:13px;color:var(--ink-2);line-height:1.6;margin:0">Cada trecho aqui foi marcado '+
-        'por você enquanto lia com esta pergunta aberta. O dossiê é isto: o que você achou, junto, '+
-        'sem você ter organizado nada.</p>':
-        '<p style="font-family:var(--serif);font-size:var(--t-leitura);line-height:var(--lh-leitura);'+
-        'color:var(--ink-2);margin:0">Nada marcado ainda. Abra o livro com esta pergunta e o que você '+
-        'destacar aparece aqui.</p>')+
-      '</div>'+
-      (p.o==="titulo"?'<div class="nota"><span>◆</span><div>Esta pergunta veio do título do capítulo '+
-        (p.cap+1)+'. Se ela não for útil, dá para apagar — as suas continuam.</div></div>':''),
-      '<button class="lnk mudo" data-a="nada">Apagar pergunta</button>'+
-      '<button class="btnO forte" data-a="ler-pergunta" data-v="'+iP+'">Ler com esta pergunta →</button>');
-  }
-  if(f==="tirar"){
-    const d=dstK(S.tirando);
-    return folha("Destaque","Tirar apaga a nota junto",
-      (d?'<div class="dossie" style="border:none;padding:0;margin:0 0 var(--s4)">'+
-        '<div class="tr -ideia"><p>'+esc(d.nota)+'</p>'+
-        '<cite>'+esc(dstCap(d))+'</cite></div></div>':"")+
-      '<p style="margin:0;font-size:14px;line-height:1.65;color:var(--ink-2)">O trecho deixa de '+
-      'ficar marcado e a nota sai com ele. D\u00e1 para desfazer logo depois, na pr\u00f3pria lista.</p>',
-      '<button class="lnk mudo" data-a="fechar">Deixar como est\u00e1</button>'+
-      '<button class="btnD" data-a="dst-tirar" data-v="'+(S.tirando||"")+'" data-f="1">Tirar mesmo assim</button>');
-  }
   if(f==="guardar"){
-    const d=dstK(S.guardando);
-    /* a pergunta do capitulo do trecho vem primeiro, e o motivo vai na propria
-       linha. Sem capitulo em comum nao ha recomendacao, e ela nao se inventa. */
-    const ord=PERGUNTAS.map((q,i)=>i).sort((x,z)=>
-      ((PERGUNTAS[z].cap===(d?d.cap:-1))?1:0)-((PERGUNTAS[x].cap===(d?d.cap:-1))?1:0));
-    return folha("Pergunta","Guardar sob uma pergunta",
-      (d?'<div class="dossie" style="border:none;padding:0;margin:0 0 var(--s4)">'+
-        '<div class="tr"><p>'+esc(dstTexto(d))+'</p><cite>'+esc(dstCap(d))+'</cite></div></div>':"")+
+    const alvo=escK(S.guardando);
+    /* primeiro os do mesmo capitulo do trecho, com o motivo na linha. Sem
+       capitulo em comum nao ha recomendacao, e ela nao se inventa. */
+    const ord=semAncora().slice().sort((x,z)=>
+      ((z.cap===(alvo?alvo.cap:-1))?1:0)-((x.cap===(alvo?alvo.cap:-1))?1:0));
+    return folha("Guardar","Guardar sob o que voc\u00ea escreveu",
+      (alvo?'<div class="dossie" style="border:none;padding:0;margin:0 0 var(--s4)">'+
+        '<div class="tr"><p>'+esc(escTxt(alvo))+'</p><cite>'+esc(escEnd(alvo))+'</cite></div></div>':"")+
       '<div class="pgs2" style="border:none;padding:0;margin:0">'+
-      ord.map(i=>'<button class="pg2i" data-a="perg-guardar" data-v="'+i+'">'+
-        '<span class="n">'+String(i+1).padStart(2,"0")+'</span>'+
-        '<span><span class="q">'+esc(PERGUNTAS[i].q)+'</span>'+
-        '<span class="r">'+(d&&PERGUNTAS[i].cap===d.cap?"do mesmo cap\u00edtulo do trecho":
-          (PERGUNTAS[i].o==="minha"?"sua":"do cap\u00edtulo "+(PERGUNTAS[i].cap+1)))+'</span></span>'+
+      ord.map((e,n)=>'<button class="pg2i" data-a="perg-guardar" data-v="'+e.k+'">'+
+        '<span class="n">'+String(n+1).padStart(2,"0")+'</span>'+
+        '<span><span class="q">'+esc(e.nota)+'</span>'+
+        '<span class="r">'+(alvo&&e.cap!=null&&e.cap===alvo.cap?"do mesmo cap\u00edtulo do trecho":
+          (e.origem==="titulo"?"do t\u00edtulo do cap\u00edtulo "+(e.cap+1):"sua"))+'</span></span>'+
         '<span class="ch">\u203a</span></button>').join("")+'</div>',
-      '<button class="lnk mudo" data-a="perg-guardar" data-v="">Deixar solto no livro</button>'+
-      '<button class="lnk mudo" data-a="nada">Escrever uma pergunta</button>');
+      '<button class="lnk mudo" data-a="perg-guardar" data-v="">Deixar solto</button>'+
+      '<button class="lnk mudo" data-a="esc-novo-guardar">Escrever e guardar aqui</button>');
+  }
+  if(f==="apagar-escrito"){
+    const d=escK(S.apagando),n=d?filhos(d.k).length:0;
+    return folha("Anota\u00e7\u00e3o","Apagar isto",
+      (d?'<div class="dossie" style="border:none;padding:0;margin:0 0 var(--s4)">'+
+        '<div class="tr -livre"><p>'+esc(d.nota)+'</p><cite>'+esc(escEnd(d))+'</cite></div></div>':"")+
+      '<p style="margin:0;font-size:14px;line-height:1.65;color:var(--ink-2)">'+
+      (n===1?'O trecho guardado sob isto continua no livro, solto.'
+            :'Os '+n+' trechos guardados sob isto continuam no livro, soltos.')+
+      ' <b>Nada do que você marcou é apagado.</b></p>',
+      '<button class="lnk mudo" data-a="fechar">Deixar como est\u00e1</button>'+
+      '<button class="btnD" data-a="esc-apagar" data-v="'+(S.apagando||"")+'" data-f="1">Apagar</button>');
   }
   if(f==="aviso")return folha("Simulação",S.aviso||"Ação representada",
     '<p style="margin:0;font-size:14px;line-height:1.65;color:var(--ink-2)">Este é um protótipo: o controle existe, '+
@@ -3341,13 +3380,16 @@ function pinta(){
            do produto seria exclusivo do mouse. */
         ed.addEventListener("keyup",e=>{if(e.shiftKey)capturaSel();});
       }
-      const ta=document.getElementById("campoNota");
-      if(ta){
-        if(taEst&&taEst.alt)ta.style.height=taEst.alt;
-        ta.focus();
-        const f=taEst?taEst.fim:ta.value.length;
-        ta.setSelectionRange(taEst?taEst.ini:f,f);
-      }
+    }
+    /* FORA do ramo da leitura: o compositor tambem abre na tela do livro, e
+       la ele perderia cursor a cada pinta() — "nada foi perdido" viraria
+       mentira justo na superficie nova. */
+    const ta=document.getElementById("campoNota");
+    if(ta){
+      if(taEst&&taEst.alt)ta.style.height=taEst.alt;
+      ta.focus();
+      const fz=taEst?taEst.fim:ta.value.length;
+      ta.setSelectionRange(taEst?taEst.ini:fz,fz);
     }
     document.body.classList.toggle("-selecionando",!!S.selE);
     c.addEventListener("scroll",()=>{
@@ -3379,7 +3421,9 @@ app.addEventListener("click",ev=>{
     case "nada":aviso("Controle representado");break;
     case "fechar":case "fechar-veu":S.folha=null;S.aviso=null;break;
     case "menu":S.menu=!S.menu;break;
-    case "ir":S.lugar=v;S.folha=null;S.dentro=false;S.dstUndo=null;S.deLivro=false;break;
+    case "ir":S.lugar=v;S.folha=null;S.dentro=false;S.dstUndo=null;S.deLivro=false;
+      if(v==="leitura")S.perg=null;   /* senao "Ler" reabria a pergunta calada */
+      break;
     case "ir-livro":{
       S.lugar="livro";S.folha=null;S.dentro=false;S.dstUndo=null;S.deLivro=false;
       if(v==="notas"){pinta();const alvo=document.getElementById("marcado");
@@ -3422,8 +3466,7 @@ app.addEventListener("click",ev=>{
       const el=document.getElementById(alvo);
       if(el){el.scrollIntoView({behavior:"smooth",block:"start"});return;}
       break;}
-    case "pergunta":S.perg=Number(v);S.folha="pergunta";break;
-    case "ler-pergunta":S.perg=Number(v);S.folha=null;S.lugar="leitura";S.dentro=false;break;
+    case "ler-pergunta":S.perg=v;S.folha=null;S.lugar="leitura";S.dentro=false;break;
     /* sair da pergunta encerra a SESSAO de leitura, nunca o vinculo:
        o destaque pertence a pergunta, nao ao momento em que foi feito. */
     case "perg-sair":S.perg=null;break;
@@ -3446,8 +3489,16 @@ app.addEventListener("click",ev=>{
       break;}
     case "dst-nota":S.notaAberta=v;S.selE=null;S.erroNota=false;break;
     case "dst-guardar":{
-      const d=dstK(v),ta=document.getElementById("campoNota");
+      const d=escK(v),ta=document.getElementById("campoNota");
       if(d&&ta)d.nota=ta.value.trim();
+      /* a ancora e solta AQUI, nao no clique do alternador: ao soltar antes,
+         notasDo() parava de emitir o compositor e o campo sumia com o texto
+         dentro. O <mark> sai agora, porque deixou de ser verdade que aquele
+         texto e sobre aquele trecho — e a saida e o proprio recibo. */
+      if(d&&S.paraLivro&&ancora(d)){d.par=null;d.ini=null;d.fim=null;d.origem="livro";d.perg=null;}
+      S.paraLivro=false;
+      /* escrito sem ancora e sem texto nao e nada: some sem aviso */
+      if(d&&!ancora(d)&&!d.nota)S.dst=S.dst.filter(x=>x.k!==v);
       delete S.rasc[v];S.notaAberta=null;S.erroNota=false;break;}
     case "dst-apagar-nota":{
       const d=dstK(v);if(d)d.nota="";delete S.rasc[v];S.notaAberta=null;break;}
@@ -3462,14 +3513,18 @@ app.addEventListener("click",ev=>{
         else{S.folha="tirar";S.tirando=v;}
         break;
       }
-      S.dstUndo=d;S.dst=S.dst.filter(x=>x.k!==v);S.notaAberta=null;S.folha=null;S.tirando=null;
+      S.dstUndo={d:d,filhos:[]};S.dst=S.dst.filter(x=>x.k!==v);S.notaAberta=null;S.folha=null;S.tirando=null;
       if(S.lugar==="leitura")
         S.selE=Object.assign({},S.selE||{x:0,y:0},{k:null,confirma:false,desfazer:true});
       break;}
     /* editar a nota a partir da lista leva ao texto: a nota mora no fluxo,
        e edita-la longe do trecho seria escrever sobre o que nao esta a vista. */
     case "dst-editar":{
-      const d=dstK(v);if(!d)break;
+      const d=escK(v);if(!d)break;
+      /* sem ancora nao ha trecho para onde ir: edita onde esta */
+      if(!ancora(d)){S.notaAberta=v;S.folha=null;
+        if(d.origem==="titulo")d.origem="minha";  /* deixou de ser derivada */
+        break;}
       S.lugar="leitura";S.folha=null;S.selE=null;S.cap=d.cap;
       if(d.perg!=null)S.perg=d.perg;
       S.notaAberta=v;pinta();
@@ -3482,8 +3537,47 @@ app.addEventListener("click",ev=>{
        — e a volta passa a dizer o nome do livro, nao "Mesa". */
     case "ver-preparo":S.lugar="item";S.fase="pronto";S.feitoAberto=true;S.deLivro=true;S.folha=null;break;
     case "dst-abrirtr":S.dstAberto=S.dstAberto===v?null:v;break;
+    /* volta ao escrito na lista do livro: o dossie e a lista */
+    case "ir-esc":{
+      S.lugar="livro";S.folha=null;S.selE=null;pinta();
+      const el2=document.getElementById("e-"+v);
+      if(el2)el2.scrollIntoView({behavior:"smooth",block:"center"});
+      return;}
+    case "esc-novo":{
+      const k="n"+S.dst.length;
+      S.dst.push(escrito(S.lugar==="leitura"?S.cap:null,null,null,"","livro",k));
+      S.notaAberta=k;S.rasc[k]="";S.escNovo=null;break;}
+    case "esc-novo-guardar":{
+      const k="n"+S.dst.length,alvo=escK(S.guardando);
+      S.dst.push(escrito(alvo?alvo.cap:null,null,null,"","livro",k));
+      if(alvo)alvo.perg=k;
+      S.folha=null;S.guardando=null;S.notaAberta=k;S.rasc[k]="";break;}
+    /* escolher o lugar ENQUANTO a caneta esta na mao. Ao soltar a ancora o
+       <mark> some do paragrafo, porque deixou de ser verdade que aquele texto
+       e sobre aquele trecho. A saida e o proprio recibo. */
+    case "esc-grao":{
+      const ta=document.getElementById("campoNota");
+      if(ta&&S.notaAberta)S.rasc[S.notaAberta]=ta.value;
+      S.paraLivro=!S.paraLivro;
+      break;}
+    case "esc-apagar":{
+      const d=escK(v);if(!d)break;
+      const fs=filhos(d.k);
+      if(fs.length&&!el.dataset.f){S.folha="apagar-escrito";S.apagando=v;break;}
+      /* apagar nunca apaga trecho nem nota: os filhos ficam soltos, e o
+         desfazer repoe o registro E o vinculo. Sem os dois seria perda. */
+      S.dstUndo={d:d,filhos:fs.map(x=>x.k)};
+      fs.forEach(x=>{x.perg=null;});
+      S.dst=S.dst.filter(x=>x.k!==d.k);
+      S.folha=null;S.apagando=null;S.notaAberta=null;
+      if(S.perg===d.k)S.perg=null;
+      break;}
     case "dst-desfazer":
-      if(S.dstUndo){S.dst.push(S.dstUndo);S.dstUndo=null;}
+      if(S.dstUndo){
+        const u=S.dstUndo.d?S.dstUndo:{d:S.dstUndo,filhos:[]};
+        S.dst.push(u.d);u.filhos.forEach(k=>{const x=escK(k);if(x)x.perg=u.d.k;});
+        S.dstUndo=null;
+      }
       S.selE=null;S.folha=null;break;
     case "sel-fim":S.selE=null;break;
     case "dst-copiar":{
@@ -3499,7 +3593,7 @@ app.addEventListener("click",ev=>{
       return;}
     case "dst-sob":S.folha="guardar";S.guardando=v;break;
     case "perg-guardar":{
-      const d=dstK(S.guardando);if(d)d.perg=(v===""?null:Number(v));
+      const d=escK(S.guardando);if(d)d.perg=(v===""?null:v);
       S.folha=null;S.guardando=null;break;}
     case "usb":{
       const et=Number(v);S.usb.p=et;
