@@ -417,7 +417,11 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
   border-radius:var(--r2);background:var(--bg-2);margin-top:var(--s5)}
 
 /* ══ VER TODAS AS PÁGINAS ══ */
-.ed2{display:grid;grid-template-columns:180px minmax(0,1fr) 240px;height:min(60vh,460px)}
+.ed2{display:grid;grid-template-columns:190px minmax(0,1fr) 250px;height:min(62vh,500px)}
+@container (max-width:860px){.ed2{grid-template-columns:170px minmax(0,1fr);height:min(62vh,500px)}
+  .ed2 .acoes2{grid-column:1/-1;border-left:none;border-top:1px solid var(--line-2);height:auto}}
+@container (max-width:560px){.ed2{grid-template-columns:1fr;height:auto}
+  .ed2 .filtros{border-right:none;border-bottom:1px solid var(--line-2)}}
 @media(max-width:900px){.ed2{grid-template-columns:1fr;height:auto}}
 .ed2 .filtros{border-right:1px solid var(--line-2);padding:var(--s3);overflow:auto;background:var(--bg)}
 .ed2 .filtros button{display:flex;justify-content:space-between;gap:var(--s2);width:100%;
@@ -425,10 +429,10 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .ed2 .filtros button:hover{background:var(--bg-2)}
 .ed2 .filtros button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 .ed2 .filtros .n{font-family:var(--mono);font-size:10px;opacity:.7}
-.pgrade{overflow:auto;padding:var(--s3);display:grid;gap:var(--s3);background:var(--bg-2);
-  grid-template-columns:repeat(auto-fill,minmax(72px,1fr));align-content:start}
+.pgrade{overflow:auto;padding:var(--s4);display:grid;gap:var(--s4);background:var(--bg-2);
+  grid-template-columns:repeat(auto-fill,minmax(84px,1fr));align-content:start}
 .pg2{position:relative;padding:2px;border:2px solid transparent;background:none}
-.pg2 .im{height:84px;background:var(--branco);border:1px solid var(--line);position:relative;overflow:hidden}
+.pg2 .im{height:106px;background:var(--branco);border:1px solid var(--line);position:relative;overflow:hidden}
 .pg2 .im i{position:absolute;inset:5px;display:block;
   background:repeating-linear-gradient(0deg,var(--line-2) 0 1px,transparent 1px 4px)}
 .pg2.semtexto .im i{background:repeating-linear-gradient(135deg,var(--dan-soft) 0 5px,transparent 5px 10px)}
@@ -767,7 +771,11 @@ body.-selecionando #notasbt{display:none}
   text-transform:uppercase;color:var(--ink-3);margin:var(--s5) 0 var(--s3)}
 .grpM:first-of-type{margin-top:var(--s4)}
 .txtE{margin-bottom:var(--esp-par,1.05em)}
-.aacols{display:grid;grid-template-columns:minmax(0,280px) minmax(0,1fr);gap:var(--s6)}
+/* @container e nao @media: o gatilho e a largura da FOLHA, nao a da janela.
+   Com media query a previa continuava em duas colunas dentro de um container
+   de 560px enquanto a janela tivesse 1900 — que era exatamente o defeito. */
+.aacols{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:var(--s6)}
+@container (max-width:700px){.aacols{grid-template-columns:1fr;gap:var(--s5)}.aaprev{display:none}}
 @media(max-width:760px){.aacols{grid-template-columns:1fr}.aaprev{display:none}}
 .aactl{max-height:min(58vh,520px);overflow-y:auto;padding-right:var(--s3)}
 .aagrupo{margin-bottom:var(--s5)}
@@ -802,6 +810,7 @@ body.-selecionando #notasbt{display:none}
 .espec .tm{display:block;width:22px;height:22px;border:1px solid var(--line-3)}
 .espec .tm.c{background:#faf9f5}.espec .tm.e{background:#161513}
 .aaprev{border-left:1px solid var(--line-2);padding-left:var(--s6);max-height:min(58vh,520px);overflow:hidden}
+@container (max-width:700px){.aaprev{border-left:none;padding-left:0}}
 @media(max-width:760px){.aaprev{border-left:none;padding-left:0}}
 .aaprev .cap{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.14em;text-transform:uppercase;
   color:var(--ink-3);display:block;margin-bottom:var(--s4)}
@@ -964,8 +973,11 @@ body.-selecionando #notasbt{display:none}
 /* ═══ FOLHA ═══ */
 .veu{position:fixed;inset:0;background:rgba(20,19,17,.44);display:flex;align-items:flex-start;
   justify-content:center;padding:var(--s6) var(--s4);z-index:80;overflow-y:auto}
-.folha{background:var(--bg);border:1px solid var(--line);border-radius:var(--r2);width:100%;max-width:560px;
-  overflow:hidden}
+.folha{background:var(--bg);border:1px solid var(--line);border-radius:var(--r2);width:100%;
+  max-width:560px;overflow:hidden;container-type:inline-size}
+/* leitura e paginas sao bancadas: precisam de mesa, nao de coluna */
+.folha.-bancada{max-width:1000px}
+.folha.-media{max-width:760px}
 .fcab{display:flex;align-items:flex-start;gap:var(--s3);padding:var(--s4);border-bottom:1px solid var(--line-2)}
 .fcab .ct{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
 .fcab h2{margin:3px 0 0;font-size:17px;font-weight:650;letter-spacing:-.018em}
@@ -2692,7 +2704,7 @@ function vFolha(){
         'Vale só para <b>'+esc(ARQ.titulo)+'</b>. Os outros continuam como estão.':
         'Passa a valer para todos os seus livros, inclusive os próximos.')+'</p></div>',
       (mudou?'<button class="lnk mudo" data-a="aa" data-v="restaurar:1" style="margin-right:auto">Restaurar padrão</button>':'')+
-      '<button class="btnO" data-a="fechar">Fechar</button>');
+      '<button class="btnO" data-a="fechar">Fechar</button>',"bancada");
   }
   if(f==="controles")return folha("Arquivo",esc(S.nome||ARQ.nome),
     '<div class="lista">'+
@@ -2759,7 +2771,7 @@ function vFolha(){
       '<span style="font-size:var(--t-peq);color:var(--ink-3);margin-right:auto">'+S.mud.length+
       ' alteraç'+(S.mud.length===1?"ão":"ões")+' · nada foi gravado</span>'+
       '<button class="lnk mudo" data-a="fechar">Cancelar</button>'+
-      '<button class="btnO forte" data-a="aplicar-pg">Aplicar</button>');
+      '<button class="btnO forte" data-a="aplicar-pg">Aplicar</button>',"bancada");
   }
   if(f==="viewport"){
     const d=DISP[S.disp];
@@ -3124,8 +3136,12 @@ function resultados(lista,q){
     '<span class="ac">Abrir</span></button>').join("")+'</div>'+
     (q?'':'<p style="margin:var(--s3) 0 0;font-size:var(--t-peq);color:var(--ink-3)">Recentes.</p>');
 }
-function folha(ct,tit,corpo,pe){
-  return '<div class="veu" data-a="fechar-veu"><div class="folha" data-stop="1">'+
+/* A folha tinha 560px para tudo. Uma folha que carrega um paragrafo e uma
+   que carrega uma bancada de duas ou tres colunas nao podem ter a mesma
+   medida: a segunda espremia a previa de leitura em 200px e a tira de
+   paginas em 100px. A largura passa a vir do que a folha carrega. */
+function folha(ct,tit,corpo,pe,larg){
+  return '<div class="veu" data-a="fechar-veu"><div class="folha'+(larg?" -"+larg:"")+'" data-stop="1">'+
     '<div class="fcab"><div><span class="ct">'+ct+'</span><h2>'+tit+'</h2></div><span class="sp"></span>'+
     '<button class="fx" data-a="fechar" aria-label="Fechar">✕</button></div>'+
     '<div class="fcorpo">'+corpo+'</div><div class="fpe"><span class="sp"></span>'+(pe||"")+'</div></div></div>';
