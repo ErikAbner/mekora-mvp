@@ -713,6 +713,18 @@ body.-selecionando #notasbt{display:none}
 .dossie .tr .volta{font-family:var(--serif);font-style:italic;font-size:13px;
   color:var(--ink-3);display:block;margin-top:var(--s2);text-align:left}
 .dossie .tr .volta:hover{color:var(--ink)}
+/* uma acao visivel por item — ir ao trecho, que e o ponto da lista.
+   As outras sao ferramenta avancada: aparecem quando a pessoa se aproxima.
+   Em aparelho sem hover elas ficam sempre, porque la nao ha como pedir. */
+.dossie .tr .acs{display:flex;gap:var(--s3);margin-top:var(--s2);flex-wrap:wrap;align-items:center}
+.dossie .tr .acs .sob{opacity:0;transition:opacity var(--d1) var(--curva)}
+.dossie .tr:hover .acs .sob,.dossie .tr:focus-within .acs .sob{opacity:1}
+@media(hover:none){.dossie .tr .acs .sob{opacity:1}}
+.dossie .tr .acs .tirar{color:var(--ink-3)}
+.dossie .tr .acs .tirar:hover{color:var(--dan)}
+.desfezL{display:flex;align-items:center;gap:var(--s3);padding:var(--s3) 0 var(--s3) var(--s4);
+  border-left:2px solid var(--line-3);margin-bottom:var(--s4);
+  font-size:var(--t-peq);color:var(--ink-3)}
 .dossie .tr .kd{font-family:var(--mono);font-size:10px;letter-spacing:.08em;
   text-transform:uppercase;color:var(--ink-3);border:1px solid var(--line);
   padding:1px 5px;margin-left:var(--s2)}
@@ -1068,7 +1080,7 @@ const zero={
   mesaVar:"reduzida",mesaEstado:"com-pendencia",perg:null,usb:{p:0,pct:0,t:null},
   /* destaque e nota. Object.assign e raso, entao dst, selE e rasc sao
      recriados a mao em reset() — senao a marcacao vaza entre cenas. */
-  dst:[],selE:null,notaAberta:null,rasc:{},dstUndo:null,erroNota:false,guardando:null,
+  dst:[],selE:null,notaAberta:null,rasc:{},dstUndo:null,erroNota:false,guardando:null,tirando:null,
   /* leitura: tudo o que muda como o arquivo é lido nesta tela.
      escopo é o ato deliberado que faz um ajuste subir a padrão da conta. */
   leit:{fonte:"serifa",align:"justificado",espaco:1,destaques:"mostrar",progresso:"porcentagem",escopo:"livro"},
@@ -1191,7 +1203,7 @@ const AJUDA=[
 let S=Object.assign({},zero),timer=null,ultimoLugar=null;
 function reset(cena){
   clearInterval(timer);timer=null;S=Object.assign({},zero);
-  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardando=null;
+  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardando=null;S.tirando=null;
   if(cena==="nova"){S.cena="nova";}
   if(cena==="sem-conta"){S.cena="nova";S.conta=false;}
   pinta();
@@ -1953,6 +1965,16 @@ function vLivro(){
     '</div></div></div>';
 }
 
+function acoesDst(d){
+  return '<div class="acs">'+
+    '<button class="lnk mudo" data-a="dst-ir" data-v="'+d.k+'">ir ao trecho</button>'+
+    '<button class="lnk mudo sob" data-a="dst-editar" data-v="'+d.k+'">'+
+      (d.nota?"editar a nota":"anotar")+'</button>'+
+    (d.perg==null?'<button class="lnk mudo sob" data-a="dst-sob" data-v="'+d.k+
+      '">guardar sob uma pergunta</button>':"")+
+    '<span class="sp" style="flex:1"></span>'+
+    '<button class="lnk sob tirar" data-a="dst-tirar" data-v="'+d.k+'">tirar</button></div>';
+}
 function itemMarcado(d,ideia){
   const cap=esc(dstCap(d));
   const sob=d.perg!=null?' \u00b7 '+esc(cortaQ(d.perg,26)):"";
@@ -1962,15 +1984,9 @@ function itemMarcado(d,ideia){
     return '<div class="tr -ideia"><p>'+esc(d.nota)+'</p>'+
       '<button class="volta" data-a="dst-ir" data-v="'+d.k+'">\u21a9 '+
       esc(dstTexto(d).slice(0,64))+corte+'</button>'+
-      '<cite>'+cap+sob+'</cite>'+kd+
-      (d.perg==null?'<div style="margin-top:var(--s2)"><button class="lnk mudo" data-a="dst-sob" '+
-        'data-v="'+d.k+'">guardar sob uma pergunta</button></div>':"")+'</div>';
+      '<cite>'+cap+sob+'</cite>'+kd+acoesDst(d)+'</div>';
   return '<div class="tr"><p>'+esc(dstTexto(d))+'</p>'+
-    '<cite>'+cap+sob+'</cite>'+kd+
-    '<div style="display:flex;gap:var(--s3);margin-top:var(--s2);flex-wrap:wrap">'+
-    '<button class="lnk mudo" data-a="dst-ir" data-v="'+d.k+'">ir ao trecho</button>'+
-    (d.perg==null?'<button class="lnk mudo" data-a="dst-sob" data-v="'+d.k+
-      '">guardar sob uma pergunta</button>':"")+'</div></div>';
+    '<cite>'+cap+sob+'</cite>'+kd+acoesDst(d)+'</div>';
 }
 function secMarcado(){
   const meus=S.dst.filter(d=>d.livro===ARQ.titulo)
@@ -1982,6 +1998,8 @@ function secMarcado(){
   const ideias=meus.filter(d=>d.nota),soltos=meus.filter(d=>!d.nota);
   const nsob=meus.filter(d=>d.perg!=null).length;
   h+='<p class="saldo">'+meus.length+' marcados \u00b7 '+ideias.length+' com nota \u00b7 '+nsob+' sob pergunta</p>'+
+    (S.dstUndo?'<div class="desfezL"><span>Trecho tirado.</span>'+
+      '<button class="lnk" data-a="dst-desfazer" style="padding:0">desfazer</button></div>':"")+
     '<div class="dossie" style="border:none;padding:0;margin:0">';
   /* busca so a partir do nono item: abaixo disso a lista cabe na cabeca,
      e um campo permanente seria interface para um problema que nao existe. */
@@ -2964,6 +2982,17 @@ function vFolha(){
       '<button class="lnk mudo" data-a="nada">Apagar pergunta</button>'+
       '<button class="btnO forte" data-a="ler-pergunta" data-v="'+iP+'">Ler com esta pergunta →</button>');
   }
+  if(f==="tirar"){
+    const d=dstK(S.tirando);
+    return folha("Destaque","Tirar apaga a nota junto",
+      (d?'<div class="dossie" style="border:none;padding:0;margin:0 0 var(--s4)">'+
+        '<div class="tr -ideia"><p>'+esc(d.nota)+'</p>'+
+        '<cite>'+esc(dstCap(d))+'</cite></div></div>':"")+
+      '<p style="margin:0;font-size:14px;line-height:1.65;color:var(--ink-2)">O trecho deixa de '+
+      'ficar marcado e a nota sai com ele. D\u00e1 para desfazer logo depois, na pr\u00f3pria lista.</p>',
+      '<button class="lnk mudo" data-a="fechar">Deixar como est\u00e1</button>'+
+      '<button class="btnD" data-a="dst-tirar" data-v="'+(S.tirando||"")+'" data-f="1">Tirar mesmo assim</button>');
+  }
   if(f==="guardar"){
     const d=dstK(S.guardando);
     /* a pergunta do capitulo do trecho vem primeiro, e o motivo vai na propria
@@ -3316,14 +3345,31 @@ app.addEventListener("click",ev=>{
     case "dst-tirar":{
       const d=dstK(v);if(!d)break;
       /* "nunca perder" e comportamento, nao tela: tirar um destaque que tem
-         nota apaga a nota junto, e por isso passa por uma porta. */
-      if(d.nota&&!el.dataset.f){S.selE=Object.assign({},S.selE||{},{k:v,confirma:true});break;}
-      S.dstUndo=d;S.dst=S.dst.filter(x=>x.k!==v);S.notaAberta=null;
-      S.selE=Object.assign({},S.selE||{x:0,y:0},{k:null,confirma:false,desfazer:true});
+         nota apaga a nota junto, e por isso passa por uma porta. Na leitura
+         a porta e a propria barra; fora dela e uma folha, porque a barra
+         so existe onde ha selecao. */
+      if(d.nota&&!el.dataset.f){
+        if(S.lugar==="leitura"){S.selE=Object.assign({},S.selE||{},{k:v,confirma:true});}
+        else{S.folha="tirar";S.tirando=v;}
+        break;
+      }
+      S.dstUndo=d;S.dst=S.dst.filter(x=>x.k!==v);S.notaAberta=null;S.folha=null;S.tirando=null;
+      if(S.lugar==="leitura")
+        S.selE=Object.assign({},S.selE||{x:0,y:0},{k:null,confirma:false,desfazer:true});
       break;}
+    /* editar a nota a partir da lista leva ao texto: a nota mora no fluxo,
+       e edita-la longe do trecho seria escrever sobre o que nao esta a vista. */
+    case "dst-editar":{
+      const d=dstK(v);if(!d)break;
+      S.lugar="leitura";S.folha=null;S.selE=null;S.cap=d.cap;
+      if(d.perg!=null)S.perg=d.perg;
+      S.notaAberta=v;pinta();
+      const m=document.getElementById("mk-"+v);
+      if(m)m.scrollIntoView({behavior:"smooth",block:"center"});
+      return;}
     case "dst-desfazer":
       if(S.dstUndo){S.dst.push(S.dstUndo);S.dstUndo=null;}
-      S.selE=null;break;
+      S.selE=null;S.folha=null;break;
     case "sel-fim":S.selE=null;break;
     case "dst-copiar":{
       const d=dstK(v);S.selE=null;
