@@ -233,16 +233,39 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .pend .n{font-family:var(--mono);font-size:10px;color:var(--warn)}
 
 /* ═══ ESPAÇO DO LIVRO ═══ */
-.livro{display:grid;grid-template-columns:230px minmax(0,1fr);gap:var(--s7);align-items:start}
-@media(max-width:800px){.livro{grid-template-columns:1fr;gap:var(--s5)}}
-.livro .capao{width:100%;border-radius:var(--r2);border:1px solid var(--line);display:block;background:var(--paper)}
-.livro h1{margin:0 0 6px;font-family:var(--serif);font-size:28px;font-weight:400;letter-spacing:-.015em;line-height:1.15}
-.livro .autor{font-size:14px;color:var(--ink-2);margin:0 0 var(--s4)}
-.barra{display:flex;gap:var(--s2);flex-wrap:wrap;margin:var(--s4) 0 var(--s5)}
-.dado{display:grid;grid-template-columns:130px minmax(0,1fr);gap:var(--s4);padding:9px 0;
-  border-bottom:1px solid var(--line-2);font-size:13.5px}
-.dado .k{color:var(--ink-3);font-size:12.5px}
-.dado:last-child{border-bottom:none}
+/* A coluna de 230px segurava uma capa e quatro botoes e depois rolava vazia
+   por mais de mil pixels. Ela nao vira sticky nem indice: deixa de existir
+   como celula. O cabecalho fica em 152+30+558; do resto para baixo e coluna
+   unica, e a pagina volta para a mesma moldura do preparo. */
+.livro{display:grid;grid-template-columns:152px minmax(0,1fr);gap:var(--s5);align-items:start}
+@media(max-width:680px){.livro{grid-template-columns:1fr;gap:var(--s4)}
+  .livro .capao{max-width:120px}}
+.livro .capao{width:100%;max-width:152px;border-radius:var(--rm);border:1px solid var(--line);
+  display:block;background:var(--paper)}
+.livro h1{margin:0;font-family:var(--serif);font-size:28px;font-weight:400;letter-spacing:-.015em;line-height:1.15}
+.livro .autor{font-size:14px;color:var(--ink-2);margin:6px 0 0}
+.livro .tit{display:flex;align-items:flex-start;gap:var(--s3)}
+.livro .tit .icb{margin-left:auto;flex:0 0 auto}
+/* duas linhas mudas. A de cima e medida — mono, caixa alta. A de baixo tem
+   nome de arquivo e fato, e nome nao se mede: grotesca, caixa normal. */
+.fonte{font-size:12.5px;line-height:1.55;color:var(--ink-3);margin:var(--s2) 0 0}
+.fonte b{color:var(--ink-2);font-weight:550}
+.acoes.-mudas{margin-top:var(--s3);gap:var(--s4)}
+.grpM.-perg{font-family:var(--serif);font-size:1.06rem;line-height:1.35;letter-spacing:-.01em;
+  text-transform:none;color:var(--ink);border-top:1px solid var(--line-2);padding-top:var(--s4);
+  margin:var(--s6) 0 var(--s4);display:flex;align-items:baseline;gap:var(--s3);flex-wrap:wrap}
+.grpM.-perg:first-of-type{margin-top:var(--s4);border-top:none;padding-top:0}
+.grpM.-perg .n{font-family:var(--mono);font-size:11px;letter-spacing:.09em;color:var(--ink-3);flex:0 0 auto}
+.grpM.-perg .o{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink-3);margin-left:auto;flex:0 0 auto}
+.faltam{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--s2) var(--s3);
+  border-top:1px solid var(--line-2);margin-top:var(--s6);padding-top:var(--s4);
+  font-size:12.5px;color:var(--ink-3)}
+.faltam .pgorig{margin-left:auto}
+.dossie .tr p{max-width:34em}
+.dossie .tr .cheio{font-family:var(--serif);font-size:15px;line-height:1.6;color:var(--ink-2);
+  margin:var(--s3) 0 0;max-width:34em}
+#marcado{scroll-margin-top:var(--s6)}
 
 /* ═══ ESTANTE ═══ */
 .vista{display:inline-flex;border:1px solid var(--line);border-radius:var(--r1);overflow:hidden;background:var(--bg-2)}
@@ -723,8 +746,7 @@ body.-selecionando #notasbt{display:none}
 .dossie .tr .acs .tirar{color:var(--ink-3)}
 .dossie .tr .acs .tirar:hover{color:var(--dan)}
 .desfezL{display:flex;align-items:center;gap:var(--s3);padding:var(--s3) 0 var(--s3) var(--s4);
-  border-left:2px solid var(--line-3);margin-bottom:var(--s4);
-  font-size:var(--t-peq);color:var(--ink-3)}
+  border-left:2px solid var(--ink);margin-bottom:var(--s4);font-size:13px;color:var(--ink)}
 .dossie .tr .kd{font-family:var(--mono);font-size:10px;letter-spacing:.08em;
   text-transform:uppercase;color:var(--ink-3);border:1px solid var(--line);
   padding:1px 5px;margin-left:var(--s2)}
@@ -1075,7 +1097,7 @@ const zero={
     {id:"a1",nome:"Kindle de Erik",modelo:"Paperwhite",email:"erik_abc@kindle.com",uso:"hoje, 09:12",princ:true},
     {id:"a2",nome:"Scribe do escritório",modelo:"Scribe",email:"erik_scribe@kindle.com",uso:"6 de agosto",princ:false}
   ],
-  apEdit:null,apRasc:{},histVazio:false,histErro:false,qMarcado:"",
+  apEdit:null,apRasc:{},histVazio:false,histErro:false,qMarcado:"",deLivro:false,dstAberto:null,
   wiz:{p:0,email:"",nome:"",copiou:false,diferente:false},
   mesaVar:"reduzida",mesaEstado:"com-pendencia",perg:null,usb:{p:0,pct:0,t:null},
   /* destaque e nota. Object.assign e raso, entao dst, selE e rasc sao
@@ -1841,7 +1863,8 @@ function vItem(){
   return h+'</div>';
 }
 function cab(){
-  return '<button class="volta" data-a="ir" data-v="mesa">‹ Mesa</button>'+
+  return (S.deLivro?'<button class="volta" data-a="ir-livro">‹ '+esc(ARQ.titulo)+'</button>'
+                   :'<button class="volta" data-a="ir" data-v="mesa">‹ Mesa</button>')+
     '<div class="icab"><img class="cp" src="'+capa(S.capaEsc==="gerada"?ARQ.gerada:ARQ.capa)+'" alt="">'+
     '<div class="tx"><h1>'+esc(ARQ.nome)+'</h1><div class="metas">'+
     '<span class="meta">'+ARQ.fmt+'</span><span class="meta">'+ARQ.tam+'</span>'+
@@ -1899,7 +1922,7 @@ function itemPronto(){
   let h='<div class="pad">'+cab()+
     est("ok","Pronto. "+ARQ.saida+" · 8,4 MB",
       S.pendResolvida?"Três páginas ficaram sem reconhecimento, como você decidiu. O resto está completo.":
-      "93 das 96 páginas com texto reconhecido, sumário com 14 capítulos, capa montada.");
+      "93 das 96 páginas com texto reconhecido, sumário com "+CAPS.length+" capítulos, capa montada.");
   if(S.enviado)h+='<div class="estado ok" style="margin-top:calc(var(--s5) * -1 + 4px)"><i class="pt pt-ok"></i>'+
     '<div><h2>A Amazon aceitou o arquivo às 09:12</h2><p>Costuma aparecer no aparelho em poucos minutos, '+
     'quando ele estiver conectado. Não temos como saber se já chegou.</p></div></div>';
@@ -1912,7 +1935,7 @@ function itemPronto(){
     (S.feitoAberto?'<div class="lista" style="margin-top:var(--s3)">'+
       li("ok","✓","Texto reconhecido em 93 das 96 páginas","Três eram fotografias sem texto legível.","","")+
       li("ok","✓","Convertido de PDF para EPUB","O original continua na estante, intacto.","desfazer","undo")+
-      li("ok","✓","Sumário com 14 capítulos","","desfazer","undo")+
+      li("ok","✓","Sumário com "+CAPS.length+" capítulos","","desfazer","undo")+
       li("ok","✓","Capa gerada pelo Mekora","","alterar","capa")+
       '</div>':'')+'</div>';
   return h+'</div>';
@@ -1920,49 +1943,47 @@ function itemPronto(){
 
 /* ═══ ESPAÇO DO LIVRO ═══ */
 function vLivro(){
-  return '<div class="pad larga">'+
-    '<button class="volta" data-a="ir" data-v="estante">‹ Estante</button>'+
-    '<div class="livro"><div>'+
-      '<img class="capao" src="'+capa(ARQ.capa)+'" alt="Capa de '+esc(ARQ.titulo)+'">'+
-      '<div class="acoes" style="margin-top:var(--s4);flex-direction:column;align-items:stretch">'+
-      '<button class="btn" data-a="ir" data-v="leitura">Ler</button>'+
-      '<button class="btn sec2" data-a="folha" data-v="viewport">Ver no aparelho</button>'+
-      '<button class="btn sec2" data-a="folha" data-v="envio">Enviar ao Kindle</button>'+
-      '<button class="btn sec2" data-a="folha" data-v="controles">⋮ Controles do arquivo</button></div></div>'+
+  /* Duas linhas mudas guardam a ficha inteira. Clausula sem dado nao aparece:
+     um campo vazio nao e informacao, e "ainda nao enviado" ja esta dito pelo
+     botao que continua ali. */
+  const cl=[];
+  if(S.cap>0)cl.push("Cap\u00edtulo "+(S.cap+1)+" de "+CAPS.length);
+  const meus=S.dst.filter(d=>d.livro===ARQ.titulo);
+  if(meus.length)cl.push(meus.length+" marcado"+(meus.length>1?"s":"")+
+    (meus.filter(d=>d.nota).length?", "+meus.filter(d=>d.nota).length+" com nota":""));
+  if(S.enviado)cl.push("Enviado hoje, 09:12");
+  const fonte=["<b>EPUB</b>","reconhecido em 93 de 96 p\u00e1ginas"]
+    .concat(S.traduzir?["traduzido para "+esc(S.traduzir)+" \u2014 o original em portugu\u00eas continua na estante"]:[])
+    .concat(["de <b>"+esc(ARQ.nome)+"</b>"]);
+  return '<div class="pad">'+
+    '<button class="volta" data-a="ir" data-v="estante">\u2039 Estante</button>'+
+    '<div class="livro"><img class="capao" src="'+capa(S.capaEsc==="gerada"?ARQ.gerada:ARQ.capa)+
+      '" alt="Capa de '+esc(ARQ.titulo)+'">'+
     '<div>'+
-      '<h1>'+esc(ARQ.titulo)+'</h1><p class="autor">'+esc(ARQ.autor)+'</p>'+
-      '<div class="barra"><span class="meta">EPUB · 8,4 MB</span><span class="meta">96 páginas</span>'+
-      '<span class="meta">Português</span><span class="meta">preparado hoje, 09:04</span></div>'+
-      '<div class="sec"><h3>De onde veio</h3><div class="lista">'+
-        '<div class="li"><span class="sn s-in">↑</span><span class="tx"><b>Relatório de pesquisa — expedição 02.pdf</b>'+
-        '<span>O original continua guardado. Dá para preparar de novo com outras opções sem enviar o arquivo outra vez.</span></span>'+
-        '<button class="ac" data-a="abrir-item">ver o preparo</button></div></div></div>'+
-      '<div class="sec"><h3>Ficha</h3>'+
-        '<div class="dado"><span class="k">Título</span><span>'+esc(ARQ.titulo)+'</span></div>'+
-        '<div class="dado"><span class="k">Autor</span><span>'+esc(ARQ.autor)+'</span></div>'+
-        '<div class="dado"><span class="k">Capa</span><span>Gerada pelo Mekora — o original não tinha</span></div>'+
-        '<div class="dado"><span class="k">Sumário</span><span>14 capítulos, navegáveis</span></div>'+
-        '<div class="dado"><span class="k">Texto</span><span>Reconhecido em 93 de 96 páginas</span></div>'+
-        '<div class="dado"><span class="k">No Kindle</span><span>'+(S.enviado?"Enviado hoje, 09:12":"Ainda não enviado")+'</span></div>'+
+      '<div class="tit"><h1>'+esc(ARQ.titulo)+'</h1>'+
+      '<button class="icb" data-a="folha" data-v="controles" aria-label="Controles do arquivo" '+
+      'title="Controles do arquivo">\u22ee</button></div>'+
+      '<p class="autor">'+esc(ARQ.autor)+'</p>'+
+      (cl.length?'<p class="saldo" style="margin:var(--s3) 0 0">'+cl.join(" \u00b7 ")+'</p>':'')+
+      '<p class="fonte">'+fonte.join(" \u00b7 ")+'</p>'+
+      '<div class="acoes">'+
+        '<button class="btn" data-a="ir" data-v="leitura">'+
+          (S.cap>0?"Continuar no cap\u00edtulo "+(S.cap+1):"Ler")+'</button>'+
+        (S.enviado?'':'<button class="btn sec2" data-a="folha" data-v="envio">Enviar ao Kindle</button>')+
       '</div>'+
-      '<div class="pgs2"><div style="display:flex;align-items:baseline;gap:var(--s3);margin-bottom:var(--s2)">'+
-      '<span class="meyebrow" style="margin:0">Perguntas que guiam esta leitura</span>'+
-      '<span class="pgorig" style="margin-left:auto">4 vieram dos capítulos</span></div>'+
-      '<p style="font-size:13px;color:var(--ink-2);line-height:1.6;margin:0 0 var(--s3);max-width:56ch">'+
-      'Tiradas dos títulos do próprio arquivo. Servem para você ler procurando alguma coisa — e o que você '+
-      'marcar fica preso à pergunta que respondeu.</p>'+
-      PERGUNTAS.map((p,i)=>'<button class="pg2i" data-a="pergunta" data-v="'+i+'">'+
-        '<span class="n">'+String(i+1).padStart(2,"0")+'</span>'+
-        '<span><span class="q">'+esc(p.q)+'</span>'+
-        '<span class="r'+(trechos(i).length?" tem":"")+'">'+(trechos(i).length?
-          trechos(i).length+' trecho'+(trechos(i).length>1?"s":"")+' marcado'+(trechos(i).length>1?"s":""):
-          'nada marcado ainda')+' · '+(p.o==="titulo"?"do capítulo "+(p.cap+1):"sua")+'</span></span>'+
-        '<span class="ch">›</span></button>').join("")+
-      '<div class="acoes" style="margin-top:var(--s4)">'+
-      '<button class="btnO" data-a="ir" data-v="leitura">Ler procurando estas respostas →</button>'+
-      '<button class="lnk mudo" data-a="nada">Escrever uma pergunta</button></div></div>'+
-      secMarcado()+
-    '</div></div></div>';
+      '<div class="acoes -mudas">'+
+        (S.cap>0?'<button class="lnk mudo" data-a="ler-comeco">Ler do come\u00e7o</button>':'')+
+        (S.enviado?'<button class="lnk mudo" data-a="folha" data-v="envio">Enviar de novo</button>':'')+
+        '<button class="lnk mudo" data-a="ver-preparo">ver o preparo</button>'+
+      '</div>'+
+    '</div></div>'+
+    /* uma excecao por vez, e so enquanto ela ainda afeta a leitura */
+    (!S.pendResolvida?'<div style="margin:var(--s5) 0 0"><span class="pend">'+
+      '<span class="n">!</span>Tr\u00eas p\u00e1ginas ficaram sem texto.'+
+      '<button class="lnk" data-a="folha" data-v="paginas" style="padding:0 0 0 var(--s2)">ver as p\u00e1ginas</button>'+
+      '</span></div>':'')+
+    secMarcado()+
+  '</div>';
 }
 
 function acoesDst(d){
@@ -1970,8 +1991,11 @@ function acoesDst(d){
     '<button class="lnk mudo" data-a="dst-ir" data-v="'+d.k+'">ir ao trecho</button>'+
     '<button class="lnk mudo sob" data-a="dst-editar" data-v="'+d.k+'">'+
       (d.nota?"editar a nota":"anotar")+'</button>'+
-    (d.perg==null?'<button class="lnk mudo sob" data-a="dst-sob" data-v="'+d.k+
-      '">guardar sob uma pergunta</button>':"")+
+    /* trocar a pergunta era inalcancavel depois de atribuida, e a folha ja
+       sabia devolver o trecho para solto. A acao existia e nao tinha porta. */
+    '<button class="lnk mudo sob" data-a="dst-sob" data-v="'+d.k+'">'+
+      (d.perg==null?"guardar sob uma pergunta":"trocar a pergunta")+'</button>'+
+    '<button class="lnk mudo sob" data-a="dst-copiar" data-v="'+d.k+'">copiar com a origem</button>'+
     '<span class="sp" style="flex:1"></span>'+
     '<button class="lnk sob tirar" data-a="dst-tirar" data-v="'+d.k+'">tirar</button></div>';
 }
@@ -1980,40 +2004,73 @@ function itemMarcado(d,ideia){
   const sob=d.perg!=null?' \u00b7 '+esc(cortaQ(d.perg,26)):"";
   const kd=d.origem==="kindle"?'<span class="kd">do Kindle</span>':"";
   const corte=dstTexto(d).length>64?"\u2026":"";
-  if(ideia)
+  if(ideia){
+    /* ver o trecho inteiro nao pode custar sair da lista: e justamente o caso
+       em que se quer a nota e o trecho na mesma tela. Abre no lugar. */
+    const ab=S.dstAberto===d.k;
     return '<div class="tr -ideia"><p>'+esc(d.nota)+'</p>'+
-      '<button class="volta" data-a="dst-ir" data-v="'+d.k+'">\u21a9 '+
-      esc(dstTexto(d).slice(0,64))+corte+'</button>'+
+      '<button class="volta" data-a="dst-abrirtr" data-v="'+d.k+'" aria-expanded="'+ab+'">\u21a9 '+
+      (ab?esc(dstTexto(d).slice(0,64))+corte:esc(dstTexto(d).slice(0,64))+corte)+'</button>'+
+      (ab?'<p class="cheio">\u201c'+esc(dstTexto(d))+'\u201d</p>':'')+
       '<cite>'+cap+sob+'</cite>'+kd+acoesDst(d)+'</div>';
+  }
   return '<div class="tr"><p>'+esc(dstTexto(d))+'</p>'+
     '<cite>'+cap+sob+'</cite>'+kd+acoesDst(d)+'</div>';
 }
 function secMarcado(){
   const meus=S.dst.filter(d=>d.livro===ARQ.titulo)
     .sort((a,b)=>a.cap-b.cap||a.par-b.par||a.ini-b.ini);
-  let h='<div class="sec" id="marcado"><h3>O que voc\u00ea marcou</h3>';
+  /* a rede de desfazer vem ANTES de qualquer retorno: tirar o ultimo destaque
+     nao pode ser a unica remocao sem volta do produto. */
+  const desfaz=S.dstUndo?'<div class="desfezL"><span>Trecho tirado.</span>'+
+    '<button class="lnk" data-a="dst-desfazer" style="padding:0">desfazer</button></div>':"";
+  let h='<div class="sec" id="marcado" style="margin-top:var(--s7)"><h3>O que voc\u00ea marcou</h3>'+desfaz;
   if(!meus.length)
-    return h+'<p class="txtE mudo" style="font-size:var(--t-peq);max-width:52ch;line-height:1.6">'+
-      'Nada marcado ainda. O que voc\u00ea destacar lendo aparece aqui, preso ao trecho.</p></div>';
-  const ideias=meus.filter(d=>d.nota),soltos=meus.filter(d=>!d.nota);
-  const nsob=meus.filter(d=>d.perg!=null).length;
-  h+='<p class="saldo">'+meus.length+' marcados \u00b7 '+ideias.length+' com nota \u00b7 '+nsob+' sob pergunta</p>'+
-    (S.dstUndo?'<div class="desfezL"><span>Trecho tirado.</span>'+
-      '<button class="lnk" data-a="dst-desfazer" style="padding:0">desfazer</button></div>':"")+
+    return h+'<p style="font-size:13px;color:var(--ink-2);line-height:1.6;max-width:58ch;margin:0">'+
+      'Nada marcado ainda. O que voc\u00ea destacar lendo aparece aqui, preso ao trecho \u2014 e as '+
+      'perguntas abaixo foram tiradas dos t\u00edtulos do pr\u00f3prio arquivo.</p>'+faltam(meus)+'</div>';
+  const ideias=meus.filter(d=>d.nota).length;
+  h+='<p class="saldo">'+meus.length+' marcados'+(ideias?' \u00b7 '+ideias+' com nota':'')+'</p>'+
     '<div class="dossie" style="border:none;padding:0;margin:0">';
-  /* busca so a partir do nono item: abaixo disso a lista cabe na cabeca,
-     e um campo permanente seria interface para um problema que nao existe. */
   if(meus.length>8)
-    h+='<input class="inp" id="buscaMarcado" placeholder="Buscar no que voc\u00ea marcou" '+
-      'value="'+esc(S.qMarcado||"")+'" style="width:100%;margin-bottom:var(--s4)">';
+    h+='<input class="campoB" id="buscaMarcado" placeholder="Buscar no que voc\u00ea marcou" '+
+      'value="'+esc(S.qMarcado||"")+'" style="margin-bottom:var(--s4)">';
   const q=(S.qMarcado||"").toLowerCase().trim();
   const passa=d=>!q||(d.nota+" "+dstTexto(d)).toLowerCase().indexOf(q)>-1;
-  const i2=ideias.filter(passa),s2=soltos.filter(passa);
-  if(q&&!i2.length&&!s2.length)
-    h+='<p class="txtE mudo" style="font-size:var(--t-peq)">Nada com \u201c'+esc(q)+'\u201d.</p>';
-  if(i2.length)h+='<div class="grpM">Suas ideias</div>'+i2.map(d=>itemMarcado(d,true)).join("");
-  if(s2.length)h+='<div class="grpM">S\u00f3 destacado</div>'+s2.map(d=>itemMarcado(d,false)).join("");
-  return h+'</div></div>';
+  /* agrupado pela pergunta que o trecho responde. Antes eram DUAS listas do
+     mesmo acervo, uma indexada por pergunta e outra por nota — completude
+     resolvida com interface. Nota e sem nota ja se distinguem pela forma. */
+  const grupos=PERGUNTAS.map((p,i)=>({i:i,itens:meus.filter(d=>d.perg===i&&passa(d))}))
+    .filter(g=>g.itens.length);
+  const soltos=meus.filter(d=>d.perg==null&&passa(d));
+  if(soltos.length)grupos.push({i:null,itens:soltos});
+  if(!grupos.length)
+    h+='<p style="font-size:13px;color:var(--ink-3);margin:0">Nada com \u201c'+esc(q)+'\u201d.</p>';
+  const varios=grupos.length>1;
+  grupos.forEach(g=>{
+    if(varios)h+=g.i===null
+      ?'<div class="grpM -perg"><span class="n">\u2014</span><span>Solto no livro</span></div>'
+      :'<div class="grpM -perg"><span class="n">'+String(g.i+1).padStart(2,"0")+'</span>'+
+       '<span>'+esc(PERGUNTAS[g.i].q)+'</span><span class="o">'+
+       (PERGUNTAS[g.i].o==="titulo"?"do cap\u00edtulo "+(PERGUNTAS[g.i].cap+1):"sua")+'</span></div>';
+    /* dentro do grupo, o que voce escreveu vem antes do que voce so marcou */
+    h+=g.itens.slice().sort((a,b)=>(b.nota?1:0)-(a.nota?1:0))
+      .map(d=>itemMarcado(d,!!d.nota)).join("");
+  });
+  return h+'</div>'+faltam(meus)+'</div>';
+}
+/* o que ainda nao tem trecho e informacao: some sozinho quando deixar de ser */
+function faltam(meus){
+  const vazias=PERGUNTAS.map((p,i)=>i).filter(i=>!meus.some(d=>d.perg===i));
+  const daEstrutura=PERGUNTAS.filter(p=>p.o==="titulo").length;
+  if(!vazias.length)
+    return '<div class="faltam"><button class="lnk mudo" data-a="nada" style="padding:0">Escrever uma pergunta</button>'+
+      '<span class="pgorig">'+daEstrutura+' vieram dos cap\u00edtulos</span></div>';
+  return '<div class="faltam"><span>Ainda sem nada marcado:</span>'+
+    vazias.map(i=>'<button class="lnk mudo" data-a="ler-pergunta" data-v="'+i+'" style="padding:0">'+
+      esc(cortaQ(i,38))+' \u2192</button>').join("")+
+    '<button class="lnk mudo" data-a="nada" style="padding:0">Escrever uma pergunta</button>'+
+    '<span class="pgorig">'+daEstrutura+' vieram dos cap\u00edtulos</span></div>';
 }
 
 /* ═══ ESTANTE ═══ */
@@ -3124,6 +3181,7 @@ function pinta(){
   const cAnt=app.querySelector(".corpo");
   const y=cAnt?cAnt.scrollTop:0;
   const taEst=guardaRascunho();
+  const tinhaBusca=document.activeElement&&document.activeElement.id==="buscaMarcado";
   /* ancora semantica em vez de scrollTop cru: abrir uma nota no fluxo empurra
      a linha que a pessoa esta lendo, e o pixel de rolagem nao sabe disso. */
   let anc=null;
@@ -3200,7 +3258,9 @@ function pinta(){
      senao ele perde o foco a cada tecla digitada. */
   const bm=document.getElementById("buscaMarcado");
   if(bm){
-    bm.focus();bm.setSelectionRange(bm.value.length,bm.value.length);
+    /* so devolve o foco se ele ja estava aqui: incondicional, toda repintura
+       rolava a tela ate a busca e tirava a pessoa de onde ela estava. */
+    if(tinhaBusca){bm.focus();bm.setSelectionRange(bm.value.length,bm.value.length);}
     bm.addEventListener("input",()=>{S.qMarcado=bm.value;pinta();});
   }
   const campo=document.getElementById("campoBusca");
@@ -3271,13 +3331,13 @@ app.addEventListener("click",ev=>{
     case "nada":aviso("Controle representado");break;
     case "fechar":case "fechar-veu":S.folha=null;S.aviso=null;break;
     case "menu":S.menu=!S.menu;break;
-    case "ir":S.lugar=v;S.folha=null;S.dentro=false;break;
+    case "ir":S.lugar=v;S.folha=null;S.dentro=false;S.dstUndo=null;S.deLivro=false;break;
     case "ir-livro":{
-      S.lugar="livro";S.folha=null;S.dentro=false;
+      S.lugar="livro";S.folha=null;S.dentro=false;S.dstUndo=null;S.deLivro=false;
       if(v==="notas"){pinta();const alvo=document.getElementById("marcado");
         if(alvo)alvo.scrollIntoView({behavior:"smooth",block:"start"});return;}
       break;}
-    case "abrir-item":S.lugar="item";S.folha=null;S.dentro=false;break;
+    case "abrir-item":S.lugar="item";S.folha=null;S.dentro=false;S.dstUndo=null;break;
     case "soltar":S.lugar="item";S.cena="trabalho";S.dentro=false;break;
     case "rolar":{const alvo=document.getElementById(v);
       if(alvo)alvo.scrollIntoView({behavior:"smooth",block:"start"});return;}
@@ -3367,6 +3427,12 @@ app.addEventListener("click",ev=>{
       const m=document.getElementById("mk-"+v);
       if(m)m.scrollIntoView({behavior:"smooth",block:"center"});
       return;}
+    case "ler-comeco":S.cap=0;S.lugar="leitura";S.folha=null;break;
+    /* "ver o preparo" caia na tela de analise e oferecia preparar um arquivo
+       ja preparado. Vindo do livro, ele abre o registro do preparo concluido
+       — e a volta passa a dizer o nome do livro, nao "Mesa". */
+    case "ver-preparo":S.lugar="item";S.fase="pronto";S.feitoAberto=true;S.deLivro=true;S.folha=null;break;
+    case "dst-abrirtr":S.dstAberto=S.dstAberto===v?null:v;break;
     case "dst-desfazer":
       if(S.dstUndo){S.dst.push(S.dstUndo);S.dstUndo=null;}
       S.selE=null;S.folha=null;break;
