@@ -753,10 +753,16 @@ body.-selecionando #notasbt{display:none}
 
 /* a nota mora no fluxo, logo abaixo do paragrafo de origem. O recuo de 7% e
    da .lnota, que e do documento; aqui o filete carrega apenas "isto e nota". */
-.notaE{border-left:2px solid var(--ink);padding-left:var(--s4);
-  margin:0 0 var(--esp-par,1.05em);text-align:left}
+/* Filete de 2px em tinta significa, no vocabulario desta interface, "ha voz
+   de autor atras". Enquanto voce escreve, o texto e SEU — a moldura estava
+   dizendo o contrario. E recuo diz "aparte, secundario", que e o oposto do
+   ato principal. O compositor perde as duas: regra fina em cima, medida
+   inteira, e o campo respira. */
+.notaE{border-top:1px solid var(--line);padding-top:var(--s3);
+  margin:var(--s3) 0 var(--esp-par,1.05em);text-align:left}
+.notaE.-erro{border-top-color:var(--dan)}
 .notaE p{font-family:var(--serif);font-size:15px;line-height:1.6;color:var(--ink-2);
-  margin:0;white-space:pre-wrap}
+  margin:0;white-space:pre-wrap;border-left:2px solid var(--ink);padding-left:var(--s4)}
 /* 4.8em nascia com quase cinco linhas vazias para uma frase de uma linha, e
    um campo grande pede um texto grande. Duas linhas, e ele cresce sozinho. */
 .notaE .campo{display:block;width:100%;min-height:2.4em;resize:vertical;
@@ -788,8 +794,7 @@ body.-selecionando #notasbt{display:none}
 .colE>.notaE{margin-top:var(--s4)}
 .notaE .pe .sp{flex:1}
 .notaE .dest{font-family:var(--ui);font-size:var(--t-peq);color:var(--ink-3)}
-.notaE.-erro{border-left-color:var(--dan);background:var(--dan-soft);
-  padding:var(--s3) var(--s4)}
+.notaE.-erro{background:var(--dan-soft);padding:var(--s3) var(--s4)}
 .notaE .erro{font-family:var(--ui);font-size:var(--t-peq);color:var(--dan);
   line-height:1.5;margin:var(--s3) 0 0}
 
@@ -900,6 +905,33 @@ body.-selecionando #notasbt{display:none}
 .dossie{border-top:1px solid var(--line);padding-top:var(--s5);margin-top:var(--s7)}
 .dossie .q{font-family:var(--serif);font-size:1.24rem;line-height:1.3;margin:0 0 var(--s3)}
 .dossie .tr{border-left:2px solid var(--ink);padding-left:var(--s4);margin:0 0 var(--s4)}
+/* PENDURADA — a alternativa. Oito itens empilhavam oito filetes identicos na
+   mesma coluna ao longo de 1100px: o filete deixa de distinguir e vira cerca.
+   Aqui a procedencia sai para a margem e a distincao vem da POSICAO, nao de
+   1px contra 2px — um sinal que ninguem relatou ter notado. */
+.dossie.-pend .tr{border-left:none;padding-left:0;display:grid;
+  grid-template-columns:132px minmax(0,1fr);gap:var(--s5);
+  padding:var(--s4) 0;border-top:1px solid var(--line-2);margin:0}
+.dossie.-pend .tr:first-of-type{border-top:none;padding-top:0}
+.dossie.-pend .tr>cite{grid-column:1;grid-row:1;margin:0;text-align:right;
+  font-family:var(--mono);font-size:10px;letter-spacing:.07em;line-height:1.5;
+  color:var(--ink-3);font-style:normal}
+.dossie.-pend .tr>p,.dossie.-pend .tr>.volta,.dossie.-pend .tr>.cheio,
+.dossie.-pend .tr>.acs,.dossie.-pend .tr>.kd{grid-column:2}
+.dossie.-pend .tr>p{margin:0}
+/* sem filete, o que separa nota de trecho e a propria letra: o que voce
+   escreveu vem em corpo de leitura, o que o livro escreveu vem menor */
+.dossie.-pend .tr.-livre>p,.dossie.-pend .tr.-ideia>p{font-size:var(--t-leitura);
+  line-height:var(--lh-leitura);color:var(--ink)}
+.dossie.-pend .tr:not(.-livre):not(.-ideia)>p{font-family:var(--serif);font-size:15px;
+  line-height:1.6;color:var(--ink-2)}
+.dossie.-pend .tr>.acs{margin-top:var(--s2)}
+@media(max-width:680px){
+  .dossie.-pend .tr{grid-template-columns:1fr;gap:var(--s2)}
+  .dossie.-pend .tr>cite{grid-column:1;text-align:left}
+  .dossie.-pend .tr>p,.dossie.-pend .tr>.volta,.dossie.-pend .tr>.cheio,
+  .dossie.-pend .tr>.acs{grid-column:1}
+}
 .dossie .tr p{font-family:var(--serif);font-size:15px;line-height:1.6;margin:0;color:var(--ink-2)}
 .dossie .tr cite{font-family:var(--mono);font-size:11px;color:var(--ink-3);font-style:normal;
   display:block;margin-top:7px}
@@ -1123,6 +1155,7 @@ td.n{color:var(--ink);font-weight:600}
   <button id="btFundo" type="button" aria-pressed="true">off-white</button>
   <button id="btTema" type="button" aria-pressed="true">tema claro</button>
   <button id="btMesa" type="button" aria-pressed="true">mesa C</button>
+  <button id="btLista" type="button" aria-pressed="true">lista &middot; filete</button>
 </div>
 <button id="notasbt" type="button">◇ notas<span class="bdg">copy · dock</span></button>
 <div id="notas" hidden></div>
@@ -1177,7 +1210,7 @@ const zero={
     {id:"a1",nome:"Kindle de Erik",modelo:"Paperwhite",email:"erik_abc@kindle.com",uso:"hoje, 09:12",princ:true},
     {id:"a2",nome:"Scribe do escritório",modelo:"Scribe",email:"erik_scribe@kindle.com",uso:"6 de agosto",princ:false}
   ],
-  apEdit:null,apRasc:{},histVazio:false,histErro:false,qMarcado:"",deLivro:false,dstAberto:null,fEstante:"tudo",
+  apEdit:null,apRasc:{},histVazio:false,histErro:false,qMarcado:"",deLivro:false,dstAberto:null,fEstante:"tudo",lista:"filete",
   wiz:{p:0,email:"",nome:"",copiou:false,diferente:false},
   mesaVar:"reduzida",mesaEstado:"com-pendencia",perg:null,usb:{p:0,pct:0,t:null},
   /* destaque e nota. Object.assign e raso, entao dst, selE e rasc sao
@@ -2275,7 +2308,7 @@ function secMarcado(){
   if(comNota)cl.push(comNota+' com nota');
   if(pais.length)cl.push(pais.length+' anota\u00e7'+(pais.length>1?"\u00f5es":"\u00e3o"));
   h+=(cl.length?'<p class="saldo">'+cl.join(" \u00b7 ")+'</p>':'')+
-    '<div class="dossie" style="border:none;padding:0;margin:0">';
+    '<div class="dossie'+(S.lista==="pend"?" -pend":"")+'" style="border:none;padding:0;margin:0">';
   if(meus.length>8)
     h+='<input class="campoB" id="buscaMarcado" placeholder="Buscar no que voc\u00ea escreveu" '+
       'value="'+esc(S.qMarcado||"")+'" style="margin-bottom:var(--s4)">';
@@ -4163,6 +4196,13 @@ document.getElementById("notasbt").addEventListener("click",()=>{notas.hidden=fa
     bM.textContent=NOMES[S.mesaVar];
     bM.setAttribute("aria-pressed",String(S.mesaVar!=="atual"));
     if(S.lugar!=="mesa"){S.lugar="mesa";}
+    pinta();
+  });
+  const bL=document.getElementById("btLista");
+  bL.addEventListener("click",()=>{
+    S.lista=S.lista==="filete"?"pend":"filete";
+    bL.innerHTML="lista &middot; "+(S.lista==="filete"?"filete":"pendurada");
+    if(S.lugar!=="livro"){S.lugar="livro";S.conta=true;}
     pinta();
   });
   const bT=document.getElementById("btTema");
