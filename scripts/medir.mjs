@@ -97,7 +97,8 @@ try {
   await manda('Runtime.enable');
   await manda('Emulation.setDeviceMetricsOverride',
     { width: +larg, height: +alt, deviceScaleFactor: 1, mobile: false });
-  await manda('Page.navigate', { url });
+  const nav = await manda('Page.navigate', { url });
+  if (nav.errorText) throw new Error(`a página não carregou: ${nav.errorText} — ${url}`);
   await espera(1500);
 
   const avalia = async (expr) => {
@@ -105,6 +106,15 @@ try {
     if (r.exceptionDetails) throw new Error(r.exceptionDetails.exception?.description || 'erro na página');
     return r.result.value;
   };
+
+  /* Página vazia mede como página quebrada. Com o servidor no ar mas parado,
+     `smoke` devolvia "162 telas → 0, pinta is not defined" e isso lê como
+     defeito no protótipo — eu quase fui atrás de um que não existia. Medida
+     sobre nada não é medida: é para falhar, não para reportar. */
+  const carregou = await avalia('({t:document.title,app:!!document.getElementById("app"),n:document.body?document.body.children.length:0})');
+  if (!carregou.app || !carregou.n) {
+    throw new Error(`a página respondeu mas não montou (título "${carregou.t}", ${carregou.n} elementos, #app ${carregou.app ? 'existe' : 'ausente'}) — ${url}`);
+  }
 
   if (arqSetup) { await avalia(readFileSync(arqSetup, 'utf8')); await espera(400); }
   console.log(JSON.stringify(await avalia(readFileSync(arqMedida, 'utf8')), null, 2));

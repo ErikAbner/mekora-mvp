@@ -248,6 +248,18 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .livro .tit .icb{margin-left:auto;flex:0 0 auto}
 /* duas linhas mudas. A de cima e medida — mono, caixa alta. A de baixo tem
    nome de arquivo e fato, e nome nao se mede: grotesca, caixa normal. */
+/* A descricao e conteudo: espaco e tipografia, sem caixa. A frase e do
+   proprio arquivo, entao ela e tratada como citacao — filete e serifa —
+   e nao como texto que o Mekora escreveu sobre o livro. */
+.descL{border-left:1px solid var(--line-3);padding-left:var(--s4);margin:var(--s4) 0 0}
+.descL p{font-family:var(--serif);font-size:1.02rem;line-height:1.5;color:var(--ink);margin:0}
+.descL .arco{font-size:12.5px;line-height:1.55;color:var(--ink-3);margin:var(--s2) 0 0;display:block}
+.descL .campo{display:block;width:100%;min-height:3.2em;resize:vertical;
+  font-family:var(--serif);font-size:1.02rem;line-height:1.5;color:var(--ink);
+  background:transparent;border:0;border-bottom:1px solid var(--line);
+  border-radius:var(--r1);padding:0 0 var(--s2)}
+.descL .campo:focus{outline:0;border-bottom-color:var(--ink)}
+.descL .campo::placeholder{color:var(--ink-4)}
 .fonte{font-size:12.5px;line-height:1.55;color:var(--ink-3);margin:var(--s2) 0 0}
 .fonte b{color:var(--ink-2);font-weight:550}
 .acoes.-mudas{margin-top:var(--s3);gap:var(--s4)}
@@ -1142,7 +1154,7 @@ const zero={
   mesaVar:"reduzida",mesaEstado:"com-pendencia",perg:null,usb:{p:0,pct:0,t:null},
   /* destaque e nota. Object.assign e raso, entao dst, selE e rasc sao
      recriados a mao em reset() — senao a marcacao vaza entre cenas. */
-  dst:[],selE:null,notaAberta:null,rasc:{},dstUndo:null,erroNota:false,guardando:null,tirando:null,apagando:null,escNovo:null,paraLivro:false,
+  dst:[],selE:null,notaAberta:null,rasc:{},dstUndo:null,erroNota:false,guardando:null,tirando:null,apagando:null,escNovo:null,paraLivro:false,desc:"",descAberta:false,
   /* leitura: tudo o que muda como o arquivo é lido nesta tela.
      escopo é o ato deliberado que faz um ajuste subir a padrão da conta. */
   /* lidoAte/par: o ponto onde a leitura parou, medido no scroll. Guardar o
@@ -1269,7 +1281,7 @@ const AJUDA=[
 let S=Object.assign({},zero),timer=null,ultimoLugar=null;
 function reset(cena){
   clearInterval(timer);timer=null;S=Object.assign({},zero);
-  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardando=null;S.tirando=null;S.apagando=null;S.escNovo=null;S.paraLivro=false;
+  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardando=null;S.tirando=null;S.apagando=null;S.escNovo=null;S.paraLivro=false;S.desc="";S.descAberta=false;
   if(cena==="nova"){S.cena="nova";}
   if(cena==="sem-conta"){S.cena="nova";S.conta=false;}
   pinta();
@@ -1679,6 +1691,31 @@ const dstTexto=escTxt;
 const escEnd=d=>d.cap!=null?"Cap\u00edtulo "+(d.cap+1):ARQ.titulo;
 const dstCap=escEnd;
 const semAncora=()=>S.dst.filter(d=>d.livro===ARQ.titulo&&!ancora(d)).sort(ordem);
+/* A descricao sai do arquivo, nao de um resumo. Duas coisas que o conteudo
+   ja tem: a primeira frase, verbatim, e o arco dos capitulos. Nada e composto
+   nem parafraseado — o produto nao sabe resumir, e fingir que sabe seria a
+   mesma mentira de chamar derivacao de titulo de geracao. */
+function primeiraFrase(){
+  const t=CAPS[0].p[0],i=t.indexOf(". ");
+  return i<0?t:t.slice(0,i+1);
+}
+const arco=()=>CAPS.map(c=>c.n).join(", ");
+function descBloco(){
+  const minha=S.desc&&S.desc.trim();
+  if(S.descAberta){
+    const r=S.rasc.desc!==undefined?S.rasc.desc:(S.desc||"");
+    return '<div class="descL"><textarea class="campo" id="campoNota" aria-label="Sua descri\u00e7\u00e3o" '+
+      'placeholder="Como voc\u00ea descreveria este livro">'+esc(r)+'</textarea>'+
+      '<div class="pe" style="display:flex;align-items:center;gap:var(--s3);margin-top:var(--s2)">'+
+      '<button class="lnk" data-a="desc-guardar">Pronto</button>'+
+      (minha?'<button class="lnk mudo" data-a="desc-limpar">Voltar \u00e0 do arquivo</button>':'')+
+      '</div></div>';
+  }
+  return '<div class="descL"><p>'+(minha?esc(S.desc):'\u201c'+esc(primeiraFrase())+'\u201d')+'</p>'+
+    '<span class="arco">'+(minha?'sua':'Primeira frase do arquivo')+' \u00b7 '+esc(arco())+
+    ' <button class="lnk mudo" data-a="desc-abrir" style="padding:0 0 0 var(--s2)">'+
+    (minha?'editar':'escrever a minha')+'</button></span></div>';
+}
 /* o paragrafo e emitido fatiado pelos destaques que caem nele */
 function paragrafo(cap,par,txt){
   const ds=S.dst.filter(d=>d.cap===cap&&d.par===par).sort((a,b)=>a.ini-b.ini);
@@ -2092,6 +2129,7 @@ function vLivro(){
       '<p class="autor">'+esc(ARQ.autor)+'</p>'+
       (cl.length?'<p class="saldo" style="margin:var(--s3) 0 0">'+cl.join(" \u00b7 ")+'</p>':'')+
       '<p class="fonte">'+fonte.join(" \u00b7 ")+'</p>'+
+      descBloco()+
       '<div class="acoes">'+
         '<button class="btn" data-a="ir" data-v="leitura">'+
           (S.cap>0?"Continuar no cap\u00edtulo "+(S.cap+1):"Ler")+'</button>'+
@@ -2698,10 +2736,14 @@ function vFolha(){
   if(f==="busca"){
     const q=S.q.trim().toLowerCase();
     const achados=q?ACERVO.filter(b=>(b.t+" "+b.a+" "+b.f).toLowerCase().includes(q)):ACERVO.slice(0,5);
-    return folha("Buscar","Buscar em livros e arquivos",
-      '<input id="campoBusca" class="campoB" placeholder="Título, autor, formato…" value="'+esc(S.q)+'" autocomplete="off">'+
-      '<div id="resBusca">'+resultados(achados,q)+'</div>',
-      '<span style="font-size:var(--t-peq);color:var(--ink-3)">Enter abre o primeiro · Esc fecha</span>');
+    /* "guardado e irrecuperavel" e a definicao pratica de perdido, e perdido
+       e a palavra que o produto usa para se vender. O que voce escreveu ja
+       estava na memoria e a busca dizia, na propria copy, que nao o cobria. */
+    const escritos=q?S.dst.filter(d=>((d.nota||"")+" "+escTxt(d)).toLowerCase().includes(q)).sort(ordem):[];
+    return folha("Buscar","Buscar em livros e no que voc\u00ea escreveu",
+      '<input id="campoBusca" class="campoB" placeholder="T\u00edtulo, autor, ou uma palavra que voc\u00ea escreveu\u2026" value="'+esc(S.q)+'" autocomplete="off">'+
+      '<div id="resBusca">'+resultados(achados,q,escritos)+'</div>',
+      '<span style="font-size:var(--t-peq);color:var(--ink-3)">Enter abre o primeiro \u00b7 Esc fecha</span>');
   }
   /* Central orientada por tarefa. A versao anterior era indice de topicos com a
      descricao cortada em 34 caracteres — o corte nao era densidade, era defeito:
@@ -3200,15 +3242,32 @@ function ctrl(rot,opts){
   return '<div class="ctrl"><b>'+rot+'</b><div class="opts">'+opts.map(o=>
     '<button data-a="prev" data-v="'+o[1]+'"'+(o[2]?' aria-pressed="true"':'')+'>'+o[0]+'</button>').join("")+'</div></div>';
 }
-function resultados(lista,q){
-  if(!lista.length)return '<p style="margin:var(--s4) 0 0;font-size:var(--t-peq);color:var(--ink-3)">'+
-    'Nada com “'+esc(q)+'”. A busca cobre título, autor e formato — ainda não o texto dentro dos livros.</p>';
-  return '<div class="lista" style="margin-top:var(--s4)">'+lista.map(b=>
-    '<button class="linha" data-a="ir-livro" style="grid-template-columns:30px minmax(0,1fr) auto">'+
-    '<img class="capa" src="'+capa(b.c)+'" alt="" style="width:30px;height:40px">'+
-    '<span><span class="nm">'+esc(b.t)+'</span><span class="st">'+esc(b.a)+' · '+b.f+'</span></span>'+
-    '<span class="ac">Abrir</span></button>').join("")+'</div>'+
-    (q?'':'<p style="margin:var(--s3) 0 0;font-size:var(--t-peq);color:var(--ink-3)">Recentes.</p>');
+function resultados(lista,q,escritos){
+  escritos=escritos||[];
+  if(!lista.length&&!escritos.length)
+    return '<p style="margin:var(--s4) 0 0;font-size:var(--t-peq);color:var(--ink-3)">'+
+      'Nada com \u201c'+esc(q)+'\u201d. A busca cobre t\u00edtulo, autor, formato e o que voc\u00ea '+
+      'escreveu \u2014 ainda n\u00e3o o texto dentro dos livros.</p>';
+  let h="";
+  if(lista.length)
+    h+='<div class="lista" style="margin-top:var(--s4)">'+lista.map(b=>
+      '<button class="linha" data-a="ir-livro" style="grid-template-columns:30px minmax(0,1fr) auto">'+
+      '<img class="capa" src="'+capa(b.c)+'" alt="" style="width:30px;height:40px">'+
+      '<span><span class="nm">'+esc(b.t)+'</span><span class="st">'+esc(b.a)+' \u00b7 '+b.f+'</span></span>'+
+      '<span class="ac">Abrir</span></button>').join("")+'</div>';
+  if(escritos.length){
+    /* a forma diz o que e, como na lista do livro: sem ancora nao tem trecho
+       atras, e por isso nao tem para onde voltar alem do proprio livro */
+    h+='<div class="grpM" style="margin-top:var(--s5)">No que voc\u00ea escreveu \u00b7 '+escritos.length+'</div>'+
+      '<div class="dossie" style="border:none;padding:0;margin:0">'+
+      escritos.map(d=>'<div class="tr'+(ancora(d)?(d.nota?" -ideia":""):" -livre")+'">'+
+        '<p>'+esc((d.nota||escTxt(d)).slice(0,150))+((d.nota||escTxt(d)).length>150?"\u2026":"")+'</p>'+
+        '<cite>'+esc(d.livro)+' \u00b7 '+esc(escEnd(d))+'</cite>'+
+        '<div class="acs"><button class="lnk mudo" data-a="'+(ancora(d)?"dst-ir":"ir-esc")+
+        '" data-v="'+d.k+'">'+(ancora(d)?"ir ao trecho":"ver no livro")+'</button></div></div>').join("")+
+      '</div>';
+  }
+  return h+(q?'':'<p style="margin:var(--s3) 0 0;font-size:var(--t-peq);color:var(--ink-3)">Recentes.</p>');
 }
 /* A folha tinha 560px para tudo. Uma folha que carrega um paragrafo e uma
    que carrega uma bancada de duas ou tres colunas nao podem ter a mesma
@@ -3296,7 +3355,8 @@ function barra(){
 /* rascunho: qualquer pinta() recria o <textarea> e levaria o texto junto. */
 function guardaRascunho(){
   const ta=document.getElementById("campoNota");
-  if(ta&&S.notaAberta)S.rasc[S.notaAberta]=ta.value;
+  const alvo=S.notaAberta||S.escNovo||(S.descAberta?"desc":null);
+  if(ta&&alvo)S.rasc[alvo]=ta.value;
   return ta?{ini:ta.selectionStart,fim:ta.selectionEnd,alt:ta.style.height}:null;
 }
 function pinta(){
@@ -3581,10 +3641,16 @@ app.addEventListener("click",ev=>{
        ja preparado. Vindo do livro, ele abre o registro do preparo concluido
        — e a volta passa a dizer o nome do livro, nao "Mesa". */
     case "ver-preparo":S.lugar="item";S.fase="pronto";S.feitoAberto=true;S.deLivro=true;S.folha=null;break;
+    case "desc-abrir":S.descAberta=true;S.rasc.desc=S.desc||"";break;
+    case "desc-guardar":{
+      const ta=document.getElementById("campoNota");
+      if(ta)S.desc=ta.value.trim();
+      delete S.rasc.desc;S.descAberta=false;break;}
+    case "desc-limpar":S.desc="";delete S.rasc.desc;S.descAberta=false;break;
     case "dst-abrirtr":S.dstAberto=S.dstAberto===v?null:v;break;
     /* volta ao escrito na lista do livro: o dossie e a lista */
     case "ir-esc":{
-      S.lugar="livro";S.folha=null;S.selE=null;pinta();
+      S.lugar="livro";S.folha=null;S.selE=null;S.q="";pinta();
       const el2=document.getElementById("e-"+v);
       if(el2)el2.scrollIntoView({behavior:"smooth",block:"center"});
       return;}
@@ -3630,7 +3696,7 @@ app.addEventListener("click",ev=>{
       aviso(d?"Copiado com a origem — "+dstCap(d)+", "+ARQ.titulo:"Copiado");break;}
     case "dst-ir":{
       const d=dstK(v);if(!d)break;
-      S.lugar="leitura";S.folha=null;S.cap=d.cap;S.selE=null;
+      S.lugar="leitura";S.folha=null;S.q="";S.cap=d.cap;S.selE=null;
       if(d.perg!=null)S.perg=d.perg;   /* voltar ao trecho devolve a pergunta junto */
       pinta();
       const m=document.getElementById("mk-"+d.k);
