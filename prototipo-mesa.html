@@ -751,13 +751,35 @@ body.-selecionando #notasbt{display:none}
   margin:0 0 var(--esp-par,1.05em);text-align:left}
 .notaE p{font-family:var(--serif);font-size:15px;line-height:1.6;color:var(--ink-2);
   margin:0;white-space:pre-wrap}
-.notaE .campo{display:block;width:100%;min-height:4.8em;resize:vertical;
+/* 4.8em nascia com quase cinco linhas vazias para uma frase de uma linha, e
+   um campo grande pede um texto grande. Duas linhas, e ele cresce sozinho. */
+.notaE .campo{display:block;width:100%;min-height:2.4em;resize:vertical;
   font-family:var(--serif);font-size:15px;line-height:1.6;color:var(--ink);
   background:transparent;border:0;border-bottom:1px solid var(--line);
   border-radius:var(--r1);padding:0 0 var(--s2)}
 .notaE .campo:focus{outline:0;border-bottom-color:var(--ink)}
 .notaE .campo::placeholder{color:var(--ink-4)}
 .notaE .pe{display:flex;align-items:center;gap:var(--s3);margin-top:var(--s2);flex-wrap:wrap}
+/* Pronto usava --acc, que e o acento reservado a excecao. Guardar uma nota e
+   o gesto mais frequente do produto: tinta cheia, nao cor de alarme. */
+.notaE .pe .lnk,.tr.-livre .pe .lnk,.descL .pe .lnk{color:var(--ink)}
+.notaE .pe .lnk:hover,.tr.-livre .pe .lnk:hover,.descL .pe .lnk:hover{background:var(--bg-3)}
+.notaE .pe .lnk.mudo,.tr.-livre .pe .lnk.mudo,.descL .pe .lnk.mudo{color:var(--ink-3)}
+/* o destino era um rotulo que virou botao e continuou parecendo rotulo — e por
+   isso ninguem achou. Dois estados a vista, o atual marcado: e escolha. */
+.destino{display:inline-flex;border:1px solid var(--line);border-radius:var(--r1);overflow:hidden;
+  margin-left:auto}
+.destino button{padding:4px 9px;font-family:var(--ui);font-size:var(--t-peq);color:var(--ink-3);
+  border-right:1px solid var(--line)}
+.destino button:last-child{border-right:none}
+.destino button:hover{background:var(--bg-2);color:var(--ink)}
+.destino button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+/* escrever sem marcar nada: pendurado na linha do capitulo e no fim do livro,
+   que ja estao na tela. O lugar onde se clica define o endereco. */
+.lcap .escq{font-family:var(--ui);font-size:var(--t-peq);letter-spacing:0;text-transform:none;
+  color:var(--ink-4);padding:0;white-space:nowrap}
+.lcap .escq:hover{color:var(--ink)}
+.colE>.notaE{margin-top:var(--s4)}
 .notaE .pe .sp{flex:1}
 .notaE .dest{font-family:var(--ui);font-size:var(--t-peq);color:var(--ink-3)}
 .notaE.-erro{border-left-color:var(--dan);background:var(--dan-soft);
@@ -1154,7 +1176,7 @@ const zero={
   mesaVar:"reduzida",mesaEstado:"com-pendencia",perg:null,usb:{p:0,pct:0,t:null},
   /* destaque e nota. Object.assign e raso, entao dst, selE e rasc sao
      recriados a mao em reset() — senao a marcacao vaza entre cenas. */
-  dst:[],selE:null,notaAberta:null,rasc:{},dstUndo:null,erroNota:false,guardando:null,tirando:null,apagando:null,escNovo:null,paraLivro:false,desc:"",descAberta:false,
+  dst:[],selE:null,notaAberta:null,rasc:{},dstUndo:null,erroNota:false,guardando:null,tirando:null,apagando:null,escNovo:null,paraLivro:false,desc:"",descAberta:false,escAqui:null,
   /* leitura: tudo o que muda como o arquivo é lido nesta tela.
      escopo é o ato deliberado que faz um ajuste subir a padrão da conta. */
   /* lidoAte/par: o ponto onde a leitura parou, medido no scroll. Guardar o
@@ -1281,7 +1303,7 @@ const AJUDA=[
 let S=Object.assign({},zero),timer=null,ultimoLugar=null;
 function reset(cena){
   clearInterval(timer);timer=null;S=Object.assign({},zero);
-  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardando=null;S.tirando=null;S.apagando=null;S.escNovo=null;S.paraLivro=false;S.desc="";S.descAberta=false;
+  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardando=null;S.tirando=null;S.apagando=null;S.escNovo=null;S.paraLivro=false;S.desc="";S.descAberta=false;S.escAqui=null;
   if(cena==="nova"){S.cena="nova";}
   if(cena==="sem-conta"){S.cena="nova";S.conta=false;}
   pinta();
@@ -1550,7 +1572,9 @@ function vLeitura(){
   h+='<div class="ed'+cls+'" style="padding-bottom:var(--s8)"><div class="colE">';
   CAPS.forEach((c,i)=>{
     h+='<section class="lsec" id="cap'+i+'"><div class="lcap"><span>'+esc(c.n)+'</span>'+
-      '<span>Capítulo '+(i+1)+' de '+CAPS.length+'</span></div>';
+      '<button class="escq" data-a="esc-aqui" data-v="'+i+'">escrever sobre este cap\u00edtulo</button>'+
+      '<span>Cap\u00edtulo '+(i+1)+' de '+CAPS.length+'</span></div>'+
+      (S.escAqui===String(i)?notaLivre({k:"aqui",cap:i,nota:""}):"");
     c.p.forEach((p,j)=>{
       h+='<p class="txtE" data-cap="'+i+'" data-p="'+j+'" data-tr>'+paragrafo(i,j,p)+
         (i===1&&j===0?'<button class="marcaN" data-a="folha" data-v="nota">1</button>':'')+'</p>'+
@@ -1564,7 +1588,10 @@ function vLeitura(){
       'sobreviveu à segunda semana.</p>';
     h+='</section>';
   });
-  h+='<div class="lfimE"><span class="kicker">Fim do que foi preparado</span>'+
+  h+=(S.escAqui==="livro"?notaLivre({k:"aqui",cap:null,nota:""}):"")+
+    '<div class="lfimE"><span class="kicker">Fim do que foi preparado</span>'+
+    '<button class="lnk mudo" data-a="esc-aqui" data-v="livro" style="padding:0;display:block;'+
+    'margin-bottom:var(--s3)">Escrever sobre o livro</button>'+
     '<p class="txtE mudo">Você está lendo o EPUB que o Mekora gerou a partir de um PDF digitalizado de '+
     ARQ.pgs+' páginas. O original continua guardado.</p>'+
     '<div class="aparelho"><i class="pt pt-ok"></i><div style="flex:1">'+
@@ -1753,12 +1780,13 @@ function notaE(d){
       '<button class="lnk" data-a="dst-guardar" data-v="'+d.k+'" style="padding:0">Tentar de novo</button></p>':"")+
     '<div class="pe"><button class="lnk" data-a="dst-guardar" data-v="'+d.k+'">Pronto</button>'+
     (d.nota?'<button class="lnk mudo" data-a="dst-apagar-nota" data-v="'+d.k+'">Apagar a nota</button>':"")+
-    '<span class="sp"></span>'+
-    /* o destino era texto morto no rodape. Vira o controle, no mesmo lugar,
-       com o mesmo tamanho: escolher onde a escrita mora ENQUANTO a caneta
+    /* dois estados a vista: escolher onde a escrita mora ENQUANTO a caneta
        esta na mao, antes de o registro existir. Nenhuma ancora falsa entra. */
-    '<button class="lnk mudo dest" data-a="esc-grao" data-v="'+d.k+'">'+
-      (S.paraLivro||!ancora(d)?"sobre o livro":"no trecho")+'</button></div></div>';
+    '<span class="destino"><button data-a="esc-grao" data-v="'+d.k+'" data-g="trecho" '+
+      'aria-pressed="'+(!S.paraLivro)+'">no trecho</button>'+
+      '<button data-a="esc-grao" data-v="'+d.k+'" data-g="livro" '+
+      'aria-pressed="'+(!!S.paraLivro)+'">sobre o livro</button></span>'+
+    '</div></div>';
 }
 const LENDO={capa:"01",titulo:"Estudo de Viabilidade",autor:"Ana Duarte",quando:"ontem",prog:32,notas:14};
 const PRONTOS=[
@@ -2197,11 +2225,15 @@ function itemMarcado(d,ideia){
 }
 /* o compositor sem ancora: mesmo campo, mesmo Pronto, outra superficie */
 function notaLivre(d){
+  const aqui=d.k==="aqui";
   const rasc=S.rasc[d.k]!==undefined?S.rasc[d.k]:d.nota;
-  return '<div class="tr -livre" id="e-'+d.k+'">'+
-    '<textarea class="campo" id="campoNota" aria-label="Sua anota\u00e7\u00e3o" '+
-    'placeholder="O que voc\u00ea quer guardar sobre este livro">'+esc(rasc)+'</textarea>'+
-    '<div class="pe"><button class="lnk" data-a="dst-guardar" data-v="'+d.k+'">Pronto</button>'+
+  return '<div class="'+(aqui?"notaE":"tr -livre")+'" id="e-'+d.k+'">'+
+    '<textarea class="campo" id="campoNota" aria-label="Sua anota\u00e7\u00e3o" placeholder="'+
+    (d.cap!=null?"O que voc\u00ea quer guardar sobre este cap\u00edtulo":"O que voc\u00ea quer guardar sobre este livro")+
+    '">'+esc(rasc)+'</textarea>'+
+    '<div class="pe"><button class="lnk" data-a="'+(aqui?"esc-aqui-guardar":"dst-guardar")+
+    '" data-v="'+d.k+'">Pronto</button>'+
+    (aqui?'<button class="lnk mudo" data-a="esc-aqui" data-v="'+(d.cap==null?"livro":d.cap)+'">Descartar</button>':'')+
     '<span class="sp" style="flex:1"></span>'+
     '<span class="dest">'+esc(escEnd(d))+'</span></div></div>';
 }
@@ -3355,7 +3387,7 @@ function barra(){
 /* rascunho: qualquer pinta() recria o <textarea> e levaria o texto junto. */
 function guardaRascunho(){
   const ta=document.getElementById("campoNota");
-  const alvo=S.notaAberta||S.escNovo||(S.descAberta?"desc":null);
+  const alvo=S.notaAberta||S.escNovo||(S.descAberta?"desc":null)||(S.escAqui?"aqui":null);
   if(ta&&alvo)S.rasc[alvo]=ta.value;
   return ta?{ini:ta.selectionStart,fim:ta.selectionEnd,alt:ta.style.height}:null;
 }
@@ -3641,6 +3673,16 @@ app.addEventListener("click",ev=>{
        ja preparado. Vindo do livro, ele abre o registro do preparo concluido
        — e a volta passa a dizer o nome do livro, nao "Mesa". */
     case "ver-preparo":S.lugar="item";S.fase="pronto";S.feitoAberto=true;S.deLivro=true;S.folha=null;break;
+    /* nasce sem selecionar nada, e o endereco sai do lugar onde se clicou:
+       na linha do capitulo vira grao capitulo, no fim do livro vira grao
+       livro. Antes so dava para escrever livre marcando um trecho que a
+       pessoa nao queria marcar, e depois soltando a ancora. */
+    case "esc-aqui":S.escAqui=(S.escAqui===v?null:v);S.notaAberta=null;S.rasc.aqui="";break;
+    case "esc-aqui-guardar":{
+      const ta=document.getElementById("campoNota"),t=ta?ta.value.trim():"";
+      if(t){const k="n"+S.dst.length;
+        S.dst.push(escrito(S.escAqui==="livro"?null:Number(S.escAqui),null,null,t,"livro",k));}
+      delete S.rasc.aqui;S.escAqui=null;break;}
     case "desc-abrir":S.descAberta=true;S.rasc.desc=S.desc||"";break;
     case "desc-guardar":{
       const ta=document.getElementById("campoNota");
@@ -3669,7 +3711,7 @@ app.addEventListener("click",ev=>{
     case "esc-grao":{
       const ta=document.getElementById("campoNota");
       if(ta&&S.notaAberta)S.rasc[S.notaAberta]=ta.value;
-      S.paraLivro=!S.paraLivro;
+      S.paraLivro=(el.dataset.g==="livro");
       break;}
     case "esc-apagar":{
       const d=escK(v);if(!d)break;
