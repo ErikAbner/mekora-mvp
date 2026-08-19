@@ -278,6 +278,9 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .vista{display:inline-flex;border:1px solid var(--line);border-radius:var(--r1);overflow:hidden;background:var(--bg-2)}
 .vista button{padding:6px 14px;font-size:12.5px;color:var(--ink-2)}
 .vista button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.vista button .exp{font-family:var(--mono);font-size:9px;letter-spacing:.06em;
+  text-transform:uppercase;margin-left:6px;padding:1px 4px;border:1px solid currentColor;
+  opacity:.55;vertical-align:1px}
 /* filtro colado na colecao que ele filtra, escrito por extenso. Nao e
    irmao do seletor de vista: aquele muda COMO se ve, este muda O QUE se ve.
    Por isso ele nao divide a linha com ele — fica embaixo, sobre o acervo. */
@@ -2230,7 +2233,11 @@ function vEstante(){
       ' itens \u00b7 tudo que j\u00e1 foi preparado.</p></div>'+
     '<span class="sp"></span>'+
     '<span class="vista"><button data-a="vista" data-v="lista" aria-pressed="'+(S.estante==="lista")+'">Capas</button>'+
-    '<button data-a="vista" data-v="3d" aria-pressed="'+(S.estante==="3d")+'">Estante</button></span></div>'+
+    /* o Caderno 03 poe a Estante 3D em "adiar" com a instrucao de marcar como
+       experimento. Marcar so depois do clique seria marcar tarde: o aviso mora
+       no botao, e a razao medida aparece quando a vista abre. */
+    '<button data-a="vista" data-v="3d" aria-pressed="'+(S.estante==="3d")+'">Estante 3D'+
+    '<span class="exp">exp</span></button></span></div>'+
     '<div class="filtroL">'+FILTROS.map(x=>
       '<button data-a="f-estante" data-v="'+x[0]+'" aria-pressed="'+(f[0]===x[0])+'">'+x[1]+
       '<span class="n">'+ACERVO.filter(x[2]).length+'</span></button>').join("")+'</div>';
@@ -2245,6 +2252,15 @@ function vEstante(){
          so o modo Estante mostrava. E e ele que explica o recorte "Com nota". */
       '<span class="q">'+esc(b.q)+'</span></button>').join("")+'</div>';
   }else{
+    /* o numero e medido na propria tela, nao escrito a mao: 14 lombadas de
+       ~18px numa tabua de 1000px ocupam 9% dela. Dizer "experimento" sem dizer
+       o que ele faz pior seria selo decorativo. */
+    h+='<div class="nota" style="margin:0 0 var(--s5)"><span>\u25c6</span><div>'+
+      '<b>Experimento.</b> As lombadas ocupam menos de um d\u00e9cimo da prateleira, e o '+
+      't\u00edtulo s\u00f3 se l\u00ea de lado, um por vez. Em <b>Capas</b> os '+ACERVO.length+
+      ' t\u00edtulos ficam leg\u00edveis de uma vez. Isto continua aqui porque a estante '+
+      '\u00e9 a met\u00e1fora certa \u2014 n\u00e3o porque j\u00e1 entrega mais que a lista.'+
+      '</div></div>';
     const n=Math.ceil(acervo.length/5);
     const prats=[];for(let k=0;k<n;k++)prats.push(acervo.slice(k*5,k*5+5));
     h+=prats.map(pr=>'<div class="prat"><div class="lombs">'+pr.map(b=>
