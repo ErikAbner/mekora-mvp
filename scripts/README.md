@@ -99,3 +99,13 @@ acervo. `ARQ.pgs`, `ARQ.lidas` e `ARQ.estreitas` existem pelo mesmo motivo:
 mentindo sem nenhuma avisar.
 
 **Derivar é mais barato que verificar, e não precisa ser lembrado.**
+
+## E o que se publica não é o que se edita
+
+O artefato é outra build: capas embutidas, `position:fixed` virando `absolute`,
+sem `<head>`. Medir o arquivo-fonte e concluir que está tudo bem é medir o
+arquivo errado — quatro artefatos saíram com metade do CSS descartada enquanto
+o fonte media limpo.
+
+Antes de publicar, rode `verificar.mjs` **sobre o artefato gerado**, e não só
+sobre `prototipo-mesa.html`.
