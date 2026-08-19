@@ -296,6 +296,8 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .bk:hover img{transform:translateY(-3px)}
 .bk .t{display:block;font-size:12.5px;font-weight:600;margin-top:9px;line-height:1.25}
 .bk .a{display:block;font-size:12px;color:var(--ink-3);margin-top:1px}
+.bk .q{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.03em;
+  color:var(--ink-3);margin-top:4px}
 .prat{margin-bottom:var(--s5)}
 .lombs{display:flex;align-items:flex-end;gap:2px;padding:0 var(--s5);min-height:150px}
 .lombs img{display:block;width:auto;border-radius:var(--rm) var(--rm) 0 0;transition:transform var(--d2) var(--curva)}
@@ -1094,7 +1096,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",
 const ACERVO=[
  {c:"01",t:"Estudo de Viabilidade",a:"Ana Duarte",f:"EPUB",q:"14 notas",l:"03",h:196},
  {c:"02",t:"Malha Urbana",a:"Ana Duarte",f:"EPUB",q:"preparado hoje",l:"02",h:182},
- {c:"03",t:"Sequênca Noturna",a:"Ana Duarte",f:"EPUB",q:"6 notas",l:"04",h:204},
+ {c:"03",t:"Sequência Noturna",a:"Ana Duarte",f:"EPUB",q:"6 notas",l:"04",h:204},
  {c:"04",t:"Censo de Fauna",a:"Ana Duarte",f:"EPUB",q:"lido em julho",l:"05",h:174},
  {c:"05",t:"Malha Urbana",a:"Ana Duarte",f:"EPUB",q:"outra edição",l:"06",h:190},
  {c:"06",t:"Ensaio Visual",a:"Ana Duarte",f:"TXT",q:"2 notas",l:"07",h:166},
@@ -2165,12 +2167,16 @@ function secMarcado(){
    um filtro que anuncia um numero que ninguem consegue produzir e o mesmo
    erro de confianca inventada, so que em miniatura. "Ainda nao enviados"
    ficou de fora porque nao existe campo — e nao se inventa um. */
-const FILTROS=[
-  ["tudo","Tudo",()=>true],
-  ["nota","Com nota",b=>/nota/.test(b.q)],
-  ["pdf","PDF",b=>b.f==="PDF"],
-  ["epub","EPUB",b=>b.f==="EPUB"]
-];
+/* os recortes de formato saem do proprio acervo, e nao de uma lista escrita a
+   mao: com PDF e EPUB fixos, 3 dos 14 itens (2 TXT, 1 XLSX) nao cabiam em
+   recorte nenhum e "Tudo 14" deixava de fechar a conta na frente de quem soma.
+   Formato agora particiona; "Com nota" e o unico recorte de estado. */
+const FILTROS=(function(){
+  const fs=[...new Set(ACERVO.map(b=>b.f))]
+    .sort((a,b)=>ACERVO.filter(x=>x.f===b).length-ACERVO.filter(x=>x.f===a).length||a.localeCompare(b));
+  return [["tudo","Tudo",()=>true],["nota","Com nota",b=>/nota/.test(b.q)]]
+    .concat(fs.map(f=>[f.toLowerCase(),f,b=>b.f===f]));
+})();
 function vEstante(){
   const f=FILTROS.find(x=>x[0]===(S.fEstante||"tudo"))||FILTROS[0];
   const acervo=ACERVO.filter(f[2]);
@@ -2189,7 +2195,11 @@ function vEstante(){
   if(S.estante==="lista"){
     h+='<div class="grade">'+acervo.map(b=>'<button class="bk" data-a="ir-livro">'+
       '<img src="'+capa(b.c)+'" alt="Capa de '+esc(b.t)+'" loading="lazy">'+
-      '<span class="t">'+esc(b.t)+'</span><span class="a">'+esc(b.a)+' \u00b7 '+b.f+'</span></button>').join("")+'</div>';
+      '<span class="t">'+esc(b.t)+'</span><span class="a">'+esc(b.a)+' \u00b7 '+b.f+'</span>'+
+      /* sem esta linha, "Malha Urbana · Ana Duarte · EPUB" aparece duas vezes
+         identica: o campo que separa a edicao da variante existia no acervo e
+         so o modo Estante mostrava. E e ele que explica o recorte "Com nota". */
+      '<span class="q">'+esc(b.q)+'</span></button>').join("")+'</div>';
   }else{
     const n=Math.ceil(acervo.length/5);
     const prats=[];for(let k=0;k<n;k++)prats.push(acervo.slice(k*5,k*5+5));
