@@ -33,13 +33,21 @@ function achaChrome() {
       if (existsSync(p)) return p;
       const l = join(cache, v, 'chrome-linux64/chrome');
       if (existsSync(l)) return l;
+      const w = join(cache, v, 'chrome-win64/chrome.exe');
+      if (existsSync(w)) return w;
     }
   }
   const fixos = [
     '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
     '/Applications/Chromium.app/Contents/MacOS/Chromium',
     '/usr/bin/google-chrome', '/usr/bin/chromium',
-  ];
+    /* Windows: o repo e trabalhado das duas maquinas, e o instrumento
+       precisa rodar nas duas — senao a medida volta a ser aritmetica */
+    join(process.env['PROGRAMFILES'] || 'C:/Program Files', 'Google/Chrome/Application/chrome.exe'),
+    join(process.env['PROGRAMFILES(X86)'] || 'C:/Program Files (x86)', 'Google/Chrome/Application/chrome.exe'),
+    join(process.env.LOCALAPPDATA || '', 'Google/Chrome/Application/chrome.exe'),
+    join(process.env.LOCALAPPDATA || '', 'Microsoft/Edge/Application/msedge.exe'),
+  ].filter(Boolean);
   const achado = fixos.find(existsSync);
   if (!achado) throw new Error('nenhum Chrome encontrado — instale um ou aponte CHROME=');
   return achado;
