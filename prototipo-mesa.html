@@ -254,9 +254,13 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .descL{border-left:1px solid var(--line-3);padding-left:var(--s4);margin:var(--s4) 0 0}
 .descL p{font-family:var(--serif);font-size:1.02rem;line-height:1.5;color:var(--ink);margin:0}
 .descL .arco{font-size:12.5px;line-height:1.55;color:var(--ink-3);margin:var(--s2) 0 0;display:block}
+/* A REGUA E O LIMITE DO CAMPO, e por isso ela e medida e nao escolhida.
+   --line da 1,28:1 contra a pagina; limite de componente pede 3:1. Entre os
+   tokens so --ink-3 alcanca (5,03) — --line-3 da 1,69 e tinta a 45% da 2,91.
+   Trocar o fundo por --bg-2 tambem nao resolveria: 1,05:1, invisivel. */
 .descL .campo{display:block;width:100%;min-height:3.2em;resize:vertical;
   font-family:var(--serif);font-size:1.02rem;line-height:1.5;color:var(--ink);
-  background:transparent;border:0;border-bottom:1px solid var(--line);
+  background:transparent;border:0;border-bottom:1px solid var(--ink-3);
   border-radius:var(--r1);padding:0 0 var(--s2)}
 .descL .campo:focus{outline:0;border-bottom-color:var(--ink)}
 .descL .campo::placeholder{color:var(--ink-4)}
@@ -290,7 +294,7 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .dossie .tr.-livre p>.abre:focus-visible{outline:1px solid var(--ink);outline-offset:3px}
 .dossie .tr.-livre .campo{display:block;width:100%;min-height:3.4em;resize:vertical;
   font-family:var(--serif);font-size:var(--t-leitura);line-height:var(--lh-leitura);color:var(--ink);
-  background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:var(--r1);
+  background:transparent;border:0;border-bottom:1px solid var(--ink-3);border-radius:var(--r1);
   padding:0 0 var(--s2)}
 .dossie .tr.-livre .campo:focus{outline:0;border-bottom-color:var(--ink)}
 .dossie .tr.-livre .campo::placeholder{color:var(--ink-4)}
@@ -826,23 +830,26 @@ body.-selecionando #notasbt{display:none}
    inteira, e o campo respira. */
 .notaE{border-top:1px solid var(--line);padding-top:var(--s3);
   margin:var(--s3) 0 var(--esp-par,1.05em);text-align:left}
+/* na lista do livro o compositor nao precisa da regra em cima: os itens ja
+   vem separados. So a medida e o respiro. */
+.escL{margin:var(--s4) 0 var(--esp-par,1.05em);text-align:left}
 .notaE.-erro{border-top-color:var(--dan)}
 .notaE p{font-family:var(--serif);font-size:15px;line-height:1.6;color:var(--ink-2);
   margin:0;white-space:pre-wrap;border-left:2px solid var(--ink);padding-left:var(--s4)}
 /* 4.8em nascia com quase cinco linhas vazias para uma frase de uma linha, e
    um campo grande pede um texto grande. Duas linhas, e ele cresce sozinho. */
-.notaE .campo{display:block;width:100%;min-height:2.4em;resize:vertical;
+.notaE .campo,.escL .campo{display:block;width:100%;min-height:2.4em;resize:vertical;
   font-family:var(--serif);font-size:15px;line-height:1.6;color:var(--ink);
-  background:transparent;border:0;border-bottom:1px solid var(--line);
+  background:transparent;border:0;border-bottom:1px solid var(--ink-3);
   border-radius:var(--r1);padding:0 0 var(--s2)}
-.notaE .campo:focus{outline:0;border-bottom-color:var(--ink)}
-.notaE .campo::placeholder{color:var(--ink-4)}
-.notaE .pe{display:flex;align-items:center;gap:var(--s3);margin-top:var(--s2);flex-wrap:wrap}
+.notaE .campo:focus,.escL .campo:focus{outline:0;border-bottom-color:var(--ink)}
+.notaE .campo::placeholder,.escL .campo::placeholder{color:var(--ink-4)}
+.notaE .pe,.escL .pe{display:flex;align-items:center;gap:var(--s3);margin-top:var(--s2);flex-wrap:wrap}
 /* Pronto usava --acc, que e o acento reservado a excecao. Guardar uma nota e
    o gesto mais frequente do produto: tinta cheia, nao cor de alarme. */
-.notaE .pe .lnk,.tr.-livre .pe .lnk,.descL .pe .lnk{color:var(--ink)}
-.notaE .pe .lnk:hover,.tr.-livre .pe .lnk:hover,.descL .pe .lnk:hover{background:var(--bg-3)}
-.notaE .pe .lnk.mudo,.tr.-livre .pe .lnk.mudo,.descL .pe .lnk.mudo{color:var(--ink-3)}
+.notaE .pe .lnk,.escL .pe .lnk,.tr.-livre .pe .lnk,.descL .pe .lnk{color:var(--ink)}
+.notaE .pe .lnk:hover,.escL .pe .lnk:hover,.tr.-livre .pe .lnk:hover,.descL .pe .lnk:hover{background:var(--bg-3)}
+.notaE .pe .lnk.mudo,.escL .pe .lnk.mudo,.tr.-livre .pe .lnk.mudo,.descL .pe .lnk.mudo{color:var(--ink-3)}
 /* o destino era um rotulo que virou botao e continuou parecendo rotulo — e por
    isso ninguem achou. Dois estados a vista, o atual marcado: e escolha. */
 .destino{display:inline-flex;border:1px solid var(--line);border-radius:var(--r1);overflow:hidden;
@@ -858,8 +865,13 @@ body.-selecionando #notasbt{display:none}
   color:var(--ink-3);padding:0;white-space:nowrap;border-bottom:1px solid var(--line)}
 .lcap .escq:hover{color:var(--ink)}
 .colE>.notaE{margin-top:var(--s4)}
-.notaE .pe .sp{flex:1}
-.notaE .dest{font-family:var(--ui);font-size:var(--t-peq);color:var(--ink-3)}
+.notaE .pe .sp,.escL .pe .sp{flex:1}
+/* o endereco e ROTULO: diz onde a escrita vai morar, e nao se aperta. Estava
+   em --t-peq dentro de .notaE — maior que o "Pronto" de 13px que ele acompanha
+   — e sem regra nenhuma em .cab, onde herdava serifa em tinta cheia do corpo
+   do item. A coisa que nao se pode apertar era a mais forte da linha. Mesmo
+   corpo e mesma cor do "Pronto"; quem manda na linha e a cor de acento dele. */
+.notaE .dest,.escL .dest,.dossie .tr .dest{font-family:var(--ui);font-size:13px;color:var(--ink-3)}
 .notaE.-erro{background:var(--dan-soft);padding:var(--s3) var(--s4)}
 .notaE .erro{font-family:var(--ui);font-size:var(--t-peq);color:var(--dan);
   line-height:1.5;margin:var(--s3) 0 0}
@@ -1913,6 +1925,11 @@ function notaE(d){
       '<span class="sp"></span><span class="dest">'+onde+'</span></div></div>';
   const rasc=S.rasc[d.k]!==undefined?S.rasc[d.k]:d.nota;
   return '<div class="notaE'+(S.erroNota?" -erro":"")+'">'+
+    /* o campo nao dizia que era campo: fundo transparente, serifa 15px igual a
+       da nota ja salva, e a regua quase invisivel. So o punho de redimensionar
+       do navegador o denunciava — affordance do sistema operacional dentro de
+       um sistema que controla todo o resto. O kicker nomeia o estado. */
+    '<span class="lbl" style="display:block;margin-bottom:var(--s2)">Escrevendo</span>'+
     '<textarea class="campo" id="campoNota" placeholder="O que você pensou aqui" '+
     'aria-label="Sua nota">'+esc(rasc)+'</textarea>'+
     (S.erroNota?'<p class="erro">Não deu para guardar agora. <b>Seu texto continua aqui</b> — nada foi perdido. '+
@@ -2416,7 +2433,12 @@ function acoesDst(d){
 function notaLivre(d){
   const aqui=d.k==="aqui";
   const rasc=S.rasc[d.k]!==undefined?S.rasc[d.k]:d.nota;
-  return '<div class="'+(aqui?"notaE":"cab")+'" id="e-'+d.k+'">'+
+  /* era "cab" — classe generica que cinco outros componentes usam como
+     cabecalho, e que nao tem nenhuma regra para .campo. O compositor livre
+     saia sem estilo nenhum: caixa branca, monoespacada de 13px, sem regua.
+     Classe propria, e as regras do compositor passam a alcanca-lo. */
+  return '<div class="'+(aqui?"notaE":"escL")+'" id="e-'+d.k+'">'+
+    '<span class="lbl" style="display:block;margin-bottom:var(--s2)">Escrevendo</span>'+
     '<textarea class="campo" id="campoNota" aria-label="Sua anotação" placeholder="'+
     (d.cap!=null?"O que você quer guardar sobre este capítulo":"O que você quer guardar sobre este livro")+
     '">'+esc(rasc)+'</textarea>'+
