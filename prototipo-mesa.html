@@ -1137,7 +1137,11 @@ const zero={
   dst:[],selE:null,notaAberta:null,rasc:{},dstUndo:null,erroNota:false,guardando:null,tirando:null,apagando:null,escNovo:null,paraLivro:false,
   /* leitura: tudo o que muda como o arquivo é lido nesta tela.
      escopo é o ato deliberado que faz um ajuste subir a padrão da conta. */
-  leit:{fonte:"serifa",align:"justificado",espaco:1,destaques:"mostrar",progresso:"porcentagem",escopo:"livro"},
+  /* lidoAte/par: o ponto onde a leitura parou, medido no scroll. Guardar o
+     PARAGRAFO e nao o pixel e o que faz voltar ao mesmo lugar depois de
+     trocar corpo, entrelinha ou largura de coluna. */
+  leit:{fonte:"serifa",align:"justificado",espaco:1,destaques:"mostrar",progresso:"porcentagem",escopo:"livro",
+    lidoAte:0,par:0},
   prefs:{modo:"guiado",onboarding:"auto",movimento:"auto",tema:"claro",baixar:"nao",formato:"auto"},
   processando:true
 };
@@ -1458,16 +1462,56 @@ const CAPS=[
  {n:"O que ficou",p:["No fim, o que sobrou não foram as conclusões. Foi o material bruto: 96 páginas de anotação, 340 fotografias e uma lista de perguntas que ninguém tinha feito antes de sair.",
    "É por isso que este diário existe em vez de um relatório."]}
 ];
+/* Progresso medido, nao declarado.
+   A unidade e o PARAGRAFO, nao o pixel: mudar corpo, entrelinha ou coluna
+   muda a altura do documento e nao pode mudar onde a pessoa esta no texto.
+   medeProg() devolve o paragrafo que encosta no topo da leitura, e o quanto
+   dele ficou para tras. */
+function pars(){return document.querySelectorAll(".colE [data-tr]");}
+/* mede o que ficou PARA TRAS: no primeiro paragrafo nada foi lido, e 0% e a
+   unica resposta honesta. 100% so quando a rolagem acaba de verdade. */
+function medeProg(){
+  const c=app.querySelector(".corpo"),ps=pars();
+  if(!c||!ps.length)return null;
+  if(c.scrollTop+c.clientHeight>=c.scrollHeight-8)return {i:ps.length-1,prog:100};
+  const topo=c.getBoundingClientRect().top;
+  let i=ps.length-1;
+  for(let k=0;k<ps.length;k++)if(ps[k].getBoundingClientRect().bottom>topo+4){i=k;break;}
+  return {i:i,prog:Math.round(i/ps.length*100)};
+}
+function progresso(){
+  const m=medeProg();
+  return m?m.prog:(S.leit.lidoAte||0);
+}
+function rotuloProg(prog){
+  return S.leit.progresso==="capitulo"?"cap. "+(S.cap+1)+" de "+CAPS.length:prog+"%";
+}
+/* uma passada de scroll atualiza fio, rotulo e S.cap sem repintar: repintar
+   aqui destruiria a selecao e o cursor de quem esta escrevendo uma nota. */
+function marcaProgresso(){
+  if(S.lugar!=="leitura")return;
+  const m=medeProg();if(!m)return;
+  const ps=pars();
+  S.leit.lidoAte=m.prog;S.leit.par=m.i;
+  const cap=Number(ps[m.i].dataset.cap);
+  if(!Number.isNaN(cap))S.cap=cap;
+  const f=document.getElementById("progF");if(f)f.style.width=m.prog+"%";
+  const t=document.getElementById("progT");if(t)t.textContent=rotuloProg(m.prog);
+}
 function vLeitura(){
-  const prog=Math.round((S.cap+1)/CAPS.length*100);
+  /* o progresso NAO sai de S.cap: o leitor rola os quatro capitulos de uma vez,
+     e (cap+1)/total anunciava 75% com a pessoa parada no primeiro paragrafo.
+     Numero sem medicao e confianca inventada — aqui ele passa a ser medido no
+     scroll, pela ancora semantica (o paragrafo no topo), nunca por pixel. */
+  const prog=progresso();
   let h='<div class="leituraTopo"><button class="lnk mudo" data-a="ir-livro">‹ '+esc(ARQ.titulo)+'</button>'+
     '<span class="sp"></span>'+
     '<button class="lnk mudo" data-a="folha" data-v="sumario">Sumário</button>'+
     '<button class="lnk mudo" data-a="folha" data-v="aa">Aa</button>'+
     (S.leit.progresso==="nada"?'':
-     '<span class="mono" style="font-size:var(--t-mono);color:var(--ink-3)">'+
-     (S.leit.progresso==="capitulo"?"cap. "+(S.cap+1)+" de "+CAPS.length:prog+"%")+'</span>')+
-    '<div class="fio"><i style="width:'+prog+'%"></i></div></div>';
+     '<span class="mono" id="progT" style="font-size:var(--t-mono);color:var(--ink-3)">'+
+     rotuloProg(prog)+'</span>')+
+    '<div class="fio"><i id="progF" style="width:'+prog+'%"></i></div></div>';
 
   const sob=S.perg?escK(S.perg):null;
   if(sob){
@@ -3377,6 +3421,15 @@ function pinta(){
   const c=app.querySelector(".corpo");
   if(c){
     c.scrollTop=y;
+    /* entrando na leitura vinda de outra tela: "Continuar no capitulo 3" abria
+       no primeiro paragrafo do capitulo 1. Volta ao paragrafo onde parou. */
+    if(S.lugar==="leitura"&&ultimoLugar!=="leitura"){
+      const ps=pars(),alvo=ps[Math.min(S.leit.par||0,ps.length-1)];
+      if(alvo&&(S.leit.par||0)>0){
+        c.scrollTop+=alvo.getBoundingClientRect().top-c.getBoundingClientRect().top-24;
+      }
+      marcaProgresso();
+    }
     if(anc){
       const el=c.querySelector('[data-cap="'+anc.cap+'"][data-p="'+anc.par+'"]');
       if(el){const cr=c.getBoundingClientRect();
@@ -3404,6 +3457,7 @@ function pinta(){
     }
     document.body.classList.toggle("-selecionando",!!S.selE);
     c.addEventListener("scroll",()=>{
+      marcaProgresso();
       const d=c.scrollTop>96;
       if(d!==S.dentro){S.dentro=d;const t=app.querySelector(".topo");
         if(t)t.classList.toggle("-dentro",d&&(S.lugar==="item"||S.lugar==="livro"));}
@@ -3542,7 +3596,7 @@ app.addEventListener("click",ev=>{
       const m=document.getElementById("mk-"+v);
       if(m)m.scrollIntoView({behavior:"smooth",block:"center"});
       return;}
-    case "ler-comeco":S.cap=0;S.lugar="leitura";S.folha=null;break;
+    case "ler-comeco":S.cap=0;S.leit.par=0;S.leit.lidoAte=0;S.lugar="leitura";S.folha=null;break;
     /* "ver o preparo" caia na tela de analise e oferecia preparar um arquivo
        ja preparado. Vindo do livro, ele abre o registro do preparo concluido
        — e a volta passa a dizer o nome do livro, nao "Mesa". */
