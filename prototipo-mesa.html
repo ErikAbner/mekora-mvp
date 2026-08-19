@@ -2019,9 +2019,10 @@ function vLivro(){
      botao que continua ali. */
   const cl=[];
   if(S.cap>0)cl.push("Cap\u00edtulo "+(S.cap+1)+" de "+CAPS.length);
-  const meus=S.dst.filter(d=>d.livro===ARQ.titulo);
-  if(meus.length)cl.push(meus.length+" marcado"+(meus.length>1?"s":"")+
-    (meus.filter(d=>d.nota).length?", "+meus.filter(d=>d.nota).length+" com nota":""));
+  /* o saldo do que ficou nao entra aqui: ele e da secao "O que ficou", que
+     conta pela regra certa (ancora e nota sao coisas diferentes) e esta na
+     mesma tela. Repetir aqui era repetir com OUTRA conta — o cabecalho somava
+     nota livre como marcado e dizia 8 onde a secao dizia 2. */
   if(S.enviado)cl.push("Enviado hoje, 09:12");
   const fonte=["<b>EPUB</b>","reconhecido em 93 de 96 p\u00e1ginas"]
     .concat(S.traduzir?["traduzido para "+esc(S.traduzir)+" \u2014 o original em portugu\u00eas continua na estante"]:[])
