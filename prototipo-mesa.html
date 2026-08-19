@@ -263,576 +263,59 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .fonte{font-size:12.5px;line-height:1.55;color:var(--ink-3);margin:var(--s2) 0 0}
 .fonte b{color:var(--ink-2);font-weight:550}
 .acoes.-mudas{margin-top:var(--s3);gap:var(--s4)}
-/* O QUE VOCE ESCREVEU NAO E CITACAO. Ele nasceu com filete de citacao, como
-   os trechos, e o resultado foi uma cerca de linhas paralelas onde pai e filho
-   eram irmaos visuais — o trecho arquivado sob uma pergunta ficava a 0px de
-   recuo dela. Agora a escrita sem ancora fica na margem, SEM filete e SEM
-   recuo, e o que esta arquivado sob ela recua. A hierarquia vira posicao, e
-   sobra filete so onde ha mesmo alguem sendo citado. */
-.dossie .tr.-livre{border-left:none;padding-left:0;margin-top:var(--s6)}
-.dossie .tr.-livre:first-child{margin-top:0}
-/* so o FILHO se aproxima do pai. "+.tr" pegava qualquer item seguinte,
-   inclusive outra pergunta, e ai dois pais ficavam tao colados quanto pai e
-   filho — o agrupamento sumia justamente onde ele precisava aparecer. */
-.dossie .tr.-livre+.tr.-filho{margin-top:var(--s3)}
-.dossie .tr.-filho+.tr.-filho{margin-top:var(--s3)}
-/* o filho recua: e o recuo, nao o peso da linha, que diz que ele esta sob */
-.dossie .tr.-filho{margin-left:var(--s5)}
-.dossie .acs.-vazia{height:0;overflow:hidden;margin:0}
-.dossie .tr:hover .acs.-vazia,.dossie .tr:focus-within .acs.-vazia{height:auto;margin-top:var(--s2)}
-/* a frase e o controle: sem caixa, herdando a tipografia do conteudo. O
-   sinal de que da para clicar aparece na aproximacao, como no resto da lista. */
-.dossie .tr.-livre p>.abre{display:block;width:100%;text-align:left;font:inherit;color:inherit;
+/* A JUNCAO
+   Do Erik: o trecho mora DENTRO do bloco da pergunta, num degrau de papel —
+   contencao inequivoca, que nem filete nem recuo conseguiram dizer. Um filete
+   por GRUPO, nao por item: a cerca acaba porque ha uma linha onde ha um
+   assunto, e nao uma por coisa escrita. E a destrutiva no canto superior
+   direito, sempre no mesmo lugar.
+   Meu: menos controle. So o que se usa trabalhando fica a vista; copiar com a
+   origem e ferramenta de levar para fora e espera ser pedida. */
+.grupoE{border-left:2px solid var(--line-3);padding-left:var(--s4);margin:0 0 var(--s6)}
+.grupoE:last-child{margin-bottom:0}
+.grupoE .cab{position:relative;padding-right:var(--s6)}
+.grupoE .cab>p{margin:0;font-size:var(--t-leitura);line-height:var(--lh-leitura);color:var(--ink)}
+/* uma regra so: todo texto que voce le e a porta de onde ele veio. Botao,
+   nesta lista, e sempre arrumacao — nunca o caminho principal. */
+.grupoE p>.abre{display:block;width:100%;text-align:left;font:inherit;color:inherit;
   padding:0;border-radius:0}
-.dossie .tr.-livre p>.abre::after{content:" 92";color:var(--ink-4);
-  opacity:0;transition:opacity var(--d1) var(--curva)}
-.dossie .tr.-livre:hover p>.abre::after,.dossie .tr.-livre p>.abre:focus-visible::after{opacity:1}
-.dossie .tr.-livre p>.abre:focus-visible{outline:1px solid var(--ink);outline-offset:3px}
-.dossie .tr.-livre .campo{display:block;width:100%;min-height:3.4em;resize:vertical;
-  font-family:var(--serif);font-size:var(--t-leitura);line-height:var(--lh-leitura);color:var(--ink);
-  background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:var(--r1);
-  padding:0 0 var(--s2)}
-.dossie .tr.-livre .campo:focus{outline:0;border-bottom-color:var(--ink)}
-.dossie .tr.-livre .campo::placeholder{color:var(--ink-4)}
-.dossie .tr.-livre .pe{display:flex;align-items:center;gap:var(--s3);margin-top:var(--s2)}
-.dossie .tr[id]{scroll-margin-top:var(--s6)}
-.faltam{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--s2) var(--s3);
-  border-top:1px solid var(--line-2);margin-top:var(--s6);padding-top:var(--s4);
-  font-size:12.5px;color:var(--ink-3)}
-.dossie .tr p{max-width:34em}
-.dossie .tr .cheio{font-family:var(--serif);font-size:15px;line-height:1.6;color:var(--ink-2);
-  margin:var(--s3) 0 0;max-width:34em}
-#marcado{scroll-margin-top:var(--s6)}
-
-/* ═══ ESTANTE ═══ */
-.vista{display:inline-flex;border:1px solid var(--line);border-radius:var(--r1);overflow:hidden;background:var(--bg-2)}
-.vista button{padding:6px 14px;font-size:12.5px;color:var(--ink-2)}
-.vista button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
-.vista button .exp{font-family:var(--mono);font-size:9px;letter-spacing:.06em;
-  text-transform:uppercase;margin-left:6px;padding:1px 4px;border:1px solid currentColor;
-  opacity:.55;vertical-align:1px}
-/* filtro colado na colecao que ele filtra, escrito por extenso. Nao e
-   irmao do seletor de vista: aquele muda COMO se ve, este muda O QUE se ve.
-   Por isso ele nao divide a linha com ele — fica embaixo, sobre o acervo. */
-.filtroL{display:flex;flex-wrap:wrap;gap:var(--s2) var(--s5);align-items:baseline;
-  border-top:1px solid var(--line-2);border-bottom:1px solid var(--line-2);
-  padding:var(--s3) 0;margin-bottom:var(--s5)}
-.filtroL button{font-size:13px;color:var(--ink-3);padding:2px 0}
-.filtroL button:hover{color:var(--ink)}
-.filtroL button[aria-pressed="true"]{color:var(--ink);font-weight:600}
-.filtroL .n{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--ink-4);margin-left:5px}
-.filtroL button[aria-pressed="true"] .n{color:var(--ink-3)}
-.grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(136px,1fr));gap:var(--s5)}
-.bk{text-align:left;display:block;width:100%}
-.bk img{display:block;width:100%;height:auto;border-radius:var(--rm);border:1px solid var(--line);
-  background:var(--paper);transition:transform var(--d2) var(--curva)}
-.bk:hover img{transform:translateY(-3px)}
-.bk .t{display:block;font-size:12.5px;font-weight:600;margin-top:9px;line-height:1.25}
-.bk .a{display:block;font-size:12px;color:var(--ink-3);margin-top:1px}
-.bk .q{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.03em;
-  color:var(--ink-3);margin-top:4px}
-.prat{margin-bottom:var(--s5)}
-.lombs{display:flex;align-items:flex-end;gap:2px;padding:0 var(--s5);min-height:150px}
-.lombs img{display:block;width:auto;border-radius:var(--rm) var(--rm) 0 0;transition:transform var(--d2) var(--curva)}
-.lombs button:hover img{transform:translateY(-9px)}
-.lombs button[aria-pressed="true"] img{transform:translateY(-15px)}
-.tabua{height:9px;background:var(--bg-3);border-bottom:4px solid var(--ink-4);border-radius:var(--r1)}
-.legenda{display:flex;align-items:baseline;gap:var(--s3);padding:var(--s3) var(--s5) 0;min-height:36px}
-
-/* ═══ PERFIL ═══ */
-.pcab{display:flex;gap:var(--s5);align-items:center;padding-bottom:var(--s5);
-  border-bottom:1px solid var(--line);margin-bottom:var(--s5);flex-wrap:wrap}
-.pcab .ava{width:64px;height:64px;font-size:22px}
-.pcab h1{margin:0;font-size:24px;font-weight:650;letter-spacing:-.025em}
-.pcab .h{font-size:13px;color:var(--ink-3);margin-top:3px}
-.dobra{border-bottom:1px solid var(--line-2);background:var(--branco);overflow:hidden}
-.dobra:first-of-type{border-top:1px solid var(--line-2)}
-.dobra>button{display:flex;align-items:center;gap:var(--s3);width:100%;padding:var(--s4)}
-.dobra>button:hover{background:var(--bg-2)}
-.dobra .nm{font-size:14.5px;font-weight:650}
-.dobra .rs{font-size:12.5px;color:var(--ink-2);margin-top:2px}
-.dobra .ch{margin-left:auto;color:var(--ink-3);font-size:11px}
-.dobra .in{padding:0 var(--s4) var(--s4);background:var(--bg)}
-.row{display:flex;align-items:center;gap:var(--s4);padding:var(--s3) 0;border-bottom:1px solid var(--line-2)}
-.row:last-child{border-bottom:none}
-.row .tx{flex:1;min-width:0}
-.row .tx b{display:block;font-size:13.5px;font-weight:600}
-.row .tx span{display:block;font-size:12.5px;color:var(--ink-2);margin-top:2px;line-height:1.5}
-.sw{width:38px;height:22px;border-radius:var(--rp);background:var(--line-3);position:relative;flex:0 0 38px;
-  transition:background var(--d1) var(--curva)}
-.sw i{position:absolute;top:2.5px;left:2.5px;width:17px;height:17px;border-radius:50%;background:var(--bg);
-  transition:left var(--d1) var(--curva)}
-.sw[aria-pressed="true"]{background:var(--ink)}
-.sw[aria-pressed="true"] i{left:18.5px}
-.espelho{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;
-  border:1px solid var(--line);border-radius:var(--r1);padding:2px 6px;color:var(--ink-3);white-space:nowrap}
-
-/* ══════════════════════════════════════════════════════════
-   CAMADA EDITORIAL — derivada do DOC.cc.
-   Vale na Home e dentro do arquivo, que são as duas superfícies
-   onde se lê. O aparato do produto (Mesa, item, perfil) continua
-   em grotesca e densidade de ferramenta.
-   ══════════════════════════════════════════════════════════ */
-.ed{padding:0 var(--s4)}
-.colE{width:100%;max-width:var(--col);margin:0 auto}
-.colE.larga{max-width:calc(var(--col) + 12rem)}
-.faixaE{padding:var(--s8) 0}
-.faixaE+.faixaE{border-top:1px solid var(--line-2)}
-.displayE{font-family:var(--ui);font-size:var(--t-display);line-height:var(--lh-display);
-  letter-spacing:var(--tr-display);font-weight:700;margin:0;text-wrap:balance}
-.h1E{font-family:var(--serif);font-size:var(--t-h1);line-height:var(--lh-h1);letter-spacing:var(--tr-h1);
-  font-weight:400;margin:0}
-.h2E{font-family:var(--ui);font-size:var(--t-h2);line-height:var(--lh-h2);letter-spacing:var(--tr-h2);
-  font-weight:700;margin:0}
-.h3E{font-family:var(--ui);font-size:var(--t-h3);line-height:var(--lh-h3);font-weight:700;margin:0}
-.kicker{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.13em;text-transform:uppercase;
-  color:var(--ink-3);display:block;margin-bottom:var(--s4)}
-.leadE{font-family:var(--serif);font-size:var(--t-leitura);line-height:var(--lh-leitura);color:var(--ink-2);
-  margin:var(--s4) 0 0}
-.txtE{font-family:var(--serif);font-size:var(--t-leitura);line-height:var(--lh-leitura);color:var(--ink);
-  margin:0 0 1.05em}
-.txtE.mudo{color:var(--ink-2)}
-/* botão do DOC: outline puro que inverte no hover, sem raio */
-.btnO{display:inline-flex;align-items:center;justify-content:center;padding:.7rem 1.25rem;
-  border:1px solid var(--line-3);font-size:var(--t-ui);font-weight:500;color:var(--ink);
-  background:none;border-radius:var(--r1);transition:background var(--d1) var(--curva),color var(--d1) var(--curva),
-  border-color var(--d1) var(--curva)}
-.btnO:hover{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.btnO.forte{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.btnO.forte:hover{background:var(--acc);border-color:var(--acc);color:#fff}
-/* matriz de tag 2×2 do DOC */
-.tagE{display:inline-flex;align-items:center;border-radius:var(--rp);padding:.25rem .625rem .375rem;
-  font-size:var(--t-peq);background:var(--bg-3);border:1px solid var(--bg-3);color:var(--ink);
-  transition:background var(--d1) var(--curva),border-color var(--d1) var(--curva)}
-.tagE:hover{background:var(--bg);border-color:var(--ink)}
-.tagE.main{background:var(--ink);border-color:var(--ink);color:var(--bg)}
-.tagE.main:hover{background:var(--ink-2);border-color:var(--ink-2)}
-.tagsE{display:flex;gap:.625rem;flex-wrap:wrap}
-/* índice numerado com divisória — o padrão de lista ordenada do DOC */
-.indiceE{list-style:none;margin:var(--s5) 0 0;padding:0;counter-reset:i}
-.indiceE li{counter-increment:i;border-bottom:1px solid var(--line-2)}
-.indiceE li button{display:flex;align-items:baseline;gap:var(--s4);width:100%;padding:.75rem 0;
-  font-size:var(--t-ui);color:var(--ink)}
-.indiceE li button:hover .nomeI{border-bottom-color:var(--ink)}
-.indiceE .numI{font-family:var(--mono);font-size:var(--t-mono);color:var(--ink-3);
-  min-width:2.2rem}
-.indiceE .nomeI{border-bottom:1px solid transparent;transition:border-color var(--d1) var(--curva)}
-.indiceE .metaI{margin-left:auto;font-family:var(--mono);font-size:var(--t-mono);color:var(--ink-3)}
-/* figura e legenda: legenda herda a largura da coluna, centralizada */
-.figE{margin:var(--s6) 0}
-.figE img{display:block;width:100%;height:auto;border-radius:var(--rm);border:1px solid var(--line)}
-.figE figcaption{width:100%;max-width:var(--col);margin:var(--s4) auto 0;text-align:center;
-  font-size:var(--t-peq);line-height:1.5;color:var(--ink-3)}
-.duasE{display:grid;grid-template-columns:1fr;gap:var(--s6)}
-@media (min-width:1000px){.duasE{grid-template-columns:repeat(2,1fr);gap:var(--s4)}}
-.duasE.tres{grid-template-columns:1fr}
-@media (min-width:1000px){.duasE.tres{grid-template-columns:repeat(3,1fr)}}
-
-/* ══ LEITURA DENTRO DO ARQUIVO ══ */
-.leituraTopo{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line);
-  display:flex;align-items:center;gap:var(--s4);padding:.7rem var(--s4)}
-.leituraTopo .tt{font-family:var(--serif);font-size:var(--t-ui);white-space:nowrap;overflow:hidden;
-  text-overflow:ellipsis}
-.fio{position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--line-2)}
-.fio i{display:block;height:100%;background:var(--ink)}
-.lsec{scroll-margin-top:70px}
-.lsec+.lsec{margin-top:var(--s8)}
-/* a régua atravessa, o título não sai da coluna — a correção de 2026-08-11 */
-.lcap{position:relative;display:flex;justify-content:space-between;align-items:baseline;gap:var(--s4);
-  font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.13em;text-transform:uppercase;
-  color:var(--ink-3);padding:var(--s6) 0 var(--s4);margin-bottom:var(--s3)}
-.lsec+.lsec .lcap::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);
-  width:100vw;height:1px;background:var(--line)}
-.lq{margin:var(--s6) 0;padding:0;border:0;font-family:var(--serif);font-size:1.34rem;line-height:1.34;
-  color:var(--ink);width:117%;max-width:none;margin-left:-8.5%}
-@media (max-width:760px){.lq{width:100%;margin-left:0}}
-.lq::before{content:"";display:block;width:34px;height:1px;background:currentColor;opacity:.35;
-  margin-bottom:.7em}
-.lnota{font-family:var(--ui);font-size:var(--t-peq);line-height:1.5;color:var(--ink-2);
-  width:93%;margin-left:7%;margin-bottom:1.05em}
-.marcaN{font-size:.62em;vertical-align:super;color:var(--acc);margin-left:.2em;line-height:1;
-  position:relative;padding:0 .5em .8em}
-.marcaN::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  width:26px;height:26px}
-.lfimE{margin-top:var(--s8);padding-top:var(--s5);border-top:1px solid var(--line)}
-.aparelho{display:flex;gap:var(--s4);align-items:center;padding:var(--s4);border:1px solid var(--line);
-  border-radius:var(--r2);background:var(--bg-2);margin-top:var(--s5)}
-
-/* ══ VER TODAS AS PÁGINAS ══ */
-.ed2{display:grid;grid-template-columns:190px minmax(0,1fr) 250px;height:min(62vh,500px)}
-@container (max-width:860px){.ed2{grid-template-columns:170px minmax(0,1fr);height:min(62vh,500px)}
-  .ed2 .acoes2{grid-column:1/-1;border-left:none;border-top:1px solid var(--line-2);height:auto}}
-@container (max-width:560px){.ed2{grid-template-columns:1fr;height:auto}
-  .ed2 .filtros{border-right:none;border-bottom:1px solid var(--line-2)}}
-@media(max-width:900px){.ed2{grid-template-columns:1fr;height:auto}}
-.ed2 .filtros{border-right:1px solid var(--line-2);padding:var(--s3);overflow:auto;background:var(--bg)}
-.ed2 .filtros button{display:flex;justify-content:space-between;gap:var(--s2);width:100%;
-  padding:8px var(--s3);font-size:12.5px;color:var(--ink-2)}
-.ed2 .filtros button:hover{background:var(--bg-2)}
-.ed2 .filtros button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
-.ed2 .filtros .n{font-family:var(--mono);font-size:10px;opacity:.7}
-.pgrade{overflow:auto;padding:var(--s4);display:grid;gap:var(--s4);background:var(--bg-2);
-  grid-template-columns:repeat(auto-fill,minmax(84px,1fr));align-content:start}
-.pg2{position:relative;padding:2px;border:2px solid transparent;background:none}
-.pg2 .im{display:block;height:106px;background:var(--branco);border:1px solid var(--line);position:relative;overflow:hidden}
-.pg2 .im i{position:absolute;inset:5px;display:block;
-  background:repeating-linear-gradient(0deg,var(--line-2) 0 1px,transparent 1px 4px)}
-.pg2.semtexto .im i{background:repeating-linear-gradient(135deg,var(--dan-soft) 0 5px,transparent 5px 10px)}
-.pg2.dim .im{border-color:var(--warn)}
-.pg2.fora .im{opacity:.32}
-.pg2.girada .im i{transform:rotate(90deg) scale(.7)}
-.pg2 .lg{display:block;font-family:var(--mono);font-size:9px;color:var(--ink-3);text-align:center;margin-top:4px}
-.pg2[aria-pressed="true"]{border-color:var(--acc);background:var(--acc-soft)}
-.pg2 .tag2{position:absolute;top:5px;left:5px;font-family:var(--mono);font-size:8px;letter-spacing:.05em;
-  text-transform:uppercase;background:var(--ink);color:var(--bg);padding:1px 4px}
-.pg2 .tag2.al{background:var(--warn);color:#fff}
-.pg2 .tag2.er{background:var(--dan);color:#fff}
-.ed2 .painel{border-left:1px solid var(--line-2);padding:var(--s4);overflow:auto;background:var(--bg)}
-.ferr{display:flex;flex-direction:column;gap:2px;margin-bottom:var(--s4)}
-.ferr button{display:flex;align-items:center;gap:var(--s3);padding:8px var(--s3);font-size:12.5px;
-  color:var(--ink-2);border:1px solid var(--line)}
-.ferr button:hover:not([disabled]){border-color:var(--ink);color:var(--ink)}
-.ferr button[disabled]{opacity:.38;cursor:not-allowed}
-.ferr .k{margin-left:auto;font-family:var(--mono);font-size:9px;color:var(--ink-3);
-  border:1px solid var(--line);padding:0 4px}
-
-/* ══ PRÉ-VISUALIZAÇÃO NO APARELHO ══ */
-.prev{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:var(--s5);align-items:start}
-@media(max-width:820px){.prev{grid-template-columns:1fr}}
-.aparelhoQ{display:flex;flex-direction:column;align-items:center;gap:var(--s3)}
-.telaQ{width:100%;max-width:300px;aspect-ratio:1236/1680;background:var(--paper);border:1px solid var(--line-3);
-  padding:18px 16px;overflow:hidden;position:relative;color:#26221c}
-.telaQ.paisagem{aspect-ratio:1680/1236;max-width:400px}
-.telaQ .rolo2{height:100%;overflow:hidden}
-.telaQ p{margin:0 0 .75em;font-family:var(--serif);text-align:justify;hyphens:auto}
-.telaQ.pdf .rolo2{transform-origin:top left}
-.telaQ .marcaQ{position:absolute;left:16px;right:16px;bottom:6px;display:flex;justify-content:space-between;
-  font-family:var(--ui);font-size:8px;color:rgba(38,34,28,.5)}
-.medida{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.05em;color:var(--ink-3);text-align:center}
-.medida b{color:var(--ink)}
-.ctrls{display:flex;flex-direction:column;gap:var(--s4)}
-.ctrl b{display:block;font-size:12.5px;font-weight:600;margin-bottom:var(--s2)}
-.ctrl .opts{display:flex;flex-wrap:wrap;gap:var(--s1)}
-.ctrl .opts button{border:1px solid var(--line);padding:6px 11px;font-size:12px;color:var(--ink-2)}
-.ctrl .opts button:hover{border-color:var(--ink);color:var(--ink)}
-.ctrl .opts button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-
-/* ══ PERFIL E CONTA ══ */
-.umenu .grp{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.11em;text-transform:uppercase;
-  color:var(--ink-3);padding:var(--s3) var(--s3) var(--s1)}
-.parea{display:grid;grid-template-columns:206px minmax(0,1fr);gap:var(--s7);align-items:start}
-@media(max-width:860px){.parea{grid-template-columns:1fr;gap:var(--s5)}.prail{display:none}}
-.prail{position:sticky;top:var(--s4);display:flex;flex-direction:column;gap:1px}
-.prail button{display:flex;align-items:center;gap:var(--s3);padding:9px var(--s3);font-size:13.5px;
-  color:var(--ink-2);border-left:2px solid transparent}
-.prail button:hover{background:var(--bg-2);color:var(--ink)}
-.prail button[aria-current="true"]{border-left-color:var(--ink);color:var(--ink);font-weight:650;background:var(--bg-2)}
-.prail .pt{margin-left:auto}
-.pcards{display:flex;flex-direction:column;background:var(--branco)}
-.pcard{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s4);align-items:center;
-  padding:var(--s4);border-bottom:1px solid var(--line-2);width:100%;text-align:left}
-.pcard:last-child{border-bottom:none}
-.pcard:hover{background:var(--bg-2)}
-.pcard .nm{font-size:14.5px;font-weight:650;display:block}
-.pcard .rs{font-size:12.5px;color:var(--ink-2);margin-top:3px;display:block;line-height:1.5}
-.pcard .ch{color:var(--ink-3);font-size:12px}
-.atencao{display:flex;gap:var(--s3);align-items:flex-start;padding:var(--s4);background:var(--warn-soft);
-  box-shadow:inset 2px 0 0 var(--warn);margin-bottom:var(--s5)}
-.atencao b{display:block;font-size:14px}
-.atencao p{margin:3px 0 0;font-size:13px;color:var(--ink-2);line-height:1.5}
-.campo{display:grid;grid-template-columns:150px minmax(0,1fr) auto;gap:var(--s4);align-items:center;
-  padding:var(--s4) 0;border-bottom:1px solid var(--line-2)}
-.campo:last-of-type{border-bottom:none}
-.campo .k{font-size:12.5px;color:var(--ink-3)}
-.campo .v{font-size:14px}
-.campo .v small{display:block;font-size:12px;color:var(--ink-3);margin-top:3px;line-height:1.45}
-@media(max-width:620px){.campo{grid-template-columns:1fr;gap:var(--s2)}}
-.campoedit{display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap;width:100%}
-.campoedit input{flex:1;min-width:180px;font:inherit;font-size:14px;color:var(--ink);background:var(--bg-2);
-  border:1px solid var(--line-3);border-radius:var(--r1);padding:.5rem .6rem}
-.campoedit input:focus{outline:2px solid var(--acc);outline-offset:-1px;background:var(--branco)}
-.selo{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:var(--t-mono);
-  letter-spacing:.06em;text-transform:uppercase;border-radius:var(--rp);padding:3px 9px;
-  border:1px solid var(--line);color:var(--ink-3)}
-.selo.ok{border-color:var(--ok);color:var(--ok)}
-.selo.al{border-color:var(--warn);color:var(--warn)}
-.selo.pend{border-color:var(--line-3);color:var(--ink-2);background:var(--bg-2)}
-.ap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s4);align-items:center;
-  padding:var(--s4);border-bottom:1px solid var(--line-2);background:var(--branco)}
-.ap:last-child{border-bottom:none}
-.ap .nm{font-size:14.5px;font-weight:650;display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap}
-.ap .em{font-family:var(--mono);font-size:12px;color:var(--ink-2);margin-top:4px;display:block;word-break:break-all}
-.ap .us{font-size:12.5px;color:var(--ink-3);margin-top:3px;display:block}
-.vazio{padding:var(--s7) var(--s4);text-align:center;background:var(--branco)}
-.vazio b{display:block;font-size:15px;margin-bottom:var(--s2)}
-.vazio p{margin:0 auto var(--s4);font-size:13.5px;color:var(--ink-2);max-width:46ch;line-height:1.6}
-.grupoP{margin-bottom:var(--s6)}
-.grupoP>h3{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.11em;text-transform:uppercase;
-  color:var(--ink-3);margin:0 0 var(--s3)}
-.opcao{display:grid;grid-template-columns:auto minmax(0,1fr);gap:var(--s3);padding:var(--s3) var(--s4);
-  width:100%;text-align:left;background:var(--branco);border-bottom:1px solid var(--line-2);align-items:start}
-.opcao:last-child{border-bottom:none}
-.opcao:hover{background:var(--bg-2)}
-.radio{width:16px;height:16px;border-radius:50%;border:1px solid var(--line-3);margin-top:2px;flex:0 0 16px;
-  display:flex;align-items:center;justify-content:center}
-.opcao[aria-pressed="true"] .radio{border-color:var(--ink);border-width:5px}
-.opcao .nm{font-size:13.5px;font-weight:600}
-.opcao .ds{font-size:12.5px;color:var(--ink-2);margin-top:2px;line-height:1.5;display:block}
-.histdia{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.11em;text-transform:uppercase;
-  color:var(--ink-3);padding:var(--s5) 0 var(--s2);border-bottom:1px solid var(--line-2)}
-.histl{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:var(--s4);align-items:baseline;
-  padding:var(--s3) 0;border-bottom:1px solid var(--line-2);width:100%;text-align:left}
-.histl:hover{background:var(--bg-2)}
-.histl .h{font-family:var(--mono);font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums}
-.histl .t{font-size:13.5px}
-.histl .o{font-size:12px;color:var(--ink-3)}
-@media(max-width:620px){.histl{grid-template-columns:56px minmax(0,1fr)}.histl .o{grid-column:2}}
-.perigo{border:1px solid var(--dan);padding:var(--s4);background:var(--dan-soft)}
-.perigo b{display:block;font-size:14px;margin-bottom:var(--s2)}
-.perigo p{margin:0 0 var(--s3);font-size:13px;color:var(--ink-2);line-height:1.55}
-.btnD{height:var(--h2);padding:0 var(--s5);border:1px solid var(--dan);color:var(--dan);background:none;
-  font-size:13.5px;font-weight:600;display:inline-flex;align-items:center}
-.btnD:hover{background:var(--dan);color:#fff}
-.pendencia{display:flex;gap:var(--s3);align-items:flex-start;padding:var(--s3) var(--s4);
-  border:1px dashed var(--line-3);font-size:12.5px;color:var(--ink-2);line-height:1.55;margin-top:var(--s4)}
-
-/* ══ MESA REDUZIDA ══ uma página editorial que por acaso é interativa.
-   Quatro níveis com peso diferente: foco, exceção, estado do sistema,
-   biblioteca. O tratamento visual é o que separa as categorias — dar o
-   mesmo peso a todas foi o que produziu a sensação de painel. */
-.mlede{font-family:var(--serif);font-size:clamp(1.6rem,1.1rem + 1.5vw,2.5rem);line-height:1.14;
-  letter-spacing:-.02em;font-weight:400;margin:0;max-width:20ch;text-wrap:balance}
-.mtopo{display:flex;align-items:flex-end;gap:var(--s6);flex-wrap:wrap;
-  padding-bottom:var(--s7);margin-bottom:var(--s7);border-bottom:1px solid var(--line)}
-.mtopo .tx{flex:1;min-width:280px}
-.meyebrow{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.16em;text-transform:uppercase;
-  color:var(--ink-3);display:block;margin-bottom:var(--s4)}
-/* 1 · foco — um item dominante, tratado como matéria de capa */
-.mfoco{display:grid;grid-template-columns:190px minmax(0,1fr);gap:var(--s6);align-items:start;
-  margin-bottom:var(--s8)}
-@media(max-width:680px){.mfoco{grid-template-columns:1fr;gap:var(--s4)}.mfoco img{max-width:150px}}
-.mfoco img{width:100%;height:auto;border:1px solid var(--line);background:var(--paper)}
-.mfoco h2{font-family:var(--serif);font-size:clamp(1.5rem,1.1rem + 1vw,2.1rem);line-height:1.1;
-  letter-spacing:-.02em;font-weight:400;margin:0 0 var(--s3)}
-.mfoco .onde{font-size:15px;line-height:1.6;color:var(--ink);margin:0 0 var(--s2)}
-.mfoco .desde{font-size:13.5px;line-height:1.6;color:var(--ink-3);margin:0 0 var(--s5)}
-/* 2 · exceção — chama atenção, e só existe quando existe */
-.mexc{border-top:1px solid var(--line);padding-top:var(--s4);margin-bottom:var(--s7)}
-.mexc .cab{display:flex;align-items:baseline;gap:var(--s3);margin-bottom:var(--s4)}
-.mexc .cab .r{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.16em;text-transform:uppercase;
-  color:var(--warn)}
-.mexc .cab .n{font-family:var(--mono);font-size:var(--t-mono);color:var(--ink-3);margin-left:auto}
-.mexc .it+.it{margin-top:var(--s5);padding-top:var(--s5);border-top:1px solid var(--line-2)}
-.mexc .nm{font-size:16px;font-weight:650;letter-spacing:-.01em;display:block}
-.mexc .pq{font-size:14px;color:var(--ink-2);line-height:1.6;margin:6px 0 var(--s4);max-width:52ch}
-/* 3 · estado do sistema — informa sem chamar */
-.mest{border-top:1px solid var(--line);padding-top:var(--s4);margin-bottom:var(--s7)}
-.mest .cab{display:flex;align-items:baseline;gap:var(--s3);margin-bottom:var(--s3)}
-.mest .cab .r{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.16em;text-transform:uppercase;
-  color:var(--ink-3)}
-.mest .cab .n{font-family:var(--mono);font-size:var(--t-mono);color:var(--ink-3);margin-left:auto}
-.mest .it{display:flex;gap:var(--s3);align-items:baseline;flex-wrap:wrap;padding:7px 0;font-size:13.5px;
-  color:var(--ink-2)}
-.mest .it b{font-weight:600;color:var(--ink)}
-.mest .it .t{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
-.mest .it button{margin-left:auto}
-/* 4 · biblioteca — amostra, não cópia da Estante */
-.mbib{border-top:1px solid var(--line);padding-top:var(--s4)}
-.mbib .cab{display:flex;align-items:baseline;gap:var(--s3);margin-bottom:var(--s4)}
-.mbib .cab .r{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.16em;text-transform:uppercase;
-  color:var(--ink-3)}
-.mbib .cab .n{font-family:var(--mono);font-size:var(--t-mono);color:var(--ink-3)}
-.mbib .cab .lnk{margin-left:auto}
-.mbib .capas{display:flex;gap:var(--s4);align-items:flex-end;flex-wrap:wrap}
-.mbib .capas button{display:block}
-.mbib .capas img{width:82px;height:auto;border:1px solid var(--line);background:var(--paper);
-  transition:transform var(--d2) var(--curva)}
-.mbib .capas button:hover img{transform:translateY(-4px)}
-/* a Mesa inteira vira área de solta ao arrastar */
-#app.-arrastando .corpo{box-shadow:inset 0 0 0 2px var(--acc)}
-.msoltando{position:absolute;inset:0;background:var(--acc-soft);display:flex;align-items:center;
-  justify-content:center;z-index:50;pointer-events:none}
-.msoltando span{font-family:var(--serif);font-size:1.6rem;letter-spacing:-.015em}
-
-/* ══ MESA (explorações A, B, C — preservadas no seletor) ══ */
-.mduas{display:grid;grid-template-columns:290px minmax(0,1fr);gap:var(--s7);align-items:start}
-@media(max-width:900px){.mduas{grid-template-columns:1fr;gap:var(--s6)}}
-.mresumo{display:flex;gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
-  margin-bottom:var(--s6)}
-.mresumo button{flex:1;padding:var(--s4) var(--s3) var(--s4) 0;text-align:left;
-  border-right:1px solid var(--line-2)}
-.mresumo button:last-child{border-right:none;padding-right:0}
-.mresumo button:hover .n{color:var(--acc)}
-.mresumo .n{display:block;font-size:1.7rem;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums;
-  transition:color var(--d1) var(--curva)}
-.mresumo .l{display:block;font-size:12px;color:var(--ink-3);margin-top:7px;line-height:1.35}
-.mresumo.fina button{padding:var(--s3) var(--s3) var(--s3) 0}
-.mresumo.fina .n{font-size:1.25rem}
-.msec{margin-bottom:var(--s7)}
-.msec>h2{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.13em;text-transform:uppercase;
-  color:var(--ink-3);margin:0 0 var(--s3);padding-bottom:var(--s2);border-bottom:1px solid var(--line-2);
-  display:flex;gap:var(--s2);align-items:baseline}
-.msec>h2 .ct{margin-left:auto;font-size:11px;letter-spacing:.06em}
-.mpend{padding:var(--s4) 0;border-bottom:1px solid var(--line-2)}
-.mpend:last-child{border-bottom:none}
-.mpend .tipo{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.1em;text-transform:uppercase;
-  color:var(--warn);display:block;margin-bottom:5px}
-.mpend .nm{font-size:15px;font-weight:650;letter-spacing:-.01em;display:block}
-.mpend .cons{font-size:13px;color:var(--ink-2);line-height:1.55;margin:5px 0 0;max-width:56ch}
-.mpend .acao{margin-top:var(--s3)}
-.mprep{padding:var(--s4) 0;border-bottom:1px solid var(--line-2)}
-.mprep:last-child{border-bottom:none}
-.mprep .nm{font-size:14px;font-weight:600;display:block}
-.mprep .et{font-size:13px;color:var(--ink-2);margin-top:4px;display:flex;gap:var(--s3);align-items:baseline;flex-wrap:wrap}
-.mprep .et .t{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
-.mprep .bg{font-size:12px;color:var(--ink-3);margin-top:5px;display:block}
-.mcont{display:grid;grid-template-columns:88px minmax(0,1fr);gap:var(--s4);align-items:start}
-.mcont img{width:88px;height:auto;border:1px solid var(--line);border-radius:var(--rm);background:var(--paper)}
-.mcont h3{font-family:var(--serif);font-size:1.45rem;line-height:1.15;letter-spacing:-.015em;font-weight:400;margin:0}
-.mcont .meta{font-size:12.5px;color:var(--ink-3);margin-top:6px}
-.mcont .prog{height:2px;background:var(--line);margin:var(--s3) 0 var(--s2);max-width:240px}
-.mcont .prog i{display:block;height:100%;background:var(--ink)}
-.mprontos{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:var(--s4)}
-.mpronto{text-align:left;display:block}
-.mpronto img{width:100%;height:auto;border:1px solid var(--line);border-radius:var(--rm);background:var(--paper);
-  transition:transform var(--d2) var(--curva)}
-.mpronto:hover img{transform:translateY(-3px)}
-.mpronto .t{display:block;font-size:12.5px;font-weight:600;margin-top:8px;line-height:1.25}
-.mpronto .q{display:block;font-size:11.5px;color:var(--ink-3);margin-top:2px}
-.mcapas{display:flex;gap:var(--s2);align-items:flex-end}
-.mcapas img{width:58px;height:auto;border:1px solid var(--line);border-radius:var(--rm);background:var(--paper)}
-@media(max-width:520px){.mcapas img:nth-child(n+5){display:none}}
-.msolta{display:flex;gap:var(--s4);align-items:center;padding:var(--s4) 0;border-top:1px solid var(--line);
-  border-bottom:1px solid var(--line);margin-bottom:var(--s6);flex-wrap:wrap}
-.msolta .tx{flex:1;min-width:200px}
-.msolta .tt{font-size:14px;font-weight:650;display:block}
-.msolta .fm{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.07em;color:var(--ink-3);
-  display:block;margin-top:4px}
-.msolta.arrastando{box-shadow:inset 0 0 0 2px var(--acc);background:var(--acc-soft)}
-.mestados{display:flex;gap:var(--s3);align-items:center;flex-wrap:wrap;padding-top:var(--s5);
-  border-top:1px solid var(--line-2);margin-top:var(--s7)}
-.mestados .lb{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.1em;color:var(--ink-3)}
-.mvazio{padding:var(--s7) 0;max-width:44ch}
-.mvazio h2{font-family:var(--serif);font-size:1.5rem;font-weight:400;letter-spacing:-.015em;margin:0 0 var(--s3)}
-.mvazio p{font-size:14px;line-height:1.62;color:var(--ink-2);margin:0 0 var(--s4)}
-
-/* ══ LEITURA ══ os ajustes agem por variável, e a superfície obedece */
-.ed.-esq .txtE,.ed.-esq .lnota{text-align:left}
-.ed.-just .txtE{text-align:justify;hyphens:auto}
-.ed.-grot .txtE,.ed.-grot .lq{font-family:var(--ui)}
-/* .marcaN e .lnota sao do DOCUMENTO — nota de rodape do original e nota de
-   campo do autor. O grupo "Seus destaques" do Aa nao manda nelas: escondia o
-   texto de outra pessoa e chamava de seu. Elas ficam sem controle, de proposito. */
-
-/* ══ DESTAQUE E NOTA ══
-   Nao ha grifo. Um degrau de papel e um filete: a marca usa a mesma camada
-   que o sistema ja usa para separar superficies, e mora dentro da linha.
-   Cor de marca-texto seria o unico elemento saturado da tela — mais alto que
-   o acento, que esta reservado a excecao. */
-.ed ::selection{background:var(--line)}
-.dst{background:var(--bg-3);border-bottom:1px solid var(--line-3);
-  box-decoration-break:clone;-webkit-box-decoration-break:clone;
-  padding:.06em 0;color:inherit;cursor:pointer;
-  scroll-margin-top:calc(var(--topo-sticky,70px) + var(--s4));
-  transition:border-color var(--d1) var(--curva)}
-.dst:hover{border-bottom-color:var(--ink)}
-.dst:focus-visible{outline:1px solid var(--ink);outline-offset:2px}
-.ed.-semdst .dst{background:none;border-bottom:0}
-.ed.-semdst .notaE{display:none}
-
-/* a barra: lasca de papel com filete. Zero sombra, raio 0. Fundo escuro foi
-   recusado — tinta cheia e o elemento mais alto da paleta, e o alto e da
-   excecao. Gastar preto no gesto mais frequente do produto seria inflacao. */
-.selE{position:absolute;z-index:40;display:flex;align-items:center;gap:var(--s3);
-  height:38px;padding:0 var(--s3);background:var(--bg);border:1px solid var(--ink);
-  border-radius:var(--r1);white-space:nowrap;transform:translateX(-50%);
-  animation:selEntra var(--d1) var(--curva)}
-@keyframes selEntra{from{opacity:0}to{opacity:1}}
-.selE .dest{font-family:var(--ui);font-size:var(--t-peq);color:var(--ink-3);
-  padding-right:var(--s3);border-right:1px solid var(--line)}
-.selE button{font-family:var(--ui);font-size:13px;font-weight:600;color:var(--ink);
-  padding:5px 7px;border-radius:var(--r1)}
-.selE button.mudo{color:var(--ink-3);font-weight:550}
-.selE button:hover{background:var(--bg-3)}
-.selE .exc{font-family:var(--ui);font-size:var(--t-peq);color:var(--dan);
-  padding-right:var(--s2)}
-.selE button.perigo{color:var(--dan)}
-@media(max-width:760px){
-  .selE{position:fixed;left:var(--s4);right:var(--s4);bottom:var(--s4);height:44px;
-    transform:none;justify-content:space-between;overflow-x:auto}
-}
-body.-selecionando #notasbt{display:none}
-
-/* a nota mora no fluxo, logo abaixo do paragrafo de origem. O recuo de 7% e
-   da .lnota, que e do documento; aqui o filete carrega apenas "isto e nota". */
-/* Filete de 2px em tinta significa, no vocabulario desta interface, "ha voz
-   de autor atras". Enquanto voce escreve, o texto e SEU — a moldura estava
-   dizendo o contrario. E recuo diz "aparte, secundario", que e o oposto do
-   ato principal. O compositor perde as duas: regra fina em cima, medida
-   inteira, e o campo respira. */
-.notaE{border-top:1px solid var(--line);padding-top:var(--s3);
-  margin:var(--s3) 0 var(--esp-par,1.05em);text-align:left}
-.notaE.-erro{border-top-color:var(--dan)}
-.notaE p{font-family:var(--serif);font-size:15px;line-height:1.6;color:var(--ink-2);
-  margin:0;white-space:pre-wrap;border-left:2px solid var(--ink);padding-left:var(--s4)}
-/* 4.8em nascia com quase cinco linhas vazias para uma frase de uma linha, e
-   um campo grande pede um texto grande. Duas linhas, e ele cresce sozinho. */
-.notaE .campo{display:block;width:100%;min-height:2.4em;resize:vertical;
-  font-family:var(--serif);font-size:15px;line-height:1.6;color:var(--ink);
-  background:transparent;border:0;border-bottom:1px solid var(--line);
-  border-radius:var(--r1);padding:0 0 var(--s2)}
-.notaE .campo:focus{outline:0;border-bottom-color:var(--ink)}
-.notaE .campo::placeholder{color:var(--ink-4)}
-.notaE .pe{display:flex;align-items:center;gap:var(--s3);margin-top:var(--s2);flex-wrap:wrap}
-/* Pronto usava --acc, que e o acento reservado a excecao. Guardar uma nota e
-   o gesto mais frequente do produto: tinta cheia, nao cor de alarme. */
-.notaE .pe .lnk,.tr.-livre .pe .lnk,.descL .pe .lnk{color:var(--ink)}
-.notaE .pe .lnk:hover,.tr.-livre .pe .lnk:hover,.descL .pe .lnk:hover{background:var(--bg-3)}
-.notaE .pe .lnk.mudo,.tr.-livre .pe .lnk.mudo,.descL .pe .lnk.mudo{color:var(--ink-3)}
-/* o destino era um rotulo que virou botao e continuou parecendo rotulo — e por
-   isso ninguem achou. Dois estados a vista, o atual marcado: e escolha. */
-.destino{display:inline-flex;border:1px solid var(--line);border-radius:var(--r1);overflow:hidden;
-  margin-left:auto}
-.destino button{padding:4px 9px;font-family:var(--ui);font-size:var(--t-peq);color:var(--ink-3);
-  border-right:1px solid var(--line)}
-.destino button:last-child{border-right:none}
-.destino button:hover{background:var(--bg-2);color:var(--ink)}
-.destino button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
-/* escrever sem marcar nada: pendurado na linha do capitulo e no fim do livro,
-   que ja estao na tela. O lugar onde se clica define o endereco. */
-.lcap .escq{font-family:var(--ui);font-size:var(--t-peq);letter-spacing:0;text-transform:none;
-  color:var(--ink-3);padding:0;white-space:nowrap;border-bottom:1px solid var(--line)}
-.lcap .escq:hover{color:var(--ink)}
-.colE>.notaE{margin-top:var(--s4)}
-.notaE .pe .sp{flex:1}
-.notaE .dest{font-family:var(--ui);font-size:var(--t-peq);color:var(--ink-3)}
-.notaE.-erro{background:var(--dan-soft);padding:var(--s3) var(--s4)}
-.notaE .erro{font-family:var(--ui);font-size:var(--t-peq);color:var(--dan);
-  line-height:1.5;margin:var(--s3) 0 0}
-
-.qbar .cont{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.06em;
-  color:var(--ink-3);padding:4px 6px;border-radius:var(--r1)}
-.qbar button.cont:hover{color:var(--ink);background:var(--bg-3)}
-
-/* as duas listas reusam .dossie .tr e so trocam os papeis por estado:
-   com nota, a nota e o corpo e o trecho vira a volta. */
-.dossie .tr.-ideia p,.dossie .tr.-livre p{font-size:var(--t-leitura);
-  line-height:var(--lh-leitura);color:var(--ink)}
-.dossie .tr .volta{font-family:var(--serif);font-style:italic;font-size:13px;
-  color:var(--ink-3);display:block;margin-top:var(--s2);text-align:left}
-.dossie .tr .volta:hover{color:var(--ink)}
-/* uma acao visivel por item — ir ao trecho, que e o ponto da lista.
-   As outras sao ferramenta avancada: aparecem quando a pessoa se aproxima.
-   Em aparelho sem hover elas ficam sempre, porque la nao ha como pedir. */
-.dossie .tr .acs{display:flex;gap:var(--s3);margin-top:var(--s2);flex-wrap:wrap;align-items:center}
-.dossie .tr .acs .sob{opacity:0;transition:opacity var(--d1) var(--curva)}
-.dossie .tr:hover .acs .sob,.dossie .tr:focus-within .acs .sob{opacity:1}
-@media(hover:none){.dossie .tr .acs .sob{opacity:1}}
-.dossie .tr .acs .tirar{color:var(--ink-3)}
-.dossie .tr .acs .tirar:hover{color:var(--dan)}
-.desfezL{display:flex;align-items:center;gap:var(--s3);padding:var(--s3) 0 var(--s3) var(--s4);
-  border-left:2px solid var(--ink);margin-bottom:var(--s4);font-size:13px;color:var(--ink)}
-.dossie .tr .kd{font-family:var(--mono);font-size:10px;letter-spacing:.08em;
+.grupoE p>.abre::after{content:" 92";color:var(--ink-4);opacity:0;
+  transition:opacity var(--d1) var(--curva)}
+.grupoE .cab:hover>p>.abre::after,.grupoE .cit:hover>p>.abre::after,
+.grupoE p>.abre:focus-visible::after{opacity:1}
+.grupoE p>.abre:focus-visible{outline:1px solid var(--ink);outline-offset:3px}
+.grupoE cite{font-family:var(--mono);font-size:10px;letter-spacing:.07em;color:var(--ink-3);
+  font-style:normal;display:block;margin-top:6px}
+/* o degrau de papel: o trecho esta DENTRO, e o fundo diz isso sem borda */
+.grupoE .cit{position:relative;background:var(--bg-2);padding:var(--s3) var(--s6) var(--s3) var(--s4);
+  margin-top:var(--s4)}
+.grupoE .cit>p{margin:0;font-family:var(--serif);font-size:15px;line-height:1.6;color:var(--ink-2)}
+.grupoE .cit>p.-nota{font-size:var(--t-leitura);line-height:var(--lh-leitura);color:var(--ink)}
+.grupoE .cit .volta{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--ink-3);
+  display:block;margin-top:var(--s2);text-align:left}
+.grupoE .cit .volta:hover{color:var(--ink)}
+.grupoE .cit .cheio{font-family:var(--serif);font-size:15px;line-height:1.6;color:var(--ink-2);
+  margin:var(--s3) 0 0}
+.grupoE .cit+.cit{margin-top:var(--s2)}
+/* uma so, sempre no mesmo canto, e so ela e destrutiva */
+.grupoE .lix{position:absolute;top:0;right:0;font-family:var(--ui);font-size:var(--t-peq);
+  color:var(--ink-4);padding:2px 4px}
+.grupoE .lix:hover{color:var(--dan)}
+/* acoes a vista: o primario tem caixa, o resto e texto. Esconder o caminho
+   principal falhou tres vezes hoje — o que se esconde agora e so o que serve
+   para levar material para fora. */
+.grupoE .acs{display:flex;align-items:center;gap:var(--s4);flex-wrap:wrap;margin-top:var(--s3)}
+.grupoE .acs .pri{border:1px solid var(--line-3);padding:6px 14px;font-size:13px;
+  color:var(--ink);font-weight:600;border-radius:var(--r1)}
+.grupoE .acs .pri:hover{background:var(--bg-3)}
+.grupoE .acs .sec{font-size:13px;color:var(--ink-3);padding:6px 0}
+.grupoE .acs .sec:hover{color:var(--ink)}
+.grupoE .acs .sob{opacity:0;transition:opacity var(--d1) var(--curva)}
+.grupoE:hover .acs .sob,.grupoE .acs .sob:focus-visible{opacity:1}
+@media(hover:none){.grupoE .acs .sob{opacity:1}}
+.soltoE{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-3);margin:var(--s7) 0 var(--s4)}
+.dossie .tr .kd{.dossie .tr .kd{font-family:var(--mono);font-size:10px;letter-spacing:.08em;
   text-transform:uppercase;color:var(--ink-3);border:1px solid var(--line);
   padding:1px 5px;margin-left:var(--s2)}
 .saldo{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.09em;
@@ -2236,74 +1719,64 @@ function vLivro(){
   '</div>';
 }
 
+/* Uma acao principal a vista, uma destrutiva no canto, e o que serve para
+   levar para fora sob demanda. Adicionar e trocar pergunta eram dois botoes
+   para a mesma operacao em dois estados: viraram um, com o rotulo mudando. */
+/* UMA REGRA SO NESTA LISTA: texto e porta, botao e arrumacao. Ja valia para
+   a pergunta, e estende-la ao trecho tirou 71 controles da tela em trinta
+   itens. O que fica a vista e a destrutiva, sempre no mesmo canto. */
 function acoesDst(d){
+  const copiar='<button class="sec sob" data-a="dst-copiar" data-v="'+d.k+'">copiar com a origem</button>';
   if(!ancora(d))
-    /* sem ancora nao ha trecho para onde ir, e navegar seria mentira. E como
-       TODAS as acoes daqui sao sob demanda, a fileira nao pode reservar
-       altura em repouso: eram 36px de vao morto por item, 288px em oito. */
-    return '<div class="acs -vazia">'+
-      '<button class="lnk mudo sob" data-a="dst-editar" data-v="'+d.k+'">editar</button>'+
-      '<button class="lnk mudo sob" data-a="dst-copiar" data-v="'+d.k+'">copiar com a origem</button>'+
-      '<span class="sp" style="flex:1"></span>'+
-      '<button class="lnk sob tirar" data-a="esc-apagar" data-v="'+d.k+'">apagar</button></div>';
+    return '<div class="acs"><button class="sec sob" data-a="dst-editar" data-v="'+d.k+'">Editar</button>'+
+      copiar+'</div>';
   return '<div class="acs">'+
-    '<button class="lnk mudo" data-a="dst-ir" data-v="'+d.k+'">ir ao trecho</button>'+
-    '<button class="lnk mudo sob" data-a="dst-editar" data-v="'+d.k+'">'+
-      (d.nota?"editar a nota":"anotar")+'</button>'+
-    '<button class="lnk mudo sob" data-a="dst-sob" data-v="'+d.k+'">'+
-      (d.perg?"trocar a pergunta":"guardar sob uma pergunta")+'</button>'+
-    '<button class="lnk mudo sob" data-a="dst-copiar" data-v="'+d.k+'">copiar com a origem</button>'+
-    '<span class="sp" style="flex:1"></span>'+
-    '<button class="lnk sob tirar" data-a="dst-tirar" data-v="'+d.k+'">tirar</button></div>';
-}
-function itemMarcado(d,ideia,filho){
-  const end=esc(escEnd(d));
-  const kd=d.origem==="kindle"?'<span class="kd">do Kindle</span>':"";
-  /* SEM ANCORA: mesmo corpo da nota de trecho, regua de 1px, e nenhum retorno.
-     A ausencia do simbolo de volta e a regua fina sao os dois sinais — nao ha
-     rotulo, selo nem icone dizendo "sem trecho". */
-  if(!ancora(d)){
-    if(S.notaAberta===d.k)return notaLivre(d);
-    /* Numa pagina onde a tipografia e protagonista, o controle tem que ser a
-       tipografia. O texto era so texto e a unica porta era uma fileira de
-       links de 13px que le como legenda — entao o ato principal, ler com
-       isto, ficava escondido no hover ao lado de copiar. Agora a frase E a
-       porta, e a fileira desce ao que sempre foi: arrumacao. */
-    /* a preposicao carrega o grao: "sobre" e assunto, sem preposicao e lugar */
-    const proc=d.origem==="titulo"?"do título do capítulo "+(d.cap+1)
-              :(d.cap!=null?"sobre o capítulo "+(d.cap+1):"sobre o livro");
-    return '<div class="tr -livre" id="e-'+d.k+'">'+
-      '<p><button class="abre" data-a="ler-pergunta" data-v="'+d.k+'">'+esc(d.nota)+'</button></p>'+
-      '<cite>'+proc+'</cite>'+acoesDst(d)+'</div>';
-  }
-  const pai=d.perg?escK(d.perg):null;
-  const sob=pai?' \u00b7 '+esc(pai.nota.slice(0,26))+'\u2026':"";
-  const corte=escTxt(d).length>64?"\u2026":"";
-  const rec=filho?" -filho":"";
-  if(ideia){
-    const ab=S.dstAberto===d.k;
-    return '<div class="tr -ideia'+rec+'" id="e-'+d.k+'"><p>'+esc(d.nota)+'</p>'+
-      '<button class="volta" data-a="dst-abrirtr" data-v="'+d.k+'" aria-expanded="'+ab+'">\u21a9 '+
-      esc(escTxt(d).slice(0,64))+corte+'</button>'+
-      (ab?'<p class="cheio">\u201c'+esc(escTxt(d))+'\u201d</p>':'')+
-      '<cite>'+end+sob+'</cite>'+kd+acoesDst(d)+'</div>';
-  }
-  return '<div class="tr'+rec+'" id="e-'+d.k+'"><p>'+esc(escTxt(d))+'</p>'+
-    '<cite>'+end+sob+'</cite>'+kd+acoesDst(d)+'</div>';
+    '<button class="sec sob" data-a="dst-editar" data-v="'+d.k+'">'+(d.nota?"Editar a nota":"Anotar")+'</button>'+
+    '<button class="sec sob" data-a="dst-sob" data-v="'+d.k+'">'+
+      (d.perg?"Trocar a pergunta":"Guardar sob uma pergunta")+'</button>'+
+    copiar+'</div>';
 }
 /* o compositor sem ancora: mesmo campo, mesmo Pronto, outra superficie */
 function notaLivre(d){
   const aqui=d.k==="aqui";
   const rasc=S.rasc[d.k]!==undefined?S.rasc[d.k]:d.nota;
-  return '<div class="'+(aqui?"notaE":"tr -livre")+'" id="e-'+d.k+'">'+
-    '<textarea class="campo" id="campoNota" aria-label="Sua anota\u00e7\u00e3o" placeholder="'+
-    (d.cap!=null?"O que voc\u00ea quer guardar sobre este cap\u00edtulo":"O que voc\u00ea quer guardar sobre este livro")+
+  return '<div class="'+(aqui?"notaE":"cab")+'" id="e-'+d.k+'">'+
+    '<textarea class="campo" id="campoNota" aria-label="Sua anotação" placeholder="'+
+    (d.cap!=null?"O que você quer guardar sobre este capítulo":"O que você quer guardar sobre este livro")+
     '">'+esc(rasc)+'</textarea>'+
     '<div class="pe"><button class="lnk" data-a="'+(aqui?"esc-aqui-guardar":"dst-guardar")+
     '" data-v="'+d.k+'">Pronto</button>'+
     (aqui?'<button class="lnk mudo" data-a="esc-aqui" data-v="'+(d.cap==null?"livro":d.cap)+'">Descartar</button>':'')+
     '<span class="sp" style="flex:1"></span>'+
     '<span class="dest">'+esc(escEnd(d))+'</span></div></div>';
+}
+/* uma so, sempre no mesmo canto, e so ela e destrutiva */
+const lix=(a,k,t)=>'<button class="lix" data-a="'+a+'" data-v="'+k+'" title="'+t+'">'+t+'</button>';
+/* o cabecalho do grupo: o que VOCE escreveu, e a porta e a propria frase */
+function cabecaE(d){
+  const proc=d.origem==="titulo"?"do t\u00edtulo do cap\u00edtulo "+(d.cap+1)
+            :(d.cap!=null?"sobre o cap\u00edtulo "+(d.cap+1):"sobre o livro");
+  if(S.notaAberta===d.k)return notaLivre(d);
+  return '<div class="cab" id="e-'+d.k+'">'+
+    '<p><button class="abre" data-a="ler-pergunta" data-v="'+d.k+'">'+esc(d.nota)+'</button></p>'+
+    '<cite>'+proc+'</cite>'+lix("esc-apagar",d.k,"apagar")+acoesDst(d)+'</div>';
+}
+/* o trecho, dentro do grupo, num degrau de papel */
+/* o trecho, dentro do grupo, num degrau de papel — e o proprio texto e a
+   porta de volta ao lugar de onde ele veio */
+function citaE(d){
+  const ab=S.dstAberto===d.k;
+  const kd=d.origem==="kindle"?'<span class="kd">do Kindle</span>':"";
+  const corte=escTxt(d).length>64?"…":"";
+  const corpo=d.nota
+    ?'<p class="-nota"><button class="abre" data-a="dst-ir" data-v="'+d.k+'">'+esc(d.nota)+'</button></p>'+
+     '<button class="volta" data-a="dst-abrirtr" data-v="'+d.k+'" aria-expanded="'+ab+'">↩ '+
+     esc(escTxt(d).slice(0,64))+corte+'</button>'+
+     (ab?'<p class="cheio">“'+esc(escTxt(d))+'”</p>':'')
+    :'<p><button class="abre" data-a="dst-ir" data-v="'+d.k+'">“'+esc(escTxt(d))+'”</button></p>';
+  return '<div class="cit" id="e-'+d.k+'">'+corpo+
+    '<cite>Capítulo '+(d.cap+1)+'</cite>'+kd+
+    lix("dst-tirar",d.k,"tirar")+acoesDst(d)+'</div>';
 }
 function secMarcado(){
   const meus=S.dst.filter(d=>d.livro===ARQ.titulo).sort(ordem);
@@ -2325,10 +1798,12 @@ function secMarcado(){
       'O que voc\u00ea escrever sobre o livro aparece sem trecho nenhum.</p>'+
       '<div style="margin-top:var(--s4)"><button class="lnk mudo" data-a="esc-novo" '+
       'style="padding:0">Escrever sobre o livro</button></div></div>';
+  /* "1 com nota" e subconjunto de "2 marcados": lado a lado eles pareciam
+     categorias irmas. A parte entra DENTRO da frase do todo. */
   const cl=[];
-  if(marcados)cl.push(marcados+' marcado'+(marcados>1?"s":""));
-  if(comNota)cl.push(comNota+' com nota');
   if(pais.length)cl.push(pais.length+' anota\u00e7'+(pais.length>1?"\u00f5es":"\u00e3o"));
+  if(marcados)cl.push(marcados+' trecho'+(marcados>1?"s":"")+' marcado'+(marcados>1?"s":"")+
+    (comNota?', '+comNota+' com nota':''));
   h+=(cl.length?'<p class="saldo">'+cl.join(" \u00b7 ")+'</p>':'')+
     '<div class="dossie'+(S.lista==="pend"?" -pend":"")+'" style="border:none;padding:0;margin:0">';
   if(meus.length>8)
@@ -2338,14 +1813,18 @@ function secMarcado(){
     h+='<p style="font-size:13px;color:var(--ink-3);margin:0">Nada com \u201c'+esc(q)+'\u201d.</p>';
   /* o pai e um ITEM da lista, nao um cabecalho de secao: uma pergunta sem
      trecho nao some, ela so nao tem nada embaixo. Nao ha segunda lista. */
+  /* um filete por GRUPO — um assunto, uma linha — em vez de um por coisa
+     escrita, que era a cerca. E "Solto no livro" vira separador: era titulo
+     de item, e o slot do titulo pertence ao que voce escreveu, nao a uma
+     categoria. */
   pais.forEach(d=>{
-    h+=itemMarcado(d,true);
-    h+=filhos(d.k).filter(passa).map(f=>itemMarcado(f,!!f.nota,true)).join("");
+    h+='<div class="grupoE">'+cabecaE(d)+
+      filhos(d.k).filter(passa).map(citaE).join("")+'</div>';
   });
-  if(S.escNovo)h+=notaLivre({k:S.escNovo,cap:null,nota:""});
+  if(S.escNovo)h+='<div class="grupoE">'+notaLivre({k:S.escNovo,cap:null,nota:""})+'</div>';
   if(soltos.length)
-    h+=(pais.length?'<div class="grpM">Solto no livro</div>':'')+
-      soltos.map(d=>itemMarcado(d,!!d.nota)).join("");
+    h+=(pais.length?'<div class="soltoE">Solto no livro</div>':'')+
+      '<div class="grupoE">'+soltos.map(citaE).join("")+'</div>';
   if(!S.escNovo)
     h+='<div class="faltam"><button class="lnk mudo" data-a="esc-novo" style="padding:0">'+
       'Escrever sobre o livro</button></div>';
