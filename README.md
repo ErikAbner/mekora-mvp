@@ -12,6 +12,41 @@ aconteça em cima de algo que se pode operar, e não em cima de uma imagem.
 Abra `index.html` no navegador. Não há build, dependências nem servidor —
 os arquivos são HTML autocontidos e funcionam offline, inclusive com duplo clique.
 
+Só para **medir** convém subir a pasta em HTTP (`python3 -m http.server 8765 -d .`) —
+ver [Como medir](#como-medir).
+
+## Onde o trabalho está agora
+
+`prototipo-mesa.html` — **o protótipo em que a exploração continua.** Abre na Home,
+para quem ainda não sabe o que o produto é, e vai até dentro do livro: a Mesa e seus
+estados, o fluxo inteiro dentro de um arquivo, a estante, a leitura com destaque e
+nota, e o Perfil absorvendo Configurações. É onde o sistema derivado do DOC.cc está
+aplicado de fato — escala fluida, medida editorial de 575 a 775, ritmo de 80px, raio
+zero, link por borda.
+
+Depois da Revisão C ele recebeu, entre 12 e 18 de agosto de 2026:
+
+- **a Mesa como página editorial**, e o Perfil em seis seções com fluxo, estado e
+  consequência, no lugar de um índice de dobras;
+- **destacar e anotar dentro do livro**, com o endereço em três grãos — trecho,
+  capítulo, livro. As três formas da tela saem de dois bits (tem âncora, tem nota):
+  nenhum campo de tipo, nenhuma tipologia na mão de quem usa;
+- **perguntas que guiam a leitura**, derivadas dos títulos dos capítulos do próprio
+  arquivo — derivação da estrutura, não geração;
+- **notas do Kindle pelo cabo**, com o que é novo, o que já existe e o que veio de
+  livro que não está na estante;
+- **o progresso da leitura medido no scroll**, pelo parágrafo que encosta no topo:
+  0% quando nada foi lido, 100% quando a rolagem acaba, e invariante a corpo,
+  entrelinha e largura de coluna.
+
+A aba **Atualizações**, dentro do protótipo, é o registro corrente disso — inclusive
+do que foi corrigido, e não só do que foi acrescentado.
+
+`prototipo.html` — a exploração anterior, em tamanho real: biblioteca, leitor,
+preferências, conta, importação, a área de Conhecimento e 27 cenários de teste. O
+botão **◇ lab** guarda os números medidos de grid e densidade. Continua valendo como
+registro; o trabalho novo não acontece mais lá.
+
 ## Os cadernos
 
 ### Caderno 01 — A bancada do card de livro
@@ -88,6 +123,13 @@ respostas às pendências são o dado que falta** para um dia recomendar com nú
 registra o que isso obriga a desenhar — medir a interface e nunca o conteúdo, consentimento no
 momento da primeira pendência, e continuar perguntando enquanto a amostra for pequena.
 
+**Revisão D, 12 de agosto de 2026.** As respostas viraram **DEC-0016 a DEC-0020** no registro do
+projeto: as duas explorações de experiência são fontes e nenhuma é descartada; o produto se chama
+Mekora e o MVP inclui Estante, Canvas e Conexões; a arquitetura de experiência desta rodada foi
+aceita inteira; a instrumentação mede a interface e nunca o conteúdo; e **a âncora semântica manda
+no leitor** — é a decisão que o progresso medido em `prototipo-mesa.html` cumpre. A **seção 11** é
+nova: o sistema visual candidato, aplicado.
+
 ## As três decisões centrais do Caderno 02
 
 **Conta é real e vira o cabeçalho de Preferências**, não um item da lista — ela é o contexto em que
@@ -110,6 +152,25 @@ você mudou — com a origem e o aparelho.
 de uma regra de arquitetura. Resolve cerca de 90% dos casos; os que sobram estão listados como
 fronteira a decidir, e três deles estão implementados no protótipo como alternativas comparáveis.
 
+## Como medir
+
+As métricas destes cadernos são **medidas no DOM depois do render**, não escritas à
+mão. `scripts/` é o instrumento disso: sobe um Chrome de verdade por CDP e avalia a
+medida dentro da página.
+
+```
+python3 -m http.server 8765 -d .
+node scripts/medir.mjs http://localhost:8765/prototipo-mesa.html 1440 900 scripts/medidas/smoke.js
+```
+
+Existe porque painel de navegador embutido em editor com agente renderiza e tira
+captura, mas **não compõe layout para medição**: `innerWidth` devolve 0 e todo
+`getBoundingClientRect()` sai degenerado. Foi assim que 96 miniaturas de página
+passaram seis dias medindo 2 por 20 pixels sem ninguém ver — em captura reduzida,
+miniatura de 2px parece fio de grade. Captura serve para julgar composição; número
+só vale medido. As cinco medidas que já existem estão em
+[`scripts/README.md`](scripts/README.md).
+
 ## Perguntas ainda em aberto
 
 Estão na seção 18 do Caderno 02. As que bloqueiam desenho:
@@ -118,3 +179,10 @@ Estão na seção 18 do Caderno 02. As que bloqueiam desenho:
 - se a tradução envia o texto para processamento externo;
 - o que "aparelho" significa se houver versão web;
 - se existe compartilhamento no roadmap.
+
+E duas decisões de produto que o protótipo declara como pendentes em vez de fingir
+resposta — elas aparecem com selo `decisão pendente` na própria tela, em Perfil:
+
+- **entrar e sair da conta**, e o que acontece com o trabalho em curso;
+- **por quanto tempo o arquivo original fica guardado.** Um prazo inventado no
+  protótipo vira promessa no produto, então ali está a pendência e não um número.
