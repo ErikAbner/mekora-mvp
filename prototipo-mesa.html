@@ -268,8 +268,14 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
    ausencia do simbolo de volta, sao os dois unicos sinais. Sem rotulo. */
 .dossie .tr.-livre{border-left-width:1px;border-left-color:var(--line-3);margin-top:var(--s6)}
 .dossie .tr.-livre:first-child{margin-top:0}
-.dossie .tr.-livre .o{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.09em;
-  text-transform:uppercase;color:var(--ink-3);display:block;margin-top:6px}
+/* a frase e o controle: sem caixa, herdando a tipografia do conteudo. O
+   sinal de que da para clicar aparece na aproximacao, como no resto da lista. */
+.dossie .tr.-livre p>.abre{display:block;width:100%;text-align:left;font:inherit;color:inherit;
+  padding:0;border-radius:0}
+.dossie .tr.-livre p>.abre::after{content:" 92";color:var(--ink-4);
+  opacity:0;transition:opacity var(--d1) var(--curva)}
+.dossie .tr.-livre:hover p>.abre::after,.dossie .tr.-livre p>.abre:focus-visible::after{opacity:1}
+.dossie .tr.-livre p>.abre:focus-visible{outline:1px solid var(--ink);outline-offset:3px}
 .dossie .tr.-livre .campo{display:block;width:100%;min-height:3.4em;resize:vertical;
   font-family:var(--serif);font-size:var(--t-leitura);line-height:var(--lh-leitura);color:var(--ink);
   background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:var(--r1);
@@ -2183,8 +2189,7 @@ function acoesDst(d){
   if(!ancora(d))
     /* sem ancora nao ha trecho para onde ir, e navegar seria mentira */
     return '<div class="acs">'+
-      '<button class="lnk mudo" data-a="dst-editar" data-v="'+d.k+'">editar</button>'+
-      '<button class="lnk mudo sob" data-a="ler-pergunta" data-v="'+d.k+'">ler com isto \u2192</button>'+
+      '<button class="lnk mudo sob" data-a="dst-editar" data-v="'+d.k+'">editar</button>'+
       '<button class="lnk mudo sob" data-a="dst-copiar" data-v="'+d.k+'">copiar com a origem</button>'+
       '<span class="sp" style="flex:1"></span>'+
       '<button class="lnk sob tirar" data-a="esc-apagar" data-v="'+d.k+'">apagar</button></div>';
@@ -2206,9 +2211,16 @@ function itemMarcado(d,ideia){
      rotulo, selo nem icone dizendo "sem trecho". */
   if(!ancora(d)){
     if(S.notaAberta===d.k)return notaLivre(d);
-    const org=d.origem==="titulo"?'<span class="o">do t\u00edtulo do cap. '+(d.cap+1)+'</span>':"";
-    return '<div class="tr -livre" id="e-'+d.k+'"><p>'+esc(d.nota)+'</p>'+
-      '<cite>'+end+'</cite>'+org+acoesDst(d)+'</div>';
+    /* Numa pagina onde a tipografia e protagonista, o controle tem que ser a
+       tipografia. O texto era so texto e a unica porta era uma fileira de
+       links de 13px que le como legenda — entao o ato principal, ler com
+       isto, ficava escondido no hover ao lado de copiar. Agora a frase E a
+       porta, e a fileira desce ao que sempre foi: arrumacao. */
+    const proc=d.origem==="titulo"?"do título do capítulo "+(d.cap+1)
+              :(d.cap!=null?"Capítulo "+(d.cap+1):esc(ARQ.titulo));
+    return '<div class="tr -livre" id="e-'+d.k+'">'+
+      '<p><button class="abre" data-a="ler-pergunta" data-v="'+d.k+'">'+esc(d.nota)+'</button></p>'+
+      '<cite>'+proc+'</cite>'+acoesDst(d)+'</div>';
   }
   const pai=d.perg?escK(d.perg):null;
   const sob=pai?' \u00b7 '+esc(pai.nota.slice(0,26))+'\u2026':"";
