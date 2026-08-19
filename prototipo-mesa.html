@@ -433,6 +433,34 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
   display:flex;align-items:center;gap:var(--s4);padding:.7rem var(--s4)}
 .leituraTopo .tt{font-family:var(--serif);font-size:var(--t-ui);white-space:nowrap;overflow:hidden;
   text-overflow:ellipsis}
+/* A FITA: mora entre a barra e o texto, EMPURRA em vez de cobrir, e nao tem
+   veu. E a diferenca inteira — a pagina continua sendo a previa de si mesma. */
+.fita{position:sticky;top:53px;z-index:19;background:var(--bg-2);
+  border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;
+  gap:var(--s3) var(--s6);padding:var(--s3) var(--s4)}
+.fgrupo{display:flex;align-items:baseline;gap:var(--s3)}
+.fgrupo>h4{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-3);margin:0;white-space:nowrap}
+.fops{display:inline-flex;border:1px solid var(--line);border-radius:var(--r1);overflow:hidden}
+.fops button{padding:3px 9px;font-size:12.5px;color:var(--ink-3);white-space:nowrap;
+  border-right:1px solid var(--line);background:var(--bg)}
+.fops button:last-child{border-right:none}
+.fops button:hover{background:var(--bg-3);color:var(--ink)}
+.fops button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.fgrupo.-fim{margin-left:auto}
+.leituraTopo .marca{font-family:var(--serif);font-size:17px;letter-spacing:-.01em;
+  margin-right:var(--s3);color:var(--ink)}
+.leituraTopo .lnk.-on{color:var(--ink);background:var(--bg-3)}
+/* no celular a barra vai para o polegar, e a fita sobe junto com ela */
+@media(max-width:760px){
+  .leituraTopo{position:fixed;left:0;right:0;bottom:0;top:auto;border-bottom:none;
+    border-top:1px solid var(--line)}
+  /* bottom vem MEDIDO em pinta(): 53px era chute, e no celular a barra quebra
+     em duas linhas e vira 87 — a fita cobria a propria barra. */
+  .fita{position:fixed;left:0;right:0;bottom:var(--barraL,53px);top:auto;border-bottom:none;
+    border-top:1px solid var(--line);max-height:44vh;overflow-y:auto}
+  .fgrupo.-fim{margin-left:0}
+}
 .fio{position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--line-2)}
 .fio i{display:block;height:100%;background:var(--ink)}
 .lsec{scroll-margin-top:70px}
@@ -1284,7 +1312,7 @@ const zero={
   mesaVar:"reduzida",mesaEstado:"com-pendencia",perg:null,usb:{p:0,pct:0,t:null},
   /* destaque e nota. Object.assign e raso, entao dst, selE e rasc sao
      recriados a mao em reset() — senao a marcacao vaza entre cenas. */
-  dst:[],selE:null,notaAberta:null,rasc:{},dstUndo:null,erroNota:false,guardando:null,tirando:null,apagando:null,escNovo:null,paraLivro:false,desc:"",descAberta:false,escAqui:null,
+  dst:[],selE:null,notaAberta:null,rasc:{},dstUndo:null,erroNota:false,guardando:null,tirando:null,apagando:null,escNovo:null,paraLivro:false,desc:"",descAberta:false,escAqui:null,aaAberto:false,
   /* leitura: tudo o que muda como o arquivo é lido nesta tela.
      escopo é o ato deliberado que faz um ajuste subir a padrão da conta. */
   /* lidoAte/par: o ponto onde a leitura parou, medido no scroll. Guardar o
@@ -1411,7 +1439,7 @@ const AJUDA=[
 let S=Object.assign({},zero),timer=null,ultimoLugar=null;
 function reset(cena){
   clearInterval(timer);timer=null;S=Object.assign({},zero);
-  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardando=null;S.tirando=null;S.apagando=null;S.escNovo=null;S.paraLivro=false;S.desc="";S.descAberta=false;S.escAqui=null;
+  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardando=null;S.tirando=null;S.apagando=null;S.escNovo=null;S.paraLivro=false;S.desc="";S.descAberta=false;S.escAqui=null;S.aaAberto=false;
   if(cena==="nova"){S.cena="nova";}
   if(cena==="sem-conta"){S.cena="nova";S.conta=false;}
   pinta();
@@ -1654,15 +1682,19 @@ function vLeitura(){
      Numero sem medicao e confianca inventada — aqui ele passa a ser medido no
      scroll, pela ancora semantica (o paragrafo no topo), nunca por pixel. */
   const prog=progresso();
-  let h='<div class="leituraTopo"><button class="lnk mudo" data-a="ir-livro">‹ '+esc(ARQ.titulo)+'</button>'+
+  let h='<div class="leituraTopo"><button class="marca" data-a="ir" data-v="mesa" '+
+    'title="Mekora">Mekora</button>'+
+    '<button class="lnk mudo" data-a="ir-livro">‹ '+esc(ARQ.titulo)+'</button>'+
     '<span class="sp"></span>'+
     '<button class="lnk mudo" data-a="esc-aqui" data-v="'+S.cap+'">Anotar</button>'+
     '<button class="lnk mudo" data-a="folha" data-v="sumario">Sumário</button>'+
-    '<button class="lnk mudo" data-a="folha" data-v="aa">Aa</button>'+
+    '<button class="lnk mudo'+(S.aaAberto?" -on":"")+'" data-a="aa-barra" '+
+      'aria-expanded="'+(!!S.aaAberto)+'">Aa</button>'+
     (S.leit.progresso==="nada"?'':
      '<span class="mono" id="progT" style="font-size:var(--t-mono);color:var(--ink-3)">'+
      rotuloProg(prog)+'</span>')+
-    '<div class="fio"><i id="progF" style="width:'+prog+'%"></i></div></div>';
+    '<div class="fio"><i id="progF" style="width:'+prog+'%"></i></div></div>'+
+    (S.aaAberto?fitaAjustes():'');
 
   const sob=S.perg?escK(S.perg):null;
   if(sob){
@@ -1920,6 +1952,33 @@ const PREPS=[
   {nm:"Ensaio Visual — rascunho.pdf",et:"A conexão caiu na página 38 de 210",t:"retomando sozinho",
    bg:"Não é preciso fazer nada — se falhar de novo, eu aviso aqui.",acao:"Ver detalhes",a:"abrir-item"}
 ];
+/* A FITA DE AJUSTES
+   O painel Aa e uma folha de 1000px que cobre exatamente o texto que ela
+   ajusta — e por isso ela carrega uma previa de 618px, que e uma simulacao do
+   que esta atras dela. Numa fita, a PAGINA e a previa: a coluna real, com o
+   seu conteudo, refluindo enquanto voce escolhe. A previa deixa de ser
+   necessaria porque deixa de haver o que simular. */
+function fitaAjustes(){
+  const L=S.leit;
+  const g=(rot,ops)=>'<div class="fgrupo"><h4>'+rot+'</h4><div class="fops">'+ops+'</div></div>';
+  const o=(a,v,rot,on)=>'<button data-a="aa" data-v="'+a+':'+v+'"'+(on?' aria-pressed="true"':'')+
+    '>'+rot+'</button>';
+  const n=(a,i,rot,atual)=>'<button data-a="aa" data-v="'+a+':'+i+'"'+(atual===i?' aria-pressed="true"':'')+
+    '>'+rot+'</button>';
+  return '<div class="fita" id="fita">'+
+    g("Tamanho", n("corpo",0,"menor",S.corpo)+n("corpo",1,"padr\u00e3o",S.corpo)+n("corpo",2,"maior",S.corpo))+
+    g("Tipografia", o("fonte","serifa","serifa",L.fonte==="serifa")+o("fonte","grotesca","grotesca",L.fonte==="grotesca"))+
+    g("Entrelinha", n("entre",0,"justa",S.entre)+n("entre",1,"padr\u00e3o",S.entre)+n("entre",2,"solta",S.entre))+
+    g("Coluna", n("largura",0,"estreita",S.largura)+n("largura",1,"padr\u00e3o",S.largura)+n("largura",2,"larga",S.largura))+
+    g("Alinhamento", o("align","esquerda","\u00e0 esquerda",L.align==="esquerda")+o("align","justificado","justificado",L.align==="justificado"))+
+    g("Tema", o("tema","claro","claro",S.tema!==1)+o("tema","escuro","escuro",S.tema===1))+
+    g("Seus destaques", o("destaques","mostrar","mostrar",L.destaques==="mostrar")+o("destaques","ocultar","ocultar",L.destaques==="ocultar"))+
+    '<div class="fgrupo -fim"><h4>Onde vale</h4><div class="fops">'+
+      o("escopo","livro","s\u00f3 aqui",L.escopo==="livro")+
+      o("escopo","todos","em todos",L.escopo==="todos")+'</div></div>'+
+    '</div>';
+}
+
 function mDados(){
   const e=S.mesaEstado;
   return {
@@ -2941,129 +3000,9 @@ function vFolha(){
      Preferencias ser espelho em vez de fonte. Herdado do leitor da area pessoal. */
   /* Controle editorial de leitura: espécime à esquerda, prévia real à direita.
      A escolha deixa de ser abstrata — vê-se o resultado enquanto se escolhe. */
-  if(f==="aa"){
-    const L=S.leit;
-    const grupo=(rot,opcoes)=>'<div class="aagrupo"><h4>'+rot+'</h4><div class="especs">'+opcoes+'</div></div>';
-    const esp=(chave,val,amostra,rot,atual)=>'<button class="espec" data-a="aa" data-v="'+chave+':'+val+'"'+
-      (String(atual)===String(val)?' aria-pressed="true"':'')+'><span class="am">'+amostra+'</span>'+
-      '<span class="rt">'+rot+'</span></button>';
-    const mudou=L.fonte!=="serifa"||L.align!=="justificado"||L.espaco!==1||S.corpo!==1||S.entre!==1||
-      S.largura!==1||L.destaques!=="mostrar"||L.progresso!=="porcentagem";
-    const previa='<div class="aaprev"><span class="cap">Capítulo 04</span>'+
-      '<div class="pv '+(L.align==="justificado"?"-just":"-esq")+(L.fonte==="grotesca"?" -grot":"")+'">'+
-      CAPS[3].p.map((p,j)=>'<p>'+paragrafo(3,j,p)+'</p>').join("")+'</div></div>';
-    return folha("Leitura","Como você quer ler",
-      '<div class="aacols"><div class="aactl">'+
-      grupo("Tamanho",
-        esp("corpo",0,'<span style="font-size:13px">Aa</span>',"menor",S.corpo)+
-        esp("corpo",1,'<span style="font-size:17px">Aa</span>',"padrão",S.corpo)+
-        esp("corpo",2,'<span style="font-size:22px">Aa</span>',"maior",S.corpo))+
-      grupo("Tipografia",
-        esp("fonte","serifa",'<span style="font-family:var(--serif);font-size:19px">Aa</span>',"serifa",L.fonte)+
-        esp("fonte","grotesca",'<span style="font-family:var(--ui);font-size:19px">Aa</span>',"grotesca",L.fonte))+
-      grupo("Entrelinha",
-        esp("entre",0,'<i class="lin j"></i>',"justa",S.entre)+
-        esp("entre",1,'<i class="lin p"></i>',"padrão",S.entre)+
-        esp("entre",2,'<i class="lin s"></i>',"solta",S.entre))+
-      grupo("Coluna",
-        esp("largura",0,'<i class="col e"></i>',"estreita",S.largura)+
-        esp("largura",1,'<i class="col p"></i>',"padrão",S.largura)+
-        esp("largura",2,'<i class="col l"></i>',"larga",S.largura))+
-      grupo("Parágrafos",
-        esp("espaco",0,'<i class="par j"></i>',"junto",L.espaco)+
-        esp("espaco",1,'<i class="par p"></i>',"padrão",L.espaco)+
-        esp("espaco",2,'<i class="par s"></i>',"solto",L.espaco))+
-      grupo("Alinhamento",
-        esp("align","justificado",'<i class="al j"></i>',"justificado",L.align)+
-        esp("align","esquerda",'<i class="al e"></i>',"à esquerda",L.align))+
-      grupo("Tema",
-        esp("tema","claro",'<i class="tm c"></i>',"claro",S.tema===1?"escuro":"claro")+
-        esp("tema","escuro",'<i class="tm e"></i>',"escuro",S.tema===1?"escuro":"claro"))+
-      grupo("Seus destaques",
-        esp("destaques","mostrar",'<span style="font-size:14px;background:var(--bg-3);border-bottom:1px solid var(--line-3);padding:0 3px">trecho</span>',"mostrar",L.destaques)+
-        esp("destaques","ocultar",'<span style="font-size:14px;color:var(--ink-4)">trecho</span>',"ocultar",L.destaques))+
-      grupo("Progresso no topo",
-        esp("progresso","porcentagem",'<span style="font-family:var(--mono);font-size:12px">32%</span>',"porcentagem",L.progresso)+
-        esp("progresso","capitulo",'<span style="font-family:var(--mono);font-size:11px">cap. 4</span>',"capítulo",L.progresso)+
-        esp("progresso","nada",'<span style="font-size:15px;opacity:.35">—</span>',"nada",L.progresso))+
-      '</div>'+previa+'</div>'+
-      '<div class="aaesc"><span class="tt">Onde isto vale</span>'+
-      '<span class="segE"><button data-a="aa" data-v="escopo:livro"'+(L.escopo==="livro"?' aria-pressed="true"':'')+
-      '>Só neste livro</button><button data-a="aa" data-v="escopo:todos"'+(L.escopo==="todos"?' aria-pressed="true"':'')+
-      '>Em todos os livros</button></span>'+
-      '<p class="cons">'+(L.escopo==="livro"?
-        'Vale só para <b>'+esc(ARQ.titulo)+'</b>. Os outros continuam como estão.':
-        'Passa a valer para todos os seus livros, inclusive os próximos.')+'</p></div>',
-      (mudou?'<button class="lnk mudo" data-a="aa" data-v="restaurar:1" style="margin-right:auto">Restaurar padrão</button>':'')+
-      '<button class="btnO" data-a="fechar">Fechar</button>',"bancada");
-  }
-  if(f==="controles")return folha("Arquivo",esc(S.nome||ARQ.nome),
-    '<div class="lista">'+
-      li("in","✎","Renomear","Muda só o nome do arquivo final. O original guarda o nome que tinha.","renomear","renomear")+
-      li("in","▦","Ver todas as "+ARQ.pgs+" páginas","Conferir o reconhecimento, escolher capa, deixar página de fora.","abrir","paginas")+
-           li("in","↓","Baixar","O EPUB preparado, ou o PDF original do jeito que chegou.","baixar","baixar-dois")+
-      li("in","↺","Refazer a preparação","Volta ao começo com o mesmo arquivo. Nada é enviado de novo.","refazer","refazer")+
-      li("er","✕","Remover da estante","O arquivo preparado e o original saem. Não dá para desfazer.","remover","remover")+
-    '</div>','<button class="btnO" data-a="fechar">Fechar</button>');
-  if(f==="remover")return folha("Irreversível","Remover da estante?",
-    '<p style="margin:0;font-size:var(--t-leitura);font-family:var(--serif);line-height:var(--lh-leitura);color:var(--ink-2)">'+
-    'Saem os dois: o EPUB preparado e o PDF original. As notas que você fez neste livro também.</p>'+
-    '<div class="nota"><span>◆</span><div>Se a intenção é só tirar da vista, <b>arquivar</b> mantém tudo e '+
-    'esconde da estante. Isso dá para desfazer.</div></div>',
-    '<button class="lnk mudo" data-a="aviso-x" data-v="Arquivado. Some da estante e continua na busca.">Arquivar</button>'+
-    '<button class="btnO forte" style="background:var(--dan);border-color:var(--dan);color:#fff" '+
-    'data-a="aviso-x" data-v="Removido. Num produto real isto pediria confirmação por e-mail.">Remover assim mesmo</button>');
-  if(f==="baixar-dois")return folha("Baixar","O que você quer levar",
-    '<div class="lista">'+
-      li("ok","✓","Diário 02.epub","8,4 MB · com capa, sumário e texto reconhecido. É o que o Kindle lê melhor.","baixar","baixar")+
-      li("in","·","Relatório de pesquisa — expedição 02.pdf","12,8 MB · o original, exatamente como chegou.","baixar","baixar")+
-    '</div>','<button class="btnO" data-a="fechar">Fechar</button>');
-  if(f==="paginas"){
-    const F=[["todas","Todas as páginas",96],["semtexto","Sem texto reconhecido",3],
-      ["dim","Dimensão diferente",5],["capa","Candidatas a capa",5],["fora","Deixadas de fora",S.fora.length]];
-    const lista=PAGS.filter(p=>S.filtro==="todas"||(S.filtro==="fora"?S.fora.includes(p.n):
-      S.filtro==="capa"?p.capaCand:p[S.filtro]));
-    const alvo=S.sel.length===1?PAGS[S.sel[0]-1]:null;
-    return folha("Organização avançada",ARQ.pgs+" páginas de "+esc(ARQ.nome),
-      '<div class="ed2"><div class="filtros">'+F.map(x=>'<button data-a="filtro" data-v="'+x[0]+'" '+
-        'aria-pressed="'+(S.filtro===x[0])+'"><span>'+x[1]+'</span><span class="n">'+x[2]+'</span></button>').join("")+
-        '<p style="font-size:11.5px;color:var(--ink-3);line-height:1.5;margin:var(--s3) 4px 0">'+
-        'Clique para selecionar. A seleção acumula — não precisa segurar tecla.</p></div>'+
-      '<div class="pgrade">'+lista.map(p=>'<button class="pg2'+
-
-(p.semtexto?" semtexto":"")+(p.dim?" dim":"")+(S.fora.includes(p.n)?" fora":"")+
-
-(S.giradas.includes(p.n)?" girada":"")+'" data-a="selp" data-v="'+p.n+'" '+
-        'aria-pressed="'+(S.sel.includes(p.n))+'"><span class="im"><i></i>'+
-        (S.capaPag===p.n?'<span class="tag2">capa</span>':p.semtexto?'<span class="tag2 er">sem texto</span>':
-         p.dim?'<span class="tag2 al">largura</span>':'')+
-        '</span><span class="lg">'+p.n+'</span></button>').join("")+'</div>'+
-      '<div class="painel"><b style="font-size:13.5px;display:block;margin-bottom:var(--s2)">'+
-        (S.sel.length===0?"Nenhuma página":S.sel.length===1?"Página "+S.sel[0]:S.sel.length+" páginas")+'</b>'+
-        (alvo?'<p style="font-size:12px;color:var(--ink-2);line-height:1.5;margin:0 0 var(--s3)">'+
-          (alvo.semtexto?"O reconhecimento devolveu ruído aqui — é uma fotografia.":
-           alvo.dim?"1200 × 1700 px, mais estreita que as outras 91.":
-           alvo.capaCand?"Está entre as cinco primeiras, então serve como capa.":
-           "1600 × 2400 px, dentro do padrão.")+'</p>':'')+
-        '<div class="ferr">'+
-          fer("Girar 90°","R",S.sel.length===0)+
-          fer("Usar como capa","C",S.sel.length!==1)+
-          fer("Deixar de fora","⌫",S.sel.length===0)+
-          fer("Restaurar","Z",S.sel.length===0)+
-        '</div>'+
-        '<span class="kicker" style="margin-bottom:var(--s2)">Alterações</span>'+
-        (S.mud.length===0?'<p style="font-size:12px;color:var(--ink-3);line-height:1.5">Nada mudou ainda. '+
-          'Tudo aqui é reversível até você aplicar.</p>':
-         '<ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px">'+
-         S.mud.map((m,i)=>'<li style="font-size:12px;color:var(--ink-2);display:flex;gap:7px">'+
-         '<span style="flex:1">'+esc(m)+'</span><button class="lnk" style="font-size:11px;padding:0" '+
-         'data-a="desfazer" data-v="'+i+'">desfazer</button></li>').join("")+'</ul>')+
-      '</div></div>',
-      '<span style="font-size:var(--t-peq);color:var(--ink-3);margin-right:auto">'+S.mud.length+
-      ' alteraç'+(S.mud.length===1?"ão":"ões")+' · nada foi gravado</span>'+
-      '<button class="lnk mudo" data-a="fechar">Cancelar</button>'+
-      '<button class="btnO forte" data-a="aplicar-pg">Aplicar</button>',"bancada");
-  }
+  /* A folha "Aa" foi deletada aqui: com a fita, ela ficou sem porta nenhuma.
+     Guardar codigo inalcancavel "por garantia" foi como nasceram os dois
+     vPerfil e a folha de dossie — e o historico do git ja e a garantia. */
   if(f==="viewport"){
     const d=DISP[S.disp];
     return folha("Antes de enviar","Como fica no "+d[0],
@@ -3534,7 +3473,12 @@ function pinta(){
   app.style.setProperty("--esp-par",ESP[S.leit.espaco]);
   if(S.lugar==="leitura")app.style.setProperty("--col",LARG[S.largura]);
   else app.style.removeProperty("--col");
-  app.innerHTML=topo()+'<div class="corpo">'+corpo()+'</div>'+vFolha();
+  /* Lendo, a barra global serve a biblioteca e nao a leitura: 56px de
+     Mesa/Estante/Canvas/Conexoes, busca e avatar em cima do texto. Ela sai
+     inteira, e a marca passa para a barra de leitura — que ja tem a porta de
+     volta. Hamburguer promete o app inteiro, e nao e para la que se vai. */
+  const semTopo=S.lugar==="leitura";
+  app.innerHTML=(semTopo?"":topo())+'<div class="corpo">'+corpo()+'</div>'+vFolha();
   /* a contagem da pré-visualização é MEDIDA na própria tela do aparelho:
      altura real do conteúdo dividida pela altura visível. Nada estimado. */
   const rolo=document.getElementById("rolo2");
@@ -3646,6 +3590,9 @@ function pinta(){
       const fz=taEst?taEst.fim:ta.value.length;
       ta.setSelectionRange(taEst?taEst.ini:fz,fz);
     }
+    /* a fita se apoia na barra, e a barra muda de altura conforme a largura */
+    const bl=c.querySelector(".leituraTopo");
+    if(bl)document.documentElement.style.setProperty("--barraL",Math.round(bl.getBoundingClientRect().height)+"px");
     document.body.classList.toggle("-selecionando",!!S.selE);
     c.addEventListener("scroll",()=>{
       marcaProgresso();
@@ -3814,6 +3761,9 @@ app.addEventListener("click",ev=>{
       if(ta)S.desc=ta.value.trim();
       delete S.rasc.desc;S.descAberta=false;break;}
     case "desc-limpar":S.desc="";delete S.rasc.desc;S.descAberta=false;break;
+    /* a fita nao e folha: ela nao tem veu, nao cobre o texto, e fechar e
+       tocar de novo no mesmo Aa — sem porta separada. */
+    case "aa-barra":S.aaAberto=!S.aaAberto;S.folha=null;break;
     case "dst-abrirtr":S.dstAberto=S.dstAberto===v?null:v;break;
     /* volta ao escrito na lista do livro: o dossie e a lista */
     case "ir-esc":{
