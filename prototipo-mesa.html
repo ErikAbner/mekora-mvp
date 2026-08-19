@@ -2304,6 +2304,16 @@ function principal(){return S.aparelhos.find(a=>a.princ)||null;}
    em que ele aparece. */
 const NOVIDADES=[
  ["18 de agosto de 2026",[
+  ["cor","As páginas da organização avançada voltaram a aparecer",
+   "A tela existe para você olhar as 96 páginas e decidir uma a uma — girar, usar como capa, deixar de fora, achar a que ficou sem texto. Ela nunca mostrou página nenhuma: a miniatura era um elemento de linha com altura pedida no CSS, e elemento de linha ignora altura. Media 2 por 20 pixels onde devia medir 97 por 106."],
+  ["cor","O espaço do livro dizia 8 marcados, e a seção logo abaixo dizia 2",
+   "As duas contagens saíam do mesmo acervo, na mesma tela. O cabeçalho era o modelo antigo, de antes de o endereço ganhar grão: somava nota livre como se fosse trecho marcado. Quem conta é a seção “O que ficou”, que separa o que tem âncora do que não tem — e o cabeçalho ficou só com o que ele sabe: onde você parou e se já foi para o aparelho."],
+  ["cor","O progresso da leitura não media nada",
+   "O leitor rola os quatro capítulos numa página só, e a porcentagem vinha de um estado parado: abria anunciando 75% com você no primeiro parágrafo. Pior, “Continuar no capítulo 3” abria no começo. Agora o progresso é medido no scroll, pelo parágrafo que encosta no topo — 0% quando nada foi lido, 100% quando a rolagem acaba. Trocar corpo, entrelinha ou largura de coluna muda a altura da página e não muda o seu lugar no texto."],
+  ["mel","A Estante 3D passou a dizer que é experimento",
+   "Ela e a vista Capas apareciam com o mesmo peso no seletor, e a diferença só se descobria depois de trocar. Agora o aviso está no próprio botão, e a vista abre dizendo o que ela faz pior: as lombadas ocupam menos de um décimo da prateleira e o título só se lê de lado, um por vez. Continua aqui porque a estante é a metáfora certa — não porque já entrega mais que a lista."],
+  ["mel","A Estante recorta por todos os formatos, e dois livros iguais deixaram de ser iguais",
+   "Os recortes eram PDF e EPUB escritos à mão: três dos catorze itens não cabiam em nenhum, e “Tudo 14” não fechava a conta de quem soma. Agora eles saem do próprio acervo. E o card ganhou a linha que distingue uma edição da outra — sem ela, o mesmo título aparecia duas vezes idêntico, e era essa a linha que explicava por que um item entrou no recorte “Com nota”."],
   ["novo","Destacar e anotar dentro do livro",
    "Um toque marca; a nota, quando existe, fica logo abaixo do parágrafo e é o próprio marcador. Não há cor de grifo nem categoria a escolher: o que organiza é a pergunta que você abriu, e ela já foi declarada quando a leitura começou. O trecho fica preso ao endereço no texto, não à posição na tela."],
   ["novo","Perguntas que guiam a leitura",
