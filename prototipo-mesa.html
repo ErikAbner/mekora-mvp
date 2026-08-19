@@ -1177,10 +1177,12 @@ td.n{color:var(--ink);font-weight:600}
    nesta lista, e sempre arrumacao — nunca o caminho principal. */
 .grupoE p>.abre{display:block;width:100%;text-align:left;font:inherit;color:inherit;
   padding:0;border-radius:0}
-.grupoE p>.abre::after{content:" →";color:var(--ink-4);opacity:0;
-  transition:opacity var(--d1) var(--curva)}
+/* --ink-4 mede 2,05:1 e o proprio projeto o proibiu em texto. Uma seta que
+   existe para anunciar nao pode estar no limiar de nao ser vista. */
+.grupoE p>.abre::after{content:" →";color:var(--ink-3);
+  transition:color var(--d1) var(--curva)}
 .grupoE .cab:hover>p>.abre::after,.grupoE .cit:hover>p>.abre::after,
-.grupoE p>.abre:focus-visible::after{opacity:1}
+.grupoE p>.abre:focus-visible::after{color:var(--ink)}
 .grupoE p>.abre:focus-visible{outline:1px solid var(--ink);outline-offset:3px}
 .grupoE cite{font-family:var(--mono);font-size:10px;letter-spacing:.07em;color:var(--ink-3);
   font-style:normal;display:block;margin-top:6px}
@@ -2298,10 +2300,10 @@ function vLivro(){
 function acoesDst(d){
   const copiar='<button class="sec sob" data-a="dst-copiar" data-v="'+d.k+'">copiar com a origem</button>';
   if(!ancora(d))
-    return '<div class="acs"><button class="sec sob" data-a="dst-editar" data-v="'+d.k+'">Editar</button>'+
+    return '<div class="acs"><button class="sec" data-a="dst-editar" data-v="'+d.k+'">Editar</button>'+
       copiar+'</div>';
   return '<div class="acs">'+
-    '<button class="sec sob" data-a="dst-editar" data-v="'+d.k+'">'+(d.nota?"Editar a nota":"Anotar")+'</button>'+
+    '<button class="sec" data-a="dst-editar" data-v="'+d.k+'">'+(d.nota?"Editar a nota":"Anotar")+'</button>'+
     '<button class="sec sob" data-a="dst-sob" data-v="'+d.k+'">'+
       (d.perg?"Trocar a pergunta":"Guardar sob uma pergunta")+'</button>'+
     copiar+'</div>';
