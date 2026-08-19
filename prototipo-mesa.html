@@ -440,24 +440,31 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 /* A DOCK DE LEITURA — embaixo, onde ficam as ferramentas.
    Topo: onde estou. Centro: o conteudo. Rodape: o que posso fazer.
    E a mesma regra da dock de conversao e da de canvas, com outro conteudo. */
-.dockL{position:fixed;left:50%;transform:translateX(-50%);bottom:var(--s5);z-index:40;
-  display:flex;align-items:center;gap:var(--s2);max-width:calc(100vw - 2*var(--s4));
-  background:var(--bg);border:1px solid var(--ink);padding:5px;overflow-x:auto}
-.dockL .grp{display:inline-flex;gap:2px}
-.dockL .div{width:1px;align-self:stretch;background:var(--line);margin:3px var(--s2)}
-.dockL .dl{font-size:13px;color:var(--ink-2);padding:7px 13px;white-space:nowrap;border-radius:var(--r1)}
-.dockL .dl:hover{background:var(--bg-3);color:var(--ink)}
-.dockL .dl.-on{background:var(--ink);color:var(--bg)}
-.dockL .dl.-pri{color:var(--ink);font-weight:600}
-.dockL .dl.-perigo{color:var(--ink-3)}
-.dockL .dl.-perigo:hover{color:var(--dan);background:var(--dan-soft)}
-.dockL .av{font-size:var(--t-peq);color:var(--ink-3);padding:0 var(--s3);white-space:nowrap}
-.dockL.-exc{border-color:var(--dan)}
-.dockL.-exc .av{color:var(--dan)}
-.dockL .sp{flex:1;min-width:var(--s4)}
+/* absolute dentro de .corpo, e nao fixed na janela: ela anda com o texto, o
+   que faz a compensacao de rolagem deixar de ser necessaria em vez de ser
+   resolvida. translate(-50%,-100%) ancora o meio de baixo no trecho. */
+.selbar{position:absolute;z-index:40;transform:translate(-50%,-100%);
+  margin-top:calc(-1 * var(--s2));pointer-events:none}
+.selbar[hidden]{display:none}
+.selcx{display:inline-flex;align-items:center;gap:var(--s2);pointer-events:auto;
+  max-width:min(520px,calc(100vw - 2*var(--s4)));
+  background:var(--bg);border:1px solid var(--ink);padding:5px}
+.selcx .dl{font-size:13px;color:var(--ink-2);padding:7px 13px;white-space:nowrap;border-radius:var(--r1)}
+.selcx .dl:hover{background:var(--bg-3);color:var(--ink)}
+.selcx .dl.-pri{color:var(--ink);font-weight:600}
+.selcx .dl.-perigo{color:var(--ink-3)}
+.selcx .dl.-perigo:hover{color:var(--dan);background:var(--dan-soft)}
+.selcx .av{font-size:var(--t-peq);color:var(--ink-3);padding:0 var(--s3);white-space:nowrap}
+.selcx.-exc{border-color:var(--dan)}
+.selcx.-exc .av{color:var(--dan)}
+.selcx .sp{flex:1;min-width:var(--s4)}
+/* a fita de ferramentas do topo: tres palavras, uma familia so */
+.ferL{display:inline-flex;gap:2px}
+.leituraTopo .lnk.mudo.-on{background:var(--ink);color:var(--bg)}
+.leituraTopo .tt{text-align:left;max-width:32ch}
 /* APARENCIA: sobe de baixo e para na dock. O texto continua atras — coberto
    so o rodape, e nao a coluna inteira como fazia a folha de 1000px. */
-.paparencia{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--s5) + 52px);
+.paparencia{position:fixed;left:50%;transform:translateX(-50%);top:calc(61px + var(--s3));
   z-index:39;width:min(calc(100vw - 2*var(--s4)),720px);background:var(--bg);
   border:1px solid var(--line-3);padding:var(--s4);
   display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:var(--s3) var(--s5)}
@@ -474,20 +481,20 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .pafim .lb{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.1em;
   text-transform:uppercase;color:var(--ink-3)}
 /* FOCO: sai tudo menos o livro */
-.leitura-foco .leituraTopo{display:none}
+/* o topo nao some: apaga. Sumindo de vez, a saida do foco morava so na dock —
+   e a dock deixou de existir. Apagado, o texto domina e o controle volta com o
+   mouse ou com o teclado. */
+.leitura-foco .leituraTopo{opacity:.12;transition:opacity var(--d2) var(--curva)}
+.leitura-foco .leituraTopo:hover,.leitura-foco .leituraTopo:focus-within{opacity:1}
 .leitura-foco .qbar{display:none}
-.leitura-foco .dockL{opacity:.28;border-color:var(--line)}
-.leitura-foco .dockL:hover{opacity:1}
 .leituraTopo .menuL{font-size:16px;padding:4px 9px}
 .leituraTopo .tt{display:flex;flex-direction:column;line-height:1.2}
 .leituraTopo .tt i{font-family:var(--ui);font-style:normal;font-size:var(--t-peq);color:var(--ink-3)}
 @media(max-width:760px){
-  .dockL{left:0;right:0;bottom:0;transform:none;max-width:none;border-left:none;
-    border-right:none;border-bottom:none;justify-content:space-around}
-  .dockL .div{display:none}
+  .selcx{max-width:calc(100vw - 2*var(--s4))}
   /* no celular, uma coluna de seis grupos comia 52% da tela. Duas colunas e
      teto de 40vh deixam a leitura respirando atras do painel. */
-  .paparencia{left:0;right:0;bottom:52px;transform:none;width:auto;max-height:40vh;
+  .paparencia{left:0;right:0;top:auto;bottom:0;transform:none;width:auto;max-height:40vh;
     overflow-y:auto;border-left:none;border-right:none;
     grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s3)}
 }
@@ -1722,14 +1729,27 @@ function vLeitura(){
   const prog=progresso();
   /* TOPO: onde estou. So isso — recolhido, o titulo, e o resto do produto
      atras do menu. A navegacao global competia com a capa do livro. */
-  let h='<div class="leituraTopo"><button class="lnk mudo menuL" data-a="folha" data-v="menuL" '+
-    'aria-label="Menu">\u2630</button>'+
-    '<span class="tt">'+esc(ARQ.titulo)+'<i>'+esc(ARQ.autor)+'</i></span>'+
+  /* ☰ e ⋯ diziam o que? "O icone so esconde o vocabulario atras de um clique"
+     e regra desta casa desde 30c8a44, e o topo da leitura era o unico lugar
+     que a quebrava — dois glifos, zero palavras. Agora cada controle se nomeia,
+     e cada um pertence a UMA familia: Mekora leva a lugares, as tres do meio
+     mudam o que voce faz, "Este arquivo" age sobre o objeto. */
+  let h='<div class="leituraTopo">'+
+    '<button class="lnk mudo" data-a="folha" data-v="menuL">Mekora</button>'+
+    '<button class="tt" data-a="ir-livro" title="Voltar ao livro">'+esc(ARQ.titulo)+
+      '<i>'+esc(ARQ.autor)+'</i></button>'+
     '<span class="sp"></span>'+
+    '<span class="ferL">'+
+      '<button class="lnk mudo" data-a="folha" data-v="sumario">Sumário</button>'+
+      '<button class="lnk mudo'+(S.aaAberto?" -on":"")+'" data-a="aa-barra" '+
+        'aria-expanded="'+(!!S.aaAberto)+'">Aparência</button>'+
+      '<button class="lnk mudo'+(S.foco?" -on":"")+'" data-a="foco" '+
+        'aria-pressed="'+(!!S.foco)+'">Foco</button>'+
+    '</span>'+
     (S.leit.progresso==="nada"?'':
      '<span class="mono" id="progT" style="font-size:var(--t-mono);color:var(--ink-3)">'+
      rotuloProg(prog)+'</span>')+
-    '<button class="lnk mudo" data-a="folha" data-v="controles" aria-label="Mais">\u22ef</button>'+
+    '<button class="lnk mudo" data-a="folha" data-v="controles">Este arquivo</button>'+
     '<div class="fio"><i id="progF" style="width:'+prog+'%"></i></div></div>';
 
   const sob=S.perg?escK(S.perg):null;
@@ -1971,41 +1991,51 @@ const PREPS=[
    mesma peca com o conteudo do contexto.
    A fita anterior era o oposto: 19 controles do mesmo peso numa faixa de
    1440px comandando uma coluna de 724, permanentemente na frente. */
+/* A DOCK VIROU BARRA DE SELECAO, que e o que ela ja parecia ser.
+   Sumario, Aparencia, Foco e Anotar eram quatro familias diferentes empilhadas
+   numa caixinha flutuante sem hierarquia: navegacao, aparencia, modo e acao
+   sobre conteudo. Lidas juntas, viravam "quatro ferramentas quaisquer" — e o
+   formato (caixa pequena, flutuando, junto ao texto) e o de popover de
+   selecao. As tres primeiras subiram para o topo, onde ferramenta mora; a
+   quarta e acao sobre trecho e vive na selecao. Sem selecao, nada flutua.
+   A compensacao de rolagem que derrubou a barra antiga nao volta: aquela era
+   position:fixed e precisava seguir a janela. Esta e absolute dentro de
+   .corpo — anda junto com o texto porque E parte dele. */
 function dockL(){
-  if(S.foco)return '<div class="dockL -foco"><button class="dl" data-a="foco">sair do foco</button></div>';
+  const c=selConteudo();
+  return '<div id="selbar" class="selbar"'+(c?'':' hidden')+
+    (S.selE&&S.selE.x!=null?' style="left:'+S.selE.x+'px;top:'+S.selE.y+'px"':'')+
+    '>'+c+'</div>'+(S.aaAberto?painelAparencia():'');
+}
+function selConteudo(){
   if(S.selE){
     const e=S.selE,d=e.k?escK(e.k):null;
     if(e.confirma)
-      return '<div class="dockL -exc"><span class="av">Este destaque tem uma nota. Tirar apaga a nota.</span>'+
+      return '<div class="selcx -exc"><span class="av">Este destaque tem uma nota. Tirar apaga a nota.</span>'+
         '<span class="sp"></span>'+
         '<button class="dl -perigo" data-a="dst-tirar" data-v="'+e.k+'" data-f="1">Tirar mesmo assim</button>'+
         '<button class="dl" data-a="sel-fim">Deixar</button></div>';
     if(e.desfazer)
-      return '<div class="dockL"><span class="av">Trecho tirado.</span><span class="sp"></span>'+
+      return '<div class="selcx"><span class="av">Trecho tirado.</span><span class="sp"></span>'+
         '<button class="dl" data-a="dst-desfazer">Desfazer</button>'+
         '<button class="dl" data-a="sel-fim">Fechar</button></div>';
     if(d)
-      return '<div class="dockL"><span class="av">'+esc(dstCap(d))+'</span>'+
+      return '<div class="selcx"><span class="av">'+esc(dstCap(d))+'</span>'+
         '<button class="dl" data-a="dst-nota" data-v="'+d.k+'">'+(d.nota?"Editar a nota":"Anotar")+'</button>'+
         '<button class="dl" data-a="dst-copiar" data-v="'+d.k+'">Copiar</button>'+
         '<span class="sp"></span>'+
         '<button class="dl -perigo" data-a="dst-tirar" data-v="'+d.k+'">Tirar</button></div>';
-    return '<div class="dockL"><span class="av">'+
+    return '<div class="selcx"><span class="av">'+
       (S.perg?"vai para a pergunta aberta":"fica solto")+'</span>'+
       '<button class="dl -pri" data-a="dst-criar" data-v="destacar">Destacar</button>'+
       '<button class="dl" data-a="dst-criar" data-v="anotar">Anotar</button>'+
+      /* copiar nao cria registro: e a unica das tres que nao mexe no acervo, e
+         faltava aqui enquanto ja existia no trecho ja destacado. */
+      '<button class="dl" data-a="sel-copiar">Copiar</button>'+
       '<span class="sp"></span>'+
       '<button class="dl" data-a="sel-fim">Cancelar</button></div>';
   }
-  return '<div class="dockL">'+
-    '<span class="grp"><button class="dl" data-a="folha" data-v="sumario">Sumário</button></span>'+
-    '<span class="div"></span>'+
-    '<span class="grp"><button class="dl'+(S.aaAberto?" -on":"")+'" data-a="aa-barra" '+
-      'aria-expanded="'+(!!S.aaAberto)+'">Aa</button>'+
-      '<button class="dl" data-a="foco">Foco</button></span>'+
-    '<span class="div"></span>'+
-    '<span class="grp"><button class="dl" data-a="esc-aqui" data-v="'+S.cap+'">Anotar</button></span>'+
-    '</div>'+(S.aaAberto?painelAparencia():'');
+  return "";
 }
 /* APARENCIA: sobe de baixo e para na dock; o texto continua atras. E os
    especimes DESENHADOS voltaram — a fita os trocou por palavras, e
@@ -3362,24 +3392,44 @@ function vFolha(){
       '<button class="lnk mudo" data-a="usb-fim">Concluir</button>'+
       '<button class="btnO forte" data-a="usb-fim">Levar 2 livros para o aparelho</button>');
   }
+  /* UMA REGRA, QUATRO COMPONENTES:
+       navegacao leva a LUGARES   .............. esta folha
+       ferramenta muda o que voce FAZ  ......... a fita do topo
+       menu de objeto age sobre a COISA  ....... a folha "arquivo"
+       barra flutuante age sobre a SELECAO  .... selbar
+     Esta folha misturava as tres primeiras e por isso lia como sitemap: quatro
+     lugares, quatro acoes do arquivo e duas de conta, todos com o mesmo peso.
+     Perguntar "para que serve este menu" era a resposta certa. */
   if(f==="menuL"){
-    /* Produto e Este arquivo separados de proposito: "quero ir para o Canvas"
-       e "quero baixar este EPUB" nao sao a mesma familia de intencao. */
     const lug=[["mesa","Mesa"],["estante","Estante"],["canvas","Canvas"],["conexoes","Conexões"]];
     const li=(a,v,nm,st)=>'<button class="linha" data-a="'+a+'"'+(v?' data-v="'+v+'"':'')+'>'+
       '<span><span class="nm">'+nm+'</span>'+(st?'<span class="st">'+st+'</span>':'')+'</span>'+
       '<span class="ac">›</span></button>';
     return folha("Mekora","Onde você quer ir",
-      '<span class="kicker">Produto</span><div class="lista">'+
-      lug.map(x=>li("ir",x[0],x[1],"")).join("")+'</div>'+
-      '<span class="kicker" style="display:block;margin-top:var(--s5)">Este arquivo</span>'+
-      '<div class="lista">'+
-      li("ir-livro","","Voltar ao livro",esc(ARQ.titulo)+" · "+esc(ARQ.autor))+
-      li("folha","envio","Enviar ao Kindle","")+
-      li("baixar","","Baixar o EPUB","")+
-      li("folha","controles","Controles do arquivo","")+'</div>'+
+      '<div class="lista">'+lug.map(x=>li("ir",x[0],x[1],"")).join("")+'</div>'+
       '<div class="lista" style="margin-top:var(--s5)">'+
       li("folha","ajuda","Ajuda","")+li("ir","perfil","Perfil e conta","")+'</div>',
+      '<button class="btnO" data-a="fechar">Fechar</button>');
+  }
+  /* "Controles do arquivo" era acao morta: tres botoes no produto — o ⋯ da
+     leitura, o ⋮ do livro e o ⋮ do item — apontavam para uma folha que nunca
+     foi escrita, e o clique nao fazia nada. Agora ela existe, e e o menu do
+     OBJETO: o que se faz com este arquivo, nada do que leva a outro lugar. */
+  if(f==="controles"){
+    const li=(a,v,nm,st,cls)=>'<button class="linha'+(cls?" "+cls:"")+'" data-a="'+a+'"'+
+      (v?' data-v="'+v+'"':'')+'><span><span class="nm">'+nm+'</span>'+
+      (st?'<span class="st">'+st+'</span>':'')+'</span><span class="ac">›</span></button>';
+    return folha("Este arquivo",esc(ARQ.titulo),
+      '<div class="lista">'+
+      li("folha","envio","Enviar ao Kindle",S.enviado?"Enviado hoje, 09:12":"")+
+      li("baixar","","Baixar o EPUB","")+
+      li("folha","traduzir","Traduzir","Gera um segundo arquivo; o original fica")+'</div>'+
+      '<span class="kicker" style="display:block;margin-top:var(--s5)">De onde ele veio</span>'+
+      '<div class="lista">'+
+      li("ver-preparo","","Ver o preparo",esc(ARQ.nome))+
+      li("folha","paginas","Ver as páginas","Organização avançada")+'</div>'+
+      '<div class="lista" style="margin-top:var(--s5)">'+
+      li("nada","","Remover da estante","Sai o livro e sai o original","-perigo")+'</div>',
       '<button class="btnO" data-a="fechar">Fechar</button>');
   }
   if(f==="guardar"){
@@ -3505,7 +3555,22 @@ function capturaSel(){
   const bate=S.dst.filter(d=>d.cap===cap&&d.par===par&&d.ini<fim&&d.fim>ini)
     .sort((x,z)=>x.ini-z.ini);
   S.selE=bate.length?{k:bate[0].k}:{cap:cap,par:par,ini:ini,fim:fim};
+  Object.assign(S.selE,ondeEsta(r));
   barra();
+}
+/* coordenada do trecho DENTRO do documento rolavel, nao da janela: somando o
+   scrollTop de .corpo, a barra fica presa ao texto e a rolagem nao a move. */
+function ondeEsta(r){
+  const c=app.querySelector(".corpo");if(!c)return {};
+  const cx=c.getBoundingClientRect(),caixas=[...r.getClientRects()];
+  if(!caixas.length)return {};
+  const a=caixas[0];
+  const col=app.querySelector(".colE"),cr=col?col.getBoundingClientRect():cx;
+  /* presa a coluna de texto: uma barra a meia altura de um trecho que comeca
+     na ultima palavra da linha sairia pela direita. */
+  const meio=Math.min(Math.max(a.left+a.width/2,cr.left+90),cr.right-90);
+  return {x:Math.round(meio-cx.left+c.scrollLeft),
+          y:Math.round(a.top-cx.top+c.scrollTop)};
 }
 /* a barra entra sem repintar: pinta() destroi #app inteiro e a selecao viva
    morreria junto, deixando a pessoa com uma barra e nenhum trecho marcado. */
@@ -3516,8 +3581,13 @@ function barra(){
      limiar medido de sticky, deixou de ser um problema porque deixou de
      existir. Custo assumido: no desktop a dock fica mais longe da mao. */
   document.body.classList.toggle("-selecionando",!!S.selE);
-  const d=document.querySelector(".dockL");
-  if(d)d.outerHTML=dockL();
+  const host=document.getElementById("selbar");
+  if(!host)return;
+  /* innerHTML num host fixo, e nao outerHTML: com outerHTML, o primeiro estado
+     vazio apagaria o proprio no e nao haveria onde escrever o proximo. */
+  const c=selConteudo();
+  host.innerHTML=c;host.hidden=!c;
+  if(S.selE&&S.selE.x!=null){host.style.left=S.selE.x+"px";host.style.top=S.selE.y+"px";}
 }
 /* rascunho: qualquer pinta() recria o <textarea> e levaria o texto junto. */
 function guardaRascunho(){
@@ -3888,6 +3958,11 @@ app.addEventListener("click",ev=>{
       }
       S.selE=null;S.folha=null;break;
     case "sel-fim":S.selE=null;break;
+    case "sel-copiar":{
+      const e=S.selE;
+      const t=e&&e.cap!=null?CAPS[e.cap].p[e.par].slice(e.ini,e.fim):"";
+      S.selE=null;
+      aviso(t?"Copiado com a origem — capítulo "+(e.cap+1)+", "+ARQ.titulo:"Copiado");break;}
     case "dst-copiar":{
       const d=dstK(v);S.selE=null;
       aviso(d?"Copiado com a origem — "+dstCap(d)+", "+ARQ.titulo:"Copiado");break;}
