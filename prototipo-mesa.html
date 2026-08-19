@@ -263,11 +263,23 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .fonte{font-size:12.5px;line-height:1.55;color:var(--ink-3);margin:var(--s2) 0 0}
 .fonte b{color:var(--ink-2);font-weight:550}
 .acoes.-mudas{margin-top:var(--s3);gap:var(--s4)}
-/* a regua fina diz "isto e so seu": nao ha voz de autor atras. 2px em tinta
-   e barra de citacao — tem fonte. 1px translucido nao tem. Junto com a
-   ausencia do simbolo de volta, sao os dois unicos sinais. Sem rotulo. */
-.dossie .tr.-livre{border-left-width:1px;border-left-color:var(--line-3);margin-top:var(--s6)}
+/* O QUE VOCE ESCREVEU NAO E CITACAO. Ele nasceu com filete de citacao, como
+   os trechos, e o resultado foi uma cerca de linhas paralelas onde pai e filho
+   eram irmaos visuais — o trecho arquivado sob uma pergunta ficava a 0px de
+   recuo dela. Agora a escrita sem ancora fica na margem, SEM filete e SEM
+   recuo, e o que esta arquivado sob ela recua. A hierarquia vira posicao, e
+   sobra filete so onde ha mesmo alguem sendo citado. */
+.dossie .tr.-livre{border-left:none;padding-left:0;margin-top:var(--s6)}
 .dossie .tr.-livre:first-child{margin-top:0}
+/* so o FILHO se aproxima do pai. "+.tr" pegava qualquer item seguinte,
+   inclusive outra pergunta, e ai dois pais ficavam tao colados quanto pai e
+   filho — o agrupamento sumia justamente onde ele precisava aparecer. */
+.dossie .tr.-livre+.tr.-filho{margin-top:var(--s3)}
+.dossie .tr.-filho+.tr.-filho{margin-top:var(--s3)}
+/* o filho recua: e o recuo, nao o peso da linha, que diz que ele esta sob */
+.dossie .tr.-filho{margin-left:var(--s5)}
+.dossie .acs.-vazia{height:0;overflow:hidden;margin:0}
+.dossie .tr:hover .acs.-vazia,.dossie .tr:focus-within .acs.-vazia{height:auto;margin-top:var(--s2)}
 /* a frase e o controle: sem caixa, herdando a tipografia do conteudo. O
    sinal de que da para clicar aparece na aproximacao, como no resto da lista. */
 .dossie .tr.-livre p>.abre{display:block;width:100%;text-align:left;font:inherit;color:inherit;
@@ -913,6 +925,8 @@ body.-selecionando #notasbt{display:none}
   grid-template-columns:132px minmax(0,1fr);gap:var(--s5);
   padding:var(--s4) 0;border-top:1px solid var(--line-2);margin:0}
 .dossie.-pend .tr:first-of-type{border-top:none;padding-top:0}
+.dossie.-pend .tr.-filho{margin-left:0}
+.dossie.-pend .tr.-livre+.tr.-filho{border-top:none;padding-top:0}
 .dossie.-pend .tr>cite{grid-column:1;grid-row:1;margin:0;text-align:right;
   font-family:var(--mono);font-size:10px;letter-spacing:.07em;line-height:1.5;
   color:var(--ink-3);font-style:normal}
@@ -2224,8 +2238,10 @@ function vLivro(){
 
 function acoesDst(d){
   if(!ancora(d))
-    /* sem ancora nao ha trecho para onde ir, e navegar seria mentira */
-    return '<div class="acs">'+
+    /* sem ancora nao ha trecho para onde ir, e navegar seria mentira. E como
+       TODAS as acoes daqui sao sob demanda, a fileira nao pode reservar
+       altura em repouso: eram 36px de vao morto por item, 288px em oito. */
+    return '<div class="acs -vazia">'+
       '<button class="lnk mudo sob" data-a="dst-editar" data-v="'+d.k+'">editar</button>'+
       '<button class="lnk mudo sob" data-a="dst-copiar" data-v="'+d.k+'">copiar com a origem</button>'+
       '<span class="sp" style="flex:1"></span>'+
@@ -2240,7 +2256,7 @@ function acoesDst(d){
     '<span class="sp" style="flex:1"></span>'+
     '<button class="lnk sob tirar" data-a="dst-tirar" data-v="'+d.k+'">tirar</button></div>';
 }
-function itemMarcado(d,ideia){
+function itemMarcado(d,ideia,filho){
   const end=esc(escEnd(d));
   const kd=d.origem==="kindle"?'<span class="kd">do Kindle</span>':"";
   /* SEM ANCORA: mesmo corpo da nota de trecho, regua de 1px, e nenhum retorno.
@@ -2263,15 +2279,16 @@ function itemMarcado(d,ideia){
   const pai=d.perg?escK(d.perg):null;
   const sob=pai?' \u00b7 '+esc(pai.nota.slice(0,26))+'\u2026':"";
   const corte=escTxt(d).length>64?"\u2026":"";
+  const rec=filho?" -filho":"";
   if(ideia){
     const ab=S.dstAberto===d.k;
-    return '<div class="tr -ideia" id="e-'+d.k+'"><p>'+esc(d.nota)+'</p>'+
+    return '<div class="tr -ideia'+rec+'" id="e-'+d.k+'"><p>'+esc(d.nota)+'</p>'+
       '<button class="volta" data-a="dst-abrirtr" data-v="'+d.k+'" aria-expanded="'+ab+'">\u21a9 '+
       esc(escTxt(d).slice(0,64))+corte+'</button>'+
       (ab?'<p class="cheio">\u201c'+esc(escTxt(d))+'\u201d</p>':'')+
       '<cite>'+end+sob+'</cite>'+kd+acoesDst(d)+'</div>';
   }
-  return '<div class="tr" id="e-'+d.k+'"><p>'+esc(escTxt(d))+'</p>'+
+  return '<div class="tr'+rec+'" id="e-'+d.k+'"><p>'+esc(escTxt(d))+'</p>'+
     '<cite>'+end+sob+'</cite>'+kd+acoesDst(d)+'</div>';
 }
 /* o compositor sem ancora: mesmo campo, mesmo Pronto, outra superficie */
@@ -2323,7 +2340,7 @@ function secMarcado(){
      trecho nao some, ela so nao tem nada embaixo. Nao ha segunda lista. */
   pais.forEach(d=>{
     h+=itemMarcado(d,true);
-    h+=filhos(d.k).filter(passa).map(f=>itemMarcado(f,!!f.nota)).join("");
+    h+=filhos(d.k).filter(passa).map(f=>itemMarcado(f,!!f.nota,true)).join("");
   });
   if(S.escNovo)h+=notaLivre({k:S.escNovo,cap:null,nota:""});
   if(soltos.length)
