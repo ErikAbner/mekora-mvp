@@ -777,7 +777,7 @@ body.-selecionando #notasbt{display:none}
 /* escrever sem marcar nada: pendurado na linha do capitulo e no fim do livro,
    que ja estao na tela. O lugar onde se clica define o endereco. */
 .lcap .escq{font-family:var(--ui);font-size:var(--t-peq);letter-spacing:0;text-transform:none;
-  color:var(--ink-4);padding:0;white-space:nowrap}
+  color:var(--ink-3);padding:0;white-space:nowrap;border-bottom:1px solid var(--line)}
 .lcap .escq:hover{color:var(--ink)}
 .colE>.notaE{margin-top:var(--s4)}
 .notaE .pe .sp{flex:1}
@@ -1548,6 +1548,7 @@ function vLeitura(){
   const prog=progresso();
   let h='<div class="leituraTopo"><button class="lnk mudo" data-a="ir-livro">‹ '+esc(ARQ.titulo)+'</button>'+
     '<span class="sp"></span>'+
+    '<button class="lnk mudo" data-a="esc-aqui" data-v="'+S.cap+'">Anotar</button>'+
     '<button class="lnk mudo" data-a="folha" data-v="sumario">Sumário</button>'+
     '<button class="lnk mudo" data-a="folha" data-v="aa">Aa</button>'+
     (S.leit.progresso==="nada"?'':
@@ -3677,7 +3678,13 @@ app.addEventListener("click",ev=>{
        na linha do capitulo vira grao capitulo, no fim do livro vira grao
        livro. Antes so dava para escrever livre marcando um trecho que a
        pessoa nao queria marcar, e depois soltando a ancora. */
-    case "esc-aqui":S.escAqui=(S.escAqui===v?null:v);S.notaAberta=null;S.rasc.aqui="";break;
+    case "esc-aqui":{
+      S.escAqui=(S.escAqui===v?null:v);S.notaAberta=null;S.rasc.aqui="";
+      if(S.escAqui){pinta();
+        const el2=document.getElementById("e-aqui");
+        if(el2)el2.scrollIntoView({behavior:"smooth",block:"center"});
+        return;}
+      break;}
     case "esc-aqui-guardar":{
       const ta=document.getElementById("campoNota"),t=ta?ta.value.trim():"";
       if(t){const k="n"+S.dst.length;
