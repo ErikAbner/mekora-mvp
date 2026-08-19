@@ -1755,7 +1755,11 @@ const escTxt=d=>{if(!ancora(d))return"";const t=CAPS[d.cap]&&CAPS[d.cap].p[d.par
   return t?t.slice(d.ini,d.fim):"";};
 const dstTexto=escTxt;
 /* null+1 === 1 em JS: o dstCap antigo nao estourava, ele MENTIA "Capitulo 1" */
-const escEnd=d=>d.cap!=null?"Cap\u00edtulo "+(d.cap+1):ARQ.titulo;
+/* o endereco dito por extenso: com ancora e LUGAR, sem ancora e ASSUNTO.
+   A preposicao faz o trabalho que uma terceira espessura de filete faria —
+   e pendurar ontologia em 1px foi justamente o erro anterior. */
+const escEnd=d=>d.ini!=null?"Capítulo "+(d.cap+1)
+  :(d.cap!=null?"sobre o capítulo "+(d.cap+1):"sobre o livro");
 const dstCap=escEnd;
 const semAncora=()=>S.dst.filter(d=>d.livro===ARQ.titulo&&!ancora(d)).sort(ordem);
 /* A descricao sai do arquivo, nao de um resumo. Duas coisas que o conteudo
@@ -2249,8 +2253,9 @@ function itemMarcado(d,ideia){
        links de 13px que le como legenda — entao o ato principal, ler com
        isto, ficava escondido no hover ao lado de copiar. Agora a frase E a
        porta, e a fileira desce ao que sempre foi: arrumacao. */
+    /* a preposicao carrega o grao: "sobre" e assunto, sem preposicao e lugar */
     const proc=d.origem==="titulo"?"do título do capítulo "+(d.cap+1)
-              :(d.cap!=null?"Capítulo "+(d.cap+1):esc(ARQ.titulo));
+              :(d.cap!=null?"sobre o capítulo "+(d.cap+1):"sobre o livro");
     return '<div class="tr -livre" id="e-'+d.k+'">'+
       '<p><button class="abre" data-a="ler-pergunta" data-v="'+d.k+'">'+esc(d.nota)+'</button></p>'+
       '<cite>'+proc+'</cite>'+acoesDst(d)+'</div>';
