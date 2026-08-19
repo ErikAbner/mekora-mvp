@@ -93,6 +93,27 @@ function verificaTexto(bruto) {
     if (!definidas.has(u) && !GLOBAIS.has(u)) achados.push({ tipo: 'sem-definicao', nome: u });
   }
 
+  /* ── CSS engolido ── uma chave aberta dentro de um seletor ──
+     `.a{.a{` faz o parser do navegador descartar TODAS as regras seguintes, e
+     ele nao se recupera. Aconteceu numa emenda minha: 225 de 398 regras
+     sumiram, o veu das folhas foi junto, e a pagina continuou renderizando —
+     entao o smoke passou e a tela estava destruida. */
+  const est = bruto.match(/<style>([\s\S]*?)<\/style>/);
+  if (est) {
+    const css = est[1].replace(/\/\*[\s\S]*?\*\//g, ' ');
+    let prof = 0, linha = 1;
+    for (let i = 0; i < css.length; i++) {
+      const c = css[i];
+      if (c === String.fromCharCode(10)) linha++;
+      else if (c === '{') {
+        prof++;
+        /* 3 e sempre erro: o maximo legitimo e @media > regra > declaracoes */
+        if (prof > 2) { achados.push({ tipo: 'css-engolido', nome: 'chave dentro de seletor, linha ~' + linha }); break; }
+      } else if (c === '}') prof = Math.max(0, prof - 1);
+    }
+    if (prof !== 0) achados.push({ tipo: 'css-engolido', nome: 'chaves desbalanceadas: sobra ' + prof });
+  }
+
   /* ── ação sem rota ── o botão existe e o roteador não sabe dele ── */
   const rotas = new Set([...js.matchAll(/case\s+"([a-z0-9-]+)"/g)].map((x) => x[1]));
   if (rotas.size) {
@@ -114,9 +135,15 @@ const CASOS = [
   ['duplicada', `function a(){return 1}\nfunction a(){return 2}`],
   ['sem-definicao', `function a(){ return naoExiste(1); }`],
   ['sem-rota', `<script>const h='<button data-a="fechar">x</button><button data-a="orfa">y</button>';\nswitch(a){case "fechar":break;}</script>`],
+  ['css-engolido', `<style>.a{color:red}
+.b{.b{color:blue}
+.c{color:green}</style><script>1</script>`],
   /* e o que ele NÃO pode acusar: prosa dentro de comentário, e aspas
      aninhadas — os dois falsos positivos que ele já teve */
   [null, `/* 3 dos 14 itens (2 TXT) nao cabiam, pela ancora semantica (o topo) */\nfunction a(){return '<p style="color:var(--x)">'+esc(b)+'</p>'}\nfunction esc(x){return x}`],
+  /* e um CSS legitimo com media query aninhada nao pode ser acusado */
+  [null, `<style>@media(max-width:700px){.a{color:red}.b{color:blue}}
+@container (max-width:600px){.c{color:green}}</style><script>1</script>`],
 ];
 function autoteste() {
   const falhas = [];
