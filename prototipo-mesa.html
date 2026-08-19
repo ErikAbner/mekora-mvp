@@ -1115,7 +1115,12 @@ const ACERVO=[
 const capa=n=>"capas/capa-"+n+".jpg";
 const lomb=n=>"capas/lombada-"+n+".png";
 const ARQ={nome:"Relatório de pesquisa — expedição 02.pdf",saida:"Diário 02.epub",fmt:"PDF",
-  tam:"12,8 MB",pgs:96,idioma:"Português",titulo:"Diário 02",autor:"Ana Duarte",capa:"11",gerada:"08"};
+  tam:"12,8 MB",pgs:96,lidas:93,estreitas:3,idioma:"Português",
+  titulo:"Diário 02",autor:"Ana Duarte",capa:"11",gerada:"08"};
+/* pgs, lidas e estreitas sao fatos deste arquivo e tem um dono so. Estavam
+   escritos a mao em oito lugares: trocar 96 por outro numero deixaria oito
+   frases mentindo, e nenhuma delas avisaria — foi assim que "sumario com 14
+   capitulos" sobreviveu ao lado de um leitor que se anuncia "de 4". */
 
 const zero={
   /* Quem chega sem conhecer o produto cai na Home, não dentro da ferramenta. */
@@ -1291,7 +1296,7 @@ function topo(){
   }
   l1+='</div>';
   const est=S.fase==="pronto"?['pt-ok',S.enviado?"Enviado ao Kindle":"Pronto · "+ARQ.saida]:
-    S.fase==="preparando"?['pt-go',"Preparando — "+S.feito+" de 96 páginas"]:['pt-at',"Analisado · 1 coisa para você ver"];
+    S.fase==="preparando"?['pt-go',"Preparando — "+S.feito+" de "+ARQ.pgs+" páginas"]:['pt-at',"Analisado · 1 coisa para você ver"];
   const l2='<div class="tlin"><button class="marca" data-a="ir" data-v="mesa">Mekora</button>'+
     '<span class="fnome">'+esc(S.lugar==="livro"?ARQ.titulo:ARQ.nome)+'</span>'+
     '<span class="fest"><i class="pt '+est[0]+'"></i>'+est[1]+'</span><span class="sp"></span>'+
@@ -1549,7 +1554,7 @@ function vLeitura(){
   });
   h+='<div class="lfimE"><span class="kicker">Fim do que foi preparado</span>'+
     '<p class="txtE mudo">Você está lendo o EPUB que o Mekora gerou a partir de um PDF digitalizado de '+
-    '96 páginas. O original continua guardado.</p>'+
+    ARQ.pgs+' páginas. O original continua guardado.</p>'+
     '<div class="aparelho"><i class="pt pt-ok"></i><div style="flex:1">'+
       '<b style="display:block;font-size:var(--t-ui)">Também está no seu Kindle</b>'+
       '<span style="font-size:var(--t-peq);color:var(--ink-2)">Enviado hoje, 09:12. Se você ler por lá, '+
@@ -1948,10 +1953,10 @@ function vItem(){
   if(S.fase==="pronto")return itemPronto();
   let h='<div class="pad">'+cab()+
     est("","Analisado. Nada aqui impede a preparação.",
-      "96 páginas, todas abriram. Uma coisa eu resolvi sozinho e vale você conferir: o arquivo não tem capa.");
+      ARQ.pgs+" páginas, todas abriram. Uma coisa eu resolvi sozinho e vale você conferir: o arquivo não tem capa.");
 
   h+='<div class="sec"><h3>O que encontrei</h3><div class="lista">'+
-    li("at","!","Texto em imagem","As 96 páginas são digitalizações. Sem reconhecimento, o Kindle não busca palavras nem ajusta o tamanho da letra.","por quê","ocr")+
+    li("at","!","Texto em imagem","As "+ARQ.pgs+" páginas são digitalizações. Sem reconhecimento, o Kindle não busca palavras nem ajusta o tamanho da letra.","por quê","ocr")+
     li("at","!","Sumário sem links","Os títulos de capítulo estão lá, mas não levam a lugar nenhum.","","")+
     li("ok","✓","Nenhuma página corrompida","96 de 96 abriram sem erro.","","")+
     '</div></div>';
@@ -2024,7 +2029,7 @@ function itemPreparando(){
     est("","Preparando — reconhecendo o texto",
       "Esta etapa eu sei contar, porque é página a página. As seguintes não avançam de forma linear, então mostro a etapa e o tempo, não uma barra.")+
     '<div class="sec"><div class="trilho"><i style="width:'+Math.round(f/96*100)+'%"></i></div>'+
-    '<div class="leg"><span><b>'+f+' de 96 páginas</b> reconhecidas</span>'+
+    '<div class="leg"><span><b>'+f+' de '+ARQ.pgs+' páginas</b> reconhecidas</span>'+
     '<span class="mn">'+Math.floor(f/16)+' MIN '+String(Math.floor(f*1.7)%60).padStart(2,"0")+' S</span></div>'+
     '<div class="etapas">'+
       '<div class="etapa feita"><span class="mk">✓</span>Analisar</div>'+
@@ -2042,7 +2047,7 @@ function itemPronto(){
   let h='<div class="pad">'+cab()+
     est("ok","Pronto. "+ARQ.saida+" · 8,4 MB",
       S.pendResolvida?"Três páginas ficaram sem reconhecimento, como você decidiu. O resto está completo.":
-      "93 das 96 páginas com texto reconhecido, sumário com "+CAPS.length+" capítulos, capa montada.");
+      ARQ.lidas+" das "+ARQ.pgs+" páginas com texto reconhecido, sumário com "+CAPS.length+" capítulos, capa montada.");
   if(S.enviado)h+='<div class="estado ok" style="margin-top:calc(var(--s5) * -1 + 4px)"><i class="pt pt-ok"></i>'+
     '<div><h2>A Amazon aceitou o arquivo às 09:12</h2><p>Costuma aparecer no aparelho em poucos minutos, '+
     'quando ele estiver conectado. Não temos como saber se já chegou.</p></div></div>';
@@ -2053,7 +2058,7 @@ function itemPronto(){
   h+='<div class="sec" style="margin-top:var(--s6)"><button class="lnk" data-a="feito">'+
     (S.feitoAberto?"▾":"▸")+' O que foi feito neste arquivo</button>'+
     (S.feitoAberto?'<div class="lista" style="margin-top:var(--s3)">'+
-      li("ok","✓","Texto reconhecido em 93 das 96 páginas","Três eram fotografias sem texto legível.","","")+
+      li("ok","✓","Texto reconhecido em "+ARQ.lidas+" das "+ARQ.pgs+" páginas","Três eram fotografias sem texto legível.","","")+
       li("ok","✓","Convertido de PDF para EPUB","O original continua na estante, intacto.","desfazer","undo")+
       li("ok","✓","Sumário com "+CAPS.length+" capítulos","","desfazer","undo")+
       li("ok","✓","Capa gerada pelo Mekora","","alterar","capa")+
@@ -2073,7 +2078,7 @@ function vLivro(){
      mesma tela. Repetir aqui era repetir com OUTRA conta — o cabecalho somava
      nota livre como marcado e dizia 8 onde a secao dizia 2. */
   if(S.enviado)cl.push("Enviado hoje, 09:12");
-  const fonte=["<b>EPUB</b>","reconhecido em 93 de 96 p\u00e1ginas"]
+  const fonte=["<b>EPUB</b>","reconhecido em "+ARQ.lidas+" de "+ARQ.pgs+" p\u00e1ginas"]
     .concat(S.traduzir?["traduzido para "+esc(S.traduzir)+" \u2014 o original em portugu\u00eas continua na estante"]:[])
     .concat(["de <b>"+esc(ARQ.nome)+"</b>"]);
   return '<div class="pad">'+
@@ -2305,7 +2310,7 @@ function principal(){return S.aparelhos.find(a=>a.princ)||null;}
 const NOVIDADES=[
  ["18 de agosto de 2026",[
   ["cor","As páginas da organização avançada voltaram a aparecer",
-   "A tela existe para você olhar as 96 páginas e decidir uma a uma — girar, usar como capa, deixar de fora, achar a que ficou sem texto. Ela nunca mostrou página nenhuma: a miniatura era um elemento de linha com altura pedida no CSS, e elemento de linha ignora altura. Media 2 por 20 pixels onde devia medir 97 por 106."],
+   "A tela existe para você olhar as "+ARQ.pgs+" páginas e decidir uma a uma — girar, usar como capa, deixar de fora, achar a que ficou sem texto. Ela nunca mostrou página nenhuma: a miniatura era um elemento de linha com altura pedida no CSS, e elemento de linha ignora altura. Media 2 por 20 pixels onde devia medir 97 por 106."],
   ["cor","O espaço do livro dizia 8 marcados, e a seção logo abaixo dizia 2",
    "As duas contagens saíam do mesmo acervo, na mesma tela. O cabeçalho era o modelo antigo, de antes de o endereço ganhar grão: somava nota livre como se fosse trecho marcado. Quem conta é a seção “O que ficou”, que separa o que tem âncora do que não tem — e o cabeçalho ficou só com o que ele sabe: onde você parou e se já foi para o aparelho."],
   ["cor","O progresso da leitura não media nada",
@@ -2648,7 +2653,7 @@ function vFolha(){
     '<div class="pgs"><span class="pg"><i></i>12</span><span class="pg"><i></i>57</span><span class="pg"><i></i>83</span></div>'+
     '<p style="margin:0 0 var(--s3);font-size:14px;line-height:1.6;color:var(--ink-2)">'+
     'As páginas 12, 57 e 83 são fotografias. Não há texto legível nelas — o reconhecimento devolveu ruído.</p>'+
-    '<span class="conf">Medido: <b>3 de 96 páginas</b> abaixo do limite em todas as tentativas</span>'+
+    '<span class="conf">Medido: <b>'+ARQ.estreitas+' de '+ARQ.pgs+' páginas</b> abaixo do limite em todas as tentativas</span>'+
     '<p style="margin:var(--s3) 0 0;font-size:12.5px;color:var(--ink-3);line-height:1.55">'+
     'Elas continuam no livro como imagem, apenas sem busca de texto.</p>',
     '<button class="lnk mudo" data-a="pend-retry">Tentar em alta qualidade</button>'+
@@ -2802,7 +2807,7 @@ function vFolha(){
   if(f==="controles")return folha("Arquivo",esc(S.nome||ARQ.nome),
     '<div class="lista">'+
       li("in","✎","Renomear","Muda só o nome do arquivo final. O original guarda o nome que tinha.","renomear","renomear")+
-      li("in","▦","Ver todas as 96 páginas","Conferir o reconhecimento, escolher capa, deixar página de fora.","abrir","paginas")+
+      li("in","▦","Ver todas as "+ARQ.pgs+" páginas","Conferir o reconhecimento, escolher capa, deixar página de fora.","abrir","paginas")+
            li("in","↓","Baixar","O EPUB preparado, ou o PDF original do jeito que chegou.","baixar","baixar-dois")+
       li("in","↺","Refazer a preparação","Volta ao começo com o mesmo arquivo. Nada é enviado de novo.","refazer","refazer")+
       li("er","✕","Remover da estante","O arquivo preparado e o original saem. Não dá para desfazer.","remover","remover")+
@@ -2826,7 +2831,7 @@ function vFolha(){
     const lista=PAGS.filter(p=>S.filtro==="todas"||(S.filtro==="fora"?S.fora.includes(p.n):
       S.filtro==="capa"?p.capaCand:p[S.filtro]));
     const alvo=S.sel.length===1?PAGS[S.sel[0]-1]:null;
-    return folha("Organização avançada","96 páginas de "+esc(ARQ.nome),
+    return folha("Organização avançada",ARQ.pgs+" páginas de "+esc(ARQ.nome),
       '<div class="ed2"><div class="filtros">'+F.map(x=>'<button data-a="filtro" data-v="'+x[0]+'" '+
         'aria-pressed="'+(S.filtro===x[0])+'"><span>'+x[1]+'</span><span class="n">'+x[2]+'</span></button>').join("")+
         '<p style="font-size:11.5px;color:var(--ink-3);line-height:1.5;margin:var(--s3) 4px 0">'+
