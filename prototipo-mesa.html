@@ -2273,47 +2273,6 @@ function dock(its,on){
 }
 
 /* ═══ PERFIL ═══ */
-function vPerfil(){
-  const D=[
-   ["conta","Conta","erik@exemplo.com · desde julho de 2026",
-     rowP("Nome","Erik Abner","","Alterar")+rowP("E-mail","erik@exemplo.com","","Alterar")+
-     rowP("Senha","Alterada em 2 de agosto","","Alterar")],
-   ["disp","Dispositivos Kindle","1 aparelho · Paperwhite",
-     rowP("Kindle de Erik","Paperwhite · 1236 × 1680 · erik_abc@kindle.com","padrão","")+
-     rowP("Adicionar aparelho","Precisa do endereço @kindle.com e de autorizar o remetente na Amazon","","Adicionar")+
-     '<div class="nota"><span>◆</span><div>É este aparelho que define o tamanho das páginas nos quadrinhos. '+
-     'Trocar aqui muda a recomendação dos próximos arquivos.</div></div>'],
-   ["pref","Preferências","Modo padrão, downloads e movimento",
-     rowP("Modo ao abrir um arquivo","Guiado","","Alterar")+
-     rowSw("Baixar sozinho quando ficar pronto","Desligado. Você continua sendo avisado na Mesa.",false)+
-     rowSw("Reduzir movimento","Segue a preferência do seu sistema.",false)+
-     '<div class="nota"><span>◆</span><div>O tamanho da letra, a coluna e o tema você escolhe dentro do '+
-     'livro, no <b>Aa</b> — e de lá pode fazer valer para todos.</div></div>'],
-   ["priv","Privacidade","O que é guardado, o que é medido, por quanto tempo",
-     rowP("Arquivos originais","Ficam guardados enquanto o livro existir — é o que permite refazer o preparo sem enviar de novo.","","Alterar")+
-     rowSw("Ajudar a melhorar o Mekora","Registramos onde você clica e onde trava — nunca o conteúdo dos seus arquivos, nem o texto que sai do reconhecimento.",true)+
-     rowSw("Usar minhas respostas de pendência","Quando você responde uma dúvida, isso vira exemplo para o Mekora aprender a acertar sozinho. Guardamos a resposta e as medidas das páginas, não as imagens.",true)+
-     rowP("Baixar meus dados","Estante, notas e histórico de preparação","","Baixar")+
-     rowP("Apagar a conta","Irreversível. Pedimos confirmação por e-mail antes.","","Apagar")],
-   ["hist","Histórico","O que você mudou, e de onde",
-     '<div class="dado"><span class="k">hoje, 09:04</span><span>Capa gerada aceita em <b>Relatório de pesquisa</b> · neste navegador</span></div>'+
-     '<div class="dado"><span class="k">ontem</span><span>Modo padrão alterado para <b>Guiado</b> · neste navegador</span></div>'+
-     '<div class="dado"><span class="k">6 de agosto</span><span>Kindle de Erik adicionado · neste navegador</span></div>'+
-     '<div class="nota"><span>◆</span><div>Preferências é um espelho, não a fonte: ela guarda o que não tem '+
-     'contexto, reflete o resto e mantém este diário.</div></div>']
-  ];
-  let h='<div class="pad">'+
-    '<div class="pcab"><span class="ava">EA</span><div><h1>Erik Abner</h1>'+
-    '<div class="h">erik@exemplo.com · 14 itens na estante · 23 notas</div></div></div>';
-  D.forEach(d=>{
-    const ab=S.perfil===d[0];
-    h+='<div class="dobra"><button data-a="dobra" data-v="'+d[0]+'" aria-expanded="'+ab+'">'+
-      '<span><span class="nm">'+d[1]+'</span><span class="rs">'+d[2]+'</span></span>'+
-      '<span class="ch">'+(ab?"▾":"▸")+'</span></button>'+(ab?'<div class="in">'+d[3]+'</div>':'')+'</div>';
-  });
-  h+='';
-  return h+'</div>';
-}
 /* ═══ PERFIL E CONTA ═══
    Visão geral + seções. Não é sidebar de settings: a visão geral mostra
    estado, não índice, e é ela que leva. O trilho à esquerda existe só no
@@ -2616,16 +2575,6 @@ function estadosHist(){
     '<button class="lnk mudo" data-a="hist-estado" data-v="vazio">vazio</button>'+
     '<button class="lnk mudo" data-a="hist-estado" data-v="erro">erro</button></div>';
 }
-function rowP(t,d,tag,bt){
-  return '<div class="row"><div class="tx"><b>'+t+'</b><span>'+d+'</span></div>'+
-    (tag?'<span class="espelho">'+tag+'</span>':'')+
-    (bt?'<button class="btn sm sec2" data-a="manual">'+bt+'</button>':'')+'</div>';
-}
-function rowSw(t,d,on){
-  return '<div class="row"><div class="tx"><b>'+t+'</b><span>'+d+'</span></div>'+
-    '<button class="sw" data-a="manual" aria-pressed="'+on+'" aria-label="'+t+'"><i></i></button></div>';
-}
-
 /* ═══ FOLHAS ═══ */
 function vFolha(){
   const f=S.folha;if(!f)return"";
