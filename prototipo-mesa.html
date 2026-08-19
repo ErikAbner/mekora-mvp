@@ -2324,8 +2324,8 @@ function cab(){
     '<span class="meta">'+ARQ.fmt+'</span><span class="meta">'+ARQ.tam+'</span>'+
     '<span class="meta">'+ARQ.pgs+' páginas</span><span class="meta">'+ARQ.idioma+'</span></div></div>'+
     '<button class="modo" data-a="modo">'+(S.modo==="guiado"?'<b>Guiado</b> · trocar':'<b>Personalizado</b> · voltar')+'</button>'+
-    '<button class="icb" data-a="folha" data-v="controles" aria-label="Controles do arquivo" '+
-    'title="Controles do arquivo">⋮</button></div>';
+    '<button class="icb" data-a="folha" data-v="controles" aria-label="Este arquivo" '+
+    'title="Este arquivo">⋮</button></div>';
 }
 function est(k,t,p){
   return '<div class="estado '+k+'"><i class="pt pt-'+(k==="ok"?"ok":k==="at"?"at":"go")+'"></i>'+
@@ -2416,8 +2416,8 @@ function vLivro(){
       '" alt="Capa de '+esc(ARQ.titulo)+'">'+
     '<div>'+
       '<div class="tit"><h1>'+esc(ARQ.titulo)+'</h1>'+
-      '<button class="icb" data-a="folha" data-v="controles" aria-label="Controles do arquivo" '+
-      'title="Controles do arquivo">\u22ee</button></div>'+
+      '<button class="icb" data-a="folha" data-v="controles" aria-label="Este arquivo" '+
+      'title="Este arquivo">\u22ee</button></div>'+
       '<p class="autor">'+esc(ARQ.autor)+'</p>'+
       (cl.length?'<p class="saldo" style="margin:var(--s3) 0 0">'+cl.join(" \u00b7 ")+'</p>':'')+
       '<p class="fonte">'+fonte.join(" \u00b7 ")+'</p>'+
