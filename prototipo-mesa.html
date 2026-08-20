@@ -434,7 +434,16 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 
 /* ══ LEITURA DENTRO DO ARQUIVO ══ */
 .leituraTopo{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line);
-  display:flex;align-items:center;gap:var(--s4);padding:.7rem var(--s4)}
+  display:flex;flex-direction:column;gap:var(--s2);padding:var(--s4) var(--s5) var(--s3)}
+.leituraTopo .lin{display:flex;align-items:baseline;gap:var(--s4)}
+.leituraTopo .obra{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink);text-align:left;padding:0}
+.leituraTopo .obra i{font-style:normal;color:var(--ink-3)}
+.leituraTopo .obra:hover{background:none;color:var(--ink)}
+.leituraTopo .obra:hover i{color:var(--ink-2)}
+.leituraTopo .cap,.leituraTopo .lido{font-family:var(--mono);font-size:var(--t-mono);
+  letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);white-space:nowrap}
+.leituraTopo .-fer{align-items:center}
 .leituraTopo .tt{font-family:var(--serif);font-size:var(--t-ui);white-space:nowrap;overflow:hidden;
   text-overflow:ellipsis}
 /* A DOCK DE LEITURA — embaixo, onde ficam as ferramentas.
@@ -484,8 +493,16 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 /* o topo nao some: apaga. Sumindo de vez, a saida do foco morava so na dock —
    e a dock deixou de existir. Apagado, o texto domina e o controle volta com o
    mouse ou com o teclado. */
-.leitura-foco .leituraTopo{opacity:.12;transition:opacity var(--d2) var(--curva)}
-.leitura-foco .leituraTopo:hover,.leitura-foco .leituraTopo:focus-within{opacity:1}
+/* Foco: as DUAS camadas de chrome se apagam juntas — produto e livro. Apagar
+   e nao esconder mantem a saida alcancavel pelo mouse e pelo teclado; escondida,
+   ela so voltaria por atalho que ninguem descobre. */
+.leitura-foco .leituraTopo,.leitura-foco .topo{opacity:.08;transition:opacity var(--d2) var(--curva)}
+.leitura-foco .leituraTopo:hover,.leitura-foco .leituraTopo:focus-within,
+.leitura-foco .topo:hover,.leitura-foco .topo:focus-within{opacity:1}
+/* a linha do livro some junto; o que sobra e o titulo, o progresso e a saida */
+.leitura-foco .leituraTopo .lin:first-child{opacity:0;height:0;overflow:hidden;margin:0}
+.leitura-foco .leituraTopo:hover .lin:first-child,
+.leitura-foco .leituraTopo:focus-within .lin:first-child{opacity:1;height:auto;overflow:visible}
 .leitura-foco .qbar{display:none}
 .leituraTopo .menuL{font-size:16px;padding:4px 9px}
 .leituraTopo .tt{display:flex;flex-direction:column;line-height:1.2}
@@ -498,6 +515,22 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
     overflow-y:auto;border-left:none;border-right:none;
     grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s3)}
 }
+/* PAINEL LATERAL — navegacao dentro do livro fica AO LADO do que ela navega.
+   O veu nao escurece: escurecer o texto para mostrar o indice do texto e o
+   mesmo erro da folha centrada, so que mais bonito. */
+.veu.-lado{background:transparent;justify-content:flex-end;align-items:stretch;
+  padding:56px 0 0}   /* comeca abaixo da navegacao global, que continua alcancavel */
+.painelLado{width:min(340px,86vw);background:var(--bg);border-left:1px solid var(--line-3);
+  display:flex;flex-direction:column;height:100%;box-shadow:-1px 0 0 var(--line-2)}
+.plcab{display:flex;align-items:center;gap:var(--s3);padding:var(--s4) var(--s4) var(--s3);
+  border-bottom:1px solid var(--line)}
+.plcorpo{flex:1;overflow-y:auto;padding:var(--s4)}
+.plnota{font-size:var(--t-peq);color:var(--ink-3);line-height:1.6;margin:var(--s5) 0 0;
+  border-top:1px solid var(--line-2);padding-top:var(--s3)}
+.plpe{display:flex;align-items:baseline;gap:var(--s3);padding:var(--s3) var(--s4) var(--s4);
+  border-top:1px solid var(--line);font-size:var(--t-peq);color:var(--ink-3)}
+.plpe .mono{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.08em}
+.painelLado .indiceE li button[aria-current="true"] .nomeI{color:var(--ink);font-weight:600}
 .fio{position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--line-2)}
 .fio i{display:block;height:100%;background:var(--ink)}
 .lsec{scroll-margin-top:70px}
@@ -1492,9 +1525,11 @@ function reset(cena){
 
 /* ═══ TOPO ═══ o mesmo do prototipo.html, com a faixa contextual */
 function topo(){
-  const noItem=S.lugar==="item"||S.lugar==="livro"||S.lugar==="leitura";
+  const noItem=S.lugar==="item"||S.lugar==="livro";
+  /* na leitura nenhuma area fica marcada: o botao Estante aceso faria a tela
+     parecer a propria Estante. */
   const lug=[["mesa","Mesa"],["estante","Estante"],["canvas","Canvas"],["conexoes","Conexões"]];
-  const at=noItem?"mesa":S.lugar;
+  const at=S.lugar==="leitura"?"":(noItem?"mesa":S.lugar);
   let l1='<div class="tlin"><button class="marca" data-a="ir" data-v="'+(S.conta?"mesa":"home")+
 
 '" title="'+(S.conta?"Voltar à Mesa":"Início")+'">Mekora</button>';
@@ -1734,22 +1769,32 @@ function vLeitura(){
      que a quebrava — dois glifos, zero palavras. Agora cada controle se nomeia,
      e cada um pertence a UMA familia: Mekora leva a lugares, as tres do meio
      mudam o que voce faz, "Este arquivo" age sobre o objeto. */
+  /* Nao e uma segunda navbar: e o cabecalho editorial do objeto, e as
+     ferramentas da leitura moram dentro dele. Tres camadas com funcao unica —
+     produto (a barra de cima), livro (esta linha), ferramenta (a de baixo) —
+     no lugar de navbar, navbar, menu, dock, popup. Sem card e sem container:
+     tipografia, espaco, metadado e um filete. */
   let h='<div class="leituraTopo">'+
-    '<button class="lnk mudo" data-a="folha" data-v="menuL">Mekora</button>'+
-    '<button class="tt" data-a="ir-livro" title="Voltar ao livro">'+esc(ARQ.titulo)+
-      '<i>'+esc(ARQ.autor)+'</i></button>'+
-    '<span class="sp"></span>'+
-    '<span class="ferL">'+
-      '<button class="lnk mudo" data-a="folha" data-v="sumario">Sumário</button>'+
-      '<button class="lnk mudo'+(S.aaAberto?" -on":"")+'" data-a="aa-barra" '+
-        'aria-expanded="'+(!!S.aaAberto)+'">Aparência</button>'+
-      '<button class="lnk mudo'+(S.foco?" -on":"")+'" data-a="foco" '+
-        'aria-pressed="'+(!!S.foco)+'">Foco</button>'+
-    '</span>'+
-    (S.leit.progresso==="nada"?'':
-     '<span class="mono" id="progT" style="font-size:var(--t-mono);color:var(--ink-3)">'+
-     rotuloProg(prog)+'</span>')+
-    '<button class="lnk mudo" data-a="folha" data-v="controles">Este arquivo</button>'+
+    '<div class="lin">'+
+      '<button class="obra" data-a="ir-livro" title="Voltar ao livro">'+
+        esc(ARQ.titulo)+'<i> / '+esc(ARQ.autor)+'</i></button>'+
+      '<span class="sp"></span>'+
+      '<span class="cap">Cap\u00edtulo '+(S.cap+1)+' de '+CAPS.length+'</span>'+
+    '</div>'+
+    '<div class="lin -fer">'+
+      '<span class="ferL">'+
+        '<button class="lnk mudo" data-a="folha" data-v="sumario" '+
+          'aria-expanded="'+(S.folha==="sumario")+'">Sumário</button>'+
+        '<button class="lnk mudo'+(S.aaAberto?" -on":"")+'" data-a="aa-barra" '+
+          'aria-expanded="'+(!!S.aaAberto)+'">Aparência</button>'+
+        '<button class="lnk mudo'+(S.foco?" -on":"")+'" data-a="foco" '+
+          'aria-pressed="'+(!!S.foco)+'">Foco</button>'+
+      '</span>'+
+      '<span class="sp"></span>'+
+      (S.leit.progresso==="nada"?'':
+       '<span class="mono lido" id="progT">'+rotuloProg(prog)+'</span>')+
+      '<button class="lnk mudo" data-a="folha" data-v="controles">Este arquivo</button>'+
+    '</div>'+
     '<div class="fio"><i id="progF" style="width:'+prog+'%"></i></div></div>';
 
   const sob=S.perg?escK(S.perg):null;
@@ -3040,14 +3085,39 @@ function vFolha(){
     '<p style="margin:0;font-size:14px;line-height:1.65;color:var(--ink-2)">Num PDF digitalizado cada página é '+
     'uma imagem. O reconhecimento lê essa imagem e devolve o texto — é o que permite buscar uma palavra, mudar '+
     'o corpo da letra e o conteúdo refluir na tela.</p>','<button class="btn sec2" data-a="fechar">Entendi</button>');
-  if(f==="sumario")return folha("Navegação","Sumário",
-    '<p style="margin:0 0 var(--s4);font-size:var(--t-peq);color:var(--ink-3);line-height:1.6">'+
-    'Gerado a partir dos títulos encontrados no arquivo. Não existia no PDF original.</p>'+
+  /* O sumario e navegacao DENTRO do livro, e navegacao nao se abre por cima do
+     que ela navega: uma folha centrada cobria o texto que a pessoa esta tentando
+     situar. Painel na lateral, ao lado da coluna, com o capitulo corrente
+     marcado e o saldo embaixo. */
+  if(f==="info"){
+    const l=(k,v)=>'<div class="campo"><span class="k">'+k+'</span><span class="v">'+v+'</span><span></span></div>';
+    return folha("Este arquivo","Informações",
+      '<div style="background:var(--branco);padding:0 var(--s4)">'+
+      l("Origem",esc(ARQ.nome))+
+      l("Formato de origem",ARQ.fmt+" · "+ARQ.tam)+
+      l("Resultado",esc(ARQ.saida))+
+      l("Páginas",ARQ.pgs+" no original · texto reconhecido em "+ARQ.lidas)+
+      l("Idioma",ARQ.idioma)+
+      l("Sumário",CAPS.length+" capítulos, derivados dos títulos encontrados")+
+      l("No aparelho",S.enviado?"Enviado hoje, 09:12":"Ainda não enviado")+'</div>'+
+      '<div class="nota"><span>◆</span><div>O original fica guardado enquanto o livro existir — '+
+      'é ele que permite refazer o preparo com outras opções, sem você enviar de novo.</div></div>',
+      '<button class="btnO" data-a="fechar">Fechar</button>');
+  }
+  if(f==="sumario")return '<div class="veu -lado" data-a="fechar-veu">'+
+    '<aside class="painelLado" data-stop="1" aria-label="Sumário">'+
+    '<div class="plcab"><span class="lbl">Sumário</span><span class="sp"></span>'+
+    '<button class="fx" data-a="fechar" aria-label="Fechar">✕</button></div>'+
+    '<div class="plcorpo">'+
     '<ol class="indiceE" style="margin:0">'+CAPS.map((c,i)=>
-      '<li><button data-a="cap" data-v="'+i+'"><span class="numI">'+String(i+1).padStart(2,"0")+'</span>'+
+      '<li><button data-a="cap" data-v="'+i+'"'+(i===S.cap?' aria-current="true"':'')+
+      '><span class="numI">'+String(i+1).padStart(2,"0")+'</span>'+
       '<span class="nomeI">'+esc(c.n)+'</span>'+
-      '<span class="metaI">'+(i===S.cap?"onde você está":"")+'</span></button></li>').join("")+'</ol>',
-    '<button class="btnO" data-a="fechar">Fechar</button>');
+      '<span class="metaI">'+(i===S.cap?"atual":"")+'</span></button></li>').join("")+'</ol>'+
+    '<p class="plnota">Gerado a partir dos títulos encontrados no arquivo. '+
+    'Não existia no PDF original.</p></div>'+
+    '<div class="plpe"><span>'+CAPS.length+' capítulos</span><span class="sp"></span>'+
+    '<span class="mono">'+progresso()+'% lido</span></div></aside></div>';
   if(f==="nota")return folha("Nota","Sobre o silêncio de duas horas",
     '<blockquote class="lq" style="width:100%;margin:0 0 var(--s4)">Anotar o que se vê é mais difícil do que parece.</blockquote>'+
     '<p style="margin:0;font-family:var(--serif);font-size:var(--t-leitura);line-height:var(--lh-leitura);'+
@@ -3435,7 +3505,8 @@ function vFolha(){
       '<span class="kicker" style="display:block;margin-top:var(--s5)">De onde ele veio</span>'+
       '<div class="lista">'+
       li("ver-preparo","","Ver o preparo",esc(ARQ.nome))+
-      li("folha","paginas","Ver as páginas","Organização avançada")+'</div>'+
+      li("folha","paginas","Ver as páginas","Organização avançada")+
+      li("folha","info","Informações do arquivo",ARQ.fmt+" · "+ARQ.tam+" · "+ARQ.pgs+" páginas")+'</div>'+
       '<div class="lista" style="margin-top:var(--s5)">'+
       li("nada","","Remover da estante","Sai o livro e sai o original","-perigo")+'</div>',
       '<button class="btnO" data-a="fechar">Fechar</button>');
@@ -3632,7 +3703,12 @@ function pinta(){
      Mesa/Estante/Canvas/Conexoes, busca e avatar em cima do texto. Ela sai
      inteira, e a marca passa para a barra de leitura — que ja tem a porta de
      volta. Hamburguer promete o app inteiro, e nao e para la que se vai. */
-  const semTopo=S.lugar==="leitura";
+  /* a leitura escondia a navegacao global inteira. Uma barra estrutural que
+     existe em quatro lugares e some no quinto deixa de ser estrutural: some o
+     "onde estou no Mekora" justo onde a pessoa fica mais tempo. Ela volta —
+     sem nenhuma das quatro areas marcada como atual, porque estar dentro de um
+     objeto da Estante nao e estar na Estante. */
+  const semTopo=false;
   document.body.classList.toggle("leitura-foco",S.lugar==="leitura"&&!!S.foco);
   app.innerHTML=(semTopo?"":topo())+'<div class="corpo">'+corpo()+'</div>'+vFolha();
   /* a contagem da pré-visualização é MEDIDA na própria tela do aparelho:
