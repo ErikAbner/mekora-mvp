@@ -1,0 +1,6 @@
+# Este diretorio e um arquivo de preservacao: os bytes importam.
+# Sem isto, core.autocrlf converte finais de linha no checkout e as copias
+# deixam de bater com HASHES.txt em outra maquina (ex.: ao clonar no Mac).
+# -text desliga qualquer normalizacao: o Git guarda e devolve exatamente o
+# que foi resgatado.
+* -text
