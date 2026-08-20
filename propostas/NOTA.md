@@ -33,18 +33,29 @@ Os números 0021 a 0029 estavam reservados e passaram a ser atribuídos. DEC-001
 sem existir: a confirmação da renumeração de 2026-08-14 continua pendente do Erik, e preencher os
 buracos enterraria a pergunta.
 
-## O corte temporal que isso cria
+## O corte temporal que isso cria — e o que ele NÃO significa
 
-É o resultado mais útil de toda a consolidação, e vale escrito:
+É o resultado mais útil de toda a consolidação, e precisa ser escrito com precisão:
 
 ```
-até 20/08/2026   →   história a ser reconciliada
-a partir daqui   →   estas nove são as regras vigentes
+DEC-0021 a DEC-0029   →   definitivamente vigentes
+DEC-0001 a DEC-0020   →   autoridade histórica ainda existente,
+                          sujeita a reconciliação contra o estado atual
 ```
+
+**As decisões anteriores a 20/08 não perderam autoridade automaticamente.** Algumas continuam
+vigentes; algumas já foram parcialmente emendadas; algumas podem estar obsoletas; algumas conflitam
+entre si. É a reconciliação que determina qual é o caso de cada uma — e o resultado pode ser
+`accepted`, `accepted + amended_by`, `superseded` ou `revoked`.
+
+Ler este corte como "tudo antes da DEC-0021 é arquivo" seria erro grave, e da mesma família do
+problema que a consolidação existe para consertar: decidir por proximidade ou por data, em vez de
+por leitura.
 
 Antes desse corte, o Mekora tinha decisões demais e nenhuma fonte com autoridade para dizer quais
-valiam. Depois dele, existe um conjunto pequeno de normas datadas, com relacionamento declarado nos
-dois sentidos, e uma fila de perguntas classificada por momento.
+valiam. Depois dele, existe um conjunto pequeno de normas datadas e indiscutíveis, com
+relacionamento declarado nos dois sentidos, contra o qual as vinte anteriores podem finalmente ser
+lidas.
 
 ## As perguntas abertas
 
