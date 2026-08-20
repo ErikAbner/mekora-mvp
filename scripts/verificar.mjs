@@ -40,6 +40,12 @@ import { readFileSync } from 'node:fs';
    arquivo inteiro. Erro contido em vez de erro propagado. */
 function separa(js) {
   return js
+    /* data: URI e conteúdo, não código. E o alfabeto do base64 inclui a barra:
+       um payload com "//" fazia a remoção de comentário de linha comer o resto
+       da linha. No artefato, isso apagou as duas definições que vinham logo
+       depois da tabela de capas, e o verificador acusou função inexistente
+       num arquivo correto. Sai primeiro, antes de tudo. */
+    .replace(/data:[a-zA-Z0-9/+.-]+;base64,[A-Za-z0-9+/=]+/g, 'DATA')
     .replace(/\/\*[\s\S]*?\*\//g, ' ')            /* comentário de bloco */
     .replace(/(^|[^:])\/\/[^\n]*/g, '$1')         /* de linha, poupando https:// */
     /* UMA passada com alternância, não três em sequência. Em sequência, a
@@ -141,6 +147,10 @@ const CASOS = [
   /* e o que ele NÃO pode acusar: prosa dentro de comentário, e aspas
      aninhadas — os dois falsos positivos que ele já teve */
   [null, `/* 3 dos 14 itens (2 TXT) nao cabiam, pela ancora semantica (o topo) */\nfunction a(){return '<p style="color:var(--x)">'+esc(b)+'</p>'}\nfunction esc(x){return x}`],
+  /* nem um data: URI com "//" dentro pode apagar o que vem depois dele */
+  [null, `const T={"01":"data:image/png;base64,iVBOR//w0KGgoAAAA+/x=="};
+const capa=n=>T[n]||"";
+function a(){return capa(1)}`],
   /* e um CSS legitimo com media query aninhada nao pode ser acusado */
   [null, `<style>@media(max-width:700px){.a{color:red}.b{color:blue}}
 @container (max-width:600px){.c{color:green}}</style><script>1</script>`],

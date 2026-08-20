@@ -1297,6 +1297,9 @@ td.n{color:var(--ink);font-weight:600}
   margin-top:var(--s4)}
 .grupoE .cit>p{margin:0;font-family:var(--serif);font-size:15px;line-height:1.6;color:var(--ink-2)}
 .grupoE .cit>p.-nota{font-size:var(--t-leitura);line-height:var(--lh-leitura);color:var(--ink)}
+/* a coluna larga serve a estrutura da pagina, e nao a linha de texto */
+.colE.larga .grupoE .cit>p{max-width:64ch}
+.colE.larga .grupoE .cit>p.-nota{max-width:58ch}
 .grupoE .cit .volta{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--ink-3);
   display:block;margin-top:var(--s2);text-align:left}
 .grupoE .cit .volta:hover{color:var(--ink)}
@@ -1319,6 +1322,186 @@ td.n{color:var(--ink);font-weight:600}
 .grupoE .acs .sob{opacity:0;transition:opacity var(--d1) var(--curva)}
 .grupoE:hover .acs .sob,.grupoE .acs .sob:focus-visible{opacity:1}
 @media(hover:none){.grupoE .acs .sob{opacity:1}}
+/* ═══ NOTAS ═══ Nada de card: as notas já têm uma forma nesta casa — filete
+   à esquerda, degrau de papel, tipografia. A área de Notas usa a MESMA, e é
+   por isso que uma nota lida aqui é reconhecível como a mesma coisa que você
+   escreveu lá dentro. */
+.nfila{display:flex;align-items:center;gap:var(--s4);flex-wrap:wrap;
+  margin-top:var(--s5);padding-bottom:var(--s3);border-bottom:1px solid var(--line-2)}
+.nfila button[data-a="nota-filtro"]{font-size:13px;color:var(--ink-3);padding:4px 0;
+  border-bottom:1px solid transparent;border-radius:0}
+.nfila button[data-a="nota-filtro"]:hover{color:var(--ink)}
+.nfila button[data-a="nota-filtro"][aria-current]{color:var(--ink);font-weight:600;
+  border-bottom-color:var(--ink)}
+.nfila button i{font-family:var(--mono);font-style:normal;font-size:10px;color:var(--ink-3);
+  letter-spacing:.05em;margin-left:3px}
+/* o filete vertical separa a partição do estado: as três primeiras dividem
+   todas as notas, "Para revisar" atravessa as três. */
+.nfila .di{width:1px;height:14px;background:var(--line);margin:0 var(--s2)}
+.nfila .sp{flex:1}
+.campoN{font-family:var(--ui);font-size:13px;color:var(--ink);background:var(--branco);
+  border:1px solid var(--line);border-radius:var(--r1);padding:5px 9px;width:150px}
+.campoN:focus{outline:1px solid var(--ink);outline-offset:-1px;border-color:var(--ink)}
+.vazioN{font-size:13px;color:var(--ink-2);line-height:1.65;max-width:58ch;margin:var(--s6) 0 0}
+.cit .rev{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--warn);display:block;margin-top:4px}
+/* ═══ A IDEIA ═══ Sugestão não é aviso: nada de cor de alerta, nada de brilho.
+   O que a distingue de uma nota é a moldura fina e o fundo um passo atrás —
+   ela é do sistema, e o sistema fala baixo. */
+.ideia{border:1px solid var(--line);padding:var(--s5);margin-top:var(--s6);background:var(--bg-2)}
+.ideia>.soltoE{margin-top:0}
+.ideia .frase{font-family:var(--serif);font-size:1.05rem;line-height:1.55;color:var(--ink);
+  margin:0;max-width:52ch}
+.ideia .pal{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.06em;color:var(--ink-2);
+  margin:var(--s3) 0 var(--s5)}
+.ideia .pal b{color:var(--ink);font-weight:600}
+/* 90 caracteres por linha em serifa de 17px: medido na captura, a amostra
+   atravessava a coluna larga inteira. A caixa e larga; a linha, nao. */
+.ideia .grupoE{margin-top:var(--s4)}
+.ideia .grupoE .cit{background:var(--branco)}
+.ideia .grupoE .cit>p{max-width:60ch}
+.ideia .grupoE .cit>p.-nota{max-width:56ch}
+.ideia .acs{display:flex;align-items:center;gap:var(--s4);flex-wrap:wrap;margin-top:var(--s5)}
+.ideia .acs .pri{border:1px solid var(--line-3);padding:6px 14px;font-size:13px;color:var(--ink);
+  font-weight:600;border-radius:var(--r1)}
+.ideia .acs .pri:hover{background:var(--bg-3)}
+.ideia .acs .sec{font-size:13px;color:var(--ink-3);padding:6px 0}
+.ideia .acs .sec:hover{color:var(--ink)}
+.ideia .nomeia{margin-top:var(--s5)}
+.ideia .nomeia label{display:block;font-size:13px;color:var(--ink-2);margin-bottom:var(--s2)}
+/* "como cheguei aqui" fica fechado e é um link, não um botão: quem confia na
+   sugestão nunca precisa abrir, e quem não confia precisa poder. */
+.ideia .como{display:block;font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.09em;
+  color:var(--ink-3);padding:var(--s4) 0 0;text-align:left}
+.ideia .como:hover{color:var(--ink)}
+.ideia .comoD{border-top:1px solid var(--line-2);margin-top:var(--s3);padding-top:var(--s3)}
+.ideia .comoD ul{margin:0;padding-left:1.1em;list-style:none}
+.ideia .comoD li{font-family:var(--mono);font-size:11px;color:var(--ink-2);line-height:1.8;
+  text-indent:-1.1em}
+.ideia .comoD li::before{content:"· ";color:var(--ink-3)}
+.ideia .comoD p{font-size:12px;color:var(--ink-3);line-height:1.65;margin:var(--s3) 0 0;max-width:56ch}
+/* ═══ UMA NOTA ═══ */
+.volt{padding:0;margin-bottom:var(--s5);display:inline-block}
+.notaG{font-family:var(--serif);font-size:1.35rem;line-height:1.5;color:var(--ink);
+  margin:0;max-width:44ch}
+.ondeN{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.07em;color:var(--ink-3);
+  margin:var(--s4) 0 0}
+.trechoN{background:var(--bg-2);padding:var(--s4);margin-top:var(--s5)}
+.trechoN p{font-family:var(--serif);font-size:15px;line-height:1.65;color:var(--ink-2);margin:0}
+.trechoN .volta{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--ink-3);
+  display:block;margin-top:var(--s3);text-align:left}
+.trechoN .volta:hover{color:var(--ink)}
+/* as regras de .acs so existem dentro de .grupoE, e fora dela a fila saia
+   grudada: "Abrir no livroEditarLevar ao Canvas". A fila de acoes da nota
+   tem as suas proprias. */
+.acsN{display:flex;align-items:center;gap:var(--s5);flex-wrap:wrap;
+  margin-top:var(--s5);padding-top:var(--s4);border-top:1px solid var(--line-2)}
+.acsN .pri{border:1px solid var(--line-3);padding:7px 15px;font-size:13px;color:var(--ink);
+  font-weight:600;border-radius:var(--r1)}
+.acsN .pri:hover{background:var(--bg-3)}
+.acsN .sec{font-size:13px;color:var(--ink-3);padding:7px 0}
+.acsN .sec:hover{color:var(--ink)}
+.acsN .-dan:hover{color:var(--dan)}
+/* a fila de relacoes nao precisa de respiro de bloco: ela e uma acao por
+   item, e nao uma decisao. */
+.rels .grupoE .cit .acs{margin-top:var(--s2)}
+.rels .grupoE .cit{padding-bottom:var(--s3)}
+.rels{margin-top:var(--s7)}
+.relG+.relG{margin-top:var(--s6)}
+.relX{font-size:12px;color:var(--ink-3);line-height:1.6;margin:0 0 var(--s4);max-width:56ch}
+.relG .grupoE .cit{background:var(--bg-2)}
+/* ═══ CONEXÕES ═══ */
+.dirNav{display:flex;gap:var(--s5);margin-top:var(--s5);padding-bottom:var(--s3);
+  border-bottom:1px solid var(--line-2)}
+.dirNav a{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.09em;
+  color:var(--ink-3);text-decoration:none}
+.dirNav a:hover{color:var(--ink)}
+.dirC{padding:var(--s8) 0}
+.dirC+.dirC{border-top:1px solid var(--line-2)}
+.dirT{font-family:var(--mono);font-size:15px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink);font-weight:600;margin:0 0 var(--s4);padding-bottom:var(--s3);
+  border-bottom:1px solid var(--line-3)}
+.dirP{font-size:13px;color:var(--ink-2);line-height:1.65;margin:0;max-width:58ch}
+.dirP b{color:var(--ink);font-weight:600}
+.dirP.-nao{color:var(--ink-3);margin-top:2px}
+.dirNota{font-size:13px;color:var(--ink-2);line-height:1.7;max-width:60ch;margin:var(--s5) 0 0;
+  padding-top:var(--s4);border-top:1px solid var(--line-2)}
+.dirNota b{color:var(--ink);font-weight:600}
+/* o mapa: filete, tinta e quadrado — o mesmo vocabulário do resto da casa.
+   Sem brilho, sem gradiente, sem neon: uma rede não fica mais verdadeira
+   por parecer um cérebro. */
+/* a legenda tem a largura do mapa: solta na pagina, os tres rotulos se
+   espalhavam por 930px e paravam de parecer uma legenda. */
+.mapaW{margin:var(--s5) 0 0;max-width:480px}
+.mapa{display:block;width:100%;max-width:480px;height:auto}
+.mapa .ln{stroke:var(--ink)}
+.mapa .ln.-possivel{stroke-opacity:.14}
+.mapa .ln.-forte{stroke-opacity:.34}
+.mapa .ln.-sua{stroke:var(--acc);stroke-opacity:.85}
+.mapa .pt{fill:var(--ink)}
+.mapa .rot{font-family:var(--mono);font-size:8.5px;fill:var(--ink-3);letter-spacing:.03em}
+.leg{display:flex;gap:var(--s5);flex-wrap:wrap;margin-top:var(--s3);max-width:480px}
+.leg span{font-family:var(--mono);font-size:10px;letter-spacing:.07em;color:var(--ink-3);
+  display:inline-flex;align-items:center;gap:6px}
+.leg span::before{content:"";width:16px;height:1px;background:var(--ink)}
+.leg .-possivel::before{opacity:.14}
+.leg .-forte::before{opacity:.34}
+.leg .-sua::before{background:var(--acc);opacity:.85}
+/* a trilha: um passo por bloco, e a palavra que liga escrita no meio do
+   caminho — a razão da ligação é texto, e não a inclinação de uma linha. */
+/* o filete do elo acompanha a largura dos passos: solto, ele atravessava a
+   coluna inteira e ligava dois blocos estreitos com uma regua larga. */
+.trl{margin-top:var(--s5);border-left:2px solid var(--line-3);padding-left:var(--s5);
+  max-width:62ch}
+.pas{position:relative}
+.pas .lv{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:var(--s2)}
+.pas .tr{font-family:var(--serif);font-size:14px;line-height:1.6;color:var(--ink-2);
+  margin:0 0 var(--s2);max-width:56ch}
+.pas .nt{margin:0;font-size:var(--t-leitura);line-height:var(--lh-leitura);color:var(--ink);
+  max-width:52ch}
+.pas .nt .abre{display:block;width:100%;text-align:left;font:inherit;color:inherit;padding:0;
+  border-radius:0}
+.pas .nt .abre::after{content:" →";color:var(--ink-3)}
+.pas .nt .abre:hover::after{color:var(--ink)}
+.elo{display:flex;align-items:center;gap:var(--s3);margin:var(--s3) 0}
+.elo::before{content:"";width:22px;height:1px;background:var(--line-3)}
+.elo span{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-2)}
+.elo::after{content:"";flex:1;height:1px;background:var(--line-2)}
+/* três palavras que não são sinônimas */
+.tresP{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s5);margin:var(--s5) 0 0;
+  padding:var(--s4) 0;border-top:1px solid var(--line-2);border-bottom:1px solid var(--line-2)}
+.tresP b{display:block;font-size:13px;color:var(--ink);margin-bottom:4px}
+.tresP span{display:block;font-size:12px;color:var(--ink-3);line-height:1.6}
+.terrL{margin-top:var(--s3)}
+.terr{padding:var(--s4) 0;border-bottom:1px solid var(--line-2)}
+.terr h4{margin:0;font-family:var(--serif);font-size:1.05rem;font-weight:600;color:var(--ink)}
+.terr.-pend h4{font-family:var(--mono);font-size:13px;font-weight:400;letter-spacing:.05em;
+  color:var(--ink-2)}
+.terr .me{font-family:var(--mono);font-size:10px;letter-spacing:.07em;color:var(--ink-3);
+  margin:4px 0 0}
+.terr .acs{display:flex;gap:var(--s4);flex-wrap:wrap;margin-top:var(--s3)}
+.terr .acs .sec{font-size:13px;color:var(--ink-3);padding:2px 0}
+.terr .acs .sec:hover{color:var(--ink)}
+.terr .acs .sob{opacity:0;transition:opacity var(--d1) var(--curva)}
+.terr:hover .acs .sob,.terr .acs .sob:focus-visible{opacity:1}
+@media(hover:none){.terr .acs .sob{opacity:1}}
+.terr .nomeia{margin-top:var(--s4)}
+.terr .nomeia label{display:block;font-size:13px;color:var(--ink-2);margin-bottom:var(--s2)}
+.terr .nomeia .pri{border:1px solid var(--line-3);padding:6px 14px;font-size:13px;color:var(--ink);
+  font-weight:600;border-radius:var(--r1)}
+.maisN{font-size:12px;color:var(--ink-3);margin:var(--s3) 0 0}
+/* o Canvas recebe notas, e a origem vem junto */
+.cnv{margin-top:var(--s5)}
+.cnvN{border:1px solid var(--line);padding:var(--s4);margin-bottom:var(--s4);background:var(--branco)}
+.cnvN p{margin:0;font-family:var(--serif);font-size:15px;line-height:1.6;color:var(--ink)}
+.cnvN cite{font-family:var(--mono);font-size:10px;letter-spacing:.07em;color:var(--ink-3);
+  font-style:normal;display:block;margin-top:var(--s2)}
+@media(max-width:640px){.tresP{grid-template-columns:1fr;gap:var(--s4)}}
+.recorte{display:flex;align-items:center;gap:var(--s4);margin-top:var(--s5);
+  padding:var(--s3) var(--s4);background:var(--bg-2);border-left:2px solid var(--ink)}
+.recorte span{font-size:13px;color:var(--ink-2)}
 .soltoE{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.13em;text-transform:uppercase;
   color:var(--ink-3);margin:var(--s7) 0 var(--s4)}
 </style>
@@ -1332,7 +1515,7 @@ td.n{color:var(--ink);font-weight:600}
   <button id="btMesa" type="button" aria-pressed="true">mesa C</button>
   <button id="btLista" type="button" aria-pressed="true">lista &middot; filete</button>
 </div>
-<button id="notasbt" type="button">◇ notas<span class="bdg">copy · dock</span></button>
+<button id="notasbt" type="button">◇ notas<span class="bdg">conhecimento</span></button>
 <div id="notas" hidden></div>
 <script>
 "use strict";
@@ -1362,9 +1545,44 @@ const ACERVO=[
 ];
 const capa=n=>"capas/capa-"+n+".jpg";
 const lomb=n=>"capas/lombada-"+n+".png";
-const ARQ={nome:"Relatório de pesquisa — expedição 02.pdf",saida:"Diário 02.epub",fmt:"PDF",
-  tam:"12,8 MB",pgs:96,lidas:93,estreitas:3,idioma:"Português",
-  titulo:"Diário 02",autor:"Ana Duarte",capa:"11",gerada:"08"};
+/* Cada livro tem texto proprio, e por isso uma nota sabe voltar para onde
+   nasceu — em qualquer um deles. Os dois novos existem porque o cenario que
+   o Erik descreveu atravessa tres livros: sem texto, a volta a origem seria
+   uma frase guardada, e nao uma memoria. */
+const LIVROS={
+ "Di\u00e1rio 02":{nome:"Relat\u00f3rio de pesquisa \u2014 expedi\u00e7\u00e3o 02.pdf",saida:"Di\u00e1rio 02.epub",fmt:"PDF",
+  tam:"12,8 MB",pgs:96,lidas:93,estreitas:3,idioma:"Portugu\u00eas",
+  titulo:"Di\u00e1rio 02",autor:"Ana Duarte",capa:"11",gerada:"08",
+  caps:[
+   {n:"Chegada",p:["A expedi\u00e7\u00e3o partiu de manh\u00e3, com o material dividido em tr\u00eas caixas e a certeza de que uma delas voltaria vazia.",
+     "Nenhum registro anterior descrevia o acesso pelo lado leste. Levamos isso como convite, e n\u00e3o como aviso."]},
+   {n:"O registro de campo",p:["Anotar o que se v\u00ea \u00e9 mais dif\u00edcil do que parece: metade do trabalho \u00e9 resistir a anotar o que se esperava ver.",
+     "Adotamos a regra de escrever antes de conversar. Duas horas por dia sem falar com ningu\u00e9m, cada um com o pr\u00f3prio caderno."]},
+   {n:"M\u00e9todo",p:["Fotografia a cada duzentos metros, sempre na mesma altura, sempre com a mesma lente. A repeti\u00e7\u00e3o \u00e9 o que transforma imagem em dado.",
+     "O que n\u00e3o cabia na fotografia entrava no caderno, com hora e coordenada."]},
+   {n:"O que ficou",p:["No fim, o que sobrou n\u00e3o foram as conclus\u00f5es. Foi o material bruto: 96 p\u00e1ginas de anota\u00e7\u00e3o, 340 fotografias e uma lista de perguntas que ningu\u00e9m tinha feito antes de sair.",
+     "\u00c9 por isso que este di\u00e1rio existe em vez de um relat\u00f3rio."]}
+  ]},
+ "Malha Urbana":{nome:"malha-urbana.epub",saida:"Malha Urbana.epub",fmt:"EPUB",
+  tam:"4,1 MB",pgs:212,lidas:212,estreitas:0,idioma:"Portugu\u00eas",
+  titulo:"Malha Urbana",autor:"Ana Duarte",capa:"02",gerada:"02",
+  caps:[
+   {n:"A mesma esquina",p:["Fotografei a mesma esquina durante catorze meses, sempre \u00e0s sete da manh\u00e3. No terceiro m\u00eas parou de ser uma foto e come\u00e7ou a ser uma medida.",
+     "Uma s\u00e9rie permite transformar registro em compara\u00e7\u00e3o. Uma imagem sozinha s\u00f3 permite lembrar."]},
+   {n:"O que a cidade repete",p:["A malha n\u00e3o muda de uma vez: ela muda um pouco em muitos lugares, e s\u00f3 quem volta percebe.",
+     "Quem passa uma vez v\u00ea uma cidade. Quem passa cem vezes v\u00ea um sistema."]}
+  ]},
+ "Estudo de Viabilidade":{nome:"estudo-viabilidade.pdf",saida:"Estudo de Viabilidade.epub",fmt:"PDF",
+  tam:"7,9 MB",pgs:64,lidas:64,estreitas:0,idioma:"Portugu\u00eas",
+  titulo:"Estudo de Viabilidade",autor:"Ana Duarte",capa:"01",gerada:"01",
+  caps:[
+   {n:"Antes de decidir",p:["Nenhuma decis\u00e3o de projeto sobreviveu ao primeiro contato com o terreno, e isso deixou de ser problema quando paramos de decidir cedo.",
+     "O padr\u00e3o s\u00f3 aparece depois que a observa\u00e7\u00e3o se repete. Antes disso, o que existe \u00e9 impress\u00e3o."]},
+   {n:"Contagem",p:["Contamos passagens de pedestres em nove pontos, tr\u00eas vezes por dia, durante um m\u00eas.",
+     "O n\u00famero sozinho nunca decidiu nada. O que decidiu foi a diferen\u00e7a entre os n\u00fameros."]}
+  ]}
+};
+let ARQ=LIVROS["Di\u00e1rio 02"];
 /* pgs, lidas e estreitas sao fatos deste arquivo e tem um dono so. Estavam
    escritos a mao em oito lugares: trocar 96 por outro numero deixaria oito
    frases mentindo, e nenhuma delas avisaria — foi assim que "sumario com 14
@@ -1377,6 +1595,12 @@ const zero={
   traduzir:null,capaEsc:"gerada",feitoAberto:false,
   estante:"lista",lombSel:"01",perfil:"conta",folha:null,menu:false,aviso:null,manuais:0,avisoUso:true,
   q:"",ajuda:null,dockSel:0,corpo:1,entre:1,largura:1,
+  /* NOTAS: filtro, busca, o que voce marcou para rever, as relacoes que voce
+     mesmo escreveu, os territorios que voce nomeou e as ideias que dispensou.
+     "rel" e "terr" sao seus; "ignoradas" existe porque uma sugestao que volta
+     depois de dispensada deixa de ser sugestao e vira insistencia. */
+  nfiltro:"todas",qNotas:"",notaK:null,rever:[],rel:[["n-solta-1","n-obs-1"]],
+  terr:[],ignoradas:[],comoIdeia:false,nomeando:null,naoRel:[],canvasN:[],mantidos:[],verTerr:null,verTerrId:null,
   sel:[],filtro:"todas",mud:[],fora:[],giradas:[],capaPag:1,
   disp:1,fonte:2,orient:"retrato",formato:"epub",nome:null,
   /* ── PERFIL ── uma seção por vez, e o estado de cada fluxo ao lado ── */
@@ -1517,7 +1741,7 @@ const AJUDA=[
 let S=Object.assign({},zero),timer=null,ultimoLugar=null;
 function reset(cena){
   clearInterval(timer);timer=null;S=Object.assign({},zero);
-  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardando=null;S.tirando=null;S.apagando=null;S.escNovo=null;S.paraLivro=false;S.desc="";S.descAberta=false;S.escAqui=null;S.aaAberto=false;S.foco=false;
+  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardando=null;S.tirando=null;S.apagando=null;S.escNovo=null;S.paraLivro=false;S.desc="";S.descAberta=false;S.escAqui=null;S.aaAberto=false;S.foco=false;S.rever=[];S.rel=[["n-solta-1","n-obs-1"]];S.terr=[];S.ignoradas=[];S.nomeando=null;S.comoIdeia=false;S.nfiltro="todas";S.qNotas="";S.notaK=null;S.naoRel=[];S.canvasN=[];S.mantidos=[];S.verTerr=null;S.verTerrId=null;
   if(cena==="nova"){S.cena="nova";}
   if(cena==="sem-conta"){S.cena="nova";S.conta=false;}
   pinta();
@@ -1528,8 +1752,12 @@ function topo(){
   const noItem=S.lugar==="item"||S.lugar==="livro";
   /* na leitura nenhuma area fica marcada: o botao Estante aceso faria a tela
      parecer a propria Estante. */
-  const lug=[["mesa","Mesa"],["estante","Estante"],["canvas","Canvas"],["conexoes","Conexões"]];
-  const at=S.lugar==="leitura"?"":(noItem?"mesa":S.lugar);
+  /* Notas entra na barra porque a aposta da rodada e que ela e o produto.
+     Ordem de leitura: onde chegam os arquivos, o que ja e livro, o que eu
+     escrevi, onde eu trabalho, o que se liga. Conexoes fica por ultimo de
+     proposito — ela e derivada das notas, e nao a porta de entrada delas. */
+  const lug=[["mesa","Mesa"],["estante","Estante"],["notas","Notas"],["canvas","Canvas"],["conexoes","Conexões"]];
+  const at=S.lugar==="leitura"?"":(noItem?"mesa":(S.lugar==="nota"?"notas":S.lugar));
   let l1='<div class="tlin"><button class="marca" data-a="ir" data-v="'+(S.conta?"mesa":"home")+
 
 '" title="'+(S.conta?"Voltar à Mesa":"Início")+'">Mekora</button>';
@@ -1710,16 +1938,11 @@ function pB(t,d){
    de 575 → 675 → 775, régua que atravessa na fronteira de capítulo
    sem tirar o título da coluna, citação escapando 17% e nota
    subordinada a 93%, legenda na largura da coluna. */
-const CAPS=[
- {n:"Chegada",p:["A expedição partiu de manhã, com o material dividido em três caixas e a certeza de que uma delas voltaria vazia.",
-   "Nenhum registro anterior descrevia o acesso pelo lado leste. Levamos isso como convite, e não como aviso."]},
- {n:"O registro de campo",p:["Anotar o que se vê é mais difícil do que parece: metade do trabalho é resistir a anotar o que se esperava ver.",
-   "Adotamos a regra de escrever antes de conversar. Duas horas por dia sem falar com ninguém, cada um com o próprio caderno."]},
- {n:"Método",p:["Fotografia a cada duzentos metros, sempre na mesma altura, sempre com a mesma lente. A repetição é o que transforma imagem em dado.",
-   "O que não cabia na fotografia entrava no caderno, com hora e coordenada."]},
- {n:"O que ficou",p:["No fim, o que sobrou não foram as conclusões. Foi o material bruto: 96 páginas de anotação, 340 fotografias e uma lista de perguntas que ninguém tinha feito antes de sair.",
-   "É por isso que este diário existe em vez de um relatório."]}
-];
+/* CAPS passa a ser o texto do livro ABERTO. Era um array fixo, e por isso
+   todo livro do acervo tinha os mesmos quatro capitulos. */
+/* getter, nao Proxy: sobre um alvo vazio, map e forEach enxergam buracos e
+   devolvem null ou nao iteram — o length vinha certo e o conteudo nao. */
+Object.defineProperty(globalThis,"CAPS",{get:()=>ARQ.caps});
 /* Progresso medido, nao declarado.
    A unidade e o PARAGRAFO, nao o pixel: mudar corpo, entrelinha ou coluna
    muda a altura do documento e nao pode mudar onde a pessoa esta no texto.
@@ -1869,19 +2092,26 @@ const CLIPS=[
      capitulo cap, resto null   tem volta ao capitulo
      livro    tudo null         nao tem volta
    Nao ha campo de tipo. As formas sao derivadas de dois bits: ancora e nota. */
-function escrito(cap,par,frag,nota,origem,k){
+/* coordenada so identifica dentro de um livro: cap 0 par 1 existe nos tres.
+   O livro entra na chave, e entra no filtro de quem le por coordenada.
+   Fica ANTES de escrito(): sementes() roda no topo e chamaria sig() na zona
+   morta, e um throw ali deixa sem inicializar tudo que vem depois. */
+const sig=t=>(t||"").normalize("NFD").replace(/[^a-zA-Z0-9]/g,"").slice(0,4).toLowerCase();
+const noLivro=(d,cap,par)=>d.livro===ARQ.titulo&&d.cap===cap&&d.par===par;
+function escrito(cap,par,frag,nota,origem,k,livro){
+  const lv=livro||ARQ.titulo;
   const tem=cap!=null&&par!=null&&frag;
   let ini=null,fim=null;
   if(tem){
-    const t=CAPS[cap].p[par],i=t.indexOf(frag);
-    if(i<0)console.warn("semente sem ancora em",cap,par,frag.slice(0,40));
+    const t=(LIVROS[lv]||ARQ).caps[cap].p[par],i=t.indexOf(frag);
+    if(i<0)console.warn("semente sem ancora em",lv,cap,par,frag.slice(0,40));
     ini=i<0?0:i;fim=i<0?t.length:i+frag.length;
   }
-  return {k:k||("d"+cap+par),livro:ARQ.titulo,cap:(cap===undefined?null:cap),
+  return {k:k||("d"+sig(lv)+cap+par),livro:lv,cap:(cap===undefined?null:cap),
     par:(tem?par:null),ini:ini,fim:fim,perg:null,nota:nota||"",origem:origem||"leitura"};
 }
-function semente(cap,par,frag,perg,nota,origem){
-  const d=escrito(cap,par,frag,nota,origem);d.perg=(perg===undefined?null:perg);return d;
+function semente(cap,par,frag,perg,nota,origem,k,livro){
+  const d=escrito(cap,par,frag,nota,origem,k,livro);d.perg=(perg===undefined?null:perg);return d;
 }
 function sementes(){
   /* As quatro derivadas dos titulos dos capitulos e a quinta, que sempre foi
@@ -1894,13 +2124,38 @@ function sementes(){
     escrito(3,null,null,"O que sobrou no fim, e por que isso virou um di\u00e1rio?","titulo","q3"),
     escrito(null,null,null,"Isso serve para o cap\u00edtulo de m\u00e9todo da minha pesquisa?","livro","q4")
   ];
-  return q.concat([
+  /* O cenario que atravessa tres livros. Cada nota nasce de um trecho REAL
+     do texto daquele livro — e por isso a volta a origem abre o livro certo,
+     no paragrafo certo, em vez de mostrar uma frase guardada. */
+  const fora=[
+    semente(2,0,"A repeti\u00e7\u00e3o \u00e9 o que transforma imagem em dado.",null,
+      "Série é dado; foto isolada é lembrança. Vale para qualquer registro repetido.",
+      "leitura","n-obs-1","Di\u00e1rio 02"),
+    semente(0,1,"Uma s\u00e9rie permite transformar registro em compara\u00e7\u00e3o.",null,
+      "A mesma coisa que a Ana diz do campo, dita sobre cidade. A comparação é o que a série compra.",
+      "leitura","n-obs-2","Malha Urbana"),
+    semente(0,1,"O padr\u00e3o s\u00f3 aparece depois que a observa\u00e7\u00e3o se repete.",null,
+      "Terceira vez que encontro isto. Começa a parecer regra, e não coincidência.",
+      "leitura","n-obs-3","Estudo de Viabilidade"),
+    /* nota solta: nasceu fora de livro nenhum */
+    {k:"n-solta-1",livro:null,cap:null,par:null,ini:null,fim:null,perg:null,
+     nota:"Vale testar: quantas passagens s\u00e3o precisas antes de um padr\u00e3o virar decis\u00e3o?",
+     origem:"solta"}
+  ];
+  /* toda nota com a mesma data faz a coluna de data virar ruido: ela ocupa
+     lugar e nao separa nada. */
+  const DIAS={q0:"2 ago",q1:"2 ago",q2:"4 ago",q3:"9 ago",q4:"9 ago",e0:"9 ago",
+    ddiar20:"4 ago","n-obs-1":"14 ago","n-obs-2":"16 ago","n-obs-3":"18 ago",
+    "n-solta-1":"ontem"};
+  const todas=q.concat(fora).concat([
     semente(1,1,"Adotamos a regra de escrever antes de conversar. Duas horas por dia sem falar com ningu\u00e9m, cada um com o pr\u00f3prio caderno.","q1"),
     semente(2,0,"A repeti\u00e7\u00e3o \u00e9 o que transforma imagem em dado.","q2",
       "É a frase que separa registro de coleta. Uma foto é lembrança; a série é medida."),
     /* a tese sobre o livro inteiro nasce SEM ancora: ela nao era daquele trecho */
     escrito(3,null,null,"O argumento do di\u00e1rio inteiro est\u00e1 aqui: o que valeu n\u00e3o foi a conclus\u00e3o, foi o que sobrou bruto.","livro","e0")
   ]);
+  todas.forEach(d=>{if(DIAS[d.k])d.dia=DIAS[d.k];});
+  return todas;
 }
 S.dst=sementes();   /* aqui, e nao junto do let S: sementes() le CAPS */
 const ancora=d=>d.ini!=null;
@@ -1923,7 +2178,11 @@ function ordem(a,b){
    trecho nao deixa referencia morta. perg guarda CHAVE, nunca indice — com
    indice, o primeiro apagar reindexaria e moveria os trechos em silencio. */
 const filhos=k=>S.dst.filter(d=>d.perg===k).sort(ordem);
-const escTxt=d=>{if(!ancora(d))return"";const t=CAPS[d.cap]&&CAPS[d.cap].p[d.par];
+/* o texto vem do LIVRO DA NOTA, nao do livro aberto: uma nota de Malha
+   Urbana lida a partir da area de Notas precisa devolver o trecho dela. */
+const livroDe=d=>LIVROS[d.livro]||ARQ;
+const escTxt=d=>{if(!ancora(d))return"";
+  const c=livroDe(d).caps[d.cap];const t=c&&c.p[d.par];
   return t?t.slice(d.ini,d.fim):"";};
 const dstTexto=escTxt;
 /* null+1 === 1 em JS: o dstCap antigo nao estourava, ele MENTIA "Capitulo 1" */
@@ -1961,7 +2220,7 @@ function descBloco(){
 }
 /* o paragrafo e emitido fatiado pelos destaques que caem nele */
 function paragrafo(cap,par,txt){
-  const ds=S.dst.filter(d=>d.cap===cap&&d.par===par).sort((a,b)=>a.ini-b.ini);
+  const ds=S.dst.filter(d=>noLivro(d,cap,par)).sort((a,b)=>a.ini-b.ini);
   if(!ds.length)return esc(txt);
   let h="",pos=0;
   ds.forEach(d=>{
@@ -1978,7 +2237,7 @@ function paragrafo(cap,par,txt){
 /* a nota fica no fluxo, logo abaixo do paragrafo. Ela e o proprio marcador:
    sinal apontando para o que esta a vista seria ruido. */
 function notasDo(cap,par){
-  return S.dst.filter(d=>d.cap===cap&&d.par===par&&(d.nota||S.notaAberta===d.k))
+  return S.dst.filter(d=>noLivro(d,cap,par)&&(d.nota||S.notaAberta===d.k))
     .sort((a,b)=>a.ini-b.ini).map(notaE).join("");
 }
 function notaE(d){
@@ -2672,11 +2931,532 @@ function vEstante(){
      isso e Canvas. Trocar de vista e filtrar nao sao manipulacao. */
   return h+'</div>';
 }
+/* ═══════════════════════════════════════════════════════════════════
+   RELAÇÕES
+   Não há descoberta aqui: há contagem. Duas notas se relacionam quando
+   usam as mesmas palavras, e a força é o número de palavras em comum.
+   A regra inteira cabe numa frase — e é por isso que o Mekora consegue
+   dizer como chegou, que é a diferença entre sugerir e adivinhar.
+   ═══════════════════════════════════════════════════════════════════ */
+const PARAR=new Set(("que para uma com dos das por nao mas seu sua ele ela isso "+
+ "esse essa como mais tem foi sem ate aqui este esta quando depois antes cada "+
+ "onde entre sobre vale pode muito coisa vezes ainda sempre nada algum outro "+
+ "mesma mesmo qualquer porque entao tambem").split(" "));
+const semAcento=w=>w.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+/* prefixo de cinco letras em vez de radical: "repetição" e "repete" batem, e
+   nenhuma tabela de sufixos do português precisa existir para isso. */
+const prefixos=t=>[...new Set(semAcento(t||"")
+  .split(/[^a-z]+/).filter(w=>w.length>5&&!PARAR.has(w)).map(w=>w.slice(0,5)))];
+const palavras=d=>prefixos((d.nota||"")+" "+escTxt(d));
+/* Duas notas sobre o MESMO paragrafo compartilham o vocabulario inteiro do
+   paragrafo — e isso nao e uma relacao entre elas, e a mesma passagem citada
+   duas vezes. Media com cinco palavras em comum, e nenhuma era de quem leu.
+   Entao: o que voce escreveu conta contra o que o outro escreveu, e contra o
+   trecho do outro. Trecho contra trecho, nunca — esse texto e do autor. */
+function comuns(a,b){
+  const na=prefixos(a.nota),nb=prefixos(b.nota);
+  const ta=prefixos(escTxt(a)),tb=prefixos(escTxt(b));
+  const dentro=(x,l)=>l.indexOf(x)>-1;
+  /* e se as duas apontam para o MESMO paragrafo, so palavra contra palavra:
+     o trecho e identico, entao qualquer coisa que ele diga aparece nos dois
+     lados sem que ninguem tenha escrito nada. */
+  const mesmoTr=a.livro===b.livro&&a.cap===b.cap&&a.par===b.par&&a.par!=null;
+  if(mesmoTr)return na.filter(w=>dentro(w,nb));
+  return [...new Set(na.filter(w=>dentro(w,nb)||dentro(w,tb))
+    .concat(nb.filter(w=>dentro(w,ta))))];
+}
+/* o prefixo serve para casar; para MOSTRAR ele volta a ser a palavra que a
+   pessoa escreveu — ninguém reconhece "repet" como uma ideia sua. */
+function inteira(pref,ds){
+  /* a forma mais repetida, e nao a primeira que aparecer: "repete" saiu como
+     nome de uma ideia que o material inteiro chama de "repeticao". */
+  const c={};
+  ds.forEach(d=>((d.nota||"")+" "+escTxt(d)).split(/[^A-Za-zÀ-ÿ]+/)
+    .filter(w=>w.length>5&&semAcento(w).slice(0,5)===pref)
+    .forEach(w=>{w=w.toLowerCase();c[w]=(c[w]||0)+1;}));
+  const fs=Object.keys(c);
+  if(!fs.length)return pref;
+  return fs.sort((x,z)=>c[z]-c[x]||z.length-x.length)[0];
+}
+/* três origens, e não três intensidades do mesmo palpite: "sua" não é a mais
+   forte — é a única que não é palpite. */
+function relacoesDe(k){
+  const d=escK(k);if(!d)return [];
+  const suas=S.rel.filter(r=>r.indexOf(k)>-1).map(r=>({k:r[0]===k?r[1]:r[0],tipo:"sua",termos:[]}))
+    .filter(r=>escK(r.k));
+  const ja={};suas.forEach(r=>ja[r.k]=1);
+  /* dispensar uma sugestao tem que valer: uma que volta na proxima visita
+     deixa de ser sugestao e vira insistencia. */
+  const nao={};S.naoRel.forEach(r=>{if(r.indexOf(k)>-1)nao[r[0]===k?r[1]:r[0]]=1;});
+  const achadas=S.dst.filter(x=>x.k!==k&&x.nota&&!ja[x.k]&&!nao[x.k])
+    .map(x=>({k:x.k,termos:comuns(d,x)})).filter(r=>r.termos.length>0)
+    .map(r=>{r.tipo=r.termos.length>1?"forte":"possivel";return r;})
+    .sort((a,b)=>b.termos.length-a.termos.length);
+  return suas.concat(achadas);
+}
+const FORCA={sua:"você ligou",forte:"parecem próximas",possivel:"talvez"};
+/* ═══ IDEIAS EMERGENTES ═══
+   Uma ideia não é uma palavra: é um grupo de notas que se tocam. E só conta
+   quando atravessa livros — duas notas do mesmo livro repetirem um termo é
+   apenas o assunto daquele livro de volta. */
+function ideias(){
+  const uteis=S.dst.filter(d=>d.nota&&d.livro);
+  const pares=[];
+  uteis.forEach((a,i)=>uteis.slice(i+1).forEach(b=>{
+    if(a.livro===b.livro)return;
+    const t=comuns(a,b);if(t.length)pares.push({a:a,b:b,termos:t});
+  }));
+  /* junta TODOS os grupos que o par toca, e nao o primeiro: com o primeiro,
+     dois grupos que o mesmo par deveria unir ficavam separados para sempre. */
+  let gs=[];
+  pares.forEach(p=>{
+    const toca=gs.filter(g=>g.n[p.a.k]||g.n[p.b.k]);
+    const g=toca.length?toca[0]:{n:{},p:[]};
+    toca.slice(1).forEach(o=>{Object.keys(o.n).forEach(k=>g.n[k]=1);g.p=g.p.concat(o.p);});
+    gs=gs.filter(x=>toca.indexOf(x)<1||x===g);
+    g.n[p.a.k]=1;g.n[p.b.k]=1;g.p.push(p);
+    if(gs.indexOf(g)<0)gs.push(g);
+  });
+  return gs.map(g=>{
+    /* um termo vale pelos LIVROS que ele atravessa, e nao pelo numero de
+       pares: dez pares dentro de dois livros continuam sendo dois livros.
+       E a palavra e resolvida UMA vez por termo — antes, cada par escolhia
+       a sua propria forma de superficie e "repeticao", "repetido" e
+       "repete" apareciam como tres achados, sendo o mesmo. */
+    const porTermo={};
+    g.p.forEach(p=>p.termos.forEach(t=>{
+      (porTermo[t]||(porTermo[t]=new Set())).add(p.a.livro);porTermo[t].add(p.b.livro);}));
+    const notas=Object.keys(g.n).map(escK).filter(Boolean);
+    return {notas:notas,livros:[...new Set(notas.map(d=>d.livro))],pares:g.p,
+      /* desempate pelo numero de notas que usam o termo: com so os livros,
+         "encontrar" (uma ocorrencia de cada lado) batia "registro" por ordem
+         de insercao, e dava nome ao territorio. */
+      termos:Object.keys(porTermo).map(t=>({p:t,w:inteira(t,notas),livros:[...porTermo[t]],
+        n:notas.filter(d=>palavras(d).indexOf(t)>-1).length}))
+        .sort((a,b)=>b.livros.length-a.livros.length||b.n-a.n||b.w.length-a.w.length),
+      id:Object.keys(g.n).sort().join("|")};
+  }).filter(g=>g.livros.length>1)
+    .sort((a,b)=>b.livros.length-a.livros.length||b.notas.length-a.notas.length);
+}
+/* "em duas livros" saiu na primeira medida: a lista era so feminina. */
+const NUMF=["nenhuma","uma","duas","três","quatro","cinco","seis","sete","oito","nove","dez"];
+const NUMM=["nenhum","um","dois","três","quatro","cinco","seis","sete","oito","nove","dez"];
+const num=n=>NUMF[n]||n;
+const numM=n=>NUMM[n]||n;
+const maiuscula=t=>t.charAt(0).toUpperCase()+t.slice(1);
+/* ═══ A ÁREA DE NOTAS ═══
+   A hipótese desta rodada é que o produto são as notas, e não o mapa. Por
+   isso Notas é um LUGAR, com entrada própria na navegação, e Conexões é o
+   que se deriva delas. Na ordem inversa, a primeira tela seria um grafo
+   bonito de relações entre coisas que ninguém escreveu ainda. */
+function vNotas(){
+  const comNota=S.dst.filter(d=>d.nota);
+  const soMarcados=S.dst.filter(d=>ancora(d)&&!d.nota).length;
+  const F={todas:comNota,livros:comNota.filter(d=>d.livro),
+    soltas:comNota.filter(d=>!d.livro),rever:comNota.filter(d=>S.rever.indexOf(d.k)>-1)};
+  const f=S.nfiltro||"todas",lista=F[f]||F.todas;
+  const q=(S.qNotas||"").toLowerCase().trim();
+  /* ver um territorio nao abre uma quarta tela: recorta ESTA, e diz em cima
+     que esta recortada — um filtro invisivel e a forma mais rapida de a
+     pessoa achar que perdeu material. */
+  const terr=S.verTerr&&S.verTerr.length?S.terr.find(t=>t.id===(S.verTerrId||"")):null;
+  let vis=q?lista.filter(d=>((d.nota||"")+" "+escTxt(d)).toLowerCase().indexOf(q)>-1):lista;
+  if(S.verTerr&&S.verTerr.length)vis=vis.filter(d=>S.verTerr.indexOf(d.k)>-1);
+  /* A fila é uma PARTIÇÃO — toda nota está em exatamente uma das três. "Para
+     revisar" não parte nada: é um estado que você marcou, e um subconjunto
+     das outras. Lado a lado sem filete, as quatro se leriam como irmãs, e a
+     fila voltaria a ensinar a coisa errada. */
+  const ab=(k,rot,n)=>'<button data-a="nota-filtro" data-v="'+k+'"'+(f===k?' aria-current="true"':'')+
+    '>'+rot+' <i>'+n+'</i></button>';
+  let h='<div class="pad larga"><div class="colE larga">'+
+    '<h1 class="t">Notas</h1><p class="sub">O que você escreveu, e de onde veio.</p>'+
+    '<div class="nfila">'+ab("todas","Todas",F.todas.length)+ab("livros","De livros",F.livros.length)+
+      ab("soltas","Soltas",F.soltas.length)+'<span class="di"></span>'+
+      ab("rever","Para revisar",F.rever.length)+'<span class="sp"></span>'+
+      /* a busca mora NA fila, do tamanho de um campo de busca. Solta acima da
+         lista ela virava uma faixa de 930 por 60 pixels para procurar entre
+         onze notas — mais alta que qualquer nota da lista. */
+      (comNota.length>12?'<input class="campoN" id="buscaNotas" placeholder="Buscar" '+
+        'value="'+esc(S.qNotas||"")+'" autocomplete="off">':'')+
+      '<button class="lnk mudo" data-a="nota-nova">Escrever uma nota</button></div>';
+
+  if(S.verTerr&&S.verTerr.length)
+    h+='<div class="recorte"><span>Mostrando '+num(S.verTerr.length)+' notas'+
+      (terr?' de “'+esc(terr.nome)+'”':' de um assunto')+'.</span>'+
+      '<button class="lnk" data-a="terr-todas" style="padding:0">ver todas</button></div>';
+  else h+=blocoIdeias();
+  if(!vis.length)
+    h+='<p class="vazioN">'+(q?'Nada com “'+esc(q)+'”.':
+      f==="rever"?'Nada marcado para revisar. Dentro de uma nota, <b>marcar para revisar</b> guarda ela aqui.':
+      f==="soltas"?'Nenhuma nota solta. Uma nota solta nasce fora de um livro — de uma conversa, de um susto, de nada.':
+      'Nada escrito ainda.')+'</p>';
+  else h+=listaNotas(vis);
+  if(soMarcados&&f!=="rever"&&!q)
+    h+='<p class="saldo" style="margin-top:var(--s6)">'+soMarcados+' trecho'+(soMarcados>1?"s":"")+
+      ' marcado'+(soMarcados>1?"s":"")+' sem nota — '+
+      (soMarcados>1?"eles ficam":"ele fica")+' no livro, e não aqui.</p>';
+  return h+'</div></div>';
+}
+/* agrupada por livro: é a organização que já existe no material, e não uma
+   que o usuário precise inventar antes de ganhar alguma coisa. */
+function listaNotas(vis){
+  const ordemL=Object.keys(LIVROS);
+  const grupos=[];
+  ordemL.forEach(t=>{const ds=vis.filter(d=>d.livro===t);if(ds.length)grupos.push([t,ds]);});
+  vis.filter(d=>d.livro&&ordemL.indexOf(d.livro)<0).forEach(d=>{
+    const g=grupos.find(g=>g[0]===d.livro);if(g)g[1].push(d);else grupos.push([d.livro,[d]]);});
+  const soltas=vis.filter(d=>!d.livro);
+  if(soltas.length)grupos.push([null,soltas]);
+  /* Dentro do livro, uma nota guardada sob uma pergunta mora DENTRO dela. Se
+     a area de Notas achatasse isso, a pergunta viraria irma da propria
+     resposta — que e exatamente o erro ja corrigido la dentro. O pai e um
+     item da lista, e nao um cabecalho: sem filhos, ele so nao tem nada
+     embaixo. */
+  return grupos.map(g=>{
+    const ds=g[1].slice().sort(ordem);
+    const pais=ds.filter(d=>!ancora(d)&&ds.some(x=>x.perg===d.k));
+    const sob={};pais.forEach(p=>sob[p.k]=ds.filter(x=>x.perg===p.k));
+    const soltos=ds.filter(d=>pais.indexOf(d)<0&&!(d.perg&&sob[d.perg]));
+    return '<div class="soltoE">'+(g[0]?esc(g[0]):"Sem livro")+'</div>'+
+      pais.map(p=>'<div class="grupoE">'+linhaPai(p)+sob[p.k].map(linhaNota).join("")+'</div>').join("")+
+      (soltos.length?'<div class="grupoE">'+soltos.map(linhaNota).join("")+'</div>':'');
+  }).join("");
+}
+/* a pergunta nao e citacao: ela nao ganha o degrau de papel, e o que esta
+   guardado sob ela ganha. A mesma regra de dentro do livro. */
+function linhaPai(d){
+  const r=relacoesDe(d.k),rot=[];
+  rot.push(d.cap!=null?"sobre o capítulo "+(d.cap+1):"sobre o livro");
+  rot.push(d.dia||"hoje");
+  if(r.length)rot.push(num(r.length)+" relacionada"+(r.length>1?"s":""));
+  return '<div class="cab" id="n-'+d.k+'">'+
+    '<p><button class="abre" data-a="nota-abrir" data-v="'+d.k+'">'+esc(d.nota)+'</button></p>'+
+    '<cite>'+rot.join(" · ")+'</cite>'+
+    (S.rever.indexOf(d.k)>-1?'<span class="rev">para revisar</span>':'')+'</div>';
+}
+function linhaNota(d){
+  const r=relacoesDe(d.k),tr=escTxt(d);
+  const rot=[];
+  if(d.livro!=null&&d.cap!=null)rot.push("Capítulo "+(d.cap+1));
+  else if(!d.livro)rot.push("escrita aqui");
+  rot.push(d.dia||"hoje");
+  if(r.length)rot.push(num(r.length)+" relacionada"+(r.length>1?"s":""));
+  return '<div class="cit" id="n-'+d.k+'">'+
+    '<p class="-nota"><button class="abre" data-a="nota-abrir" data-v="'+d.k+'">'+esc(d.nota)+'</button></p>'+
+    (tr?'<button class="volta" data-a="nota-origem" data-v="'+d.k+'">↩ '+
+      esc(tr.slice(0,72))+(tr.length>72?"…":"")+'</button>':'')+
+    '<cite>'+rot.join(" · ")+'</cite>'+
+    (S.rever.indexOf(d.k)>-1?'<span class="rev">para revisar</span>':'')+'</div>';
+}
+/* ═══ O BLOCO DA IDEIA ═══
+   O que o Mekora tem é uma contagem, e o que ele mostra é uma contagem. Ele
+   não nomeia: propõe as palavras que contou e deixa o nome com quem sabe o
+   que elas querem dizer. Nomear é o gesto que transforma a sugestão em
+   Território — e é do usuário, sempre. */
+function blocoIdeias(){
+  /* "manter sem nome" tira o convite de cima das Notas e deixa o assunto
+     listado em Territorios: manter nao e nomear, e nao e ignorar. */
+  const gs=ideias().filter(g=>S.ignoradas.indexOf(g.id)<0&&S.mantidos.indexOf(g.id)<0
+    &&!S.terr.some(t=>t.id===g.id));
+  if(!gs.length)return "";
+  const g=gs[0];
+  const pal=g.termos.slice(0,3).map(t=>'<b>'+esc(t.w)+'</b>').join(" · ");
+  /* uma nota por livro, na ordem dos livros, para a amostra mostrar a
+     travessia em vez de tres notas do mesmo lugar. */
+  const mostra=[];
+  const forte=g.termos[0]&&g.termos[0].p;
+  g.livros.forEach(l=>{const ns=g.notas.filter(d=>d.livro===l);
+    /* a que USA a palavra forte, e nao a primeira do livro: a amostra existe
+       para mostrar a travessia, e uma nota que nao tem o termo nao mostra. */
+    /* entre duas do mesmo livro, a que carrega MAIS dos termos da ideia:
+       a amostra existe para mostrar a travessia, e a que so tangencia
+       mostra menos. */
+    const pontos=d=>{const w=palavras(d);
+      return g.termos.slice(0,3).filter(t=>w.indexOf(t.p)>-1).length;};
+    const d=ns.slice().sort((x,z)=>pontos(z)-pontos(x))[0];
+    if(d)mostra.push(d);});
+  /* uma linha por PALAVRA, com os livros que ela atravessa: por par, a mesma
+     palavra aparecia quatro vezes e parecia quatro achados. */
+  const como=g.termos.slice(0,5).map(t=>
+    '<li>'+esc(t.w)+': '+t.livros.map(esc).join(", ")+'</li>').join("");
+  return '<div class="ideia"><div class="soltoE">Talvez exista uma conexão</div>'+
+    '<p class="frase">'+maiuscula(num(g.notas.length))+' notas suas, em '+
+      numM(g.livros.length)+' livros diferentes, usam as mesmas palavras.</p>'+
+    '<p class="pal">'+pal+'</p>'+
+    /* tres notas, uma por livro quando da: a lista inteira aqui seria uma
+       segunda lista de notas em cima da lista de notas. */
+    '<div class="grupoE">'+mostra.map(d=>
+      '<div class="cit"><p class="-nota"><button class="abre" data-a="nota-abrir" data-v="'+d.k+'">'+
+      esc(d.nota)+'</button></p><cite>'+esc(d.livro)+'</cite></div>').join("")+'</div>'+
+    (g.notas.length>mostra.length?'<p class="maisN">e mais '+num(g.notas.length-mostra.length)+
+      ' nota'+(g.notas.length-mostra.length>1?"s":"")+'.</p>':'')+
+    (S.nomeando===g.id
+      ?'<div class="nomeia"><label for="nomeIdeia">Que nome isto tem para você?</label>'+
+        '<input id="nomeIdeia" class="campoB" placeholder="Observação como sistema" autocomplete="off">'+
+        '<div class="acs"><button class="pri" data-a="ideia-nome-ok" data-v="'+esc(g.id)+'">Nomear</button>'+
+        '<button class="sec" data-a="ideia-nomear" data-v="">cancelar</button></div></div>'
+      :'<div class="acs"><button class="pri" data-a="ideia-nomear" data-v="'+esc(g.id)+'">Dar um nome</button>'+
+        '<button class="sec" data-a="ideia-ignorar" data-v="'+esc(g.id)+'">ignorar</button></div>')+
+    '<button class="como" data-a="ideia-como" aria-expanded="'+(!!S.comoIdeia)+'">como cheguei aqui '+
+      (S.comoIdeia?"▴":"▾")+'</button>'+
+    (S.comoIdeia?'<div class="comoD"><ul>'+como+'</ul>'+
+      '<p>Não li o sentido. Contei palavras de mais de cinco letras que aparecem '+
+      'em notas de livros diferentes. O que elas querem dizer juntas é a sua parte.</p></div>':'')+
+    '</div>';
+}
+/* ═══ UMA NOTA ═══
+   A nota ganha um lugar próprio porque ela é uma coisa, e não uma linha de
+   lista. Aqui ela mostra tudo o que sabe de si: o que você escreveu, de onde
+   veio, e com quem parece falar. O trecho de origem aparece inteiro — a nota
+   sem ele é meia frase, e foi para não perder essa metade que ela nasceu
+   presa a um lugar. */
+function vNota(){
+  const d=escK(S.notaK);
+  if(!d)return '<div class="pad larga"><div class="colE"><p class="vazioN">Essa nota não existe mais. '+
+    '<button class="lnk mudo" data-a="ir" data-v="notas" style="padding:0">Voltar às notas</button></p></div></div>';
+  const tr=escTxt(d),lv=d.livro?LIVROS[d.livro]:null;
+  const onde=[];
+  if(d.livro){onde.push(esc(d.livro));if(lv&&lv.autor)onde.push(esc(lv.autor));
+    if(d.cap!=null)onde.push("Capítulo "+(d.cap+1)+(lv?" — "+esc(lv.caps[d.cap].n):""));}
+  else onde.push("Escrita aqui, sem livro");
+  onde.push(d.dia||"hoje");
+  let h='<div class="pad larga"><div class="colE">'+
+    '<button class="lnk mudo volt" data-a="ir" data-v="notas">‹ Notas</button>';
+  /* editar é a mesma superfície de escrever dentro do livro: uma nota não
+     muda de natureza por estar sendo lida noutro lugar. */
+  h+=S.notaAberta===d.k?notaLivre(d)
+    :'<p class="notaG">'+esc(d.nota||"—")+'</p>';
+  h+='<p class="ondeN">'+onde.join(" · ")+'</p>';
+  if(tr)h+='<div class="trechoN"><p>“'+esc(tr)+'”</p>'+
+    '<button class="volta" data-a="nota-origem" data-v="'+d.k+'">↩ abrir no livro, onde isto está</button></div>';
+  const rev=S.rever.indexOf(d.k)>-1,noC=S.canvasN.indexOf(d.k)>-1;
+  h+='<div class="acs acsN">'+
+    (tr?'<button class="pri" data-a="nota-origem" data-v="'+d.k+'">Abrir no livro</button>':'')+
+    '<button class="'+(tr?"sec":"pri")+'" data-a="nota-editar" data-v="'+d.k+'">Editar</button>'+
+    '<button class="sec" data-a="nota-canvas" data-v="'+d.k+'">'+
+      (noC?"já está no Canvas":"Levar ao Canvas")+'</button>'+
+    '<button class="sec" data-a="nota-rever" data-v="'+d.k+'">'+
+      (rev?"tirar de para revisar":"marcar para revisar")+'</button>'+
+    '<span class="sp" style="flex:1"></span>'+
+    '<button class="sec -dan" data-a="nota-apagar" data-v="'+d.k+'">apagar</button></div>';
+  h+=secRelacoes(d);
+  return h+'</div></div>';
+}
+/* ═══ RELAÇÕES DE UMA NOTA ═══
+   Três títulos, e não três cores: a diferença entre "você ligou" e "talvez"
+   é de origem, não de intensidade. Quem ligou foi você ou foi a contagem —
+   e a contagem sempre mostra as palavras que contou, ao lado, para poder
+   ser discordada. */
+function secRelacoes(d){
+  const rs=relacoesDe(d.k);
+  if(!rs.length)return '<div class="soltoE">Relacionadas</div>'+
+    '<p class="vazioN">Nada parecido com esta nota ainda. Quando outra nota sua usar as mesmas '+
+    'palavras, ela aparece aqui.</p>';
+  const g=t=>rs.filter(r=>r.tipo===t);
+  const bloco=(t,rot,exp)=>{
+    const l=g(t);if(!l.length)return "";
+    return '<div class="relG"><div class="soltoE">'+rot+'</div>'+
+      (exp?'<p class="relX">'+exp+'</p>':'')+
+      '<div class="grupoE">'+l.map(r=>{
+        const o=escK(r.k);if(!o)return "";
+        const pal=r.termos.length?r.termos.map(x=>inteira(x,[d,o])).join(", "):"";
+        return '<div class="cit"><p class="-nota"><button class="abre" data-a="nota-abrir" data-v="'+
+          r.k+'">'+esc(o.nota)+'</button></p>'+
+          '<cite>'+esc(o.livro||"sem livro")+(pal?' · em comum: '+esc(pal):'')+'</cite>'+
+          '<div class="acs">'+(t==="sua"
+            ?'<button class="sec" data-a="nota-desligar" data-v="'+d.k+'|'+r.k+'">desfazer a ligação</button>'
+            :'<button class="sec" data-a="nota-ligar" data-v="'+d.k+'|'+r.k+'">ligar de verdade</button>'+
+             '<button class="sec sob" data-a="nota-naorel" data-v="'+d.k+'|'+r.k+'">não tem a ver</button>')+
+          '</div></div>';
+      }).join("")+'</div></div>';
+  };
+  return '<div class="rels">'+
+    bloco("sua","Você ligou","Ligação sua. O Mekora não teria achado esta: as duas notas não repetem nenhuma palavra.")+
+    bloco("forte","Parecem próximas","Usam mais de uma palavra em comum.")+
+    bloco("possivel","Talvez","Uma palavra em comum. Pode não ser nada.")+
+    '</div>';
+}
+/* ═══════════════════════════════════════════════════════════════════
+   CONEXÕES — três direções, e não três aparências
+   As três respondem a perguntas diferentes, e é por isso que estão na
+   mesma página: elas não se escolhem por gosto visual. O mapa responde
+   "como está a minha cabeça?"; a trilha responde "como cheguei até
+   aqui?"; o território responde "sobre o que eu ando pensando?".
+   Só a segunda e a terceira sobrevivem a um acervo pequeno.
+   ═══════════════════════════════════════════════════════════════════ */
+function vConexoes(){
+  const notas=S.dst.filter(d=>d.nota);
+  const comRel=notas.filter(d=>relacoesDe(d.k).length);
+  let h='<div class="pad larga"><div class="colE larga">'+
+    '<h1 class="t">Conexões</h1>'+
+    '<p class="sub">Três direções possíveis para o mesmo material. Elas respondem a perguntas '+
+    'diferentes — não são três aparências da mesma tela.</p>'+
+    '<div class="dirNav">'+[["a","A · Mapa"],["b","B · Trilhas"],["c","C · Territórios"]]
+      .map(x=>'<a href="#dir-'+x[0]+'">'+x[1]+'</a>').join("")+'</div>';
+  if(!comRel.length)
+    return h+'<p class="vazioN">Nenhuma nota se liga a outra ainda. Estas três telas são '+
+      'derivadas do que você escreveu: sem notas, elas não têm o que mostrar — e é exatamente '+
+      'esse o argumento de não começar o produto por aqui.</p></div></div>';
+  return h+dirMapa(comRel)+dirTrilhas()+dirTerritorios()+'</div></div>';
+}
+/* o titulo da direcao nao pode ter o mesmo peso de "Ainda sem nome", que e
+   um separador DENTRO dela: medido lado a lado, os dois liam igual. */
+const cabDir=(id,rot,resp,nao)=>'<div class="dirC" id="dir-'+id+'">'+
+  '<h2 class="dirT">'+rot+'</h2>'+
+  '<p class="dirP"><b>Responde:</b> '+resp+'</p>'+
+  '<p class="dirP -nao"><b>Não responde:</b> '+nao+'</p>';
+/* ── A · MAPA ──────────────────────────────────────────────────────
+   Desenhado com o que a casa tem: filete fino, tinta, quadrado. Sem
+   brilho, sem gradiente, sem cérebro. O ponto do exercício não é fazer
+   um grafo bonito — é ver que, mesmo bonito, ele não diz o que fazer. */
+/* Duas primeiras palavras davam "O que" em tres notas diferentes: o rotulo
+   nao distinguia nada, e um mapa cujos pontos tem o mesmo nome e uma nuvem
+   com legenda. Artigo e preposicao saem antes de contar as duas. */
+const VAZIA=/^(o|a|os|as|um|uma|que|de|do|da|dos|das|e|é|em|no|na|ao|se|por|para|com|mais|isso|isto)$/i;
+const rotuloNota=d=>{
+  const w=(d.nota||"").split(/[\s,;.:?!—–]+/).filter(x=>x&&!VAZIA.test(x));
+  const t=w.slice(0,2).join(" ");
+  return t.length>18?w[0].slice(0,18):t;
+};
+function dirMapa(ds){
+  /* a caixa e mais larga do que o circulo porque o rotulo mora FORA dele:
+     medido, "Vale testar:" saia do viewBox e era cortado pelo navegador. */
+  const n=ds.length,R=140,cx=260,cy=170;
+  const pos={};
+  ds.forEach((d,i)=>{const a=-Math.PI/2+i*2*Math.PI/n;
+    pos[d.k]={x:cx+R*Math.cos(a),y:cy+R*Math.sin(a),a:a};});
+  const vistos={},linhas=[];
+  ds.forEach(d=>relacoesDe(d.k).forEach(r=>{
+    if(!pos[r.k])return;
+    const id=[d.k,r.k].sort().join("|");if(vistos[id])return;vistos[id]=1;
+    linhas.push({a:pos[d.k],b:pos[r.k],t:r.tipo});}));
+  const linha=l=>'<line x1="'+l.a.x.toFixed(1)+'" y1="'+l.a.y.toFixed(1)+'" x2="'+
+    l.b.x.toFixed(1)+'" y2="'+l.b.y.toFixed(1)+'" class="ln -'+l.t+'"/>';
+  const ponto=d=>{const p=pos[d.k],fora=Math.cos(p.a)<-0.15,alto=Math.abs(Math.cos(p.a))<0.35;
+    return '<rect x="'+(p.x-3).toFixed(1)+'" y="'+(p.y-3).toFixed(1)+'" width="6" height="6" class="pt"/>'+
+    '<text x="'+(p.x+(alto?0:(fora?-9:9))).toFixed(1)+'" y="'+(p.y+(alto?(Math.sin(p.a)<0?-10:16):3.5)).toFixed(1)+
+    '" class="rot" text-anchor="'+(alto?"middle":(fora?"end":"start"))+'">'+
+    esc(rotuloNota(d))+'</text>';};
+  return cabDir("a","A · Mapa neural","Como está a minha cabeça, num olhar.",
+    "O que eu faço agora. Nenhum ponto do mapa é uma próxima ação.")+
+    '<div class="mapaW"><svg viewBox="0 0 520 340" class="mapa" role="img" '+
+      'aria-label="Mapa das notas ligadas por palavras em comum">'+
+      linhas.map(linha).join("")+ds.map(ponto).join("")+'</svg>'+
+      '<div class="leg"><span class="-sua">você ligou</span>'+
+        '<span class="-forte">parecem próximas</span><span class="-possivel">talvez</span></div></div>'+
+    '<p class="dirNota"><b>Por que não como primeira tela.</b> Com '+ds.length+' notas ele já está '+
+    'quase cheio; com duzentas vira uma nuvem. E o custo é o mesmo em qualquer tamanho: '+
+    'ele mostra que existe relação sem nunca dizer <i>qual</i>. Para saber o que liga dois '+
+    'pontos é preciso clicar — e aí você já está lendo uma nota, que é a tela de Notas.</p></div>';
+}
+/* ── B · TRILHAS ───────────────────────────────────────────────────
+   O caminho inteiro, escrito na horizontal: livro, trecho, nota, a
+   palavra que atravessa, nota, trecho, livro. É a única das três em que
+   cada passo é legível sem clicar em nada. */
+function trilha(){
+  const gs=ideias();if(!gs.length)return null;
+  const g=gs[0],adj={};
+  g.pares.forEach(p=>{
+    (adj[p.a.k]||(adj[p.a.k]=[])).push({k:p.b.k,t:p.termos});
+    (adj[p.b.k]||(adj[p.b.k]=[])).push({k:p.a.k,t:p.termos});});
+  /* o caminho mais longo que não repete nota nem livro: uma trilha que
+     volta ao mesmo livro não mostrou travessia nenhuma. */
+  let melhor=[];
+  const anda=(k,vis,livros,cam)=>{
+    if(cam.length>melhor.length)melhor=cam.slice();
+    (adj[k]||[]).forEach(e=>{
+      const o=escK(e.k);if(!o||vis[e.k]||livros[o.livro])return;
+      vis[e.k]=1;livros[o.livro]=1;
+      anda(e.k,vis,livros,cam.concat([{termo:e.t[0],nota:o}]));
+      delete vis[e.k];delete livros[o.livro];});
+  };
+  Object.keys(adj).forEach(k=>{const d=escK(k);if(!d)return;
+    const vis={},livros={};vis[k]=1;livros[d.livro]=1;
+    anda(k,vis,livros,[{termo:null,nota:d}]);});
+  return melhor.length>1?melhor:null;
+}
+function dirTrilhas(){
+  const t=trilha();
+  let h=cabDir("b","B · Trilhas","Como cheguei até aqui, e por onde passei.",
+    "Tudo de uma vez. Uma trilha é um caminho, e não o acervo inteiro.");
+  if(!t)return h+'<p class="vazioN">Ainda não há um caminho que atravesse dois livros.</p></div>';
+  h+='<div class="trl">';
+  t.forEach((passo,i)=>{
+    const d=passo.nota,tr=escTxt(d);
+    if(passo.termo)h+='<div class="elo"><span>'+esc(inteira(passo.termo,[t[i-1].nota,d]))+'</span></div>';
+    h+='<div class="pas"><div class="lv">'+esc(d.livro||"sem livro")+
+      (d.cap!=null&&d.livro?' · cap. '+(d.cap+1):'')+'</div>'+
+      (tr?'<p class="tr">“'+esc(tr)+'”</p>':'')+
+      '<p class="nt"><button class="abre" data-a="nota-abrir" data-v="'+d.k+'">'+esc(d.nota)+'</button></p>'+
+      '</div>';
+  });
+  h+='</div><p class="dirNota"><b>Por que esta vem primeiro.</b> Cada passo é uma frase que você '+
+    'escreveu ou leu, e a palavra entre dois passos é a razão da ligação — dita, e não '+
+    'sugerida por uma linha. Uma trilha cabe numa conversa: dá para mostrar a alguém sem '+
+    'explicar a interface antes.</p></div>';
+  return h;
+}
+/* ── C · TERRITÓRIOS ───────────────────────────────────────────────
+   Três palavras que não são sinônimas, e o produto perde o sentido se
+   elas virarem uma só. */
+function dirTerritorios(){
+  const gs=ideias();
+  const pend=gs.filter(g=>S.ignoradas.indexOf(g.id)<0&&!S.terr.some(t=>t.id===g.id));
+  let h=cabDir("c","C · Territórios","Sobre o que eu ando pensando, sem eu ter organizado nada.",
+    "Onde uma coisa específica está. Território é assunto, e não endereço.");
+  h+='<div class="tresP">'+
+    '<div><b>Coleção</b><span>Você juntou de propósito. Existe porque você a fez.</span></div>'+
+    '<div><b>Território</b><span>O Mekora notou, você nomeou. Existe porque o material se repetiu.</span></div>'+
+    '<div><b>Conexão</b><span>Uma relação entre duas notas. Não é lugar nenhum.</span></div></div>';
+  if(S.terr.length)
+    h+='<div class="soltoE">Seus territórios</div><div class="terrL">'+S.terr.map(t=>{
+      const ns=t.notas.map(escK).filter(Boolean);
+      const lvs=[...new Set(ns.map(n=>n.livro).filter(Boolean))];
+      return '<div class="terr"><h4>'+esc(t.nome)+'</h4>'+
+        '<p class="me">'+ns.length+' notas · '+lvs.length+' livro'+(lvs.length>1?"s":"")+
+        ' · nomeado por você</p>'+
+        '<div class="acs"><button class="sec" data-a="terr-ver" data-v="'+esc(t.id)+'">ver as notas</button>'+
+        '<button class="sec" data-a="terr-soltar" data-v="'+esc(t.id)+'">desfazer o território</button></div></div>';
+    }).join("")+'</div>';
+  if(pend.length){
+    h+='<div class="soltoE">Ainda sem nome</div>';
+    h+='<div class="terrL">'+pend.slice(0,3).map(g=>
+      '<div class="terr -pend"><h4>'+g.termos.slice(0,2).map(t=>esc(t.w)).join(" · ")+'</h4>'+
+      '<p class="me">'+g.notas.length+' notas · '+g.livros.length+' livros · o Mekora contou</p>'+
+      '<div class="acs">'+
+        '<button class="sec" data-a="terr-ver" data-v="'+esc(g.id)+'">ver</button>'+
+        '<button class="sec" data-a="ideia-nomear" data-v="'+esc(g.id)+'">nomear</button>'+
+        '<button class="sec" data-a="terr-manter" data-v="'+esc(g.id)+'">manter sem nome</button>'+
+        '<button class="sec sob" data-a="ideia-ignorar" data-v="'+esc(g.id)+'">ignorar</button></div>'+
+      (S.nomeando===g.id?'<div class="nomeia"><label for="nomeIdeia">Que nome isto tem para você?</label>'+
+        '<input id="nomeIdeia" class="campoB" placeholder="Observação como sistema" autocomplete="off">'+
+        '<div class="acs"><button class="pri" data-a="ideia-nome-ok" data-v="'+esc(g.id)+'">Nomear</button>'+
+        '<button class="sec" data-a="ideia-nomear" data-v="">cancelar</button></div></div>':'')+
+      '</div>').join("")+'</div>';
+  }
+  if(!S.terr.length&&!pend.length)
+    h+='<p class="vazioN">Nenhum assunto se repetiu ainda em livros diferentes.</p>';
+  return h+'<p class="dirNota"><b>Por que depois das trilhas.</b> Um território só é útil quando '+
+    'já existe material suficiente para ele se repetir sozinho. Oferecido cedo demais, ele '+
+    'vira uma pasta com outro nome — e pasta é justamente o que este produto não quer '+
+    'obrigar ninguém a manter.</p></div>';
+}
 function vCanvas(nome){
+  /* Levar ao Canvas nao copia a nota: leva a MESMA, e a origem vem junto.
+     Uma copia seria uma segunda coisa para manter atualizada, e a primeira
+     coisa que este produto promete e nao perder de onde veio. */
+  const ns=S.canvasN.map(escK).filter(Boolean);
   return '<div class="pad larga"><h1 class="t">'+nome+'</h1>'+
     '<p class="sub">Superfície espacial. É aqui — e só aqui — que a dock existe: ela segura ferramentas de '+
     'manipulação direta, que precisam ficar perto das mãos.</p>'+
-    dock(["Nota","Mídia","Conectar","Organizar","Filtrar"],-1)+'</div>';
+    dock(["Nota","Mídia","Conectar","Organizar","Filtrar"],-1)+
+    (ns.length?'<div class="cnv"><div class="soltoE">Notas que você trouxe</div>'+ns.map(d=>
+      '<div class="cnvN"><p>'+esc(d.nota)+'</p><cite>'+
+      (d.livro?esc(d.livro)+(d.cap!=null?' · capítulo '+(d.cap+1):''):'sem livro')+
+      '</cite>'+(ancora(d)?'<button class="volta" data-a="nota-origem" data-v="'+d.k+
+      '">↩ abrir no livro</button>':'')+'</div>').join("")+'</div>':
+     '<p class="vazioN">Nada trazido ainda. Em uma nota, <b>Levar ao Canvas</b> traz ela para cá '+
+     'com a origem junto.</p>')+'</div>';
 }
 function dock(its,on){
   return '<div class="dock">'+its.map((t,i)=>'<button data-a="dock" data-v="'+i+'"'+((on<0?i===S.dockSel:i===on)?' aria-pressed="true"':'')+
@@ -3609,8 +4389,10 @@ function corpo(){
   if(S.lugar==="item")return vItem();
   if(S.lugar==="livro")return vLivro();
   if(S.lugar==="estante")return vEstante();
+  if(S.lugar==="notas")return vNotas();
+  if(S.lugar==="nota")return vNota();
   if(S.lugar==="canvas")return vCanvas("Canvas");
-  if(S.lugar==="conexoes")return vCanvas("Conexões");
+  if(S.lugar==="conexoes")return vConexoes();
   if(S.lugar==="perfil"||S.lugar==="novidades")return vPerfil();
   return vMesa();
 }
@@ -3639,7 +4421,7 @@ function capturaSel(){
   if(fim<=ini)return;
   /* encostar num destaque que ja existe REABRE aquele destaque em vez de
      criar outro por cima: destaques sobrepostos fatiariam o paragrafo errado. */
-  const bate=S.dst.filter(d=>d.cap===cap&&d.par===par&&d.ini<fim&&d.fim>ini)
+  const bate=S.dst.filter(d=>noLivro(d,cap,par)&&d.ini<fim&&d.fim>ini)
     .sort((x,z)=>x.ini-z.ini);
   S.selE=bate.length?{k:bate[0].k}:{cap:cap,par:par,ini:ini,fim:fim};
   Object.assign(S.selE,ondeEsta(r));
@@ -3919,7 +4701,7 @@ app.addEventListener("click",ev=>{
       /* com os destaques ocultos o gesto ficaria sem recibo nenhum:
          a marca e o unico retorno que existe, entao ela volta a aparecer. */
       if(S.leit.destaques==="ocultar")S.leit.destaques="mostrar";
-      const k="u"+e.cap+"-"+e.par+"-"+e.ini;
+      const k="u"+sig(ARQ.titulo)+e.cap+"-"+e.par+"-"+e.ini;
       S.dst.push({k:k,livro:ARQ.titulo,cap:e.cap,par:e.par,ini:e.ini,fim:e.fim,
         perg:S.perg,nota:"",origem:"leitura"});
       S.selE=null;
@@ -4058,8 +4840,77 @@ app.addEventListener("click",ev=>{
     case "dst-copiar":{
       const d=dstK(v);S.selE=null;
       aviso(d?"Copiado com a origem — "+dstCap(d)+", "+ARQ.titulo:"Copiado");break;}
+    /* ═══ NOTAS ═══ */
+    case "nota-filtro":S.nfiltro=v;break;
+    case "nota-abrir":S.lugar="nota";S.notaK=v;S.notaAberta=null;break;
+    case "nota-editar":S.notaAberta=v;S.rasc[v]=escK(v)?escK(v).nota:"";break;
+    /* uma nota solta nasce já aberta para escrita: ela não tem trecho para
+       mostrar, e uma tela com um traço e um botão seria só uma parada. */
+    case "nota-nova":{
+      const k="s"+S.dst.length;
+      S.dst.push({k:k,livro:null,cap:null,par:null,ini:null,fim:null,perg:null,
+        nota:"",origem:"solta",dia:"hoje"});
+      S.lugar="nota";S.notaK=k;S.notaAberta=k;S.rasc[k]="";break;}
+    /* voltar à origem TROCA de livro: a nota guarda de onde veio, e voltar
+       para outro texto seria a mesma perda que ela existe para evitar. */
+    case "nota-origem":{
+      const d=escK(v);if(!d||!ancora(d))break;
+      if(d.livro&&LIVROS[d.livro])ARQ=LIVROS[d.livro];
+      S.lugar="leitura";S.folha=null;S.q="";S.cap=d.cap;S.selE=null;S.notaAberta=null;
+      if(d.perg!=null)S.perg=d.perg;
+      pinta();
+      const m=document.getElementById("mk-"+d.k);
+      if(m)m.scrollIntoView({behavior:"smooth",block:"center"});
+      return;}
+    case "nota-rever":{
+      const i=S.rever.indexOf(v);
+      if(i>-1)S.rever.splice(i,1);else S.rever.push(v);break;}
+    /* levar ao Canvas não copia a nota: leva a mesma, com a origem junto.
+       Uma cópia seria uma segunda coisa para manter atualizada. */
+    case "nota-canvas":if(S.canvasN.indexOf(v)<0)S.canvasN.push(v);break;
+    case "nota-apagar":{
+      const d=escK(v);if(!d)break;
+      S.dstUndo={d:d,filhos:[]};S.dst=S.dst.filter(x=>x.k!==v);
+      S.rever=S.rever.filter(k=>k!==v);S.canvasN=S.canvasN.filter(k=>k!==v);
+      S.rel=S.rel.filter(r=>r.indexOf(v)<0);
+      S.lugar="notas";S.notaK=null;break;}
+    /* ligar é escrever uma relação; ela passa a valer como sua, e para de
+       depender de as duas notas repetirem palavra nenhuma. */
+    case "nota-ligar":{
+      const par=v.split("|");
+      if(!S.rel.some(r=>r.indexOf(par[0])>-1&&r.indexOf(par[1])>-1))S.rel.push(par);
+      break;}
+    case "nota-desligar":{
+      const par=v.split("|");
+      S.rel=S.rel.filter(r=>!(r.indexOf(par[0])>-1&&r.indexOf(par[1])>-1));break;}
+    case "nota-naorel":{
+      const par=v.split("|");
+      if(!S.naoRel.some(r=>r.indexOf(par[0])>-1&&r.indexOf(par[1])>-1))S.naoRel.push(par);
+      break;}
+    /* ═══ TERRITÓRIOS ═══ */
+    /* "ver" leva para as Notas com a busca armada pela palavra do territorio:
+       ver um territorio e ver as notas dele, e nao abrir uma quarta tela. */
+    case "terr-ver":{
+      const t=S.terr.find(t=>t.id===v),g=ideias().find(g=>g.id===v);
+      const ks=t?t.notas:(g?g.notas.map(d=>d.k):[]);
+      S.lugar="notas";S.nfiltro="todas";S.qNotas="";S.verTerr=ks;S.verTerrId=v;break;}
+    case "terr-todas":S.verTerr=null;S.verTerrId=null;break;
+    case "terr-manter":if(S.mantidos.indexOf(v)<0)S.mantidos.push(v);S.nomeando=null;break;
+    case "terr-soltar":S.terr=S.terr.filter(t=>t.id!==v);break;
+    /* ═══ IDEIAS ═══ */
+    case "ideia-como":S.comoIdeia=!S.comoIdeia;break;
+    case "ideia-nomear":S.nomeando=v||null;break;
+    case "ideia-ignorar":if(S.ignoradas.indexOf(v)<0)S.ignoradas.push(v);S.nomeando=null;break;
+    /* nomear é o gesto que transforma o palpite do sistema em coisa sua: o
+       território leva o nome que VOCÊ deu, e não o que a contagem sugeriu. */
+    case "ideia-nome-ok":{
+      const c=document.getElementById("nomeIdeia"),nome=c?c.value.trim():"";
+      if(!nome){if(c)c.focus();break;}
+      S.terr.push({id:v,nome:nome,notas:v.split("|"),quando:"agora"});
+      S.nomeando=null;break;}
     case "dst-ir":{
       const d=dstK(v);if(!d)break;
+      if(d.livro&&LIVROS[d.livro])ARQ=LIVROS[d.livro];
       S.lugar="leitura";S.folha=null;S.q="";S.cap=d.cap;S.selE=null;
       if(d.perg!=null)S.perg=d.perg;   /* voltar ao trecho devolve a pergunta junto */
       pinta();
@@ -4357,6 +5208,81 @@ de existir.</li>
 pessoal</b> e continuam sendo a fonte deles. Este protótipo cobre a chegada do arquivo, a ficha do
 livro e o perfil. Os dois usam os mesmos tokens porque são o mesmo produto.</p></div>`
 };
+NT.conhecimento=`<div class="w"><h2>Notas, conexões e organização: o que está de pé e o que é aposta</h2>
+<p>A hipótese que esta rodada foi testar: <b>o mapa não deve ser o produto — o produto é nota com
+memória mais relação útil</b>. O protótipo agora dá para testar isso, porque os três livros do
+cenário têm <b>texto próprio</b>. Antes, os catorze compartilhavam um só, e uma nota de Malha Urbana
+voltava para o Diário 02: a memória não podia falhar, porque não existia.</p>
+
+<h3>O estado de cada coisa</h3>
+<p>Nada aqui é "pronto". A coluna do estado é o que separa o que já se sustenta do que é convite
+para o próximo teste.</p>
+<table><thead><tr><th>Coisa</th><th>Estado</th><th>Por quê</th></tr></thead><tbody>
+<tr><td class="n">Nota presa ao trecho, e a volta à origem</td><td><b>Atual</b></td><td>Funciona atravessando livros: abrir a origem de uma nota de outro livro troca o livro aberto, o capítulo e rola até a marca.</td></tr>
+<tr><td class="n">Área de Notas (Todas · De livros · Soltas · Para revisar)</td><td><b>Atual</b></td><td>As três primeiras são partição; "Para revisar" é estado seu e atravessa as três — por isso está depois de um filete, e não como quarta irmã.</td></tr>
+<tr><td class="n">Nota solta</td><td><b>Atual</b></td><td>Nasce fora de livro nenhum, e a área tem uma fila só para elas.</td></tr>
+<tr><td class="n">Relações por palavra em comum</td><td><b>Exploração forte</b></td><td>A regra cabe numa frase e é dizível. O que ainda não sei é se ela sobrevive a duzentas notas sem virar ruído.</td></tr>
+<tr><td class="n">Trilha entre livros</td><td><b>Exploração forte</b></td><td>É a única das três direções em que cada passo é legível sem clicar. Sai do material real, e não de um exemplo escrito à mão.</td></tr>
+<tr><td class="n">Ideia emergente e Território</td><td><b>Experimental</b></td><td>A contagem funciona; o nome não. Ver abaixo.</td></tr>
+<tr><td class="n">Mapa</td><td><b>Experimental</b></td><td>Desenhado para poder ser recusado com conhecimento de causa, e não por gosto.</td></tr>
+<tr><td class="n">Conectar como ação do leitor</td><td><b>Futuro</b></td><td>Continua fora da barra de seleção, como combinado. Ligar duas notas só existe dentro de uma nota, onde há as duas pontas.</td></tr>
+<tr><td class="n">Zoom semântico</td><td><b>Futuro</b></td><td>Só faz sentido depois que existir densidade suficiente para haver o que esconder.</td></tr>
+</tbody></table>
+
+<h3>Onde o Mekora não consegue chegar sozinho</h3>
+<p>O cenário pedia que o produto percebesse "Observação como sistema" entre três notas de três
+livros. Ele percebe a <b>travessia</b>: contando, encontra <span class="mono">repetição</span>
+ligando Diário 02 a Estudo de Viabilidade e <span class="mono">registro</span> ligando Diário 02 a
+Malha Urbana. Mas nenhuma das três notas usa a palavra "sistema".</p>
+<p><b>Esse nome é interpretação, e interpretação não sai de contagem.</b> Por isso a tela oferece as
+palavras que contou e o botão diz <b>Dar um nome</b> — nomear é o gesto que transforma o palpite do
+sistema em coisa sua, e é o que separa Território de pasta. Se o Mekora escrevesse "Observação como
+sistema" sozinho, ele estaria acertando por sorte numa tela e errando com a mesma confiança na
+seguinte.</p>
+<p>É a mesma razão de <b>como cheguei aqui</b> estar sempre a um clique: quem confia na sugestão
+nunca abre, e quem não confia precisa poder discordar do argumento, e não da conclusão.</p>
+
+<h3>Dois defeitos que a medição pegou, e que não eram de aparência</h3>
+<ul>
+<li><b>Citar a mesma passagem não é uma relação.</b> Duas notas sobre o mesmo parágrafo apareciam com
+cinco palavras em comum — e nenhuma era de quem leu: eram do autor, vindas do trecho idêntico. Agora
+o que você escreveu conta contra o que o outro escreveu e contra o trecho do outro; trecho contra
+trecho, nunca. As cinco palavras viraram duas, e as duas são defensáveis.</li>
+<li><b>A ideia dizia "repete" onde o material inteiro diz "repetição".</b> A palavra mostrada era a
+primeira encontrada, não a mais usada. Um assunto batizado com a forma mais pobre de si mesmo não é
+reconhecível como seu.</li>
+</ul>
+
+<h3>A ordem que eu proponho, e onde ela discorda da sua</h3>
+<p>Concordo com as fases 1 e 2. Discordo da 3 e da 4 — não na ordem, mas em <b>o que decide a
+passagem</b>.</p>
+<ul>
+<li><b>Fase 1 — nota com origem.</b> Já de pé. É a única fase que se justifica sozinha: mesmo que
+nada mais exista, não perder de onde a nota veio já é o produto.</li>
+<li><b>Fase 2 — relacionadas e trilhas.</b> A trilha deveria vir <b>junto</b> das relacionadas, e não
+depois: uma relação isolada é uma curiosidade, e três em fila são um argumento. É a trilha que faz a
+relação valer a pena de ler.</li>
+<li><b>Fase 3 — territórios: não é fase, é limiar.</b> Território oferecido cedo demais vira pasta com
+outro nome. Ele não deve aparecer quando o código estiver pronto, e sim quando o mesmo assunto se
+repetir <b>em livros diferentes</b> — que é a condição que o protótipo já usa. Num acervo de doze
+notas de um livro só, essa tela deve continuar vazia, e vazia é o comportamento certo.</li>
+<li><b>Fase 4 — mapa: talvez nunca.</b> Não porque seja difícil, mas porque em nenhum tamanho ele
+responde "o que eu faço agora". Com onze notas já está quase cheio; com duzentas vira nuvem. E para
+saber o que liga dois pontos é preciso clicar — e aí você está lendo uma nota, que é a tela de Notas.
+Se ele entrar um dia, deve entrar como <b>vista</b> de Conexões, e não como a porta dela.</li>
+</ul>
+
+<h3>O que continua em aberto</h3>
+<ul>
+<li>O nome de "Soltas". Testei contra <span class="mono">Caixa de pensamento</span>, <span class="mono">Em
+aberto</span>, <span class="mono">Rascunhos</span> e <span class="mono">Entrada</span>. "Soltas"
+ganhou porque descreve o estado sem prometer arrumação futura — "Entrada" e "Rascunhos" prometem que
+aquilo vai virar outra coisa, e a maioria não vira.</li>
+<li>O limiar de uma palavra em comum. Hoje uma palavra basta para "talvez". Pode ser generoso demais
+num acervo grande — mas apertar isso agora, com onze notas, seria calibrar no escuro.</li>
+<li>Nenhuma dessas telas foi vista no celular ainda.</li>
+</ul>
+</div>`;
 NT.sistema=`<div class="w"><h2>O que veio do DOC.cc, e onde está aplicado</h2>
 <p>Na rodada anterior eu escrevi sobre o sistema deles e entreguei um produto que não o usava.
 Aqui ele está aplicado — e as duas superfícies onde ele de fato serve são a <b>Home</b> e a
@@ -4431,11 +5357,11 @@ ensaio de oito minutos, com retorno de linha a cada ~8 palavras — cansa em 300
 título chegou a entrar e <b>você o reprovou no dia seguinte</b>, porque o olho tinha de sair da coluna
 e voltar a cada capítulo. Sobrou a régua atravessando na fronteira de capítulo, com o título alinhado
 ao texto — está na leitura, entre um capítulo e outro.</p></div>`;
-let abaN="sistema";
+let abaN="conhecimento";   /* a aba desta rodada abre primeiro */
 const notas=document.getElementById("notas");
 function pintaNotas(){
   notas.innerHTML='<div class="ncab"><span class="lbl">◇ notas desta exploração</span>'+
-    '<div class="nabas">'+[["sistema","Sistema"],["copy","Copy"],["dock","A dock"],["fluxos","Fluxos"]].map(x=>
+    '<div class="nabas">'+[["conhecimento","Conhecimento"],["sistema","Sistema"],["copy","Copy"],["dock","A dock"],["fluxos","Fluxos"]].map(x=>
       '<button data-n="'+x[0]+'" aria-pressed="'+(abaN===x[0])+'">'+x[1]+'</button>').join("")+'</div>'+
     '<span class="sp"></span><button class="btn sm sec2" id="fechaN">Voltar ao produto</button></div>'+
     '<div class="ncorpo">'+NT[abaN]+'</div>';

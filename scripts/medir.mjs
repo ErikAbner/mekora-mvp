@@ -9,7 +9,7 @@
  *
  * Sem dependência: Node 18+ já tem fetch e WebSocket globais.
  *
- *   node scripts/medir.mjs <url> [largura] [altura] [setup.js] <medida.js>
+ *   node scripts/medir.mjs <url> [largura] [altura] [setup.js] <medida.js> [--png=arq]
  *
  * setup.js  roda antes da medida (põe o protótipo no estado que interessa)
  * medida.js é uma expressão avaliada na página; o valor volta como JSON
@@ -21,7 +21,7 @@
  */
 import { spawn } from 'node:child_process';
 import { setTimeout as espera } from 'node:timers/promises';
-import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
@@ -53,7 +53,12 @@ function achaChrome() {
   return achado;
 }
 
-const [url, larg = '1440', alt = '900', a4, a5] = process.argv.slice(2);
+/* --png=<arquivo> guarda a composicao junto da medida. Numero diz se a caixa
+   tem o tamanho certo; captura diz se a tela quer ser olhada. Sao perguntas
+   diferentes, e ate agora so uma delas tinha instrumento. */
+const bruto = process.argv.slice(2);
+const png = (bruto.find(x => x.startsWith('--png=')) || '').slice(6) || null;
+const [url, larg = '1440', alt = '900', a4, a5] = bruto.filter(x => !x.startsWith('--'));
 const arqMedida = a5 || a4;
 const arqSetup = a5 ? a4 : null;
 if (!url || !arqMedida) {
@@ -65,7 +70,8 @@ const porta = 9333 + Math.floor(process.pid % 500);
 const chrome = spawn(process.env.CHROME || achaChrome(), [
   '--headless=new', `--remote-debugging-port=${porta}`,
   '--no-first-run', '--no-default-browser-check', '--hide-scrollbars',
-  `--window-size=${larg},${alt}`, `--user-data-dir=/tmp/medir-${porta}`, 'about:blank',
+  `--window-size=${larg},${alt}`, `--user-data-dir=/tmp/medir-${porta}-${Date.now()}`,
+  '--disk-cache-size=1', '--media-cache-size=1', 'about:blank',
 ], { stdio: 'ignore' });
 
 let ws, seq = 0;
@@ -95,6 +101,12 @@ try {
 
   await manda('Page.enable');
   await manda('Runtime.enable');
+  /* Uma captura veio de uma copia em cache: a medida na mesma sessao mostrava
+     a barra nova e a imagem mostrava a antiga. Captura velha apresentada como
+     atual e o pior defeito que este instrumento pode ter — ele existe para
+     dizer o que esta na tela agora. */
+  await manda('Network.enable');
+  await manda('Network.setCacheDisabled', { cacheDisabled: true });
   await manda('Emulation.setDeviceMetricsOverride',
     { width: +larg, height: +alt, deviceScaleFactor: 1, mobile: false });
   const nav = await manda('Page.navigate', { url });
@@ -118,6 +130,15 @@ try {
 
   if (arqSetup) { await avalia(readFileSync(arqSetup, 'utf8')); await espera(400); }
   console.log(JSON.stringify(await avalia(readFileSync(arqMedida, 'utf8')), null, 2));
+  if (png) {
+    await espera(500);
+    const alt2 = await avalia('Math.min(document.documentElement.scrollHeight,12000)');
+    const r = await manda('Page.captureScreenshot',
+      { format: 'png', captureBeyondViewport: true,
+        clip: { x: 0, y: 0, width: +larg, height: alt2, scale: 1 } });
+    writeFileSync(png, Buffer.from(r.data, 'base64'));
+    console.error(`captura: ${png} (${larg}×${alt2})`);
+  }
 } finally {
   try { ws?.close(); } catch { /* já fechado */ }
   chrome.kill();
