@@ -9,87 +9,168 @@
 
 ## Contexto
 
-O Mekora não tem, hoje, definição normativa do que é um item da biblioteca. O protótipo executável indexa livros por título: `LIVROS` é um objeto cuja chave é o título (`prototipo-mesa.html:1858`), a pertinência de uma nota é `d.livro===ARQ.titulo` (`:2441`) e a chave da nota é `"d"+sig(lv)+cap+par` (`:2455`), onde `sig()` é uma redução do próprio título (`:2440`). O acervo de demonstração já expõe o limite dessa escolha: há dois itens "Malha Urbana" e dois "Ensaio Visual", distinguidos à mão pelas legendas "outra edição" (`:1841`) e "variante" (`:1843`). Duas edições do mesmo título colidem.
+O Mekora não tem definição normativa do que é um item da biblioteca. O protótipo executável indexa
+livros por título: `LIVROS` é um objeto cuja chave é o título (`prototipo-mesa.html:1858`), a
+pertinência de uma nota é `d.livro===ARQ.titulo` (`:2441`), e a chave da nota é
+`"d"+sig(lv)+cap+par` (`:2455`), onde `sig()` é uma redução do próprio título (`:2440`). O acervo
+de demonstração já expõe o limite: há dois "Malha Urbana" e dois "Ensaio Visual", distinguidos à
+mão pelas legendas "outra edição" (`:1841`) e "variante" (`:1843`). Duas edições do mesmo título
+colidem.
 
-O produto também carrega uma hipótese arquitetural que nunca foi decidida: a de que o PDF de origem permanece como representação paralela do item. Dela nasceu a tríade Original/Adaptado/Comparar, implementada em `prototipo-mesa.html:2663` e `:2676`, onde o "original" é derivado do texto adaptado por regra fixa — quebra em 58 colunas, hifenização e folio a cada 14 linhas.
+O produto também carrega uma hipótese arquitetural que nunca foi decidida: a de que o PDF de origem
+permanece como representação paralela do item. Dela nasceu a tríade Original/Adaptado/Comparar,
+implementada em `:2663` e `:2676`, onde o "original" é derivado do texto adaptado por regra fixa.
 
-A DEC-0011 (aceita, 11/08) já havia nomeado a lacuna nas suas consequências: "O próximo marco técnico passa a ser o **modelo de livro persistente**: a entidade que `ProcessingJob` não é" (`DEC-0011-canonical-frontend-and-operational-api-contract.md:51`). Aquela DEC apontou o marco técnico e parou ali, porque o que faltava era uma resposta de produto. Esta decisão é essa resposta.
-
-Nesta mesma sessão foi proposto a Erik um modelo de três níveis — Work → Edition → Representation. Ele o recusou explicitamente antes de desenhar o modelo que segue.
+A DEC-0011 nomeou a lacuna nas suas consequências — "O próximo marco técnico passa a ser o
+**modelo de livro persistente**: a entidade que `ProcessingJob` não é"
+(`DEC-0011-canonical-frontend-and-operational-api-contract.md:51`). Apontou o marco e parou ali,
+porque o que faltava era resposta de produto. Esta decisão é essa resposta.
 
 ## Decisão
 
-1. O Mekora **não adota** o modelo Work → Edition → Representation.
+### As famílias de conteúdo
 
-2. Existem **duas famílias de conteúdo**:
+1. Existem **duas famílias canônicas**, e nenhuma é forçada ao formato da outra por uniformidade:
 
    ```
-   CONTENT ITEM
-   ├── Documento / Livro  → formato de leitura canônico: EPUB
-   └── Quadrinho / Mangá  → formato de leitura visual/fixo
+   Conteúdo textual      →  EPUB responsivo
+   Quadrinho / Mangá     →  conteúdo visual responsivo apropriado ao formato
    ```
 
-3. Para a família **Documento / Livro**, o Mekora normaliza documentos e livros para um formato canônico de leitura. Após conversão bem-sucedida e validada, o item persistido na biblioteca **é o EPUB responsivo**.
+2. **Quadrinho e mangá entram no MVP.** São conteúdo ingerível e legível na primeira versão.
 
-4. Para a família **Quadrinho / Mangá**, o item mantém uma representação apropriada a conteúdo visual/fixo.
+3. O Mekora **não adota** o modelo Work → Edition → Representation.
 
-5. **PDF e formatos semelhantes são fontes de ingestão temporárias.** Não são representação permanente do item na biblioteca.
+### O que se lê, e o que persiste
 
-6. **O PDF não é representação paralela do item.** Não há necessidade de mantê-lo ao lado do item persistido.
+4. Para **conteúdo textual**, o Mekora normaliza a entrada para um formato canônico de leitura.
+   O item persistido na biblioteca é o **EPUB responsivo**.
 
-7. **Original/Adaptado/Comparar não é regra do produto.** A estrutura deixa de valer como arquitetura principal.
+5. **O original importado não é persistido depois de uma conversão validada.** Ele existe
+   temporariamente durante upload, conversão, retry e validação. Depois disso é eliminado.
 
-8. A ingestão é **transacional**, nesta ordem: PDF recebido → converter → validar EPUB → persistir EPUB → só então descartar o PDF temporário.
+6. **Na biblioteca não existe PDF paralelo ao EPUB.** Um item não carrega duas representações
+   concorrentes do mesmo conteúdo.
 
-9. **O original não é descartado antes de a conversão estar validada.** Se a conversão falhar, o original ainda precisa estar disponível para retry.
+7. **Original/Adaptado/Comparar não é regra do produto.** A estrutura deixa de valer como
+   arquitetura principal.
 
-10. **Cada item tem identidade estável própria.** Título não pode ser identidade.
+8. A ingestão é **transacional**:
 
-11. Identidade derivada do título é **proibida**. `id = hash(título)` nunca é aceitável. Duas importações chamadas "Duna" não podem colidir só porque possuem o mesmo título.
+   ```
+   entrada recebida
+        ↓
+   conversão
+        ↓
+   validação
+        ├── falhou  →  o original continua disponível para retry
+        └── passou  →  o formato canônico persiste, o original temporário é eliminado
+   ```
+
+### O que conta como conversão bem-sucedida
+
+9. Uma conversão é bem-sucedida quando cumpre as **quatro dimensões**:
+
+   | | critério |
+   |---|---|
+   | **Validade** | o pacote gerado é tecnicamente válido |
+   | **Completude** | todo conteúdo extraível foi representado, sem perda estrutural grave |
+   | **Legibilidade** | texto e imagens permanecem legíveis, sem corte ou overflow, nos tamanhos suportados |
+   | **Estrutura** | ordem de leitura, capítulos, parágrafos e imagens continuam identificáveis |
+
+10. Existe o resultado **"concluída com avisos"**. Uma conversão que passa nas quatro dimensões mas
+    tem qualidade reduzida em algum ponto — OCR de baixa confiança, por exemplo — é declarada como
+    tal. O produto não finge que foi perfeita.
+
+11. **O que se preserva é conteúdo e estrutura semântica, não apresentação.** Preservar tudo não
+    significa preservar cada quebra ruim do PDF de origem. A transformação de apresentação rígida em
+    apresentação maleável é o trabalho, não um efeito colateral.
+
+### Identidade
+
+12. **Cada item tem identidade estável própria.** Título não pode ser identidade.
+
+13. Identidade derivada do título é **proibida**. `id = hash(título)` nunca é aceitável. Duas
+    importações chamadas "Duna" não podem colidir só porque possuem o mesmo título.
+
+### Arquivar e excluir
+
+14. **Arquivar e excluir são atos diferentes.**
+
+    - **Arquivar** tira o livro da biblioteca ativa sem destruir conhecimento.
+    - **Excluir permanentemente** remove o arquivo e os destaques que dependem dele.
+
+15. **As notas escritas pela pessoa sobrevivem à exclusão, por padrão**, com a origem marcada como
+    removida. Elas são trabalho intelectual de quem escreveu, e não simples derivado do arquivo.
 
 ## O que esta decisão NÃO decide
 
-- **O formato exato do identificador.** Erik citou `content_id = UUID` como exemplo do tipo de coisa que serve, não como especificação. O formato fica em aberto.
-- **Se guardar o original por outra razão é proibido.** A decisão 6 registra ausência de necessidade, não proibição. Pergunta fechada em aberto: *manter o PDF de origem depois de o EPUB validado ser persistido — por retry, auditoria ou obrigação legal — é proibido, ou apenas desnecessário?*
-- **Por quanto tempo o original fica guardado antes do descarte.** Nenhum prazo foi decidido. Erik declarou a pendência ao reformular a pergunta de privacidade: "quanto tempo mantemos o original? onde os arquivos ficam? são criptografados? quem/processos podem acessá-los? o que é eliminado depois da conversão?". A pendência tem consequência jurídica e permanece aberta.
-- **O que valida uma conversão como bem-sucedida.** A decisão exige validação antes de persistir e antes de descartar o original. O critério de validação não foi definido.
-- **O que acontece com o item quando o usuário o remove da estante.** Não decidido: nem se o conteúdo persistido é apagado, nem em que prazo, nem o que resta da identidade do item.
-- **Qual é o formato concreto da família Quadrinho / Mangá.** A decisão diz "representação apropriada a conteúdo visual/fixo" e não nomeia formato.
-- **Quais formatos de entrada são aceitos** além de PDF. "Formatos semelhantes" não foi enumerado.
-- **Onde os arquivos ficam, se são criptografados e quem os acessa.** Isso pertence ao modelo de privacidade e retenção a reconciliar, não a esta DEC.
-- **Como relacionar duas importações do mesmo título.** A decisão proíbe colisão; não define agrupamento, metadado de edição nem deduplicação.
+- **O formato do identificador.** Erik citou `content_id = UUID` como exemplo do tipo de coisa que
+  serve, não como especificação.
+- **Qual é o formato concreto do conteúdo visual responsivo** da família Quadrinho/Mangá.
+- **Quais formatos de entrada são aceitos.** "Conteúdo textual" e "quadrinho/mangá" nomeiam famílias
+  de destino, não a lista de extensões de origem.
+- **Por quanto tempo o original temporário sobrevive** entre a falha de conversão e o descarte, nem
+  quantos retries são oferecidos.
+- **Os limiares de cada dimensão do item 9.** "Perda estrutural grave" e "tamanhos suportados"
+  precisam de valores medidos, e a instrumentação que os mediria ainda não existe.
+- **Quais avisos são possíveis** no resultado "concluída com avisos", nem como aparecem na tela.
+- **Como relacionar duas importações do mesmo título.** A decisão proíbe colisão; não define
+  agrupamento, metadado de edição nem deduplicação.
 - **A migração do acervo e das notas existentes** para identidade estável.
-- **Se a família Quadrinho / Mangá entra no MVP.** Esta DEC reconhece a família no modelo de conteúdo e não decide escopo; a DEC-0018 tampouco responde essa pergunta — ver consequência 4. Pergunta fechada em aberto: *quadrinho e mangá são conteúdo ingerível no MVP, ou só depois dele?*
+- **O que acontece com uma nota órfã** depois que sua origem é excluída: se continua buscável, onde
+  aparece na lista, e se a pessoa pode reconectá-la a um item reimportado.
 
 ## Consequências
 
-1. **Original/Adaptado/Comparar perde a base arquitetural e pode ir para o histórico.** A feature está implementada em `prototipo-mesa.html:2663` (bloco `ORIGINAL, ADAPTADO, COMPARAR`) e `:2676` (`comoSaiuDoPDF`). Ela nasceu da hipótese de que o PDF original permaneceria como representação paralela; com as decisões 5 e 6, a hipótese cai. Erik: "eu não deixaria essa feature sobreviver só porque já foi prototipada. Pode ir para o histórico." Esta DEC não manda apagar código — retira o estatuto normativo: nada no produto deve ser desenhado a partir dessa tríade daqui em diante.
+1. **Original/Adaptado/Comparar perde a base arquitetural.** A feature está em
+   `prototipo-mesa.html:2663` e `:2676`. Nasceu da hipótese de que o PDF permaneceria como
+   representação paralela; com os itens 5 e 6, a hipótese cai. Esta DEC não manda apagar código —
+   retira o estatuto normativo: nada deve ser desenhado a partir dessa tríade daqui em diante.
 
-2. **A identidade por título passa a ser BUG conhecido se esta DEC for aceita.** Enquanto esta DEC estiver em estado "proposta", nenhuma norma vigente proíbe identidade por título, e a implementação atual não é bug — não há DEC aceita sobre modelo de conteúdo. Se esta DEC for aceita, passam a divergir das decisões 10 e 11, e a se registrar como BUG conhecido:
-   - `prototipo-mesa.html:1858` — `LIVROS` indexado por título;
-   - `prototipo-mesa.html:2441` — `noLivro=(d,cap,par)=>d.livro===ARQ.titulo&&...`, pertinência de nota resolvida por comparação de título;
-   - `prototipo-mesa.html:2455` — chave da nota `"d"+sig(lv)+cap+par`, com `sig()` derivado do título em `:2440`.
+2. **A identidade por título passa a ser BUG conhecido se esta DEC for aceita.** Divergem dos itens
+   12 e 13: `:1858` (`LIVROS` indexado por título), `:2441` (pertinência por comparação de título) e
+   `:2455` (chave da nota derivada do título). Enquanto o estado for "proposta", nenhuma norma
+   vigente proíbe identidade por título e a implementação não é bug.
 
-   Consequência observável hoje, independente de aceitação: duas edições do mesmo título colidem, e o acervo já traz o caso anotado à mão em `:1841` ("outra edição") e `:1843` ("variante"). Aceita esta DEC, vale a distinção-mãe da governança — DEC vigente x implementação divergente = BUG, não conflito de autoridade —, e isto se registra como defeito a corrigir, não como disputa entre protótipo e norma. (A auditoria registrou estas ocorrências como `:1857`, `:2438` e `:2459`; o arquivo foi alterado desde então e as linhas verificadas hoje são as citadas acima.)
+3. **A DEC-0018 não é contrariada.** Ela põe fora do MVP a *tradução* de quadrinhos e mangás
+   (`DEC-0018:15-17`), não a família de conteúdo. O item 2 desta DEC admite quadrinho e mangá como
+   conteúdo ingerível no MVP; a tradução deles continua fora, por decisão que permanece vigente.
 
-3. **A DEC-0011 recebe a resposta de produto que suas consequências pediam.** A DEC-0011 nomeou o "modelo de livro persistente" como próximo marco técnico e o descreveu como "a entidade que `ProcessingJob` não é". Esta DEC define o que essa entidade é do ponto de vista de produto: um item com duas famílias possíveis, formato canônico por família e identidade estável própria. Esta DEC não emenda nem substitui a DEC-0011: ela responde à pergunta de produto que as consequências dela deixaram aberta. O ponto 1 da DEC-0011 é emendado pela **DEC-0025**, proposta na mesma data; o conteúdo desta DEC não depende dele. Os demais pontos da DEC-0011 não são tocados por esta DEC.
+4. **A DEC-0011 recebe a resposta de produto que suas consequências pediam.** Esta DEC define o que
+   é o "modelo de livro persistente" do ponto de vista de produto. Não emenda nem substitui a
+   DEC-0011; o ponto 1 daquela DEC é emendado pela DEC-0025, proposta na mesma data.
 
-4. **Modelo e escopo são coisas diferentes.** A DEC-0018 (aceita, 12/08) fixa o escopo do MVP em preparação e biblioteca, com Estante, Canvas e Conexões dentro — "a primeira versão inclui **preparação e biblioteca**. Estante, Canvas e Conexões entram; não são fase dois" (`DEC-0018-mekora-identity-and-mvp-scope.md:12-13`) — e põe fora do MVP a **tradução** de quadrinhos e mangás, não a família de conteúdo em si: "**Tradução:** entra no MVP e é uma das funcionalidades principais — para documentos de texto. **Fica de fora para quadrinhos e mangás**, onde a eficiência ainda não foi comprovada" (`:15-17`). Esta DEC reconhece a família Quadrinho/Mangá **no modelo de conteúdo**: reconhecer a família impede que o modelo seja desenhado como se só existisse texto refluível. Ela não decide se a família entra no MVP, e a DEC-0018 também não responde isso — fica registrada como pendência de escopo. O que a DEC-0018 decide sobre tradução de quadrinho continua vigente e não é tocado aqui.
+5. **O fluxo de ingestão ganha norma verificável.** O item 8 fixa uma ordem e o item 5 fixa uma
+   invariante: enquanto não houver formato canônico validado e persistido, o original existe.
+   Qualquer implementação que descarte a fonte antes da validação viola esta DEC. Se o backend atual
+   cumpre essa ordem: não verificado.
 
-5. **O fluxo de ingestão ganha norma verificável.** A decisão 8 fixa uma ordem e a decisão 9 fixa uma invariante: enquanto não houver EPUB validado e persistido, o original existe. Aceita esta DEC, qualquer implementação que descarte a fonte antes da validação a viola. Se o backend atual cumpre ou não essa ordem: não verificado.
+6. **A retenção do original deixa de ser pendência aberta e passa a ter regra.** O item 5 responde
+   a primeira das cinco perguntas de privacidade que a DEC-0022 registra: o original é temporário.
+   O prazo entre falha e descarte continua sem número.
 
-6. **A pendência de retenção fica formalmente aberta e nomeada.** Sem prazo decidido, o produto não pode publicar promessa de descarte nem contrato de retenção. A pendência se conecta às cinco perguntas de privacidade e retenção registradas na **DEC-0022**, proposta na mesma data, e ao AUTH-001 (pendente), que declara não decidir nada sobre identidade e sessão. Registrado por honestidade: a decisão 8 desta DEC responde em parte a última daquelas cinco perguntas — diz *o quê* é eliminado depois da conversão, o PDF de origem, depois de o EPUB validado ser persistido. Não diz *quando*, nem onde o original ficou até lá, nem quem teve acesso.
+7. **A biblioteca precisa de dois atos distintos na interface.** O item 14 exige que arquivar e
+   excluir não compartilhem o mesmo controle nem a mesma confirmação. Hoje o protótipo não
+   implementa a distinção: não verificado se existe algum ato de remoção.
 
-7. **A tela de preparo é coerente com a decisão 8 quanto ao lugar do processamento.** Em `prototipo-mesa.html:2000` a resposta ao leitor diz "Pode. O preparo não é feito no seu computador." e em `:3179` o rodapé do preparo diz "Pode fechar a aba: o trabalho não é feito no seu computador.". O mesmo arquivo afirma "o produto é local" ao justificar recusas (`:6587`, `:6647`, `:6652`). Essa contradição interna é anterior a esta DEC e não é resolvida por ela: onde o produto roda é matéria da **DEC-0022**, proposta na mesma data.
+8. **A promessa de que a nota sobrevive ao arquivo é agora norma.** O item 15 tem consequência
+   técnica direta: a nota não pode ser armazenada como filha do arquivo. Precisa de existência
+   própria e de referência resolvível, incluindo o caso em que o alvo não existe mais.
 
 ## Histórico
 
-O modelo **Work → Edition → Representation** foi proposto a Erik nesta mesma sessão, como forma clássica de separar a obra, suas edições e os arquivos concretos de cada edição. Ele o descartou na mesma sessão, com a razão de que era "sofisticado demais para um problema que vocês não querem ter". Fica registrado aqui para que ninguém reabra a discussão do zero: a ideia foi considerada e recusada, e a recusa é deliberada, não omissão.
+Nesta mesma sessão foi proposto um modelo de três níveis — Work → Edition → Representation. Erik o
+recusou: *"Com o que você explicou, esse modelo ficou sofisticado demais para um problema que vocês
+não querem ter."* O argumento dele foi que a biblioteca não precisa saber PDF original, EPUB
+convertido, OCR e versão adaptada — precisa saber *"este é o conteúdo que eu leio"*, e os estados
+intermediários do pipeline não fazem parte do modelo mental de quem usa.
 
-O que ficou no lugar dele é mais raso de propósito: um item, duas famílias, um formato canônico por família e identidade própria — só o suficiente para impedir a colisão que já existe no acervo.
+Uma versão anterior desta proposta escrevia o item 5 como proibição de o original existir. Erik
+corrigiu: a formulação correta é que ele **não é persistido depois de uma conversão validada** —
+durante upload, conversão, retry e validação ele precisa poder existir, ou a recuperação de falha
+fica impossível.
 
-**Original/Adaptado/Comparar** foi construído antes desta decisão, a partir da hipótese oposta: a de que o PDF permaneceria disponível ao lado do texto refluído, e de que comparar as duas versões serviria para conferir se a conversão comeu alguma coisa. O código explicita essa intenção em `prototipo-mesa.html:2663`. A hipótese era razoável enquanto o PDF fosse representação permanente. Com a decisão 5, deixou de ser. Vale a regra da governança: protótipo é evidência de estado observado, nunca decisão normativa por si só.
-
-**A identidade por título** também é anterior, e é escolha de protótipo, não de produto: `sig()` reduz o título a quatro caracteres alfanuméricos para compor a chave da nota (`:2440`, `:2455`). Funcionou enquanto o acervo era de demonstração e as duplicatas eram anotadas à mão. A DEC-0011 já apontava, em 11/08, que faltava a entidade persistente; esta DEC diz que ela precisa nascer com identidade própria.
-
-Vale o enquadramento que Erik deu à rodada: "quero que a reconciliação preserve o caminho que levou ao produto atual, mas que a autoridade normativa descreva o Mekora que existe daqui para frente."
+A família Quadrinho/Mangá foi reconhecida no modelo antes de o escopo estar claro. A auditoria de
+20/08 apurou depois que a DEC-0018 nunca excluíra quadrinhos do MVP — excluíra a tradução deles —,
+e Erik então decidiu a inclusão explícita no item 2.

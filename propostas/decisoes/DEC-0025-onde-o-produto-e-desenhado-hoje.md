@@ -1,58 +1,116 @@
-# DEC-0025 — A DEC-0011 é emendada, não revogada
+# DEC-0025 — O papel do canvas-motion, e onde o desenho aprovado vive
 
 **Data:** 2026-08-20
 **Estado:** proposta
 **Projeto:** Mekora
-**Substitui / emenda:** emenda a DEC-0011. Qual ponto muda e com qual redação não está decidido — ver "O que esta decisão NÃO decide".
-**Decidido por:** Erik, em 2026-08-20
+**Substitui / emenda:** emenda a DEC-0011, ponto 1. Os pontos 2, 3, 5 e 6 permanecem vigentes e são
+preservados explicitamente. O ponto 4 é tratado à parte — ver Consequências.
+**Proposta redigida a partir de:** sessão de reconciliação com Erik, 2026-08-20
+**Aceita em:** —
 
 ## Contexto
 
-A DEC-0011, aceita em 2026-08-11, diz no ponto 1 (`decisions/DEC-0011-canonical-frontend-and-operational-api-contract.md:35`): "`mekora-canvas-motion` é o frontend canônico do Mekora. É onde a interface do produto é construída daqui em diante."
+A DEC-0011, aceita em 11/08 e nunca emendada, fixa no ponto 1: *"`mekora-canvas-motion` é o frontend
+canônico do Mekora. É onde a interface do produto é construída daqui em diante."*
 
-O estado observado nove dias depois é outro. O risco R-008 nomeou o sintoma antes desta rodada: aberto em 2026-08-19 em `projects/mekora.risks.json:70`–`:77`, com o título "O produto e desenhado fora dos repositorios que o registro rastreia" (`:71`), ele registra como evidência que entre 14 e 19/08 houve 25 runs do Mekora e nenhum tocou `operational_app`, `experience` ou `canvas_motion`; todos alteraram `C:/Users/erikc/mekora`. O manifesto do projeto repete o fato em `projects/mekora.json:22` — "o trabalho vive em C:/Users/erikc/mekora/prototipo-mesa.html" — e em `projects/mekora.json:131` — "Deixou de ser apenas caderno: entre 14 e 19/08 foi o unico lugar onde o produto foi desenhado", com `prototipo-mesa.html` como superfície principal.
+Isso deixou de descrever o projeto. Entre 14 e 20/08 o desenho do produto avançou em 25 runs, e
+nenhum deles tocou `canvas-motion`, `mekora-app` ou `mekora-experience`. O risco R-008 do registro
+nomeia o sintoma: *"O produto é desenhado fora dos repositórios que o registro rastreia."* A
+consequência mecânica é que 58 runs gravam `baseline_revisions` com três hashes observados em
+05/08, de repositórios que não receberam nenhuma dessas mudanças.
 
-O registro continua descrevendo esse lugar como outra coisa. `projects/mekora.json:98` classifica `C:/Users/erikc/mekora` dentro de `supporting_artifacts`, com `role` "cadernos de UX e protótipos de raciocínio, versionados fora das bases de produto" (`:110`) e `canonical: false` (`:118`). A lista de `contents` (`:121`–`:127`) não menciona `prototipo-mesa.html`. A revisão registrada é `0b12f1f`, observada em 19/08 (`:128`–`:130`), enquanto o `HEAD` do repositório é `af57c54`, de 20/08, com dez commits entre a revisão registrada e ele — cinco de desenho (`7c93518`, `27c779f`, `44c83e5`, `13b8257`, `64becca`) e cinco de preservação do material de resgate (`645ac22`, `5f32064`, `7da7b3e`, `e2df18e`, `af57c54`).
-
-Lendo a frase do ponto 1, ela responde a duas perguntas ao mesmo tempo: **onde a interface é desenhada** e **qual base a implementa**. O estado observado acima diverge da primeira. Nada nesta rodada testou a segunda: nenhuma implementação de interface começou.
-
-Diante da opção entre revogar a DEC-0011 e corrigi-la, o Erik decidiu, verbatim: "emendar DEC-0011, não jogar fora as partes ainda válidas." Foi a única frase dele sobre a DEC-0011 nesta rodada. Ele não indicou qual ponto emendar, não escreveu redação nova e não se pronunciou sobre o `mekora-canvas-motion`.
+O ponto 1 confundia dois papéis numa frase só: **onde o desenho acontece** e **qual é a base de
+implementação da interface**. A emenda separa os dois e responde o primeiro.
 
 ## Decisão
 
-**1. A DEC-0011 é emendada, não revogada.** As partes ainda válidas são preservadas. Verbatim do Erik em 2026-08-20: "emendar DEC-0011, não jogar fora as partes ainda válidas."
+1. **A DEC-0011 é emendada, não revogada.** As partes ainda válidas são preservadas. Verbatim de
+   Erik: *"emendar DEC-0011, não jogar fora as partes ainda válidas."*
+
+2. **O ponto 1 da DEC-0011 passa a ter esta redação:**
+
+   > `mekora-canvas-motion` **deixa de ser o frontend canônico** do Mekora. Passa a ser fonte
+   > exploratória de comportamento, motion, componentes, funções, superfícies e hipóteses de
+   > interface. O desenho aprovado do produto é consolidado na fonte de design vigente definida pelo
+   > projeto.
+
+3. **Os pontos 2, 3, 5 e 6 da DEC-0011 permanecem vigentes**, e são repetidos aqui para que esta
+   emenda não seja lida como revogação:
+
+   - **2.** O frontend de `mekora-app` continua legado: roda, é o único cliente que exercita o
+     pipeline operacional ponta a ponta, e não recebe recurso novo.
+   - **3.** O backend de `mekora-app` permanece como serviço, e é o ativo a preservar.
+   - **5.** A integração acontece por contrato de API, não por fusão de repositórios.
+   - **6.** A condição de aposentadoria do frontend legado é inalterada: ele sai quando a interface
+     nova cobrir importar com validação, acompanhar a conversão até o fim, e enviar ao Kindle.
+
+4. **Caminho local não governa o projeto.** Nenhuma penalidade, desvio ou obrigação de registro nasce
+   do fato de alguém ter trabalhado fora de uma pasta específica. `C:/Users/erikc/mekora` é
+   circunstância de uma máquina, não norma.
+
+5. **A governança rastreia papel de repositório, não pasta física.** A pergunta que o registro
+   precisa responder é *qual fonte tem qual papel* — não *em que diretório alguém estava naquele
+   dia*. A implementação disso é matéria da DEC-0026.
 
 ## O que esta decisão NÃO decide
 
-- **Qual ponto da DEC-0011 é emendado?** Não decidido. O Erik não indicou ponto.
-- **Qual é a nova redação desse ponto?** Não decidido. Nenhuma redação nova foi escrita por ele.
-- **`mekora-canvas-motion` continua sendo o frontend canônico e a base sobre a qual a interface será implementada?** Não decidido nesta rodada. O ponto 1 da DEC-0011 responde hoje que sim, e continua vigente nesse aspecto até o Erik revisá-lo. Esta decisão não o desativa.
-- **Mudança de desenho de interface feita fora de `C:/Users/erikc/mekora` passa a exigir registro próprio?** Não decidido. Nenhuma obrigação de processo é criada aqui.
-- **`C:/Users/erikc/mekora` sai de `supporting_artifacts` e entra em `repositories`, e com qual `role`?** É matéria da **DEC-0026**, proposta na mesma data. Esta decisão descreve o estado; não altera manifesto, e não depende da aceitação da DEC-0026 para valer.
-- **O protótipo pode ser citado, sozinho, como aprovação de comportamento do produto?** É matéria da **DEC-0027**, proposta na mesma data, cujo item 5 trata de implementação como evidência de estado observado. Não é decidido aqui.
-- **O que acontece com `prototipo-mesa.html` depois que houver implementação?** Se ele vira especificação, referência histórica ou material a arquivar não está decidido.
-- **O conflito, anterior e não resolvido, entre o ponto 4 da DEC-0011 e a DEC-0017.** O ponto 4 diz que `mekora-experience` "sai do caminho crítico" e "não é base de trabalho" (`decisions/DEC-0011-canonical-frontend-and-operational-api-contract.md:41`); a DEC-0017, posterior (2026-08-12, aceita), diz que `mekora-experience` e `mekora-canvas-motion` não disputam o lugar de base da experiência, que nenhuma das duas é descartada, e que as duas são fontes. As duas DECs estão marcadas como aceitas. O conflito nasceu antes desta rodada, não foi criado nem resolvido por ela, e continua aberto.
-- **Nenhuma exclusão, movimentação ou fusão é autorizada.** Como já dizia a DEC-0011, apagar, mover, copiar ou fundir qualquer coisa nesses repositórios continua exigindo decisão própria.
-- **A correção de `baseline_revisions`.** Continua sendo questão separada.
+- **Qual é, nominalmente, a fonte de design vigente.** O item 2 diz que o desenho aprovado é
+  consolidado nela; não a nomeia. Erik foi explícito ao evitar escrever hoje que uma ferramenta
+  específica é eternamente canônica — mais adiante podem coexistir design system em código, arquivo
+  de design e implementação, e a decisão de qual manda entre elas ainda não foi tomada.
+- **O que acontece com `mekora-canvas-motion` daqui em diante.** Ele deixa de ser canônico e ganha
+  papel exploratório. Se continua recebendo trabalho, em que ritmo, e se um dia é aposentado, não foi
+  decidido.
+- **Sobre qual base a interface do produto será implementada.** O ponto 1 deixava isso confundido com
+  o desenho; a emenda desfaz a confusão e não responde a segunda metade. É decisão própria, ainda não
+  tomada.
+- **O que acontece com `mekora-experience`.** Ver Consequências, item 4.
+- **Se `prototipo-mesa.html` é ele próprio a fonte do desenho aprovado, ou um instrumento de
+  exploração como o `canvas-motion`.** Hoje é onde o produto é desenhado; o item 2 não o promove.
 
 ## Consequências
 
-- **Enquanto o ponto a emendar e a nova redação não forem decididos, a DEC-0011 continua citável na íntegra, inclusive o ponto 1.** Aceitar esta decisão registra a forma da correção — emenda, não revogação — e não muda ainda nenhuma palavra da DEC-0011.
-- **Nenhuma consequência da DEC-0011 é alterada.** Inclusive a técnica: "O próximo marco técnico passa a ser o modelo de livro persistente: a entidade que `ProcessingJob` não é."
-- **O risco R-008 continua aberto.** A mitigação escrita em `projects/mekora.risks.json:76` pede decisão sobre promover o repositório de desenho, e essa decisão não é esta.
-- **BUG conhecido — o manifesto descreve o repositório de desenho por um papel que ele não tem mais.** `projects/mekora.json:110` chama `C:/Users/erikc/mekora` de "cadernos de UX e protótipos de raciocínio"; `:118` marca `canonical: false`; `:121`–`:127` listam os conteúdos sem `prototipo-mesa.html`. O próprio arquivo já se contradiz em `:22` e `:131`. É divergência entre registro e estado observado; permanece registrada, e não é corrigida aqui.
-- **BUG conhecido — a revisão rastreada do repositório de desenho está atrasada.** `projects/mekora.json:128` grava `0b12f1f`, observado em 19/08; o `HEAD` é `af57c54`, de 20/08.
-- **Dívida registrada, e não paga: a DEC-0011 mandava corrigir o `mekora.status.md`, e a correção nunca foi feita.** As três correções eram: o caminho de `mekora-app` (não está em `~/mekora-app`; o clone é `~/Projeto-kindle/kindle-local-tool`), a revisão observada (`HEAD` local `12d7062`, um commit à frente da revisão registrada `65bb244`) e a ausência de clone local de `mekora-experience`. Nenhuma entrou no arquivo. `projects/mekora.status.md:3` ainda diz "Última revisão: 2 de agosto de 2026" — nove dias antes da própria DEC-0011 e dezoito dias antes desta decisão. `projects/mekora.status.md:7`–`:10` ainda descrevem o Mekora como "um produto único com duas bases oficiais", `mekora-app` e `mekora-experience`, e a tabela em `:16`–`:19` lista só essas duas, sem o `canvas-motion` e sem o repositório de desenho. A dívida é anterior a esta decisão e continua aberta.
-- **Nenhuma linha de código muda por causa desta decisão.**
+1. **A DEC-0011 passa a declarar `amended_by: DEC-0025, escopo: ponto 1`.** Pela DEC-0027, emenda
+   parcial não muda o estado do documento emendado: a DEC-0011 permanece `accepted`.
+
+2. **A pergunta "onde eu mexo?" muda de resposta, e continua tendo resposta escrita.** Era esse o
+   mérito declarado da DEC-0011 nas suas consequências — *"A pergunta 'onde eu mexo?' tem resposta
+   escrita, e não depende de ninguém lembrar."* A emenda preserva o mérito e corrige o conteúdo.
+
+3. **O R-008 fica parcialmente endereçado.** Esta DEC corrige a norma; a DEC-0026 corrige o registro,
+   fazendo o repositório de desenho entrar em `repositories` e passar a ter revisão rastreada nos
+   runs. Nenhuma das duas resolve o escopo por domínio do `baseline_revisions`, que segue como
+   questão separada.
+
+4. **O conflito entre a DEC-0011 ponto 4 e a DEC-0017 é tratado como emenda parcial, não como
+   substituição.** O ponto 4 diz que `mekora-experience` "sai do caminho crítico" e "não é base de
+   trabalho"; a DEC-0017, posterior, diz que as duas bases de experiência são fontes e nenhuma é
+   descartada. A saída conservadora é a DEC-0017 emendar aquele trecho da DEC-0011 — e não substituir
+   a DEC inteira. **Este conflito é anterior a esta rodada**, e a resolução formal acontece na
+   reconciliação, com o vocabulário da DEC-0027.
+
+5. **A DEC-0011 mandava corrigir o `mekora.status.md`** quanto ao caminho de `mekora-app`, à revisão
+   observada e à ausência de clone do `mekora-experience`. As correções nunca foram feitas, e o
+   documento ainda abre com "Última revisão: 2 de agosto". A dívida é anterior e continua aberta.
+
+6. **Nenhuma norma nova de processo é criada.** Uma versão anterior desta proposta transformava
+   trabalho fora de `C:/Users/erikc/mekora` em "desvio que exige registro próprio". O item 4 diz o
+   oposto, e diz por quê.
 
 ## Histórico
 
-Em 2026-08-11 a DEC-0011 foi aceita com seis pontos. Ela nasceu de uma auditoria que encontrou três bases sob o nome Mekora sem decisão registrada sobre qual seria a interface do produto, e o ponto 1 respondeu a essa pergunta apontando o `mekora-canvas-motion`. Naquela data a escolha descrevia o trabalho real: o app operacional estava congelado desde 2026-07-22, e a própria DEC registrava que "todo o trabalho diário migrou para o canvas".
+O ponto 1 da DEC-0011 foi escrito em 11/08 depois de uma auditoria que apurou fatos ainda válidos: os
+dois frontends são pilhas incompatíveis e não variações de estilo — React Router, Tailwind, i18next e
+axios de um lado; vinext sobre Vite com RSC, tokens CSS próprios e deploy em Cloudflare Workers do
+outro. Unificar não seria apagar estilo antigo: seria escolher uma pilha e reescrever a outra. Esse
+diagnóstico não é desfeito por esta emenda.
 
-Em 2026-08-12 a DEC-0017 encerrou como "pergunta errada" a disputa entre `mekora-experience` e `mekora-canvas-motion`, declarando as duas fontes. É desse momento que vem o conflito com o ponto 4 da DEC-0011, nunca reconciliado.
+O que mudou foi outra coisa. O `canvas-motion` foi escolhido como frontend canônico quando o trabalho
+diário acontecia nele — 51 commits entre 1º e 4 de agosto, 41 deles num único dia. A partir de 12/08
+o desenho migrou para um protótipo autocontido, e a escolha de 11/08 passou a descrever um passado.
 
-Entre 14 e 20/08 o desenho passou a acontecer fora dos três repositórios registrados: 25 runs entre 14 e 19/08, nenhum tocando `operational_app`, `experience` ou `canvas_motion`, com `prototipo-mesa.html` como superfície principal. Em 19/08 o risco R-008 foi aberto para nomear exatamente isso.
-
-Há evidência datada, na mesma janela, de que estar no protótipo não equivale a estar aprovado: a captura de 2026-08-14 14:29 mostra "mesa C · workspace" ativo, e o run das 17:33 do mesmo dia registra a recusa da Mesa C como "o dashboard que a direcao editorial recusa". A tela existia; a decisão era contrária. O tratamento dessa distinção corre na DEC-0027, não aqui.
-
-Em 2026-08-20, diante da opção entre revogar a DEC-0011 e corrigi-la, o Erik decidiu: "emendar DEC-0011, não jogar fora as partes ainda válidas." A redação da emenda ainda não existe; as perguntas que faltam estão listadas acima.
+Uma versão anterior desta proposta escrevia, na seção Decisão, que a base de implementação "fica em
+aberto" — o que teria **removido autoridade vigente do `canvas-motion` sem decisão do dono**. Erik
+depois decidiu explicitamente que ele deixa de ser canônico e ganha papel exploratório, e é isso que
+o item 2 registra. A distinção importa: uma coisa é o dono decidir; outra é o documento desativar por
+inferência.
