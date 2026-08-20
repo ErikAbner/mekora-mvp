@@ -1,3 +1,4 @@
+578ece38fdde4b599389577362c769e5 ./.gitattributes
 a58643c5c4a084b73b55a9568a389abf ./2026-07-24-kindle-local-repo/LEIA.md
 8c2ea1bd2467ded836345f0b745324aa ./2026-07-24-kindle-local-repo/gitignored/index.html
 760d54c14af8b897eef45655fe961232 ./2026-07-24-kindle-local-repo/gitignored/kindle-local-claude.zip
@@ -20,6 +21,14 @@ c423ca9e72290eac669ea37d2969ccd0 ./2026-07-31-mekora-library-lab/work/mekora-lib
 abb75f5aa949642ad222753d2c4c9fee ./2026-07-31-mekora-library-lab/work/mekora-library-lab/src/style.css
 ac22d74945f9adaf7876ea1abdeba7d4 ./2026-08-10-exploracao-card/Exploracao Profunda Card.dc.html
 c43849a633edb7d4cf0b47608ce15bc0 ./2026-08-10-exploracao-card/LEIA.md
+555a2ced38a74f9a27dc04c26d233616 ./2026-08-14-a-20-artefato-publicado/LEIA.md
+8f154be7f682e49ce5ba2a35aa3a658f ./2026-08-14-a-20-artefato-publicado/originais/2026-08-14-14_29_50.png
+2f9fafaf330f22e199b8e86c1826465d ./2026-08-14-a-20-artefato-publicado/originais/2026-08-18-15_50_00.png
+7c094a40c5ef6093449ec24c1db7a8c8 ./2026-08-14-a-20-artefato-publicado/originais/2026-08-18-16_40_41.png
+4fb4455a6027291238289ff3adbb9ed4 ./2026-08-14-a-20-artefato-publicado/originais/2026-08-19-09_45_39.png
+4fb4455a6027291238289ff3adbb9ed4 ./2026-08-14-a-20-artefato-publicado/originais/2026-08-19-09_45_55.png
+e273a330480d4649b7a45d5bb4b11e53 ./2026-08-14-a-20-artefato-publicado/originais/2026-08-20-10_44_58.png
+cf259779cbd8ba40da348e42598c7f61 ./2026-08-14-a-20-artefato-publicado/originais/2026-08-20-10_45_23.png
 91ebb87e1c973160dfc344f79132ffc3 ./2026-08-20-kindle-painel-leitura/LEIA.md
 c94b27197701ac674f39b76ed56a8753 ./2026-08-20-kindle-painel-leitura/originais/image 68.png
 45f9fd55c6369378177bcfa357b04005 ./2026-08-20-kindle-painel-leitura/originais/image 69.png
@@ -44,4 +53,4 @@ eb72318c2db056bbaf72d87c2bbe18db ./2026-08-20-kindle-painel-leitura/originais/im
 16752f1dfc4c0b40c6006a22e235bdeb ./2026-08-20-kindle-painel-leitura/originais/image 88.png
 ff589a6ceb7e858f2bc2d79d27e60a19 ./2026-08-20-kindle-painel-leitura/originais/image 89.png
 bdda887faa4564992907bd895f4e862d ./2026-08-20-kindle-painel-leitura/run-de-origem.json
-c39702000cd163af8b3d0a4829c68af6 ./NOTA.md
+d7689d0220aeaa48f6d6c8db476dbdd2 ./NOTA.md

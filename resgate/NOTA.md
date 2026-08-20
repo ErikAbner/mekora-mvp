@@ -112,12 +112,16 @@ e não de preferência do momento.
 Um caso já confirmado: a disciplina de evidência marcada existia em 24/07 nos relatórios acima e
 foi reinventada em 12/08 como *"confiança só quando existe medição"*.
 
+### [`2026-08-14-a-20-artefato-publicado/`](2026-08-14-a-20-artefato-publicado/) — seis estados da interface
+
+O artefato publicado é mutável e republicado no mesmo endereço: a versão anterior deixa de
+existir, e o Git guarda o fonte, não o render. Estas capturas são a única prova de como o produto
+parecia em 14, 18, 19 e 20/08 — incluindo a Mesa C três horas antes de ser recusada, o
+encurtamento da página do livro acontecendo em cinquenta minutos, e a barra passando de quatro
+para cinco lugares. Cada imagem foi aberta e descrita uma a uma.
+
 ## O que continua fora, e por quê
 
-- **6 capturas únicas do artefato publicado**, em `Downloads` (14 a 20/08). Registram estados de
-  interface que não se recapturam — a navegação de quatro abas antes de Notas existir, e a página
-  do livro longa antes do encurtamento. Não foram resgatadas porque estavam fora dos cinco itens
-  autorizados nesta rodada.
 - **Duplicatas verificadas por hash**, que não precisam de resgate: `mekora-exploracao.zip`,
   `erik-project-os-main.zip`, `tipography-cards-reference/` e os builds do library-lab.
 - **Os três repositórios do Mac**, que têm remoto e não dependem desta máquina.
