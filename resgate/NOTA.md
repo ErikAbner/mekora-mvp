@@ -1,62 +1,100 @@
-# Resgate — material recuperado, ainda não classificado
+# Resgate — material preservado, ainda não classificado
 
 Este diretório existe por um motivo só: **tirar material insubstituível de lugares onde ele
 pode sumir sem aviso.** Nada aqui foi classificado, e nada aqui tem autoridade.
 
 ## A regra que vale neste diretório
 
-> Estar aqui não torna nada uma decisão vigente. Este material é anterior à consolidação e
-> descreve um produto que mudou de nome, de direção e de premissa desde então.
+> Estar aqui não torna nada uma decisão vigente. Este material é anterior à consolidação e, em
+> boa parte, descreve um produto que mudou de nome, de direção e de premissa desde então.
 
 Estes arquivos **não são especificação**. São evidência histórica. Quem for escrever
 `PRODUTO.md`, `SISTEMA.md` ou `DESIGN-SYSTEM.md` pode citá-los como origem de uma ideia, nunca
 como fonte de uma regra em vigor. A autoridade de cada item só se decide na fase de
 reconciliação, comparando com as decisões registradas e com a implementação atual.
 
-O caminho é: **resgatar → preservar → classificar → só então decidir autoridade.** Hoje estamos
-no segundo passo.
+O caminho é: **resgatar → preservar → classificar → só então decidir autoridade.**
+Hoje estamos no segundo passo.
+
+### Uma distinção que evita confusão ao ler este material
+
+```
+AUTORIDADE NORMATIVA          "como o produto deve ser"
+  DEC  →  documentação canônica
+
+ESTADO OBSERVADO              "como o produto está hoje"
+  implementação  →  testes  →  protótipos
+```
+
+Quando uma DEC vigente diz uma coisa e a implementação faz outra, **isso não é conflito de
+autoridade — é um bug.** Quando uma DEC vigente diz uma coisa e um protótipo daqui diz outra,
+**isso não é disputa — é material histórico incompatível.** Nenhum arquivo deste diretório
+disputa com uma DEC. Ele registra o que já se pensou.
+
+## Regras seguidas neste resgate
+
+Para cada item: original preservado sem modificação, estrutura de diretórios mantida, origem e
+data registradas, hash gerado, e **a origem não foi apagada nem movida**. Nenhum `.gitignore` de
+origem foi alterado e nada foi forçado para o histórico de nenhum repositório auditado.
+
+`HASHES.txt` cataloga os 47 arquivos. Para conferir a integridade a qualquer momento:
+
+```bash
+md5sum -c HASHES.txt
+```
+
+Verificação feita no dia do resgate: manifesto íntegro, cópias idênticas às origens byte a byte,
+bundle Git clonável com história completa, 22/22 PNGs com assinatura válida, JavaScript com
+sintaxe válida, JSON parseável e zip legível.
 
 ## O que está aqui
 
-### `2026-07-24-kindle-local/`
+### [`2026-07-24-kindle-local/`](2026-07-24-kindle-local/) — os dois relatórios de teste
 
-Dois relatórios de teste de 24 de julho de 2026, quando o produto ainda se chamava
-**Kindle Local** e empurrava arquivos *para* o Kindle — direção que o produto inverteu uma
-semana depois, ao virar Mekora e passar a ler o aparelho.
+118 KB resgatados de `C:\Users\erikc\.codex\attachments\`, o cache de anexos do Codex — cujo
+índice tem um campo `pendingRemovalPaths`, ou seja, os arquivos viviam numa fila de remoção por
+design. Achados por varredura de conteúdo, não por nome.
 
-| Arquivo | O que é | Tamanho |
-|---|---|---|
-| `relatorio-testes-v1.md` | Relatório de testes de UX e funcionalidade do primeiro protótipo | 51 KB |
-| `relatorio-testes-v2-e-direcoes.md` | Reteste do v2, três direções de arquitetura comparadas e o fluxo de dez telas | 66 KB |
-| `proveniencia.json` | O índice de anexos que localizava os dois arquivos, preservado como prova de origem | 4,7 KB |
+Contêm evidência marcada (`[V]` verificado, `[C]` lido no código, `[H]` hipótese, `[R]`
+recomendação), conformidade WCAG 2.2 AA item a item, execução real em Chromium headless a cinco
+viewports incluindo **390**, três direções de arquitetura com wireframe desktop e mobile, e um
+fluxo de dez telas com microcópia final.
 
-**De onde vieram:** `C:\Users\erikc\.codex\attachments\` — o cache de anexos do Codex. Não é
-uma pasta de trabalho: é estado interno de ferramenta, e o próprio índice tem um campo
-`pendingRemovalPaths`, ou seja, os arquivos vivem numa fila de remoção por design. Foram
-encontrados por varredura de conteúdo em 20/08/2026, não por nome — nenhum dos dois tinha
-"mekora" ou "kindle" no nome do arquivo. Cópia verificada por md5 contra a origem.
+### [`2026-07-24-kindle-local-repo/`](2026-07-24-kindle-local-repo/) — o repositório sem remoto
 
-**Por que importam.** Os dois documentos contêm mais especificação de produto do que qualquer
-documento hoje versionado neste repositório:
+História Git completa em `kindle-local.bundle` (`git clone kindle-local.bundle`), mais os
+arquivos **gitignored** preservados ao lado — que o `.gitignore` de origem excluía e que nenhum
+`git push` levaria. Entre eles, a versão mais avançada que o Kindle Local chegou a ter.
 
-- método de evidência marcada — `[V]` verificado em execução, `[C]` lido no código e não
-  exercitado, `[H]` hipótese sem participantes, `[R]` recomendação — com a declaração de
-  honestidade que o projeto reinventaria três semanas depois: *"Não houve participantes humanos.
-  Nenhum número de compreensão ou tempo neste documento é medição."*;
-- conformidade WCAG 2.2 AA item a item, com conformes, não conformes e ressalvas;
-- execução real em Chromium headless por Playwright a 1440×900, 768×1024, **390×844**,
-  720×450 (zoom 200%) e 320×800 (reflow), mais percurso só por teclado;
-- scorecard, matriz de cobertura e achados priorizados por severidade;
-- três direções de arquitetura comparadas, cada uma com wireframe desktop **e mobile a 390px**;
-- fluxo de dez telas com a microcópia final de cada uma;
-- backlog em três níveis e cinco experimentos de produto;
-- uma segunda passagem auditando as próprias contradições internas.
+### [`2026-07-31-mekora-library-lab/`](2026-07-31-mekora-library-lab/) — o primeiro "Mekora"
 
-**O que isso muda, e o que não muda.** O material mostra que 390px já foi desenhado, e que a
-disciplina de critérios de aceite já existiu neste projeto. Mas foi produzido para um produto na
-direção antiga. A pergunta certa na reconciliação não é "isto vale?", e sim: *o que já foi
-resolvido em 390, por que foi resolvido daquela maneira, e quais dessas decisões sobrevivem ao
-Mekora atual?*
+O protótipo "Importar do Kindle" e os fontes do library-lab, com a Estante 3D em WebGL e o Canvas
+com pan e zoom. Nunca esteve em Git. Contém a premissa local-first como promessa exibida ao
+usuário — o antes de uma decisão que foi revogada em 10/08.
+
+**Atenção:** o caminho de origem é homônimo de um repositório que existe no Mac com conteúdo
+diferente. Verificar por conteúdo, nunca por nome. Detalhes no `LEIA.md` de lá.
+
+### [`2026-08-10-exploracao-card/`](2026-08-10-exploracao-card/) — o raciocínio do caderno 01
+
+O documento-fonte que virou `caderno-01-bancada-do-card.html` seis horas depois. Guarda a tabela
+de arquitetura da informação, o diagnóstico do card em quatro escalas e o enunciado do problema —
+nenhum dos três presente no caderno.
+
+### [`2026-08-20-kindle-painel-leitura/`](2026-08-20-kindle-painel-leitura/) — 22 capturas + índice
+
+Capturas do painel de leitura do próprio Kindle, usadas como referência competitiva, com o run
+que elas fundamentaram preservado ao lado como índice. Sem ele, são 22 PNGs sem assunto.
+
+## Uma prova de proveniência que fechou sozinha
+
+O relatório `relatorio-testes-v2-e-direcoes.md` identifica o material que analisou pelo hash:
+*"index.html v2 (24,6 KB) — MD5 `8c2ea1bd…`"*. O arquivo resgatado em
+`2026-07-24-kindle-local-repo/gitignored/index.html` tem md5
+`8c2ea1bd2467ded836345f0b745324aa`.
+
+Os dois resgates vieram de lugares diferentes, por caminhos diferentes, e se identificam. O
+relatório e o artefato que ele avalia estão os dois aqui, verificáveis um contra o outro.
 
 ## Um padrão a procurar na reconciliação
 
@@ -66,22 +104,25 @@ Vale marcar, ao ler este material, os casos de:
 ideia antiga  →  esquecida  →  redescoberta de forma independente
 ```
 
-Quando a mesma ideia é encontrada duas vezes por caminhos separados, é sinal de princípio forte
-do produto — e não de coincidência. Esses casos merecem virar decisão registrada com prioridade.
+Sugestão de marca durante a reconciliação: **`PRINCÍPIO RECORRENTE`**. Se uma regra foi
+descoberta em julho e de novo em agosto por caminhos separados, isso não a torna
+automaticamente correta — mas é evidência forte de que ela emerge de necessidade real do produto,
+e não de preferência do momento.
 
-## O que ainda não foi resgatado
+Um caso já confirmado: a disciplina de evidência marcada existia em 24/07 nos relatórios acima e
+foi reinventada em 12/08 como *"confiança só quando existe medição"*.
 
-Segue em cópia única na máquina Windows, fora de qualquer repositório, aguardando autorização:
+## O que continua fora, e por quê
 
-- `Documents/Codex/2026-07-24/` — o repositório Git do Kindle Local, **sem remoto**; a melhor
-  versão dele está em `outputs/`, que o `.gitignore` exclui, então um push não a levaria;
-- `Documents/Codex/2026-07-31/` — o protótipo "Importar do Kindle" e o `mekora-library-lab`,
-  com a Estante 3D em WebGL e o Canvas com pan e zoom;
-- `Downloads/Exploracao Profunda Card.dc.html` — o raciocínio que produziu o Caderno 01;
-- `Pictures/img/` — 22 capturas do painel de leitura do Kindle, base de uma decisão de 20/08;
-- 6 capturas únicas do artefato publicado, em `Downloads/`.
+- **6 capturas únicas do artefato publicado**, em `Downloads` (14 a 20/08). Registram estados de
+  interface que não se recapturam — a navegação de quatro abas antes de Notas existir, e a página
+  do livro longa antes do encurtamento. Não foram resgatadas porque estavam fora dos cinco itens
+  autorizados nesta rodada.
+- **Duplicatas verificadas por hash**, que não precisam de resgate: `mekora-exploracao.zip`,
+  `erik-project-os-main.zip`, `tipography-cards-reference/` e os builds do library-lab.
+- **Os três repositórios do Mac**, que têm remoto e não dependem desta máquina.
 
 ---
 
-*Criado em 20 de agosto de 2026, na fase de preservação da consolidação do Mekora. Nenhum
-arquivo existente foi movido, renomeado ou alterado para criar este diretório.*
+*Criado em 20 de agosto de 2026, na fase de preservação da consolidação do Mekora. Nenhum arquivo
+existente foi movido, renomeado ou alterado para criar este diretório.*

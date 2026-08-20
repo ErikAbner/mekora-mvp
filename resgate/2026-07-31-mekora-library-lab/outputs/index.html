@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#f5f1e8" />
+  <title>Mekora — Importar do Kindle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#" aria-label="Mekora"><span class="brand-mark">M</span><span>Mekora</span></a>
+      <nav aria-label="Navegação principal">
+        <button class="nav-item active" data-view="import"><span>↙</span> Importar do Kindle</button>
+        <button class="nav-item" data-view="history"><span>◷</span> Histórico</button>
+        <button class="nav-item" data-view="connections"><span>⌁</span> Conexões futuras</button>
+      </nav>
+      <div class="sidebar-note">
+        <span class="status-dot"></span>
+        <div><strong>Processamento local</strong><small>Seus arquivos ficam sob seu controle.</small></div>
+      </div>
+      <button class="profile"><span class="avatar">EC</span><span><strong>Erik</strong><small>Biblioteca pessoal</small></span><span>•••</span></button>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <button class="mobile-menu" aria-label="Abrir menu">☰</button>
+        <div class="crumb"><span>Biblioteca</span><b>/</b><strong id="crumb-title">Importar do Kindle</strong></div>
+        <button class="help" data-modal="help">? <span>Como funciona</span></button>
+      </header>
+
+      <section id="view-import" class="view active">
+        <div class="hero-copy">
+          <p class="eyebrow">Importação segura por cabo</p>
+          <h1>Sua biblioteca, mais perto de você.</h1>
+          <p>Conecte seu Kindle para guardar documentos pessoais, organizar anotações e catalogar seus livros — sem alterar nada no dispositivo.</p>
+        </div>
+
+        <section class="flow-card" aria-live="polite">
+          <div id="step-connect" class="flow-step active">
+            <div class="cable-illustration" aria-hidden="true">
+              <div class="kindle"><div class="screen"><span>mekora</span><div class="book-lines"></div><small>Kindle</small></div><i class="port"></i></div>
+              <svg class="cable" viewBox="0 0 360 120"><path class="cable-path" d="M8 50 C80 50, 75 105, 160 105 S245 60, 310 60"/><path class="cable-flow" d="M8 50 C80 50, 75 105, 160 105 S245 60, 310 60"/></svg>
+              <div class="plug"><i></i><i></i></div>
+            </div>
+            <div class="step-copy">
+              <span class="step-pill">Etapa 1 de 4</span>
+              <h2>Conecte seu Kindle</h2>
+              <p>Use o cabo USB e mantenha o dispositivo desbloqueado. A detecção começa automaticamente.</p>
+              <button id="detect-btn" class="primary">Simular conexão <span>→</span></button>
+              <p class="microcopy">Apenas leitura · nada será apagado ou alterado</p>
+            </div>
+          </div>
+
+          <div id="step-analyze" class="flow-step">
+            <div class="device-orbit"><div class="device-mini">M</div><span></span><span></span><span></span></div>
+            <div class="step-copy">
+              <span class="step-pill">Kindle encontrado</span>
+              <h2>Analisando sua biblioteca…</h2>
+              <p id="scan-label">Preparando leitura segura do dispositivo</p>
+              <div class="progress"><i id="progress-bar"></i></div>
+              <div class="scan-list">
+                <span data-scan="docs"><i>○</i> Documentos pessoais</span>
+                <span data-scan="amazon"><i>○</i> Catálogo de livros Amazon</span>
+                <span data-scan="clippings"><i>○</i> Notas e destaques</span>
+                <span data-scan="duplicates"><i>○</i> Duplicatas e versões</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="step-review" class="flow-step review-step">
+            <div class="review-head">
+              <div><span class="step-pill">Etapa 2 de 4</span><h2>Revise o que encontramos</h2><p>Escolha o que entra na sua biblioteca. Você poderá exportar ou reorganizar tudo depois.</p></div>
+              <div class="device-badge"><span>✓</span><div><strong>Kindle Paperwhite</strong><small>Conectado · 3,2 GB livres</small></div></div>
+            </div>
+            <div class="summary-grid">
+              <article><span class="summary-icon coral">▤</span><div><strong>12</strong><small>Documentos pessoais</small></div><label class="switch"><input type="checkbox" checked data-count="12"><i></i></label></article>
+              <article><span class="summary-icon blue">▥</span><div><strong>8</strong><small>Livros Amazon</small></div><label class="switch"><input type="checkbox" checked data-count="8"><i></i></label></article>
+              <article><span class="summary-icon gold">✦</span><div><strong>147</strong><small>Notas e destaques</small></div><label class="switch"><input type="checkbox" checked data-count="147"><i></i></label></article>
+            </div>
+            <div class="review-list">
+              <button class="review-row" data-detail="docs"><span class="file-icon coral">PDF</span><span><strong>Documentos pessoais</strong><small>12 novos · 2 reconhecidos como criados no Mekora</small></span><em>Backup incluído</em><b>›</b></button>
+              <button class="review-row" data-detail="amazon"><span class="file-icon blue">Aa</span><span><strong>Livros da Amazon</strong><small>8 títulos identificados por metadados</small></span><em class="neutral">Somente catálogo</em><b>›</b></button>
+              <button class="review-row" data-detail="clippings"><span class="file-icon gold">“</span><span><strong>My Clippings.txt</strong><small>147 anotações · 6 ainda sem livro associado</small></span><em>Nova versão</em><b>›</b></button>
+              <div class="insight"><span>✦</span><div><strong>A organização já começou</strong><p>Encontramos 3 duplicatas e manteremos somente a versão mais recente. As 6 anotações sem associação irão para a Caixa de entrada.</p></div><button data-modal="dedupe">Ver detalhes</button></div>
+            </div>
+            <div class="flow-actions"><button class="ghost" data-reset>Cancelar</button><div><small><b id="selected-count">167 itens</b> selecionados</small><button id="import-btn" class="primary">Importar selecionados <span>→</span></button></div></div>
+          </div>
+
+          <div id="step-importing" class="flow-step importing-step">
+            <div class="import-visual"><div class="book-stack"><i></i><i></i><i></i></div><div class="transfer-dots"><i></i><i></i><i></i></div><div class="mekora-box">M</div></div>
+            <div class="step-copy"><span class="step-pill">Etapa 3 de 4</span><h2>Guardando sua biblioteca…</h2><p id="import-label">Fazendo backup dos documentos pessoais</p><div class="progress large"><i id="import-progress"></i></div><div class="import-meta"><strong id="import-percent">0%</strong><span>Você pode continuar usando o computador.</span></div><div class="safe-tip"><span>⌁</span><p><strong>Mantenha o Kindle conectado.</strong><br>Vamos avisar quando for seguro remover o cabo.</p></div></div>
+          </div>
+
+          <div id="step-disconnect" class="flow-step">
+            <div class="success-ring"><span>✓</span></div>
+            <div class="step-copy"><span class="step-pill success">Importação concluída</span><h2>Agora é seguro desconectar.</h2><p>Todos os itens selecionados foram organizados e o backup foi concluído.</p><button id="disconnect-btn" class="primary">Já desconectei <span>→</span></button><button class="text-btn" id="view-library">Ver minha biblioteca</button></div>
+          </div>
+
+          <div id="step-done" class="flow-step done-step">
+            <div class="celebration"><span>✦</span><span>·</span><span>✦</span><div>✓</div></div>
+            <div class="step-copy"><span class="step-pill success">Tudo pronto</span><h2>Seu Kindle agora faz parte do Mekora.</h2><p>Na próxima conexão, analisaremos apenas o que mudou — automaticamente.</p>
+              <div class="done-stats"><span><b>12</b> documentos salvos</span><span><b>8</b> livros catalogados</span><span><b>147</b> notas organizadas</span></div>
+              <div class="done-actions"><button id="finish-btn" class="primary">Ir para o histórico <span>→</span></button><button data-reset class="ghost">Simular novamente</button></div>
+            </div>
+          </div>
+        </section>
+
+        <div class="trust-row"><span>◉ <b>Sem DRM</b><small>Conteúdo protegido nunca é copiado</small></span><span>◫ <b>Backup versionado</b><small>Cada My Clippings preservado</small></span><span>⌁ <b>Reconexão inteligente</b><small>Só analisamos o que mudou</small></span></div>
+      </section>
+
+      <section id="view-history" class="view">
+        <div class="page-head"><div><p class="eyebrow">Sua atividade</p><h1>Histórico de importações</h1><p>Acompanhe o que entrou, mudou ou foi ignorado em cada conexão.</p></div><button class="primary" data-go-import>Nova importação <span>＋</span></button></div>
+        <div class="metrics"><article><span>Última importação</span><strong id="last-import">Hoje, 14:32</strong><small>Kindle Paperwhite</small></article><article><span>Backups preservados</span><strong>4 versões</strong><small>My Clippings.txt</small></article><article><span>Espaço utilizado</span><strong>184 MB</strong><small>Documentos pessoais</small></article></div>
+        <div class="history-card">
+          <div class="history-toolbar"><strong>Atividade recente</strong><button>Todos os tipos⌄</button></div>
+          <div class="timeline">
+            <article><i class="timeline-dot green"></i><time>Hoje<br><small>14:32</small></time><div><strong>Importação concluída</strong><p>12 documentos, 8 livros catalogados e 147 anotações.</p><div class="chips"><span>3 duplicatas evitadas</span><span>6 na Caixa de entrada</span></div></div><button class="round" data-modal="history-detail">›</button></article>
+            <article><i class="timeline-dot gold"></i><time>24 jul<br><small>09:18</small></time><div><strong>My Clippings atualizado</strong><p>Uma nova versão foi preservada antes da atualização.</p><div class="chips"><span>31 novas anotações</span><span>Versão 3</span></div></div><button class="round">›</button></article>
+            <article><i class="timeline-dot blue"></i><time>12 jul<br><small>18:04</small></time><div><strong>Primeira conexão</strong><p>Kindle Paperwhite reconhecido e configurado.</p><div class="chips"><span>Análise automática ativada</span></div></div><button class="round">›</button></article>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-connections" class="view">
+        <div class="page-head"><div><p class="eyebrow">Reconexão inteligente</p><h1>Conexões futuras</h1><p>Defina o que o Mekora fará quando este Kindle voltar a ser conectado.</p></div><div class="device-badge"><span>✓</span><div><strong>Kindle Paperwhite</strong><small>Última conexão hoje, 14:32</small></div></div></div>
+        <div class="settings-layout">
+          <section class="settings-card"><h2>Automação</h2><p>Aplicada somente a este dispositivo.</p>
+            <label class="setting"><span><b>Analisar ao reconectar</b><small>Procura itens novos ou alterados automaticamente.</small></span><input type="checkbox" checked><i></i></label>
+            <label class="setting"><span><b>Backup de documentos pessoais</b><small>Guarda uma cópia local antes de organizar.</small></span><input type="checkbox" checked><i></i></label>
+            <label class="setting"><span><b>Versionar My Clippings</b><small>Preserva o histórico sem sobrescrever versões.</small></span><input type="checkbox" checked><i></i></label>
+            <label class="setting"><span><b>Deduplicação inteligente</b><small>Compara conteúdo, nome, tamanho e data.</small></span><input type="checkbox" checked><i></i></label>
+            <button class="primary save-settings">Salvar preferências</button>
+          </section>
+          <aside class="value-card"><span class="value-icon">↗</span><h2>Leve suas notas com você</h2><p>Exporte destaques e anotações organizados quando quiser.</p><div class="export-buttons"><button data-export="Markdown">.MD <span>Markdown</span></button><button data-export="CSV">.CSV <span>Planilha</span></button><button data-export="JSON">{ } <span>Dados</span></button></div><hr><div class="inbox-preview"><span>6</span><div><strong>Caixa de entrada</strong><small>Anotações aguardando associação</small></div><button data-modal="inbox">Revisar</button></div></aside>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="modal" class="modal" aria-hidden="true"><div class="modal-backdrop"></div><section class="modal-card" role="dialog" aria-modal="true"><button class="modal-close" aria-label="Fechar">×</button><div id="modal-content"></div></section></div>
+  <div id="toast" class="toast"><span>✓</span><p></p></div>
+  <script src="app.js"></script>
+</body>
+</html>

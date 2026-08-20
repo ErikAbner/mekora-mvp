@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "id": "20260820T135528Z-ancora-resiliente-painel-do-livro-conceito-criad",
+  "project": "mekora",
+  "workflow": "visual-exploration",
+  "title": "Ancora resiliente, painel do livro, conceito criado por voce",
+  "status": "completed",
+  "owner": "Erik",
+  "executor": "Claude Code",
+  "reviewer": null,
+  "source_handoff": null,
+  "defect": null,
+  "scope": "ENTRA: ancora por citacao mais contexto que sobrevive a reconversao, com estado dito na tela; Alinhamento no painel Aparencia; painel do livro com Conteudo/Destaques/Notas; conceito criado pelo usuario, igualado a territorio; interruptores de tipo de no no mapa. FICA DE FORA: paginacao, leitura em voz alta, cores de destaque, painel lateral permanente no desktop. NAO TOCAR: backend, DB, API, infra, e o contrato do leitor (Sumario/Aparencia/Foco/Este arquivo continuam sendo as mesmas quatro portas).",
+  "created_at": "2026-08-20T13:55:28.674Z",
+  "updated_at": "2026-08-20T13:55:50.713Z",
+  "machine": "windows-erikc",
+  "baseline_revisions": {
+    "operational_app": "65bb244",
+    "experience": "1de54a4",
+    "canvas_motion": "e862326"
+  },
+  "acceptance_criteria": [
+    "A pergunta respondida pela exploração está explícita.",
+    "Simulações estão identificadas como simulações.",
+    "A exploração pode ser aberta e percorrida.",
+    "Resultados visuais foram verificados.",
+    "Foi tomada uma decisão clara sobre o próximo passo."
+  ],
+  "actions": [],
+  "files_changed": [
+    "prototipo-mesa.html; artefato-mekora.html"
+  ],
+  "verification": [
+    "verificar.mjs e autoteste limpos; smoke 217 telas, 0 erros, 971 regras, na fonte E no artefato; teste de reconversao com seis casos passa identico nos dois arquivos: palavra antes muda (contexto), frase inserida (contexto), contexto dos dois lados muda (citacao), trecho migra de capitulo (livro), trecho some (PERDIDA, nota preservada), restaurado (exata); nome acentuado sobrevive ao caminho real (ccedil 231, atilde 227); painel do livro mede 3 destaques e 8 notas no Diario 02; alinhamento alterna ed -just e ed -esq."
+  ],
+  "decisions": [
+    "A ancora guardada e citacao + antes + depois; numero de pagina e deslocamento sao dicas, nunca a fonte da verdade. Quando ela se conserta, a tela diz; quando ela perde, a tela diz.",
+    "Conceito e Territorio sao o mesmo objeto: um grupo de notas com nome. Duas palavras para a mesma coisa seria pior do que uma.",
+    "Brilho nao entra no painel de leitura (o app nao controla o brilho da tela; a camada escura por cima piora o contraste) e Destaques populares nao entra (depende de um corpo de leitores que um produto local nao tem).",
+    "No desktop, painel de notas a direita sim, recolhido por padrao; trilho de biblioteca a esquerda nao. Medido a 1440: coluna de leitura 724px, sobra 358px de cada lado."
+  ],
+  "blockers": [
+    "Paginacao versus rolagem continua ainda nao foi decidida, e e uma das preferencias mais usadas de qualquer leitor.",
+    "Nada foi visto no celular ainda."
+  ],
+  "summary": "A ancora deixou de ser um deslocamento: passou a ser citacao mais o texto em volta, com o deslocamento rebaixado a dica de busca. Resolve em cinco degraus (exata, contexto no paragrafo, citacao no paragrafo, capitulo, livro) e, quando nao acha, DIZ que perdeu e mostra a citacao guardada. O painel do livro virou Conteudo/Destaques/Notas no mesmo lugar. Alinhamento ganhou controle (o estado e o CSS ja existiam sem porta). Conceito criado pelo usuario passou a existir, e e o mesmo objeto que Territorio, distinguido so por quem comecou. O mapa ganhou interruptores de tipo de no, que servem para mostrar de onde vem o ruido em vez de esconde-lo.",
+  "next_step": "Decidir paginacao, e ver Notas, nota e Conexoes a 390 de largura.",
+  "completed_at": "2026-08-20T13:55:50.713Z"
+}

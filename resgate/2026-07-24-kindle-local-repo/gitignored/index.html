@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Kindle Local — protótipo navegável</title>
+  <style>
+    :root{--ink:#20201d;--muted:#6f706a;--green:#315d4d;--soft:#e7eee9;--paper:#fbfaf6;--line:#dedbd1;--white:#fff}
+    *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px Arial,sans-serif}button,input,select{font:inherit}button{cursor:pointer}
+    header{height:70px;padding:0 5vw;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800}.logo{width:32px;height:32px;border-radius:9px;background:var(--ink);color:#fff;display:grid;place-items:center;font:22px Georgia}
+    .quiet,.link{border:0;background:none;color:var(--green);font-weight:800}.progress{width:min(880px,90vw);margin:28px auto}.meta{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.12em}.track{height:4px;background:#e5e2da;margin-top:10px;border-radius:5px}.track i{display:block;height:100%;width:16.6%;background:var(--green);transition:.3s}
+    main{min-height:calc(100vh - 160px);padding:38px 20px 65px}.screen{display:none;width:min(880px,100%);margin:auto;animation:up .25s ease}.screen.active{display:block}.narrow{max-width:650px}@keyframes up{from{opacity:0;transform:translateY(7px)}}
+    .eyebrow{display:block;color:var(--green);font-size:11px;text-transform:uppercase;font-weight:800;letter-spacing:.13em;margin-bottom:14px}h1,h2{font:500 clamp(35px,5vw,52px)/1.07 Georgia,serif;letter-spacing:-.035em;margin:0 0 13px}h2{font-size:35px}.lede{color:var(--muted);font-size:17px;line-height:1.55;margin:0 0 28px}
+    .file{display:grid;grid-template-columns:100px 1fr auto;gap:22px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:17px;padding:18px;margin-bottom:38px;box-shadow:0 8px 30px #2221}.cover{height:125px;background:#a9462f;color:#f5dfb0;display:grid;place-items:center;text-align:center;font:18px Georgia;box-shadow:5px 5px #d9d1bd}.file h3{margin:6px 0}.file p{color:var(--muted)}.pill,.tag{padding:7px 10px;border-radius:30px;background:var(--soft);color:var(--green);font-size:10px;text-transform:uppercase;font-weight:800}
+    .primary{border:0;border-radius:10px;background:var(--green);color:#fff;padding:15px 20px;font-weight:800}.primary span{margin-left:22px}.primary.full{width:100%}.choices{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:30px}.choice{text-align:left;padding:27px;border:1px solid var(--line);border-radius:17px;background:#fff;position:relative}.choice.selected{border:2px solid var(--green);box-shadow:0 9px 30px #315d4d16}.choice.selected:after{content:"✓";position:absolute;right:18px;top:18px;width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:grid;place-items:center}.choice h3{font:500 26px Georgia;margin:17px 0 8px}.choice p,.choice li{color:var(--muted);line-height:1.45}.choice li::marker{color:var(--green)}.choice>strong{color:var(--green);font-size:12px}
+    .nav{border-top:1px solid var(--line);margin-top:30px;padding-top:22px;display:flex;justify-content:space-between;align-items:center}.field{display:grid;gap:8px;font-weight:800;margin:24px 0}.field input,.field select{border:1px solid #bdbbb3;border-radius:10px;padding:14px;background:#fff}.field small,.radio small,.summary small,.journey small{display:block;color:var(--muted);font-weight:400;margin-top:4px}fieldset{border:0;padding:0;margin:24px 0}legend{font-weight:800;margin-bottom:10px}.radio{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:11px;padding:15px;margin:9px 0}.radio:has(input:checked){border-color:var(--green);background:#fbfdfb}.radio input{accent-color:var(--green);width:18px;height:18px}.radio span{flex:1}.radio em{font-style:normal;color:var(--green);font-weight:800;font-size:10px;text-transform:uppercase}
+    .pages{display:grid;grid-template-columns:repeat(5,1fr);gap:13px;margin:26px 0}.page{border:0;background:none;text-align:left;padding:0}.sheet{display:flex;flex-direction:column;width:100%;aspect-ratio:.7;background:#fff;border:1px solid var(--line);padding:15px;box-shadow:0 5px 15px #0001;margin-bottom:9px}.sheet.covermini{background:#a9462f;color:#f5dfb0;justify-content:center;text-align:center;font:15px Georgia}.sheet b{font:15px Georgia;margin:8px 0 14px}.sheet i{height:3px;background:#d8d5cc;margin:4px 0}.page strong{font-size:11px}.page small{display:block;color:var(--green);margin-top:3px}.notice,.privacy,.estimate,.next{background:var(--soft);border-radius:12px;padding:16px}.notice{display:flex;align-items:center;gap:12px}.notice>i{width:28px;height:28px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center}.notice div{flex:1}.notice p,.estimate p,.next p{margin:4px 0;color:var(--muted)}.privacy{color:var(--green);font-size:13px;line-height:1.5}
+    .summary{background:#fff;border:1px solid var(--line);border-radius:15px;overflow:hidden;margin:25px 0 17px}.summary>div{display:grid;grid-template-columns:100px 1fr auto;gap:14px;padding:17px 19px;border-bottom:1px solid var(--line);align-items:center}.summary>div:last-child{border:0}.summary>div>span{color:var(--muted);font-size:12px}.summary button{border:0;background:none;color:var(--green);font-weight:800}.estimate{margin-bottom:20px}.center{text-align:center;max-width:700px}.success{width:58px;height:58px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;margin:0 auto 20px;font-size:25px}.journey{text-align:left;background:#fff;border:1px solid var(--line);border-radius:15px;padding:14px 24px;margin:26px 0}.journey>div{display:grid;grid-template-columns:32px 1fr auto;gap:12px;padding:15px 0}.journey i{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-style:normal}.journey .done i,.journey .doing i{background:var(--green);color:#fff}.journey time{color:var(--muted);font-size:11px}.bar{height:5px;background:#ddd;border-radius:6px;margin-top:9px}.bar b{display:block;width:68%;height:100%;background:#e9a45b}.next{text-align:left;margin-bottom:18px}
+    footer{border-top:1px solid var(--line);padding:18px 5vw;color:var(--muted);font-size:11px;display:flex;justify-content:space-between}.error{color:#a33;font-weight:700;font-size:12px;margin-top:2px}.hidden{display:none!important}
+    @media(max-width:700px){main{padding:30px 17px 50px}.choices{grid-template-columns:1fr}.file{grid-template-columns:72px 1fr}.file .pill{display:none}.cover{height:100px;font-size:14px}.pages{overflow-x:auto;grid-template-columns:repeat(5,125px);padding-bottom:8px}.summary>div{grid-template-columns:75px 1fr}.summary button{display:none}footer span{display:none}}
+  </style>
+</head>
+<body>
+  <header><div class="brand"><span class="logo">k</span>kindle local</div><button class="quiet" type="button">Salvar e sair</button></header>
+  <div class="progress" aria-label="Progresso"><div class="meta"><span id="stepLabel">Etapa 1 de 6</span><strong id="stepName">Arquivo</strong></div><div class="track"><i id="track"></i></div></div>
+  <main>
+    <section class="screen active" data-step="0">
+      <span class="eyebrow">Seu arquivo está pronto para começar</span>
+      <div class="file"><div class="cover">A ILHA<br>DO TESOURO</div><div><small>EPUB · 2,8 MB</small><h3>A_ilha_do_tesouro.epub</h3><p>Livro detectado · 248 páginas · Português</p><button class="link">Trocar arquivo</button></div><span class="pill">Verificado</span></div>
+      <h2>Vamos preparar este livro para o seu Kindle?</h2><p class="lede">Você escolhe quanto controle quer ter. Nada será enviado sem sua confirmação.</p>
+      <button class="primary" onclick="go(1)">Começar preparação <span>→</span></button>
+    </section>
+
+    <section class="screen" data-step="1">
+      <span class="eyebrow">Escolha seu caminho</span><h1>Como você quer preparar o livro?</h1><p class="lede">Você pode mudar de caminho depois. Suas escolhas serão preservadas.</p>
+      <div class="choices">
+        <button class="choice selected" id="recommended" onclick="chooseMode('recommended')" aria-pressed="true"><span class="tag">Recomendado</span><h3>Preparar para mim</h3><p>Detectamos um EPUB em português com 248 páginas. Manteremos o formato e o idioma originais.</p><ul><li>Nome organizado</li><li>Texto original preservado</li><li>Prévia verificada automaticamente</li></ul><strong>3 etapas · cerca de 1 minuto</strong></button>
+        <button class="choice" id="manual" onclick="chooseMode('manual')" aria-pressed="false"><h3>Escolher cada detalhe</h3><p>Controle conversão, metadados, capa, revisão e horário.</p><ul><li>Formato, idioma e diagramação</li><li>Autor, série e capa</li><li>Revisão visual completa</li></ul><strong>6 etapas · cerca de 5 minutos</strong></button>
+      </div><nav class="nav"><button class="link" onclick="go(0)">← Voltar</button><button class="primary" onclick="continueFromMode()">Continuar <span>→</span></button></nav>
+    </section>
+
+    <section class="screen narrow" data-step="2">
+      <span class="eyebrow" id="modeLabel">Nossa recomendação</span><h1>Detalhes do livro</h1><p class="lede">Ajustamos o que encontramos no arquivo. Tudo continua editável.</p>
+      <label class="field">Nome no Kindle<input id="title" value="A ilha do tesouro" maxlength="100"><small>Aparecerá assim na sua biblioteca.</small><span class="error hidden" id="titleError">Digite um nome para continuar.</span></label>
+      <fieldset><legend>Tradução</legend>
+        <label class="radio"><input type="radio" name="translation" value="Não traduzir" checked><span><strong>Não traduzir</strong><small>O arquivo já está em português — opção mais fiel.</small></span><em>Recomendado</em></label>
+        <label class="radio"><input type="radio" name="translation" value="Traduzir para português"><span><strong>Traduzir para português</strong><small>Pode alterar nuances do texto original.</small></span></label>
+        <label class="radio"><input type="radio" name="translation" value="Traduzir para inglês"><span><strong>Traduzir para inglês</strong><small>Pode alterar nuances do texto original.</small></span></label>
+      </fieldset>
+      <div class="hidden" id="formatField">
+        <label class="field">Formato de saída<select id="format"><option>EPUB otimizado</option><option>AZW3</option><option>MOBI (legado)</option></select><small>EPUB otimizado oferece a melhor compatibilidade com Kindles atuais.</small></label>
+        <label class="field">Autor<input id="author" value="Robert Louis Stevenson"></label>
+        <label class="field">Série — opcional<input id="series" placeholder="Ex.: Clássicos de aventura"></label>
+        <label class="field">Capa
+          <select id="coverChoice"><option>Manter capa original</option><option>Usar primeira página</option><option>Remover capa</option></select>
+        </label>
+        <label class="field">Diagramação
+          <select id="layoutChoice"><option>Otimizar automaticamente</option><option>Preservar margens originais</option><option>Margens compactas</option></select>
+        </label>
+      </div>
+      <nav class="nav"><button class="link" onclick="go(1)">← Voltar</button><button class="primary" onclick="validateDetails()">Continuar <span>→</span></button></nav>
+    </section>
+
+    <section class="screen" data-step="3">
+      <span class="eyebrow">Verificação rápida</span><h1>As primeiras páginas estão boas?</h1><p class="lede">Confira a capa, o sumário e o início do texto. Isso evita surpresas no Kindle.</p>
+      <div class="pages" aria-label="Primeiras cinco páginas">
+        <button class="page"><span class="sheet covermini">A ILHA DO TESOURO</span><strong>1. Capa</strong><small>✓ Legível</small></button>
+        <button class="page"><span class="sheet"><b>Folha de rosto</b><i></i><i></i><i></i></span><strong>2. Folha de rosto</strong><small>✓ Legível</small></button>
+        <button class="page"><span class="sheet"><b>Créditos</b><i></i><i></i><i></i></span><strong>3. Créditos</strong><small>✓ Legível</small></button>
+        <button class="page"><span class="sheet"><b>Sumário</b><i></i><i></i><i></i></span><strong>4. Sumário</strong><small>✓ Legível</small></button>
+        <button class="page"><span class="sheet"><b>I</b><i></i><i></i><i></i></span><strong>5. Capítulo 1</strong><small>✓ Legível</small></button>
+      </div>
+      <div class="notice"><i>✓</i><div><strong>Verificação automática sem alertas</strong><p>Margens, fontes e imagens parecem corretas — confira você também.</p></div><button class="link" onclick="alert('Obrigado. Em uma versão completa, você poderá marcar a página e descrever o problema.')">Reportar problema</button></div>
+      <nav class="nav"><button class="link" onclick="go(2)">← Voltar</button><button class="primary" onclick="go(4)">Está tudo certo <span>→</span></button></nav>
+    </section>
+
+    <section class="screen narrow" data-step="4">
+      <span class="eyebrow">Destino e horário</span><h1>Quando devemos enviar?</h1>
+      <label class="field">E-mail do Kindle<input id="email" value="leitor_72@kindle.com" inputmode="email"><small>Seu endereço “Enviar para Kindle”.</small><span class="error hidden" id="emailError">Digite um endereço Kindle válido.</span></label>
+      <fieldset><legend>Envio</legend>
+        <label class="radio"><input type="radio" name="schedule" value="Agora" checked><span><strong>Agora</strong><small>Conversão e envio levam cerca de 3 minutos.</small></span><em>Mais rápido</em></label>
+        <label class="radio"><input type="radio" name="schedule" value="Hoje, às 21h"><span><strong>Hoje, às 21h</strong><small>Você pode cancelar antes do horário.</small></span></label>
+        <label class="radio"><input type="radio" name="schedule" value="Escolher data e hora" onchange="toggleCustomDate()"><span><strong>Escolher data e hora</strong><small>Defina um horário futuro.</small></span></label>
+      </fieldset>
+      <label class="field hidden" id="customDateField">Data e hora
+        <input type="datetime-local" id="customDate">
+        <small>Horário de Brasília (GMT−3).</small>
+        <span class="error hidden" id="dateError">Escolha uma data e hora futuras.</span>
+      </label>
+      <div class="notice"><i>i</i><div><strong>Antes do primeiro envio</strong><p>Confirme nas preferências da Amazon que o remetente do Kindle Local está autorizado.</p></div></div><br>
+      <div class="privacy">🔒 O arquivo é processado localmente. Apenas o resultado final é enviado ao seu Kindle.</div>
+      <nav class="nav"><button class="link" onclick="go(3)">← Voltar</button><button class="primary" onclick="validateEmail()">Continuar <span>→</span></button></nav>
+    </section>
+
+    <section class="screen narrow" data-step="5" id="review">
+      <span class="eyebrow">Última etapa</span><h1>Revise antes de enviar</h1>
+      <div class="summary"><div><span>Livro</span><div><strong id="sumTitle"></strong><small id="sumBookMeta"></small></div><button onclick="go(2)">Editar</button></div><div><span>Idioma</span><div><strong id="sumTranslation"></strong><small>Configuração preservada</small></div><button onclick="go(2)">Editar</button></div><div id="formatSummary"><span>Formato</span><div><strong id="sumFormat"></strong><small id="sumAuthor"></small></div><button onclick="go(2)">Editar</button></div><div><span>Verificação</span><div><strong id="sumCheck"></strong><small>Verificação automática sem alertas</small></div><button onclick="go(3)">Editar</button></div><div><span>Destino</span><div><strong id="sumEmail"></strong><small id="sumSchedule"></small></div><button onclick="go(4)">Editar</button></div></div>
+      <div class="estimate"><strong id="estimateTitle"></strong><p id="estimateText"></p></div><br>
+      <button class="primary full" id="sendButton" onclick="submitJob()"><span id="sendLabel"></span> <span>→</span></button><br><br><button class="link" onclick="go(4)">← Voltar e editar</button>
+    </section>
+
+    <section class="screen center" data-step="6" aria-live="polite">
+      <div class="success" id="statusIcon">◷</div><span class="eyebrow" id="statusEyebrow">Envio em andamento</span><h1 id="statusTitle">Seu livro está a caminho</h1><p class="lede" id="statusLede">Mantenha esta aba aberta até a conversão terminar. Você pode acompanhar por aqui.</p>
+      <div class="journey" id="journey"><div class="done"><i>✓</i><span><strong>Arquivo preparado</strong><small>Metadados e páginas verificados</small></span><time>agora</time></div><div class="doing"><i>2</i><span><strong>Convertendo para Kindle</strong><small id="progressText">Otimizando fontes e imagens · 12%</small><span class="bar"><b id="progressBar" style="width:12%"></b></span></span><time>~1 min</time></div><div><i>3</i><span><strong id="sendingTo"></strong><small>Começa após a conversão</small></span><time>~2 min</time></div><div><i>4</i><span><strong>Disponível na biblioteca</strong><small>Após a sincronização do Kindle</small></span></div></div>
+      <div class="next" id="nextAdvice"><strong>Enquanto isso</strong><p>Deixe o Kindle conectado ao Wi‑Fi. Quando a conversão terminar, abra a biblioteca e toque em “Sincronizar”.</p></div>
+      <button class="link" id="cancelButton" onclick="cancelJob()">Cancelar envio</button> <button class="primary hidden" id="anotherButton" onclick="resetFlow()">Preparar outro arquivo</button>
+    </section>
+  </main>
+  <footer>Kindle Local · Protótipo de experiência <span>Seus arquivos permanecem privados</span></footer>
+  <script>
+    const names=["Arquivo","Caminho","Detalhes","Prévia","Kindle","Revisão","Acompanhamento"];let mode="recommended",current=0,sending=false,progressTimer=null;
+    function go(n){current=n;document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));const target=document.querySelector(`[data-step="${n}"]`);target.classList.add("active");stepLabel.textContent=n===6?"Acompanhamento":`Etapa ${n+1} de 6`;stepName.textContent=names[n];track.style.width=`${Math.min(((n+1)/6)*100,100)}%`;window.scrollTo({top:0,behavior:"smooth"});const heading=target.querySelector("h1,h2");if(heading){heading.setAttribute("tabindex","-1");heading.focus()}if(n===5)updateSummary()}
+    function chooseMode(next){mode=next;recommended.classList.toggle("selected",next==="recommended");manual.classList.toggle("selected",next==="manual");recommended.setAttribute("aria-pressed",next==="recommended");manual.setAttribute("aria-pressed",next==="manual");formatField.classList.toggle("hidden",next!=="manual");modeLabel.textContent=next==="manual"?"Configuração manual":"Nossa recomendação"}
+    function continueFromMode(){if(mode==="recommended"){document.querySelector('input[name="translation"][value="Não traduzir"]').checked=true;format.value="EPUB otimizado";go(4)}else go(2)}
+    function validateDetails(){const ok=title.value.trim().length>0;titleError.classList.toggle("hidden",ok);if(ok)go(3);else title.focus()}
+    function toggleCustomDate(){customDateField.classList.toggle("hidden",checked("schedule")!=="Escolher data e hora")}
+    document.querySelectorAll('input[name="schedule"]').forEach(x=>x.addEventListener("change",toggleCustomDate));
+    function validateEmail(){const emailOk=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim());let dateOk=true;if(checked("schedule")==="Escolher data e hora"){dateOk=customDate.value&&new Date(customDate.value)>new Date();dateError.classList.toggle("hidden",dateOk)}emailError.classList.toggle("hidden",emailOk);if(emailOk&&dateOk)go(5);else(emailOk?customDate:email).focus()}
+    function checked(name){return document.querySelector(`input[name="${name}"]:checked`).value}
+    function scheduleText(){const s=checked("schedule");if(s==="Escolher data e hora")return new Date(customDate.value).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"})+" · Brasília (GMT−3)";return s}
+    function updateSummary(){const scheduled=checked("schedule")!=="Agora";sumTitle.textContent=title.value.trim();sumBookMeta.textContent=`${mode==="manual"?format.value:"EPUB otimizado"} · 248 páginas`;sumTranslation.textContent=checked("translation");sumEmail.textContent=email.value.trim();sumSchedule.textContent=scheduleText();formatSummary.classList.toggle("hidden",mode!=="manual");sumFormat.textContent=format.value;sumAuthor.textContent=`${author.value} · ${coverChoice.value}`;sumCheck.textContent=mode==="manual"?"5 páginas revisadas":"Prévia verificada automaticamente";estimateTitle.textContent=scheduled?`◷ Envio programado para ${scheduleText()}`:"◷ Pronto no Kindle em aproximadamente 3 minutos";estimateText.textContent=scheduled?"Você poderá cancelar até o início da conversão.":"Depois de iniciar o envio, você poderá cancelar enquanto a conversão estiver em andamento.";sendLabel.textContent=scheduled?`Converter e agendar para ${scheduleText()}`:"Converter e enviar agora"}
+    function submitJob(){if(sending)return;sending=true;sendButton.disabled=true;sendLabel.textContent="Preparando…";const scheduled=checked("schedule")!=="Agora";sendingTo.textContent=`Enviando para ${email.value.trim()}`;go(6);if(scheduled)showScheduled();else startProgress()}
+    function showScheduled(){statusIcon.textContent="◷";statusEyebrow.textContent="Envio agendado";statusTitle.textContent=`Tudo certo para ${scheduleText()}`;statusLede.textContent="O livro será convertido e enviado no horário escolhido.";journey.innerHTML=`<div class="done"><i>✓</i><span><strong>Configuração salva</strong><small>Arquivo e preferências verificados</small></span><time>agora</time></div><div class="doing"><i>2</i><span><strong>Aguardando o horário programado</strong><small>${scheduleText()}</small></span></div><div><i>3</i><span><strong>Converter e enviar</strong><small>${email.value.trim()}</small></span></div><div><i>4</i><span><strong>Disponível na biblioteca</strong><small>Após a sincronização do Kindle</small></span></div>`;nextAdvice.innerHTML="<strong>Você está no controle</strong><p>Pode cancelar ou alterar o horário antes do início da conversão.</p>";cancelButton.textContent="Cancelar agendamento";anotherButton.classList.add("hidden")}
+    function startProgress(){let value=12;statusIcon.textContent="◷";statusEyebrow.textContent="Envio em andamento";statusTitle.textContent="Seu livro está a caminho";statusLede.textContent="Mantenha esta aba aberta até a conversão terminar. Você pode acompanhar por aqui.";cancelButton.textContent="Cancelar envio";progressTimer=setInterval(()=>{value=Math.min(value+11,100);progressText.textContent=`Otimizando fontes e imagens · ${value}%`;progressBar.style.width=value+"%";if(value===100){clearInterval(progressTimer);statusIcon.textContent="✓";statusEyebrow.textContent="Envio concluído";statusTitle.textContent="Livro enviado com sucesso";statusLede.textContent="Agora sincronize seu Kindle para encontrá-lo na biblioteca.";journey.querySelectorAll("div").forEach(x=>x.classList.add("done"));cancelButton.classList.add("hidden");anotherButton.classList.remove("hidden")}},650)}
+    function cancelJob(){if(progressTimer)clearInterval(progressTimer);sending=false;statusIcon.textContent="×";statusEyebrow.textContent="Operação cancelada";statusTitle.textContent="O arquivo não foi enviado";statusLede.textContent="Suas escolhas continuam salvas. Você pode voltar e ajustar o que quiser.";journey.classList.add("hidden");nextAdvice.innerHTML="<strong>Nada foi perdido</strong><p>Volte à revisão para tentar novamente ou altere o agendamento.</p>";cancelButton.classList.add("hidden");anotherButton.classList.remove("hidden")}
+    function resetFlow(){if(progressTimer)clearInterval(progressTimer);sending=false;sendButton.disabled=false;sendLabel.textContent="";journey.classList.remove("hidden");cancelButton.classList.remove("hidden");anotherButton.classList.add("hidden");title.value="A ilha do tesouro";email.value="leitor_72@kindle.com";author.value="Robert Louis Stevenson";series.value="";format.value="EPUB otimizado";chooseMode("recommended");document.querySelector('input[name="translation"]').checked=true;document.querySelector('input[name="schedule"]').checked=true;customDate.value="";toggleCustomDate();go(0)}
+  </script>
+</body>
+</html>
