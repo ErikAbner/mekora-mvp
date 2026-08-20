@@ -59,12 +59,12 @@ lidas.
 
 ## As perguntas abertas
 
-[`ABERTO.md`](ABERTO.md) reúne as **57 perguntas** que as nove deixaram registradas, classificadas
+[`ABERTO.md`](ABERTO.md) reúne as **61 perguntas** que as nove deixaram registradas, classificadas
 **por momento de decisão** — antes da arquitetura, antes da feature afetada, antes do lançamento, ou
 backlog técnico. É rascunho do futuro documento canônico de mesmo nome.
 
 **Nenhuma delas virou decisão durante a promoção.** A classificação existe para que documentação
-melhor organizada não vire paralisia de especificação: nenhuma das 57 bloqueia a escrita do PRD, e
+melhor organizada não vire paralisia de especificação: nenhuma das 61 bloqueia a escrita do PRD, e
 as que bloqueavam foram respondidas antes da aceitação.
 
 ## Como elas foram escritas

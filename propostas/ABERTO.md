@@ -1,4 +1,4 @@
-# Aberto — as 57 perguntas, classificadas por momento
+# Aberto — as 61 perguntas, classificadas por momento
 
 **Data:** 2026-08-20
 **Estado:** rascunho — este documento ainda não é canônico
@@ -25,10 +25,10 @@ D   backlog técnico               pode ser decidido durante a implementação, 
 
 | | quantas |
 |---|---:|
-| **A** — antes da arquitetura | 8 |
-| **B** — antes da feature afetada | 21 |
-| **C** — antes do lançamento | 15 |
-| **D** — backlog técnico | 13 |
+| **A** — antes da arquitetura | 9 |
+| **B** — antes da feature afetada | 22 |
+| **C** — antes do lançamento | 16 |
+| **D** — backlog técnico | 14 |
 
 ---
 
@@ -38,7 +38,7 @@ Decidem forma de sistema. Errar aqui custa refação, não ajuste.
 
 | | pergunta | origem |
 |---|---|---|
-| **A1** | **Onde a infraestrutura fica** — região, provedor, jurisdição. É a única de todas as 57 cuja resposta muda obrigação legal, e não só implementação. | DEC-0022 |
+| **A1** | **Onde a infraestrutura fica** — região, provedor, jurisdição. É a única de todas as 61 cuja resposta muda obrigação legal, e não só implementação. | DEC-0022 |
 | **A2** | **Como a tradução própria é construída.** A regra é o limite; a arquitetura que a cumpre não existe, e pode ter custo relevante. | DEC-0022 |
 | **A3** | **Se algum processamento além da tradução pode usar serviços externos.** O item 7 nomeia tradução e IA. OCR, extração e geração de capa não foram tratados. | DEC-0022 |
 | **A4** | **O formato do identificador de conteúdo.** UUID foi exemplo, não especificação. | DEC-0021 |
@@ -46,6 +46,7 @@ Decidem forma de sistema. Errar aqui custa refação, não ajuste.
 | **A6** | **Qual é, nominalmente, a fonte de design vigente.** Deliberadamente não nomeada, porque podem coexistir design system em código, arquivo de design e implementação. | DEC-0025 |
 | **A7** | **Sobre qual base a interface será implementada.** Separada do desenho pela DEC-0025, e não respondida. | DEC-0025 |
 | **A8** | **O escopo por domínio do `baseline_revisions`.** Hoje todo run carimba todos os repositórios, independente do que tocou. | DEC-0026 |
+| **A9** | **Como o Kindle por cabo funciona num produto web.** A DEC-0022 item 6 isolou a questão como técnica separada, e ela não estava na fila. Acesso a dispositivo físico pelo navegador pode impor restrições que mudam a arquitetura. Hoje "pelo cabo o Mekora leva e traz" é a afirmação mais frágil da interface | DEC-0022 |
 
 ---
 
@@ -60,10 +61,10 @@ Não impedem outras frentes. Impedem aquela.
 | **B3** | Os limiares de cada verificação do contrato de conversão | pipeline de conversão | DEC-0021 |
 | **B4** | Quais avisos são possíveis em "concluído com avisos", e como aparecem | conversão + tela de preparo | DEC-0021 |
 | **B5** | Se "falhou" oferece retry automático, manual ou nenhum, e quantas vezes | conversão | DEC-0021 |
-| **B6** | O que acontece com uma nota órfã depois da exclusão da origem | Notas + exclusão | DEC-0021 |
+| **B6** | O que acontece com uma nota órfã depois da exclusão da origem — **é a mesma pergunta que B16**, vista do outro lado | Notas + exclusão | DEC-0021 |
 | **B7** | O que acontece com o trabalho feito antes de a conta existir | primeiro uso + conta | DEC-0022 |
 | **B8** | Como Relacionadas, Trilhas e Assuntos se apresentam | Conexões no telefone | DEC-0023 |
-| **B9** | Se o Mapa ganha alguma representação no telefone | Conexões no telefone | DEC-0023 |
+| **B9** | Se o Mapa ganha alguma representação no telefone — **evidência nova:** a decisão de 20/08 sugere "vista opcional, talvez nunca", inclusive no desktop | Conexões no telefone | DEC-0023 |
 | **B10** | Como a escolha de modo de leitura é lembrada — conta, aparelho ou livro | Reader | DEC-0023 |
 | **B11** | O tablet, feature a feature | tudo no tablet | DEC-0023 |
 | **B12** | Quais breakpoints existem além de 390px, e o que "tablet" significa em números — **evidência nova:** a regra `@container` de 18/08 sugere que parte do problema não se resolve por breakpoint | design system | DEC-0023 |
@@ -71,11 +72,12 @@ Não impedem outras frentes. Impedem aquela.
 | **B14** | Se Mesa é um lugar como os outros, ou a casa que a marca abre — **evidência nova:** a DEC-0019 a trata das duas formas na mesma frase, e o run de 12/08 fechou "a Mesa é a Home"; a ambiguidade pode ser deliberada | navegação | DEC-0024 |
 | **B15** | Que vistas Notas tem, e como se chama a partição hoje rotulada "Soltas" | Notas | DEC-0024 |
 | **B16** | Como a visão filtrada do livro se comporta quando a origem foi excluída | Notas dentro do livro | DEC-0024 |
-| **B17** | O destino do `mekora-canvas-motion` daqui em diante | frente de implementação | DEC-0025 |
+| **B17** | O destino do `mekora-canvas-motion` daqui em diante — **evidência nova:** ele contém o Canvas de cinco tipos, a implementação mais avançada das três | frente de implementação | DEC-0025 |
 | **B18** | O destino do `mekora-experience` — o conflito DEC-0011 §4 × DEC-0017 | reconciliação | DEC-0025 |
 | **B19** | Se `prototipo-mesa.html` é a fonte do desenho aprovado ou um instrumento de exploração | governança do desenho | DEC-0025 |
 | **B20** | Que eventos são coletados, com que granularidade | instrumentação | DEC-0029 |
 | **B21** | **Auto-ocultar as barras no celular** depois de segundos sem interação. Bloqueio de 19/08 que a DEC-0023 tornou requisito de V1; precisa de regra para nunca ocultar com campo em foco | Reader no telefone | DEC-0023 |
+| **B22** | **Persistência da posição no Canvas.** Hoje vive em memória | Canvas | DEC-0024 |
 
 ---
 
@@ -100,6 +102,7 @@ Podem ser decididas durante a construção. Não podem ficar sem resposta na V1.
 | **C13** | Quando a máquina Windows é efetivamente zerada | DEC-0028 |
 | **C14** | O destino do `artefato-mekora.html`, 2,87 MB versionados por ausência de regra | DEC-0028 |
 | **C15** | Quando a V1 é lançada | DEC-0029 |
+| **C16** | **O limiar de "talvez" em Conexões.** Uma palavra em comum pode ser generoso demais num acervo grande; calibrar com onze notas seria no escuro. Depende dos dados que a DEC-0029 destrava | DEC-0024 |
 
 ---
 
@@ -122,6 +125,7 @@ Podem ser decididas durante a implementação, por quem implementa.
 | **D11** | Que número, em qualquer medida, conta como sucesso — depende de linha de base que ainda não existe | DEC-0029 |
 | **D12** | O que entra no escopo da V1 — matéria da DEC-0018, não da DEC-0029 | DEC-0029 |
 | **D13** | **O Sumário continua sendo folha**, e folha cobre o texto. O run de 19/08 o nomeia como o próximo candidato à tese da fita | DEC-0023 |
+| **D14** | **Canvas em toque, e regra de escala acima de ~50 itens.** Desktop-only no V1 pela DEC-0023, então não bloqueia | DEC-0023 |
 
 ---
 
