@@ -1565,6 +1565,70 @@ td.n{color:var(--ink);font-weight:600}
   color:var(--ink-3);margin-top:4px;line-height:1.5}
 .pit cite{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.07em;
   color:var(--ink-3);font-style:normal;margin-top:5px}
+/* ═══ CANVAS ═══ Superficie, e nao lista. O campo tem fundo proprio e uma
+   borda fina para dizer onde ele acaba: sem limite visivel, "espacial" vira
+   "solto na pagina". O ponto de grade e quase invisivel de proposito — ele
+   existe para o olho saber que ha coordenada, e nao para ser lido. */
+.cvTopo{display:flex;align-items:flex-end;gap:var(--s5);flex-wrap:wrap;margin-bottom:var(--s5)}
+.cvTopo .sub{margin-bottom:0}
+.cvFer{display:flex;align-items:center;gap:var(--s4);margin-left:auto;padding-bottom:2px}
+.cvFer button{font-size:13px;color:var(--ink-3);padding:5px 0;border-bottom:1px solid transparent;
+  border-radius:0}
+.cvFer button:hover{color:var(--ink)}
+.cvFer button[aria-pressed="true"]{color:var(--ink);font-weight:600;border-bottom-color:var(--ink)}
+.cvFer .di{width:1px;height:14px;background:var(--line);margin:0 var(--s1)}
+.cvCampo{position:relative;height:560px;background:var(--bg-2);border:1px solid var(--line);
+  background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:24px 24px;
+  overflow:hidden;touch-action:none}
+.cvLinhas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.cvLinhas line{stroke:var(--acc);stroke-opacity:.85;stroke-width:1}
+.cvIt{position:absolute;width:210px;background:var(--branco);border:1px solid var(--line-3);
+  padding:var(--s3) var(--s4);cursor:grab;user-select:none}
+.cvIt.-arrastando{cursor:grabbing;border-color:var(--ink)}
+.cvIt.-sel{border-color:var(--acc);outline:1px solid var(--acc)}
+.cvIt>p{margin:0;font-family:var(--serif);font-size:14px;line-height:1.5;color:var(--ink)}
+.cvIt>cite{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;
+  color:var(--ink-3);font-style:normal;margin-top:6px}
+.cvAcs{display:flex;gap:var(--s3);margin-top:var(--s2);opacity:0;transition:opacity var(--d1) var(--curva)}
+.cvIt:hover .cvAcs,.cvIt:focus-within .cvAcs{opacity:1}
+@media(hover:none){.cvAcs{opacity:1}}
+.cvAcs button{font-size:11px;color:var(--ink-3);padding:2px 0;border-radius:0}
+.cvAcs button:hover{color:var(--acc)}
+.cvCampo[data-ligando] .cvIt{cursor:pointer}
+.cvCampo[data-ligando] .cvIt:hover{border-color:var(--acc)}
+.cvVazio{border:1px solid var(--line);background:var(--bg-2);padding:var(--s8) var(--s6);text-align:center}
+.cvVazio p{margin:0;font-family:var(--serif);font-size:1.15rem;color:var(--ink-2)}
+.cvVazio .sub2{font-family:var(--ui);font-size:13px;color:var(--ink-3);line-height:1.7;
+  max-width:52ch;margin:var(--s3) auto 0}
+.cvVazio .sub2 b{color:var(--ink-2);font-weight:600}
+.cvSaldo{font-family:var(--mono);font-size:10px;letter-spacing:.07em;color:var(--ink-3);
+  margin:var(--s3) 0 0;line-height:1.7}
+.cvSaldo b{color:var(--ink);font-weight:600;font-family:var(--ui);font-size:11px;letter-spacing:0}
+.grupoE .cit,.grupoE .cab{position:relative}
+.mls{position:absolute;top:var(--s2);right:var(--s2);font-size:14px;line-height:1;
+  color:var(--ink-3);padding:3px 6px;border-radius:0;opacity:0;
+  transition:opacity var(--d1) var(--curva)}
+.grupoE .cit:hover .mls,.grupoE .cab:hover .mls,.mls:focus-visible,.mls[aria-expanded="true"]{opacity:1}
+@media(hover:none){.mls{opacity:1}}
+.mls:hover{color:var(--ink);background:var(--bg-3)}
+.mlm{position:absolute;top:calc(var(--s2) + 22px);right:var(--s2);z-index:8;min-width:190px;
+  background:var(--branco);border:1px solid var(--line-3);padding:4px 0;display:flex;
+  flex-direction:column;align-items:stretch}
+.mlm button{text-align:left;font-size:13px;color:var(--ink-2);padding:7px var(--s4);border-radius:0}
+.mlm button:hover{background:var(--bg-2);color:var(--ink)}
+.mlm .-dan:hover{color:var(--dan)}
+.mlm .ln{height:1px;background:var(--line-2);margin:4px 0}
+.pauta{margin-top:var(--s5);border-left:2px solid var(--warn);padding-left:var(--s5)}
+.pauta>.soltoE{margin-top:0}
+.pit2{padding:var(--s3) 0;border-bottom:1px solid var(--line-2)}
+.pit2:last-child{border-bottom:0}
+.pit2>p{margin:0}
+.pit2 .abre{display:block;width:100%;text-align:left;font-family:var(--serif);
+  font-size:var(--t-leitura);line-height:var(--lh-leitura);color:var(--ink);padding:0;border-radius:0}
+.pit2 .abre::after{content:" →";color:var(--ink-3)}
+.pit2 .abre:hover::after{color:var(--ink)}
+.pit2 cite{display:block;font-size:12px;color:var(--ink-3);font-style:normal;margin-top:3px;
+  line-height:1.6}
 .recorte{display:flex;align-items:center;gap:var(--s4);margin-top:var(--s5);
   padding:var(--s3) var(--s4);background:var(--bg-2);border-left:2px solid var(--ink)}
 .recorte span{font-size:13px;color:var(--ink-2)}
@@ -1665,8 +1729,8 @@ const zero={
      mesmo escreveu, os territorios que voce nomeou e as ideias que dispensou.
      "rel" e "terr" sao seus; "ignoradas" existe porque uma sugestao que volta
      depois de dispensada deixa de ser sugestao e vira insistencia. */
-  nfiltro:"todas",qNotas:"",notaK:null,sumAba:"conteudo",mapaNos:null,rever:[],rel:[["n-solta-1","n-obs-1"]],
-  terr:[],ignoradas:[],comoIdeia:false,nomeando:null,concNova:null,naoRel:[],canvasN:[],mantidos:[],verTerr:null,verTerrId:null,
+  nfiltro:"todas",qNotas:"",notaK:null,sumAba:"conteudo",mapaNos:null,linhaMenu:null,recorteMotivo:null,rever:[],rel:[["n-solta-1","n-obs-1"]],
+  terr:[],ignoradas:[],comoIdeia:false,nomeando:null,concNova:null,canvasPos:{},cvModo:"mover",cvLigando:null,trazendo:false,voltarCanvas:false,naoRel:[],canvasN:[],mantidos:[],verTerr:null,verTerrId:null,
   sel:[],filtro:"todas",mud:[],fora:[],giradas:[],capaPag:1,
   disp:1,fonte:2,orient:"retrato",formato:"epub",nome:null,
   /* ── PERFIL ── uma seção por vez, e o estado de cada fluxo ao lado ── */
@@ -1807,7 +1871,7 @@ const AJUDA=[
 let S=Object.assign({},zero),timer=null,ultimoLugar=null;
 function reset(cena){
   clearInterval(timer);timer=null;S=Object.assign({},zero);
-  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardando=null;S.tirando=null;S.apagando=null;S.escNovo=null;S.paraLivro=false;S.desc="";S.descAberta=false;S.escAqui=null;S.aaAberto=false;S.foco=false;S.rever=[];S.rel=[["n-solta-1","n-obs-1"]];S.terr=[];S.ignoradas=[];S.nomeando=null;S.concNova=null;S.comoIdeia=false;S.nfiltro="todas";S.qNotas="";S.notaK=null;S.sumAba="conteudo";S.mapaNos=null;S.naoRel=[];S.canvasN=[];S.mantidos=[];S.verTerr=null;S.verTerrId=null;
+  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardando=null;S.tirando=null;S.apagando=null;S.escNovo=null;S.paraLivro=false;S.desc="";S.descAberta=false;S.escAqui=null;S.aaAberto=false;S.foco=false;S.rever=[];S.rel=[["n-solta-1","n-obs-1"]];S.terr=[];S.ignoradas=[];S.nomeando=null;S.concNova=null;S.comoIdeia=false;S.nfiltro="todas";S.qNotas="";S.notaK=null;S.sumAba="conteudo";S.mapaNos=null;S.linhaMenu=null;S.recorteMotivo=null;S.naoRel=[];S.canvasN=[];S.mantidos=[];S.verTerr=null;S.verTerrId=null;S.canvasPos={};S.cvModo="mover";S.cvLigando=null;S.trazendo=false;S.voltarCanvas=false;
   if(cena==="nova"){S.cena="nova";}
   if(cena==="sem-conta"){S.cena="nova";S.conta=false;}
   pinta();
@@ -3246,9 +3310,49 @@ const maiuscula=t=>t.charAt(0).toUpperCase()+t.slice(1);
    isso Notas é um LUGAR, com entrada própria na navegação, e Conexões é o
    que se deriva delas. Na ordem inversa, a primeira tela seria um grafo
    bonito de relações entre coisas que ninguém escreveu ainda. */
+/* ═══ A PAUTA ═══
+   "Para revisar 0" era uma categoria vazia esperando alguem marcar coisa. Mas
+   o material ja sabe o que ficou pela metade: trecho marcado e nunca escrito,
+   nota que nao encostou em nenhuma outra, sugestao forte que ninguem decidiu,
+   assunto que se repetiu e continua sem nome, e trecho que a reconversao
+   perdeu. Isso e um ritual de fim de leitura sem inventar pontinho nenhum:
+   o retorno vem do que a propria pessoa escreveu. */
+function pauta(){
+  const comNota=S.dst.filter(d=>d.nota);
+  const it=[];
+  const marcados=S.dst.filter(d=>ancora(d)&&!d.nota);
+  if(marcados.length)it.push({k:"marcados",n:marcados.length,
+    t:marcados.length+" trecho"+(marcados.length>1?"s":"")+" marcado"+(marcados.length>1?"s":"")+
+      " e nunca escrito"+(marcados.length>1?"s":""),
+    r:"Eles est\u00e3o no livro, em Este livro \u203a Destaques.",a:"ir-destaques"});
+  const sozinhas=comNota.filter(d=>!relacoesDe(d.k).length);
+  if(sozinhas.length)it.push({k:"sozinhas",n:sozinhas.length,
+    t:sozinhas.length+" nota"+(sozinhas.length>1?"s":"")+" que n\u00e3o encosta"+(sozinhas.length>1?"m":"")+
+      " em nenhuma outra",
+    r:"Pode ser assunto novo, e pode ser que falte uma liga\u00e7\u00e3o sua.",a:"rev-sozinhas"});
+  const fortes=[];
+  comNota.forEach(d=>relacoesDe(d.k).forEach(r=>{
+    if(r.tipo!=="forte")return;
+    const id=[d.k,r.k].sort().join("|");
+    if(fortes.indexOf(id)<0)fortes.push(id);}));
+  if(fortes.length)it.push({k:"fortes",n:fortes.length,
+    t:fortes.length+" par"+(fortes.length>1?"es":"")+" que o Mekora achou parecido"+(fortes.length>1?"s":""),
+    r:"Confirmar ou recusar leva um toque dentro da nota.",a:"rev-fortes"});
+  const semNome=ideias().filter(g=>S.ignoradas.indexOf(g.id)<0&&S.mantidos.indexOf(g.id)<0
+    &&!S.terr.some(t=>t.id===g.id));
+  if(semNome.length)it.push({k:"semnome",n:semNome.length,
+    t:semNome.length+" assunto"+(semNome.length>1?"s":"")+" que se repetiu em livros diferentes e "+
+      "continua sem nome",r:"Nomear transforma a contagem em coisa sua.",a:"ir",v:"conexoes"});
+  const perdidas=S.dst.filter(d=>perdida(d));
+  if(perdidas.length)it.push({k:"perdidas",n:perdidas.length,
+    t:perdidas.length+" nota"+(perdidas.length>1?"s":"")+" cujo trecho sumiu do texto",
+    r:"O que voc\u00ea escreveu continua; a cita\u00e7\u00e3o guardada est\u00e1 dentro da nota.",a:"rev-perdidas"});
+  return it;
+}
 function vNotas(){
   const comNota=S.dst.filter(d=>d.nota);
   const soMarcados=S.dst.filter(d=>ancora(d)&&!d.nota).length;
+  const P=pauta();
   const F={todas:comNota,livros:comNota.filter(d=>d.livro),
     soltas:comNota.filter(d=>!d.livro),rever:comNota.filter(d=>S.rever.indexOf(d.k)>-1)};
   const f=S.nfiltro||"todas",lista=F[f]||F.todas;
@@ -3269,7 +3373,7 @@ function vNotas(){
     '<h1 class="t">Notas</h1><p class="sub">O que você escreveu, e de onde veio.</p>'+
     '<div class="nfila">'+ab("todas","Todas",F.todas.length)+ab("livros","De livros",F.livros.length)+
       ab("soltas","Soltas",F.soltas.length)+'<span class="di"></span>'+
-      ab("rever","Para revisar",F.rever.length)+'<span class="sp"></span>'+
+      ab("rever","Para revisar",P.reduce((n,x)=>n+x.n,0)+F.rever.length)+'<span class="sp"></span>'+
       /* a busca mora NA fila, do tamanho de um campo de busca. Solta acima da
          lista ela virava uma faixa de 930 por 60 pixels para procurar entre
          onze notas — mais alta que qualquer nota da lista. */
@@ -3277,14 +3381,25 @@ function vNotas(){
         'value="'+esc(S.qNotas||"")+'" autocomplete="off">':'')+
       '<button class="lnk mudo" data-a="nota-nova">Escrever uma nota</button></div>';
 
+  /* veio do Canvas para escolher: a tela diz para que serve o proximo toque,
+     em vez de deixar a pessoa adivinhar que a lista virou um seletor. */
+  if(S.trazendo)
+    h+='<div class="recorte"><span>Toque em <b>Levar ao Canvas</b> dentro de uma nota para '+
+      'trazê-la.</span><button class="lnk" data-a="cv-cancelar" style="padding:0">cancelar</button></div>';
   if(S.verTerr&&S.verTerr.length)
     h+='<div class="recorte"><span>Mostrando '+num(S.verTerr.length)+' notas'+
-      (terr?' de “'+esc(terr.nome)+'”':' de um assunto')+'.</span>'+
+      (terr?' de “'+esc(terr.nome)+'”':(S.recorteMotivo||' de um assunto'))+'.</span>'+
       '<button class="lnk" data-a="terr-todas" style="padding:0">ver todas</button></div>';
   else h+=blocoIdeias();
+  if(f==="rever"&&!q&&P.length)
+    h+='<div class="pauta"><div class="soltoE">O que ficou pela metade</div>'+
+      P.map(x=>'<div class="pit2"><p><button class="abre" data-a="'+x.a+'" data-v="'+
+        esc(x.v||x.k)+'">'+esc(x.t)+'</button></p><cite>'+x.r+'</cite></div>').join("")+
+      '</div>';
   if(!vis.length)
     h+='<p class="vazioN">'+(q?'Nada com “'+esc(q)+'”.':
-      f==="rever"?'Nada marcado para revisar. Dentro de uma nota, <b>marcar para revisar</b> guarda ela aqui.':
+      f==="rever"?(P.length?'Nenhuma nota marcada à mão. Dentro de uma nota, <b>marcar para revisar</b> guarda ela aqui.'
+        :'Nada pendente. Nem pauta do material, nem nota marcada por você.'):
       f==="soltas"?'Nenhuma nota solta. Uma nota solta nasce fora de um livro — de uma conversa, de um susto, de nada.':
       'Nada escrito ainda.')+'</p>';
   else h+=listaNotas(vis);
@@ -3321,6 +3436,26 @@ function listaNotas(vis){
 }
 /* a pergunta nao e citacao: ela nao ganha o degrau de papel, e o que esta
    guardado sob ela ganha. A mesma regra de dentro do livro. */
+/* MENU DE OBJETO, na categoria do Erik: age sobre a coisa daquela linha, e nao
+   sobre a tela nem sobre uma selecao. Um controle por item, e nao seis — a
+   regra de "texto e porta, botao e arrumacao" continua valendo: a porta e a
+   frase, e isto aqui e a arrumacao. */
+function menuLinha(d){
+  const ab=S.linhaMenu===d.k, tr=ancora(d), rev=S.rever.indexOf(d.k)>-1,
+        noC=S.canvasN.indexOf(d.k)>-1;
+  const i=(a,v,rot)=>'<button data-a="'+a+'" data-v="'+v+'">'+rot+'</button>';
+  return '<button class="mls" data-a="linha-menu" data-v="'+d.k+'" aria-expanded="'+ab+'" '+
+    'aria-label="O que fazer com esta nota">⋯</button>'+
+    (ab?'<div class="mlm">'+
+      (tr?i("nota-origem",d.k,"Abrir no livro"):"")+
+      i("nota-abrir",d.k,"Ver a nota")+
+      i("nota-editar",d.k,"Editar")+
+      i("nota-canvas",d.k,noC?"Já está no Canvas":"Levar ao Canvas")+
+      i("nota-rever",d.k,rev?"Tirar de para revisar":"Marcar para revisar")+
+      '<span class="ln"></span>'+
+      '<button class="-dan" data-a="nota-apagar" data-v="'+d.k+'">Apagar</button>'+
+      '</div>':'');
+}
 function linhaPai(d){
   const r=relacoesDe(d.k),rot=[];
   rot.push(d.cap!=null?"sobre o capítulo "+(d.cap+1):"sobre o livro");
@@ -3329,7 +3464,8 @@ function linhaPai(d){
   return '<div class="cab" id="n-'+d.k+'">'+
     '<p><button class="abre" data-a="nota-abrir" data-v="'+d.k+'">'+esc(d.nota)+'</button></p>'+
     '<cite>'+rot.join(" · ")+'</cite>'+
-    (S.rever.indexOf(d.k)>-1?'<span class="rev">para revisar</span>':'')+'</div>';
+    (S.rever.indexOf(d.k)>-1?'<span class="rev">para revisar</span>':'')+
+    menuLinha(d)+'</div>';
 }
 function linhaNota(d){
   const r=relacoesDe(d.k),tr=escTxt(d),an=ancoraDe(d);
@@ -3345,7 +3481,8 @@ function linhaNota(d){
       :(perdida(d)?'<span class="volta -perdida">↩ o trecho não existe mais neste texto</span>':''))+
     (an&&COMO[an.como]?'<span class="reanc">reencontrado</span>':'')+
     '<cite>'+rot.join(" · ")+'</cite>'+
-    (S.rever.indexOf(d.k)>-1?'<span class="rev">para revisar</span>':'')+'</div>';
+    (S.rever.indexOf(d.k)>-1?'<span class="rev">para revisar</span>':'')+
+    menuLinha(d)+'</div>';
 }
 /* ═══ O BLOCO DA IDEIA ═══
    O que o Mekora tem é uma contagem, e o que ele mostra é uma contagem. Ele
@@ -3441,6 +3578,7 @@ function vNota(){
     '<button class="'+(tr?"sec":"pri")+'" data-a="nota-editar" data-v="'+d.k+'">Editar</button>'+
     '<button class="sec" data-a="nota-canvas" data-v="'+d.k+'">'+
       (noC?"já está no Canvas":"Levar ao Canvas")+'</button>'+
+    (S.voltarCanvas?'<button class="sec" data-a="ir" data-v="canvas">‹ voltar ao Canvas</button>':'')+
     '<button class="sec" data-a="nota-rever" data-v="'+d.k+'">'+
       (rev?"tirar de para revisar":"marcar para revisar")+'</button>'+
     '<span class="sp" style="flex:1"></span>'+
@@ -3536,10 +3674,13 @@ function vConexoes(){
 }
 /* o titulo da direcao nao pode ter o mesmo peso de "Ainda sem nome", que e
    um separador DENTRO dela: medido lado a lado, os dois liam igual. */
-const cabDir=(id,rot,resp,nao)=>'<div class="dirC" id="dir-'+id+'">'+
+/* Uma linha, e nao um par de rotulos. "Responde / Nao responde" e argumento
+   meu para o Erik, e argumento meu nao e conteudo da tela: o usuario nao
+   deveria precisar ler uma dissertacao para entender uma visualizacao. O
+   raciocinio inteiro mudou para o painel de notas. */
+const cabDir=(id,rot,resp)=>'<div class="dirC" id="dir-'+id+'">'+
   '<h2 class="dirT">'+rot+'</h2>'+
-  '<p class="dirP"><b>Responde:</b> '+resp+'</p>'+
-  '<p class="dirP -nao"><b>Não responde:</b> '+nao+'</p>';
+  '<p class="dirP">'+resp+'</p>';
 /* ── A · MAPA ──────────────────────────────────────────────────────
    Desenhado com o que a casa tem: filete fino, tinta, quadrado. Sem
    brilho, sem gradiente, sem cérebro. O ponto do exercício não é fazer
@@ -3601,8 +3742,7 @@ function dirMapa(ds){
       (p.y+(alto?(Math.sin(p.a)<0?-10:16):3.5)).toFixed(1)+
       '" class="rot -'+no.t+'" text-anchor="'+(alto?"middle":(fora?"end":"start"))+'">'+
       esc(no.rot)+'</text>':'');};
-  return cabDir("a","A · Mapa neural","Como está a minha cabeça, num olhar.",
-    "O que eu faço agora. Nenhum ponto do mapa é uma próxima ação.")+
+  return cabDir("a","A · Mapa","O que está ligado com o quê.")+
     '<div class="mapaW"><svg viewBox="0 0 520 340" class="mapa" role="img" '+
       'aria-label="Mapa das notas ligadas por palavras em comum">'+
       linhas.map(linha).join("")+G.nos.map(ponto).join("")+'</svg>'+
@@ -3619,10 +3759,7 @@ function dirMapa(ds){
        'informação que você já tinha antes de abrir o mapa.'+
        (G.conta.trechos>4?' <b>E com '+G.conta.trechos+' trechos elas já são a maioria das linhas.</b>':''):'')+
       '</p></div>'+
-    '<p class="dirNota"><b>Por que não como primeira tela.</b> Com '+ds.length+' notas ele já está '+
-    'quase cheio; com duzentas vira uma nuvem. E o custo é o mesmo em qualquer tamanho: '+
-    'ele mostra que existe relação sem nunca dizer <i>qual</i>. Para saber o que liga dois '+
-    'pontos é preciso clicar — e aí você já está lendo uma nota, que é a tela de Notas.</p></div>';
+    '</div>';
 }
 /* ── B · TRILHAS ───────────────────────────────────────────────────
    O caminho inteiro, escrito na horizontal: livro, trecho, nota, a
@@ -3652,8 +3789,7 @@ function trilha(){
 }
 function dirTrilhas(){
   const t=trilha();
-  let h=cabDir("b","B · Trilhas","Como cheguei até aqui, e por onde passei.",
-    "Tudo de uma vez. Uma trilha é um caminho, e não o acervo inteiro.");
+  let h=cabDir("b","B · Trilhas","Como uma ideia levou à outra.");
   if(!t)return h+'<p class="vazioN">Ainda não há um caminho que atravesse dois livros.</p></div>';
   h+='<div class="trl">';
   t.forEach((passo,i)=>{
@@ -3665,10 +3801,7 @@ function dirTrilhas(){
       '<p class="nt"><button class="abre" data-a="nota-abrir" data-v="'+d.k+'">'+esc(d.nota)+'</button></p>'+
       '</div>';
   });
-  h+='</div><p class="dirNota"><b>Por que esta vem primeiro.</b> Cada passo é uma frase que você '+
-    'escreveu ou leu, e a palavra entre dois passos é a razão da ligação — dita, e não '+
-    'sugerida por uma linha. Uma trilha cabe numa conversa: dá para mostrar a alguém sem '+
-    'explicar a interface antes.</p></div>';
+  h+='</div></div>';
   return h;
 }
 /* ── C · TERRITÓRIOS ───────────────────────────────────────────────
@@ -3677,8 +3810,7 @@ function dirTrilhas(){
 function dirTerritorios(){
   const gs=ideias();
   const pend=gs.filter(g=>S.ignoradas.indexOf(g.id)<0&&!S.terr.some(t=>t.id===g.id));
-  let h=cabDir("c","C · Territórios","Sobre o que eu ando pensando, sem eu ter organizado nada.",
-    "Onde uma coisa específica está. Território é assunto, e não endereço.");
+  let h=cabDir("c","C · Territórios","Que assuntos apareceram sozinhos.");
   h+='<div class="tresP">'+
     '<div><b>Coleção</b><span>Você juntou de propósito. Existe porque você a fez.</span></div>'+
     '<div><b>Território</b><span>O Mekora notou, você nomeou. Existe porque o material se repetiu.</span></div>'+
@@ -3712,27 +3844,118 @@ function dirTerritorios(){
   }
   if(!S.terr.length&&!pend.length)
     h+='<p class="vazioN">Nenhum assunto se repetiu ainda em livros diferentes.</p>';
-  return h+'<p class="dirNota"><b>Por que depois das trilhas.</b> Um território só é útil quando '+
-    'já existe material suficiente para ele se repetir sozinho. Oferecido cedo demais, ele '+
-    'vira uma pasta com outro nome — e pasta é justamente o que este produto não quer '+
-    'obrigar ninguém a manter.</p></div>';
+  return h+'</div>';
 }
-function vCanvas(nome){
-  /* Levar ao Canvas nao copia a nota: leva a MESMA, e a origem vem junto.
-     Uma copia seria uma segunda coisa para manter atualizada, e a primeira
-     coisa que este produto promete e nao perder de onde veio. */
-  const ns=S.canvasN.map(escK).filter(Boolean);
-  return '<div class="pad larga"><h1 class="t">'+nome+'</h1>'+
-    '<p class="sub">Superfície espacial. É aqui — e só aqui — que a dock existe: ela segura ferramentas de '+
-    'manipulação direta, que precisam ficar perto das mãos.</p>'+
-    dock(["Nota","Mídia","Conectar","Organizar","Filtrar"],-1)+
-    (ns.length?'<div class="cnv"><div class="soltoE">Notas que você trouxe</div>'+ns.map(d=>
-      '<div class="cnvN"><p>'+esc(d.nota)+'</p><cite>'+
-      (d.livro?esc(d.livro)+(d.cap!=null?' · capítulo '+(d.cap+1):''):'sem livro')+
-      '</cite>'+(ancora(d)?'<button class="volta" data-a="nota-origem" data-v="'+d.k+
-      '">↩ abrir no livro</button>':'')+'</div>').join("")+'</div>':
-     '<p class="vazioN">Nada trazido ainda. Em uma nota, <b>Levar ao Canvas</b> traz ela para cá '+
-     'com a origem junto.</p>')+'</div>';
+/* ═══════════════════════════════════════════════════════════════════
+   CANVAS
+   Canvas é intenção; Conexões é descoberta. É a única regra que impede
+   as duas de virarem a mesma tela — e ela precisa valer no MODELO, não
+   só na explicação: uma linha puxada aqui à mão vira exatamente o mesmo
+   objeto que aparece em "Você ligou" dentro da nota. Não há relação de
+   canvas e relação de nota; há relação, e duas maneiras de fazer uma.
+
+   Nada aqui é cópia. A nota trazida é a mesma nota, com a mesma origem,
+   e apagá-la do canvas não apaga a nota — tira ela da mesa.
+   ═══════════════════════════════════════════════════════════════════ */
+const CVL = 210;   /* largura fixa do item: a variável é a posição, não a caixa */
+
+function cvPos(k, i) {
+  const p = S.canvasPos[k];
+  if (p) return p;
+  /* quem chega sem lugar entra numa grade, e não empilhado na origem */
+  const col = i % 4, lin = Math.floor(i / 4);
+  return { x: 28 + col * (CVL + 26), y: 28 + lin * 150 };
+}
+
+function vCanvas() {
+  const ns = S.canvasN.map(escK).filter(Boolean);
+  const modo = S.cvModo || "mover";
+  const bt = (m, rot) => '<button data-a="cv-modo" data-v="' + m + '"' +
+    (modo === m ? ' aria-pressed="true"' : '') + '>' + rot + '</button>';
+  let h = '<div class="pad larga"><div class="cvTopo">' +
+    '<div><h1 class="t">Canvas</h1>' +
+    '<p class="sub">Aqui você organiza de propósito. Em Conexões, o Mekora mostra o que notou.</p></div>' +
+    '<div class="cvFer">' + bt("mover", "Mover") + bt("ligar", "Ligar") + bt("tirar", "Tirar") +
+    '<span class="di"></span>' +
+    '<button data-a="cv-nota">Escrever aqui</button>' +
+    '<button data-a="cv-trazer">Trazer uma nota</button></div></div>';
+  if (!ns.length)
+    return h + '<div class="cvVazio"><p>A mesa está vazia.</p>' +
+      '<p class="sub2"><b>Trazer uma nota</b> põe aqui algo que você já escreveu, com a origem junto. ' +
+      '<b>Escrever aqui</b> começa uma nota nova, que passa a existir também em Notas.</p></div></div>';
+  h += '<div class="cvCampo" id="cvCampo"' + (modo === "ligar" ? ' data-ligando="1"' : '') + '>' +
+    '<svg class="cvLinhas" id="cvLinhas"></svg>';
+  ns.forEach((d, i) => {
+    const p = cvPos(d.k, i), tr = escTxt(d);
+    const sel = S.cvLigando === d.k;
+    h += '<div class="cvIt' + (sel ? ' -sel' : '') + '" data-k="' + d.k + '" ' +
+      'style="left:' + p.x + 'px;top:' + p.y + 'px">' +
+      '<p>' + esc((d.nota || tr).slice(0, 120)) + ((d.nota || tr).length > 120 ? "…" : "") + '</p>' +
+      '<cite>' + (d.livro ? esc(d.livro) + (d.cap != null ? ' · cap. ' + (d.cap + 1) : '') : 'escrita aqui') +
+      '</cite>' +
+      '<div class="cvAcs">' +
+      (ancora(d) ? '<button data-a="nota-origem" data-v="' + d.k + '">abrir no livro</button>' : '') +
+      '<button data-a="nota-abrir" data-v="' + d.k + '">ver a nota</button></div></div>';
+  });
+  h += '</div>';
+  /* o que foi ligado aqui é dito em palavras logo abaixo: uma linha diz que
+     existe relação, e nunca diz qual. */
+  const suas = S.rel.filter(r => S.canvasN.indexOf(r[0]) > -1 && S.canvasN.indexOf(r[1]) > -1);
+  h += '<p class="cvSaldo">' + ns.length + (ns.length > 1 ? ' notas' : ' nota') + ' na mesa · ' +
+    (suas.length ? suas.length + (suas.length > 1 ? ' ligações suas' : ' ligação sua') +
+      ', e elas aparecem em <b>Você ligou</b> dentro de cada nota'
+      : 'nenhuma ligação ainda — em <b>Ligar</b>, toque em duas') + '.</p>';
+  return h + '</div>';
+}
+
+/* As linhas são desenhadas DEPOIS da pintura, medindo as caixas de verdade.
+   Estimar o centro por largura fixa erra assim que o texto muda de altura, e
+   uma linha que não encosta no que ela liga não está ligando nada. */
+function desenhaLigacoes() {
+  const campo = document.getElementById("cvCampo"), svg = document.getElementById("cvLinhas");
+  if (!campo || !svg) return;
+  const cr = campo.getBoundingClientRect();
+  const centro = {};
+  campo.querySelectorAll(".cvIt").forEach(el => {
+    const r = el.getBoundingClientRect();
+    centro[el.dataset.k] = { x: r.left - cr.left + r.width / 2, y: r.top - cr.top + r.height / 2 };
+  });
+  const linhas = S.rel.map(r => [centro[r[0]], centro[r[1]]]).filter(p => p[0] && p[1]);
+  svg.setAttribute("viewBox", "0 0 " + Math.round(cr.width) + " " + Math.round(cr.height));
+  svg.innerHTML = linhas.map(p =>
+    '<line x1="' + p[0].x.toFixed(1) + '" y1="' + p[0].y.toFixed(1) + '" x2="' + p[1].x.toFixed(1) +
+    '" y2="' + p[1].y.toFixed(1) + '"/>').join("");
+}
+
+/* Arrastar mexe no estilo do elemento, e só grava no estado ao soltar:
+   repintar a tela inteira a cada movimento do ponteiro devolveria o objeto
+   sob o cursor a cada quadro. */
+function arrastavel() {
+  const campo = document.getElementById("cvCampo");
+  if (!campo || (S.cvModo || "mover") !== "mover") return;
+  campo.addEventListener("pointerdown", ev => {
+    const it = ev.target.closest(".cvIt");
+    if (!it || ev.target.closest("[data-a]")) return;
+    const cr = campo.getBoundingClientRect();
+    const ir = it.getBoundingClientRect();
+    const dx = ev.clientX - ir.left, dy = ev.clientY - ir.top;
+    it.setPointerCapture(ev.pointerId);
+    it.classList.add("-arrastando");
+    const move = e => {
+      const x = Math.max(0, Math.min(cr.width - ir.width, e.clientX - cr.left - dx));
+      const y = Math.max(0, Math.min(cr.height - ir.height, e.clientY - cr.top - dy));
+      it.style.left = x + "px"; it.style.top = y + "px";
+      desenhaLigacoes();
+    };
+    const solta = () => {
+      it.removeEventListener("pointermove", move);
+      it.removeEventListener("pointerup", solta);
+      it.classList.remove("-arrastando");
+      S.canvasPos[it.dataset.k] = { x: parseFloat(it.style.left), y: parseFloat(it.style.top) };
+    };
+    it.addEventListener("pointermove", move);
+    it.addEventListener("pointerup", solta);
+  });
 }
 function dock(its,on){
   return '<div class="dock">'+its.map((t,i)=>'<button data-a="dock" data-v="'+i+'"'+((on<0?i===S.dockSel:i===on)?' aria-pressed="true"':'')+
@@ -4695,7 +4918,7 @@ function corpo(){
   if(S.lugar==="estante")return vEstante();
   if(S.lugar==="notas")return vNotas();
   if(S.lugar==="nota")return vNota();
-  if(S.lugar==="canvas")return vCanvas("Canvas");
+  if(S.lugar==="canvas")return vCanvas();
   if(S.lugar==="conexoes")return vConexoes();
   if(S.lugar==="perfil"||S.lugar==="novidades")return vPerfil();
   return vMesa();
@@ -4929,6 +5152,9 @@ function pinta(){
         if(t)t.classList.toggle("-dentro",d&&(S.lugar==="item"||S.lugar==="livro"));}
     });
   }
+  /* as ligacoes so podem ser desenhadas depois que as caixas existem e tem
+     altura: medir e o unico jeito de a linha encostar no que ela liga. */
+  if(S.lugar==="canvas"){desenhaLigacoes();arrastavel();}
   ultimoLugar=S.lugar;
 }
 function tick(){
@@ -4942,12 +5168,31 @@ function tick(){
   },300);
 }
 function aviso(t){S.aviso=t;S.folha="aviso";}
+/* uma porta so para o roteador: o toque no item do canvas entra pelo mesmo
+   switch, e nao por uma segunda copia da regra. */
+function acaoCanvas(k){
+  app.dispatchEvent(new CustomEvent("cv",{detail:k}));
+}
 
+
+app.addEventListener("cv",ev=>{roteia("cv-tocar",ev.detail,null);});
 app.addEventListener("click",ev=>{
+  /* No canvas, o item inteiro e alvo nos modos Ligar e Tirar: exigir mira
+     num botao pequeno para ligar duas coisas seria trabalho manual dentro
+     de uma superficie que existe para manipulacao direta. */
+  const it=ev.target.closest(".cvIt");
+  if(it&&(S.cvModo==="ligar"||S.cvModo==="tirar")&&!ev.target.closest("[data-a]")){
+    acaoCanvas(it.dataset.k);return;}
   const el=ev.target.closest("[data-a]");if(!el)return;
-  const a=el.dataset.a,v=el.dataset.v;
-  if(a==="fechar-veu"&&ev.target.closest("[data-stop]"))return;
+  if(el.dataset.a==="fechar-veu"&&ev.target.closest("[data-stop]"))return;
+  roteia(el.dataset.a,el.dataset.v,el);
+});
+function roteia(a,v,el){
+  el=el||{dataset:{}};
   if(S.menu&&a!=="menu")S.menu=false;
+  /* qualquer outra acao fecha o menu da linha: um menu que fica aberto atras
+     do que voce acabou de fazer e um menu que voce vai tocar sem querer. */
+  if(S.linhaMenu&&a!=="linha-menu")S.linhaMenu=null;
   switch(a){
     case "nada":aviso("Controle representado");break;
     case "fechar":case "fechar-veu":S.folha=null;S.aviso=null;break;
@@ -5156,6 +5401,45 @@ app.addEventListener("click",ev=>{
       const M=S.mapaNos||{notas:true,livros:false,trechos:false,conceitos:true};
       M[v]=!M[v];S.mapaNos=M;break;}
     case "sum-aba":S.sumAba=v;break;
+    /* ═══ CANVAS ═══ */
+    case "cv-modo":S.cvModo=v;S.cvLigando=null;break;
+    /* escrever no canvas cria uma nota SOLTA de verdade: ela aparece em
+       Notas › Soltas no mesmo instante. O canvas nao inventa um segundo
+       tipo de objeto — ele so decide onde o objeto fica. */
+    case "cv-nota":{
+      const k="s"+S.dst.length;
+      S.dst.push({k:k,livro:null,cap:null,par:null,ini:null,fim:null,perg:null,
+        nota:"",origem:"canvas",dia:"hoje"});
+      S.canvasN.push(k);S.lugar="nota";S.notaK=k;S.notaAberta=k;S.rasc[k]="";
+      S.voltarCanvas=true;break;}
+    case "cv-trazer":S.lugar="notas";S.trazendo=true;break;
+    case "cv-cancelar":S.trazendo=false;S.lugar="canvas";break;
+    case "cv-tocar":{
+      const modo=S.cvModo||"mover";
+      if(modo==="tirar"){S.canvasN=S.canvasN.filter(x=>x!==v);delete S.canvasPos[v];break;}
+      if(modo!=="ligar")break;
+      if(!S.cvLigando){S.cvLigando=v;break;}
+      if(S.cvLigando===v){S.cvLigando=null;break;}
+      const par=[S.cvLigando,v];
+      /* a linha puxada aqui E a relacao "sua" da nota: mesmo objeto, duas
+         maneiras de fazer. Tocar de novo em duas ja ligadas desfaz. */
+      const ja=S.rel.some(r=>r.indexOf(par[0])>-1&&r.indexOf(par[1])>-1);
+      if(ja)S.rel=S.rel.filter(r=>!(r.indexOf(par[0])>-1&&r.indexOf(par[1])>-1));
+      else S.rel.push(par);
+      S.cvLigando=null;break;}
+    /* cada linha da pauta leva ao recorte que ela descreve: uma pauta que so
+       conta e um relatorio, e relatorio nao e trabalho. */
+    case "rev-sozinhas":S.verTerr=S.dst.filter(d=>d.nota&&!relacoesDe(d.k).length).map(d=>d.k);
+      S.verTerrId=null;S.nfiltro="todas";S.recorteMotivo=" que não encostam em nenhuma outra";break;
+    case "rev-perdidas":S.verTerr=S.dst.filter(d=>perdida(d)).map(d=>d.k);
+      S.verTerrId=null;S.nfiltro="todas";S.recorteMotivo=" cujo trecho sumiu do texto";break;
+    case "rev-fortes":{
+      const ks={};S.dst.filter(d=>d.nota).forEach(d=>
+        relacoesDe(d.k).forEach(r=>{if(r.tipo==="forte"){ks[d.k]=1;ks[r.k]=1;}}));
+      S.verTerr=Object.keys(ks);S.verTerrId=null;S.nfiltro="todas";
+      S.recorteMotivo=" que o Mekora achou parecidas";break;}
+    case "ir-destaques":S.lugar="leitura";S.folha="sumario";S.sumAba="destaques";break;
+    case "linha-menu":S.linhaMenu=S.linhaMenu===v?null:v;break;
     case "nota-filtro":S.nfiltro=v;break;
     case "nota-abrir":S.lugar="nota";S.notaK=v;S.notaAberta=null;break;
     case "nota-editar":S.notaAberta=v;S.rasc[v]=escK(v)?escK(v).nota:"";break;
@@ -5182,7 +5466,12 @@ app.addEventListener("click",ev=>{
       if(i>-1)S.rever.splice(i,1);else S.rever.push(v);break;}
     /* levar ao Canvas não copia a nota: leva a mesma, com a origem junto.
        Uma cópia seria uma segunda coisa para manter atualizada. */
-    case "nota-canvas":if(S.canvasN.indexOf(v)<0)S.canvasN.push(v);break;
+    case "nota-canvas":{
+      if(S.canvasN.indexOf(v)<0)S.canvasN.push(v);
+      /* trazido de dentro de Notas, o item vai PARA o canvas: ficar na tela
+         de notas depois de mandar algo embora esconde o efeito do gesto. */
+      if(S.trazendo){S.trazendo=false;S.lugar="canvas";}
+      break;}
     case "nota-apagar":{
       const d=escK(v);if(!d)break;
       S.dstUndo={d:d,filhos:[]};S.dst=S.dst.filter(x=>x.k!==v);
@@ -5222,8 +5511,8 @@ app.addEventListener("click",ev=>{
     case "terr-ver":{
       const t=S.terr.find(t=>t.id===v),g=ideias().find(g=>g.id===v);
       const ks=t?t.notas:(g?g.notas.map(d=>d.k):[]);
-      S.lugar="notas";S.nfiltro="todas";S.qNotas="";S.verTerr=ks;S.verTerrId=v;break;}
-    case "terr-todas":S.verTerr=null;S.verTerrId=null;break;
+      S.lugar="notas";S.nfiltro="todas";S.qNotas="";S.verTerr=ks;S.verTerrId=v;S.recorteMotivo=null;break;}
+    case "terr-todas":S.verTerr=null;S.verTerrId=null;S.recorteMotivo=null;break;
     case "terr-manter":if(S.mantidos.indexOf(v)<0)S.mantidos.push(v);S.nomeando=null;break;
     case "terr-soltar":S.terr=S.terr.filter(t=>t.id!==v);break;
     /* ═══ IDEIAS ═══ */
@@ -5384,7 +5673,7 @@ app.addEventListener("click",ev=>{
     case "criar-conta":S.conta=true;S.folha=null;S.cena="trabalho";S.lugar="mesa";break;
   }
   pinta();
-});
+}
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape"&&S.notaAberta){
     /* grava ANTES de fechar: sem estas duas linhas o Escape destruiria o
@@ -5554,6 +5843,9 @@ para o próximo teste.</p>
 <tr><td class="n">Trilha entre livros</td><td><b>Exploração forte</b></td><td>É a única das três direções em que cada passo é legível sem clicar. Sai do material real, e não de um exemplo escrito à mão.</td></tr>
 <tr><td class="n">Ideia emergente e Território</td><td><b>Experimental</b></td><td>A contagem funciona; o nome não. Ver abaixo.</td></tr>
 <tr><td class="n">Mapa</td><td><b>Experimental</b></td><td>Desenhado para poder ser recusado com conhecimento de causa, e não por gosto.</td></tr>
+<tr><td class="n">Canvas: mover, ligar, escrever, tirar</td><td><b>Exploração forte</b></td><td>A ligação feita à mão é o mesmo objeto da relação da nota, o que impede Canvas e Conexões de virarem a mesma tela.</td></tr>
+<tr><td class="n">Pauta de “Para revisar”</td><td><b>Exploração forte</b></td><td>Sai inteira de contagem sobre o que você escreveu. Nenhum número inventado.</td></tr>
+<tr><td class="n">Menu de objeto na linha da nota</td><td><b>Atual</b></td><td>Um controle por item, escondido até o cursor chegar. A porta continua sendo a frase.</td></tr>
 <tr><td class="n">Conectar como ação do leitor</td><td><b>Futuro</b></td><td>Continua fora da barra de seleção, como combinado. Ligar duas notas só existe dentro de uma nota, onde há as duas pontas.</td></tr>
 <tr><td class="n">Zoom semântico</td><td><b>Futuro</b></td><td>Só faz sentido depois que existir densidade suficiente para haver o que esconder.</td></tr>
 </tbody></table>
@@ -5633,6 +5925,64 @@ de notas à direita cabe inteiro na margem que já está vazia — <b>ele não c
 O trilho de biblioteca à esquerda é outra história: ele custa largura de verdade e compra pouco,
 porque a Estante está a um clique e ninguém troca de livro no meio de um parágrafo.</p>
 <p>Então: painel da direita sim, recolhido por padrão e fora do modo Foco; trilho da esquerda não.</p>
+
+<h3>Canvas é intenção; Conexões é descoberta — e isso agora vale no modelo</h3>
+<p>A regra sozinha não segura nada: duas telas separadas só por uma explicação acabam fazendo a mesma
+coisa em duas aparências. Então ela foi para o modelo. <b>A linha que você puxa à mão no Canvas é
+exatamente o mesmo objeto que aparece em “Você ligou” dentro da nota.</b> Não existe relação-de-canvas
+e relação-de-nota: existe relação, e duas maneiras de fazer uma.</p>
+<p>O mesmo vale para o resto do que o Canvas faz. <b>Escrever aqui</b> cria uma nota solta de verdade,
+que aparece em Notas › Soltas no mesmo instante — o Canvas não inventa um segundo tipo de objeto, ele
+decide onde o objeto fica. <b>Tirar</b> tira da mesa e não apaga a nota. E o que é trazido continua
+sabendo de onde veio: o item na mesa mostra livro e capítulo, e abre no trecho.</p>
+<p>Antes desta rodada não havia Canvas nenhum: havia um título, um parágrafo explicando que ali
+existia uma dock, cinco botões que não faziam nada e uma lista vertical. Não dava para avaliar se
+competia com Conexões porque não havia o que competir.</p>
+
+<h3>A dissertação saiu das telas</h3>
+<p>Conexões estava dizendo coisas como <i>“Não responde: o que eu faço agora. Nenhum ponto do mapa é
+uma próxima ação”</i> e três parágrafos de <i>“Por que esta vem primeiro”</i>. Isso é <b>argumento meu
+para você</b>, e argumento meu não é conteúdo de tela: quem usa não deveria precisar ler uma
+justificativa para entender uma visualização. Cada direção ficou com uma linha, e o raciocínio inteiro
+mora aqui. “Mapa neural” virou <b>Mapa</b> — “neural” é exatamente a palavra que este projeto
+proibiu na primeira rodada.</p>
+<p>O argumento continua o mesmo, e é este:</p>
+<ul>
+<li><b>Mapa</b> responde “o que está ligado com quê” e não responde “o que eu faço agora”. Com onze
+notas ele já está quase cheio; com duzentas vira nuvem. Para saber <i>qual</i> é a relação entre dois
+pontos é preciso clicar — e aí você está lendo uma nota, que é a tela de Notas. Ligue <b>Trechos
+marcados</b> e veja de onde vêm as linhas novas: trecho liga com trecho por estarem no mesmo capítulo,
+informação que você já tinha antes de abrir o mapa.</li>
+<li><b>Trilhas</b> responde “como uma ideia levou à outra”, e é a única das três em que cada passo é
+legível sem clicar em nada: a palavra entre dois passos é a razão da ligação, dita, e não sugerida
+pela inclinação de uma linha. Uma trilha cabe numa conversa.</li>
+<li><b>Territórios</b> responde “que assuntos apareceram sozinhos”, e não é fase: é limiar. Oferecido
+cedo demais vira pasta com outro nome — e pasta é o que este produto não quer obrigar ninguém a
+manter. A condição já está no código: o assunto só aparece quando se repete em <i>livros
+diferentes</i>.</li>
+</ul>
+
+<h3>“Para revisar” deixou de ser uma categoria vazia</h3>
+<p>Ela contava quantas notas você tinha marcado à mão, o que começava em zero e tendia a continuar
+zero. Agora ela lê o próprio material e monta uma pauta: trecho marcado e nunca escrito, nota que não
+encosta em nenhuma outra, par que o Mekora achou parecido e ninguém decidiu, assunto que se repetiu e
+continua sem nome, nota cujo trecho a reconversão perdeu.</p>
+<p>Cada linha leva ao recorte que ela descreve, e o recorte diz por que está recortado. <b>Nenhuma
+delas inventa um número:</b> todas saem de contagem sobre o que você escreveu — que é o contrário de
+gamificação, porque o retorno é o seu próprio material e não um ponto que o produto distribui.</p>
+
+<h3>O que eu não mudei, e por quê</h3>
+<ul>
+<li><b>Highlights sem nota continuam fora da lista de Notas</b> — mas deixaram de estar enterrados: o
+painel do livro tem uma aba <b>Destaques</b>, e a pauta de revisão os traz de volta pelo nome. A área
+se chama Notas e a fila dela é uma partição de notas; misturar destaque ali faria os números pararem
+de fechar. A distinção que você pediu existe, só não como quinta aba.</li>
+<li><b>A área continua se chamando Notas, e não Conhecimento.</b> “Conhecimento” é uma afirmação sobre
+o resultado; “Notas” descreve o conteúdo. Quem decide se aquilo virou conhecimento é quem escreveu.</li>
+<li><b>Tag e Coleção ainda não existem</b>, de propósito. Conceito já cobre “ideia nomeada”, e três
+palavras para classificar antes de existir material é a organização manual que o produto disse que não
+ia exigir.</li>
+</ul>
 
 <h3>A ordem que eu proponho, e onde ela discorda da sua</h3>
 <p>Concordo com as fases 1 e 2. Discordo da 3 e da 4 — não na ordem, mas em <b>o que decide a
