@@ -2,7 +2,8 @@
 
 **Data:** 2026-08-20
 **Estado:** rascunho — este documento ainda não é canônico
-**Fonte:** as nove propostas em `decisoes/`, seção "O que esta decisão NÃO decide"
+**Fonte:** as nove decisões aceitas em 2026-08-20, seção "O que esta decisão NÃO decide" de cada uma.
+Elas vivem em `erik-project-os/decisions/`, como DEC-0021 a DEC-0029.
 
 Esta é a fila. Não é registro: um item sai daqui quando vira decisão, e a linha some. Se este
 arquivo começar a ter estado próprio — "aceito", "rejeitado" —, virou uma segunda `decisions/` e
