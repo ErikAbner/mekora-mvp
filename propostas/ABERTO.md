@@ -1,4 +1,4 @@
-# Aberto — as 55 perguntas, classificadas por momento
+# Aberto — as 57 perguntas, classificadas por momento
 
 **Data:** 2026-08-20
 **Estado:** rascunho — este documento ainda não é canônico
@@ -26,9 +26,9 @@ D   backlog técnico               pode ser decidido durante a implementação, 
 | | quantas |
 |---|---:|
 | **A** — antes da arquitetura | 8 |
-| **B** — antes da feature afetada | 20 |
+| **B** — antes da feature afetada | 21 |
 | **C** — antes do lançamento | 15 |
-| **D** — backlog técnico | 12 |
+| **D** — backlog técnico | 13 |
 
 ---
 
@@ -38,7 +38,7 @@ Decidem forma de sistema. Errar aqui custa refação, não ajuste.
 
 | | pergunta | origem |
 |---|---|---|
-| **A1** | **Onde a infraestrutura fica** — região, provedor, jurisdição. É a única de todas as 55 cuja resposta muda obrigação legal, e não só implementação. | DEC-0022 |
+| **A1** | **Onde a infraestrutura fica** — região, provedor, jurisdição. É a única de todas as 57 cuja resposta muda obrigação legal, e não só implementação. | DEC-0022 |
 | **A2** | **Como a tradução própria é construída.** A regra é o limite; a arquitetura que a cumpre não existe, e pode ter custo relevante. | DEC-0022 |
 | **A3** | **Se algum processamento além da tradução pode usar serviços externos.** O item 7 nomeia tradução e IA. OCR, extração e geração de capa não foram tratados. | DEC-0022 |
 | **A4** | **O formato do identificador de conteúdo.** UUID foi exemplo, não especificação. | DEC-0021 |
@@ -66,15 +66,16 @@ Não impedem outras frentes. Impedem aquela.
 | **B9** | Se o Mapa ganha alguma representação no telefone | Conexões no telefone | DEC-0023 |
 | **B10** | Como a escolha de modo de leitura é lembrada — conta, aparelho ou livro | Reader | DEC-0023 |
 | **B11** | O tablet, feature a feature | tudo no tablet | DEC-0023 |
-| **B12** | Quais breakpoints existem além de 390px, e o que "tablet" significa em números | design system | DEC-0023 |
+| **B12** | Quais breakpoints existem além de 390px, e o que "tablet" significa em números — **evidência nova:** a regra `@container` de 18/08 sugere que parte do problema não se resolve por breakpoint | design system | DEC-0023 |
 | **B13** | Como os cinco lugares se apresentam no telefone | navegação mobile | DEC-0024 |
-| **B14** | Se Mesa é um lugar como os outros, ou a casa que a marca abre | navegação | DEC-0024 |
+| **B14** | Se Mesa é um lugar como os outros, ou a casa que a marca abre — **evidência nova:** a DEC-0019 a trata das duas formas na mesma frase, e o run de 12/08 fechou "a Mesa é a Home"; a ambiguidade pode ser deliberada | navegação | DEC-0024 |
 | **B15** | Que vistas Notas tem, e como se chama a partição hoje rotulada "Soltas" | Notas | DEC-0024 |
 | **B16** | Como a visão filtrada do livro se comporta quando a origem foi excluída | Notas dentro do livro | DEC-0024 |
 | **B17** | O destino do `mekora-canvas-motion` daqui em diante | frente de implementação | DEC-0025 |
 | **B18** | O destino do `mekora-experience` — o conflito DEC-0011 §4 × DEC-0017 | reconciliação | DEC-0025 |
 | **B19** | Se `prototipo-mesa.html` é a fonte do desenho aprovado ou um instrumento de exploração | governança do desenho | DEC-0025 |
 | **B20** | Que eventos são coletados, com que granularidade | instrumentação | DEC-0029 |
+| **B21** | **Auto-ocultar as barras no celular** depois de segundos sem interação. Bloqueio de 19/08 que a DEC-0023 tornou requisito de V1; precisa de regra para nunca ocultar com campo em foco | Reader no telefone | DEC-0023 |
 
 ---
 
@@ -120,6 +121,7 @@ Podem ser decididas durante a implementação, por quem implementa.
 | **D10** | O destino das ~60 MB de transcrições de sessão | DEC-0028 |
 | **D11** | Que número, em qualquer medida, conta como sucesso — depende de linha de base que ainda não existe | DEC-0029 |
 | **D12** | O que entra no escopo da V1 — matéria da DEC-0018, não da DEC-0029 | DEC-0029 |
+| **D13** | **O Sumário continua sendo folha**, e folha cobre o texto. O run de 19/08 o nomeia como o próximo candidato à tese da fita | DEC-0023 |
 
 ---
 
