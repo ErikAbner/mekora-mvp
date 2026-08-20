@@ -115,10 +115,16 @@ Quatro vezes é padrão, não coincidência. **Candidato forte a princípio do `
 
 1. A DEC-0011 merece nota de consequência cumprida, apontando o run de 14/08. Não é emenda: é
    fechamento de pendência.
-2. **A4 e A5 de `ABERTO.md` podem já ter resposta.** "O formato do identificador" e "como relacionar
-   duas importações do mesmo título" são exatamente o que um schema Drizzle com quatro tabelas
-   resolve. **Ler `db/schema.ts` no Mac antes de decidir** — decidir agora arriscaria inventar pela
-   terceira vez algo que já existe.
+2. **A4 e A5 de `ABERTO.md` têm uma implementação histórica concreta, que precisa ser auditada antes
+   de qualquer decisão nova.** Elas **não** estão resolvidas.
+
+   Saber que existem quatro tabelas não diz nada sobre o que A4 e A5 perguntam. Continua
+   desconhecido: qual é a chave primária de `livros`; se é UUID, hash ou autoincremental; se o
+   título participa da identidade; se existe fingerprint do arquivo; como duas importações da mesma
+   obra são distinguidas; como duplicata é detectada; e como reimportação é tratada.
+
+   O comportamento correto da reconciliação é este: **não reinventar, e também não promover código
+   antigo a norma automaticamente.** A implementação de 14/08 é estado observado, não autoridade.
 
 ### 10. Ação posterior
 
@@ -191,12 +197,16 @@ e não é reverificado há dezoito dias.**
 
 - **"Falha bloqueando conversão insegura"** (OCR, classe D) já implementa o espírito do item 8 da
   DEC-0021: não persistir resultado que não passou.
-- **Tradução classe B** — funcional no app e não incorporada à experiência — é compatível com a
-  DEC-0022 item 7: Argos e NLLB são modelos que rodam na própria infraestrutura, não APIs de
-  terceiros. **A regra dura de 20/08 já está satisfeita pela escolha técnica de julho.**
+- **Tradução classe B** — funcional no app e não incorporada à experiência. Argos e NLLB são modelos
+  que rodam sob controle do produto, não APIs de terceiros.
 
-Esta segunda convergência é a mais valiosa da leva: a DEC-0022 parecia impor custo novo, e a
-implementação existente já cumpre o limite.
+  **Existe precedente técnico funcional compatível com a DEC-0022 item 7. A conformidade da
+  arquitetura web vigente ainda precisa ser verificada.**
+
+  A distinção importa e é a que acabamos de formalizar na DEC-0027: implementação histórica
+  compatível **não é** estado atual comprovadamente conforme. O produto passou a ser web-first, a
+  arquitetura de implantação mudou, e nada foi medido depois disso. O que a descoberta dá é uma
+  rota conhecida — não uma conformidade declarada.
 
 ### 5. Divergências
 
@@ -232,7 +242,7 @@ Três ocorrências, duas redescobertas independentes.
 
 - **DEC-0021** — vigente.
 - **DEC-0018** — vigente quanto à tradução.
-- **DEC-0022** — vigente, e mais barata do que parecia.
+- **DEC-0022** — vigente. O custo continua não medido: há precedente compatível, não conformidade verificada.
 
 ### 9. Ação normativa proposta
 
@@ -409,10 +419,10 @@ pergunta aberta e passa a ser esta emenda, se aprovada.
 
 | assunto | resultado | ação normativa proposta |
 |---|---|---|
-| **Identidade e modelo de conteúdo** | tudo vigente | nenhuma · ler `db/schema.ts` no Mac antes de decidir A4 e A5 |
-| **Conversão e ingestão** | tudo vigente | nenhuma |
-| **Web-first** | tudo vigente | **1 pergunta ao Erik** sobre "converter não exige conta" |
-| **MVP / V1** | tudo vigente | **1 emenda proposta** à DEC-0018, no escopo |
+| **Identidade e modelo de conteúdo** | tudo vigente | nenhuma · **auditar** `db/schema.ts` no Mac antes de decidir A4 e A5 |
+| **Conversão e ingestão** | tudo vigente | nenhuma · verificar se a arquitetura web cumpre a DEC-0022 |
+| **Web-first** | tudo vigente | respondida pelo Erik — ver emenda à DEC-0018 |
+| **MVP / V1** | tudo vigente | **1 emenda** à DEC-0018 — escopo e conta |
 
 **Nenhuma DEC foi marcada `superseded` ou `revoked` nesta leva.** Nenhuma decisão anterior a 20/08
 se revelou obsoleta — o padrão até aqui é enumeração desatualizada e consequência cumprida, não

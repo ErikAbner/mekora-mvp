@@ -1,4 +1,4 @@
-# Aberto — as 54 perguntas, classificadas por momento
+# Aberto — as 55 perguntas, classificadas por momento
 
 **Data:** 2026-08-20
 **Estado:** rascunho — este documento ainda não é canônico
@@ -27,7 +27,7 @@ D   backlog técnico               pode ser decidido durante a implementação, 
 |---|---:|
 | **A** — antes da arquitetura | 8 |
 | **B** — antes da feature afetada | 20 |
-| **C** — antes do lançamento | 14 |
+| **C** — antes do lançamento | 15 |
 | **D** — backlog técnico | 12 |
 
 ---
@@ -38,7 +38,7 @@ Decidem forma de sistema. Errar aqui custa refação, não ajuste.
 
 | | pergunta | origem |
 |---|---|---|
-| **A1** | **Onde a infraestrutura fica** — região, provedor, jurisdição. É a única de todas as 54 cuja resposta muda obrigação legal, e não só implementação. | DEC-0022 |
+| **A1** | **Onde a infraestrutura fica** — região, provedor, jurisdição. É a única de todas as 55 cuja resposta muda obrigação legal, e não só implementação. | DEC-0022 |
 | **A2** | **Como a tradução própria é construída.** A regra é o limite; a arquitetura que a cumpre não existe, e pode ter custo relevante. | DEC-0022 |
 | **A3** | **Se algum processamento além da tradução pode usar serviços externos.** O item 7 nomeia tradução e IA. OCR, extração e geração de capa não foram tratados. | DEC-0022 |
 | **A4** | **O formato do identificador de conteúdo.** UUID foi exemplo, não especificação. | DEC-0021 |
@@ -87,17 +87,18 @@ Podem ser decididas durante a construção. Não podem ficar sem resposta na V1.
 | **C1** | Que criptografia é usada, e se o produto tem acesso ao conteúdo em claro durante o processamento | DEC-0022 |
 | **C2** | O que é "processo mínimo necessário", e como o acesso humano interno é auditado e por quem | DEC-0022 |
 | **C3** | Por quanto tempo o original temporário sobrevive entre a falha e o descarte | DEC-0021 · DEC-0022 |
-| **C4** | Autenticação — a AUTH-001 continua pendente e proíbe desenhar | DEC-0022 |
-| **C5** | Se há consentimento para a coleta de uso, e como é pedido | DEC-0029 |
-| **C6** | Por quanto tempo os eventos coletados são mantidos | DEC-0029 |
-| **C7** | Qual ferramenta de instrumentação é usada, e se é própria | DEC-0029 |
-| **C8** | Quando as telas passam a ser efetivamente verificadas a 390px | DEC-0023 |
-| **C9** | A migração do acervo e das notas existentes para identidade estável | DEC-0021 |
-| **C10** | Que estado cada uma das 19 DECs recebe além da normalização mecânica | DEC-0027 |
-| **C11** | O `role` literal de cada repositório existente | DEC-0026 |
-| **C12** | Quando a máquina Windows é efetivamente zerada | DEC-0028 |
-| **C13** | O destino do `artefato-mekora.html`, 2,87 MB versionados por ausência de regra | DEC-0028 |
-| **C14** | Quando a V1 é lançada | DEC-0029 |
+| **C4** | **Prazo exato de retenção de sessões anônimas.** A DEC-0018, emendada em 20/08, fixa que sem conta os dados são temporários — e deliberadamente não fixa o prazo, porque depende das perguntas de privacidade e infraestrutura ainda abertas | DEC-0018 |
+| **C5** | Autenticação — a AUTH-001 continua pendente e proíbe desenhar | DEC-0022 |
+| **C6** | Se há consentimento para a coleta de uso, e como é pedido | DEC-0029 |
+| **C7** | Por quanto tempo os eventos coletados são mantidos | DEC-0029 |
+| **C8** | Qual ferramenta de instrumentação é usada, e se é própria | DEC-0029 |
+| **C9** | Quando as telas passam a ser efetivamente verificadas a 390px | DEC-0023 |
+| **C10** | A migração do acervo e das notas existentes para identidade estável | DEC-0021 |
+| **C11** | Que estado cada uma das 19 DECs recebe além da normalização mecânica | DEC-0027 |
+| **C12** | O `role` literal de cada repositório existente | DEC-0026 |
+| **C13** | Quando a máquina Windows é efetivamente zerada | DEC-0028 |
+| **C14** | O destino do `artefato-mekora.html`, 2,87 MB versionados por ausência de regra | DEC-0028 |
+| **C15** | Quando a V1 é lançada | DEC-0029 |
 
 ---
 
