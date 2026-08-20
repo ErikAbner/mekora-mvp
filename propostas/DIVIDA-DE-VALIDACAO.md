@@ -36,6 +36,42 @@ O `validate` chegou a acusar **6** durante a sessão — as 4 acima mais 2 de um
 escrito às 17h56 com `sha` dessincronizado. Uma sessão da Vynce corrigiu esse por conta própria, e
 voltou a 4.
 
+## ⚠ Atualização — o conjunto de testes depende de máquina
+
+Descoberto em 20/08, depois do commit `46e62ff`, que destravou um teste acoplado à prosa do
+`next_milestone`.
+
+**A mesma suíte dá resultados diferentes nas duas máquinas:**
+
+| | `npm test` |
+|---|---|
+| **mac-mini-erik** | 27 passaram, 0 falharam — relatado no commit `46e62ff` |
+| **windows-erikc** | 8 asserções falham, em 4 casos de teste |
+
+A causa é acoplamento a máquina dentro do próprio teste. `tests/cli.test.mjs:523-524` afirma
+literalmente:
+
+```js
+assert.equal(manifest.last_reviewed_from, "mac-mini-erik");
+assert.ok(manifest.repositories[0].local_paths["mac-mini-erik"]);
+```
+
+Os quatro casos que falham no Windows:
+
+- `validates the repository manifests` — pelos 4 handoffs de 02/08
+- `cancels a run opened by mistake without inventing evidence`
+- `keeps machine-specific paths honest instead of printing another machine's path`
+- `refuses to authorize a new project whose code lives in a single copy`
+
+**Consequência prática:** "verde" não é um fato do repositório — é um fato do repositório *numa
+máquina*. Quem verificar regressão precisa comparar o número **na mesma máquina** em que mediu antes.
+
+Nesta máquina, **8 é o valor esperado hoje** (eram 10 antes de `46e62ff`). No Mac, é **0**.
+
+Isto é a DEC-0008 — manifestos conscientes de máquina — aparecendo dentro dos testes, que não
+receberam o mesmo tratamento. Não foi corrigido: é o mesmo motivo de antes, escopo da Vynce e sessão
+ativa.
+
 ## Por que não foi consertada
 
 Três razões, nesta ordem:
