@@ -34,18 +34,21 @@ desktop, tablet e telefone. **Esta DEC não a emenda; preenche uma lacuna que el
 1. **Mobile faz parte do V1.** Um V1 que só roda em desktop não cumpre o escopo.
 2. **Não existe paridade obrigatória de features entre aparelhos.** Uma feature ausente num aparelho
    não é, por si só, defeito.
-3. **Regra de design system, aplicável a qualquer feature em qualquer superfície:**
+3. **A regra é paridade de valor, não paridade de interface.** Formulada como norma de design
+   system, aplicável a qualquer feature em qualquer superfície:
 
    > **Responsividade não significa reproduzir a mesma representação em todos os dispositivos.
    > O significado é preservado; a representação pode mudar.**
 
 ### A capacidade essencial
 
-4. **Estas capacidades existem em desktop, tablet e telefone:**
+4. **Estas capacidades existem no telefone, e portanto em todos os aparelhos:**
 
    ```
-   Mesa · Estante · Reader · Highlights · Notas · Busca · Revisão
+   Mesa · Estante · Reader · Busca · Highlights · Notas · Marcadores · Para revisar
    ```
+
+   Mais **Conexões em representação adaptada**, conforme o item 6.
 
    A 390px, uma dessas indisponível ou inoperante é falha de V1.
 
@@ -59,8 +62,9 @@ desktop, tablet e telefone. **Esta DEC não a emenda; preenche uma lacuna que el
 
 7. **O Mapa pode permanecer desktop-only.** Sua ausência no telefone não conta como feature faltando.
 
-8. **O tablet é decidido feature a feature.** Nenhuma feature é considerada presente ou ausente no
-   tablet por herança automática do desktop ou do telefone.
+8. **O tablet não é uma terceira especificação rígida.** Adota comportamento por capacidade e
+   espaço disponível, e é decidido feature a feature. Nenhuma feature é considerada presente ou
+   ausente no tablet por herança automática do desktop ou do telefone.
 
 ### O Reader
 

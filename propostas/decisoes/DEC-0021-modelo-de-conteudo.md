@@ -69,18 +69,32 @@ porque o que faltava era resposta de produto. Esta decisão é essa resposta.
 
 ### O que conta como conversão bem-sucedida
 
-9. Uma conversão é bem-sucedida quando cumpre as **quatro dimensões**:
+9. **Conversão bem-sucedida é um contrato funcional, não "o arquivo abre".** Uma conversão só é
+   declarada concluída quando cumpre estas dez verificações:
 
-   | | critério |
+   | | verificação |
    |---|---|
-   | **Validade** | o pacote gerado é tecnicamente válido |
-   | **Completude** | todo conteúdo extraível foi representado, sem perda estrutural grave |
-   | **Legibilidade** | texto e imagens permanecem legíveis, sem corte ou overflow, nos tamanhos suportados |
-   | **Estrutura** | ordem de leitura, capítulos, parágrafos e imagens continuam identificáveis |
+   | 1 | texto extraível presente |
+   | 2 | imagens preservadas quando relevantes |
+   | 3 | ordem de leitura coerente |
+   | 4 | capítulos e seções identificáveis quando detectáveis |
+   | 5 | nenhum conteúdo essencial cortado |
+   | 6 | layout refluível |
+   | 7 | funciona nas larguras suportadas |
+   | 8 | tipografia escala sem quebrar o conteúdo |
+   | 9 | imagens respeitam a área de conteúdo |
+   | 10 | arquivo tecnicamente válido |
 
-10. Existe o resultado **"concluída com avisos"**. Uma conversão que passa nas quatro dimensões mas
-    tem qualidade reduzida em algum ponto — OCR de baixa confiança, por exemplo — é declarada como
-    tal. O produto não finge que foi perfeita.
+10. **Existem três resultados, não dois:**
+
+    ```
+    CONCLUÍDO               conteúdo validado; as dez verificações passam
+    CONCLUÍDO COM AVISOS    legível, mas houve perda ou incerteza detectável
+    FALHOU                  não atende ao mínimo
+    ```
+
+    "Concluído com avisos" cobre o caso em que o resultado serve para ler mas tem qualidade reduzida
+    em algum ponto — OCR de baixa confiança, por exemplo. **O produto não finge que foi perfeita.**
 
 11. **O que se preserva é conteúdo e estrutura semântica, não apresentação.** Preservar tudo não
     significa preservar cada quebra ruim do PDF de origem. A transformação de apresentação rígida em
@@ -112,9 +126,11 @@ porque o que faltava era resposta de produto. Esta decisão é essa resposta.
   de destino, não a lista de extensões de origem.
 - **Por quanto tempo o original temporário sobrevive** entre a falha de conversão e o descarte, nem
   quantos retries são oferecidos.
-- **Os limiares de cada dimensão do item 9.** "Perda estrutural grave" e "tamanhos suportados"
-  precisam de valores medidos, e a instrumentação que os mediria ainda não existe.
-- **Quais avisos são possíveis** no resultado "concluída com avisos", nem como aparecem na tela.
+- **Os limiares de cada verificação do item 9.** "Conteúdo essencial", "larguras suportadas" e
+  "imagens relevantes" precisam de valores medidos, e a instrumentação que os mediria ainda não
+  existe.
+- **Quais avisos são possíveis** no resultado "concluído com avisos", nem como aparecem na tela.
+- **Se o resultado "falhou" oferece retry automático, manual, ou nenhum**, e quantas vezes.
 - **Como relacionar duas importações do mesmo título.** A decisão proíbe colisão; não define
   agrupamento, metadado de edição nem deduplicação.
 - **A migração do acervo e das notas existentes** para identidade estável.

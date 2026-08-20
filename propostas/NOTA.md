@@ -22,6 +22,15 @@ respondeu, corrigiu três das direções propostas, e autorizou: *"pode preparar
 como proposta, sem ainda alterar implementação, schema, registros ou canonicalidade. Mostre os
 rascunhos antes de aceitá-los."*
 
+## As perguntas abertas
+
+[`ABERTO.md`](ABERTO.md) reúne as **54 perguntas** que as nove propostas deixaram registradas, e as
+classifica **por momento de decisão** — antes da arquitetura, antes da feature afetada, antes do
+lançamento, ou backlog técnico. É rascunho do futuro documento canônico de mesmo nome.
+
+A classificação existe para que documentação melhor organizada não vire paralisia de especificação.
+Nenhuma das 54 bloqueia a escrita do PRD: as que bloqueavam foram respondidas.
+
 ## O que está em `decisoes/`
 
 | | Assunto | Emenda declarada |

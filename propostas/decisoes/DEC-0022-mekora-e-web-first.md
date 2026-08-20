@@ -39,17 +39,35 @@ consolidou o argumento de conta. Esta decisão torna explícito o que ficou impl
 6. **A integração física com Kindle por cabo permanece como questão técnica separada**, até que se
    verifique a arquitetura adequada para um produto web. Esta decisão não a autoriza nem a descarta.
 
-### O conteúdo não vai para terceiros
+### O conteúdo não vai para serviços externos de tradução ou IA
 
-7. **O conteúdo usado para tradução é processado dentro da infraestrutura controlada pelo Mekora, e
-   não é enviado a provedores terceiros de tradução ou de IA.**
+7. **O conteúdo do usuário não é enviado a serviços externos de tradução ou de IA para executar a
+   tradução. A tradução acontece em infraestrutura controlada pelo Mekora.**
 
-   Isto é regra dura, e a consequência técnica é assumida: implica tradução própria ou
+   ```
+   PERMITIDO                          PROIBIDO
+   usuário                            Mekora
+     ↓                                  ↓
+   Mekora                             DeepL · Google Translate
+     ↓                                API externa de tradução ou IA
+   servidor controlado pelo Mekora
+     ↓
+   modelo de tradução hospedado
+   pelo Mekora
+   ```
+
+8. **Provedor de infraestrutura não é serviço externo de tradução.** Hospedar em AWS, Cloudflare,
+   Google Cloud ou equivalente é compatível com o item 7. A regra é sobre **quem executa a
+   tradução**, não sobre onde o servidor roda. Um provedor que apenas fornece computação, rede ou
+   armazenamento — sob contrato, sem usar o conteúdo para outro fim — está dentro da infraestrutura
+   controlada pelo Mekora para efeito desta decisão.
+
+   Isto é regra dura, e a consequência técnica é assumida: implica modelo de tradução próprio ou
    self-hosted. O produto avalia depois *como* cumprir; a implementação não decide isto em silêncio.
 
 ### Baseline de privacidade e retenção
 
-8. O comportamento do produto quanto a arquivos é o seguinte. **São afirmações de comportamento, não
+9. O comportamento do produto quanto a arquivos é o seguinte. **São afirmações de comportamento, não
    de conformidade legal** — nenhuma delas alega adequação a qualquer regulação, e a revisão jurídica
    é etapa própria e posterior.
 
@@ -63,10 +81,10 @@ consolidou o argumento de conta. Esta decisão torna explícito o que ficou impl
    | **Acesso humano interno** | excepcional, auditável, e vinculado a suporte ou operação |
    | **Exclusão** | ato explícito de exclusão permanente elimina o arquivo e seus derivados |
 
-9. **A pergunta de privacidade está reformulada.** Ela deixa de ser "este arquivo pode sair da sua
-   máquina?", porque usar o produto já envolve upload. As perguntas que valem agora, e que o item 8
-   responde em nível de baseline, são: quanto tempo o original é mantido; onde os arquivos ficam; se
-   são criptografados; quem e que processos podem acessá-los; e o que é eliminado depois da conversão.
+10. **A pergunta de privacidade está reformulada.** Ela deixa de ser "este arquivo pode sair da sua
+    máquina?", porque usar o produto já envolve upload. As perguntas que valem agora, e que o item 9
+    responde em nível de baseline, são: quanto tempo o original é mantido; onde os arquivos ficam; se
+    são criptografados; quem e que processos podem acessá-los; e o que é eliminado depois da conversão.
 
 ## O que esta decisão NÃO decide
 
