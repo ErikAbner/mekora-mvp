@@ -881,7 +881,7 @@ body.-selecionando #notasbt{display:none}
 /* na lista do livro o compositor nao precisa da regra em cima: os itens ja
    vem separados. So a medida e o respiro. */
 .escL{margin:var(--s4) 0 var(--esp-par,1.05em);text-align:left}
-.notaE.-erro{border-top-color:var(--dan)}
+.notaE.-erro,.escL.-erro{border-top-color:var(--dan)}
 .notaE p{font-family:var(--serif);font-size:15px;line-height:1.6;color:var(--ink-2);
   margin:0;white-space:pre-wrap;border-left:2px solid var(--ink);padding-left:var(--s4)}
 /* 4.8em nascia com quase cinco linhas vazias para uma frase de uma linha, e
@@ -920,8 +920,8 @@ body.-selecionando #notasbt{display:none}
    do item. A coisa que nao se pode apertar era a mais forte da linha. Mesmo
    corpo e mesma cor do "Pronto"; quem manda na linha e a cor de acento dele. */
 .notaE .dest,.escL .dest,.dossie .tr .dest{font-family:var(--ui);font-size:13px;color:var(--ink-3)}
-.notaE.-erro{background:var(--dan-soft);padding:var(--s3) var(--s4)}
-.notaE .erro{font-family:var(--ui);font-size:var(--t-peq);color:var(--dan);
+.notaE.-erro,.escL.-erro{background:var(--dan-soft);padding:var(--s3) var(--s4)}
+.notaE .erro,.escL .erro{font-family:var(--ui);font-size:var(--t-peq);color:var(--dan);
   line-height:1.5;margin:var(--s3) 0 0}
 
 .qbar .cont{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.06em;
@@ -1920,7 +1920,7 @@ const zero={
   mesaVar:"reduzida",mesaEstado:"com-pendencia",perg:null,usb:{p:0,pct:0,t:null},
   /* destaque e nota. Object.assign e raso, entao dst, selE e rasc sao
      recriados a mao em reset() — senao a marcacao vaza entre cenas. */
-  dst:[],selE:null,notaAberta:null,rasc:{},dstUndo:null,erroNota:false,guardando:null,tirando:null,apagando:null,escNovo:null,paraLivro:false,desc:"",descAberta:false,escAqui:null,aaAberto:false,foco:false,
+  dst:[],selE:null,notaAberta:null,rasc:{},dstUndo:null,erroNota:false,guardandoNota:null,guardando:null,tirando:null,apagando:null,escNovo:null,paraLivro:false,desc:"",descAberta:false,escAqui:null,aaAberto:false,foco:false,
   /* leitura: tudo o que muda como o arquivo é lido nesta tela.
      escopo é o ato deliberado que faz um ajuste subir a padrão da conta. */
   /* lidoAte/par: o ponto onde a leitura parou, medido no scroll. Guardar o
@@ -2047,7 +2047,7 @@ const AJUDA=[
 let S=Object.assign({},zero),timer=null,ultimoLugar=null;
 function reset(cena){
   clearInterval(timer);timer=null;S=Object.assign({},zero);
-  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardando=null;S.tirando=null;S.apagando=null;S.escNovo=null;S.paraLivro=false;S.desc="";S.descAberta=false;S.escAqui=null;S.aaAberto=false;S.foco=false;S.rever=[];S.rel=[["n-solta-1","n-obs-1"]];S.terr=[];S.ignoradas=[];S.nomeando=null;S.concNova=null;S.comoIdeia=false;S.nfiltro="todas";S.qNotas="";S.notaK=null;S.sumAba="conteudo";S.qLivro="";S.vista="adaptado";S.conteudoVista="capitulos";S.tagNova=null;S.colecoes=[{id:"col0",nome:"Método de campo",livros:["Diário 02","Estudo de Viabilidade"]}];S.colNova=false;S.fColecao=null;S.marcas=[{livro:"Diário 02",cap:2,dia:"9 ago"}];S.mapaZoom=1;S.mapaFoco=null;S.linhaMenu=null;S.recorteMotivo=null;S.conectando=null;S.qConectar="";S.novaRel=null;S.naoRel=[];S.canvasN=[];S.mantidos=[];S.verTerr=null;S.verTerrId=null;S.canvasPos={};S.cvModo="mover";S.cvLigando=null;S.trazendo=false;S.voltarCanvas=false;
+  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardandoNota=null;S.guardando=null;S.tirando=null;S.apagando=null;S.escNovo=null;S.paraLivro=false;S.desc="";S.descAberta=false;S.escAqui=null;S.aaAberto=false;S.foco=false;S.rever=[];S.rel=[["n-solta-1","n-obs-1"]];S.terr=[];S.ignoradas=[];S.nomeando=null;S.concNova=null;S.comoIdeia=false;S.nfiltro="todas";S.qNotas="";S.notaK=null;S.sumAba="conteudo";S.qLivro="";S.vista="adaptado";S.conteudoVista="capitulos";S.tagNova=null;S.colecoes=[{id:"col0",nome:"Método de campo",livros:["Diário 02","Estudo de Viabilidade"]}];S.colNova=false;S.fColecao=null;S.marcas=[{livro:"Diário 02",cap:2,dia:"9 ago"}];S.mapaZoom=1;S.mapaFoco=null;S.linhaMenu=null;S.recorteMotivo=null;S.conectando=null;S.qConectar="";S.novaRel=null;S.naoRel=[];S.canvasN=[];S.mantidos=[];S.verTerr=null;S.verTerrId=null;S.canvasPos={};S.cvModo="mover";S.cvLigando=null;S.trazendo=false;S.voltarCanvas=false;
   if(cena==="nova"){S.cena="nova";}
   if(cena==="sem-conta"){S.cena="nova";S.conta=false;}
   pinta();
@@ -2305,7 +2305,7 @@ function vLeitura(){
      tipografia, espaco, metadado e um filete. */
   let h='<div class="leituraTopo">'+
     '<div class="lin">'+
-      '<button class="obra" data-a="ir-livro" title="Voltar ao livro">'+
+      '<button class="obra" data-a="ir-livro" data-v="'+esc(ARQ.titulo)+'" title="Voltar ao livro">'+
         esc(ARQ.titulo)+'<i> / '+esc(ARQ.autor)+'</i></button>'+
       '<span class="sp"></span>'+
       '<span class="cap">Cap\u00edtulo '+(S.cap+1)+' de '+CAPS.length+'</span>'+
@@ -2786,7 +2786,9 @@ function notaE(d){
     'aria-label="Sua nota">'+esc(rasc)+'</textarea>'+
     (S.erroNota?'<p class="erro">Não deu para guardar agora. <b>Seu texto continua aqui</b> — nada foi perdido. '+
       '<button class="lnk" data-a="dst-guardar" data-v="'+d.k+'" style="padding:0">Tentar de novo</button></p>':"")+
-    '<div class="pe"><button class="lnk" data-a="dst-guardar" data-v="'+d.k+'">Pronto</button>'+
+    '<div class="pe"><button class="lnk" data-a="dst-guardar" data-v="'+d.k+'"'+
+      (S.guardandoNota===d.k?' aria-busy="true"':"")+'>'+
+      (S.guardandoNota===d.k?"Guardando…":"Pronto")+'</button>'+
     (d.nota?'<button class="lnk mudo" data-a="dst-apagar-nota" data-v="'+d.k+'">Apagar a nota</button>':"")+
     /* dois estados a vista: escolher onde a escrita mora ENQUANTO a caneta
        esta na mao, antes de o registro existir. Nenhuma ancora falsa entra. */
@@ -2963,7 +2965,7 @@ function mesaReduzida(){
       '<p class="onde">Você parou na página 84.</p>'+
       '<p class="desde">3 notas desde a última leitura · '+esc(l.autor)+'</p>'+
       '<div class="acoes" style="margin:0"><button class="btnO forte" data-a="ir" data-v="leitura">'+
-      'Continuar lendo →</button><button class="lnk mudo" data-a="ir-livro">Ver as notas</button></div>'+
+      'Continuar lendo →</button><button class="lnk mudo" data-a="ir-livro" data-v="'+esc(l.titulo)+'#notas">Ver as notas</button></div>'+
       '</div></div>';
   }
   if(d.pends.length){
@@ -2986,7 +2988,7 @@ function mesaReduzida(){
     h+='<div class="mbib"><div class="cab"><span class="r">Na estante</span>'+
       '<span class="n">'+d.acervo+'</span>'+
       '<button class="lnk" data-a="ir" data-v="estante">Ver estante →</button></div>'+
-      '<div class="capas">'+ACERVO.slice(0,5).map(b=>'<button data-a="ir-livro" title="'+esc(b.t)+'">'+
+      '<div class="capas">'+ACERVO.slice(0,5).map(b=>'<button data-a="ir-livro" data-v="'+esc(b.t)+'" title="'+esc(b.t)+'">'+
         '<img src="'+capa(b.c)+'" alt="Capa de '+esc(b.t)+'" loading="lazy"></button>').join("")+'</div></div>';
   }
   return h+mEstados()+'</div>';
@@ -3053,12 +3055,12 @@ function mContinuar(d){
     '<p class="meta">'+l.prog+'% lido · '+l.notas+' notas suas</p>'+
     '<div class="acoes" style="margin-top:var(--s3)">'+
     '<button class="btnO forte" data-a="ir" data-v="leitura">Continuar leitura →</button>'+
-    '<button class="lnk mudo" data-a="ir-livro">Abrir as notas</button></div></div></div></div>';
+    '<button class="lnk mudo" data-a="ir-livro" data-v="'+esc(l.titulo)+'#notas">Abrir as notas</button></div></div></div></div>';
 }
 function mProntos(d){
   if(!d.prontos.length)return"";
   return '<div class="msec"><h2>Ficaram prontos<span class="ct">agora há pouco</span></h2>'+
-    '<div class="mprontos">'+d.prontos.map(p=>'<button class="mpronto" data-a="ir-livro">'+
+    '<div class="mprontos">'+d.prontos.map(p=>'<button class="mpronto" data-a="ir-livro" data-v="'+esc(p.t)+'">'+
       '<img src="'+capa(p.capa)+'" alt="Capa de '+esc(p.t)+'" loading="lazy">'+
       '<span class="t">'+esc(p.t)+'</span><span class="q">'+p.fmt+' · '+esc(p.q)+'</span></button>').join("")+
     '</div></div>';
@@ -3109,7 +3111,7 @@ function mesaAtual(){
 
   h+='<div class="grupo"><div class="gcab"><h2>Na estante</h2><span class="n">14</span><span class="sp"></span>'+
     '<button class="lnk mudo" data-a="ir" data-v="estante">Ver a estante →</button></div>'+
-    ACERVO.slice(0,3).map(b=>linha({nm:b.t,st:b.f+" · "+b.q,pt:"ok",cap:b.c,acao:"Abrir",a:"ir-livro"})).join("")+
+    ACERVO.slice(0,3).map(b=>linha({nm:b.t,st:b.f+" · "+b.q,pt:"ok",cap:b.c,acao:"Abrir",a:"ir-livro",v:b.t})).join("")+
     '</div>';
   return h+'</div>';
 }
@@ -3134,7 +3136,7 @@ function mesaNova(){
     '</div>';
 }
 function linha(o){
-  return '<button class="linha" data-a="'+o.a+'">'+
+  return '<button class="linha" data-a="'+o.a+'"'+(o.v?' data-v="'+esc(o.v)+'"':"")+'>'+
     (o.cap?'<img class="capa" src="'+capa(o.cap)+'" alt="">':'<span class="capa vazia">sem<br>capa</span>')+
     '<span><span class="nm">'+esc(o.nm)+'</span><span class="st"><i class="pt pt-'+o.pt+'"></i>'+esc(o.st)+'</span></span>'+
     '<span class="ac">'+o.acao+'</span></button>';
@@ -3181,7 +3183,7 @@ function vItem(){
   return h+'</div>';
 }
 function cab(){
-  return (S.deLivro?'<button class="volta" data-a="ir-livro">‹ '+esc(ARQ.titulo)+'</button>'
+  return (S.deLivro?'<button class="volta" data-a="ir-livro" data-v="'+esc(ARQ.titulo)+'">‹ '+esc(ARQ.titulo)+'</button>'
                    :'<button class="volta" data-a="ir" data-v="mesa">‹ Mesa</button>')+
     '<div class="icab"><img class="cp" src="'+capa(S.capaEsc==="gerada"?ARQ.gerada:ARQ.capa)+'" alt="">'+
     '<div class="tx"><h1>'+esc(ARQ.nome)+'</h1><div class="metas">'+
@@ -3247,7 +3249,7 @@ function itemPronto(){
   h+='<div class="acoes">'+
     (S.enviado?'':'<button class="btn" data-a="folha" data-v="envio">Enviar ao Kindle de Erik</button>')+
     '<button class="btn '+(S.enviado?'':'sec2')+'" data-a="baixar">Baixar EPUB</button>'+
-    '<button class="lnk mudo" data-a="ir-livro">Abrir na estante</button></div>';
+    '<button class="lnk mudo" data-a="ir-livro" data-v="'+esc(ARQ.titulo)+'">Abrir na estante</button></div>';
   h+='<div class="sec" style="margin-top:var(--s6)"><button class="lnk" data-a="feito">'+
     (S.feitoAberto?"▾":"▸")+' O que foi feito neste arquivo</button>'+
     (S.feitoAberto?'<div class="lista" style="margin-top:var(--s3)">'+
@@ -3331,13 +3333,19 @@ function notaLivre(d){
      cabecalho, e que nao tem nenhuma regra para .campo. O compositor livre
      saia sem estilo nenhum: caixa branca, monoespacada de 13px, sem regua.
      Classe propria, e as regras do compositor passam a alcanca-lo. */
-  return '<div class="'+(aqui?"notaE":"escL")+'" id="e-'+d.k+'">'+
+  return '<div class="'+(aqui?"notaE":"escL")+(!aqui&&S.erroNota?" -erro":"")+'" id="e-'+d.k+'">'+
     '<span class="lbl" style="display:block;margin-bottom:var(--s2)">Escrevendo</span>'+
     '<textarea class="campo" id="campoNota" aria-label="Sua anotação" placeholder="'+
     (d.cap!=null?"O que você quer guardar sobre este capítulo":"O que você quer guardar sobre este livro")+
     '">'+esc(rasc)+'</textarea>'+
+    /* o mesmo guardar do outro compositor passa por aqui: se ele falha, a
+       promessa "seu texto continua aqui" precisa aparecer nos DOIS lugares,
+       senao a falha e muda justo onde a pessoa acabou de escrever. */
+    (!aqui&&S.erroNota?'<p class="erro">Não deu para guardar agora. <b>Seu texto continua aqui</b> — nada foi perdido. '+
+      '<button class="lnk" data-a="dst-guardar" data-v="'+d.k+'" style="padding:0">Tentar de novo</button></p>':"")+
     '<div class="pe"><button class="lnk" data-a="'+(aqui?"esc-aqui-guardar":"dst-guardar")+
-    '" data-v="'+d.k+'">Pronto</button>'+
+    '" data-v="'+d.k+'"'+(!aqui&&S.guardandoNota===d.k?' aria-busy="true"':"")+'>'+
+    (!aqui&&S.guardandoNota===d.k?"Guardando…":"Pronto")+'</button>'+
     (aqui?'<button class="lnk mudo" data-a="esc-aqui" data-v="'+(d.cap==null?"livro":d.cap)+'">Descartar</button>':'')+
     '<span class="sp" style="flex:1"></span>'+
     '<span class="dest">'+esc(escEnd(d))+'</span></div></div>';
@@ -3473,7 +3481,7 @@ function vEstante(){
     return h+'<p class="sub">Nenhum item com esse recorte'+
       (col?', dentro de “'+esc(col.nome)+'”':'')+'.</p></div>';
   if(S.estante==="lista"){
-    h+='<div class="grade">'+acervo.map(b=>'<button class="bk" data-a="ir-livro">'+
+    h+='<div class="grade">'+acervo.map(b=>'<button class="bk" data-a="ir-livro" data-v="'+esc(b.t)+'">'+
       '<img src="'+capa(b.c)+'" alt="Capa de '+esc(b.t)+'" loading="lazy">'+
       '<span class="t">'+esc(b.t)+'</span><span class="a">'+esc(b.a)+' \u00b7 '+b.f+'</span>'+
       /* sem esta linha, "Malha Urbana · Ana Duarte · EPUB" aparece duas vezes
@@ -3499,7 +3507,7 @@ function vEstante(){
     const b=acervo.find(x=>x.c===S.lombSel);
     h+='<div class="legenda">'+(b?'<b style="font-size:14px">'+esc(b.t)+'</b>'+
       '<span style="font-size:12.5px;color:var(--ink-3)">'+esc(b.a)+' \u00b7 '+b.f+' \u00b7 '+esc(b.q)+'</span>'+
-      '<span class="sp"></span><button class="lnk" data-a="ir-livro">Abrir</button>':'')+'</div>';
+      '<span class="sp"></span><button class="lnk" data-a="ir-livro" data-v="'+esc(b.t)+'">Abrir</button>':'')+'</div>';
   }
   /* a dock saiu daqui: ela repetia Capas/Estante, que ja estao no seletor
      acima, e a justificativa dela era manipulacao direta perto das maos —
@@ -4071,7 +4079,10 @@ function secRelacoes(d){
    mesma página: elas não se escolhem por gosto visual. O mapa responde
    "como está a minha cabeça?"; a trilha responde "como cheguei até
    aqui?"; o território responde "sobre o que eu ando pensando?".
-   Só a segunda e a terceira sobrevivem a um acervo pequeno.
+   O mapa não é mais a porta: só a trilha e o território sobrevivem a um
+   acervo pequeno, e é por isso que a ordem é trilha, território, mapa.
+   O mapa fica como vista opcional — se ele continua existindo é outra
+   pergunta, e não é desta correção.
    ═══════════════════════════════════════════════════════════════════ */
 function vConexoes(){
   const notas=S.dst.filter(d=>d.nota);
@@ -4080,13 +4091,13 @@ function vConexoes(){
     '<h1 class="t">Conexões</h1>'+
     '<p class="sub">Três direções possíveis para o mesmo material. Elas respondem a perguntas '+
     'diferentes — não são três aparências da mesma tela.</p>'+
-    '<div class="dirNav">'+[["a","A · Mapa"],["b","B · Trilhas"],["c","C · Territórios"]]
+    '<div class="dirNav">'+[["a","A · Trilhas"],["b","B · Territórios"],["c","C · Mapa"]]
       .map(x=>'<a href="#dir-'+x[0]+'">'+x[1]+'</a>').join("")+'</div>';
   if(!comRel.length)
     return h+'<p class="vazioN">Nenhuma nota se liga a outra ainda. Estas três telas são '+
       'derivadas do que você escreveu: sem notas, elas não têm o que mostrar — e é exatamente '+
       'esse o argumento de não começar o produto por aqui.</p></div></div>';
-  return h+dirMapa(comRel)+dirTrilhas()+dirTerritorios()+'</div></div>';
+  return h+dirTrilhas()+dirTerritorios()+dirMapa(comRel)+'</div></div>';
 }
 /* o titulo da direcao nao pode ter o mesmo peso de "Ainda sem nome", que e
    um separador DENTRO dela: medido lado a lado, os dois liam igual. */
@@ -4097,7 +4108,105 @@ function vConexoes(){
 const cabDir=(id,rot,resp)=>'<div class="dirC" id="dir-'+id+'">'+
   '<h2 class="dirT">'+rot+'</h2>'+
   '<p class="dirP">'+resp+'</p>';
-/* ── A · MAPA ──────────────────────────────────────────────────────
+/* ── A · TRILHAS ───────────────────────────────────────────────────
+   O caminho inteiro, escrito na horizontal: livro, trecho, nota, a
+   palavra que atravessa, nota, trecho, livro. É a única das três em que
+   cada passo é legível sem clicar em nada. */
+function trilha(){
+  const gs=ideias();if(!gs.length)return null;
+  const g=gs[0],adj={};
+  g.pares.forEach(p=>{
+    (adj[p.a.k]||(adj[p.a.k]=[])).push({k:p.b.k,t:p.termos});
+    (adj[p.b.k]||(adj[p.b.k]=[])).push({k:p.a.k,t:p.termos});});
+  /* o caminho mais longo que não repete nota nem livro: uma trilha que
+     volta ao mesmo livro não mostrou travessia nenhuma. */
+  let melhor=[];
+  const anda=(k,vis,livros,cam)=>{
+    if(cam.length>melhor.length)melhor=cam.slice();
+    (adj[k]||[]).forEach(e=>{
+      const o=escK(e.k);if(!o||vis[e.k]||livros[o.livro])return;
+      vis[e.k]=1;livros[o.livro]=1;
+      anda(e.k,vis,livros,cam.concat([{termo:e.t[0],nota:o}]));
+      delete vis[e.k];delete livros[o.livro];});
+  };
+  Object.keys(adj).forEach(k=>{const d=escK(k);if(!d)return;
+    const vis={},livros={};vis[k]=1;livros[d.livro]=1;
+    anda(k,vis,livros,[{termo:null,nota:d}]);});
+  return melhor.length>1?melhor:null;
+}
+function dirTrilhas(){
+  const t=trilha();
+  let h=cabDir("a","A · Trilhas","Como uma ideia levou à outra.");
+  if(!t)return h+'<p class="vazioN">Ainda não há um caminho que atravesse dois livros.</p></div>';
+  /* so anima ao CHEGAR em Conexoes: repetir a entrada a cada repintura
+     transformaria um argumento numa animacao de abertura. */
+  h+='<div class="trl'+(ultimoLugar!=="conexoes"?" -entra":"")+'">';
+  t.forEach((passo,i)=>{
+    const d=passo.nota,tr=escTxt(d);
+    if(passo.termo){
+      /* O desenho do Erik era livro -> trecho -> nota -> IDEIA -> outra nota.
+         O elo ja ocupa essa posicao; o que faltava era ele saber quando a
+         ideia tem nome. Se as duas notas estao dentro do mesmo conceito, o
+         elo mostra o conceito; se nao, mostra a palavra que ainda nao foi
+         batizada. Uma ideia sem nome continua sendo uma ideia. */
+      const ant=t[i-1].nota;
+      const conc=S.terr.find(x=>x.notas.indexOf(ant.k)>-1&&x.notas.indexOf(d.k)>-1);
+      h+='<div class="elo'+(conc?' -nomeada':'')+'" style="--i:'+i+'"><span>'+
+        (conc?esc(conc.nome):esc(inteira(passo.termo,[ant,d])))+'</span>'+
+        (conc?'<i>ideia sua</i>':'<i>palavra em comum, ainda sem nome</i>')+'</div>';
+    }
+    h+='<div class="pas" style="--i:'+i+'"><div class="lv">'+esc(d.livro||"sem livro")+
+      (d.cap!=null&&d.livro?' · cap. '+(d.cap+1):'')+'</div>'+
+      (tr?'<p class="tr">“'+esc(tr)+'”</p>':'')+
+      '<p class="nt"><button class="abre" data-a="nota-abrir" data-v="'+d.k+'">'+esc(d.nota)+'</button></p>'+
+      '</div>';
+  });
+  h+='</div></div>';
+  return h;
+}
+/* ── B · TERRITÓRIOS ───────────────────────────────────────────────
+   Três palavras que não são sinônimas, e o produto perde o sentido se
+   elas virarem uma só. */
+function dirTerritorios(){
+  const gs=ideias();
+  const pend=gs.filter(g=>S.ignoradas.indexOf(g.id)<0&&!S.terr.some(t=>t.id===g.id));
+  let h=cabDir("b","B · Territórios","Que assuntos apareceram sozinhos.");
+  h+='<div class="tresP">'+
+    '<div><b>Coleção</b><span>Você juntou de propósito. Existe porque você a fez.</span></div>'+
+    '<div><b>Território</b><span>O Mekora notou, você nomeou. Existe porque o material se repetiu.</span></div>'+
+    '<div><b>Conexão</b><span>Uma relação entre duas notas. Não é lugar nenhum.</span></div></div>';
+  if(S.terr.length)
+    h+='<div class="soltoE">Seus territórios</div><div class="terrL">'+S.terr.map(t=>{
+      const ns=t.notas.map(escK).filter(Boolean);
+      const lvs=[...new Set(ns.map(n=>n.livro).filter(Boolean))];
+      return '<div class="terr"><h4>'+esc(t.nome)+'</h4>'+
+        '<p class="me">'+ns.length+' nota'+(ns.length>1?"s":"")+
+        (lvs.length?' · '+lvs.length+' livro'+(lvs.length>1?"s":""):"")+
+        ' · '+(t.sua?"você reuniu":"o Mekora notou, você nomeou")+'</p>'+
+        '<div class="acs"><button class="sec" data-a="terr-ver" data-v="'+esc(t.id)+'">ver as notas</button>'+
+        '<button class="sec" data-a="terr-soltar" data-v="'+esc(t.id)+'">desfazer o território</button></div></div>';
+    }).join("")+'</div>';
+  if(pend.length){
+    h+='<div class="soltoE">Ainda sem nome</div>';
+    h+='<div class="terrL">'+pend.slice(0,3).map(g=>
+      '<div class="terr -pend"><h4>'+g.termos.slice(0,2).map(t=>esc(t.w)).join(" · ")+'</h4>'+
+      '<p class="me">'+g.notas.length+' notas · '+g.livros.length+' livros · o Mekora contou</p>'+
+      '<div class="acs">'+
+        '<button class="sec" data-a="terr-ver" data-v="'+esc(g.id)+'">ver</button>'+
+        '<button class="sec" data-a="ideia-nomear" data-v="'+esc(g.id)+'">nomear</button>'+
+        '<button class="sec" data-a="terr-manter" data-v="'+esc(g.id)+'">manter sem nome</button>'+
+        '<button class="sec sob" data-a="ideia-ignorar" data-v="'+esc(g.id)+'">ignorar</button></div>'+
+      (S.nomeando===g.id?'<div class="nomeia"><label for="nomeIdeia">Que nome isto tem para você?</label>'+
+        '<input id="nomeIdeia" class="campoB" placeholder="Observação como sistema" autocomplete="off">'+
+        '<div class="acs"><button class="pri" data-a="ideia-nome-ok" data-v="'+esc(g.id)+'">Nomear</button>'+
+        '<button class="sec" data-a="ideia-nomear" data-v="">cancelar</button></div></div>':'')+
+      '</div>').join("")+'</div>';
+  }
+  if(!S.terr.length&&!pend.length)
+    h+='<p class="vazioN">Nenhum assunto se repetiu ainda em livros diferentes.</p>';
+  return h+'</div>';
+}
+/* ── C · MAPA ──────────────────────────────────────────────────────
    Desenhado com o que a casa tem: filete fino, tinta, quadrado. Sem
    brilho, sem gradiente, sem cérebro. O ponto do exercício não é fazer
    um grafo bonito — é ver que, mesmo bonito, ele não diz o que fazer. */
@@ -4197,7 +4306,7 @@ function dirMapa(ds){
       (p.y+(alto?(Math.sin(p.a)<0?-10:16):3.5)).toFixed(1)+
       '" class="rot -'+no.t+'" text-anchor="'+(alto?"middle":(fora?"end":"start"))+'">'+
       esc(no.rot)+'</text>':'');};
-  return cabDir("a","A · Mapa","O que está ligado com o quê.")+
+  return cabDir("c","C · Mapa","O que está ligado com o quê.")+
     '<div class="mapaW"><svg viewBox="0 0 520 340" class="mapa" role="img" '+
       'aria-label="Mapa das notas ligadas por palavras em comum">'+
       linhas.map(linha).join("")+G.nos.map(ponto).join("")+'</svg>'+
@@ -4219,104 +4328,6 @@ function dirMapa(ds){
        (G.conta.trechos>4?' <b>E com '+G.conta.trechos+' trechos elas já são a maioria das linhas.</b>':''):'')+
       '</p></div>'+
     '</div>';
-}
-/* ── B · TRILHAS ───────────────────────────────────────────────────
-   O caminho inteiro, escrito na horizontal: livro, trecho, nota, a
-   palavra que atravessa, nota, trecho, livro. É a única das três em que
-   cada passo é legível sem clicar em nada. */
-function trilha(){
-  const gs=ideias();if(!gs.length)return null;
-  const g=gs[0],adj={};
-  g.pares.forEach(p=>{
-    (adj[p.a.k]||(adj[p.a.k]=[])).push({k:p.b.k,t:p.termos});
-    (adj[p.b.k]||(adj[p.b.k]=[])).push({k:p.a.k,t:p.termos});});
-  /* o caminho mais longo que não repete nota nem livro: uma trilha que
-     volta ao mesmo livro não mostrou travessia nenhuma. */
-  let melhor=[];
-  const anda=(k,vis,livros,cam)=>{
-    if(cam.length>melhor.length)melhor=cam.slice();
-    (adj[k]||[]).forEach(e=>{
-      const o=escK(e.k);if(!o||vis[e.k]||livros[o.livro])return;
-      vis[e.k]=1;livros[o.livro]=1;
-      anda(e.k,vis,livros,cam.concat([{termo:e.t[0],nota:o}]));
-      delete vis[e.k];delete livros[o.livro];});
-  };
-  Object.keys(adj).forEach(k=>{const d=escK(k);if(!d)return;
-    const vis={},livros={};vis[k]=1;livros[d.livro]=1;
-    anda(k,vis,livros,[{termo:null,nota:d}]);});
-  return melhor.length>1?melhor:null;
-}
-function dirTrilhas(){
-  const t=trilha();
-  let h=cabDir("b","B · Trilhas","Como uma ideia levou à outra.");
-  if(!t)return h+'<p class="vazioN">Ainda não há um caminho que atravesse dois livros.</p></div>';
-  /* so anima ao CHEGAR em Conexoes: repetir a entrada a cada repintura
-     transformaria um argumento numa animacao de abertura. */
-  h+='<div class="trl'+(ultimoLugar!=="conexoes"?" -entra":"")+'">';
-  t.forEach((passo,i)=>{
-    const d=passo.nota,tr=escTxt(d);
-    if(passo.termo){
-      /* O desenho do Erik era livro -> trecho -> nota -> IDEIA -> outra nota.
-         O elo ja ocupa essa posicao; o que faltava era ele saber quando a
-         ideia tem nome. Se as duas notas estao dentro do mesmo conceito, o
-         elo mostra o conceito; se nao, mostra a palavra que ainda nao foi
-         batizada. Uma ideia sem nome continua sendo uma ideia. */
-      const ant=t[i-1].nota;
-      const conc=S.terr.find(x=>x.notas.indexOf(ant.k)>-1&&x.notas.indexOf(d.k)>-1);
-      h+='<div class="elo'+(conc?' -nomeada':'')+'" style="--i:'+i+'"><span>'+
-        (conc?esc(conc.nome):esc(inteira(passo.termo,[ant,d])))+'</span>'+
-        (conc?'<i>ideia sua</i>':'<i>palavra em comum, ainda sem nome</i>')+'</div>';
-    }
-    h+='<div class="pas" style="--i:'+i+'"><div class="lv">'+esc(d.livro||"sem livro")+
-      (d.cap!=null&&d.livro?' · cap. '+(d.cap+1):'')+'</div>'+
-      (tr?'<p class="tr">“'+esc(tr)+'”</p>':'')+
-      '<p class="nt"><button class="abre" data-a="nota-abrir" data-v="'+d.k+'">'+esc(d.nota)+'</button></p>'+
-      '</div>';
-  });
-  h+='</div></div>';
-  return h;
-}
-/* ── C · TERRITÓRIOS ───────────────────────────────────────────────
-   Três palavras que não são sinônimas, e o produto perde o sentido se
-   elas virarem uma só. */
-function dirTerritorios(){
-  const gs=ideias();
-  const pend=gs.filter(g=>S.ignoradas.indexOf(g.id)<0&&!S.terr.some(t=>t.id===g.id));
-  let h=cabDir("c","C · Territórios","Que assuntos apareceram sozinhos.");
-  h+='<div class="tresP">'+
-    '<div><b>Coleção</b><span>Você juntou de propósito. Existe porque você a fez.</span></div>'+
-    '<div><b>Território</b><span>O Mekora notou, você nomeou. Existe porque o material se repetiu.</span></div>'+
-    '<div><b>Conexão</b><span>Uma relação entre duas notas. Não é lugar nenhum.</span></div></div>';
-  if(S.terr.length)
-    h+='<div class="soltoE">Seus territórios</div><div class="terrL">'+S.terr.map(t=>{
-      const ns=t.notas.map(escK).filter(Boolean);
-      const lvs=[...new Set(ns.map(n=>n.livro).filter(Boolean))];
-      return '<div class="terr"><h4>'+esc(t.nome)+'</h4>'+
-        '<p class="me">'+ns.length+' nota'+(ns.length>1?"s":"")+
-        (lvs.length?' · '+lvs.length+' livro'+(lvs.length>1?"s":""):"")+
-        ' · '+(t.sua?"você reuniu":"o Mekora notou, você nomeou")+'</p>'+
-        '<div class="acs"><button class="sec" data-a="terr-ver" data-v="'+esc(t.id)+'">ver as notas</button>'+
-        '<button class="sec" data-a="terr-soltar" data-v="'+esc(t.id)+'">desfazer o território</button></div></div>';
-    }).join("")+'</div>';
-  if(pend.length){
-    h+='<div class="soltoE">Ainda sem nome</div>';
-    h+='<div class="terrL">'+pend.slice(0,3).map(g=>
-      '<div class="terr -pend"><h4>'+g.termos.slice(0,2).map(t=>esc(t.w)).join(" · ")+'</h4>'+
-      '<p class="me">'+g.notas.length+' notas · '+g.livros.length+' livros · o Mekora contou</p>'+
-      '<div class="acs">'+
-        '<button class="sec" data-a="terr-ver" data-v="'+esc(g.id)+'">ver</button>'+
-        '<button class="sec" data-a="ideia-nomear" data-v="'+esc(g.id)+'">nomear</button>'+
-        '<button class="sec" data-a="terr-manter" data-v="'+esc(g.id)+'">manter sem nome</button>'+
-        '<button class="sec sob" data-a="ideia-ignorar" data-v="'+esc(g.id)+'">ignorar</button></div>'+
-      (S.nomeando===g.id?'<div class="nomeia"><label for="nomeIdeia">Que nome isto tem para você?</label>'+
-        '<input id="nomeIdeia" class="campoB" placeholder="Observação como sistema" autocomplete="off">'+
-        '<div class="acs"><button class="pri" data-a="ideia-nome-ok" data-v="'+esc(g.id)+'">Nomear</button>'+
-        '<button class="sec" data-a="ideia-nomear" data-v="">cancelar</button></div></div>':'')+
-      '</div>').join("")+'</div>';
-  }
-  if(!S.terr.length&&!pend.length)
-    h+='<p class="vazioN">Nenhum assunto se repetiu ainda em livros diferentes.</p>';
-  return h+'</div>';
 }
 /* ═══════════════════════════════════════════════════════════════════
    CANVAS
@@ -5356,7 +5367,7 @@ function vFolha(){
      lugares, quatro acoes do arquivo e duas de conta, todos com o mesmo peso.
      Perguntar "para que serve este menu" era a resposta certa. */
   if(f==="menuL"){
-    const lug=[["mesa","Mesa"],["estante","Estante"],["canvas","Canvas"],["conexoes","Conexões"]];
+    const lug=[["mesa","Mesa"],["estante","Estante"],["notas","Notas"],["canvas","Canvas"],["conexoes","Conexões"]];
     const li=(a,v,nm,st)=>'<button class="linha" data-a="'+a+'"'+(v?' data-v="'+v+'"':'')+'>'+
       '<span><span class="nm">'+nm+'</span>'+(st?'<span class="st">'+st+'</span>':'')+'</span>'+
       '<span class="ac">›</span></button>';
@@ -5451,7 +5462,7 @@ function resultados(lista,q,escritos){
   let h="";
   if(lista.length)
     h+='<div class="lista" style="margin-top:var(--s4)">'+lista.map(b=>
-      '<button class="linha" data-a="ir-livro" style="grid-template-columns:30px minmax(0,1fr) auto">'+
+      '<button class="linha" data-a="ir-livro" data-v="'+esc(b.t)+'" style="grid-template-columns:30px minmax(0,1fr) auto">'+
       '<img class="capa" src="'+capa(b.c)+'" alt="" style="width:30px;height:40px">'+
       '<span><span class="nm">'+esc(b.t)+'</span><span class="st">'+esc(b.a)+' \u00b7 '+b.f+'</span></span>'+
       '<span class="ac">Abrir</span></button>').join("")+'</div>';
@@ -5821,9 +5832,22 @@ function roteia(a,v,el){
       if(v==="leitura")S.perg=null;   /* senao "Ler" reabria a pergunta calada */
       break;
     case "ir-livro":{
+      /* o titulo vem em v. Sem ele, os 14 itens do acervo abriam o mesmo
+         caderno — e o sufixo "#notas", que existia para descer ate "O que
+         ficou", tambem nunca chegava: nenhuma das onze chamadas passava valor.
+         Nem todo livro do acervo tem texto proprio, e mostrar o caderno de
+         outro seria a mesma perda que "voltar a origem" existe para evitar. */
+      const [alvo,mod]=String(v||"").split("#");
+      if(alvo){
+        if(!LIVROS[alvo]){
+          aviso("“"+alvo+"” está na estante, mas não abre aqui: "+
+            Object.keys(LIVROS).length+" livros têm texto próprio neste protótipo, "+
+            "e este não é um deles.");break;}
+        ARQ=LIVROS[alvo];
+      }
       S.lugar="livro";S.folha=null;S.dentro=false;S.dstUndo=null;S.deLivro=false;
-      if(v==="notas"){pinta();const alvo=document.getElementById("marcado");
-        if(alvo)alvo.scrollIntoView({behavior:"smooth",block:"start"});return;}
+      if(mod==="notas"){pinta();const el=document.getElementById("marcado");
+        if(el)el.scrollIntoView({behavior:"smooth",block:"start"});return;}
       break;}
     case "abrir-item":S.lugar="item";S.folha=null;S.dentro=false;S.dstUndo=null;break;
     case "soltar":S.lugar="item";S.cena="trabalho";S.dentro=false;break;
@@ -5890,17 +5914,32 @@ function roteia(a,v,el){
       break;}
     case "dst-nota":S.notaAberta=v;S.selE=null;S.erroNota=false;break;
     case "dst-guardar":{
-      const d=escK(v),ta=document.getElementById("campoNota");
-      if(d&&ta)d.nota=ta.value.trim();
-      /* a ancora e solta AQUI, nao no clique do alternador: ao soltar antes,
-         notasDo() parava de emitir o compositor e o campo sumia com o texto
-         dentro. O <mark> sai agora, porque deixou de ser verdade que aquele
-         texto e sobre aquele trecho — e a saida e o proprio recibo. */
-      if(d&&S.paraLivro&&ancora(d)){d.par=null;d.ini=null;d.fim=null;d.origem="livro";d.perg=null;}
-      S.paraLivro=false;
-      /* escrito sem ancora e sem texto nao e nada: some sem aviso */
-      if(d&&!ancora(d)&&!d.nota)S.dst=S.dst.filter(x=>x.k!==v);
-      delete S.rasc[v];S.notaAberta=null;S.erroNota=false;break;}
+      if(S.guardandoNota===v)break;
+      const ta=document.getElementById("campoNota");
+      /* o texto vai para o rascunho ANTES da tentativa: e ele que sustenta a
+         promessa "seu texto continua aqui" enquanto o guardar esta no ar. */
+      if(ta)S.rasc[v]=ta.value;
+      S.erroNota=false;S.guardandoNota=v;pinta();
+      /* guardar uma nota e a mesma classe de operacao que guardar o perfil:
+         sai da maquina, e pode nao chegar. O ramo de erro daqui existia sem
+         nunca acontecer — e ramo inalcancavel nao e honestidade, e decoracao.
+         Agora ele acontece, com o mesmo desenho que "p-salvar" ja usava. */
+      setTimeout(()=>{
+        S.guardandoNota=null;
+        if(Math.random()<0.001){S.erroNota=true;pinta();return;}
+        const d=escK(v);
+        if(d)d.nota=(S.rasc[v]!==undefined?S.rasc[v]:d.nota).trim();
+        /* a ancora e solta AQUI, nao no clique do alternador: ao soltar antes,
+           notasDo() parava de emitir o compositor e o campo sumia com o texto
+           dentro. O <mark> sai agora, porque deixou de ser verdade que aquele
+           texto e sobre aquele trecho — e a saida e o proprio recibo. */
+        if(d&&S.paraLivro&&ancora(d)){d.par=null;d.ini=null;d.fim=null;d.origem="livro";d.perg=null;}
+        S.paraLivro=false;
+        /* escrito sem ancora e sem texto nao e nada: some sem aviso */
+        if(d&&!ancora(d)&&!d.nota)S.dst=S.dst.filter(x=>x.k!==v);
+        delete S.rasc[v];S.notaAberta=null;S.erroNota=false;pinta();
+      },700);
+      return;}
     case "dst-apagar-nota":{
       const d=dstK(v);if(d)d.nota="";delete S.rasc[v];S.notaAberta=null;break;}
     case "dst-tirar":{
@@ -6584,8 +6623,10 @@ argumento que você confere sozinho vale mais do que um que precisa aceitar de m
 tela. O que dá para fazer é escurecer a página com uma camada por cima — que não é brilho, é sujeira
 sobre o texto, e piora o contraste em vez de melhorar. Tema escuro já cobre a necessidade real.</li>
 <li><b>Destaques populares.</b> Aquilo é o agregado de milhões de leitores da Amazon. Não temos esse
-corpo e não vamos ter: o produto é local, e a biblioteca é de uma pessoa só. Prometer isso seria
-prometer um dado que não existe.</li>
+corpo e não vamos ter: a biblioteca é de uma pessoa só. Prometer isso seria prometer um dado que não
+existe. A razão escrita aqui antes era outra — <i>“o produto é local”</i> — e ela caducou quando o
+produto passou a ser web. A recusa continua de pé; o que a sustenta é o corpo de leitores, não o
+lugar onde o produto roda.</li>
 </ul>
 
 <h3>Onde eu discordo do desenho de três colunas no desktop</h3>
@@ -6644,12 +6685,14 @@ nota–nota e nota–livro, e as notas tinham acabado de sumir. Zoom semântico 
 
 <h3>O que continua de fora, e por quê</h3>
 <ul>
-<li><b>Leitura em voz alta.</b> Combinamos que não era prioridade. Numa ferramenta local, isso é o
-sintetizador do sistema operacional, e a decisão relevante é de arquitetura, não de tela.</li>
+<li><b>Leitura em voz alta.</b> Combinamos que não era prioridade. A decisão relevante continua
+sendo de arquitetura e não de tela — onde a síntese roda, com que voz, e se o áudio acompanha o
+texto. O que mudou é que a resposta não é mais “o sintetizador do sistema operacional”: num produto
+web isso vira uma escolha, e ela ainda não foi feita.</li>
 <li><b>Cor de destaque.</b> Continua fora por decisão declarada: sete cores pedem que a pessoa
 invente uma taxonomia antes de ter material, e daqui a seis meses ninguém lembra o que era o azul.</li>
 <li><b>Brilho e destaques populares.</b> O primeiro o app não controla; o segundo depende de um corpo
-de leitores que um produto local não tem.</li>
+de leitores que uma biblioteca de uma pessoa só não tem.</li>
 <li><b>O celular.</b> Nada foi visto a 390 ainda — e agora existem uma superfície arrastável, um mapa
 com zoom e um modo paginado, que são os três casos mais difíceis de tudo.</li>
 </ul>
