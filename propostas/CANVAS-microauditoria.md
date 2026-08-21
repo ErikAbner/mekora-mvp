@@ -53,15 +53,13 @@ não é escolha estética: é constatação de que ele nunca esteve na disputa.
 | Mekora · área pessoal | 12/08 | **sim, integralmente** |
 | Bancada do card · Mekora | 10/08 | é o `caderno-01`, já auditado |
 | Preferências do Mekora · exploração | 11/08 | é o `caderno-02`, já auditado |
-| Kindle no cabo — exploração de animação | 06/08 | **não verificado** |
+| Kindle no cabo — exploração de animação | 06/08 | **sim** — não é Canvas |
 | Kindle Tool — telas do projeto (nomes derivados no lote) | 02/08 | **não verificado** |
 | Kindle Tool — protótipo das telas do projeto | 31/07 | **não verificado** |
-| Kindle Local Tool — exploração de navegação em camadas | 29/07 | **não verificado** |
+| Kindle Local Tool — exploração de navegação em camadas | 29/07 | **sim** — não é Canvas |
 
-Os quatro não verificados são todos da era do fluxo de conversão — 29/07 a 06/08 —, quando o Kindle
-era destino e Canvas não existia como conceito no produto. **Probabilidade baixa, não zero.** Se
-alguma dessas quatro importar, é a de animação, porque motion é justamente o que o contrato admite
-absorver.
+Os dois que restam não verificados são da era do fluxo de conversão — 29/07 a 06/08 —, quando o Kindle
+era destino e Canvas não existia como conceito no produto. **Probabilidade baixa, não zero** — e a de animação, que era a única com chance real de importar, foi verificada.
 
 ### As três perguntas
 
@@ -121,6 +119,30 @@ Parcialmente, e a lista do que **não** sobreviveu é a mais útil:
 | rotação leve de "papel sobre a mesa" | library-lab, prototype-v2 | **não** |
 
 ---
+
+### Os dois verificados depois — nenhuma quarta direção
+
+**"Kindle no cabo — exploração de animação" (06/08)** não é Canvas: é a ilustração animada do Kindle
+conectado por cabo, dentro de um modal de 448px. **Mas tem doutrina de movimento diretamente
+absorvível pelo contrato**, e ela é boa:
+
+- **um progresso só** — a variável `--p`, registrada com `@property`, governa traçado e plugue ao
+  mesmo tempo: *"matematicamente impossível separar"*;
+- **nada nasce do zero** — entra em `scale(.92)` com opacidade zero, nunca em `scale(0)`, *"no mundo
+  real nada aparece do nada"*;
+- **transição, não keyframe** — se a pessoa interromper no meio, a curva reverte de onde estava em vez
+  de reiniciar. Keyframe fica só no que é laço decorativo;
+- **`ease-in` não aparece em lugar nenhum** — *"ele atrasa justamente o começo, que é onde o olho
+  está"*;
+- **movimento reduzido não é imobilidade** — some o deslocamento, permanece o que informa.
+
+As três primeiras se aplicam diretamente a trazer uma nota para o Canvas e a arrastá-la.
+
+**"Kindle Local Tool — exploração de navegação em camadas" (29/07)** também não é Canvas: são cinco
+variações de sobreposição — empilhada, quase-fullscreen, painel lateral, livro aberto e folha
+flutuante — mais drawer, modal, HUD e toast, com um sistema de camadas por `z-index` nomeado. Traz
+um ancestral da **dock** atual, fixa no rodapé central. Onde a palavra "canvas" aparece ali, ela
+nomeia o fundo da página, não uma feature.
 
 ## 3. As cinco linhagens, e a linha evolutiva que elas desenham
 
