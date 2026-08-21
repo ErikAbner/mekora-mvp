@@ -2,7 +2,8 @@
 
 **Data:** 2026-08-20
 **Estado:** evidência reunida. **Nenhuma decisão foi tomada aqui.**
-**Base:** `propostas/ABERTO.md`, seção A — as nove que decidem forma de sistema
+**Base:** a seção A do `ABERTO.md` — as nove que decidem forma de sistema. O arquivo era rascunho
+daqui e hoje é canônico, em [`docs/ABERTO.md`](../docs/ABERTO.md); a numeração não mudou.
 
 O Erik pediu três coisas: trazer as nove inteiras com a evidência que já existe, separar A4 e A5 como
 aguardando a auditoria do schema no Mac, e resolver as outras sete.

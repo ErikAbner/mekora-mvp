@@ -59,9 +59,13 @@ lidas.
 
 ## As perguntas abertas
 
-[`ABERTO.md`](ABERTO.md) reúne as **61 perguntas** que as nove deixaram registradas, classificadas
-**por momento de decisão** — antes da arquitetura, antes da feature afetada, antes do lançamento, ou
-backlog técnico. É rascunho do futuro documento canônico de mesmo nome.
+O rascunho que vivia aqui reunia as **61 perguntas** que as nove deixaram registradas,
+classificadas **por momento de decisão** — antes da arquitetura, antes da feature afetada, antes do
+lançamento, ou backlog técnico.
+
+Ele virou canônico em 21/08 e mudou de lugar: [`docs/ABERTO.md`](../docs/ABERTO.md), hoje com **63**.
+**Os números das perguntas são estáveis**, então toda referência a `A4`, `B22` ou `D14` escrita antes
+continua resolvendo.
 
 **Nenhuma delas virou decisão durante a promoção.** A classificação existe para que documentação
 melhor organizada não vire paralisia de especificação: nenhuma das 61 bloqueia a escrita do PRD, e
@@ -104,4 +108,20 @@ razão escrita.
 
 ---
 
-*Atualizado em 20 de agosto de 2026, na promoção das nove.*
+## O que saiu daqui em 2026-08-21
+
+**O `ABERTO.md` saiu.** Ele era rascunho, e agora é canônico: vive em `docs/ABERTO.md`, com as três
+que viraram decisão removidas da fila e seis novas entradas que as decisões de 20 e 21/08 abriram.
+
+Manter os dois seria manter **duas filas** — que é o mesmo erro que manter duas `decisions/`. O
+arquivo antigo continua no histórico do Git, e é lá que ele mora agora: **história se aposenta, não
+se apaga** `DEC-0028`.
+
+**Continuam aqui, e continuam sem autoridade:** `DIVIDA-DE-VALIDACAO.md`, `DRIFT-revisao.md`,
+`CANVAS-microauditoria.md`, `A-NOVE-PERGUNTAS.md` e as três levas de `RECONCILIACAO`. São material de
+trabalho e evidência — não norma. A norma está em `erik-project-os/decisions/`, e o estado vigente
+em `docs/`.
+
+---
+
+*Atualizado em 21 de agosto de 2026, quando o `ABERTO.md` virou canônico.*
