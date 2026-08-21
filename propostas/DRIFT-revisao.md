@@ -145,12 +145,22 @@ ocorrência dele. O que caiu foi a premissa, não a execução.
 
 O código está certo. O registro está errado. **Não se toca no código.**
 
-### R1 · Busca dentro do livro implementada sem run
+### ~~R1 · Busca dentro do livro implementada sem run~~ — **este drift não existe**
 
-`:4899`. A feature foi bloqueio declarado **duas vezes** em 19/08 — *"a única feature de referência
-marcada como obrigatória pela auditoria"* — e apareceu implementada em 20/08 sem run que a cubra.
+**Corrigido em 20/08, depois de conferir.** Eu havia registrado que a busca dentro do livro apareceu
+implementada sem run que a cobrisse. **É falso.**
 
-Nada a corrigir na implementação. O que falta é registro do trabalho.
+O run existe: `20260820T144353Z-a-lista-que-faltava-dos-tres-briefings`, aberto às 14h43m53s UTC —
+**22 segundos antes** do commit `645ac22`, às 14h44m15s. Ele nomeia *"busca dentro do texto do
+livro"* no escopo **e** no sumário, entre os treze itens fechados.
+
+**Como eu errei:** listei o diretório `runs/2026-08-20/` com `head -30`. A saída anterior tinha 21
+runs de 19/08, então o corte caiu no meio de 20/08 e escondeu os sete últimos — inclusive este. Eu
+li a lista truncada como se fosse a lista inteira.
+
+É o mesmo erro de método que produziu a evidência falsa da R-008 e a afirmação das "três horas" da
+Mesa C: **concluir ausência a partir de uma busca que não cobriu o campo todo.** Ausência é a
+conclusão mais cara de tirar, e a única que exige provar que se olhou o conjunto inteiro.
 
 ### R2 · O commit do Canvas descreve o repositório, não o produto
 
@@ -169,7 +179,7 @@ mensagem de commit é imutável, e a correção é o registro da microauditoria 
 | **BUG** | 5 | conserto pontual; três deles são de uma linha |
 | **PROTÓTIPO ANTIGO** | 2 | remover um, marcar o outro |
 | **EXIGE IMPLEMENTAÇÃO** | 2 | os dois bloqueados por perguntas `A` e `B` do `ABERTO.md` |
-| **DRIFT DE REGISTRO** | 2 | nada a fazer no código |
+| **DRIFT DE REGISTRO** | 1 | nada a fazer no código — o outro não existia |
 
 ### O que está pronto para conserto imediato
 
@@ -196,3 +206,6 @@ de qual marca já existe como precedente na Estante 3D.
 2. Não são "11 drifts" homogêneos. **Quatro dos onze não têm conserto de código** — dois são registro
    e dois são norma sem implementação. Tratar a lista como uma fila de bugs teria produzido trabalho
    errado em quatro dos onze casos.
+3. **A R1 não era drift nenhum** — o run existia, e eu não o vi porque cortei a listagem. Dos onze,
+   **dez**. E a correção interessa mais que a contagem: das três vezes que afirmei ausência nesta
+   consolidação, três eram falsas.
