@@ -9,10 +9,12 @@
  *
  * Sem dependência: Node 18+ já tem fetch e WebSocket globais.
  *
- *   node scripts/medir.mjs <url> [largura] [altura] [setup.js] <medida.js> [--png=arq]
+ *   node scripts/medir.mjs <url> [largura] [altura] [setup.js] <medida.js> [--png=arq] [--gesto=arq]
  *
  * setup.js  roda antes da medida (põe o protótipo no estado que interessa)
  * medida.js é uma expressão avaliada na página; o valor volta como JSON
+ * --gesto=  arquivo avaliado na página que devolve pontos [{x,y},...]; o Chrome
+ *           anda por eles com o botão apertado, entre o setup e a medida
  *
  * Exemplo:
  *   python3 -m http.server 8765 -d . &
@@ -58,11 +60,16 @@ function achaChrome() {
    diferentes, e ate agora so uma delas tinha instrumento. */
 const bruto = process.argv.slice(2);
 const png = (bruto.find(x => x.startsWith('--png=')) || '').slice(6) || null;
+/* --gesto=<arquivo.js> e avaliado na pagina e deve devolver uma lista de
+   pontos [{x,y},...]; o Chrome anda por eles com o botao apertado. Existe
+   porque arrasto nao se mede com expressao: dispatchEvent sintetico nao gera
+   captura de ponteiro, e captura e exatamente onde o arrasto quebra. */
+const gesto = (bruto.find(x => x.startsWith('--gesto=')) || '').slice(8) || null;
 const [url, larg = '1440', alt = '900', a4, a5] = bruto.filter(x => !x.startsWith('--'));
 const arqMedida = a5 || a4;
 const arqSetup = a5 ? a4 : null;
 if (!url || !arqMedida) {
-  console.error('uso: node scripts/medir.mjs <url> [largura] [altura] [setup.js] <medida.js>');
+  console.error('uso: node scripts/medir.mjs <url> [largura] [altura] [setup.js] <medida.js> [--png=] [--gesto=]');
   process.exit(2);
 }
 
@@ -129,6 +136,23 @@ try {
   }
 
   if (arqSetup) { await avalia(readFileSync(arqSetup, 'utf8')); await espera(400); }
+  if (gesto) {
+    const pts = await avalia(readFileSync(gesto, 'utf8'));
+    if (!Array.isArray(pts) || pts.length < 2)
+      throw new Error('--gesto precisa devolver ao menos dois pontos {x,y}');
+    const bota = (type, pt) => manda('Input.dispatchMouseEvent',
+      { type, x: Math.round(pt.x), y: Math.round(pt.y), button: 'left',
+        buttons: type === 'mouseReleased' ? 0 : 1, clickCount: 1, pointerType: 'mouse' });
+    await manda('Input.dispatchMouseEvent',
+      { type: 'mouseMoved', x: Math.round(pts[0].x), y: Math.round(pts[0].y),
+        button: 'none', buttons: 0, pointerType: 'mouse' });
+    await bota('mousePressed', pts[0]);
+    /* passos intermediarios: um arrasto de um quadro so nao e arrasto, e e
+       exatamente o que esconde limiar mal posto e captura perdida. */
+    for (let i = 1; i < pts.length; i++) { await bota('mouseMoved', pts[i]); await espera(24); }
+    await bota('mouseReleased', pts[pts.length - 1]);
+    await espera(260);
+  }
   console.log(JSON.stringify(await avalia(readFileSync(arqMedida, 'utf8')), null, 2));
   if (png) {
     await espera(500);

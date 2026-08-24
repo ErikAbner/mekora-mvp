@@ -366,7 +366,12 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .fAcs button:hover{color:var(--ink)}
 /* o que voce arrasta e a fila, e por isso so ela tem pega */
 .fCol.-fila .fCard{cursor:grab;touch-action:none}
-.fCard.-arrastando{cursor:grabbing;background:var(--branco);border-color:var(--line);opacity:.92}
+.fCol.-fila .fCard{transition:transform var(--d2) var(--curva)}
+/* o cartao na mao nao interpola: ele esta EM baixo do dedo, e atraso ali le
+   como atraso do proprio ponteiro. Quem interpola sao os vizinhos. */
+.fCard.-arrastando{cursor:grabbing;background:var(--branco);border-color:var(--line);
+  position:relative;z-index:2;transition:none;box-shadow:0 1px 0 var(--line-2)}
+@media(prefers-reduced-motion:reduce){.fCol.-fila .fCard{transition:none}}
 /* a coluna do meio e a resposta a "onde eu estou" */
 .fCol.-agora .fCard{grid-template-columns:72px minmax(0,1fr);background:var(--bg-2);
   border:0;padding:var(--s4);gap:var(--s4)}
@@ -3735,31 +3740,63 @@ function vFila(acervo){
         :'<p class="fVazio">Nada terminado ainda.</p>')+'</div>'+
     '</div>';
 }
-/* Arrastar move o no no DOM e so grava a ordem ao soltar: repintar a cada
-   quadro devolveria o cartao para debaixo do cursor. Mesmo motivo do Canvas. */
+/* Arrastar nao mexe no DOM: mexer matava a captura de ponteiro no primeiro
+   pixel — medido, lostpointercapture chegava junto com o primeiro pointermove,
+   e dali em diante nada mais alcancava o cartao. Agora o cartao segue o
+   ponteiro por transform, os vizinhos abrem espaco por transform, e a ordem so
+   e escrita ao soltar. A captura mora no container, que nao se move. */
 function filaArrastavel(){
   const pilha=document.getElementById("filaPilha");
   if(!pilha)return;
   pilha.addEventListener("pointerdown",ev=>{
     const c=ev.target.closest(".fCard");
-    if(!c||ev.target.closest("[data-a]"))return;
+    if(!c||ev.button||ev.target.closest("[data-a]"))return;
+    const cartoes=[...pilha.querySelectorAll(".fCard")];
+    const de=cartoes.indexOf(c);
+    if(de<0)return;
     ev.preventDefault();
-    c.setPointerCapture(ev.pointerId);
-    c.classList.add("-arrastando");
+    /* medidos UMA vez: como nada no DOM se move durante o arrasto, estes
+       retangulos continuam validos ate soltar. */
+    const rs=cartoes.map(x=>x.getBoundingClientRect());
+    const centros=rs.map(r=>r.top+r.height/2);
+    /* o primeiro cartao nao tem a linha de acoes, entao as alturas diferem:
+       o indice sai dos centros medidos, e nao de uma altura media. */
+    const salto=rs[de].height+(rs.length>1?Math.max(0,rs[1].top-rs[0].bottom):0);
+    const y0=ev.clientY;
+    let alvo=de,arrastando=false;
+    pilha.setPointerCapture(ev.pointerId);
+    const desloca=()=>cartoes.forEach((x,i)=>{
+      if(x===c)return;
+      const d=(de<alvo&&i>de&&i<=alvo)?-salto:(de>alvo&&i>=alvo&&i<de)?salto:0;
+      x.style.transform=d?"translateY("+d+"px)":"";
+    });
     const move=e=>{
-      const alvo=[...pilha.querySelectorAll(".fCard")].filter(x=>x!==c)
-        .find(x=>{const r=x.getBoundingClientRect();return e.clientY<r.top+r.height/2;});
-      if(alvo)pilha.insertBefore(c,alvo);else pilha.appendChild(c);
+      const dy=e.clientY-y0;
+      /* limiar: sem ele, todo clique no corpo do cartao vira um arrasto de
+         zero pixel que reescreve a ordem e repinta a tela. */
+      if(!arrastando){if(Math.abs(dy)<4)return;arrastando=true;c.classList.add("-arrastando");}
+      c.style.transform="translateY("+dy+"px)";
+      const y=centros[de]+dy;
+      let novo=de;
+      if(dy<0)while(novo>0&&y<centros[novo-1])novo--;
+      else while(novo<centros.length-1&&y>centros[novo+1])novo++;
+      if(novo!==alvo){alvo=novo;desloca();}
     };
     const solta=()=>{
-      c.removeEventListener("pointermove",move);
-      c.removeEventListener("pointerup",solta);
+      pilha.removeEventListener("pointermove",move);
+      pilha.removeEventListener("pointerup",solta);
+      pilha.removeEventListener("pointercancel",solta);
+      cartoes.forEach(x=>{x.style.transform="";});
       c.classList.remove("-arrastando");
-      S.ordemFila=[...pilha.querySelectorAll(".fCard")].map(x=>x.dataset.t);
+      if(!arrastando)return;
+      const ordem=cartoes.map(x=>x.dataset.t);
+      ordem.splice(de,1);ordem.splice(alvo,0,c.dataset.t);
+      S.ordemFila=ordem;
       pinta();
     };
-    c.addEventListener("pointermove",move);
-    c.addEventListener("pointerup",solta);
+    pilha.addEventListener("pointermove",move);
+    pilha.addEventListener("pointerup",solta);
+    pilha.addEventListener("pointercancel",solta);
   });
 }
 function vEstante(){
