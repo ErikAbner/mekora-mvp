@@ -151,6 +151,7 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
   padding-bottom:var(--s2);border-bottom:1px solid var(--line-2)}
 .gcab h2{margin:0;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
 .gcab .n{font-family:var(--mono);font-size:10px;color:var(--ink-3)}
+.linha.-menu{grid-template-columns:minmax(0,1fr) auto}
 .linha{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:var(--s4);align-items:center;
   padding:var(--s3) var(--s4);border-bottom:1px solid var(--line-2);background:var(--branco);
   width:100%;transition:background var(--d1) var(--curva)}
@@ -1943,20 +1944,20 @@ const ACERVO=[
  /* est: novo | lendo | lido · nn: quantas notas · kin: esta no Kindle
     tipo: texto | quadrinho · f: formato de ORIGEM, que so aparece em
     Informacoes · q: so desambigua titulo repetido */
- {c:"01",t:"Estudo de Viabilidade",a:"Ana Duarte",f:"PDF",est:"lendo",nn:14,kin:true,tipo:"texto",q:"",l:"03",h:196},
- {c:"02",t:"Malha Urbana",a:"Ana Duarte",f:"EPUB",est:"novo",nn:0,kin:false,tipo:"texto",q:"",l:"02",h:182},
- {c:"03",t:"Sequência Noturna",a:"Ana Duarte",f:"CBZ",est:"lendo",nn:6,kin:false,tipo:"quadrinho",q:"",l:"04",h:204},
- {c:"04",t:"Censo de Fauna",a:"Ana Duarte",f:"EPUB",est:"lido",nn:0,kin:true,tipo:"texto",q:"",l:"05",h:174},
- {c:"05",t:"Malha Urbana",a:"Ana Duarte",f:"EPUB",est:"novo",nn:0,kin:false,tipo:"texto",q:"outra edição",l:"06",h:190},
- {c:"06",t:"Ensaio Visual",a:"Ana Duarte",f:"TXT",est:"lendo",nn:2,kin:false,tipo:"texto",q:"",l:"07",h:166},
- {c:"07",t:"Ensaio Visual",a:"Ana Duarte",f:"TXT",est:"novo",nn:0,kin:false,tipo:"texto",q:"variante",l:"08",h:198},
- {c:"08",t:"Arquivo",a:"Ana Duarte",f:"PDF",est:"novo",nn:0,kin:false,tipo:"texto",q:"capa gerada",l:"09",h:186},
- {c:"09",t:"Ata da reunião",a:"Ana Duarte",f:"PDF",est:"lido",nn:0,kin:false,tipo:"texto",q:"março",l:"10",h:172},
- {c:"10",t:"Arquivo",a:"Ana Duarte",f:"XLSX",est:"novo",nn:0,kin:false,tipo:"texto",q:"planilha",l:"11",h:200},
- {c:"11",t:"Diário 02",a:"Ana Duarte",f:"PDF",est:"lendo",nn:8,kin:true,tipo:"texto",q:"",l:"12",h:178},
- {c:"12",t:"Ata da reunião",a:"Ana Duarte",f:"PDF",est:"novo",nn:0,kin:false,tipo:"texto",q:"junho",l:"13",h:192},
- {c:"13",t:"Briefing de Marca",a:"Ana Duarte",f:"PDF",est:"lido",nn:1,kin:false,tipo:"texto",q:"",l:"01",h:168},
- {c:"14",t:"Apresentação Institucional",a:"Ana Duarte",f:"PDF",est:"novo",nn:0,kin:false,tipo:"quadrinho",q:"",l:"14",h:206}
+ {c:"01",t:"Estudo de Viabilidade",a:"Ana Duarte",f:"PDF",prog:34,nn:14,kin:true,tipo:"texto",q:"",l:"03",h:196},
+ {c:"02",t:"Malha Urbana",a:"Ana Duarte",f:"EPUB",prog:0,nn:0,kin:false,tipo:"texto",q:"",l:"02",h:182},
+ {c:"03",t:"Sequência Noturna",a:"Ana Duarte",f:"CBZ",prog:61,nn:6,kin:false,tipo:"quadrinho",q:"",l:"04",h:204},
+ {c:"04",t:"Censo de Fauna",a:"Ana Duarte",f:"EPUB",prog:100,nn:0,kin:true,tipo:"texto",q:"",l:"05",h:174},
+ {c:"05",t:"Malha Urbana",a:"Ana Duarte",f:"EPUB",prog:0,nn:0,kin:false,tipo:"texto",q:"outra edição",l:"06",h:190},
+ {c:"06",t:"Ensaio Visual",a:"Ana Duarte",f:"TXT",prog:12,nn:2,kin:false,tipo:"texto",q:"",l:"07",h:166},
+ {c:"07",t:"Ensaio Visual",a:"Ana Duarte",f:"TXT",prog:0,nn:0,kin:false,tipo:"texto",q:"variante",l:"08",h:198},
+ {c:"08",t:"Arquivo",a:"Ana Duarte",f:"PDF",prog:0,nn:0,kin:false,tipo:"texto",q:"capa gerada",l:"09",h:186},
+ {c:"09",t:"Ata da reunião",a:"Ana Duarte",f:"PDF",prog:100,nn:0,kin:false,tipo:"texto",q:"março",l:"10",h:172},
+ {c:"10",t:"Arquivo",a:"Ana Duarte",f:"XLSX",prog:0,nn:0,kin:false,tipo:"texto",q:"planilha",l:"11",h:200},
+ {c:"11",t:"Diário 02",a:"Ana Duarte",f:"PDF",prog:78,nn:8,kin:true,tipo:"texto",q:"",l:"12",h:178},
+ {c:"12",t:"Ata da reunião",a:"Ana Duarte",f:"PDF",prog:0,nn:0,kin:false,tipo:"texto",q:"junho",l:"13",h:192},
+ {c:"13",t:"Briefing de Marca",a:"Ana Duarte",f:"PDF",prog:100,nn:1,kin:false,tipo:"texto",q:"",l:"01",h:168},
+ {c:"14",t:"Apresentação Institucional",a:"Ana Duarte",f:"PDF",prog:0,nn:0,kin:false,tipo:"quadrinho",q:"",l:"14",h:206}
 ];
 const capa=n=>"capas/capa-"+n+".jpg";
 const lomb=n=>"capas/lombada-"+n+".png";
@@ -2396,6 +2397,10 @@ function marcaProgresso(){
   S.leit.lidoAte=m.prog;S.leit.par=m.i;
   const cap=Number(ps[m.i].dataset.cap);
   if(!Number.isNaN(cap))S.cap=cap;
+  /* a leitura ESCREVE no acervo: e isto que faz "Lendo" e "Lido" existirem
+     sem ninguem manter um campo a mao. */
+  const nb=noAcervo(ARQ.titulo);
+  if(nb)nb.prog=Math.max(nb.prog||0,Math.max(1,m.prog));
   const f=document.getElementById("progF");if(f)f.style.width=m.prog+"%";
   const t=document.getElementById("progT");if(t)t.textContent=rotuloProg(m.prog);
 }
@@ -3565,14 +3570,20 @@ function secMarcado(){
    Formato agora particiona; "Com nota" e o unico recorte de estado. */
 /* A terceira linha do cartao carregava quatro tipos de fato ao mesmo tempo:
    contagem de nota, estado de leitura, procedencia e desambiguacao. */
+/* derivado da leitura, e nao um campo que alguem mantem: campo de status a
+   mao e a primeira coisa que fica desatualizada, e dai o filtro volta a
+   mentir — so que com a culpa do usuario. */
+const estadoDe=b=>b.prog>=100?"lido":(b.prog>0?"lendo":"novo");
 const ESTADO={novo:"não comecei",lendo:"lendo",lido:"lido"};
+/* o livro do acervo que corresponde ao que esta aberto */
+const noAcervo=t=>ACERVO.find(b=>b.t===t)||null;
 const FILTROS=(function(){
   /* Perguntas que alguem faz na frente de uma estante — e nenhuma delas e
      "quais vieram de PDF". Quadrinho so entra se existir algum: filtro que
      sempre devolve zero e ruido permanente. */
   const base=[["tudo","Tudo",()=>true],
-    ["lendo","Lendo",b=>b.est==="lendo"],
-    ["novo","N\u00e3o comecei",b=>b.est==="novo"],
+    ["lendo","Lendo",b=>estadoDe(b)==="lendo"],
+    ["novo","N\u00e3o comecei",b=>estadoDe(b)==="novo"],
     ["nota","Com nota",b=>b.nn>0],
     ["kindle","No Kindle",b=>!!b.kin]];
   if(ACERVO.some(b=>b.tipo==="quadrinho"))
@@ -3620,7 +3631,7 @@ function vEstante(){
       /* sem esta linha, "Malha Urbana · Ana Duarte · EPUB" aparece duas vezes
          identica: o campo que separa a edicao da variante existia no acervo e
          so o modo Estante mostrava. E e ele que explica o recorte "Com nota". */
-      '<span class="q">'+ESTADO[b.est]+(b.nn?' · '+b.nn+' nota'+(b.nn>1?'s':''):'')+
+      '<span class="q">'+ESTADO[estadoDe(b)]+(estadoDe(b)==="lendo"?' · '+b.prog+'%':'')+(b.nn?' · '+b.nn+' nota'+(b.nn>1?'s':''):'')+
       (b.kin?' · no Kindle':'')+'</span></button>').join("")+'</div>';
   }else{
     /* o numero e medido na propria tela, nao escrito a mao: 14 lombadas de
@@ -5794,7 +5805,10 @@ function vFolha(){
      tudo. O nome nao e uma promessa sobre o valor — e a descricao do
      recorte. */
   const lug=[["mesa","Mesa"],["estante","Estante"],["notas","Conhecimento"],["canvas","Canvas"]];
-    const li=(a,v,nm,st)=>'<button class="linha" data-a="'+a+'"'+(v?' data-v="'+v+'"':'')+'>'+
+    /* .linha e a grade da MESA: 38px de capa, texto, acao. Aqui nao ha capa,
+       e a linha tinha dois filhos numa grade de tres colunas — o nome caia na
+       coluna de 38px e quebrava uma palavra por linha. Modificador proprio. */
+    const li=(a,v,nm,st)=>'<button class="linha -menu" data-a="'+a+'"'+(v?' data-v="'+v+'"':'')+'>'+
       '<span><span class="nm">'+nm+'</span>'+(st?'<span class="st">'+st+'</span>':'')+'</span>'+
       '<span class="ac">›</span></button>';
     return folha("Mekora","Onde você quer ir",
@@ -5808,13 +5822,22 @@ function vFolha(){
      foi escrita, e o clique nao fazia nada. Agora ela existe, e e o menu do
      OBJETO: o que se faz com este arquivo, nada do que leva a outro lugar. */
   if(f==="controles"){
-    const li=(a,v,nm,st,cls)=>'<button class="linha'+(cls?" "+cls:"")+'" data-a="'+a+'"'+
+    const li=(a,v,nm,st,cls)=>'<button class="linha -menu'+(cls?" "+cls:"")+'" data-a="'+a+'"'+
       (v?' data-v="'+v+'"':'')+'><span><span class="nm">'+nm+'</span>'+
       (st?'<span class="st">'+st+'</span>':'')+'</span><span class="ac">›</span></button>';
     return folha("Este arquivo",esc(ARQ.titulo),
       '<div class="lista">'+
       li("folha","envio","Enviar ao Kindle",S.enviado?"Enviado hoje, 09:12":"")+
       li("baixar","","Baixar o EPUB","")+
+      /* A derivacao erra em dois casos previsiveis: quem termina o livro sem
+         rolar o ultimo pixel, e quem quer recomecar. Por isso ela e corrigivel
+         — e a correcao mora aqui, junto do que se faz com o arquivo, e nao num
+         seletor de status que alguem teria de manter. */
+      (function(){const b=noAcervo(ARQ.titulo);if(!b)return "";
+        const e=estadoDe(b);
+        return li("marcar-lido","",e==="lido"?"Marcar como não lido":"Marcar como lido",
+          e==="lido"?"Volta para “não comecei”":
+          e==="lendo"?"Você está em "+b.prog+"%":"Ainda não aberto");})()+
       li("folha","traduzir","Traduzir","Gera um segundo arquivo; o original fica")+'</div>'+
       /* por o livro numa colecao mora aqui porque e uma acao SOBRE o arquivo,
          e "Este arquivo" e o menu de objeto dele. A colecao aparece na
@@ -6528,6 +6551,10 @@ function roteia(a,v,el){
       el.scrollBy({left:Number(v)*el.clientWidth,behavior:"smooth"});
       return;}
     case "vista-texto":S.vista=v;S.folha=null;break;
+    case "marcar-lido":{
+      const b=noAcervo(ARQ.titulo);if(!b)break;
+      b.prog=estadoDe(b)==="lido"?0:100;
+      S.folha=null;break;}
     case "cont-vista":S.conteudoVista=v;break;
     case "pg-como":S.pgComo=!S.pgComo;break;
     case "livro-busca":S.qLivro=v;break;

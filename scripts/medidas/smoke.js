@@ -30,6 +30,17 @@
     catch(e){erros.push("estante/"+fe+" -> "+e.message);}
   }
   S.fEstante="tudo";
+  /* o estado de leitura agora e escrito pela leitura e corrigivel a mao:
+     os dois caminhos precisam de caso, senao o filtro volta a ser enfeite. */
+  try{
+    const b=ACERVO[0],antes=b.prog;
+    b.prog=0;  S.lugar="estante";pinta();feito.push("estante/livro-em-zero:"+document.body.innerHTML.length);
+    b.prog=50; pinta();feito.push("estante/livro-lendo:"+document.body.innerHTML.length);
+    b.prog=100;pinta();feito.push("estante/livro-lido:"+document.body.innerHTML.length);
+    S.lugar="livro";S.folha="controles";pinta();
+    feito.push("arquivo/marcar-lido:"+document.body.innerHTML.length);
+    b.prog=antes;S.folha=null;
+  }catch(e){erros.push("estado de leitura -> "+e.message);}
   for(const s of psecs){
     try{S.lugar="perfil";S.folha=null;S.psec=s;pinta();}
     catch(e){erros.push("perfil/"+s+" -> "+e.message);}
