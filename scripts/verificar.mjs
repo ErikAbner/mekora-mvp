@@ -115,7 +115,16 @@ function verificaTexto(bruto) {
         prof++;
         /* 3 e sempre erro: o maximo legitimo e @media > regra > declaracoes */
         if (prof > 2) { achados.push({ tipo: 'css-engolido', nome: 'chave dentro de seletor, linha ~' + linha }); break; }
-      } else if (c === '}') prof = Math.max(0, prof - 1);
+      } else if (c === '}') {
+        /* Math.max escondia justamente o defeito que eu cometi duas vezes: uma
+           chave a mais no nivel zero e uma declaracao orfa fora de regra, e o
+           navegador descarta a regra seguinte tentando se recuperar. */
+        if (prof === 0) {
+          achados.push({ tipo: 'css-orfao', nome: 'chave fechando fora de regra, linha ~' + linha });
+          break;
+        }
+        prof--;
+      }
     }
     if (prof !== 0) achados.push({ tipo: 'css-engolido', nome: 'chaves desbalanceadas: sobra ' + prof });
   }
@@ -151,6 +160,11 @@ const CASOS = [
   [null, `const T={"01":"data:image/png;base64,iVBOR//w0KGgoAAAA+/x=="};
 const capa=n=>T[n]||"";
 function a(){return capa(1)}`],
+  /* a declaracao orfa: sobrou de uma edicao por linha, e o navegador come a
+     regra seguinte tentando se recuperar */
+  ['css-orfao', `<style>.a{color:red}
+  padding-bottom:8px}
+.b{color:blue}</style><script>1</script>`],
   /* e um CSS legitimo com media query aninhada nao pode ser acusado */
   [null, `<style>@media(max-width:700px){.a{color:red}.b{color:blue}}
 @container (max-width:600px){.c{color:green}}</style><script>1</script>`],
@@ -176,7 +190,7 @@ if (falhas.length) {
   process.exit(2);
 }
 if (process.argv.includes('--autoteste') && !arqs.length) {
-  console.log('✓ autoteste: os quatro detectores respondem, e nenhum acusa prosa');
+  console.log('✓ autoteste: os seis detectores respondem, e nenhum acusa prosa');
   process.exit(0);
 }
 if (!arqs.length) { console.error('uso: node scripts/verificar.mjs [--autoteste] <arquivo.html|.js> …'); process.exit(2); }

@@ -391,8 +391,8 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 /* ═══ ESTUDOS ═══ */
 /* o segundo nivel e visivelmente menor que o primeiro: sao recortes de uma
    lista, e nao lugares. Antes os seis estavam lado a lado com o mesmo peso. */
-.nfila2{display:flex;align-items:baseline;gap:var(--s5);margin:calc(var(--s4)*-1) 0 var(--s5);
-  padding-bottom:var(--s2)}
+.nfila2{display:flex;align-items:baseline;gap:var(--s5);flex-wrap:wrap;
+  margin:0 0 var(--s5);padding-bottom:var(--s3);border-bottom:1px solid var(--line-2)}
 .nfila2 button{font-size:12px;color:var(--ink-3);display:inline-flex;align-items:baseline;gap:4px}
 .nfila2 button[aria-current="true"]{color:var(--ink);font-weight:600}
 .nfila2 button i{font-family:var(--mono);font-style:normal;font-size:9.5px;color:var(--ink-3)}
@@ -1451,6 +1451,10 @@ td.n{color:var(--ink);font-weight:600}
    escreveu lá dentro. */
 .nfila{display:flex;align-items:center;gap:var(--s4);flex-wrap:wrap;
   margin-top:var(--s5);padding-bottom:var(--s3);border-bottom:1px solid var(--line-2)}
+/* com dois niveis, o filete e do grupo: ele desce para o segundo, e o
+   primeiro so encosta. Sem isto o segundo nivel pendura por fora da linha
+   que deveria fechar o cabecalho. */
+.nfila:has(+.nfila2){padding-bottom:var(--s2);border-bottom:0}
 .nfila button[data-a="nota-filtro"]{font-size:13px;color:var(--ink-3);padding:4px 0;
   border-bottom:1px solid transparent;border-radius:0}
 .nfila button[data-a="nota-filtro"]:hover{color:var(--ink)}
