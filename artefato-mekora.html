@@ -1575,8 +1575,10 @@ td.n{color:var(--ink);font-weight:600}
    caminho — a razão da ligação é texto, e não a inclinação de uma linha. */
 /* o filete do elo acompanha a largura dos passos: solto, ele atravessava a
    coluna inteira e ligava dois blocos estreitos com uma regua larga. */
-.trl{margin-top:var(--s5);border-left:2px solid var(--line-3);padding-left:var(--s5);
+.trl{margin-top:var(--s4);border-left:2px solid var(--line-3);padding-left:var(--s5);
   max-width:62ch}
+/* dentro do conceito, o que sobra da trilha usa a mesma medida dela */
+.colE .grupoE{max-width:62ch}
 .pas{position:relative}
 .pas .lv{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
   color:var(--ink-3);margin-bottom:var(--s2)}
@@ -1588,7 +1590,9 @@ td.n{color:var(--ink);font-weight:600}
   border-radius:0}
 .pas .nt .abre::after{content:" →";color:var(--ink-3)}
 .pas .nt .abre:hover::after{color:var(--ink)}
-.elo{display:flex;align-items:center;gap:var(--s3);margin:var(--s3) 0}
+/* o elo separa dois passos, entao ele precisa de mais ar do que tinha: com
+   12px de cada lado, o fim de um passo e o comeco do seguinte encostavam. */
+.elo{display:flex;align-items:center;gap:var(--s3);margin:var(--s5) 0}
 .elo::before{content:"";width:22px;height:1px;background:var(--line-3)}
 .elo span{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
   color:var(--ink-2)}
@@ -1771,6 +1775,11 @@ td.n{color:var(--ink);font-weight:600}
 .ideI{padding:var(--s4) 0;border-bottom:1px solid var(--line-2)}
 .ideI:last-child{border-bottom:0}
 .ideI h4{margin:0;font-family:var(--serif);font-size:1.1rem;font-weight:600;color:var(--ink)}
+.ideI h4 .abre{font:inherit;color:inherit;padding:0;border-radius:0}
+.ideI h4 .abre::after{content:" →";color:var(--ink-3);font-weight:400}
+.ideI:hover h4 .abre::after{color:var(--ink)}
+.tConc{font-family:var(--serif);font-size:1.9rem;font-weight:600;letter-spacing:-.015em;
+  color:var(--ink);margin:0;max-width:24ch}
 .ideI.-pend h4{font-family:var(--mono);font-size:13px;font-weight:400;letter-spacing:.05em;
   color:var(--ink-2)}
 .ideI .me{font-family:var(--mono);font-size:10px;letter-spacing:.07em;color:var(--ink-3);margin:5px 0 0}
@@ -1900,7 +1909,7 @@ const zero={
      mesmo escreveu, os territorios que voce nomeou e as ideias que dispensou.
      "rel" e "terr" sao seus; "ignoradas" existe porque uma sugestao que volta
      depois de dispensada deixa de ser sugestao e vira insistencia. */
-  nfiltro:"todas",qNotas:"",notaK:null,sumAba:"conteudo",qLivro:"",vista:"adaptado",conteudoVista:"capitulos",tagNova:null,colecoes:[{id:"col0",nome:"Método de campo",livros:["Diário 02","Estudo de Viabilidade"]}],colNova:false,fColecao:null,marcas:[{livro:"Diário 02",cap:2,dia:"9 ago"}],mapaZoom:1,mapaFoco:null,linhaMenu:null,recorteMotivo:null,conectando:null,qConectar:"",novaRel:null,rever:[],rel:[["n-solta-1","n-obs-1"]],
+  nfiltro:"todas",qNotas:"",notaK:null,sumAba:"conteudo",qLivro:"",vista:"adaptado",conteudoVista:"capitulos",tagNova:null,colecoes:[{id:"col0",nome:"Método de campo",livros:["Diário 02","Estudo de Viabilidade"]}],colNova:false,fColecao:null,marcas:[{livro:"Diário 02",cap:2,dia:"9 ago"}],concK:null,redeAberta:false,renomeando:null,linhaMenu:null,recorteMotivo:null,conectando:null,qConectar:"",novaRel:null,rever:[],rel:[["n-solta-1","n-obs-1"]],
   terr:[],ignoradas:[],comoIdeia:false,nomeando:null,concNova:null,canvasPos:{},cvModo:"mover",cvLigando:null,trazendo:false,voltarCanvas:false,naoRel:[],canvasN:[],mantidos:[],verTerr:null,verTerrId:null,
   sel:[],filtro:"todas",mud:[],fora:[],giradas:[],capaPag:1,
   disp:1,fonte:2,orient:"retrato",formato:"epub",nome:null,
@@ -2042,7 +2051,7 @@ const AJUDA=[
 let S=Object.assign({},zero),timer=null,ultimoLugar=null;
 function reset(cena){
   clearInterval(timer);timer=null;S=Object.assign({},zero);
-  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardandoNota=null;S.guardando=null;S.tirando=null;S.apagando=null;S.escNovo=null;S.paraLivro=false;S.desc="";S.descAberta=false;S.escAqui=null;S.aaAberto=false;S.foco=false;S.rever=[];S.rel=[["n-solta-1","n-obs-1"]];S.terr=[];S.ignoradas=[];S.nomeando=null;S.concNova=null;S.comoIdeia=false;S.nfiltro="todas";S.qNotas="";S.notaK=null;S.sumAba="conteudo";S.qLivro="";S.vista="adaptado";S.conteudoVista="capitulos";S.tagNova=null;S.colecoes=[{id:"col0",nome:"Método de campo",livros:["Diário 02","Estudo de Viabilidade"]}];S.colNova=false;S.fColecao=null;S.marcas=[{livro:"Diário 02",cap:2,dia:"9 ago"}];S.mapaZoom=1;S.mapaFoco=null;S.linhaMenu=null;S.recorteMotivo=null;S.conectando=null;S.qConectar="";S.novaRel=null;S.naoRel=[];S.canvasN=[];S.mantidos=[];S.verTerr=null;S.verTerrId=null;S.canvasPos={};S.cvModo="mover";S.cvLigando=null;S.trazendo=false;S.voltarCanvas=false;
+  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardandoNota=null;S.guardando=null;S.tirando=null;S.apagando=null;S.escNovo=null;S.paraLivro=false;S.desc="";S.descAberta=false;S.escAqui=null;S.aaAberto=false;S.foco=false;S.rever=[];S.rel=[["n-solta-1","n-obs-1"]];S.terr=[];S.ignoradas=[];S.nomeando=null;S.concNova=null;S.comoIdeia=false;S.nfiltro="todas";S.qNotas="";S.notaK=null;S.sumAba="conteudo";S.qLivro="";S.vista="adaptado";S.conteudoVista="capitulos";S.tagNova=null;S.colecoes=[{id:"col0",nome:"Método de campo",livros:["Diário 02","Estudo de Viabilidade"]}];S.colNova=false;S.fColecao=null;S.marcas=[{livro:"Diário 02",cap:2,dia:"9 ago"}];S.concK=null;S.redeAberta=false;S.renomeando=null;S.linhaMenu=null;S.recorteMotivo=null;S.conectando=null;S.qConectar="";S.novaRel=null;S.naoRel=[];S.canvasN=[];S.mantidos=[];S.verTerr=null;S.verTerrId=null;S.canvasPos={};S.cvModo="mover";S.cvLigando=null;S.trazendo=false;S.voltarCanvas=false;
   if(cena==="nova"){S.cena="nova";}
   if(cena==="sem-conta"){S.cena="nova";S.conta=false;}
   pinta();
@@ -2057,8 +2066,8 @@ function topo(){
      Ordem de leitura: onde chegam os arquivos, o que ja e livro, o que eu
      escrevi, onde eu trabalho, o que se liga. Conexoes fica por ultimo de
      proposito — ela e derivada das notas, e nao a porta de entrada delas. */
-  const lug=[["mesa","Mesa"],["estante","Estante"],["notas","Notas"],["canvas","Canvas"],["conexoes","Conexões"]];
-  const at=S.lugar==="leitura"?"":(noItem?"mesa":(S.lugar==="nota"?"notas":S.lugar));
+  const lug=[["mesa","Mesa"],["estante","Estante"],["notas","Notas"],["canvas","Canvas"]];
+  const at=S.lugar==="leitura"?"":(noItem?"mesa":((S.lugar==="nota"||S.lugar==="conceito")?"notas":S.lugar));
   let l1='<div class="tlin"><button class="marca" data-a="ir" data-v="'+(S.conta?"mesa":"home")+
 
 '" title="'+(S.conta?"Voltar à Mesa":"Início")+'">Mekora</button>';
@@ -3659,7 +3668,7 @@ function pauta(){
     &&!S.terr.some(t=>t.id===g.id));
   if(semNome.length)it.push({k:"semnome",n:semNome.length,
     t:semNome.length+" assunto"+(semNome.length>1?"s":"")+" que se repetiu em livros diferentes e "+
-      "continua sem nome",r:"Nomear transforma a contagem em coisa sua.",a:"ir",v:"conexoes"});
+      "continua sem nome",r:"Nomear transforma a contagem em coisa sua.",a:"ir-ideias"});
   const perdidas=S.dst.filter(d=>perdida(d));
   if(perdidas.length)it.push({k:"perdidas",n:perdidas.length,
     t:perdidas.length+" nota"+(perdidas.length>1?"s":"")+" cujo trecho sumiu do texto",
@@ -3753,12 +3762,13 @@ function vIdeias(){
     h+='<div class="soltoE">Com nome</div><div class="ideL">'+S.terr.map(t=>{
       const ns=t.notas.map(escK).filter(Boolean);
       const lvs=[...new Set(ns.map(n=>n.livro).filter(Boolean))];
-      return '<div class="ideI"><h4>'+esc(t.nome)+'</h4>'+
+      return '<div class="ideI"><h4><button class="abre" data-a="conc-abrir" data-v="'+
+        esc(t.id)+'">'+esc(t.nome)+'</button></h4>'+
         '<p class="me">'+ns.length+' nota'+(ns.length>1?"s":"")+
         (lvs.length?' \u00b7 '+lvs.map(esc).join(", "):"")+
         ' \u00b7 '+(t.sua?"voc\u00ea reuniu":"voc\u00ea nomeou")+'</p>'+
         '<div class="acs"><button class="sec" data-a="terr-ver" data-v="'+esc(t.id)+
-        '">ver as notas</button><button class="sec" data-a="ir" data-v="conexoes">ver no mapa</button>'+
+        '">ver as notas</button>'+
         '<button class="sec sob" data-a="terr-soltar" data-v="'+esc(t.id)+'">desfazer</button></div></div>';
     }).join("")+'</div>';
   if(abertas.length)
@@ -4082,135 +4092,8 @@ function secRelacoes(d){
    O mapa fica como vista opcional — se ele continua existindo é outra
    pergunta, e não é desta correção.
    ═══════════════════════════════════════════════════════════════════ */
-function vConexoes(){
-  const notas=S.dst.filter(d=>d.nota);
-  const comRel=notas.filter(d=>relacoesDe(d.k).length);
-  let h='<div class="pad larga"><div class="colE larga">'+
-    '<h1 class="t">Conexões</h1>'+
-    '<p class="sub">Três direções possíveis para o mesmo material. Elas respondem a perguntas '+
-    'diferentes — não são três aparências da mesma tela.</p>'+
-    '<div class="dirNav">'+[["a","A · Trilhas"],["b","B · Territórios"],["c","C · Mapa"]]
-      .map(x=>'<a href="#dir-'+x[0]+'">'+x[1]+'</a>').join("")+'</div>';
-  if(!comRel.length)
-    return h+'<p class="vazioN">Nenhuma nota se liga a outra ainda. Estas três telas são '+
-      'derivadas do que você escreveu: sem notas, elas não têm o que mostrar — e é exatamente '+
-      'esse o argumento de não começar o produto por aqui.</p></div></div>';
-  return h+dirTrilhas()+dirTerritorios()+dirMapa(comRel)+'</div></div>';
-}
-/* o titulo da direcao nao pode ter o mesmo peso de "Ainda sem nome", que e
-   um separador DENTRO dela: medido lado a lado, os dois liam igual. */
-/* Uma linha, e nao um par de rotulos. "Responde / Nao responde" e argumento
-   meu para o Erik, e argumento meu nao e conteudo da tela: o usuario nao
-   deveria precisar ler uma dissertacao para entender uma visualizacao. O
-   raciocinio inteiro mudou para o painel de notas. */
-const cabDir=(id,rot,resp)=>'<div class="dirC" id="dir-'+id+'">'+
-  '<h2 class="dirT">'+rot+'</h2>'+
-  '<p class="dirP">'+resp+'</p>';
-/* ── A · TRILHAS ───────────────────────────────────────────────────
-   O caminho inteiro, escrito na horizontal: livro, trecho, nota, a
-   palavra que atravessa, nota, trecho, livro. É a única das três em que
-   cada passo é legível sem clicar em nada. */
-function trilha(){
-  const gs=ideias();if(!gs.length)return null;
-  const g=gs[0],adj={};
-  g.pares.forEach(p=>{
-    (adj[p.a.k]||(adj[p.a.k]=[])).push({k:p.b.k,t:p.termos});
-    (adj[p.b.k]||(adj[p.b.k]=[])).push({k:p.a.k,t:p.termos});});
-  /* o caminho mais longo que não repete nota nem livro: uma trilha que
-     volta ao mesmo livro não mostrou travessia nenhuma. */
-  let melhor=[];
-  const anda=(k,vis,livros,cam)=>{
-    if(cam.length>melhor.length)melhor=cam.slice();
-    (adj[k]||[]).forEach(e=>{
-      const o=escK(e.k);if(!o||vis[e.k]||livros[o.livro])return;
-      vis[e.k]=1;livros[o.livro]=1;
-      anda(e.k,vis,livros,cam.concat([{termo:e.t[0],nota:o}]));
-      delete vis[e.k];delete livros[o.livro];});
-  };
-  Object.keys(adj).forEach(k=>{const d=escK(k);if(!d)return;
-    const vis={},livros={};vis[k]=1;livros[d.livro]=1;
-    anda(k,vis,livros,[{termo:null,nota:d}]);});
-  return melhor.length>1?melhor:null;
-}
-function dirTrilhas(){
-  const t=trilha();
-  let h=cabDir("a","A · Trilhas","Como uma ideia levou à outra.");
-  if(!t)return h+'<p class="vazioN">Ainda não há um caminho que atravesse dois livros.</p></div>';
-  /* so anima ao CHEGAR em Conexoes: repetir a entrada a cada repintura
-     transformaria um argumento numa animacao de abertura. */
-  h+='<div class="trl'+(ultimoLugar!=="conexoes"?" -entra":"")+'">';
-  t.forEach((passo,i)=>{
-    const d=passo.nota,tr=escTxt(d);
-    if(passo.termo){
-      /* O desenho do Erik era livro -> trecho -> nota -> IDEIA -> outra nota.
-         O elo ja ocupa essa posicao; o que faltava era ele saber quando a
-         ideia tem nome. Se as duas notas estao dentro do mesmo conceito, o
-         elo mostra o conceito; se nao, mostra a palavra que ainda nao foi
-         batizada. Uma ideia sem nome continua sendo uma ideia. */
-      const ant=t[i-1].nota;
-      const conc=S.terr.find(x=>x.notas.indexOf(ant.k)>-1&&x.notas.indexOf(d.k)>-1);
-      h+='<div class="elo'+(conc?' -nomeada':'')+'" style="--i:'+i+'"><span>'+
-        (conc?esc(conc.nome):esc(inteira(passo.termo,[ant,d])))+'</span>'+
-        (conc?'<i>ideia sua</i>':'<i>palavra em comum, ainda sem nome</i>')+'</div>';
-    }
-    h+='<div class="pas" style="--i:'+i+'"><div class="lv">'+esc(d.livro||"sem livro")+
-      (d.cap!=null&&d.livro?' · cap. '+(d.cap+1):'')+'</div>'+
-      (tr?'<p class="tr">“'+esc(tr)+'”</p>':'')+
-      '<p class="nt"><button class="abre" data-a="nota-abrir" data-v="'+d.k+'">'+esc(d.nota)+'</button></p>'+
-      '</div>';
-  });
-  h+='</div></div>';
-  return h;
-}
-/* ── B · TERRITÓRIOS ───────────────────────────────────────────────
-   Três palavras que não são sinônimas, e o produto perde o sentido se
-   elas virarem uma só. */
-function dirTerritorios(){
-  const gs=ideias();
-  const pend=gs.filter(g=>S.ignoradas.indexOf(g.id)<0&&!S.terr.some(t=>t.id===g.id));
-  let h=cabDir("b","B · Territórios","Que assuntos apareceram sozinhos.");
-  h+='<div class="tresP">'+
-    '<div><b>Coleção</b><span>Você juntou de propósito. Existe porque você a fez.</span></div>'+
-    '<div><b>Território</b><span>O Mekora notou, você nomeou. Existe porque o material se repetiu.</span></div>'+
-    '<div><b>Conexão</b><span>Uma relação entre duas notas. Não é lugar nenhum.</span></div></div>';
-  if(S.terr.length)
-    h+='<div class="soltoE">Seus territórios</div><div class="terrL">'+S.terr.map(t=>{
-      const ns=t.notas.map(escK).filter(Boolean);
-      const lvs=[...new Set(ns.map(n=>n.livro).filter(Boolean))];
-      return '<div class="terr"><h4>'+esc(t.nome)+'</h4>'+
-        '<p class="me">'+ns.length+' nota'+(ns.length>1?"s":"")+
-        (lvs.length?' · '+lvs.length+' livro'+(lvs.length>1?"s":""):"")+
-        ' · '+(t.sua?"você reuniu":"o Mekora notou, você nomeou")+'</p>'+
-        '<div class="acs"><button class="sec" data-a="terr-ver" data-v="'+esc(t.id)+'">ver as notas</button>'+
-        '<button class="sec" data-a="terr-soltar" data-v="'+esc(t.id)+'">desfazer o território</button></div></div>';
-    }).join("")+'</div>';
-  if(pend.length){
-    h+='<div class="soltoE">Ainda sem nome</div>';
-    h+='<div class="terrL">'+pend.slice(0,3).map(g=>
-      '<div class="terr -pend"><h4>'+g.termos.slice(0,2).map(t=>esc(t.w)).join(" · ")+'</h4>'+
-      '<p class="me">'+g.notas.length+' notas · '+g.livros.length+' livros · o Mekora contou</p>'+
-      '<div class="acs">'+
-        '<button class="sec" data-a="terr-ver" data-v="'+esc(g.id)+'">ver</button>'+
-        '<button class="sec" data-a="ideia-nomear" data-v="'+esc(g.id)+'">nomear</button>'+
-        '<button class="sec" data-a="terr-manter" data-v="'+esc(g.id)+'">manter sem nome</button>'+
-        '<button class="sec sob" data-a="ideia-ignorar" data-v="'+esc(g.id)+'">ignorar</button></div>'+
-      (S.nomeando===g.id?'<div class="nomeia"><label for="nomeIdeia">Que nome isto tem para você?</label>'+
-        '<input id="nomeIdeia" class="campoB" placeholder="Observação como sistema" autocomplete="off">'+
-        '<div class="acs"><button class="pri" data-a="ideia-nome-ok" data-v="'+esc(g.id)+'">Nomear</button>'+
-        '<button class="sec" data-a="ideia-nomear" data-v="">cancelar</button></div></div>':'')+
-      '</div>').join("")+'</div>';
-  }
-  if(!S.terr.length&&!pend.length)
-    h+='<p class="vazioN">Nenhum assunto se repetiu ainda em livros diferentes.</p>';
-  return h+'</div>';
-}
-/* ── C · MAPA ──────────────────────────────────────────────────────
-   Desenhado com o que a casa tem: filete fino, tinta, quadrado. Sem
-   brilho, sem gradiente, sem cérebro. O ponto do exercício não é fazer
-   um grafo bonito — é ver que, mesmo bonito, ele não diz o que fazer. */
-/* Duas primeiras palavras davam "O que" em tres notas diferentes: o rotulo
-   nao distinguia nada, e um mapa cujos pontos tem o mesmo nome e uma nuvem
-   com legenda. Artigo e preposicao saem antes de contar as duas. */
+/* rotuloNota sobreviveu ao mapa: a rede pequena do conceito ainda
+   precisa de um nome curto por ponto. */
 const VAZIA=/^(o|a|os|as|um|uma|que|de|do|da|dos|das|e|é|em|no|na|ao|se|por|para|com|mais|isso|isto)$/i;
 const rotuloNota=d=>{
   const w=(d.nota||"").split(/[\s,;.:?!—–]+/).filter(x=>x&&!VAZIA.test(x));
@@ -4224,130 +4107,200 @@ const rotuloNota=d=>{
    escrita ao lado do interruptor. */
 const ZOOM=[["De longe","livros e conceitos"],["Meio","mais as suas notas"],
   ["De perto","mais os trechos marcados"]];
-function nosMapa(){
-  const notas=S.dst.filter(d=>d.nota);
-  const trechos=S.dst.filter(d=>ancora(d)&&!d.nota);
-  const livros=[...new Set(notas.map(d=>d.livro).filter(Boolean))];
-  /* cada passo ACRESCENTA ao anterior: de longe voce ve a forma, de perto
-     voce ve o material. E nao ha estado sem sentido — nao da para pedir
-     trechos sem notas, que era possivel com quatro interruptores soltos. */
-  const z=S.mapaZoom==null?1:S.mapaZoom;
-  const M={livros:true,conceitos:true,notas:z>=1,trechos:z>=2};
-  const nos=[];
-  if(M.notas)notas.forEach(d=>nos.push({id:d.k,t:"nota",rot:rotuloNota(d)}));
-  if(M.trechos)trechos.forEach(d=>nos.push({id:d.k,t:"trecho",rot:""}));
-  if(M.livros)livros.forEach(l=>nos.push({id:"L:"+l,t:"livro",rot:l}));
-  if(M.conceitos)S.terr.forEach(t=>nos.push({id:"C:"+t.id,t:"conceito",rot:t.nome}));
-  const tem={};nos.forEach(n=>tem[n.id]=1);
-  const arestas=[],visto={};
-  const liga=(a,b,tipo)=>{if(!tem[a]||!tem[b]||a===b)return;
-    const id=[a,b].sort().join("|");if(visto[id])return;visto[id]=1;
-    arestas.push({a:a,b:b,t:tipo});};
-  if(M.notas)notas.forEach(d=>relacoesDe(d.k).forEach(r=>liga(d.k,r.k,r.tipo)));
-  /* AGREGACAO. Sem isto, afastar o zoom deixava quatro pontos soltos e zero
-     linhas: as unicas arestas que existiam eram nota-nota e nota-livro, e as
-     notas tinham acabado de sumir. Zoom semantico nao e esconder — e a
-     relacao SUBIR de nivel junto com o que sobrou na tela. */
-  if(!M.notas){
-    notas.forEach(d=>relacoesDe(d.k).forEach(r=>{
-      const o=escK(r.k);if(!o||!o.livro||!d.livro||o.livro===d.livro)return;
-      liga("L:"+d.livro,"L:"+o.livro,r.tipo==="sua"?"sua":"forte");}));
-    S.terr.forEach(t=>{
-      const lvs=[...new Set(t.notas.map(escK).filter(Boolean).map(d=>d.livro).filter(Boolean))];
-      lvs.forEach(l=>liga("C:"+t.id,"L:"+l,"pertence"));});
-  }
-  if(M.livros)S.dst.forEach(d=>{if(d.livro)liga("L:"+d.livro,d.k,"pertence");});
-  if(M.conceitos)S.terr.forEach(t=>t.notas.forEach(k=>liga("C:"+t.id,k,"pertence")));
-  /* trecho puxa trecho por estarem no mesmo capitulo: e exatamente o tipo de
-     aresta que nao diz nada, e por isso ela precisa poder ser vista. */
-  if(M.trechos)trechos.forEach(d=>trechos.forEach(o=>{
-    if(o.k!==d.k&&o.livro===d.livro&&o.cap===d.cap)liga(d.k,o.k,"possivel");}));
-  /* ENTRAR NUM NO: o mapa passa a mostrar so ele e a vizinhanca imediata.
-     E o unico jeito de um grafo continuar legivel quando o acervo cresce —
-     e tambem o unico jeito de ele responder "qual e a relacao", porque
-     dentro de um no cabe o texto que na visao geral nao cabia. */
-  if(S.mapaFoco){
-    const perto={};perto[S.mapaFoco]=1;
-    arestas.forEach(e=>{if(e.a===S.mapaFoco)perto[e.b]=1;if(e.b===S.mapaFoco)perto[e.a]=1;});
-    return {nos:nos.filter(n=>perto[n.id]),
-      arestas:arestas.filter(e=>perto[e.a]&&perto[e.b]),M:M,foco:S.mapaFoco,
-      conta:{notas:notas.length,trechos:trechos.length,livros:livros.length,conceitos:S.terr.length}};
-  }
-  return {nos:nos,arestas:arestas,M:M,
-    conta:{notas:notas.length,trechos:trechos.length,livros:livros.length,conceitos:S.terr.length}};
-}
-/* o nome do que esta em foco, para a tela poder dizê-lo */
-function nomeNo(id){
-  if(!id)return "";
-  if(id.indexOf("L:")===0)return id.slice(2);
-  if(id.indexOf("C:")===0){const t=S.terr.find(t=>("C:"+t.id)===id);return t?t.nome:"conceito";}
-  const d=escK(id);return d?(d.nota?rotuloNota(d):escTxt(d).slice(0,30)):"";
-}
-function dirMapa(ds){
-  /* a caixa e mais larga do que o circulo porque o rotulo mora FORA dele:
-     medido, "Vale testar:" saia do viewBox e era cortado pelo navegador. */
-  const G=nosMapa(),n=G.nos.length||1,R=140,cx=260,cy=170;
-  const pos={};
-  G.nos.forEach((no,i)=>{const ang=-Math.PI/2+i*2*Math.PI/n;
-    pos[no.id]={x:cx+R*Math.cos(ang),y:cy+R*Math.sin(ang),a:ang};});
-  const linhas=G.arestas.map(e=>({a:pos[e.a],b:pos[e.b],t:e.t})).filter(l=>l.a&&l.b);
-  const linha=l=>'<line x1="'+l.a.x.toFixed(1)+'" y1="'+l.a.y.toFixed(1)+'" x2="'+
-    l.b.x.toFixed(1)+'" y2="'+l.b.y.toFixed(1)+'" class="ln -'+l.t+'"/>';
-  const ponto=no=>{const p=pos[no.id],fora=Math.cos(p.a)<-0.15,alto=Math.abs(Math.cos(p.a))<0.35;
-    const L=no.t==="trecho"?3:no.t==="nota"?6:8;
-    return '<rect x="'+(p.x-L/2-5).toFixed(1)+'" y="'+(p.y-L/2-5).toFixed(1)+'" width="'+(L+10)+
-      '" height="'+(L+10)+'" class="alvo" data-a="mapa-foco" data-v="'+esc(no.id)+
-      '"><title>'+esc(no.rot||"entrar")+'</title></rect>'+
-    '<rect x="'+(p.x-L/2).toFixed(1)+'" y="'+(p.y-L/2).toFixed(1)+'" width="'+L+
-      '" height="'+L+'" class="pt -'+no.t+'"/>'+
-    (no.rot?'<text x="'+(p.x+(alto?0:(fora?-9:9))).toFixed(1)+'" y="'+
-      (p.y+(alto?(Math.sin(p.a)<0?-10:16):3.5)).toFixed(1)+
-      '" class="rot -'+no.t+'" text-anchor="'+(alto?"middle":(fora?"end":"start"))+'">'+
-      esc(no.rot)+'</text>':'');};
-  return cabDir("c","C · Mapa","O que está ligado com o quê.")+
-    '<div class="mapaW"><svg viewBox="0 0 520 340" class="mapa" role="img" '+
-      'aria-label="Mapa das notas ligadas por palavras em comum">'+
-      linhas.map(linha).join("")+G.nos.map(ponto).join("")+'</svg>'+
-      '<div class="legM"><span class="-sua">você ligou</span>'+
-        '<span class="-forte">parecem próximas</span><span class="-possivel">talvez</span></div>'+
-      '<div class="mapaF"><span class="zl">Zoom</span>'+ZOOM.map((z,i)=>
-        '<button data-a="mapa-zoom" data-v="'+i+'" aria-pressed="'+((S.mapaZoom==null?1:S.mapaZoom)===i)+'">'+
-        z[0]+' <b>'+z[1]+'</b></button>').join("")+'</div>'+
-      (G.foco?'<div class="mapaFoco"><span>Dentro de <b>'+esc(nomeNo(G.foco))+'</b>.</span>'+
-        (G.foco.indexOf("C:")===0?'<button class="lnk" data-a="terr-ver" data-v="'+
-          esc(G.foco.slice(2))+'" style="padding:0">ver as notas</button>':'')+
-        '<button class="lnk" data-a="mapa-foco" data-v="" style="padding:0">sair</button></div>':'')+
-      /* a frase acompanha o numero: com um trecho marcado so, dizer que o mapa
-         "ficou ilegivel" seria eu afirmando o que a tela nao mostra. */
-      '<p class="mapaN">'+G.nos.length+' pontos, '+linhas.length+' linhas.'+
-      (G.foco?' Tocar num ponto entra nele; tocar fora volta.':' Toque num ponto para entrar nele.')+
-      (G.M.trechos?' As ligações entre trechos vêm de estarem no mesmo capítulo — '+
-       'informação que você já tinha antes de abrir o mapa.'+
-       (G.conta.trechos>4?' <b>E com '+G.conta.trechos+' trechos elas já são a maioria das linhas.</b>':''):'')+
-      '</p></div>'+
-    '</div>';
-}
 /* ═══════════════════════════════════════════════════════════════════
-   CANVAS
-   Canvas é intenção; Conexões é descoberta. É a única regra que impede
-   as duas de virarem a mesma tela — e ela precisa valer no MODELO, não
-   só na explicação: uma linha puxada aqui à mão vira exatamente o mesmo
-   objeto que aparece em "Você ligou" dentro da nota. Não há relação de
-   canvas e relação de nota; há relação, e duas maneiras de fazer uma.
+   A PÁGINA DE UM CONCEITO
+   Conexões saiu da navegação. A medida que a matou: a correlação entre
+   força da relação e proximidade no mapa era −0,145, e notas sem nada
+   em comum ficavam mais perto (180px) do que as relacionadas (202px).
+   Num arranjo espacial em que a posição não significa nada, o desenho
+   inteiro é enfeite — a informação estava só nas linhas, e linha se lê
+   traçando com o olho, um par de cada vez.
 
-   Nada aqui é cópia. A nota trazida é a mesma nota, com a mesma origem,
-   e apagá-la do canvas não apaga a nota — tira ela da mesa.
+   O que sobrou de Conexões não era uma área: era a página de uma ideia.
+   A trilha é a forma de UM conceito atravessando livros, então ela mora
+   dentro dele. E Territórios já existia duas vezes — aqui e em Notas ›
+   Ideias, com o mesmo nome e quase as mesmas ações.
    ═══════════════════════════════════════════════════════════════════ */
-const CVL = 210;   /* largura fixa do item: a variável é a posição, não a caixa */
+
+/* pares entre um conjunto de notas. Atravessar livro é o sinal fraco (a
+   contagem); a ligação que você escreveu vale mesmo dentro do mesmo livro,
+   porque ela não foi contada — foi decidida. */
+function paresEntre(ns) {
+  const pares = [], vis = {};
+  const por = (a, b, termos, sua) => {
+    const id = [a.k, b.k].sort().join("|");
+    if (vis[id]) return;
+    vis[id] = 1;
+    pares.push({ a: a, b: b, termos: termos, sua: !!sua });
+  };
+  ns.forEach((a, i) => ns.slice(i + 1).forEach(b => {
+    if (S.rel.some(r => r.indexOf(a.k) > -1 && r.indexOf(b.k) > -1)) { por(a, b, [], true); return; }
+    if (!a.livro || !b.livro || a.livro === b.livro) return;
+    const t = comuns(a, b);
+    if (t.length) por(a, b, t, false);
+  }));
+  return pares;
+}
+
+/* o caminho mais longo que não repete nota. Não repetir LIVRO era regra do
+   mapa antigo, onde a trilha era sempre entre livros; dentro de um conceito
+   feito à mão, duas notas do mesmo livro podem ser passos legítimos. */
+/* entre os termos que um par compartilha, o que MAIS aparece no conceito
+   inteiro: "encontrar" e "repeticao" pesavam igual num par, e so o segundo
+   e o que a ideia e sobre. */
+function termoForte(termos, ns) {
+  if (!termos || !termos.length) return null;
+  const conta = t => ns.filter(d => palavras(d).indexOf(t) > -1).length;
+  return termos.slice().sort((a, b) => conta(b) - conta(a))[0];
+}
+function trilhaDe(ns) {
+  const adj = {};
+  paresEntre(ns).forEach(p => {
+    (adj[p.a.k] || (adj[p.a.k] = [])).push({ k: p.b.k, t: p.termos, sua: p.sua });
+    (adj[p.b.k] || (adj[p.b.k] = [])).push({ k: p.a.k, t: p.termos, sua: p.sua });
+  });
+  /* Maximizar comprimento sozinho produzia zigue-zague: Diario, Estudo,
+     Diario, Malha, Diario. O que a trilha existe para mostrar e a IDEIA
+     atravessando livros, entao livros distintos vem primeiro e o tamanho e
+     so o desempate. */
+  /* tres criterios, nesta ordem: quantos LIVROS o caminho atravessa, quantas
+     PALAVRAS DIFERENTES o ligam, e so entao o tamanho. Sem o segundo, o
+     vencedor era um caminho em que "registro" ligava tres notas seguidas —
+     isso nao e uma ideia se desenvolvendo, e a mesma palavra repetida. */
+  const nota=cam=>{const lv={},pl={};
+    cam.forEach(p=>{if(p.nota.livro)lv[p.nota.livro]=1;if(p.termo)pl[p.termo]=1;});
+    return [Object.keys(lv).length,Object.keys(pl).length,cam.length];};
+  let melhor=[],melhorN=[0,0,0];
+  const anda = (k, vis, cam) => {
+    const n=nota(cam);
+    if(n[0]>melhorN[0]||(n[0]===melhorN[0]&&(n[1]>melhorN[1]||
+       (n[1]===melhorN[1]&&n[2]>melhorN[2])))){melhor=cam.slice();melhorN=n;}
+    (adj[k] || []).forEach(e => {
+      const o = escK(e.k);
+      if (!o || vis[e.k]) return;
+      vis[e.k] = 1;
+      anda(e.k, vis, cam.concat([{ termo: termoForte(e.t, ns), sua: e.sua, nota: o }]));
+      delete vis[e.k];
+    });
+  };
+  Object.keys(adj).forEach(k => {
+    const d = escK(k); if (!d) return;
+    const vis = {}; vis[k] = 1;
+    anda(k, vis, [{ termo: null, nota: d }]);
+  });
+  return melhor.length > 1 ? melhor : null;
+}
+
+function vConceito() {
+  const t = S.terr.find(x => x.id === S.concK);
+  if (!t) return '<div class="pad larga"><div class="colE"><button class="lnk mudo volt" ' +
+    'data-a="nota-filtro" data-v="ideias">‹ Ideias</button>' +
+    '<p class="vazioN">Esse conceito não existe mais.</p></div></div>';
+  const ns = t.notas.map(escK).filter(Boolean);
+  const lvs = [...new Set(ns.map(n => n.livro).filter(Boolean))];
+  const cam = trilhaDe(ns);
+  const soltas = cam ? ns.filter(d => !cam.some(p => p.nota.k === d.k)) : ns;
+
+  let h = '<div class="pad larga"><div class="colE">' +
+    '<button class="lnk mudo volt" data-a="ir-ideias">‹ Ideias</button>';
+  h += S.renomeando === t.id
+    ? '<div class="nomeia"><label for="nomeConc2">Como você chama esta ideia?</label>' +
+      '<input id="nomeConc2" class="campoB" value="' + esc(t.nome) + '" autocomplete="off">' +
+      '<div class="acs"><button class="pri" data-a="conc-renomear-ok" data-v="' + esc(t.id) + '">Guardar</button>' +
+      '<button class="sec" data-a="conc-renomear" data-v="">cancelar</button></div></div>'
+    : '<h1 class="tConc">' + esc(t.nome) + '</h1>';
+  h += '<p class="ondeN">' + ns.length + ' nota' + (ns.length > 1 ? 's' : '') +
+    (lvs.length ? ' · ' + lvs.map(esc).join(', ') : '') +
+    ' · ' + (t.sua ? 'você reuniu' : 'o Mekora notou, você nomeou') + '</p>';
+  h += '<div class="acs acsN">' +
+    '<button class="pri" data-a="terr-ver" data-v="' + esc(t.id) + '">Ver as notas na lista</button>' +
+    '<button class="sec" data-a="conc-renomear" data-v="' + esc(t.id) + '">Renomear</button>' +
+    '<span class="sp" style="flex:1"></span>' +
+    '<button class="sec -dan" data-a="terr-soltar" data-v="' + esc(t.id) + '">Desfazer o conceito</button></div>';
+
+  /* A TRILHA, que era uma das três direções de Conexões e agora é o corpo
+     desta página: ela é a forma DESTE conceito, e não uma vista do acervo. */
+  h += '<div class="soltoE">Como isto se formou</div>';
+  if (!cam)
+    h += '<p class="vazioN">As notas deste conceito não se ligam entre si por palavra nenhuma — ' +
+      'quem as juntou foi você. Isso não é defeito: é a diferença entre reunir e contar.</p>';
+  else {
+    h += '<div class="trl' + (ultimoLugar !== "conceito" ? " -entra" : "") + '">';
+    cam.forEach((passo, i) => {
+      const d = passo.nota, tr = escTxt(d);
+      if (passo.termo || passo.sua)
+        h += '<div class="elo' + (passo.sua ? ' -nomeada' : '') + '" style="--i:' + i + '"><span>' +
+          (passo.sua ? 'você ligou' : esc(inteira(passo.termo, [cam[i - 1].nota, d]))) + '</span>' +
+          '<i>' + (passo.sua ? 'ligação sua' : 'palavra em comum') + '</i></div>';
+      h += '<div class="pas" style="--i:' + i + '"><div class="lv">' + esc(d.livro || "sem livro") +
+        (d.cap != null && d.livro ? ' · cap. ' + (d.cap + 1) : '') + '</div>' +
+        (tr ? '<p class="tr">“' + esc(tr) + '”</p>' : '') +
+        '<p class="nt"><button class="abre" data-a="nota-abrir" data-v="' + d.k + '">' +
+        esc(d.nota) + '</button></p></div>';
+    });
+    h += '</div>';
+  }
+  if (soltas.length && cam)
+    h += '<div class="soltoE">Também aqui dentro</div><div class="grupoE">' +
+      soltas.map(linhaNota).join("") + '</div>';
+
+  /* A REDE, recolhida. Ela sobrevive só neste tamanho e só como opção: a
+     posição continua não significando nada, mas com cinco pontos dá para ver
+     a forma de uma vez, sem traçar linha com o olho. */
+  h += '<button class="como" data-a="conc-rede" aria-expanded="' + (!!S.redeAberta) + '">' +
+    'ver como rede ' + (S.redeAberta ? "▴" : "▾") + '</button>' +
+    (S.redeAberta ? redeDe(ns, lvs) : '');
+  return h + '</div></div>';
+}
+
+/* rede pequena: as notas do conceito e os livros delas. Sem zoom e sem
+   entrar em nó — os dois existiam para salvar um mapa do acervo inteiro,
+   e este cabe numa olhada. */
+function redeDe(ns, lvs) {
+  const nos = ns.map(d => ({ id: d.k, t: "nota", rot: rotuloNota(d) }))
+    .concat(lvs.map(l => ({ id: "L:" + l, t: "livro", rot: l })));
+  const n = nos.length || 1, R = 118, cx = 260, cy = 148, pos = {};
+  nos.forEach((no, i) => {
+    const a = -Math.PI / 2 + i * 2 * Math.PI / n;
+    pos[no.id] = { x: cx + R * Math.cos(a), y: cy + R * Math.sin(a), a: a };
+  });
+  const vis = {}, linhas = [];
+  const liga = (a, b, tipo) => {
+    if (!pos[a] || !pos[b] || a === b) return;
+    const id = [a, b].sort().join("|"); if (vis[id]) return; vis[id] = 1;
+    linhas.push({ a: pos[a], b: pos[b], t: tipo });
+  };
+  paresEntre(ns).forEach(p => liga(p.a.k, p.b.k, p.sua ? "sua" : (p.termos.length > 1 ? "forte" : "possivel")));
+  ns.forEach(d => { if (d.livro) liga("L:" + d.livro, d.k, "pertence"); });
+  const ponto = no => {
+    const p = pos[no.id], fora = Math.cos(p.a) < -0.15, alto = Math.abs(Math.cos(p.a)) < 0.35;
+    const L = no.t === "livro" ? 8 : 6;
+    return '<rect x="' + (p.x - L / 2).toFixed(1) + '" y="' + (p.y - L / 2).toFixed(1) +
+      '" width="' + L + '" height="' + L + '" class="pt -' + no.t + '"/>' +
+      '<text x="' + (p.x + (alto ? 0 : (fora ? -9 : 9))).toFixed(1) + '" y="' +
+      (p.y + (alto ? (Math.sin(p.a) < 0 ? -10 : 16) : 3.5)).toFixed(1) +
+      '" class="rot -' + no.t + '" text-anchor="' + (alto ? "middle" : (fora ? "end" : "start")) + '">' +
+      esc(no.rot) + '</text>';
+  };
+  return '<div class="mapaW"><svg viewBox="0 0 520 300" class="mapa" role="img" ' +
+    'aria-label="Rede das notas deste conceito">' +
+    linhas.map(l => '<line x1="' + l.a.x.toFixed(1) + '" y1="' + l.a.y.toFixed(1) +
+      '" x2="' + l.b.x.toFixed(1) + '" y2="' + l.b.y.toFixed(1) + '" class="ln -' + l.t + '"/>').join("") +
+    nos.map(ponto).join("") + '</svg>' +
+    '<div class="legM"><span class="-sua">você ligou</span>' +
+    '<span class="-forte">parecem próximas</span><span class="-possivel">talvez</span></div>' +
+    '<p class="mapaN">A posição não quer dizer nada: os pontos estão num círculo, na ordem em que ' +
+    'foram escritos. Quem carrega informação são as linhas.</p></div>';
+}
+const CVL = 210;   /* largura fixa do item: a variavel e a posicao, nao a caixa */
 
 function cvPos(k, i) {
   const p = S.canvasPos[k];
   if (p) return p;
-  /* quem chega sem lugar entra numa grade, e não empilhado na origem */
+  /* quem chega sem lugar entra numa grade, e nao empilhado na origem */
   const col = i % 4, lin = Math.floor(i / 4);
   return { x: 28 + col * (CVL + 26), y: 28 + lin * 150 };
 }
-
 function vCanvas() {
   const ns = S.canvasN.map(escK).filter(Boolean);
   const modo = S.cvModo || "mover";
@@ -5365,7 +5318,7 @@ function vFolha(){
      lugares, quatro acoes do arquivo e duas de conta, todos com o mesmo peso.
      Perguntar "para que serve este menu" era a resposta certa. */
   if(f==="menuL"){
-    const lug=[["mesa","Mesa"],["estante","Estante"],["notas","Notas"],["canvas","Canvas"],["conexoes","Conexões"]];
+    const lug=[["mesa","Mesa"],["estante","Estante"],["notas","Notas"],["canvas","Canvas"]];
     const li=(a,v,nm,st)=>'<button class="linha" data-a="'+a+'"'+(v?' data-v="'+v+'"':'')+'>'+
       '<span><span class="nm">'+nm+'</span>'+(st?'<span class="st">'+st+'</span>':'')+'</span>'+
       '<span class="ac">›</span></button>';
@@ -5500,7 +5453,9 @@ function corpo(){
   if(S.lugar==="notas")return vNotas();
   if(S.lugar==="nota")return vNota();
   if(S.lugar==="canvas")return vCanvas();
-  if(S.lugar==="conexoes")return vConexoes();
+  if(S.lugar==="conceito")return vConceito();
+  /* quem vier de um link antigo cai onde os conceitos moram agora */
+  if(S.lugar==="conexoes"){S.lugar="notas";S.nfiltro="ideias";return vNotas();}
   if(S.lugar==="perfil"||S.lugar==="novidades")return vPerfil();
   return vMesa();
 }
@@ -6197,6 +6152,15 @@ function roteia(a,v,el){
       const par=v.split("|");
       if(!S.naoRel.some(r=>r.indexOf(par[0])>-1&&r.indexOf(par[1])>-1))S.naoRel.push(par);
       break;}
+    case "conc-abrir":S.lugar="conceito";S.concK=v;S.redeAberta=false;break;
+    case "ir-ideias":S.lugar="notas";S.nfiltro="ideias";S.verTerr=null;S.verTerrId=null;break;
+    case "conc-rede":S.redeAberta=!S.redeAberta;break;
+    case "conc-renomear":S.renomeando=v||null;break;
+    case "conc-renomear-ok":{
+      const c=document.getElementById("nomeConc2"),nome=c?c.value.trim():"";
+      if(!nome){if(c)c.focus();break;}
+      const t=S.terr.find(x=>x.id===v);if(t)t.nome=nome;
+      S.renomeando=null;break;}
     case "conc-nova":S.concNova=v||null;break;
     case "conc-criar-ok":{
       const c=document.getElementById("nomeConc"),nome=c?c.value.trim():"";
@@ -6220,7 +6184,9 @@ function roteia(a,v,el){
       S.lugar="notas";S.nfiltro="todas";S.qNotas="";S.verTerr=ks;S.verTerrId=v;S.recorteMotivo=null;break;}
     case "terr-todas":S.verTerr=null;S.verTerrId=null;S.recorteMotivo=null;break;
     case "terr-manter":if(S.mantidos.indexOf(v)<0)S.mantidos.push(v);S.nomeando=null;break;
-    case "terr-soltar":S.terr=S.terr.filter(t=>t.id!==v);break;
+    case "terr-soltar":S.terr=S.terr.filter(t=>t.id!==v);
+      if(S.lugar==="conceito"){S.lugar="notas";S.nfiltro="ideias";S.concK=null;}
+      break;
     /* ═══ IDEIAS ═══ */
     case "ideia-como":S.comoIdeia=!S.comoIdeia;break;
     case "ideia-nomear":S.nomeando=v||null;break;
@@ -6548,7 +6514,8 @@ para o próximo teste.</p>
 <tr><td class="n">Relações por palavra em comum</td><td><b>Exploração forte</b></td><td>A regra cabe numa frase e é dizível. O que ainda não sei é se ela sobrevive a duzentas notas sem virar ruído.</td></tr>
 <tr><td class="n">Trilha entre livros</td><td><b>Exploração forte</b></td><td>É a única das três direções em que cada passo é legível sem clicar. Sai do material real, e não de um exemplo escrito à mão.</td></tr>
 <tr><td class="n">Ideia emergente e Território</td><td><b>Experimental</b></td><td>A contagem funciona; o nome não. Ver abaixo.</td></tr>
-<tr><td class="n">Mapa</td><td><b>Experimental</b></td><td>Desenhado para poder ser recusado com conhecimento de causa, e não por gosto.</td></tr>
+<tr><td class="n">Mapa como área</td><td><b>Removido</b></td><td>Reprovado por medida: a posição não carregava informação. Sobrevive recolhido dentro de um conceito.</td></tr>
+<tr><td class="n">Página de um conceito, com a trilha dentro</td><td><b>Atual</b></td><td>É o que sobrou de Conexões quando a duplicação e o mapa saíram — e o que sobrou não era uma área.</td></tr>
 <tr><td class="n">Canvas: mover, ligar, escrever, tirar</td><td><b>Exploração forte</b></td><td>A ligação feita à mão é o mesmo objeto da relação da nota, o que impede Canvas e Conexões de virarem a mesma tela.</td></tr>
 <tr><td class="n">Pauta de “Para revisar”</td><td><b>Exploração forte</b></td><td>Sai inteira de contagem sobre o que você escreveu. Nenhum número inventado.</td></tr>
 <tr><td class="n">Menu de objeto na linha da nota</td><td><b>Atual</b></td><td>Um controle por item, escondido até o cursor chegar. A porta continua sendo a frase.</td></tr>
@@ -6633,6 +6600,67 @@ de notas à direita cabe inteiro na margem que já está vazia — <b>ele não c
 O trilho de biblioteca à esquerda é outra história: ele custa largura de verdade e compra pouco,
 porque a Estante está a um clique e ninguém troca de livro no meio de um parágrafo.</p>
 <p>Então: painel da direita sim, recolhido por padrão e fora do modo Foco; trilho da esquerda não.</p>
+
+<h3>Conexões saiu da navegação, e a medida que a matou</h3>
+<p>Você perguntou se aquilo era mesmo a melhor forma de ver estudos. Fui medir em vez de opinar: se
+dois pontos próximos no mapa tinham alguma relação entre si.</p>
+<table><thead><tr><th>O que foi medido</th><th>Resultado</th></tr></thead><tbody>
+<tr><td class="n">Correlação entre força da relação e proximidade</td><td><b>−0,145</b></td></tr>
+<tr><td class="n">Distância média entre notas <b>relacionadas</b></td><td>202 px</td></tr>
+<tr><td class="n">Distância média entre notas <b>sem nada em comum</b></td><td><b>180 px</b></td></tr>
+</tbody></table>
+<p>As notas sem relação ficavam <b>mais perto</b> do que as relacionadas. A posição — que é a variável
+visual mais forte de qualquer arranjo espacial — não carregava informação nenhuma e ainda enganava um
+pouco. Toda a informação estava nas linhas, e linha se lê traçando com o olho, um par de cada vez. Os
+rótulos confirmavam o resto: <span class="mono">sobrou fim</span>, <span class="mono">frase separa</span>,
+<span class="mono">serve capítulo</span> — fragmentos que ninguém reconhece como uma ideia sua.</p>
+<p>Um layout de força consertaria a posição. Mas seria melhorar exatamente as bolinhas flutuantes que
+estavam sendo recusadas, e continuaria sem responder “o que eu faço agora”.</p>
+
+<h3>E a duplicação que eu tinha criado sem perceber</h3>
+<p>Medindo o que existia <i>só</i> em Conexões, sobrou pouco. <b>Territórios</b> e <b>Notas › Ideias</b>
+listavam o mesmo objeto, com o mesmo nome e quase as mesmas ações — eu duplicei isso na rodada
+anterior. Fora o mapa, o único conteúdo exclusivo era a <b>trilha</b>. E uma trilha é a forma de
+<i>um</i> conceito atravessando livros: ela pertence ao conceito, não a uma área.</p>
+<p>Então Conexões não era uma área. Era <b>a página de uma ideia</b>, que ainda não existia.</p>
+
+<h3>O que existe agora</h3>
+<ul>
+<li>A navegação tem quatro lugares: <b>Mesa · Estante · Notas · Canvas</b>. O Canvas fica, porque lá o
+espaço é intenção sua — a posição significa o que você decidiu que ela significa.</li>
+<li>Um conceito tem <b>página própria</b>, aberta pelo nome em Notas › Ideias: quantas notas, quais
+livros, quem começou, e as ações — ver na lista, renomear, desfazer.</li>
+<li>O corpo dessa página é <b>como isto se formou</b>: a trilha, com a palavra que liga cada dois
+passos escrita entre eles. O que não entrou no caminho aparece embaixo, em <b>também aqui dentro</b> —
+nenhuma nota do conceito some.</li>
+<li>A <b>rede</b> sobrevive como opção recolhida, só neste tamanho, e diz a própria limitação na
+tela: “a posição não quer dizer nada; quem carrega informação são as linhas”.</li>
+<li>Links antigos para <span class="mono">conexoes</span> caem em Notas › Ideias em vez de quebrar.</li>
+</ul>
+
+<h3>Como a trilha escolhe o caminho</h3>
+<p>Três critérios, nesta ordem: quantos <b>livros</b> o caminho atravessa, quantas <b>palavras
+diferentes</b> o ligam, e só então o tamanho. O segundo critério existe porque o vencedor sem ele era
+um caminho em que <span class="mono">registro</span> ligava três notas seguidas — isso não é uma ideia
+se desenvolvendo, é a mesma palavra repetida.</p>
+<p>No material atual o caminho vencedor visita o Diário 02 três vezes, e isso está certo: é onde há
+mais notas sobre este assunto. A trilha reflete o material, e não uma simetria que eu tivesse imposto.</p>
+
+<h3>As quatro palavras, agora que a tela não as explica mais</h3>
+<p>O parágrafo que ensinava isso morava em Conexões e saiu junto. Ele fica aqui, que é onde argumento
+mora:</p>
+<table><thead><tr><th>Palavra</th><th>O que é</th><th>Quem começou</th></tr></thead><tbody>
+<tr><td class="n">Coleção</td><td>Livros que você juntou. Mora na Estante.</td><td>você, do começo ao fim</td></tr>
+<tr><td class="n">Tag</td><td>Palavra colada numa nota. Não tem página.</td><td>você</td></tr>
+<tr><td class="n">Conceito</td><td>Grupo de notas com nome, e tem página.</td><td>você nomeia; o Mekora pode ter notado</td></tr>
+<tr><td class="n">Conexão</td><td>Relação entre duas notas. Não é lugar nenhum.</td><td>você liga, ou aceita uma sugestão</td></tr>
+</tbody></table>
+
+<h3>O que eu apaguei junto, e vale saber</h3>
+<p>O <b>zoom semântico</b> e o <b>entrar num nó</b> saíram com o mapa do acervo. Eles tinham sido
+construídos na rodada anterior para tornar aquele mapa sobrevivível — com o mapa fora do caminho
+principal, eles perdem a função: a rede de um conceito tem cinco a dez pontos e cabe numa olhada.
+Continuam no git, se a decisão voltar atrás.</p>
 
 <h3>O que faltava, e que agora está feito</h3>
 <p>Você perguntou se eu tinha checado os três prompts. Não tinha. Esta rodada fecha a lista que

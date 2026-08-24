@@ -6,7 +6,7 @@
   const orig=console.error;console.error=(...a)=>{erros.push(a.join(" "));orig(...a);};
   window.onerror=m=>{erros.push("onerror: "+m);};
   const lugares=["home","mesa","item","livro","estante","leitura","perfil","canvas",
-    "novidades","notas","nota","conexoes"];
+    "novidades","notas","nota","conexoes","conceito"];
   const folhas=[null,"paginas","viewport","ajuda","conta","envio","capa","traduzir","pend",
     "sumario","busca","controles","wiz","usb","nota","apagar-conta","pref-reset"];
   const psecs=["visao","conta","disp","pref","priv","hist","novidades"];
@@ -15,6 +15,9 @@
     try{
       S.lugar=l;S.folha=f;S.dentro=(l==="leitura");
       if(l==="nota")S.notaK=S.dst.filter(d=>d.nota)[0].k;
+      if(l==="conceito"){const g=ideias()[0];
+        S.terr=g?[{id:g.id,nome:"Um nome",notas:g.notas.map(d=>d.k)}]:[];
+        S.concK=g?g.id:"nao-existe";}
       pinta();
       feito.push(l+"/"+(f||"-")+":"+document.body.innerHTML.length);
     }catch(e){erros.push(l+"/"+f+" -> "+e.message);}
@@ -44,9 +47,17 @@
     ["notas-ignorada",()=>{S.nomeando=null;S.ignoradas=g0?[g0.id]:[];}],
     ["nota-inexistente",()=>{S.ignoradas=[];S.lugar="nota";S.notaK="nao-existe";}],
     ["nota-editando",()=>{S.notaK="n-obs-1";S.notaAberta="n-obs-1";S.rasc={"n-obs-1":"x"};}],
-    ["conexoes-nomeado",()=>{S.notaAberta=null;S.lugar="conexoes";
-      S.terr=g0?[{id:g0.id,nome:"Um nome",notas:g0.notas.map(d=>d.k)}]:[];}],
-    ["conexoes-vazio",()=>{S.terr=[];S.dst=S.dst.filter(d=>!d.nota);}],
+    ["conceito-com-trilha",()=>{S.notaAberta=null;S.lugar="conceito";
+      S.terr=g0?[{id:g0.id,nome:"Um nome",notas:g0.notas.map(d=>d.k)}]:[];
+      S.concK=g0?g0.id:null;}],
+    ["conceito-rede-aberta",()=>{S.redeAberta=true;}],
+    ["conceito-renomeando",()=>{S.redeAberta=false;S.renomeando=S.concK;}],
+    ["conceito-de-uma-nota-so",()=>{S.renomeando=null;
+      S.terr=[{id:"u1",nome:"So uma",notas:["n-obs-1"],sua:true}];S.concK="u1";}],
+    ["conceito-inexistente",()=>{S.concK="nao-existe";}],
+    ["conexoes-link-antigo",()=>{S.lugar="conexoes";S.terr=[];}],
+    ["notas-sem-nota-nenhuma",()=>{S.lugar="notas";S.nfiltro="todas";
+      S.dst=S.dst.filter(d=>!d.nota);}],
     ["canvas-com-notas",()=>{S.dst=sementes();S.lugar="canvas";S.canvasN=["n-obs-2"];}],
   ];
   for(const [nome,poe] of casos){
