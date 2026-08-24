@@ -1532,6 +1532,41 @@ td.n{color:var(--ink);font-weight:600}
 /* a legenda tem a largura do mapa: solta na pagina, os tres rotulos se
    espalhavam por 930px e paravam de parecer uma legenda. */
 .mapaW{margin:var(--s5) 0 0;max-width:480px}
+/* A REDE. O no e uma caixa com o texto dentro, e nao um ponto: e isso que
+   torna a coisa reconhecivel parada, sem hover. Livro tem canto reto e uma
+   guia colorida; assunto tem forma de pilula porque e rotulo; ideia e uma
+   folha branca com duas linhas do que voce escreveu. */
+.redeW{margin:var(--s5) 0 0}
+.rede{display:block;width:100%;height:auto;max-width:900px;border:1px solid var(--line-2);
+  background:var(--bg-2)}
+.rede .rbox{fill:var(--branco);stroke:var(--line-3);stroke-width:1}
+.rede .-livro .rbox{fill:var(--bg-3);stroke:var(--line)}
+.rede .-assunto .rbox{fill:var(--ink);stroke:var(--ink)}
+.rede .-conceito .rbox{fill:var(--acc);stroke:var(--acc)}
+.rede .rt{font-family:var(--serif);font-size:11.5px;fill:var(--ink)}
+.rede .rt.-2{fill:var(--ink-2)}
+.rede .rt.-livro{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;fill:var(--ink-2)}
+.rede .rt.-assunto,.rede .rt.-conceito{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;
+  fill:var(--branco)}
+.rede .rl{fill:none;stroke:var(--ink);stroke-opacity:.2}
+.rede .rl.-origem{stroke-opacity:.42}
+.rede .rl.-tema{stroke-dasharray:2 3;stroke-opacity:.3}
+.rede .rl.-sua{stroke:var(--acc);stroke-opacity:.85}
+.rede .-nota{cursor:pointer}
+.rede .-nota:hover .rbox{stroke:var(--ink);stroke-width:1.5}
+.redeL{display:flex;align-items:center;gap:var(--s4);flex-wrap:wrap;margin-bottom:var(--s3);
+  font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--ink-3)}
+.redeL span{display:inline-flex;align-items:center;gap:6px}
+.redeL span::before{content:"";width:9px;height:9px;border:1px solid var(--line-3);
+  background:var(--branco)}
+.redeL .-livro::before{background:var(--bg-3)}
+.redeL .-assunto::before{background:var(--ink);border-color:var(--ink);border-radius:var(--rp)}
+.redeL .-conceito::before{background:var(--acc);border-color:var(--acc);border-radius:var(--rp)}
+.redeL .-lorigem::before,.redeL .-ltema::before{width:16px;height:1px;border:0;background:var(--ink);
+  opacity:.42}
+.redeL .-ltema::before{opacity:.3}
+.redeL .di{width:1px;height:12px;background:var(--line);border:0}
+.redeL .di::before{display:none}
 .mapa{display:block;width:100%;max-width:480px;height:auto}
 .mapa .ln{stroke:var(--ink)}
 .mapa .ln.-possivel{stroke-opacity:.14}
@@ -4249,49 +4284,166 @@ function vConceito() {
      a forma de uma vez, sem traçar linha com o olho. */
   h += '<button class="como" data-a="conc-rede" aria-expanded="' + (!!S.redeAberta) + '">' +
     'ver como rede ' + (S.redeAberta ? "▴" : "▾") + '</button>' +
-    (S.redeAberta ? redeDe(ns, lvs) : '');
+    (S.redeAberta ? redeDe(ns) : '');
   return h + '</div></div>';
 }
 
-/* rede pequena: as notas do conceito e os livros delas. Sem zoom e sem
-   entrar em nó — os dois existiam para salvar um mapa do acervo inteiro,
-   e este cabe numa olhada. */
-function redeDe(ns, lvs) {
-  const nos = ns.map(d => ({ id: d.k, t: "nota", rot: rotuloNota(d) }))
-    .concat(lvs.map(l => ({ id: "L:" + l, t: "livro", rot: l })));
-  const n = nos.length || 1, R = 118, cx = 260, cy = 148, pos = {};
-  nos.forEach((no, i) => {
-    const a = -Math.PI / 2 + i * 2 * Math.PI / n;
-    pos[no.id] = { x: cx + R * Math.cos(a), y: cy + R * Math.sin(a), a: a };
+/* ═══════════════════════════════════════════════════════════════════
+   A REDE, REFEITA NO MODELO QUE FUNCIONA
+   A que eu tinha morreu por medida: a posição não carregava informação
+   (nós ligados ficavam 202px de distância, os sem relação 180px — pior
+   que o acaso). Mas a exploração da área pessoal, de 11 de agosto, tem
+   uma rede em que ligados ficam a 218px e não-ligados a 315px: 44% mais
+   perto. Três diferenças, e nenhuma é de gosto:
+
+     1. ARESTA É FATO, não palpite. "saiu deste livro" e "toca neste
+        assunto" são verdades por construção. Prefixo de cinco letras em
+        comum é adivinhação, e adivinhação desenhada vira ruído.
+     2. LAYOUT DE FORÇA, não círculo por ordem de inserção. Quem se liga
+        se atrai; quem não se liga se repele. É isso que faz a posição
+        querer dizer alguma coisa.
+     3. O NÓ É O OBJETO, não uma bolinha. Livro, ideia e assunto
+        aparecem com o que são. Custa espaço; em troca a rede se lê
+        parada, sem hover.
+
+   O layout é determinístico: mesma entrada, mesmo desenho. A pessoa
+   precisa reconhecer o próprio mapa entre uma visita e outra.
+   ═══════════════════════════════════════════════════════════════════ */
+function grafoDe(ns) {
+  const nos = [], ar = [], idx = {};
+  const por = (id, tipo, rot, extra) => {
+    if (idx[id] !== undefined) return idx[id];
+    idx[id] = nos.length;
+    nos.push(Object.assign({ id: id, tipo: tipo, rot: rot }, extra || {}));
+    return idx[id];
+  };
+  ns.forEach(d => {
+    const ni = por("n:" + d.k, "nota", d.nota || escTxt(d), { k: d.k });
+    if (d.livro) ar.push({ a: por("b:" + d.livro, "livro", d.livro), b: ni, tipo: "origem" });
+    (d.tags || []).forEach(t => ar.push({ a: ni, b: por("t:" + t, "assunto", "#" + t), tipo: "tema" }));
+    S.terr.forEach(c => {
+      if (c.notas.indexOf(d.k) > -1) ar.push({ a: ni, b: por("c:" + c.id, "conceito", c.nome), tipo: "tema" });
+    });
   });
-  const vis = {}, linhas = [];
-  const liga = (a, b, tipo) => {
-    if (!pos[a] || !pos[b] || a === b) return;
-    const id = [a, b].sort().join("|"); if (vis[id]) return; vis[id] = 1;
-    linhas.push({ a: pos[a], b: pos[b], t: tipo });
-  };
-  paresEntre(ns).forEach(p => liga(p.a.k, p.b.k, p.sua ? "sua" : (p.termos.length > 1 ? "forte" : "possivel")));
-  ns.forEach(d => { if (d.livro) liga("L:" + d.livro, d.k, "pertence"); });
-  const ponto = no => {
-    const p = pos[no.id], fora = Math.cos(p.a) < -0.15, alto = Math.abs(Math.cos(p.a)) < 0.35;
-    const L = no.t === "livro" ? 8 : 6;
-    return '<rect x="' + (p.x - L / 2).toFixed(1) + '" y="' + (p.y - L / 2).toFixed(1) +
-      '" width="' + L + '" height="' + L + '" class="pt -' + no.t + '"/>' +
-      '<text x="' + (p.x + (alto ? 0 : (fora ? -9 : 9))).toFixed(1) + '" y="' +
-      (p.y + (alto ? (Math.sin(p.a) < 0 ? -10 : 16) : 3.5)).toFixed(1) +
-      '" class="rot -' + no.t + '" text-anchor="' + (alto ? "middle" : (fora ? "end" : "start")) + '">' +
-      esc(no.rot) + '</text>';
-  };
-  return '<div class="mapaW"><svg viewBox="0 0 520 300" class="mapa" role="img" ' +
-    'aria-label="Rede das notas deste conceito">' +
-    linhas.map(l => '<line x1="' + l.a.x.toFixed(1) + '" y1="' + l.a.y.toFixed(1) +
-      '" x2="' + l.b.x.toFixed(1) + '" y2="' + l.b.y.toFixed(1) + '" class="ln -' + l.t + '"/>').join("") +
-    nos.map(ponto).join("") + '</svg>' +
-    '<div class="legM"><span class="-sua">você ligou</span>' +
-    '<span class="-forte">parecem próximas</span><span class="-possivel">talvez</span></div>' +
-    '<p class="mapaN">A posição não quer dizer nada: os pontos estão num círculo, na ordem em que ' +
-    'foram escritos. Quem carrega informação são as linhas.</p></div>';
+  /* a ligação que você escreveu à mão também é fato — a mais fato de todas */
+  S.rel.forEach(r => {
+    const a = idx["n:" + r[0]], b = idx["n:" + r[1]];
+    if (a !== undefined && b !== undefined) ar.push({ a: a, b: b, tipo: "sua" });
+  });
+  return { nos: nos, ar: ar };
 }
+function posicionar(g, W, H) {
+  const n = g.nos.length; if (!n) return;
+  g.nos.forEach((o, i) => {
+    const a = i * 2 * Math.PI / n, r = Math.min(W, H) * 0.34;
+    o.x = W / 2 + Math.cos(a) * r; o.y = H / 2 + Math.sin(a) * r;
+    /* a caixa É o nó, então a repulsão precisa saber o tamanho dela */
+    o.w = o.tipo === "assunto" ? Math.max(56, o.rot.length * 7.4 + 20)
+      : o.tipo === "livro" ? Math.max(108, Math.min(184, o.rot.length * 7.2 + 24))
+      : o.tipo === "conceito" ? Math.max(96, Math.min(200, o.rot.length * 7.4 + 24))
+      : 182;
+    o.h = o.tipo === "nota" ? 52 : 32;
+  });
+  for (let it = 0; it < 600; it++) {
+    /* o resfriamento nao chega a zero: as ultimas voltas ainda precisam de
+       forca para desfazer a ultima sobreposicao. */
+    const t = 1 - it / 600 * 0.86;
+    g.ar.forEach(e => {
+      const A = g.nos[e.a], B = g.nos[e.b];
+      const dx = B.x - A.x, dy = B.y - A.y;
+      const d = Math.max(1, Math.hypot(dx, dy));
+      const alvo = e.tipo === "origem" ? 146 : e.tipo === "sua" ? 104 : 118;
+      const f = (d - alvo) * 0.012 * t;
+      A.x += dx / d * f; A.y += dy / d * f; B.x -= dx / d * f; B.y -= dy / d * f;
+    });
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+      const A = g.nos[i], B = g.nos[j];
+      const dx = B.x - A.x, dy = B.y - A.y, d = Math.max(1, Math.hypot(dx, dy));
+      /* Separar nos dois eixos, e nao pela diagonal: duas caixas largas e
+         baixas podem estar a 200px de centro e ainda assim se sobrepor, e
+         empurrar na diagonal nao resolve isso. Aqui o teste e o mesmo que
+         o olho faz — as caixas se cruzam? — e o empurrao vai no eixo em
+         que a sobreposicao e menor. */
+      const sx = (A.w + B.w) / 2 + 14 - Math.abs(dx);
+      const sy = (A.h + B.h) / 2 + 12 - Math.abs(dy);
+      if (sx > 0 && sy > 0) {
+        const f = 0.55 * t;
+        if (sx < sy) { const e = sx * f * (dx < 0 ? -1 : 1); A.x -= e; B.x += e; }
+        else { const e = sy * f * (dy < 0 ? -1 : 1); A.y -= e; B.y += e; }
+      }
+    }
+  }
+}
+function redeDe(ns) {
+  const g = grafoDe(ns);
+  if (!g.nos.length) return '';
+  const W = 900, H = 560;
+  posicionar(g, W, H);
+  /* a moldura acompanha o desenho: cortar o grafo pela metade seria pior
+     do que não desenhar. */
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  g.nos.forEach(o => {
+    x0 = Math.min(x0, o.x - o.w / 2); x1 = Math.max(x1, o.x + o.w / 2);
+    y0 = Math.min(y0, o.y - o.h / 2); y1 = Math.max(y1, o.y + o.h / 2);
+  });
+  const m = 18, vb = [x0 - m, y0 - m, (x1 - x0) + 2 * m, (y1 - y0) + 2 * m];
+  const linhas = g.ar.map(e => {
+    const A = g.nos[e.a], B = g.nos[e.b];
+    /* curva leve: duas retas paralelas entre as mesmas caixas viram uma só
+       aos olhos, e a curva separa sem precisar de cor. */
+    const mx = (A.x + B.x) / 2 + (B.y - A.y) * 0.07;
+    const my = (A.y + B.y) / 2 - (B.x - A.x) * 0.07;
+    return '<path d="M' + A.x.toFixed(1) + ' ' + A.y.toFixed(1) + ' Q' + mx.toFixed(1) + ' ' +
+      my.toFixed(1) + ' ' + B.x.toFixed(1) + ' ' + B.y.toFixed(1) + '" class="rl -' + e.tipo + '"/>';
+  }).join("");
+  /* a reticencia tambem recua ate o espaco: "nao" virava "na…", que le
+     como erro de digitacao e nao como texto cortado. */
+  const corta = (s, n) => {
+    if (s.length <= n) return s;
+    let c = s.lastIndexOf(" ", n);
+    if (c < n * 0.6) c = n;
+    return s.slice(0, c).replace(/[ ,;.]+$/, "") + "…";
+  };
+  const caixas = g.nos.map(o => {
+    const x = (o.x - o.w / 2), y = (o.y - o.h / 2);
+    let corpo;
+    if (o.tipo === "nota") {
+      /* cortar em 30 caracteres partia "lembranca" ao meio. A quebra
+         procura o ultimo espaco antes do limite, como qualquer linha. */
+      const quebra = (txt, n) => {
+        if (txt.length <= n) return [txt, ""];
+        let c = txt.lastIndexOf(" ", n);
+        if (c < n * 0.5) c = n;
+        return [txt.slice(0, c), txt.slice(c).trim()];
+      };
+      const par = quebra(o.rot, 30);
+      const l1 = par[0], l2 = corta(par[1], 30);
+      corpo = '<text x="' + (x + 11).toFixed(1) + '" y="' + (y + 21).toFixed(1) + '" class="rt">' + esc(l1) + '</text>' +
+        (l2 ? '<text x="' + (x + 11).toFixed(1) + '" y="' + (y + 37).toFixed(1) + '" class="rt -2">' + esc(l2) + '</text>' : '');
+    } else {
+      corpo = '<text x="' + (o.x).toFixed(1) + '" y="' + (o.y + 4.5).toFixed(1) +
+        '" class="rt -' + o.tipo + '" text-anchor="middle">' + esc(corta(o.rot, 24)) + '</text>';
+    }
+    const acao = o.tipo === "nota" ? ' data-a="nota-abrir" data-v="' + o.k + '"' : '';
+    return '<g class="rn -' + o.tipo + '"' + acao + (o.tipo === "nota" ? ' tabindex="0" role="button"' : '') +
+      ' aria-label="' + esc((o.tipo === "nota" ? "Ideia: " : o.tipo === "livro" ? "Livro: " : "Assunto: ") + corta(o.rot, 60)) + '">' +
+      '<rect class="rbox" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + o.w +
+      '" height="' + o.h + '" rx="' + (o.tipo === "assunto" ? o.h / 2 : 0) + '"/>' + corpo + '</g>';
+  }).join("");
+  const conta = t => g.nos.filter(o => o.tipo === t).length;
+  return '<div class="redeW">' +
+    '<div class="redeL"><span class="-livro">' + conta("livro") + ' livros</span>' +
+    '<span class="-nota">' + conta("nota") + ' ideias</span>' +
+    (conta("assunto") ? '<span class="-assunto">' + conta("assunto") + ' assuntos</span>' : '') +
+    (conta("conceito") ? '<span class="-conceito">' + conta("conceito") + ' conceitos</span>' : '') +
+    '<span class="di"></span><span class="-lorigem">saiu deste livro</span>' +
+    '<span class="-ltema">toca neste assunto</span></div>' +
+    '<svg viewBox="' + vb.map(v => v.toFixed(0)).join(" ") + '" class="rede" role="img" ' +
+    'aria-label="Rede das ideias deste conceito">' + linhas + caixas + '</svg>' +
+    '<p class="mapaN">As ligações são fatos: <b>de onde a ideia saiu</b> e <b>que assunto ela toca</b>. ' +
+    'Nenhuma linha foi inferida — se duas ideias não se ligam aqui, é porque nada as liga de verdade.</p></div>';
+}
+
 const CVL = 210;   /* largura fixa do item: a variavel e a posicao, nao a caixa */
 
 function cvPos(k, i) {
@@ -6600,6 +6752,31 @@ de notas à direita cabe inteiro na margem que já está vazia — <b>ele não c
 O trilho de biblioteca à esquerda é outra história: ele custa largura de verdade e compra pouco,
 porque a Estante está a um clique e ninguém troca de livro no meio de um parágrafo.</p>
 <p>Então: painel da direita sim, recolhido por padrão e fora do modo Foco; trilho da esquerda não.</p>
+
+<h3>Correção: eu generalizei demais, e a exploração de 11 de agosto prova</h3>
+<p>A medida abaixo continua verdadeira sobre <b>o mapa que eu tinha feito</b>. Mas eu tirei dela uma
+conclusão maior do que ela sustentava — “arranjo espacial não serve para notas de leitura” — e a
+exploração da área pessoal, que já existia no repositório, mostra o contrário. Rodei o mesmo
+critério nas duas:</p>
+<table><thead><tr><th></th><th>o meu mapa</th><th>a Rede da área pessoal</th></tr></thead><tbody>
+<tr><td class="n">nós com texto</td><td>0 de 11</td><td><b>24 de 24</b></td></tr>
+<tr><td class="n">tipos de nó</td><td>1</td><td><b>3</b> — livro, ideia, assunto</td></tr>
+<tr><td class="n">arestas</td><td>inferidas por prefixo</td><td><b>fatos</b> — origem e tag</td></tr>
+<tr><td class="n">distância média entre ligados</td><td>202 px</td><td>218 px</td></tr>
+<tr><td class="n">distância média entre não ligados</td><td>180 px</td><td>315 px</td></tr>
+<tr><td class="n">razão (não ligado ÷ ligado)</td><td><b>0,89</b></td><td><b>1,44</b></td></tr>
+</tbody></table>
+<p><b>O problema não era rede. Era a minha rede.</b> Três defeitos, e nenhum é de gosto: círculo por
+ordem de inserção em vez de layout de força; arestas adivinhadas em vez de fatos; e o nó como bolinha
+anônima em vez de caixa com o objeto dentro.</p>
+<p>A rede do conceito foi refeita nesse modelo — força determinística, arestas que são fatos
+(<i>saiu deste livro</i>, <i>toca neste assunto</i>, <i>você ligou</i>), e o nó carregando o que é.
+Medida com o mesmo critério: <b>razão 1,42, zero caixas sobrepostas</b>. Ligados a 161px, não ligados
+a 229px.</p>
+<p>Duas coisas quebraram no caminho e foram medidas para fechar: a repulsão diagonal deixava caixas
+largas se cruzarem (agora ela testa a sobreposição real e empurra no eixo mais curto), e o corte de
+texto partia palavra ao meio — “não” virava “nã…”, que lê como erro de digitação e não como texto
+cortado.</p>
 
 <h3>Conexões saiu da navegação, e a medida que a matou</h3>
 <p>Você perguntou se aquilo era mesmo a melhor forma de ver estudos. Fui medir em vez de opinar: se
