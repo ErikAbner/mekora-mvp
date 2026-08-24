@@ -32,6 +32,12 @@
     ["notas-livros",()=>{S.lugar="notas";S.nfiltro="livros";}],
     ["notas-soltas",()=>{S.lugar="notas";S.nfiltro="soltas";}],
     ["notas-rever",()=>{S.lugar="notas";S.nfiltro="rever";}],
+    /* a vista Ideias entrou depois destes casos e ficou sem cobertura: ela
+       estourava ao abrir, e o smoke respondia 0 erros. Caso novo, vista
+       nova — senao o instrumento cobre o codigo de ontem. */
+    ["notas-ideias",()=>{S.lugar="notas";S.nfiltro="ideias";}],
+    ["notas-ideias-nomeada",()=>{S.lugar="notas";S.nfiltro="ideias";
+      const g=ideias()[0];S.terr=g?[{id:g.id,nome:"Um nome",notas:g.notas.map(d=>d.k),sua:true}]:[];}],
     ["notas-busca",()=>{S.lugar="notas";S.nfiltro="todas";S.qNotas="zzzz";}],
     ["notas-recorte",()=>{S.qNotas="";S.verTerr=g0?g0.notas.map(d=>d.k):["n-obs-1"];}],
     ["notas-nomeando",()=>{S.verTerr=null;S.nomeando=g0?g0.id:null;}],

@@ -3673,7 +3673,6 @@ function vNotas(){
   const F={todas:comNota,livros:comNota.filter(d=>d.livro),
     soltas:comNota.filter(d=>!d.livro),rever:comNota.filter(d=>S.rever.indexOf(d.k)>-1)};
   const f=S.nfiltro||"todas",lista=F[f]||F.todas;
-  if(f==="ideias")return h+vIdeias()+'</div></div>';
   const q=(S.qNotas||"").toLowerCase().trim();
   /* ver um territorio nao abre uma quarta tela: recorta ESTA, e diz em cima
      que esta recortada — um filtro invisivel e a forma mais rapida de a
@@ -3716,6 +3715,10 @@ function vNotas(){
       ' nota'+(S.verTerr.length===1?"":"s")+
       (terr?' de “'+esc(terr.nome)+'”':(S.recorteMotivo||' de um assunto'))+'.</span>'+
       '<button class="lnk" data-a="terr-todas" style="padding:0">ver todas</button></div>';
+  /* aqui, e nao antes do cabecalho: a vista Ideias precisa do h que carrega
+     o titulo e a fila. Antes disso "h" ainda esta na zona morta, e a vista
+     estourava ao ser aberta. */
+  else if(f==="ideias")return h+vIdeias()+'</div></div>';
   else h+=blocoIdeias();
   if(f==="rever"&&!q&&P.length)
     h+='<div class="pauta"><div class="soltoE">O que ficou pela metade</div>'+
