@@ -332,6 +332,53 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .bk .a{display:block;font-size:12px;color:var(--ink-3);margin-top:1px}
 .bk .q{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.03em;
   color:var(--ink-3);margin-top:4px}
+/* ═══ A FILA ═══
+   Tres colunas, e o peso nao segue a posicao: "Lendo" fica no meio e mesmo
+   assim ganha o teste dos cinco segundos, porque leva chao, capa maior e
+   corpo maior. Enfase carrega a prioridade; a posicao carrega o tempo. */
+.fila{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s6);align-items:start}
+@media(max-width:900px){.fila{grid-template-columns:1fr;gap:var(--s7)}}
+.fCol{min-width:0}
+.fCab{display:flex;align-items:baseline;gap:var(--s2);padding-bottom:var(--s2);
+  border-bottom:1px solid var(--line);margin-bottom:var(--s4)}
+.fCab h2{font-family:var(--ui);font-size:13px;font-weight:600;margin:0;letter-spacing:.01em}
+.fCab .n{font-family:var(--mono);font-size:10px;color:var(--ink-3)}
+/* --ink-4 mede 2,05:1 e neste projeto so serve para borda e ponto. Estes
+   dois sao texto: a etiqueta do gesto e o numero da posicao. */
+.fCab .lb{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;color:var(--ink-3);margin-left:auto}
+.fPil{display:flex;flex-direction:column;gap:var(--s3)}
+.fCard{display:grid;grid-template-columns:auto 40px minmax(0,1fr);gap:var(--s3);
+  align-items:start;padding:var(--s3);border:1px solid var(--line-2);background:none}
+.fCard img{width:40px;height:auto;display:block;border:1px solid var(--line)}
+.fCard .ttl{display:block;text-align:left;font-size:12.5px;font-weight:600;line-height:1.25;width:100%}
+.fCard .ttl:hover{color:var(--acc)}
+.fCard .a{display:block;font-size:11.5px;color:var(--ink-3);margin-top:1px}
+.fCard .pos{font-family:var(--mono);font-size:10px;color:var(--ink-3);padding-top:2px;min-width:11px}
+.fAcs{display:flex;gap:var(--s3);margin-top:var(--s2)}
+/* O mesmo botao empilhado seis vezes vira textura, e some como coisa
+   clicavel. O gesto principal e o arrasto — o cursor ja diz —, e "por no
+   topo" e o atalho de teclado, que aparece quando a pessoa chega perto.
+   focus-within e o que o mantem alcancavel por Tab. */
+.fCol.-fila .fAcs{opacity:0;transition:opacity var(--d1) var(--curva)}
+.fCol.-fila .fCard:hover .fAcs,.fCol.-fila .fCard:focus-within .fAcs{opacity:1}
+@media(hover:none){.fCol.-fila .fAcs{opacity:1}}
+.fAcs button{font-size:11.5px;color:var(--ink-3)}
+.fAcs button:hover{color:var(--ink)}
+/* o que voce arrasta e a fila, e por isso so ela tem pega */
+.fCol.-fila .fCard{cursor:grab;touch-action:none}
+.fCard.-arrastando{cursor:grabbing;background:var(--branco);border-color:var(--line);opacity:.92}
+/* a coluna do meio e a resposta a "onde eu estou" */
+.fCol.-agora .fCard{grid-template-columns:72px minmax(0,1fr);background:var(--bg-2);
+  border:0;padding:var(--s4);gap:var(--s4)}
+.fCol.-agora .fCard img{width:72px}
+.fCol.-agora .fCard .ttl{font-size:14.5px}
+.fCol.-agora .fCab h2{font-size:15px}
+.fBarra{height:2px;background:var(--line-2);margin-top:var(--s3)}
+.fBarra i{display:block;height:2px;background:var(--ink-2)}
+.fPct{display:block;font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-top:5px}
+.fVazio{font-size:12px;color:var(--ink-3);line-height:1.5;padding:var(--s3) 0}
+.fMais{font-family:var(--mono);font-size:10px;color:var(--ink-3);padding-top:var(--s2)}
+.fRegra{font-size:12.5px;color:var(--ink-2);line-height:1.55;max-width:74ch;margin:var(--s6) 0 var(--s6)}
 .prat{margin-bottom:var(--s5)}
 .lombs{display:flex;align-items:flex-end;gap:2px;padding:0 var(--s5);min-height:150px}
 .lombs img{display:block;width:auto;border-radius:var(--rm) var(--rm) 0 0;transition:transform var(--d2) var(--curva)}
@@ -2055,6 +2102,10 @@ const zero={
   fase:"analise",feito:0,pendMostrada:false,pendResolvida:false,enviado:false,
   traduzir:null,capaEsc:"gerada",feitoAberto:false,
   estante:"lista",lombSel:"01",perfil:"conta",folha:null,menu:false,aviso:null,manuais:0,avisoUso:true,
+  /* A unica coisa manual das tres colunas: em que ordem voce pretende ler.
+     Guarda o codigo, e nao o titulo, porque o acervo tem titulo repetido
+     — duas "Malha Urbana", dois "Arquivo", duas "Ata da reuniao". */
+  ordemFila:[],
   q:"",ajuda:null,dockSel:0,corpo:1,entre:1,largura:1,
   /* NOTAS: filtro, busca, o que voce marcou para rever, as relacoes que voce
      mesmo escreveu, os territorios que voce nomeou e as ideias que dispensou.
@@ -3635,8 +3686,88 @@ const FILTROS=(function(){
     base.push(["quadrinho","Quadrinhos",b=>b.tipo==="quadrinho"]);
   return base;
 })();
+/* ═══ A FILA ═══
+   Uma coluna se arranja e duas sao consequencia. "A ler" e o acervo que voce
+   ainda nao abriu, na ordem que voce quis; abrir um livro tira dali sozinho.
+   Nao ha gesto para arrastar entre colunas de proposito: se arrastar bastasse
+   para dizer "estou lendo", o quadro voltaria a ser um campo de status a mao,
+   que foi exatamente o que se tirou daqui. */
+function vFila(acervo){
+  const naFila=b=>{const i=S.ordemFila.indexOf(b.c);return i<0?900+ACERVO.indexOf(b):i;};
+  const aler=acervo.filter(b=>estadoDe(b)==="novo").sort((a,b)=>naFila(a)-naFila(b));
+  /* quem esta mais perto do fim primeiro: e o que se termina com menos esforco */
+  const agora=acervo.filter(b=>estadoDe(b)==="lendo").sort((a,b)=>b.prog-a.prog);
+  const lidos=acervo.filter(b=>estadoDe(b)==="lido");
+  const capaDe=b=>'<img src="'+capa(b.c)+'" alt="Capa de '+esc(b.t)+'" loading="lazy">';
+  const nome=b=>'<button class="ttl" data-a="ir-livro" data-v="'+esc(b.t)+'">'+esc(b.t)+'</button>'+
+    '<span class="a">'+esc(b.a)+(b.q?' \u00b7 '+esc(b.q):'')+'</span>';
+  const cartaoFila=(b,i)=>'<div class="fCard" data-t="'+b.c+'">'+
+    '<span class="pos">'+(i+1)+'</span>'+capaDe(b)+'<div>'+nome(b)+
+    /* arrastar sozinho seria inacessivel: "por no topo" faz o mesmo pelo teclado */
+    (i>0?'<div class="fAcs"><button data-a="fila-topo" data-v="'+b.c+'">p\u00f4r no topo</button></div>':'')+
+    '</div></div>';
+  const cartaoAgora=b=>'<div class="fCard" data-t="'+b.c+'">'+capaDe(b)+'<div>'+nome(b)+
+    '<div class="fBarra"><i style="width:'+b.prog+'%"></i></div>'+
+    '<span class="fPct">'+b.prog+'%'+(b.nn?' \u00b7 '+b.nn+' nota'+(b.nn>1?'s':''):'')+'</span>'+
+    '<div class="fAcs"><button data-a="ir-livro" data-v="'+esc(b.t)+'">continuar</button>'+
+    '<button data-a="livro-terminei" data-v="'+b.c+'">terminei</button></div>'+
+    '</div></div>';
+  const cartaoLido=b=>'<div class="fCard" data-t="'+b.c+'"><span class="pos">\u2713</span>'+
+    capaDe(b)+'<div>'+nome(b)+
+    (b.nn?'<span class="fPct">'+b.nn+' nota'+(b.nn>1?'s':'')+'</span>':'')+
+    '<div class="fAcs"><button data-a="livro-recomecar" data-v="'+b.c+'">reler</button></div>'+
+    '</div></div>';
+  const corte=4, mostra=lidos.slice(0,corte);
+  return '<p class="fRegra">Voc\u00ea arranja <b>a ler</b> \u2014 essa \u00e9 a decis\u00e3o. As outras duas '+
+    'colunas s\u00e3o consequ\u00eancia da leitura: abrir um livro o tira da fila, e chegar ao fim o '+
+    'termina. N\u00e3o se arrasta entre colunas porque arrastar n\u00e3o \u00e9 ler.</p>'+
+    '<div class="fila">'+
+    '<div class="fCol -fila"><div class="fCab"><h2>A ler</h2><span class="n">'+aler.length+'</span>'+
+      (aler.length>1?'<span class="lb">arraste para ordenar</span>':'')+'</div>'+
+      (aler.length?'<div class="fPil" id="filaPilha">'+aler.map(cartaoFila).join("")+'</div>'
+        :'<p class="fVazio">Nada esperando. Tudo que voc\u00ea tem j\u00e1 foi aberto.</p>')+'</div>'+
+    '<div class="fCol -agora"><div class="fCab"><h2>Lendo</h2><span class="n">'+agora.length+'</span></div>'+
+      (agora.length?'<div class="fPil">'+agora.map(cartaoAgora).join("")+'</div>'
+        :'<p class="fVazio">Nada aberto agora. Um livro entra aqui quando voc\u00ea o abre.</p>')+'</div>'+
+    '<div class="fCol -lido"><div class="fCab"><h2>Li</h2><span class="n">'+lidos.length+'</span></div>'+
+      (lidos.length?'<div class="fPil">'+mostra.map(cartaoLido).join("")+'</div>'+
+        (lidos.length>corte?'<p class="fMais">e mais '+(lidos.length-corte)+'.</p>':'')
+        :'<p class="fVazio">Nada terminado ainda.</p>')+'</div>'+
+    '</div>';
+}
+/* Arrastar move o no no DOM e so grava a ordem ao soltar: repintar a cada
+   quadro devolveria o cartao para debaixo do cursor. Mesmo motivo do Canvas. */
+function filaArrastavel(){
+  const pilha=document.getElementById("filaPilha");
+  if(!pilha)return;
+  pilha.addEventListener("pointerdown",ev=>{
+    const c=ev.target.closest(".fCard");
+    if(!c||ev.target.closest("[data-a]"))return;
+    ev.preventDefault();
+    c.setPointerCapture(ev.pointerId);
+    c.classList.add("-arrastando");
+    const move=e=>{
+      const alvo=[...pilha.querySelectorAll(".fCard")].filter(x=>x!==c)
+        .find(x=>{const r=x.getBoundingClientRect();return e.clientY<r.top+r.height/2;});
+      if(alvo)pilha.insertBefore(c,alvo);else pilha.appendChild(c);
+    };
+    const solta=()=>{
+      c.removeEventListener("pointermove",move);
+      c.removeEventListener("pointerup",solta);
+      c.classList.remove("-arrastando");
+      S.ordemFila=[...pilha.querySelectorAll(".fCard")].map(x=>x.dataset.t);
+      pinta();
+    };
+    c.addEventListener("pointermove",move);
+    c.addEventListener("pointerup",solta);
+  });
+}
 function vEstante(){
-  const f=FILTROS.find(x=>x[0]===(S.fEstante||"tudo"))||FILTROS[0];
+  /* Na Fila, "Lendo" e "Nao comecei" sao as COLUNAS. Um recorte que repete o
+     eixo da vista nao recorta nada — some. */
+  const eixo=S.estante==="fila";
+  const FS=eixo?FILTROS.filter(x=>["tudo","nota","kindle","quadrinho"].indexOf(x[0])>-1):FILTROS;
+  const f=FS.find(x=>x[0]===(S.fEstante||"tudo"))||FS[0];
   const col=S.fColecao?S.colecoes.find(c=>c.id===S.fColecao):null;
   /* a colecao recorta ANTES do filtro: ela e o conjunto, e o filtro e uma
      pergunta sobre o conjunto. */
@@ -3647,12 +3778,15 @@ function vEstante(){
       ' itens \u00b7 tudo que j\u00e1 foi preparado.</p></div>'+
     '<span class="sp"></span>'+
     '<span class="vista"><button data-a="vista" data-v="lista" aria-pressed="'+(S.estante==="lista")+'">Capas</button>'+
+    /* A Fila e vista, e nao pagina: a navegacao tem quatro lugares e nenhum
+       deles e um recorte da Estante. O interruptor ja existia. */
+    '<button data-a="vista" data-v="fila" aria-pressed="'+(S.estante==="fila")+'">Fila</button>'+
     /* o Caderno 03 poe a Estante 3D em "adiar" com a instrucao de marcar como
        experimento. Marcar so depois do clique seria marcar tarde: o aviso mora
        no botao, e a razao medida aparece quando a vista abre. */
     '<button data-a="vista" data-v="3d" aria-pressed="'+(S.estante==="3d")+'">Estante 3D'+
     '<span class="exp">exp</span></button></span></div>'+
-    '<div class="filtroL">'+FILTROS.map(x=>
+    '<div class="filtroL">'+FS.map(x=>
       '<button data-a="f-estante" data-v="'+x[0]+'" aria-pressed="'+(f[0]===x[0])+'">'+x[1]+
       '<span class="n">'+ACERVO.filter(x[2]).length+'</span></button>').join("")+'</div>'+
     /* COLECAO mora na Estante, e nao nas Notas, porque ela agrupa LIVROS. E a
@@ -3669,7 +3803,8 @@ function vEstante(){
   if(!acervo.length)
     return h+'<p class="sub">Nenhum item com esse recorte'+
       (col?', dentro de “'+esc(col.nome)+'”':'')+'.</p></div>';
-  if(S.estante==="lista"){
+  if(S.estante==="fila"){h+=vFila(acervo);}
+  else if(S.estante==="lista"){
     h+='<div class="grade">'+acervo.map(b=>'<button class="bk" data-a="ir-livro" data-v="'+esc(b.t)+'">'+
       '<img src="'+capa(b.c)+'" alt="Capa de '+esc(b.t)+'" loading="lazy">'+
       '<span class="t">'+esc(b.t)+'</span><span class="a">'+esc(b.a)+(b.q?' · '+esc(b.q):'')+'</span>'+
@@ -6248,6 +6383,7 @@ function pinta(){
   /* as ligacoes so podem ser desenhadas depois que as caixas existem e tem
      altura: medir e o unico jeito de a linha encostar no que ela liga. */
   if(S.lugar==="canvas"){desenhaLigacoes();arrastavel();}
+  if(S.lugar==="estante"&&S.estante==="fila")filaArrastavel();
   /* A regua acompanha o cursor porque e assim que ela serve: uma faixa fixa
      no meio da tela obrigaria a pessoa a mover o texto ate ela, que e o
      contrario do problema que ela resolve. */
@@ -6375,7 +6511,22 @@ function roteia(a,v,el){
     case "enviar":S.folha=null;S.enviado=true;break;
     case "baixar":aviso("Download iniciado");break;
     case "feito":S.feitoAberto=!S.feitoAberto;break;
-    case "vista":S.estante=v;break;
+    /* trocar de vista com um recorte de estado ligado deixaria a Estante
+       vazia sem dizer por que: o recorte volta para "tudo". */
+    case "vista":S.estante=v;
+      if(v==="fila"&&["lendo","novo"].indexOf(S.fEstante)>-1)S.fEstante="tudo";
+      break;
+    /* A fila e a unica coisa manual do quadro. "Por no topo" existe porque
+       arrastar sozinho seria inacessivel pelo teclado. */
+    case "fila-topo":{
+      const fora=ACERVO.filter(b=>estadoDe(b)==="novo"&&b.c!==v)
+        .sort((a,b)=>{const i=S.ordemFila.indexOf(a.c),j=S.ordemFila.indexOf(b.c);
+          return (i<0?900+ACERVO.indexOf(a):i)-(j<0?900+ACERVO.indexOf(b):j);}).map(b=>b.c);
+      S.ordemFila=[v].concat(fora);break;}
+    /* As duas correcoes da derivacao, no lugar onde a pessoa esta olhando
+       para o estado: quem termina sem rolar o ultimo pixel, e quem rele. */
+    case "livro-terminei":{const b=ACERVO.find(x=>x.c===v);if(b)b.prog=100;break;}
+    case "livro-recomecar":{const b=ACERVO.find(x=>x.c===v);if(b)b.prog=0;break;}
     case "f-estante":S.fEstante=v;S.lombSel=null;break;
     case "lomb":S.lombSel=v;break;
     case "dobra":S.perfil=S.perfil===v?"":v;break;
