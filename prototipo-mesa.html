@@ -1940,20 +1940,23 @@ const app=document.getElementById("app");
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 const ACERVO=[
- {c:"01",t:"Estudo de Viabilidade",a:"Ana Duarte",f:"EPUB",q:"14 notas",l:"03",h:196},
- {c:"02",t:"Malha Urbana",a:"Ana Duarte",f:"EPUB",q:"preparado hoje",l:"02",h:182},
- {c:"03",t:"Sequência Noturna",a:"Ana Duarte",f:"EPUB",q:"6 notas",l:"04",h:204},
- {c:"04",t:"Censo de Fauna",a:"Ana Duarte",f:"EPUB",q:"lido em julho",l:"05",h:174},
- {c:"05",t:"Malha Urbana",a:"Ana Duarte",f:"EPUB",q:"outra edição",l:"06",h:190},
- {c:"06",t:"Ensaio Visual",a:"Ana Duarte",f:"TXT",q:"2 notas",l:"07",h:166},
- {c:"07",t:"Ensaio Visual",a:"Ana Duarte",f:"TXT",q:"variante",l:"08",h:198},
- {c:"08",t:"Arquivo",a:"Ana Duarte",f:"PDF",q:"capa gerada",l:"09",h:186},
- {c:"09",t:"Ata da reunião",a:"Ana Duarte",f:"PDF",q:"pesquisa",l:"10",h:172},
- {c:"10",t:"Arquivo",a:"Ana Duarte",f:"XLSX",q:"planilha",l:"11",h:200},
- {c:"11",t:"Diário 02",a:"Ana Duarte",f:"PDF",q:"registro de campo",l:"12",h:178},
- {c:"12",t:"Ata da reunião",a:"Ana Duarte",f:"PDF",q:"pesquisa",l:"13",h:192},
- {c:"13",t:"Briefing de Marca",a:"Ana Duarte",f:"PDF",q:"1 nota",l:"01",h:168},
- {c:"14",t:"Apresentação Institucional",a:"Ana Duarte",f:"PDF",q:"pesquisa",l:"14",h:206}
+ /* est: novo | lendo | lido · nn: quantas notas · kin: esta no Kindle
+    tipo: texto | quadrinho · f: formato de ORIGEM, que so aparece em
+    Informacoes · q: so desambigua titulo repetido */
+ {c:"01",t:"Estudo de Viabilidade",a:"Ana Duarte",f:"PDF",est:"lendo",nn:14,kin:true,tipo:"texto",q:"",l:"03",h:196},
+ {c:"02",t:"Malha Urbana",a:"Ana Duarte",f:"EPUB",est:"novo",nn:0,kin:false,tipo:"texto",q:"",l:"02",h:182},
+ {c:"03",t:"Sequência Noturna",a:"Ana Duarte",f:"CBZ",est:"lendo",nn:6,kin:false,tipo:"quadrinho",q:"",l:"04",h:204},
+ {c:"04",t:"Censo de Fauna",a:"Ana Duarte",f:"EPUB",est:"lido",nn:0,kin:true,tipo:"texto",q:"",l:"05",h:174},
+ {c:"05",t:"Malha Urbana",a:"Ana Duarte",f:"EPUB",est:"novo",nn:0,kin:false,tipo:"texto",q:"outra edição",l:"06",h:190},
+ {c:"06",t:"Ensaio Visual",a:"Ana Duarte",f:"TXT",est:"lendo",nn:2,kin:false,tipo:"texto",q:"",l:"07",h:166},
+ {c:"07",t:"Ensaio Visual",a:"Ana Duarte",f:"TXT",est:"novo",nn:0,kin:false,tipo:"texto",q:"variante",l:"08",h:198},
+ {c:"08",t:"Arquivo",a:"Ana Duarte",f:"PDF",est:"novo",nn:0,kin:false,tipo:"texto",q:"capa gerada",l:"09",h:186},
+ {c:"09",t:"Ata da reunião",a:"Ana Duarte",f:"PDF",est:"lido",nn:0,kin:false,tipo:"texto",q:"março",l:"10",h:172},
+ {c:"10",t:"Arquivo",a:"Ana Duarte",f:"XLSX",est:"novo",nn:0,kin:false,tipo:"texto",q:"planilha",l:"11",h:200},
+ {c:"11",t:"Diário 02",a:"Ana Duarte",f:"PDF",est:"lendo",nn:8,kin:true,tipo:"texto",q:"",l:"12",h:178},
+ {c:"12",t:"Ata da reunião",a:"Ana Duarte",f:"PDF",est:"novo",nn:0,kin:false,tipo:"texto",q:"junho",l:"13",h:192},
+ {c:"13",t:"Briefing de Marca",a:"Ana Duarte",f:"PDF",est:"lido",nn:1,kin:false,tipo:"texto",q:"",l:"01",h:168},
+ {c:"14",t:"Apresentação Institucional",a:"Ana Duarte",f:"PDF",est:"novo",nn:0,kin:false,tipo:"quadrinho",q:"",l:"14",h:206}
 ];
 const capa=n=>"capas/capa-"+n+".jpg";
 const lomb=n=>"capas/lombada-"+n+".png";
@@ -2011,7 +2014,7 @@ const zero={
      mesmo escreveu, os territorios que voce nomeou e as ideias que dispensou.
      "rel" e "terr" sao seus; "ignoradas" existe porque uma sugestao que volta
      depois de dispensada deixa de ser sugestao e vira insistencia. */
-  nfiltro:"todas",qNotas:"",qPergunta:"",notaK:null,sumAba:"conteudo",qLivro:"",vista:"adaptado",conteudoVista:"capitulos",tagNova:null,colecoes:[{id:"col0",nome:"Método de campo",livros:["Diário 02","Estudo de Viabilidade"]}],colNova:false,fColecao:null,marcas:[{livro:"Diário 02",cap:2,dia:"9 ago"}],concK:null,redeAberta:false,renomeando:null,conj:null,listaVisivel:null,linhaMenu:null,recorteMotivo:null,conectando:null,qConectar:"",novaRel:null,rever:[],rel:[["n-solta-1","n-obs-1"]],
+  nfiltro:"todas",qNotas:"",qPergunta:"",pgComo:false,notaK:null,sumAba:"conteudo",qLivro:"",vista:"adaptado",conteudoVista:"capitulos",tagNova:null,colecoes:[{id:"col0",nome:"Método de campo",livros:["Diário 02","Estudo de Viabilidade"]}],colNova:false,fColecao:null,marcas:[{livro:"Diário 02",cap:2,dia:"9 ago"}],concK:null,redeAberta:false,renomeando:null,conj:null,listaVisivel:null,linhaMenu:null,recorteMotivo:null,conectando:null,qConectar:"",novaRel:null,rever:[],rel:[["n-solta-1","n-obs-1"]],
   terr:[],ignoradas:[],comoIdeia:false,nomeando:null,concNova:null,canvasPos:{},cvModo:"mover",cvLigando:null,trazendo:false,voltarCanvas:false,naoRel:[],canvasN:[],mantidos:[],verTerr:null,verTerrId:null,
   sel:[],filtro:"todas",mud:[],fora:[],giradas:[],capaPag:1,
   disp:1,fonte:2,orient:"retrato",formato:"epub",nome:null,
@@ -2153,7 +2156,7 @@ const AJUDA=[
 let S=Object.assign({},zero),timer=null,ultimoLugar=null;
 function reset(cena){
   clearInterval(timer);timer=null;S=Object.assign({},zero);
-  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardandoNota=null;S.guardando=null;S.tirando=null;S.apagando=null;S.escNovo=null;S.paraLivro=false;S.desc="";S.descAberta=false;S.escAqui=null;S.aaAberto=false;S.foco=false;S.rever=[];S.rel=[["n-solta-1","n-obs-1"]];S.terr=[];S.ignoradas=[];S.nomeando=null;S.concNova=null;S.comoIdeia=false;S.nfiltro="todas";S.qNotas="";S.qPergunta="";S.notaK=null;S.sumAba="conteudo";S.qLivro="";S.vista="adaptado";S.conteudoVista="capitulos";S.tagNova=null;S.colecoes=[{id:"col0",nome:"Método de campo",livros:["Diário 02","Estudo de Viabilidade"]}];S.colNova=false;S.fColecao=null;S.marcas=[{livro:"Diário 02",cap:2,dia:"9 ago"}];S.concK=null;S.redeAberta=false;S.renomeando=null;S.conj=null;S.listaVisivel=null;S.linhaMenu=null;S.recorteMotivo=null;S.conectando=null;S.qConectar="";S.novaRel=null;S.naoRel=[];S.canvasN=[];S.mantidos=[];S.verTerr=null;S.verTerrId=null;S.canvasPos={};S.cvModo="mover";S.cvLigando=null;S.trazendo=false;S.voltarCanvas=false;
+  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardandoNota=null;S.guardando=null;S.tirando=null;S.apagando=null;S.escNovo=null;S.paraLivro=false;S.desc="";S.descAberta=false;S.escAqui=null;S.aaAberto=false;S.foco=false;S.rever=[];S.rel=[["n-solta-1","n-obs-1"]];S.terr=[];S.ignoradas=[];S.nomeando=null;S.concNova=null;S.comoIdeia=false;S.nfiltro="todas";S.qNotas="";S.qPergunta="";S.pgComo=false;S.notaK=null;S.sumAba="conteudo";S.qLivro="";S.vista="adaptado";S.conteudoVista="capitulos";S.tagNova=null;S.colecoes=[{id:"col0",nome:"Método de campo",livros:["Diário 02","Estudo de Viabilidade"]}];S.colNova=false;S.fColecao=null;S.marcas=[{livro:"Diário 02",cap:2,dia:"9 ago"}];S.concK=null;S.redeAberta=false;S.renomeando=null;S.conj=null;S.listaVisivel=null;S.linhaMenu=null;S.recorteMotivo=null;S.conectando=null;S.qConectar="";S.novaRel=null;S.naoRel=[];S.canvasN=[];S.mantidos=[];S.verTerr=null;S.verTerrId=null;S.canvasPos={};S.cvModo="mover";S.cvLigando=null;S.trazendo=false;S.voltarCanvas=false;
   if(cena==="nova"){S.cena="nova";}
   if(cena==="sem-conta"){S.cena="nova";S.conta=false;}
   pinta();
@@ -3560,11 +3563,21 @@ function secMarcado(){
    mao: com PDF e EPUB fixos, 3 dos 14 itens (2 TXT, 1 XLSX) nao cabiam em
    recorte nenhum e "Tudo 14" deixava de fechar a conta na frente de quem soma.
    Formato agora particiona; "Com nota" e o unico recorte de estado. */
+/* A terceira linha do cartao carregava quatro tipos de fato ao mesmo tempo:
+   contagem de nota, estado de leitura, procedencia e desambiguacao. */
+const ESTADO={novo:"não comecei",lendo:"lendo",lido:"lido"};
 const FILTROS=(function(){
-  const fs=[...new Set(ACERVO.map(b=>b.f))]
-    .sort((a,b)=>ACERVO.filter(x=>x.f===b).length-ACERVO.filter(x=>x.f===a).length||a.localeCompare(b));
-  return [["tudo","Tudo",()=>true],["nota","Com nota",b=>/nota/.test(b.q)]]
-    .concat(fs.map(f=>[f.toLowerCase(),f,b=>b.f===f]));
+  /* Perguntas que alguem faz na frente de uma estante — e nenhuma delas e
+     "quais vieram de PDF". Quadrinho so entra se existir algum: filtro que
+     sempre devolve zero e ruido permanente. */
+  const base=[["tudo","Tudo",()=>true],
+    ["lendo","Lendo",b=>b.est==="lendo"],
+    ["novo","N\u00e3o comecei",b=>b.est==="novo"],
+    ["nota","Com nota",b=>b.nn>0],
+    ["kindle","No Kindle",b=>!!b.kin]];
+  if(ACERVO.some(b=>b.tipo==="quadrinho"))
+    base.push(["quadrinho","Quadrinhos",b=>b.tipo==="quadrinho"]);
+  return base;
 })();
 function vEstante(){
   const f=FILTROS.find(x=>x[0]===(S.fEstante||"tudo"))||FILTROS[0];
@@ -3603,11 +3616,12 @@ function vEstante(){
   if(S.estante==="lista"){
     h+='<div class="grade">'+acervo.map(b=>'<button class="bk" data-a="ir-livro" data-v="'+esc(b.t)+'">'+
       '<img src="'+capa(b.c)+'" alt="Capa de '+esc(b.t)+'" loading="lazy">'+
-      '<span class="t">'+esc(b.t)+'</span><span class="a">'+esc(b.a)+' \u00b7 '+b.f+'</span>'+
+      '<span class="t">'+esc(b.t)+'</span><span class="a">'+esc(b.a)+(b.q?' · '+esc(b.q):'')+'</span>'+
       /* sem esta linha, "Malha Urbana · Ana Duarte · EPUB" aparece duas vezes
          identica: o campo que separa a edicao da variante existia no acervo e
          so o modo Estante mostrava. E e ele que explica o recorte "Com nota". */
-      '<span class="q">'+esc(b.q)+'</span></button>').join("")+'</div>';
+      '<span class="q">'+ESTADO[b.est]+(b.nn?' · '+b.nn+' nota'+(b.nn>1?'s':''):'')+
+      (b.kin?' · no Kindle':'')+'</span></button>').join("")+'</div>';
   }else{
     /* o numero e medido na propria tela, nao escrito a mao: 14 lombadas de
        ~18px numa tabua de 1000px ocupam 9% dela. Dizer "experimento" sem dizer
@@ -3834,7 +3848,10 @@ function vNotas(){
     'Escrever não traz nada para cá; levar é um gesto separado, feito no livro.</p>'+
     '<div class="nfila">'+ab("todas","Todas",F.todas.length)+ab("livros","De livros",F.livros.length)+
       ab("soltas","Soltas",F.soltas.length)+'<span class="di"></span>'+
-      ab("rever","Para revisar",P.reduce((n,x)=>n+x.n,0)+F.rever.length)+
+      /* somando os ITENS de cada pendencia, isto dava 8 numa area com 7 notas
+         — subconjunto maior que o todo. Cada emblema conta o que a SUA vista
+         mostra: aqui, linhas de pauta mais notas que voce marcou. */
+      ab("rever","Para revisar",P.length+F.rever.length)+
       /* Ideias fica DEPOIS do filete, junto de Para revisar, porque nenhuma
          das duas parte a lista: uma e estado, a outra nem sequer e nota. As
          tres primeiras dividem tudo o que voce escreveu; estas duas
@@ -3925,14 +3942,22 @@ function respondePergunta(q){
 }
 function vPergunta(){
   const q=(S.qPergunta||"").trim();
-  let h='<label class="pgL" for="campoPergunta">Sobre o que voc\u00ea quer juntar o que j\u00e1 leu?</label>'+
-    '<input id="campoPergunta" class="campoB" placeholder="ex.: aten\u00e7\u00e3o, tipografia, por que guardo demais" '+
+  /* o rotulo dizia "juntar o que voce leu" e o paragrafo logo abaixo dizia
+     que a busca NAO olha o que voce leu, e sim o que voce escreveu. Um dos
+     dois estava errado, e era o rotulo. */
+  let h='<label class="pgL" for="campoPergunta">Sobre o que você já pensou?</label>'+
+    '<input id="campoPergunta" class="campoB" placeholder="ex.: atenção, tipografia, por que guardo demais" '+
     'value="'+esc(S.qPergunta||"")+'" autocomplete="off">'+
-    '<p class="pgN">Isto procura <b>nas suas palavras</b>, e n\u00e3o no texto dos livros: o dossi\u00ea '+
-    're\u00fane o que voc\u00ea j\u00e1 pensou, n\u00e3o o que o autor escreveu.<br>'+
-    'Ele compara só o <b>começo da palavra</b>: “guardo” acha “guardar”, e '+
-    '“repetição” acha “repetido”. Sem sinônimo e sem modelo de linguagem — ele erra '+
-    'de um jeito previsível, e é isso que o torna confiável.</p>';
+    /* cinco linhas de metodo antes de a pessoa ter perguntado qualquer coisa
+       e aula, e nao ajuda. Uma linha fica; o resto abre quando pedirem. */
+    '<p class="pgN">Procura <b>no que você escreveu</b>, e não no texto dos livros. '+
+    '<button class="como" data-a="pg-como" aria-expanded="'+(!!S.pgComo)+'">como isto procura '+
+    (S.pgComo?"▴":"▾")+'</button></p>'+
+    (S.pgComo
+      ?'<p class="pgN">Ele compara só o <b>começo da palavra</b>: “guardo” acha '+
+       '“guardar”, e “repetição” acha “repetido”. Sem sinônimo e sem modelo de '+
+       'linguagem — ele erra de um jeito previsível, e é isso que o torna confiável.</p>'
+      :'');
   const r=q?respondePergunta(q):null;
   if(!r)return h;
   if(!r.achados.length)
@@ -6504,6 +6529,7 @@ function roteia(a,v,el){
       return;}
     case "vista-texto":S.vista=v;S.folha=null;break;
     case "cont-vista":S.conteudoVista=v;break;
+    case "pg-como":S.pgComo=!S.pgComo;break;
     case "livro-busca":S.qLivro=v;break;
     case "marca-por":{
       const c=Number(v);

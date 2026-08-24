@@ -10,6 +10,8 @@
   const folhas=[null,"paginas","viewport","ajuda","conta","envio","capa","traduzir","pend",
     "sumario","busca","controles","wiz","usb","nota","apagar-conta","pref-reset"];
   const psecs=["visao","conta","disp","pref","priv","hist","novidades"];
+  /* cada filtro da estante e um caminho proprio, e eles acabaram de mudar */
+  const fEst=["tudo","lendo","novo","nota","kindle","quadrinho"];
   const feito=[];
   for(const l of lugares)for(const f of folhas){
     try{
@@ -22,6 +24,12 @@
       feito.push(l+"/"+(f||"-")+":"+document.body.innerHTML.length);
     }catch(e){erros.push(l+"/"+f+" -> "+e.message);}
   }
+  for(const fe of fEst){
+    try{S.lugar="estante";S.folha=null;S.fEstante=fe;S.fColecao=null;pinta();
+      feito.push("estante/"+fe+":"+document.body.innerHTML.length);}
+    catch(e){erros.push("estante/"+fe+" -> "+e.message);}
+  }
+  S.fEstante="tudo";
   for(const s of psecs){
     try{S.lugar="perfil";S.folha=null;S.psec=s;pinta();}
     catch(e){erros.push("perfil/"+s+" -> "+e.message);}
@@ -63,6 +71,13 @@
     /* a faixa do conjunto e a migalha mudam conforme de onde voce entrou:
        tres entradas, tres estados, e nenhum deles tinha cobertura. */
     ["nota-sem-conjunto",()=>{S.notaAberta=null;S.conj=null;S.notaK="n-obs-1";}],
+    /* o caminho que eu tinha esquecido: abrir uma nota DA LISTA. Quatro dos
+       seis defeitos da ultima rodada estavam so nele. */
+    ["nota-vinda-da-lista",()=>{S.lugar="notas";S.nfiltro="todas";S.verTerr=null;
+      S.recorteMotivo=null;pinta();
+      const b=document.querySelector('.grupoE .cab [data-a="nota-abrir"],.grupoE .cit [data-a="nota-abrir"]');
+      if(b)b.click();}],
+    ["notas-pergunta-como",()=>{S.lugar="notas";S.nfiltro="pergunta";S.pgComo=true;}],
     ["nota-no-comeco-do-conjunto",()=>{const g=ideias()[0];
       S.terr=g?[{id:g.id,nome:"Um nome",notas:g.notas.map(d=>d.k)}]:[];
       S.conj=g?{lista:g.notas.map(d=>d.k),concId:g.id,nome:"Um nome"}:null;
