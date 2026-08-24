@@ -39,6 +39,19 @@
        estourava ao abrir, e o smoke respondia 0 erros. Caso novo, vista
        nova — senao o instrumento cobre o codigo de ontem. */
     ["notas-ideias",()=>{S.lugar="notas";S.nfiltro="ideias";}],
+    ["notas-pergunta-vazia",()=>{S.lugar="notas";S.nfiltro="pergunta";S.qPergunta="";}],
+    ["notas-pergunta-com-acerto",()=>{S.qPergunta="repeticao";}],
+    ["notas-pergunta-sem-acerto",()=>{S.qPergunta="blockchain";}],
+    ["notas-nada-levado",()=>{S.qPergunta="";S.nfiltro="todas";
+      S.dst.forEach(d=>{d.levada=false;});}],
+    ["notas-tudo-levado",()=>{S.dst.forEach(d=>{if(d.nota)d.levada=true;});}],
+    /* o painel do livro so era renderizado na aba Conteudo: itemPainel
+       inteiro estava sem cobertura, e um "gesto is not defined" passou. */
+    ["painel-destaques",()=>{S.lugar="leitura";S.dentro=true;S.folha="sumario";S.sumAba="destaques";}],
+    ["painel-notas",()=>{S.sumAba="notas";}],
+    ["painel-marcas",()=>{S.sumAba="marcas";}],
+    ["painel-busca",()=>{S.sumAba="conteudo";S.qLivro="repeti";}],
+    ["painel-paginas",()=>{S.qLivro="";S.conteudoVista="paginas";}],
     ["notas-ideias-nomeada",()=>{S.lugar="notas";S.nfiltro="ideias";
       const g=ideias()[0];S.terr=g?[{id:g.id,nome:"Um nome",notas:g.notas.map(d=>d.k),sua:true}]:[];}],
     ["notas-busca",()=>{S.lugar="notas";S.nfiltro="todas";S.qNotas="zzzz";}],

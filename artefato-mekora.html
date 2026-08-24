@@ -1716,6 +1716,13 @@ td.n{color:var(--ink);font-weight:600}
 .vsN{font-size:12px;color:var(--ink-3);line-height:1.6;margin:var(--s4) 0 0}
 .plbusca{padding:var(--s3) var(--s5) 0}
 .plbusca .campoN{width:100%}
+.lev{display:inline-block;margin-top:6px;font-family:var(--mono);font-size:10px;
+  letter-spacing:.06em;color:var(--ink-3);padding:2px 0;border-radius:0}
+.lev:hover{color:var(--ink)}
+.lev.-on{color:var(--ink)}
+/* o que ainda nao foi levado nao e erro nem pendencia: e material do livro.
+   Ele fica um passo atras, e nao sinalizado. */
+.pit.-fora .abre{color:var(--ink-2)}
 .pit.-pg .abre{display:flex;align-items:baseline;gap:var(--s3)}
 .pit .pn{font-family:var(--mono);font-size:10px;letter-spacing:.07em;color:var(--ink-3);
   min-width:26px}
@@ -1806,6 +1813,12 @@ td.n{color:var(--ink);font-weight:600}
 .mlm button:hover{background:var(--bg-2);color:var(--ink)}
 .mlm .-dan:hover{color:var(--dan)}
 .mlm .ln{height:1px;background:var(--line-2);margin:4px 0}
+.pgL{display:block;font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-3);margin:var(--s6) 0 var(--s3)}
+#campoPergunta{max-width:56ch}
+.pgN{font-size:12.5px;color:var(--ink-3);line-height:1.7;max-width:62ch;margin:var(--s3) 0 0}
+.pgN b{color:var(--ink-2);font-weight:600}
+.pgN .mono{font-family:var(--mono);font-size:11px;color:var(--ink-2)}
 .ideL{margin-top:var(--s3);margin-bottom:var(--s6)}
 .ideI{padding:var(--s4) 0;border-bottom:1px solid var(--line-2)}
 .ideI:last-child{border-bottom:0}
@@ -1833,6 +1846,16 @@ td.n{color:var(--ink);font-weight:600}
 .elo.-nomeada span{color:var(--ink);font-weight:600}
 .elo i{font-family:var(--ui);font-style:normal;font-size:10px;color:var(--ink-3);
   letter-spacing:0;text-transform:none;margin-left:var(--s2)}
+/* MIGALHAS: mono pequena, como toda metadata desta casa. Ela e endereco, e
+   endereco nao compete com titulo — por isso nao tem peso nem cor. */
+.migl{display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap;
+  margin-bottom:var(--s5);font-family:var(--mono);font-size:var(--t-mono);
+  letter-spacing:.07em;color:var(--ink-3)}
+.migl button{font:inherit;color:var(--ink-3);padding:2px 0;border-radius:0;
+  border-bottom:1px solid transparent}
+.migl button:hover{color:var(--ink);border-bottom-color:var(--ink)}
+.migl i{font-style:normal;color:var(--ink-4)}
+.migl [aria-current]{color:var(--ink)}
 .pauta{margin-top:var(--s5);border-left:2px solid var(--warn);padding-left:var(--s5)}
 .pauta>.soltoE{margin-top:0}
 .pit2{padding:var(--s3) 0;border-bottom:1px solid var(--line-2)}
@@ -1944,7 +1967,7 @@ const zero={
      mesmo escreveu, os territorios que voce nomeou e as ideias que dispensou.
      "rel" e "terr" sao seus; "ignoradas" existe porque uma sugestao que volta
      depois de dispensada deixa de ser sugestao e vira insistencia. */
-  nfiltro:"todas",qNotas:"",notaK:null,sumAba:"conteudo",qLivro:"",vista:"adaptado",conteudoVista:"capitulos",tagNova:null,colecoes:[{id:"col0",nome:"Método de campo",livros:["Diário 02","Estudo de Viabilidade"]}],colNova:false,fColecao:null,marcas:[{livro:"Diário 02",cap:2,dia:"9 ago"}],concK:null,redeAberta:false,renomeando:null,linhaMenu:null,recorteMotivo:null,conectando:null,qConectar:"",novaRel:null,rever:[],rel:[["n-solta-1","n-obs-1"]],
+  nfiltro:"todas",qNotas:"",qPergunta:"",notaK:null,sumAba:"conteudo",qLivro:"",vista:"adaptado",conteudoVista:"capitulos",tagNova:null,colecoes:[{id:"col0",nome:"Método de campo",livros:["Diário 02","Estudo de Viabilidade"]}],colNova:false,fColecao:null,marcas:[{livro:"Diário 02",cap:2,dia:"9 ago"}],concK:null,redeAberta:false,renomeando:null,linhaMenu:null,recorteMotivo:null,conectando:null,qConectar:"",novaRel:null,rever:[],rel:[["n-solta-1","n-obs-1"]],
   terr:[],ignoradas:[],comoIdeia:false,nomeando:null,concNova:null,canvasPos:{},cvModo:"mover",cvLigando:null,trazendo:false,voltarCanvas:false,naoRel:[],canvasN:[],mantidos:[],verTerr:null,verTerrId:null,
   sel:[],filtro:"todas",mud:[],fora:[],giradas:[],capaPag:1,
   disp:1,fonte:2,orient:"retrato",formato:"epub",nome:null,
@@ -2086,7 +2109,7 @@ const AJUDA=[
 let S=Object.assign({},zero),timer=null,ultimoLugar=null;
 function reset(cena){
   clearInterval(timer);timer=null;S=Object.assign({},zero);
-  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardandoNota=null;S.guardando=null;S.tirando=null;S.apagando=null;S.escNovo=null;S.paraLivro=false;S.desc="";S.descAberta=false;S.escAqui=null;S.aaAberto=false;S.foco=false;S.rever=[];S.rel=[["n-solta-1","n-obs-1"]];S.terr=[];S.ignoradas=[];S.nomeando=null;S.concNova=null;S.comoIdeia=false;S.nfiltro="todas";S.qNotas="";S.notaK=null;S.sumAba="conteudo";S.qLivro="";S.vista="adaptado";S.conteudoVista="capitulos";S.tagNova=null;S.colecoes=[{id:"col0",nome:"Método de campo",livros:["Diário 02","Estudo de Viabilidade"]}];S.colNova=false;S.fColecao=null;S.marcas=[{livro:"Diário 02",cap:2,dia:"9 ago"}];S.concK=null;S.redeAberta=false;S.renomeando=null;S.linhaMenu=null;S.recorteMotivo=null;S.conectando=null;S.qConectar="";S.novaRel=null;S.naoRel=[];S.canvasN=[];S.mantidos=[];S.verTerr=null;S.verTerrId=null;S.canvasPos={};S.cvModo="mover";S.cvLigando=null;S.trazendo=false;S.voltarCanvas=false;
+  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardandoNota=null;S.guardando=null;S.tirando=null;S.apagando=null;S.escNovo=null;S.paraLivro=false;S.desc="";S.descAberta=false;S.escAqui=null;S.aaAberto=false;S.foco=false;S.rever=[];S.rel=[["n-solta-1","n-obs-1"]];S.terr=[];S.ignoradas=[];S.nomeando=null;S.concNova=null;S.comoIdeia=false;S.nfiltro="todas";S.qNotas="";S.qPergunta="";S.notaK=null;S.sumAba="conteudo";S.qLivro="";S.vista="adaptado";S.conteudoVista="capitulos";S.tagNova=null;S.colecoes=[{id:"col0",nome:"Método de campo",livros:["Diário 02","Estudo de Viabilidade"]}];S.colNova=false;S.fColecao=null;S.marcas=[{livro:"Diário 02",cap:2,dia:"9 ago"}];S.concK=null;S.redeAberta=false;S.renomeando=null;S.linhaMenu=null;S.recorteMotivo=null;S.conectando=null;S.qConectar="";S.novaRel=null;S.naoRel=[];S.canvasN=[];S.mantidos=[];S.verTerr=null;S.verTerrId=null;S.canvasPos={};S.cvModo="mover";S.cvLigando=null;S.trazendo=false;S.voltarCanvas=false;
   if(cena==="nova"){S.cena="nova";}
   if(cena==="sem-conta"){S.cena="nova";S.conta=false;}
   pinta();
@@ -2101,7 +2124,12 @@ function topo(){
      Ordem de leitura: onde chegam os arquivos, o que ja e livro, o que eu
      escrevi, onde eu trabalho, o que se liga. Conexoes fica por ultimo de
      proposito — ela e derivada das notas, e nao a porta de entrada delas. */
-  const lug=[["mesa","Mesa"],["estante","Estante"],["notas","Notas"],["canvas","Canvas"]];
+  /* "Notas" virou "Conhecimento" no dia em que o portao entrou: uma area
+     chamada Notas que nao mostra todas as suas notas e mentira, e uma
+     chamada Conhecimento passa a ser honesta justamente por nao receber
+     tudo. O nome nao e uma promessa sobre o valor — e a descricao do
+     recorte. */
+  const lug=[["mesa","Mesa"],["estante","Estante"],["notas","Conhecimento"],["canvas","Canvas"]];
   const at=S.lugar==="leitura"?"":(noItem?"mesa":((S.lugar==="nota"||S.lugar==="conceito")?"notas":S.lugar));
   let l1='<div class="tlin"><button class="marca" data-a="ir" data-v="'+(S.conta?"mesa":"home")+
 
@@ -2538,7 +2566,10 @@ function sementes(){
     /* a tese sobre o livro inteiro nasce SEM ancora: ela nao era daquele trecho */
     escrito(3,null,null,"O argumento do di\u00e1rio inteiro est\u00e1 aqui: o que valeu n\u00e3o foi a conclus\u00e3o, foi o que sobrou bruto.","livro","e0")
   ]);
-  todas.forEach(d=>{if(DIAS[d.k])d.dia=DIAS[d.k];});
+  /* nem tudo que foi escrito foi levado: quatro anotacoes ficam so no livro,
+     porque a tela precisa MOSTRAR a diferenca em vez de explica-la. */
+  const LEVADAS={q1:1,q2:1,ddiar20:1,"n-obs-1":1,"n-obs-2":1,"n-obs-3":1,"n-solta-1":1};
+  todas.forEach(d=>{if(DIAS[d.k])d.dia=DIAS[d.k];d.levada=!!LEVADAS[d.k];});
   return todas;
 }
 const ancora=d=>d.ini!=null;
@@ -2969,12 +3000,18 @@ function itemPainel(d,ab){
   const prim=ab==="destaques"?tr:(d.nota||tr);
   const onde=!ancora(d)?(d.cap!=null?"sobre o cap\u00edtulo "+(d.cap+1):"sobre o livro")
     :"Cap\u00edtulo "+((r?r.cap:d.cap)+1);
-  return '<div class="pit"><button class="abre" data-a="'+alvo+'" data-v="'+v+'">'+
+  /* o gesto so aparece na aba de notas: em Destaques nao ha o que levar
+     ainda — levar e sobre o que voce escreveu, nao sobre o que marcou. */
+  const gesto=ab==="notas"&&d.nota
+    ?'<button class="lev'+(d.levada?" -on":"")+'" data-a="levar" data-v="'+d.k+'">'+
+     (d.levada?"◆ no Conhecimento":"◇ levar")+'</button>':'';
+  return '<div class="pit'+(ab==="notas"&&d.nota&&!d.levada?" -fora":"")+
+    '"><button class="abre" data-a="'+alvo+'" data-v="'+v+'">'+
     esc(prim.slice(0,110))+(prim.length>110?"\u2026":"")+'</button>'+
     (ab==="notas"&&ancora(d)&&d.nota?'<span class="pq">\u201c'+esc(tr.slice(0,58))+
       (tr.length>58?"\u2026":"")+'\u201d</span>':'')+
     '<cite>'+onde+(perdida(d)?' \u00b7 trecho perdido':(r&&COMO[r.como]?' \u00b7 reencontrado':''))+'</cite>'+
-    '</div>';
+    gesto+'</div>';
 }
 function mDados(){
   const e=S.mesaEstado;
@@ -3610,19 +3647,29 @@ function relacoesDe(k){
   /* dispensar uma sugestao tem que valer: uma que volta na proxima visita
      deixa de ser sugestao e vira insistencia. */
   const nao={};S.naoRel.forEach(r=>{if(r.indexOf(k)>-1)nao[r[0]===k?r[1]:r[0]]=1;});
-  const achadas=S.dst.filter(x=>x.k!==k&&x.nota&&!ja[x.k]&&!nao[x.k])
+  /* sugestao so sai do que foi levado: o portao serve tambem para calar
+     o palpite sobre material que voce nao escolheu guardar. */
+  const achadas=levadas().filter(x=>x.k!==k&&!ja[x.k]&&!nao[x.k])
     .map(x=>({k:x.k,termos:comuns(d,x)})).filter(r=>r.termos.length>0)
     .map(r=>{r.tipo=r.termos.length>1?"forte":"possivel";return r;})
     .sort((a,b)=>b.termos.length-a.termos.length);
   return suas.concat(achadas);
 }
 const FORCA={sua:"você ligou",forte:"parecem próximas",possivel:"talvez"};
+/* ═══ O PORTAO ═══
+   Escrever uma nota no livro nao a manda para lugar nenhum. Levar e um
+   segundo gesto, feito de proposito, e e ele que separa "o que eu anotei"
+   de "o que eu quis guardar". Sem essa separacao a area cresce com tudo e
+   vira o arquivo que ninguem abre — que e exatamente contra o que uma das
+   notas do acervo argumenta. */
+const levadas=()=>S.dst.filter(d=>d.nota&&d.levada);
+const anotadasDe=lv=>S.dst.filter(d=>d.nota&&d.livro===lv);
 /* ═══ IDEIAS EMERGENTES ═══
    Uma ideia não é uma palavra: é um grupo de notas que se tocam. E só conta
    quando atravessa livros — duas notas do mesmo livro repetirem um termo é
    apenas o assunto daquele livro de volta. */
 function ideias(){
-  const uteis=S.dst.filter(d=>d.nota&&d.livro);
+  const uteis=levadas().filter(d=>d.livro);
   const pares=[];
   uteis.forEach((a,i)=>uteis.slice(i+1).forEach(b=>{
     if(a.livro===b.livro)return;
@@ -3679,8 +3726,16 @@ const maiuscula=t=>t.charAt(0).toUpperCase()+t.slice(1);
    perdeu. Isso e um ritual de fim de leitura sem inventar pontinho nenhum:
    o retorno vem do que a propria pessoa escreveu. */
 function pauta(){
-  const comNota=S.dst.filter(d=>d.nota);
+  const comNota=levadas();
   const it=[];
+  /* a primeira pendencia deixa de ser "marcou e nao escreveu" e passa a ser
+     "escreveu e nao levou": e a que o portao cria, e a que vale um gesto. */
+  const naoLevadas=S.dst.filter(d=>d.nota&&!d.levada);
+  if(naoLevadas.length)it.push({k:"naolevadas",n:naoLevadas.length,
+    t:naoLevadas.length+" anota\u00e7"+(naoLevadas.length>1?"\u00f5es escritas":"\u00e3o escrita")+
+      " e ainda n\u00e3o levada"+(naoLevadas.length>1?"s":""),
+    r:"Elas est\u00e3o no livro. Levar \u00e9 um gesto seu, e \u00e9 o que faz esta \u00e1rea valer.",
+    a:"ir-destaques"});
   const marcados=S.dst.filter(d=>ancora(d)&&!d.nota);
   if(marcados.length)it.push({k:"marcados",n:marcados.length,
     t:marcados.length+" trecho"+(marcados.length>1?"s":"")+" marcado"+(marcados.length>1?"s":"")+
@@ -3711,7 +3766,7 @@ function pauta(){
   return it;
 }
 function vNotas(){
-  const comNota=S.dst.filter(d=>d.nota);
+  const comNota=levadas();
   const soMarcados=S.dst.filter(d=>ancora(d)&&!d.nota).length;
   const P=pauta();
   const F={todas:comNota,livros:comNota.filter(d=>d.livro),
@@ -3731,7 +3786,8 @@ function vNotas(){
   const ab=(k,rot,n)=>'<button data-a="nota-filtro" data-v="'+k+'"'+(f===k?' aria-current="true"':'')+
     '>'+rot+' <i>'+n+'</i></button>';
   let h='<div class="pad larga"><div class="colE larga">'+
-    '<h1 class="t">Notas</h1><p class="sub">O que você escreveu, e de onde veio.</p>'+
+    '<h1 class="t">Conhecimento</h1><p class="sub">O que você trouxe da leitura — e só isso. '+
+    'Escrever não traz nada para cá; levar é um gesto separado, feito no livro.</p>'+
     '<div class="nfila">'+ab("todas","Todas",F.todas.length)+ab("livros","De livros",F.livros.length)+
       ab("soltas","Soltas",F.soltas.length)+'<span class="di"></span>'+
       ab("rever","Para revisar",P.reduce((n,x)=>n+x.n,0)+F.rever.length)+
@@ -3741,6 +3797,10 @@ function vNotas(){
          atravessam. Voce pediu cinco vistas — sao cinco, so nao sao cinco
          irmas. */
       ab("ideias","Ideias",ideias().filter(x=>S.ignoradas.indexOf(x.id)<0).length+S.terr.length)+
+      /* "Por pergunta" nao conta nada: ela nao e um recorte do que existe, e
+         um jeito de perguntar. Numero ali seria mentira. */
+      '<button data-a="nota-filtro" data-v="pergunta"'+(f==="pergunta"?' aria-current="true"':'')+
+      '>Por pergunta</button>'+
       '<span class="sp"></span>'+
       /* a busca mora NA fila, do tamanho de um campo de busca. Solta acima da
          lista ela virava uma faixa de 930 por 60 pixels para procurar entre
@@ -3763,6 +3823,7 @@ function vNotas(){
      o titulo e a fila. Antes disso "h" ainda esta na zona morta, e a vista
      estourava ao ser aberta. */
   else if(f==="ideias")return h+vIdeias()+'</div></div>';
+  else if(f==="pergunta")return h+vPergunta()+'</div></div>';
   else h+=blocoIdeias();
   if(f==="rever"&&!q&&P.length)
     h+='<div class="pauta"><div class="soltoE">O que ficou pela metade</div>'+
@@ -3786,6 +3847,64 @@ function vNotas(){
    Nao e uma lista de notas: e a lista do que atravessou livros. Nomeadas
    primeiro, porque essas sao suas; depois as que o Mekora contou e ninguem
    batizou ainda. */
+/* ═══ POR PERGUNTA ═══
+   A busca comum recupera; esta MONTA. Voce faz uma pergunta e recebe o que
+   ja pensou sobre ela, reunido — e a diferenca entre as duas nao e de
+   qualidade, e de proposito.
+
+   Duas decisoes que vieram da exploracao de 11 de agosto e que eu adoto
+   inteiras, porque as duas ja tinham sido testadas la:
+
+   1. Procura NAS SUAS PALAVRAS, e nao no texto dos livros. O dossie reune o
+      que voce pensou, nao o que o autor escreveu. Sem isso ele devolve o
+      livro de volta, que e o contrario do que se pediu.
+   2. Casamento por RADICAL, cortando as duas ultimas letras: "guardo" acha
+      "guardar". Sem sinonimo e sem modelo de linguagem — ele erra de um
+      jeito previsivel, e e isso que o torna confiavel. Um acerto que voce
+      nao consegue explicar vale menos do que um erro que voce consegue. */
+/* Cortar duas letras resolve "guardo" -> "guardar" (6 viram 4), mas nao
+   resolve "repeticao" -> "repetido": 9 viram 7, e "repetido" nao contem
+   "repetic". Com teto de seis, os dois passam — e a regra continua cabendo
+   numa frase: ele compara so o comeco da palavra. */
+const radical=w=>w.length>4?w.slice(0,Math.max(4,Math.min(w.length-2,6))):w;
+function respondePergunta(q){
+  const t=semAcento(q).split(/[^a-z]+/).filter(w=>w.length>2&&!PARAR.has(w));
+  if(!t.length)return null;
+  const casa=d=>{
+    const alvo=semAcento(d.nota||"");
+    const achou=t.filter(w=>alvo.indexOf(radical(w))>-1);
+    return achou.length?{d:d,termos:achou}:null;
+  };
+  const r=levadas().map(casa).filter(Boolean)
+    .sort((a,b)=>b.termos.length-a.termos.length);
+  return {termos:t,achados:r};
+}
+function vPergunta(){
+  const q=(S.qPergunta||"").trim();
+  let h='<label class="pgL" for="campoPergunta">Sobre o que voc\u00ea quer juntar o que j\u00e1 leu?</label>'+
+    '<input id="campoPergunta" class="campoB" placeholder="ex.: aten\u00e7\u00e3o, tipografia, por que guardo demais" '+
+    'value="'+esc(S.qPergunta||"")+'" autocomplete="off">'+
+    '<p class="pgN">Isto procura <b>nas suas palavras</b>, e n\u00e3o no texto dos livros: o dossi\u00ea '+
+    're\u00fane o que voc\u00ea j\u00e1 pensou, n\u00e3o o que o autor escreveu.<br>'+
+    'Ele compara só o <b>começo da palavra</b>: “guardo” acha “guardar”, e '+
+    '“repetição” acha “repetido”. Sem sinônimo e sem modelo de linguagem — ele erra '+
+    'de um jeito previsível, e é isso que o torna confiável.</p>';
+  const r=q?respondePergunta(q):null;
+  if(!r)return h;
+  if(!r.achados.length)
+    return h+'<p class="vazioN">Nada seu sobre \u201c'+esc(q)+'\u201d ainda. '+
+      'Isso pode ser resposta: \u00e9 um assunto que voc\u00ea leu e n\u00e3o escreveu sobre.</p>';
+  /* o dossie diz de quantos livros ele veio: e a unica coisa que a pergunta
+     sozinha nao consegue dizer, e a que faz a reuniao valer. */
+  const lvs=[...new Set(r.achados.map(x=>x.d.livro).filter(Boolean))];
+  h+='<div class="soltoE">'+r.achados.length+' de '+levadas().length+' \u2014 '+
+    (lvs.length>1?'de '+numM(lvs.length)+' livros':lvs.length?'de um livro':'sem livro')+'</div>'+
+    '<div class="grupoE">'+r.achados.map(x=>linhaNota(x.d)).join("")+'</div>'+
+    '<p class="pgN">Casou por: '+r.termos.map(w=>'<span class="mono">'+esc(radical(w))+'</span>').join(", ")+
+    '. Se algo que deveria estar aqui ficou de fora, provavelmente voc\u00ea usou outra palavra \u2014 '+
+    'e isso \u00e9 o limite, n\u00e3o um defeito escondido.</p>';
+  return h;
+}
 function vIdeias(){
   const abertas=ideias().filter(g=>S.ignoradas.indexOf(g.id)<0&&!S.terr.some(t=>t.id===g.id));
   if(!S.terr.length&&!abertas.length)
@@ -3806,6 +3925,16 @@ function vIdeias(){
         '">ver as notas</button>'+
         '<button class="sec sob" data-a="terr-soltar" data-v="'+esc(t.id)+'">desfazer</button></div></div>';
     }).join("")+'</div>';
+  /* Nem toda ideia entra numa gaveta. A frase e do Erik, e ela evita o
+     erro que eu ia cometer: inventar um conceito guarda-chuva so para a
+     lista nao ter sobra. */
+  const soltas=levadas().filter(d=>!S.terr.some(t=>t.notas.indexOf(d.k)>-1)
+    &&!ideias().some(g=>g.notas.some(n=>n.k===d.k)));
+  if(soltas.length)
+    h+='<div class="soltoE">Sem conceito ainda \u2014 '+soltas.length+'</div>'+
+      '<p class="pgN" style="margin-top:0">Nem toda ideia entra numa gaveta, e for\u00e7ar uma '+
+      'seria pior do que deix\u00e1-la aqui. Ela aparece na busca e na ordem por tempo do mesmo jeito.</p>'+
+      '<div class="grupoE">'+soltas.map(linhaNota).join("")+'</div>';
   if(abertas.length)
     h+='<div class="soltoE">Ainda sem nome</div><div class="ideL">'+abertas.map(g=>
       '<div class="ideI -pend"><h4>'+g.termos.slice(0,2).map(t=>esc(t.w)).join(" \u00b7 ")+'</h4>'+
@@ -3971,7 +4100,11 @@ function vNota(){
   else onde.push("Escrita aqui, sem livro");
   onde.push(d.dia||"hoje");
   let h='<div class="pad larga"><div class="colE">'+
-    '<button class="lnk mudo volt" data-a="ir" data-v="notas">‹ Notas</button>';
+  /* o meio da migalha e o LIVRO da nota, e nao "todas as notas": e ali que
+     ela mora. Tocar nele recorta o Conhecimento por aquele livro. */
+    migalhas([["Conhecimento","ir","notas"],
+      d.livro?[d.livro,"ver-livro",d.livro]:["Soltas","nota-filtro","soltas"],
+      [curto(d.nota||escTxt(d),46)]]);
   /* editar é a mesma superfície de escrever dentro do livro: uma nota não
      muda de natureza por estar sendo lida noutro lugar. */
   h+=S.notaAberta===d.k?notaLivre(d)
@@ -3990,6 +4123,8 @@ function vNota(){
   h+='<div class="acs acsN">'+
     (tr?'<button class="pri" data-a="nota-origem" data-v="'+d.k+'">Abrir no livro</button>':'')+
     '<button class="'+(tr?"sec":"pri")+'" data-a="nota-editar" data-v="'+d.k+'">Editar</button>'+
+    '<button class="sec" data-a="levar" data-v="'+d.k+'">'+
+      (d.levada?"Tirar do Conhecimento":"Levar para o Conhecimento")+'</button>'+
     '<button class="sec" data-a="nota-canvas" data-v="'+d.k+'">'+
       (noC?"já está no Canvas":"Levar ao Canvas")+'</button>'+
     (S.voltarCanvas?'<button class="sec" data-a="ir" data-v="canvas">‹ voltar ao Canvas</button>':'')+
@@ -4226,10 +4361,20 @@ function trilhaDe(ns) {
   return melhor.length > 1 ? melhor : null;
 }
 
+/* itens: [rotulo, acao, valor]. O ultimo e onde voce esta, e nao e link —
+   um link para a pagina atual e um convite a recarregar. */
+function migalhas(itens){
+  return '<nav class="migl" aria-label="Onde voc\u00ea est\u00e1">'+itens.map((x,i)=>
+    i===itens.length-1
+      ? '<span aria-current="page">'+esc(x[0])+'</span>'
+      : '<button data-a="'+x[1]+'"'+(x[2]!=null?' data-v="'+esc(x[2])+'"':'')+'>'+
+        esc(x[0])+'</button><i>\u203a</i>').join("")+'</nav>';
+}
+const curto=(t,n)=>{t=(t||"").trim();return t.length>n?t.slice(0,n).replace(/[ ,;.]+$/,"")+"\u2026":t;};
 function vConceito() {
   const t = S.terr.find(x => x.id === S.concK);
   if (!t) return '<div class="pad larga"><div class="colE"><button class="lnk mudo volt" ' +
-    'data-a="nota-filtro" data-v="ideias">‹ Ideias</button>' +
+    'data-a="ir-ideias">‹ Ideias</button>' +
     '<p class="vazioN">Esse conceito não existe mais.</p></div></div>';
   const ns = t.notas.map(escK).filter(Boolean);
   const lvs = [...new Set(ns.map(n => n.livro).filter(Boolean))];
@@ -4237,7 +4382,7 @@ function vConceito() {
   const soltas = cam ? ns.filter(d => !cam.some(p => p.nota.k === d.k)) : ns;
 
   let h = '<div class="pad larga"><div class="colE">' +
-    '<button class="lnk mudo volt" data-a="ir-ideias">‹ Ideias</button>';
+    migalhas([["Conhecimento","ir","notas"],["Ideias","ir-ideias",null],[t.nome]]);
   h += S.renomeando === t.id
     ? '<div class="nomeia"><label for="nomeConc2">Como você chama esta ideia?</label>' +
       '<input id="nomeConc2" class="campoB" value="' + esc(t.nome) + '" autocomplete="off">' +
@@ -5092,8 +5237,11 @@ function vFolha(){
         :'<p class="plnota">'+(ab==="destaques"
           ?'Nada marcado neste livro ainda. Selecione um trecho lendo para marcar.'
           :'Nada escrito neste livro ainda.')+'</p>';
-      pe='<span>'+l.length+' '+(ab==="destaques"?"trecho":"nota")+(l.length===1?"":"s")+
-        (ab==="destaques"?" marcado"+(l.length===1?"":"s"):"")+'</span>'+
+      /* "3 de 9 anotacoes levadas" mostra o portao sem precisar explica-lo. */
+      const nlv=nts.filter(d=>d.levada).length;
+      pe=(ab==="notas"
+        ?'<span>'+nlv+' de '+nts.length+' anotaç'+(nts.length===1?"ão levada":"ões levadas")+'</span>'
+        :'<span>'+l.length+' trecho'+(l.length===1?"":"s")+' marcado'+(l.length===1?"":"s")+'</span>')+
         '<span class="sp"></span><button class="lnk mudo" data-a="ir" data-v="notas" '+
         'style="padding:0">ver todas as notas ›</button>';
     }
@@ -5470,7 +5618,12 @@ function vFolha(){
      lugares, quatro acoes do arquivo e duas de conta, todos com o mesmo peso.
      Perguntar "para que serve este menu" era a resposta certa. */
   if(f==="menuL"){
-    const lug=[["mesa","Mesa"],["estante","Estante"],["notas","Notas"],["canvas","Canvas"]];
+    /* "Notas" virou "Conhecimento" no dia em que o portao entrou: uma area
+     chamada Notas que nao mostra todas as suas notas e mentira, e uma
+     chamada Conhecimento passa a ser honesta justamente por nao receber
+     tudo. O nome nao e uma promessa sobre o valor — e a descricao do
+     recorte. */
+  const lug=[["mesa","Mesa"],["estante","Estante"],["notas","Conhecimento"],["canvas","Canvas"]];
     const li=(a,v,nm,st)=>'<button class="linha" data-a="'+a+'"'+(v?' data-v="'+v+'"':'')+'>'+
       '<span><span class="nm">'+nm+'</span>'+(st?'<span class="st">'+st+'</span>':'')+'</span>'+
       '<span class="ac">›</span></button>';
@@ -5782,6 +5935,11 @@ function pinta(){
   }
   /* o seletor de "conectar outra nota" tem o mesmo problema: sem reancorar,
      o campo perde o foco a cada letra. */
+  const cp=document.getElementById("campoPergunta");
+  if(cp){
+    cp.focus();cp.setSelectionRange(cp.value.length,cp.value.length);
+    cp.addEventListener("input",()=>{S.qPergunta=cp.value;pinta();});
+  }
   const ql=document.getElementById("qConectar");
   if(ql){
     if(focoLig){ql.focus();ql.setSelectionRange(ql.value.length,ql.value.length);}
@@ -6239,12 +6397,12 @@ function roteia(a,v,el){
       S.cvLigando=null;break;}
     /* cada linha da pauta leva ao recorte que ela descreve: uma pauta que so
        conta e um relatorio, e relatorio nao e trabalho. */
-    case "rev-sozinhas":S.verTerr=S.dst.filter(d=>d.nota&&!relacoesDe(d.k).length).map(d=>d.k);
+    case "rev-sozinhas":S.verTerr=levadas().filter(d=>!relacoesDe(d.k).length).map(d=>d.k);
       S.verTerrId=null;S.nfiltro="todas";S.recorteMotivo=" que não encostam em nenhuma outra";break;
     case "rev-perdidas":S.verTerr=S.dst.filter(d=>perdida(d)).map(d=>d.k);
       S.verTerrId=null;S.nfiltro="todas";S.recorteMotivo=" cujo trecho sumiu do texto";break;
     case "rev-fortes":{
-      const ks={};S.dst.filter(d=>d.nota).forEach(d=>
+      const ks={};levadas().forEach(d=>
         relacoesDe(d.k).forEach(r=>{if(r.tipo==="forte"){ks[d.k]=1;ks[r.k]=1;}}));
       S.verTerr=Object.keys(ks);S.verTerrId=null;S.nfiltro="todas";
       S.recorteMotivo=" que o Mekora achou parecidas";break;}
@@ -6277,6 +6435,16 @@ function roteia(a,v,el){
       if(i>-1)S.rever.splice(i,1);else S.rever.push(v);break;}
     /* levar ao Canvas não copia a nota: leva a mesma, com a origem junto.
        Uma cópia seria uma segunda coisa para manter atualizada. */
+    /* levar e tirar sao o mesmo botao, porque sao o mesmo gesto invertido —
+       e tirar do Conhecimento nao apaga a anotacao: ela volta a morar so no
+       livro, que e de onde ela nunca saiu. */
+    case "levar":{
+      const d=escK(v);if(!d)break;
+      d.levada=!d.levada;
+      if(!d.levada){S.canvasN=S.canvasN.filter(k=>k!==v);
+        S.terr.forEach(t=>{t.notas=t.notas.filter(k=>k!==v);});
+        S.terr=S.terr.filter(t=>t.notas.length);}
+      break;}
     case "nota-canvas":{
       if(S.canvasN.indexOf(v)<0)S.canvasN.push(v);
       /* trazido de dentro de Notas, o item vai PARA o canvas: ficar na tela
@@ -6305,7 +6473,14 @@ function roteia(a,v,el){
       if(!S.naoRel.some(r=>r.indexOf(par[0])>-1&&r.indexOf(par[1])>-1))S.naoRel.push(par);
       break;}
     case "conc-abrir":S.lugar="conceito";S.concK=v;S.redeAberta=false;break;
-    case "ir-ideias":S.lugar="notas";S.nfiltro="ideias";S.verTerr=null;S.verTerrId=null;break;
+    case "ir-ideias":S.lugar="notas";S.nfiltro="ideias";S.verTerr=null;S.verTerrId=null;
+      S.recorteMotivo=null;break;
+    /* recorta o Conhecimento por um livro: reusa o mesmo recorte do
+       territorio, porque a pergunta e a mesma — "so estas, e por isto". */
+    case "ver-livro":
+      S.lugar="notas";S.nfiltro="todas";S.qNotas="";S.verTerrId=null;
+      S.verTerr=levadas().filter(d=>d.livro===v).map(d=>d.k);
+      S.recorteMotivo=" de \u201c"+v+"\u201d";break;
     case "conc-rede":S.redeAberta=!S.redeAberta;break;
     case "conc-renomear":S.renomeando=v||null;break;
     case "conc-renomear-ok":{
@@ -6661,6 +6836,9 @@ voltava para o Diário 02: a memória não podia falhar, porque não existia.</p
 para o próximo teste.</p>
 <table><thead><tr><th>Coisa</th><th>Estado</th><th>Por quê</th></tr></thead><tbody>
 <tr><td class="n">Nota presa ao trecho, e a volta à origem</td><td><b>Atual</b></td><td>Funciona atravessando livros: abrir a origem de uma nota de outro livro troca o livro aberto, o capítulo e rola até a marca.</td></tr>
+<tr><td class="n">Portão do “levar”, e a área chamada Conhecimento</td><td><b>Atual</b></td><td>Escrever não traz nada para cá. O painel do livro conta “4 de 8 anotações levadas”, e sugestão só sai do que foi levado.</td></tr>
+<tr><td class="n">Migalhas de endereço</td><td><b>Atual</b></td><td>Onde a coisa mora, e não por onde você passou. “Como chegou” continua na faixa de recorte.</td></tr>
+<tr><td class="n">Por pergunta</td><td><b>Exploração forte</b></td><td>Reúne em vez de recuperar, nas suas palavras, comparando só o começo. Falta saber se a pessoa faz a pergunta sem exemplo na frente.</td></tr>
 <tr><td class="n">Área de Notas (Todas · De livros · Soltas · Para revisar)</td><td><b>Atual</b></td><td>As três primeiras são partição; "Para revisar" é estado seu e atravessa as três — por isso está depois de um filete, e não como quarta irmã.</td></tr>
 <tr><td class="n">Nota solta</td><td><b>Atual</b></td><td>Nasce fora de livro nenhum, e a área tem uma fila só para elas.</td></tr>
 <tr><td class="n">Relações por palavra em comum</td><td><b>Exploração forte</b></td><td>A regra cabe numa frase e é dizível. O que ainda não sei é se ela sobrevive a duzentas notas sem virar ruído.</td></tr>
@@ -6752,6 +6930,72 @@ de notas à direita cabe inteiro na margem que já está vazia — <b>ele não c
 O trilho de biblioteca à esquerda é outra história: ele custa largura de verdade e compra pouco,
 porque a Estante está a um clique e ninguém troca de livro no meio de um parágrafo.</p>
 <p>Então: painel da direita sim, recolhido por padrão e fora do modo Foco; trilho da esquerda não.</p>
+
+<h3>O portão do “levar”, e o nome que ele obriga a mudar</h3>
+<p>A tese é sua, e estava escrita no protótipo da área pessoal desde 11 de agosto: <i>“O que chega
+aqui não é tudo que foi destacado: é o que a pessoa levou, pela ponte do leitor. A distinção é o
+produto — sem ela isto vira o arquivo que ninguém abre.”</i></p>
+<p>Escrever uma anotação no livro não a manda para lugar nenhum. <b>Levar</b> é um segundo gesto,
+feito de propósito, no painel do livro ou dentro da nota. E o painel mostra a diferença sem
+explicá-la: <b>“4 de 8 anotações levadas”</b>.</p>
+<p><b>Aceitar o portão obriga a renomear a área.</b> Uma tela chamada <i>Notas</i> que não mostra
+todas as suas notas é mentira. <i>Conhecimento</i> passa a ser honesto justamente por não receber
+tudo — o nome deixa de ser uma promessa sobre o valor e vira a descrição do recorte. Eu tinha
+argumentado contra esse nome; o portão inverte o meu próprio argumento.</p>
+<p>Duas consequências que não são cosméticas: <b>sugestão só sai do que foi levado</b> — o portão
+serve também para calar o palpite sobre material que você não escolheu guardar; e <b>tirar do
+Conhecimento não apaga a anotação</b>, ela volta a morar só no livro, que é de onde nunca saiu.</p>
+<p>A pauta de revisão ganhou a pendência que o portão cria, e ela passou a ser a primeira:
+<b>“3 anotações escritas e ainda não levadas”</b>.</p>
+
+<h3>Migalhas: endereço, e não rastro</h3>
+<p>A migalha diz <b>onde a coisa mora</b>, e não por onde você passou. Um rastro de navegação muda a
+cada visita e mente sobre a estrutura; o endereço é sempre o mesmo, e é ele que permite voltar sem se
+perder.</p>
+<table><thead><tr><th>Onde você está</th><th>A migalha</th></tr></thead><tbody>
+<tr><td class="n">Uma nota de livro</td><td>Conhecimento › Malha Urbana › “A mesma coisa que a Ana…”</td></tr>
+<tr><td class="n">Uma nota solta</td><td>Conhecimento › Soltas › “Vale testar…”</td></tr>
+<tr><td class="n">Um conceito</td><td>Conhecimento › Ideias › Observação como sistema</td></tr>
+</tbody></table>
+<p>O meio da migalha é o <b>livro</b>, e não “todas as notas”: é ali que ela mora. Tocar nele recorta
+o Conhecimento por aquele livro.</p>
+<p><b>“Como você chegou” continua sendo outra coisa</b>, com componente próprio: a faixa de recorte
+(“Mostrando uma nota de <i>Malha Urbana</i>”). São duas perguntas diferentes e por isso dois
+elementos diferentes — a mesma disciplina das quatro categorias de interação.</p>
+<p>Onde ela <b>não</b> entra: na leitura. O cabeçalho do livro já responde “onde estou” com título,
+autor e capítulo, e aquele contrato está fechado. Duas respostas para a mesma pergunta é pior do que
+nenhuma.</p>
+
+<h3>Por pergunta: a busca que monta em vez de recuperar</h3>
+<p>A busca comum devolve; esta <b>reúne</b>. Duas decisões vieram inteiras da sua exploração, porque
+as duas já tinham sido testadas lá:</p>
+<ul>
+<li><b>Procura nas suas palavras</b>, não no texto dos livros. O dossiê junta o que você já pensou,
+não o que o autor escreveu — sem isso ele devolve o livro de volta, que é o contrário do que se
+pediu.</li>
+<li><b>Compara só o começo da palavra.</b> Sem sinônimo e sem modelo de linguagem: ele erra de um
+jeito previsível, e é isso que o torna confiável. Um acerto que você não consegue explicar vale menos
+do que um erro que você consegue.</li>
+</ul>
+<p>Uma correção medida sobre a regra original: cortar duas letras resolve “guardo” → “guardar” (6
+viram 4), mas não resolve <span class="mono">repetição</span> → <span class="mono">repetido</span>,
+porque 9 letras viram 7 e “repetido” não contém “repetic”. Com <b>teto de seis</b> os dois casos
+passam, e a regra continua cabendo numa frase.</p>
+<p>O resultado diz de onde veio (“4 de 7 — de um livro”) e por que casou (“Casou por:
+<span class="mono">repeti</span>, <span class="mono">regist</span>”). E o vazio é resposta:
+<i>“Nada seu sobre ‘blockchain’ ainda. Isso pode ser resposta: é um assunto que você leu e não
+escreveu sobre.”</i></p>
+
+<h3>Sem conceito ainda</h3>
+<p>A frase é sua e ela evitou um erro que eu ia cometer — inventar um conceito guarda-chuva só para a
+lista não ter sobra: <i>“Nem toda ideia entra numa gaveta, e forçar uma seria pior do que deixá-la
+aqui.”</i></p>
+
+<h3>O que a cobertura pegou nesta rodada</h3>
+<p>O painel do livro só era renderizado na aba <b>Conteúdo</b>: <span class="mono">itemPainel</span>
+inteiro estava sem cobertura, e um <span class="mono">gesto is not defined</span> passou pelo smoke
+com zero erros. Cinco casos novos para as abas, cinco para o portão e a pergunta — <b>251 telas</b>,
+de 153 no começo desta série.</p>
 
 <h3>Correção: eu generalizei demais, e a exploração de 11 de agosto prova</h3>
 <p>A medida abaixo continua verdadeira sobre <b>o mapa que eu tinha feito</b>. Mas eu tirei dela uma
