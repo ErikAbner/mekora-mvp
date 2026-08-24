@@ -431,6 +431,33 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .relD .tr{font-family:var(--serif);font-style:italic;font-size:.95rem;line-height:1.55;
   color:var(--ink-2);margin:0 0 var(--s3);max-width:56ch}
 .relG .cit.-aberta{background:var(--bg-2);padding:var(--s3) var(--s4)}
+/* ── a passada de UI na pagina de uma nota ── */
+/* Tags e Estudos gastavam tres niveis de rotulo para dois chips: o titulo do
+   bloco, o subrotulo, e o conteudo, cada um numa linha. O subrotulo entra na
+   linha do proprio conteudo, que e o que uma lista de definicao faz. */
+.conc.-linha{display:grid;grid-template-columns:64px minmax(0,1fr);gap:var(--s3);
+  align-items:baseline;margin-top:var(--s3)}
+.conc.-linha>.sublbl{margin:0;grid-column:1}
+.conc.-linha>*:not(.sublbl){grid-column:2}
+/* os chips e a porta de criar dividem a mesma faixa: sao a mesma escolha com
+   dois destinos, e nao duas linhas de coisa diferente. */
+.conc.-linha .acs.-mesmalinha{margin-top:0;display:flex;flex-wrap:wrap;
+  align-items:baseline;gap:var(--s3)}
+/* baseline, e nao center: o chip tem borda e o botao nao, entao centrar as
+   CAIXAS desalinhava os TEXTOS em 15px — medido. O que a pessoa le e a
+   linha do texto. */
+@media(max-width:560px){.conc.-linha{grid-template-columns:1fr}
+  .conc.-linha>*:not(.sublbl){grid-column:1}}
+/* "Talvez" e o grupo de menor confianca: ele pede a decisao so quando a pessoa
+   chega perto. focus-within mantem alcancavel por Tab. */
+.relG.-fraco .grupoE .cit>.acs{opacity:0;transition:opacity var(--d1) var(--curva)}
+.relG.-fraco .grupoE .cit:hover>.acs,
+.relG.-fraco .grupoE .cit:focus-within>.acs{opacity:1}
+@media(hover:none){.relG.-fraco .grupoE .cit>.acs{opacity:1}}
+/* O bloco de classificacao e METADADO da nota, e estava com o mesmo respiro de
+   60px que separa a nota do que esta em volta dela. Com tudo a mesma
+   distancia, nada agrupa: ele sobe para junto das acoes. */
+.acsN+.bloco{margin-top:var(--s5)}
 .prat{margin-bottom:var(--s5)}
 .lombs{display:flex;align-items:flex-end;gap:2px;padding:0 var(--s5);min-height:150px}
 .lombs img{display:block;width:auto;border-radius:var(--rm) var(--rm) 0 0;transition:transform var(--d2) var(--curva)}
@@ -1585,11 +1612,14 @@ td.n{color:var(--ink);font-weight:600}
 /* O CONJUNTO: faixa fina logo abaixo da migalha. Ela responde "por que estou
    aqui" — a migalha responde "onde" — e por isso sao dois elementos, e nao
    um so tentando dizer as duas coisas. */
+/* Uma barra de largura inteira com chao e filete grosso, colada embaixo da
+   migalha, lia como um segundo nivel do mesmo endereco — duas barras
+   empilhadas sao dois enderecos. A tira responde outra pergunta (por que lista
+   voce esta andando) e por isso e uma LINHA do mesmo cabecalho: sem chao, sem
+   filete, e subindo para junto da migalha. */
 .conj{display:flex;align-items:center;gap:var(--s3);flex-wrap:wrap;
-  padding:var(--s2) var(--s3);background:var(--bg-2);border-left:2px solid var(--ink);
-  margin-bottom:var(--s5)}
-.conj.-simples{background:none;border-left:0;padding:0;gap:var(--s2);
-  margin-bottom:var(--s4)}
+  padding:0;background:none;margin:calc(var(--s5)*-1 + var(--s2)) 0 var(--s6)}
+.conj.-simples{gap:var(--s2)}
 .conj.-simples .ant,.conj.-simples .prox,.conj.-simples .-off{padding:2px 5px}
 .conj .em{font-size:12.5px;color:var(--ink-2)}
 .conj .em b{color:var(--ink);font-weight:600}
@@ -4513,7 +4543,7 @@ function conjuntoDe(k){
   if(!c||!c.lista.length)return null;
   const i=c.lista.indexOf(k);
   if(i<0)return null;
-  return {lista:c.lista,i:i,n:c.lista.length,nome:c.nome,
+  return {lista:c.lista,i:i,n:c.lista.length,nome:c.nome,recorte:!!c.recorte,
     conc:c.concId?S.estudos.find(x=>x.id===c.concId):null};
 }
 /* O conjunto e montado NO CLIQUE, e nao adivinhado depois: quem sabe de onde
@@ -4522,21 +4552,31 @@ function conjuntoDe(k){
 function conjuntoDaqui(){
   if(S.verEst&&S.verEst.length){
     const t=S.verEstId?S.estudos.find(x=>x.id===S.verEstId):null;
-    return {lista:S.verEst.slice(),concId:t?t.id:null,
+    return {lista:S.verEst.slice(),concId:t?t.id:null,recorte:true,
       nome:t?t.nome:((S.recorteMotivo||"").replace(/^ (de |com |que |cujo )?/,"")
         .replace(/[“”]/g,"").trim()||"este recorte")};
   }
   if(S.lugar==="estudo"){
     const t=estudoK(S.estK);
-    if(t)return {lista:t.notas.slice(),concId:t.id,nome:t.nome};
+    if(t)return {lista:t.notas.slice(),concId:t.id,nome:t.nome,recorte:true};
   }
   if(S.lugar==="notas"&&S.listaVisivel&&S.listaVisivel.length>1){
     /* a lista inteira nao tem nome porque nao e um recorte: e a area. Sem
        isto a migalha saia "Conhecimento > Conhecimento" e a faixa dizia
        "Em Conhecimento", que e onde a pessoa esta sempre. */
-    const nomes={livros:"De livros",soltas:"Soltas",rever:"Para revisar",
-      pergunta:"esta pergunta"};
+    /* "Todas as notas" voltou a ter nome. Sem nome, o contador aparecia como
+       "2 de 7" logo abaixo de uma migalha que diz "Metodo de campo" — e um
+       numero sem dono embaixo de um endereco com nome so pode ser lido como se
+       fosse do mesmo conjunto. A decisao de deixar a area sem nome valia
+       quando a migalha tambem dizia "Conhecimento"; parou de valer quando a
+       vizinha mudou. */
+    const nomes={todas:"Todas as notas",livros:"De livros",soltas:"Soltas",
+      rever:"Para revisar",pergunta:"esta pergunta"};
     return {lista:S.listaVisivel.slice(),concId:null,
+      /* nomear a lista inteira criou um "ver todas" que sai para onde voce ja
+         esta. A saida e do RECORTE, e nao do nome — sao duas coisas, e uma
+         delas nao existe quando voce esta na lista inteira. */
+      recorte:(S.nfiltro||"todas")!=="todas",
       nome:nomes[S.nfiltro||"todas"]||null};
   }
   return null;
@@ -4560,7 +4600,7 @@ function faixaConjunto(c){
     bt(prox,"\u203a","prox")+
     (c.nome?'<span class="em">em <b>'+esc(c.nome)+'</b></span>':'')+
     '<span class="sp"></span>'+
-    (c.nome?'<button class="sai" data-a="est-todas">ver todas</button>':'')+
+    (c.recorte?'<button class="sai" data-a="est-todas">ver todas</button>':'')+
     '</div>';
 }
 function vNota(){
@@ -4638,7 +4678,11 @@ function vNota(){
        '<button class="sec" data-a="tag-nova" data-v="'+d.k+'">+ tag</button>'+
        '<button class="sec" data-a="est-nova" data-v="'+d.k+'">criar um estudo</button></div>'+
        (S.tagNova===d.k||S.estNova===d.k?secTags(d)+secConceitos(d):'')
-      :'<div class="soltoE">Como voc\u00ea classifica</div>'+secTags(d)+secConceitos(d))+
+      /* com conteudo, "Tags" e "Estudos" ja dizem o que este titulo dizia: ele
+         era uma terceira camada de rotulo para dois chips, e custava uma linha
+         mais 30px de margem propria que somavam aos 30 da caixa. No estado
+         vazio ele fica, porque la e o unico texto que explica os dois botoes. */
+      :secTags(d)+secConceitos(d))+
     '</div>';
   h+=secRelacoes(d);
   return h+'</div></div>';
@@ -4649,7 +4693,7 @@ function vNota(){
    recorta a lista. Se ela tivesse pagina, seria um conceito com outro nome. */
 function secTags(d){
   const ts=d.tags||[];
-  let h='<div class="conc tagS"><span class="sublbl">Tags</span>';
+  let h='<div class="conc tagS -linha"><span class="sublbl">Tags</span>';
   h+='<div class="cchips">'+ts.map(t=>'<span class="cchip -tag">'+
       '<button class="ir" data-a="tag-ver" data-v="'+esc(t)+'">#'+esc(t)+'</button>'+
       '<button data-a="tag-tirar" data-v="'+esc(t)+'|'+d.k+'" aria-label="Tirar #'+esc(t)+
@@ -4675,11 +4719,12 @@ function secTags(d){
 function secConceitos(d){
   const meus=S.estudos.filter(t=>t.notas.indexOf(d.k)>-1);
   const outros=S.estudos.filter(t=>t.notas.indexOf(d.k)<0);
-  let h='<div class="conc"><span class="sublbl">Estudos</span>';
-  if(meus.length)
-    h+='<div class="cchips">'+meus.map(t=>'<span class="cchip">'+esc(t.nome)+
-      '<button data-a="est-tirar" data-v="'+esc(t.id)+'|'+d.k+'" aria-label="Tirar de '+
-      esc(t.nome)+'">\u2715</button></span>').join("")+'</div>';
+  let h='<div class="conc -linha"><span class="sublbl">Estudos</span>';
+  /* como dois filhos do grid, chips e acoes caiam em duas linhas por
+     construcao. Aqui eles viram texto, para entrarem no mesmo container. */
+  const chips=meus.map(t=>'<span class="cchip">'+esc(t.nome)+
+    '<button data-a="est-tirar" data-v="'+esc(t.id)+'|'+d.k+'" aria-label="Tirar de '+
+    esc(t.nome)+'">✕</button></span>').join("");
   /* narrar a ausencia nao ajuda: o botao ja diz que nao ha nenhum. */
   if(S.estNova===d.k)
     h+='<div class="nomeia"><label for="nomeConc">Como voc\u00ea chama este estudo?</label>'+
@@ -4687,10 +4732,12 @@ function secConceitos(d){
       '<div class="acs"><button class="pri" data-a="est-criar-ok" data-v="'+d.k+'">Criar</button>'+
       '<button class="sec" data-a="est-nova" data-v="">cancelar</button></div></div>';
   else{
-    h+='<div class="acs">'+
-      '<button class="sec" data-a="est-nova" data-v="'+d.k+'">criar um estudo</button>'+
+    /* na linha dos chips, e nao numa linha propria: por a nota num estudo e
+       criar um estudo sao a mesma escolha, com dois destinos. */
+    h+='<div class="acs -mesmalinha">'+chips+
       outros.map(t=>'<button class="sec" data-a="est-por" data-v="'+esc(t.id)+'|'+d.k+
-        '">+ '+esc(t.nome)+'</button>').join("")+'</div>';
+        '">+ '+esc(t.nome)+'</button>').join("")+
+      '<button class="sec" data-a="est-nova" data-v="'+d.k+'">criar um estudo</button></div>';
   }
   return h+'</div>';
 }
@@ -4735,7 +4782,10 @@ function secRelacoes(d){
      argumento meu mora no painel de notas. */
   const bloco=(t,rot)=>{
     const l=g(t);if(!l.length)return "";
-    return '<div class="relG"><span class="sublbl">'+rot+'</span>'+
+    /* o grupo de menor confianca leva a classe que esconde as acoes ate a
+       pessoa chegar perto: cinco "Confirmar a ligacao" identicos empilhados
+       viram textura, e a de cima e a unica que alguem le. */
+    return '<div class="relG'+(t==="possivel"?" -fraco":"")+'"><span class="sublbl">'+rot+'</span>'+
       '<div class="grupoE">'+l.map(r=>{
         const o=escK(r.k);if(!o)return "";
         /* "repeticao, isolada" dentro de uma aspa so le como um termo
