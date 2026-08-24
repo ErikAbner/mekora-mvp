@@ -60,6 +60,18 @@
     ["notas-ignorada",()=>{S.nomeando=null;S.ignoradas=g0?[g0.id]:[];}],
     ["nota-inexistente",()=>{S.ignoradas=[];S.lugar="nota";S.notaK="nao-existe";}],
     ["nota-editando",()=>{S.notaK="n-obs-1";S.notaAberta="n-obs-1";S.rasc={"n-obs-1":"x"};}],
+    /* a faixa do conjunto e a migalha mudam conforme de onde voce entrou:
+       tres entradas, tres estados, e nenhum deles tinha cobertura. */
+    ["nota-sem-conjunto",()=>{S.notaAberta=null;S.conj=null;S.notaK="n-obs-1";}],
+    ["nota-no-comeco-do-conjunto",()=>{const g=ideias()[0];
+      S.terr=g?[{id:g.id,nome:"Um nome",notas:g.notas.map(d=>d.k)}]:[];
+      S.conj=g?{lista:g.notas.map(d=>d.k),concId:g.id,nome:"Um nome"}:null;
+      S.notaK=g?g.notas[0].k:"n-obs-1";}],
+    ["nota-no-fim-do-conjunto",()=>{if(S.conj)S.notaK=S.conj.lista[S.conj.lista.length-1];}],
+    ["nota-conjunto-de-um-so",()=>{S.conj={lista:["n-obs-1"],concId:null,nome:"um recorte"};
+      S.notaK="n-obs-1";}],
+    ["nota-fora-do-conjunto",()=>{S.conj={lista:["n-obs-2"],concId:null,nome:"outro"};
+      S.notaK="n-obs-1";}],
     ["conceito-com-trilha",()=>{S.notaAberta=null;S.lugar="conceito";
       S.terr=g0?[{id:g0.id,nome:"Um nome",notas:g0.notas.map(d=>d.k)}]:[];
       S.concK=g0?g0.id:null;}],

@@ -1422,6 +1422,34 @@ td.n{color:var(--ink);font-weight:600}
 /* o conceito e um rotulo, e rotulo tem forma de rotulo: nem card, nem
    linha de lista. E o unico lugar do produto com canto arredondado — nao
    tem: raio zero aqui tambem, porque a excecao custaria a regra. */
+/* BLOCO: 60px separando blocos, 30px separando o que esta DENTRO de um.
+   Antes tudo tinha 60, e por isso nada agrupava. */
+.bloco{margin-top:var(--s7)}
+/* dentro do bloco o respiro e 20, e nao 30: Tags e Conceitos sao a mesma
+   pergunta feita duas vezes, e nao dois assuntos. */
+.bloco .conc{margin-top:var(--s4)}
+.bloco .conc:first-of-type{margin-top:var(--s3)}
+.bloco .conc .acs{margin-top:var(--s2)}
+.cchips{margin-top:var(--s2)}
+.sublbl{display:block;font-size:12.5px;color:var(--ink-3);margin-bottom:var(--s2)}
+.cabB{display:flex;align-items:baseline;gap:var(--s5);flex-wrap:wrap}
+.cabB .soltoE{margin:0}
+.cabB .sec{font-size:13px;color:var(--ink-3);padding:2px 0}
+.cabB .sec:hover{color:var(--ink)}
+/* O CONJUNTO: faixa fina logo abaixo da migalha. Ela responde "por que estou
+   aqui" — a migalha responde "onde" — e por isso sao dois elementos, e nao
+   um so tentando dizer as duas coisas. */
+.conj{display:flex;align-items:center;gap:var(--s3);flex-wrap:wrap;
+  padding:var(--s2) var(--s3);background:var(--bg-2);border-left:2px solid var(--ink);
+  margin-bottom:var(--s5)}
+.conj .em{font-size:12.5px;color:var(--ink-2)}
+.conj .em b{color:var(--ink);font-weight:600}
+.conj .pos{font-family:var(--mono);font-size:10px;letter-spacing:.07em;color:var(--ink-3)}
+.conj .sp{flex:1}
+.conj button{font-size:12.5px;color:var(--ink-3);padding:2px 6px;border-radius:0}
+.conj button:hover{color:var(--ink);background:var(--bg-3)}
+.conj .-off{font-size:12.5px;color:var(--ink-4);padding:2px 6px}
+.acsN .di{width:1px;height:16px;background:var(--line);align-self:center}
 .conc{margin-top:var(--s7)}
 /* a tag e mais leve que o conceito: ela e uma palavra, e nao um lugar. */
 .cchip.-tag{padding-left:6px}
@@ -1506,7 +1534,8 @@ td.n{color:var(--ink);font-weight:600}
   .cvLinhas line.-traca{animation:none;stroke-dashoffset:0!important}
 }
 .rels{margin-top:var(--s7)}
-.relG+.relG{margin-top:var(--s6)}
+.relG{margin-top:var(--s5)}
+.relG:first-of-type{margin-top:var(--s3)}
 .relX{font-size:12px;color:var(--ink-3);line-height:1.6;margin:0 0 var(--s4);max-width:56ch}
 .relG .grupoE .cit{background:var(--bg-2)}
 /* ═══ CONEXÕES ═══ */
@@ -1967,7 +1996,7 @@ const zero={
      mesmo escreveu, os territorios que voce nomeou e as ideias que dispensou.
      "rel" e "terr" sao seus; "ignoradas" existe porque uma sugestao que volta
      depois de dispensada deixa de ser sugestao e vira insistencia. */
-  nfiltro:"todas",qNotas:"",qPergunta:"",notaK:null,sumAba:"conteudo",qLivro:"",vista:"adaptado",conteudoVista:"capitulos",tagNova:null,colecoes:[{id:"col0",nome:"Método de campo",livros:["Diário 02","Estudo de Viabilidade"]}],colNova:false,fColecao:null,marcas:[{livro:"Diário 02",cap:2,dia:"9 ago"}],concK:null,redeAberta:false,renomeando:null,linhaMenu:null,recorteMotivo:null,conectando:null,qConectar:"",novaRel:null,rever:[],rel:[["n-solta-1","n-obs-1"]],
+  nfiltro:"todas",qNotas:"",qPergunta:"",notaK:null,sumAba:"conteudo",qLivro:"",vista:"adaptado",conteudoVista:"capitulos",tagNova:null,colecoes:[{id:"col0",nome:"Método de campo",livros:["Diário 02","Estudo de Viabilidade"]}],colNova:false,fColecao:null,marcas:[{livro:"Diário 02",cap:2,dia:"9 ago"}],concK:null,redeAberta:false,renomeando:null,conj:null,listaVisivel:null,linhaMenu:null,recorteMotivo:null,conectando:null,qConectar:"",novaRel:null,rever:[],rel:[["n-solta-1","n-obs-1"]],
   terr:[],ignoradas:[],comoIdeia:false,nomeando:null,concNova:null,canvasPos:{},cvModo:"mover",cvLigando:null,trazendo:false,voltarCanvas:false,naoRel:[],canvasN:[],mantidos:[],verTerr:null,verTerrId:null,
   sel:[],filtro:"todas",mud:[],fora:[],giradas:[],capaPag:1,
   disp:1,fonte:2,orient:"retrato",formato:"epub",nome:null,
@@ -2109,7 +2138,7 @@ const AJUDA=[
 let S=Object.assign({},zero),timer=null,ultimoLugar=null;
 function reset(cena){
   clearInterval(timer);timer=null;S=Object.assign({},zero);
-  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardandoNota=null;S.guardando=null;S.tirando=null;S.apagando=null;S.escNovo=null;S.paraLivro=false;S.desc="";S.descAberta=false;S.escAqui=null;S.aaAberto=false;S.foco=false;S.rever=[];S.rel=[["n-solta-1","n-obs-1"]];S.terr=[];S.ignoradas=[];S.nomeando=null;S.concNova=null;S.comoIdeia=false;S.nfiltro="todas";S.qNotas="";S.qPergunta="";S.notaK=null;S.sumAba="conteudo";S.qLivro="";S.vista="adaptado";S.conteudoVista="capitulos";S.tagNova=null;S.colecoes=[{id:"col0",nome:"Método de campo",livros:["Diário 02","Estudo de Viabilidade"]}];S.colNova=false;S.fColecao=null;S.marcas=[{livro:"Diário 02",cap:2,dia:"9 ago"}];S.concK=null;S.redeAberta=false;S.renomeando=null;S.linhaMenu=null;S.recorteMotivo=null;S.conectando=null;S.qConectar="";S.novaRel=null;S.naoRel=[];S.canvasN=[];S.mantidos=[];S.verTerr=null;S.verTerrId=null;S.canvasPos={};S.cvModo="mover";S.cvLigando=null;S.trazendo=false;S.voltarCanvas=false;
+  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardandoNota=null;S.guardando=null;S.tirando=null;S.apagando=null;S.escNovo=null;S.paraLivro=false;S.desc="";S.descAberta=false;S.escAqui=null;S.aaAberto=false;S.foco=false;S.rever=[];S.rel=[["n-solta-1","n-obs-1"]];S.terr=[];S.ignoradas=[];S.nomeando=null;S.concNova=null;S.comoIdeia=false;S.nfiltro="todas";S.qNotas="";S.qPergunta="";S.notaK=null;S.sumAba="conteudo";S.qLivro="";S.vista="adaptado";S.conteudoVista="capitulos";S.tagNova=null;S.colecoes=[{id:"col0",nome:"Método de campo",livros:["Diário 02","Estudo de Viabilidade"]}];S.colNova=false;S.fColecao=null;S.marcas=[{livro:"Diário 02",cap:2,dia:"9 ago"}];S.concK=null;S.redeAberta=false;S.renomeando=null;S.conj=null;S.listaVisivel=null;S.linhaMenu=null;S.recorteMotivo=null;S.conectando=null;S.qConectar="";S.novaRel=null;S.naoRel=[];S.canvasN=[];S.mantidos=[];S.verTerr=null;S.verTerrId=null;S.canvasPos={};S.cvModo="mover";S.cvLigando=null;S.trazendo=false;S.voltarCanvas=false;
   if(cena==="nova"){S.cena="nova";}
   if(cena==="sem-conta"){S.cena="nova";S.conta=false;}
   pinta();
@@ -3836,7 +3865,7 @@ function vNotas(){
         :'Nada pendente. Nem pauta do material, nem nota marcada por você.'):
       f==="soltas"?'Nenhuma nota solta. Uma nota solta nasce fora de um livro — de uma conversa, de um susto, de nada.':
       'Nada escrito ainda.')+'</p>';
-  else h+=listaNotas(vis);
+  else {S.listaVisivel=vis.map(d=>d.k);h+=listaNotas(vis);}
   if(soMarcados&&f!=="rever"&&!q)
     h+='<p class="saldo" style="margin-top:var(--s6)">'+soMarcados+' trecho'+(soMarcados>1?"s":"")+
       ' marcado'+(soMarcados>1?"s":"")+' sem nota — '+
@@ -4089,6 +4118,53 @@ function blocoIdeias(){
    veio, e com quem parece falar. O trecho de origem aparece inteiro — a nota
    sem ele é meia frase, e foi para não perder essa metade que ela nasceu
    presa a um lugar. */
+/* O CONJUNTO. Ele existe quando voce entrou a partir de um recorte — um
+   conceito, uma tag, um livro, uma pergunta. Guarda a lista e a posicao, e
+   e isso que permite a nota dizer "3 de 7" e oferecer os vizinhos. Sem ele
+   a nota e uma ilha, e voltar e um chute. */
+function conjuntoDe(k){
+  const c=S.conj;
+  if(!c||!c.lista.length)return null;
+  const i=c.lista.indexOf(k);
+  if(i<0)return null;
+  return {lista:c.lista,i:i,n:c.lista.length,nome:c.nome,
+    conc:c.concId?S.terr.find(x=>x.id===c.concId):null};
+}
+/* O conjunto e montado NO CLIQUE, e nao adivinhado depois: quem sabe de onde
+   voce veio e o lugar de onde voce clicou. Depois disso a nota so precisa
+   olhar para S.conj. */
+function conjuntoDaqui(){
+  if(S.verTerr&&S.verTerr.length){
+    const t=S.verTerrId?S.terr.find(x=>x.id===S.verTerrId):null;
+    return {lista:S.verTerr.slice(),concId:t?t.id:null,
+      nome:t?t.nome:((S.recorteMotivo||"").replace(/^ (de |com |que |cujo )?/,"")
+        .replace(/[“”]/g,"").trim()||"este recorte")};
+  }
+  if(S.lugar==="conceito"){
+    const t=S.terr.find(x=>x.id===S.concK);
+    if(t)return {lista:t.notas.slice(),concId:t.id,nome:t.nome};
+  }
+  if(S.lugar==="notas"&&S.listaVisivel&&S.listaVisivel.length>1){
+    const nomes={todas:"Conhecimento",livros:"De livros",soltas:"Soltas",
+      rever:"Para revisar",pergunta:"esta pergunta"};
+    return {lista:S.listaVisivel.slice(),concId:null,
+      nome:nomes[S.nfiltro||"todas"]||"Conhecimento"};
+  }
+  return null;
+}
+function faixaConjunto(c){
+  if(!c)return "";
+  const ant=c.i>0?c.lista[c.i-1]:null, prox=c.i<c.n-1?c.lista[c.i+1]:null;
+  const bt=(k,rot,lado)=>k
+    ? '<button data-a="nota-abrir" data-v="'+k+'" class="'+lado+'">'+rot+'</button>'
+    : '<span class="'+lado+' -off">'+rot+'</span>';
+  return '<div class="conj">'+
+    '<span class="em">Em <b>'+esc(c.nome)+'</b></span>'+
+    '<span class="pos">'+(c.i+1)+' de '+c.n+'</span>'+
+    '<span class="sp"></span>'+
+    bt(ant,"\u2039 anterior","ant")+bt(prox,"pr\u00f3xima \u203a","prox")+
+    '</div>';
+}
 function vNota(){
   const d=escK(S.notaK);
   if(!d)return '<div class="pad larga"><div class="colE"><p class="vazioN">Essa nota não existe mais. '+
@@ -4097,14 +4173,20 @@ function vNota(){
   const onde=[];
   if(d.livro){onde.push(esc(d.livro));if(lv&&lv.autor)onde.push(esc(lv.autor));
     if(d.cap!=null)onde.push("Capítulo "+(d.cap+1)+(lv?" — "+esc(lv.caps[d.cap].n):""));}
-  else onde.push("Escrita aqui, sem livro");
+  else onde.push("Escrita aqui");   /* "sem livro" ja estava dito por "aqui" */
   onde.push(d.dia||"hoje");
+  const conj=conjuntoDe(d.k);
+  /* A migalha termina no PAI, e nao na propria nota: o ultimo item repetia
+     o titulo truncado, que estava dois centimetros abaixo. E o meio dela e
+     o conjunto de onde voce veio quando ele existe — senao, o livro. */
   let h='<div class="pad larga"><div class="colE">'+
-  /* o meio da migalha e o LIVRO da nota, e nao "todas as notas": e ali que
-     ela mora. Tocar nele recorta o Conhecimento por aquele livro. */
-    migalhas([["Conhecimento","ir","notas"],
-      d.livro?[d.livro,"ver-livro",d.livro]:["Soltas","nota-filtro","soltas"],
-      [curto(d.nota||escTxt(d),46)]]);
+    migalhas(conj&&conj.conc
+      ? [["Conhecimento","ir","notas"],["Ideias","ir-ideias",null],[conj.conc.nome,"conc-abrir",conj.conc.id]]
+      : conj
+      ? [["Conhecimento","ir","notas"],[conj.nome]]
+      : [["Conhecimento","ir","notas"],
+         d.livro?[d.livro,"ver-livro",d.livro]:["Soltas","nota-filtro","soltas"]])+
+    faixaConjunto(conj);
   /* editar é a mesma superfície de escrever dentro do livro: uma nota não
      muda de natureza por estar sendo lida noutro lugar. */
   h+=S.notaAberta===d.k?notaLivre(d)
@@ -4120,20 +4202,31 @@ function vNota(){
     'não existe mais neste texto.</p><p class="reanc">Guardado: “'+esc(d.cita||"")+'” · '+
     esc(d.livro||"")+(d.cap!=null?', capítulo '+(d.cap+1):'')+'.</p></div>';
   const rev=S.rever.indexOf(d.k)>-1,noC=S.canvasN.indexOf(d.k)>-1;
+  /* Cinco verbos de naturezas diferentes estavam na mesma fila com o mesmo
+     peso. Agora sao tres grupos separados por filete vertical: o que abre,
+     o que muda o estado da nota, e o que a destroi — este ultimo sozinho,
+     no fim. */
   h+='<div class="acs acsN">'+
     (tr?'<button class="pri" data-a="nota-origem" data-v="'+d.k+'">Abrir no livro</button>':'')+
     '<button class="'+(tr?"sec":"pri")+'" data-a="nota-editar" data-v="'+d.k+'">Editar</button>'+
+    '<span class="di"></span>'+
     '<button class="sec" data-a="levar" data-v="'+d.k+'">'+
-      (d.levada?"Tirar do Conhecimento":"Levar para o Conhecimento")+'</button>'+
+      /* explicito ganha de curto num gesto que a pessoa esta aprendendo:
+         "trazer para ca" nao diz para onde, se voce ja esta ca. */
+      (d.levada?"Tirar do Conhecimento":"Levar ao Conhecimento")+'</button>'+
     '<button class="sec" data-a="nota-canvas" data-v="'+d.k+'">'+
-      (noC?"já está no Canvas":"Levar ao Canvas")+'</button>'+
-    (S.voltarCanvas?'<button class="sec" data-a="ir" data-v="canvas">‹ voltar ao Canvas</button>':'')+
+      (noC?"no Canvas":"P\u00f4r no Canvas")+'</button>'+
     '<button class="sec" data-a="nota-rever" data-v="'+d.k+'">'+
-      (rev?"tirar de para revisar":"marcar para revisar")+'</button>'+
+      (rev?"n\u00e3o revisar":"Revisar depois")+'</button>'+
+    (S.voltarCanvas?'<span class="di"></span><button class="sec" data-a="ir" data-v="canvas">\u2039 voltar ao Canvas</button>':'')+
     '<span class="sp" style="flex:1"></span>'+
     '<button class="sec -dan" data-a="nota-apagar" data-v="'+d.k+'">apagar</button></div>';
-  h+=secTags(d);
-  h+=secConceitos(d);
+  /* Tags e Conceitos sao a MESMA pergunta — "como voce classifica isto" — e
+     estavam separadas por 60px, o mesmo vao que separava tudo do resto. Com
+     tudo a mesma distancia, nada agrupa. Agora sao um bloco, com respiro
+     interno menor que o externo. */
+  h+='<div class="bloco"><div class="soltoE">Como voc\u00ea classifica</div>'+
+    secTags(d)+secConceitos(d)+'</div>';
   h+=secRelacoes(d);
   return h+'</div></div>';
 }
@@ -4143,7 +4236,7 @@ function vNota(){
    recorta a lista. Se ela tivesse pagina, seria um conceito com outro nome. */
 function secTags(d){
   const ts=d.tags||[];
-  let h='<div class="conc tagS"><div class="soltoE">Tags</div>';
+  let h='<div class="conc tagS"><span class="sublbl">Tags</span>';
   h+='<div class="cchips">'+ts.map(t=>'<span class="cchip -tag">'+
       '<button class="ir" data-a="tag-ver" data-v="'+esc(t)+'">#'+esc(t)+'</button>'+
       '<button data-a="tag-tirar" data-v="'+esc(t)+'|'+d.k+'" aria-label="Tirar #'+esc(t)+
@@ -4169,12 +4262,12 @@ function secTags(d){
 function secConceitos(d){
   const meus=S.terr.filter(t=>t.notas.indexOf(d.k)>-1);
   const outros=S.terr.filter(t=>t.notas.indexOf(d.k)<0);
-  let h='<div class="conc"><div class="soltoE">Conceitos</div>';
+  let h='<div class="conc"><span class="sublbl">Conceitos</span>';
   if(meus.length)
     h+='<div class="cchips">'+meus.map(t=>'<span class="cchip">'+esc(t.nome)+
       '<button data-a="conc-tirar" data-v="'+esc(t.id)+'|'+d.k+'" aria-label="Tirar de '+
       esc(t.nome)+'">\u2715</button></span>').join("")+'</div>';
-  else h+='<p class="relX">Esta nota ainda n\u00e3o est\u00e1 em nenhum conceito.</p>';
+  /* narrar a ausencia nao ajuda: o botao ja diz que nao ha nenhum. */
   if(S.concNova===d.k)
     h+='<div class="nomeia"><label for="nomeConc">Como voc\u00ea chama esta ideia?</label>'+
       '<input id="nomeConc" class="campoB" placeholder="Observa\u00e7\u00e3o como sistema" autocomplete="off">'+
@@ -4198,9 +4291,7 @@ function secConceitos(d){
    duas dependem de a maquina ter percebido alguma coisa primeiro. A ligacao
    mais valiosa e justamente a que ela nunca acharia. */
 function ligarOutra(d){
-  if(S.conectando!==d.k)
-    return '<div class="acs acsLig"><button class="sec" data-a="conectar" data-v="'+d.k+
-      '">+ Conectar outra nota</button></div>';
+  if(S.conectando!==d.k)return "";   /* o botao subiu para o cabecalho do bloco */
   const q=(S.qConectar||"").toLowerCase().trim();
   const ja={};S.rel.forEach(r=>{if(r.indexOf(d.k)>-1)ja[r[0]===d.k?r[1]:r[0]]=1;});
   const cand=S.dst.filter(x=>x.k!==d.k&&x.nota&&!ja[x.k])
@@ -4219,14 +4310,19 @@ function ligarOutra(d){
 }
 function secRelacoes(d){
   const rs=relacoesDe(d.k);
-  if(!rs.length)return '<div class="soltoE">Relacionadas</div>'+
-    '<p class="vazioN">Nada parecido com esta nota ainda. Quando outra nota sua usar as mesmas '+
-    'palavras, ela aparece aqui.</p>';
+  if(!rs.length)return '<div class="bloco rels"><div class="cabB"><div class="soltoE">Relacionadas</div>'+
+    '<button class="sec" data-a="conectar" data-v="'+d.k+'">+ Conectar outra nota</button></div>'+
+    ligarOutra(d)+
+    '<p class="vazioN">Nenhuma ainda. Quando outra nota sua usar as mesmas palavras, ela aparece '+
+    'aqui sozinha \u2014 e voc\u00ea pode ligar duas \u00e0 m\u00e3o a qualquer momento.</p></div>';
   const g=t=>rs.filter(r=>r.tipo===t);
-  const bloco=(t,rot,exp)=>{
+  /* Os tres grupos sao SUBtitulos dentro de "Relacionadas", e nao tres
+     secoes irmas dela: com o mesmo peso, a pessoa lia quatro secoes onde ha
+     uma. E a frase que explicava o criterio saiu — ela e argumento meu, e
+     argumento meu mora no painel de notas. */
+  const bloco=(t,rot)=>{
     const l=g(t);if(!l.length)return "";
-    return '<div class="relG"><div class="soltoE">'+rot+'</div>'+
-      (exp?'<p class="relX">'+exp+'</p>':'')+
+    return '<div class="relG"><span class="sublbl">'+rot+'</span>'+
       '<div class="grupoE">'+l.map(r=>{
         const o=escK(r.k);if(!o)return "";
         const pal=r.termos.length?r.termos.map(x=>inteira(x,[d,o])).join(", "):"";
@@ -4237,18 +4333,23 @@ function secRelacoes(d){
         const nova=S.novaRel&&S.novaRel.indexOf(d.k)>-1&&S.novaRel.indexOf(r.k)>-1;
         return '<div class="cit'+(nova?" -subiu":"")+'"><p class="-nota"><button class="abre" data-a="nota-abrir" data-v="'+
           r.k+'">'+esc(o.nota)+'</button></p>'+
-          '<cite>'+esc(o.livro||"sem livro")+(pal?' · em comum: '+esc(pal):'')+'</cite>'+
+          '<cite>'+esc(o.livro||"sem livro")+
+          (pal?' · as duas falam de “'+esc(pal)+'”':'')+'</cite>'+
           '<div class="acs">'+(t==="sua"
             ?'<button class="sec" data-a="nota-desligar" data-v="'+d.k+'|'+r.k+'">desfazer a ligação</button>'
-            :'<button class="sec" data-a="nota-ligar" data-v="'+d.k+'|'+r.k+'">ligar de verdade</button>'+
+            :'<button class="sec" data-a="nota-ligar" data-v="'+d.k+'|'+r.k+'">Confirmar a ligação</button>'+
              '<button class="sec sob" data-a="nota-naorel" data-v="'+d.k+'|'+r.k+'">não tem a ver</button>')+
           '</div></div>';
       }).join("")+'</div></div>';
   };
-  return '<div class="rels">'+ligarOutra(d)+
-    bloco("sua","Você ligou","Ligação sua. O Mekora não teria achado esta: as duas notas não repetem nenhuma palavra.")+
-    bloco("forte","Parecem próximas","Usam mais de uma palavra em comum.")+
-    bloco("possivel","Talvez","Uma palavra em comum. Pode não ser nada.")+
+  /* uma legenda so para os tres grupos, no cabecalho, em vez de uma frase
+     explicando o algoritmo dentro de cada um. */
+  return '<div class="bloco rels"><div class="cabB"><div class="soltoE">Relacionadas</div>'+
+    '<button class="sec" data-a="conectar" data-v="'+d.k+'">+ Conectar outra nota</button></div>'+
+    ligarOutra(d)+
+    bloco("sua","Você ligou")+
+    bloco("forte","Parecem próximas")+
+    bloco("possivel","Talvez")+
     '</div>';
 }
 /* ═══════════════════════════════════════════════════════════════════
@@ -4364,11 +4465,14 @@ function trilhaDe(ns) {
 /* itens: [rotulo, acao, valor]. O ultimo e onde voce esta, e nao e link —
    um link para a pagina atual e um convite a recarregar. */
 function migalhas(itens){
-  return '<nav class="migl" aria-label="Onde voc\u00ea est\u00e1">'+itens.map((x,i)=>
-    i===itens.length-1
+  /* O que decide se e link nao e a POSICAO, e ter acao: na pagina de uma
+     nota o ultimo item da migalha e o conceito PAI, e ele precisa levar de
+     volta. Antes o ultimo era sempre inerte, e a volta ao conjunto sumia. */
+  return '<nav class="migl" aria-label="Onde voce esta">'+itens.map((x,i)=>
+    (!x[1]
       ? '<span aria-current="page">'+esc(x[0])+'</span>'
       : '<button data-a="'+x[1]+'"'+(x[2]!=null?' data-v="'+esc(x[2])+'"':'')+'>'+
-        esc(x[0])+'</button><i>\u203a</i>').join("")+'</nav>';
+        esc(x[0])+'</button>')+(i<itens.length-1?'<i>›</i>':'')).join("")+'</nav>';
 }
 const curto=(t,n)=>{t=(t||"").trim();return t.length>n?t.slice(0,n).replace(/[ ,;.]+$/,"")+"\u2026":t;};
 function vConceito() {
@@ -6410,7 +6514,12 @@ function roteia(a,v,el){
     case "conectar":S.conectando=v||null;S.qConectar="";break;
     case "linha-menu":S.linhaMenu=S.linhaMenu===v?null:v;break;
     case "nota-filtro":S.nfiltro=v;break;
-    case "nota-abrir":S.lugar="nota";S.notaK=v;S.notaAberta=null;break;
+    case "nota-abrir":{
+      /* trocar de nota DENTRO do conjunto mantem o conjunto; entrar de fora
+         monta um novo. Sem isso, "proxima" perderia a fila na primeira vez. */
+      const dentro=S.conj&&S.conj.lista.indexOf(v)>-1&&S.lugar==="nota";
+      if(!dentro)S.conj=conjuntoDaqui();
+      S.lugar="nota";S.notaK=v;S.notaAberta=null;break;}
     case "nota-editar":S.notaAberta=v;S.rasc[v]=escK(v)?escK(v).nota:"";break;
     /* uma nota solta nasce já aberta para escrita: ela não tem trecho para
        mostrar, e uma tela com um traço e um botão seria só uma parada. */
@@ -6930,6 +7039,71 @@ de notas à direita cabe inteiro na margem que já está vazia — <b>ele não c
 O trilho de biblioteca à esquerda é outra história: ele custa largura de verdade e compra pouco,
 porque a Estante está a um clique e ninguém troca de livro no meio de um parágrafo.</p>
 <p>Então: painel da direita sim, recolhido por padrão e fora do modo Foco; trilho da esquerda não.</p>
+
+<h3>A crítica da página de uma nota, e o que ela mediu</h3>
+<p>Rodada pelo método do <b>Design Critique</b> (interface-craft), que exige contagem e proíbe
+prescrição sem justificativa. O pacote não está nesta máquina — está no Mac —, então segui o método
+a partir do registro em <span class="mono">docs/references/interface-craft-2026-08-12.md</span>, e
+não a skill em si.</p>
+<table><thead><tr><th>O que foi medido</th><th>Antes</th><th>Agora</th></tr></thead><tbody>
+<tr><td class="n">Cabeçalhos de seção (todos com um único estilo)</td><td><b>4</b></td><td><b>2</b></td></tr>
+<tr><td class="n">Vãos de 60px idênticos e seguidos</td><td><b>3</b></td><td>2, e agora separam blocos</td></tr>
+<tr><td class="n">Altura da coluna</td><td>1363 px</td><td>1145 px</td></tr>
+<tr><td class="n">A migalha repete o título</td><td><b>sim</b></td><td>não</td></tr>
+<tr><td class="n">Frases que explicam o algoritmo dentro do conteúdo</td><td><b>2</b></td><td><b>0</b></td></tr>
+<tr><td class="n">Textos abaixo de 4,5:1</td><td>0</td><td>0</td></tr>
+</tbody></table>
+<p><b>Três vãos de 60px seguidos e idênticos era o defeito estrutural.</b> Quatro seções à mesma
+distância umas das outras não formam grupos — formam pilha. Agora 60 separa <i>bloco</i> e 20 separa
+o que está <i>dentro</i> de um: Tags e Conceitos viraram “Como você classifica”, e Conectar entrou no
+cabeçalho de “Relacionadas” em vez de flutuar sozinho entre dois vazios.</p>
+
+<h3>A orientação — e uma regra minha que estava errada</h3>
+<p>A reclamação foi <i>“é fácil se perder dentro dos grupos, não dá pra entender onde você está e por
+que está lá”</i>. Medido, entrando numa nota por três caminhos diferentes:</p>
+<ul>
+<li>vindo de um <b>conceito</b>: nenhuma menção ao conceito, nenhuma volta para ele, nenhum vizinho;</li>
+<li>vindo de um <b>recorte de duas notas</b>: a faixa do recorte não acompanhava — o estado sobrevivia
+e voltar restaurava, mas a tela não dizia;</li>
+<li>a migalha era <b>idêntica nos três casos</b>.</li>
+</ul>
+<p>Ontem eu registrei aqui: <i>“a migalha diz onde a coisa mora, e não por onde você passou”</i>.
+<b>Essa regra está errada para lista→detalhe.</b> Ela vale para hierarquia estável — uma pasta dentro
+de outra. Numa lista, “por que estou aqui” faz parte de “onde estou”, e separar as duas deixou a
+segunda sem dono nenhum.</p>
+<p>O conserto não foi trocar uma pela outra. O <b>conjunto</b> passou a ser estado explícito, montado
+no clique — quem sabe de onde você veio é o lugar de onde você clicou. A nota mostra
+<b>“Em Observação como sistema · 3 de 6 · ‹ anterior · próxima ›”</b>, e a migalha reflete o conjunto:
+<span class="mono">Conhecimento › Ideias › Observação como sistema</span>, com o último item clicável
+de volta. Trocar de nota dentro do conjunto mantém a fila; entrar de fora monta uma nova.</p>
+<p>E a migalha parou de repetir o título: ela termina no <b>pai</b>. O último item era o começo do H1
+truncado, dois centímetros acima do próprio H1.</p>
+
+<h3>A copy</h3>
+<ul>
+<li><b>“Ligação sua. O Mekora não teria achado esta: as duas notas não repetem nenhuma palavra.”</b> e
+<b>“Uma palavra em comum. Pode não ser nada.”</b> saíram. É argumento meu, e argumento meu mora aqui.
+Os três grupos viraram subtítulos de “Relacionadas” em vez de quatro seções irmãs.</li>
+<li><b>“em comum: padrão”</b> → <i>“as duas falam de ‘padrão’”</i>. Telegrama vira frase.</li>
+<li><b>“ligar de verdade”</b> → <i>“Confirmar a ligação”</i>. Versus ligar de mentira?</li>
+<li><b>“Esta nota ainda não está em nenhum conceito.”</b> saiu: o botão já diz isso. Narrar ausência
+não é ajudar.</li>
+<li><b>“Escrita aqui, sem livro”</b> → <i>“Escrita aqui”</i>. “Sem livro” já estava dito por “aqui”.</li>
+<li>Cinco verbos de naturezas diferentes na mesma fila com o mesmo peso ganharam filete: o que abre,
+o que muda o estado, e o que destrói — este sozinho, no fim.</li>
+</ul>
+
+<h3>O que eu não consertei, e por quê</h3>
+<ul>
+<li><b>Cinco pesos de controle na mesma página.</b> Contei e deixei: eles correspondem a cinco coisas
+de fato diferentes (ação primária, ação secundária, chip, rótulo, e o texto de uma nota que é porta).
+Reduzir por estética faria duas delas mentirem sobre a própria natureza.</li>
+<li><b>A página continua alta para uma nota solta.</b> Sem trecho de origem, sobram título, metadata,
+ações e dois blocos quase vazios. Isso é honesto — a nota solta tem menos —, mas provavelmente pede
+um arranjo próprio, e isso é outra rodada.</li>
+<li><b>Nada foi visto a 390</b>, e a faixa do conjunto com “anterior/próxima” é justamente o tipo de
+coisa que quebra primeiro lá.</li>
+</ul>
 
 <h3>O portão do “levar”, e o nome que ele obriga a mudar</h3>
 <p>A tese é sua, e estava escrita no protótipo da área pessoal desde 11 de agosto: <i>“O que chega
