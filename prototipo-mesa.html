@@ -1302,8 +1302,24 @@ td.n{color:var(--ink);font-weight:600}
 .grupoE cite{font-family:var(--mono);font-size:10px;letter-spacing:.07em;color:var(--ink-3);
   font-style:normal;display:block;margin-top:6px}
 /* o degrau de papel: o trecho esta DENTRO, e o fundo diz isso sem borda */
-.grupoE .cit{position:relative;background:var(--bg-2);padding:var(--s3) var(--s6) var(--s3) var(--s4);
-  margin-top:var(--s4)}
+/* O CHAO MUDA DE LADO. O degrau de papel marcava a CITACAO, e por isso a
+   frase do autor pesava mais do que a sua — medido: pai sem fundo, filho
+   com fundo branco. Agora o chao e do conteudo, e a citacao volta a ser
+   marcada como citacao sempre foi: filete e italico. */
+/* padrao: um item da lista E conteudo, e conteudo tem chao. A excecao e o
+   trecho sem nota — citacao pura —, que troca chao por filete.
+   Sem inverter assim, a especificidade de :has() fazia a excecao vencer a
+   regra do filho, e todo mundo acabava com o mesmo fundo. */
+.grupoE .cit{position:relative;padding:var(--s3) var(--s6) var(--s3) var(--s4);
+  margin-top:var(--s4);background:var(--bg-2)}
+.grupoE .cit:not(:has(>p.-nota)){background:none;border-left:1px solid var(--line-2)}
+/* A CABECA DO GRUPO GANHA O CHAO, e o que esta guardado sob ela recua e
+   troca chao por filete. Antes era o contrario — a cabeca sem fundo e o
+   filho com fundo branco —, e o grupo lia de tras para a frente. */
+.grupoE .cab{background:var(--bg-2);padding:var(--s3) var(--s6) var(--s3) var(--s4)}
+.grupoE:has(>.cab) .cit{background:none;border-left:1px solid var(--line-2);
+  margin-left:var(--s5)}
+.grupoE:has(>.cab) .cit>p.-nota{font-size:1rem;line-height:1.55}
 .grupoE .cit>p{margin:0;font-family:var(--serif);font-size:15px;line-height:1.6;color:var(--ink-2)}
 .grupoE .cit>p.-nota{font-size:var(--t-leitura);line-height:var(--lh-leitura);color:var(--ink)}
 /* a coluna larga serve a estrutura da pagina, e nao a linha de texto */
@@ -1394,11 +1410,21 @@ td.n{color:var(--ink);font-weight:600}
 .ideia .comoD p{font-size:12px;color:var(--ink-3);line-height:1.65;margin:var(--s3) 0 0;max-width:56ch}
 /* ═══ UMA NOTA ═══ */
 .volt{padding:0;margin-bottom:var(--s5);display:inline-block}
-.notaG{font-family:var(--serif);font-size:1.35rem;line-height:1.5;color:var(--ink);
-  margin:0;max-width:44ch}
+/* 1,35rem contra 1,16rem das relacionadas davam 17% de diferenca entre "o
+   assunto desta pagina" e "uma referencia de apoio". Hierarquia e distancia,
+   e 17% nao e distancia. */
+.notaG{font-family:var(--serif);font-size:1.9rem;line-height:1.32;color:var(--ink);
+  margin:0;letter-spacing:-.01em;background:var(--bg-2);
+  padding:var(--s5);box-sizing:border-box}
+.notaG+.ondeN{margin-top:var(--s4)}
 .ondeN{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.07em;color:var(--ink-3);
   margin:var(--s4) 0 0}
-.trechoN{background:var(--bg-2);padding:var(--s4);margin-top:var(--s5)}
+/* a nota ficou com o chao, entao a citacao volta a ser marcada como citacao:
+   filete e italico. Duas coisas com o mesmo fundo na mesma tela e o mesmo
+   problema de antes, invertido. */
+.trechoN{background:none;border-left:2px solid var(--line-3);
+  padding:0 0 0 var(--s4);margin-top:var(--s5)}
+.trechoN p{font-style:italic}
 .trechoN p{font-family:var(--serif);font-size:15px;line-height:1.65;color:var(--ink-2);margin:0}
 .trechoN .volta{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--ink-3);
   display:block;margin-top:var(--s3);text-align:left}
@@ -1426,7 +1452,10 @@ td.n{color:var(--ink);font-weight:600}
 /* a fila de relacoes nao precisa de respiro de bloco: ela e uma acao por
    item, e nao uma decisao. */
 .rels .grupoE .cit .acs{margin-top:var(--s2)}
-.rels .grupoE .cit{padding-bottom:var(--s3)}
+.rels .grupoE .cit{padding-bottom:var(--s3);background:none;border-left:1px solid var(--line-2)}
+/* dentro de Relacionadas, uma nota e REFERENCIA e nao conteudo: ela encolhe
+   para nao competir com o assunto da pagina. */
+.rels .grupoE .cit>p.-nota{font-size:.95rem;line-height:1.55;max-width:52ch}
 /* o conceito e um rotulo, e rotulo tem forma de rotulo: nem card, nem
    linha de lista. E o unico lugar do produto com canto arredondado — nao
    tem: raio zero aqui tambem, porque a excecao custaria a regra. */
@@ -1552,7 +1581,11 @@ td.n{color:var(--ink);font-weight:600}
 .relG{margin-top:var(--s5)}
 .relG:first-of-type{margin-top:var(--s3)}
 .relX{font-size:12px;color:var(--ink-3);line-height:1.6;margin:0 0 var(--s4);max-width:56ch}
-.relG .grupoE .cit{background:var(--bg-2)}
+/* dentro de Relacionadas o item e REFERENCIA: filete, e nao chao. O chao
+   agora e da nota que a pagina trata. */
+/* dois filetes empilhados marcavam a MESMA coisa: em Relacionadas o grupo
+   e a nota. Fica o de fora, que alinha com a margem da pagina. */
+.relG .grupoE .cit{background:none;border-left:0;padding-left:0}
 /* ═══ CONEXÕES ═══ */
 .dirNav{display:flex;gap:var(--s5);margin-top:var(--s5);padding-bottom:var(--s3);
   border-bottom:1px solid var(--line-2)}
@@ -1771,7 +1804,7 @@ td.n{color:var(--ink);font-weight:600}
 .pit .pn{font-family:var(--mono);font-size:10px;letter-spacing:.07em;color:var(--ink-3);
   min-width:26px}
 .pit b{background:var(--bg-3);font-weight:600;color:var(--ink)}
-.pit .lix{float:right;font-family:var(--ui);font-size:var(--t-peq);color:var(--ink-3);padding:2px 4px}
+.pit .lix{font-family:var(--ui);font-size:var(--t-peq);color:var(--ink-3);padding:2px 4px}
 .pit .lix:hover{color:var(--dan)}
 /* MARCADOR: o mesmo peso de "escrever sobre este capitulo" — sao dois gestos
    sobre o capitulo, e nenhum e mais importante que o outro. */
@@ -1792,10 +1825,27 @@ td.n{color:var(--ink);font-weight:600}
   border-radius:0}
 .plabas button:hover{color:var(--ink)}
 .plabas button[aria-current]{color:var(--ink);font-weight:600;border-bottom-color:var(--ink)}
-.plabas button i{font-family:var(--mono);font-style:normal;font-size:10px;color:var(--ink-3);
-  letter-spacing:.05em;margin-left:3px}
+/* o numero embaixo do rotulo fazia cada aba ocupar TRES linhas num painel de
+   340px. Ao lado, e nao embaixo — e num tamanho que nao disputa. */
+.plabas{gap:var(--s3)}
+.plabas button{display:inline-flex;align-items:baseline;gap:4px;white-space:nowrap}
+.plabas button i{font-family:var(--mono);font-style:normal;font-size:9.5px;color:var(--ink-4);
+  letter-spacing:.04em;margin:0}
+.plabas button[aria-current] i{color:var(--ink-3)}
+/* A busca era o elemento mais pesado de um painel onde ela e o menos
+   importante: caixa de 29px de altura na largura toda. Vira um filete. */
+.plbusca .campoN{border:0;border-bottom:1px solid var(--line);background:none;
+  padding:5px 0;font-size:12.5px}
+.plbusca .campoN:focus{outline:0;border-bottom-color:var(--ink)}
 .plista{display:block}
-.pit{padding:var(--s3) 0;border-bottom:1px solid var(--line-2)}
+/* o float jogava "tirar" para a linha DEPOIS do item, e ele aparecia
+   sozinho a 250px do que remove. Em duas colunas ele volta para junto do
+   titulo. A coluna 1 e declarada em .pit>* para que um filho novo caia no
+   texto, e nao na coluna da acao. */
+.pit{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:var(--s3);
+  align-items:start;padding:var(--s3) 0;border-bottom:1px solid var(--line-2)}
+.pit>*{grid-column:1;min-width:0}
+.pit>.lix{grid-column:2;grid-row:1}
 .pit:last-child{border-bottom:0}
 .pit .abre{display:block;width:100%;text-align:left;font-family:var(--serif);font-size:14px;
   line-height:1.55;color:var(--ink);padding:0;border-radius:0}
