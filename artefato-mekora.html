@@ -813,7 +813,13 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .mfoco h2{font-family:var(--serif);font-size:clamp(1.5rem,1.1rem + 1vw,2.1rem);line-height:1.1;
   letter-spacing:-.02em;font-weight:400;margin:0 0 var(--s3)}
 .mfoco .onde{font-size:15px;line-height:1.6;color:var(--ink);margin:0 0 var(--s2)}
-.mfoco .desde{font-size:13.5px;line-height:1.6;color:var(--ink-3);margin:0 0 var(--s5)}
+.mfoco .desde{font-size:13.5px;line-height:1.6;color:var(--ink-3);margin:0 0 var(--s2)}
+/* a fila e outro assunto que este livro: respiro maior antes das acoes, e um
+   filete acima para dizer que o que vem depois nao e sobre ele. */
+.mfoco .mfila{font-size:13px;line-height:1.6;color:var(--ink-3);margin:var(--s4) 0 var(--s5);
+  padding-top:var(--s3);border-top:1px solid var(--line-2)}
+.mfoco .mfila .lnk{padding:0;font-size:13px;color:var(--ink-2)}
+.mfoco .mfila .lnk:hover{color:var(--acc)}
 /* 2 · exceção — chama atenção, e só existe quando existe */
 .mexc{border-top:1px solid var(--line);padding-top:var(--s4);margin-bottom:var(--s7)}
 .mexc .cab{display:flex;align-items:baseline;gap:var(--s3);margin-bottom:var(--s4)}
@@ -3254,8 +3260,23 @@ function mesaReduzida(){
     h+='<div class="mfoco"><img src="'+capa(l.capa)+'" alt="Capa de '+esc(l.titulo)+'">'+
       '<div><span class="meyebrow">Continue</span>'+
       '<h2>'+esc(l.titulo)+'</h2>'+
-      '<p class="onde">Você parou na página 84.</p>'+
-      '<p class="desde">3 notas desde a última leitura · '+esc(l.autor)+'</p>'+
+      /* os dois numeros saem do acervo. Escritos a mao, eles diziam "pagina 84"
+         e "3 notas" sobre um livro que o acervo diz estar em 34% com 14 — duas
+         telas discordando sobre o mesmo objeto. E pagina nao se guarda: ela
+         muda quando a fonte muda, e esta regra ja estava escrita aqui. */
+      (function(){const b=noAcervo(l.titulo);
+        return '<p class="onde">Você parou em '+(b?b.prog:0)+'%.</p>'+
+          '<p class="desde">'+(b&&b.nn?b.nn+' nota'+(b.nn>1?'s':'')+' neste livro · ':'')+
+          esc(l.autor)+'</p>';})()+
+      /* A porta para a Fila. Ela fica FORA da linha de ações porque não é mais
+         uma coisa para fazer com este livro — é o resto da leitura, que é outro
+         assunto. E aparece sempre: sem ela, quem tem um livro só nunca descobre
+         que a fila existe. */
+      (function(){const o=ACERVO.filter(b=>estadoDe(b)==="lendo"&&b.t!==l.titulo).length;
+        return '<p class="mfila">'+(o
+          ? 'Mais '+numM(o)+' aberto'+(o>1?'s':'')+' · '
+          : 'Só este aberto · ')+
+          '<button class="lnk" data-a="ir-fila">ver a fila →</button></p>';})()+
       '<div class="acoes" style="margin:0"><button class="btnO forte" data-a="ir" data-v="leitura">'+
       'Continuar lendo →</button><button class="lnk mudo" data-a="ir-livro" data-v="'+esc(l.titulo)+'#notas">Ver as notas</button></div>'+
       '</div></div>';
@@ -6906,6 +6927,9 @@ function roteia(a,v,el){
     /* COLECAO e do acervo: um conjunto de LIVROS que voce juntou de proposito.
        Nao e conceito (que agrupa notas) nem territorio (que ninguem juntou). */
     case "est-filtrar":S.fEstudo=S.fEstudo===v?null:v;break;
+    /* a Mesa diz onde voce parou; a Fila diz o que vem depois. Um item contra
+       uma lista, e por isso a porta e um link e nao um bloco repetido. */
+    case "ir-fila":S.lugar="estante";S.estante="fila";S.fEstante="tudo";S.fEstudo=null;break;
     case "est-filtrar-ir":S.lugar="estante";S.estante="lista";S.fEstudo=v;S.fEstante="tudo";break;
     /* por e tirar sao o mesmo gesto invertido, e por isso o mesmo botao */
     case "est-livro":{

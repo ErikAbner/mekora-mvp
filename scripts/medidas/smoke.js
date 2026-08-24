@@ -13,7 +13,11 @@
   /* cada filtro da estante e um caminho proprio, e eles acabaram de mudar */
   const fEst=["tudo","lendo","novo","nota","kindle","quadrinho"];
   const feito=[];
+  /* COM E SEM CONTA. Sem isto a Mesa nunca era montada: vMesa() devolve
+     mesaNova() enquanto S.conta e false, que e o padrao do estado zero. */
+  for(const conta of [false,true])
   for(const l of lugares)for(const f of folhas){
+    S.conta=conta;
     try{
       S.lugar=l;S.folha=f;S.dentro=(l==="leitura");
       if(l==="nota")S.notaK=S.dst.filter(d=>d.nota)[0].k;
@@ -22,15 +26,56 @@
           notas:g.notas.map(d=>d.k),sua:false}]:[];
         S.estK=g?g.id:"nao-existe";}
       pinta();
-      feito.push(l+"/"+(f||"-")+":"+document.body.innerHTML.length);
-    }catch(e){erros.push(l+"/"+f+" -> "+e.message);}
+      feito.push((conta?"":"sem-conta/")+l+"/"+(f||"-")+":"+document.body.innerHTML.length);
+    }catch(e){erros.push((conta?"":"sem-conta/")+l+"/"+f+" -> "+e.message);}
   }
   for(const fe of fEst){
     try{S.lugar="estante";S.folha=null;S.fEstante=fe;S.fColecao=null;pinta();
       feito.push("estante/"+fe+":"+document.body.innerHTML.length);}
     catch(e){erros.push("estante/"+fe+" -> "+e.message);}
   }
-  S.fEstante="tudo";
+  S.fEstante="tudo";S.conta=true;
+  /* AS VARIANTES DA MESA. Cinco desenhos diferentes do mesmo lugar, e nenhum
+     deles tinha caso: a Mesa inteira estava fora da cobertura. */
+  try{
+    for(const v of ["reduzida","atual","a","b","c"])
+      for(const e of ["com-pendencia","sem-pendencia","novo","vazio"]){
+        S.lugar="mesa";S.cena="trabalho";S.mesaVar=v;S.mesaEstado=e;S.folha=null;pinta();
+        feito.push("mesa/"+v+"/"+e+":"+document.body.innerHTML.length);
+      }
+    S.mesaVar="reduzida";S.mesaEstado="com-pendencia";
+  }catch(e){erros.push("variantes da mesa -> "+e.message);}
+  /* A PORTA DA MESA PARA A FILA. Dois textos, e o segundo e o que some se
+     alguem achar que o link so faz sentido com varios abertos: quem tem um
+     livro so e justamente quem nunca descobriu que a fila existe. */
+  try{
+    const antes=ACERVO.map(b=>b.prog);
+    S.conta=true;S.lugar="mesa";S.cena="trabalho";S.mesaVar="reduzida";
+    S.mesaEstado="com-pendencia";S.folha=null;pinta();
+    const diz=()=>{const e=document.querySelector(".mfoco .mfila");
+      return e?e.innerText.replace(/\s+/g," ").trim():"";};
+    if(!/ver a fila/.test(diz()))erros.push("mesa: o bloco Continue perdeu a porta para a Fila");
+    feito.push("mesa/porta-para-a-fila:"+document.body.innerHTML.length);
+    /* um livro aberto so */
+    ACERVO.forEach(b=>{if(estadoDe(b)==="lendo"&&b.t!=="Estudo de Viabilidade")b.prog=0;});
+    pinta();
+    if(!/Só este aberto/.test(diz()))erros.push("mesa: com um livro so, a porta nao diz o estado certo — "+diz());
+    feito.push("mesa/porta-um-livro-so:"+document.body.innerHTML.length);
+    ACERVO.forEach((b,k)=>b.prog=antes[k]);pinta();
+    /* e a porta leva mesmo para a Fila */
+    roteia("ir-fila","");
+    if(!(S.lugar==="estante"&&S.estante==="fila"))
+      erros.push("mesa: ir-fila nao chegou na Fila ("+S.lugar+"/"+S.estante+")");
+    feito.push("mesa/porta-chega-na-fila:"+document.body.innerHTML.length);
+    /* a Mesa nao pode voltar a discordar do acervo sobre o mesmo livro */
+    S.lugar="mesa";pinta();
+    const b=noAcervo("Estudo de Viabilidade");
+    const onde=document.querySelector(".mfoco .onde");
+    if(b&&onde&&onde.innerText.indexOf(b.prog+"%")<0)
+      erros.push("mesa: o Continue discorda do acervo — diz \""+onde.innerText.trim()+"\" e o acervo diz "+b.prog+"%");
+    feito.push("mesa/continue-concorda-com-o-acervo:"+document.body.innerHTML.length);
+    S.lugar="estante";S.estante="lista";
+  }catch(e){erros.push("porta da mesa -> "+e.message);}
   /* A FILA. Tres colunas derivadas de uma so propriedade (prog), e por isso
      tres extremos que a semente nao cobre: fila vazia, nada aberto, nada
      terminado. O quarto caso e a coluna "Li" estourando o corte de 4. */
