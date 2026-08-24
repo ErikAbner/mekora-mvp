@@ -35,6 +35,45 @@
     catch(e){erros.push("estante/"+fe+" -> "+e.message);}
   }
   S.fEstante="tudo";S.conta=true;
+  /* O QUE FICOU PELA METADE. A faixa e a unica coisa da entrada com acao
+     pendente, e o que ela conta muda com o estado do acervo: cada extremo
+     mostra uma versao diferente do cabecalho. */
+  try{
+    S.lugar="notas";S.nfiltro="estudos";S.folha=null;S.pautaAberta=false;pinta();
+    const cab=()=>{const e=document.querySelector(".pmcab");
+      return e?e.innerText.replace(/\s+/g," ").trim():"";};
+    if(!/QUE FICOU PELA METADE/.test(cab()))erros.push("entrada: a faixa de pendencia sumiu");
+    /* conta COISAS e nao linhas: o numero tem de bater com a soma */
+    const soma=pauta().reduce((a,x)=>a+x.n,0);
+    if(cab().indexOf(String(soma))<0)
+      erros.push("faixa: o numero nao e a soma das coisas — diz \""+cab()+"\" e a soma e "+soma);
+    feito.push("entrada/faixa-fechada:"+document.body.innerHTML.length);
+    S.pautaAberta=true;pinta();
+    feito.push("entrada/faixa-aberta:"+document.body.innerHTML.length);
+    S.pautaAberta=false;
+    /* nada pendente: a faixa some inteira em vez de dizer zero */
+    const antesL=S.dst.map(d=>d.levada),antesR=S.rel.slice(),antesN=S.naoRel.slice();
+    S.dst.forEach(d=>{if(d.nota)d.levada=true;});
+    S.dst.filter(d=>ancora(d)&&!d.nota).forEach(d=>{d.nota="x";d.levada=true;});
+    levadas().forEach(a=>levadas().forEach(b=>{if(a.k<b.k)S.rel.push([a.k,b.k]);}));
+    pinta();
+    feito.push("entrada/faixa-sem-pendencia:"+document.body.innerHTML.length);
+    S.dst.forEach((d,k)=>d.levada=antesL[k]);S.rel=antesR;S.naoRel=antesN;
+    S.dst=sementes();pinta();
+    /* "Para revisar" so existe quando ha nota marcada a mao */
+    S.nfiltro="todas";S.rever=[];pinta();
+    const abas=()=>[...document.querySelectorAll(".nfila2 button")]
+      .map(b=>b.innerText.replace(/\s+/g," ").trim());
+    if(abas().some(t=>/Para revisar/.test(t)))
+      erros.push("recorte: \"Para revisar\" aparece com zero notas marcadas");
+    feito.push("notas/sem-para-revisar:"+document.body.innerHTML.length);
+    S.rever=[levadas()[0].k];pinta();
+    if(!abas().some(t=>/Para revisar 1/.test(t)))
+      erros.push("recorte: marcou uma nota e \"Para revisar 1\" nao apareceu — "+abas().join(" | "));
+    S.nfiltro="rever";pinta();
+    feito.push("notas/para-revisar-com-uma:"+document.body.innerHTML.length);
+    S.rever=[];S.nfiltro="estudos";pinta();
+  }catch(e){erros.push("faixa de pendencia -> "+e.message);}
   /* AS VARIANTES DA MESA. Cinco desenhos diferentes do mesmo lugar, e nenhum
      deles tinha caso: a Mesa inteira estava fora da cobertura. */
   try{

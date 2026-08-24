@@ -2085,6 +2085,22 @@ td.n{color:var(--ink);font-weight:600}
 .migl button:hover{color:var(--ink);border-bottom-color:var(--ink)}
 .migl i{font-style:normal;color:var(--ink-4)}
 .migl [aria-current]{color:var(--ink)}
+/* A faixa do que ficou pela metade. Chao proprio e filete de aviso, porque ela
+   e a unica coisa da tela com acao pendente — mas UMA linha visivel, porque
+   quatro manchetes em serifa aqui virariam a lista de tarefas que esta area
+   deixou de ser. */
+.pmeio{background:var(--bg-2);border-left:2px solid var(--warn);
+  padding:var(--s3) var(--s5) var(--s3) var(--s4);margin-bottom:var(--s6)}
+.pmcab{display:flex;align-items:baseline;gap:var(--s2);margin-bottom:var(--s2)}
+.pmcab .lb{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink-3)}
+.pmcab .n{font-family:var(--mono);font-size:10px;color:var(--ink);font-weight:600}
+.pmcab .sp{flex:1}
+.pmcab button{font-size:12px;color:var(--ink-3);padding:0}
+.pmcab button:hover{color:var(--ink)}
+.pmeio .pit2{border-bottom:0;padding:var(--s2) 0}
+.pmeio .pit2+.pit2{border-top:1px solid var(--line-2)}
+.pmeio .pit2 .abre{font-size:1.05rem;line-height:1.45}
 .pauta{margin-top:var(--s5);border-left:2px solid var(--warn);padding-left:var(--s5)}
 .pauta>.soltoE{margin-top:0}
 .pit2{padding:var(--s3) 0;border-bottom:1px solid var(--line-2)}
@@ -2203,7 +2219,7 @@ const zero={
      mesmo escreveu, os territorios que voce nomeou e as ideias que dispensou.
      "rel" e "terr" sao seus; "ignoradas" existe porque uma sugestao que volta
      depois de dispensada deixa de ser sugestao e vira insistencia. */
-  nfiltro:"estudos",qNotas:"",qPergunta:"",pgComo:false,notaK:null,sumAba:"conteudo",qLivro:"",vista:"adaptado",conteudoVista:"capitulos",tagNova:null,fEstudo:null,relAberta:null,marcas:[{livro:"Diário 02",cap:2,dia:"9 ago"}],estK:null,redeAberta:false,renomeando:null,conj:null,listaVisivel:null,linhaMenu:null,recorteMotivo:null,conectando:null,qConectar:"",novaRel:null,rever:[],rel:[["n-solta-1","n-obs-1"]],
+  nfiltro:"estudos",qNotas:"",qPergunta:"",pgComo:false,notaK:null,sumAba:"conteudo",qLivro:"",vista:"adaptado",conteudoVista:"capitulos",tagNova:null,fEstudo:null,relAberta:null,pautaAberta:false,marcas:[{livro:"Diário 02",cap:2,dia:"9 ago"}],estK:null,redeAberta:false,renomeando:null,conj:null,listaVisivel:null,linhaMenu:null,recorteMotivo:null,conectando:null,qConectar:"",novaRel:null,rever:[],rel:[["n-solta-1","n-obs-1"]],
   estudos:[],ignoradas:[],comoIdeia:false,nomeando:null,estNova:null,canvasPos:{},cvModo:"mover",cvLigando:null,trazendo:false,voltarCanvas:false,naoRel:[],canvasN:[],mantidos:[],verEst:null,verEstId:null,
   sel:[],filtro:"todas",mud:[],fora:[],giradas:[],capaPag:1,
   disp:1,fonte:2,orient:"retrato",formato:"epub",nome:null,
@@ -2345,7 +2361,7 @@ const AJUDA=[
 let S=Object.assign({},zero),timer=null,ultimoLugar=null;
 function reset(cena){
   clearInterval(timer);timer=null;S=Object.assign({},zero);
-  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardandoNota=null;S.guardando=null;S.tirando=null;S.apagando=null;S.escNovo=null;S.paraLivro=false;S.desc="";S.descAberta=false;S.escAqui=null;S.aaAberto=false;S.foco=false;S.rever=[];S.rel=[["n-solta-1","n-obs-1"]];S.ignoradas=[];S.nomeando=null;S.estNova=null;S.comoIdeia=false;S.nfiltro="estudos";S.qNotas="";S.qPergunta="";S.pgComo=false;S.notaK=null;S.sumAba="conteudo";S.qLivro="";S.vista="adaptado";S.conteudoVista="capitulos";S.tagNova=null;S.estudos=sementeEstudos();S.fEstudo=null;S.relAberta=null;S.marcas=[{livro:"Diário 02",cap:2,dia:"9 ago"}];S.estK=null;S.redeAberta=false;S.renomeando=null;S.conj=null;S.listaVisivel=null;S.linhaMenu=null;S.recorteMotivo=null;S.conectando=null;S.qConectar="";S.novaRel=null;S.naoRel=[];S.canvasN=[];S.mantidos=[];S.verEst=null;S.verEstId=null;S.canvasPos={};S.cvModo="mover";S.cvLigando=null;S.trazendo=false;S.voltarCanvas=false;
+  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardandoNota=null;S.guardando=null;S.tirando=null;S.apagando=null;S.escNovo=null;S.paraLivro=false;S.desc="";S.descAberta=false;S.escAqui=null;S.aaAberto=false;S.foco=false;S.rever=[];S.rel=[["n-solta-1","n-obs-1"]];S.ignoradas=[];S.nomeando=null;S.estNova=null;S.comoIdeia=false;S.nfiltro="estudos";S.qNotas="";S.qPergunta="";S.pgComo=false;S.notaK=null;S.sumAba="conteudo";S.qLivro="";S.vista="adaptado";S.conteudoVista="capitulos";S.tagNova=null;S.estudos=sementeEstudos();S.fEstudo=null;S.relAberta=null;S.pautaAberta=false;S.marcas=[{livro:"Diário 02",cap:2,dia:"9 ago"}];S.estK=null;S.redeAberta=false;S.renomeando=null;S.conj=null;S.listaVisivel=null;S.linhaMenu=null;S.recorteMotivo=null;S.conectando=null;S.qConectar="";S.novaRel=null;S.naoRel=[];S.canvasN=[];S.mantidos=[];S.verEst=null;S.verEstId=null;S.canvasPos={};S.cvModo="mover";S.cvLigando=null;S.trazendo=false;S.voltarCanvas=false;
   if(cena==="nova"){S.cena="nova";}
   if(cena==="sem-conta"){S.cena="nova";S.conta=false;}
   pinta();
@@ -4181,11 +4197,9 @@ function pauta(){
   if(fortes.length)it.push({k:"fortes",n:fortes.length,
     t:fortes.length+" par"+(fortes.length>1?"es":"")+" que o Mekora achou parecido"+(fortes.length>1?"s":""),
     r:"Confirmar ou recusar leva um toque dentro da nota.",a:"rev-fortes"});
-  const semNome=ideias().filter(g=>S.ignoradas.indexOf(g.id)<0&&S.mantidos.indexOf(g.id)<0
-    &&!S.estudos.some(t=>t.id===g.id));
-  if(semNome.length)it.push({k:"semnome",n:semNome.length,
-    t:semNome.length+" assunto"+(semNome.length>1?"s":"")+" que se repetiu em livros diferentes e "+
-      "continua sem nome",r:"Nomear transforma a contagem em coisa sua.",a:"ir-ideias"});
+  /* "um assunto que continua sem nome" saiu daqui: o cartao "Talvez um estudo"
+     fica na MESMA tela, logo abaixo, dizendo a mesma coisa e com o material
+     junto. Duas telas mandando nomear o mesmo grupo era uma a mais. */
   const perdidas=S.dst.filter(d=>perdida(d));
   if(perdidas.length)it.push({k:"perdidas",n:perdidas.length,
     t:perdidas.length+" nota"+(perdidas.length>1?"s":"")+" cujo trecho sumiu do texto",
@@ -4236,7 +4250,10 @@ function vNotas(){
     (area==="notas"
       ?'<div class="nfila2">'+ab("todas","Todas",F.todas.length)+
         ab("livros","De livros",F.livros.length)+ab("soltas","Soltas",F.soltas.length)+
-        ab("rever","Para revisar",P.length+F.rever.length)+'</div>'
+        /* conta NOTAS, porque agora o recorte e mesmo so de notas. E some quando
+         nao ha nenhuma: recorte que sempre devolve zero e ruido permanente,
+         regra que ja vale nos filtros da Estante. */
+      (F.rever.length?ab("rever","Para revisar",F.rever.length):'')+'</div>'
       :'');
 
   /* veio do Canvas para escolher: a tela diz para que serve o proximo toque,
@@ -4254,15 +4271,11 @@ function vNotas(){
      estourava ao ser aberta. */
   else if(f==="estudos")return h+vEstudos()+'</div></div>';
   else if(f==="pergunta")return h+vPergunta()+'</div></div>';
-  if(f==="rever"&&!q&&P.length)
-    h+='<div class="pauta"><div class="soltoE">O que ficou pela metade</div>'+
-      P.map(x=>'<div class="pit2"><p><button class="abre" data-a="'+x.a+'" data-v="'+
-        esc(x.v||x.k)+'">'+esc(x.t)+'</button></p><cite>'+x.r+'</cite></div>').join("")+
-      '</div>';
+  /* a pauta subiu para o topo da entrada: ela e sobre o produto inteiro —
+     livro, relacoes, notas —, e nao um recorte desta lista. */
   if(!vis.length)
     h+='<p class="vazioN">'+(q?'Nada com “'+esc(q)+'”.':
-      f==="rever"?(P.length?'Nenhuma nota marcada à mão. Dentro de uma nota, <b>marcar para revisar</b> guarda ela aqui.'
-        :'Nada pendente. Nem pauta do material, nem nota marcada por você.'):
+      f==="rever"?'Nenhuma nota marcada à mão. Dentro de uma nota, <b>marcar para revisar</b> guarda ela aqui.':
       f==="soltas"?'Nenhuma nota solta. Uma nota solta nasce fora de um livro — de uma conversa, de um susto, de nada.':
       'Nada escrito ainda.')+'</p>';
   else {S.listaVisivel=vis.map(d=>d.k);h+=listaNotas(vis);}
@@ -4349,7 +4362,7 @@ function vPergunta(){
 function vEstudos(){
   const abertos=ideias().filter(g=>S.ignoradas.indexOf(g.id)<0&&!S.estudos.some(e=>e.id===g.id));
   const fora=semEstudo();
-  let h='';
+  let h=faixaPendente();
   h+='<div class="acs estNv">'+
      (S.estNova==="novo"
        ?''
@@ -4375,6 +4388,33 @@ function vEstudos(){
       'For\u00e7ar uma gaveta seria pior do que deix\u00e1-las aqui.</p>'+
       '<div class="grupoE">'+fora.map(linhaNota).join("")+'</div>';
   return h;
+}
+/* ═══ O QUE FICOU PELA METADE ═══
+   Primeira coisa da entrada, e nao a ultima. Numa tela onde nada mais tem
+   prioridade definida, o que tem acao pendente e a prioridade — a observacao e
+   do Erik, e ela derrubou a minha primeira versao, que mandava isto para o
+   rodape.
+   Mas presenca nao e massa: quatro manchetes em serifa aqui fariam do
+   Conhecimento uma lista de tarefas, que e o modelo de caixa de entrada do qual
+   esta area acabou de sair. Uma linha, a mais urgente, com as outras a um
+   toque. Alta posicao, baixa massa.
+   E ela conta COISAS, e nao linhas: quando era aba, somar dava 8 contra
+   "Todas 7" e parecia subconjunto maior que o todo — mas nunca foi subconjunto
+   de nada, e agora que nao e mais recorte a contagem honesta cabe. */
+function faixaPendente(){
+  const P=pauta();
+  if(!P.length)return "";
+  const n=P.reduce((a,x)=>a+x.n,0);
+  const linha=x=>'<div class="pit2"><p><button class="abre" data-a="'+x.a+'" data-v="'+
+    esc(x.v||x.k)+'">'+esc(x.t)+'</button></p><cite>'+x.r+'</cite></div>';
+  const resto=P.slice(1);
+  return '<div class="pmeio"><div class="pmcab"><span class="lb">O que ficou pela metade</span>'+
+    '<span class="n">'+n+'</span><span class="sp"></span>'+
+    (resto.length
+      ?'<button data-a="pauta-abrir" aria-expanded="'+(!!S.pautaAberta)+'">'+
+        (S.pautaAberta?'recolher':'ver as outras '+resto.length)+'</button>'
+      :'')+'</div>'+
+    linha(P[0])+(S.pautaAberta?resto.map(linha).join(""):'')+'</div>';
 }
 /* O cartao carrega a PERGUNTA em destaque, e nao o nome: o nome diz como o
    estudo se chama, e a pergunta diz para que ele existe. As capas entram
@@ -7052,6 +7092,7 @@ function roteia(a,v,el){
     case "conectar":S.conectando=v||null;S.qConectar="";break;
     case "linha-menu":S.linhaMenu=S.linhaMenu===v?null:v;break;
     case "nota-filtro":S.nfiltro=v;break;
+    case "pauta-abrir":S.pautaAberta=!S.pautaAberta;break;
     /* abrir no lugar, e nao ir: uma segunda vez fecha. */
     case "rel-abrir":S.relAberta=S.relAberta===v?null:v;break;
     case "nota-abrir":{

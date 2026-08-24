@@ -129,6 +129,36 @@ function verificaTexto(bruto) {
     if (prof !== 0) achados.push({ tipo: 'css-engolido', nome: 'chaves desbalanceadas: sobra ' + prof });
   }
 
+  /* ── classe que já existia ── duas regras-base longe uma da outra ──
+     Uma classe nova num arquivo grande herda o que já estava escrito com aquele
+     nome, e a tela renderiza sem erro: `.pend` era um emblema inline-flex, e a
+     faixa que reusou o nome virou duas colunas em silêncio. Terceira vez. */
+  if (est) {
+    const css = est[1].replace(/\/\*[\s\S]*?\*\//g, ' ').split(String.fromCharCode(10));
+    const base = new Map();
+    /* o corpo da regra, que pode continuar nas linhas seguintes */
+    const props = (n) => {
+      let t = '';
+      for (let i = n; i < css.length && i < n + 12; i++) { t += css[i]; if (css[i].indexOf('}') > -1) break; }
+      return new Set([...t.matchAll(/([a-z-]+)\s*:/g)].map((m) => m[1]));
+    };
+    css.forEach((l, n) => {
+      const m = /^\.([A-Za-z][\w-]*)\{/.exec(l);
+      if (m) (base.get(m[1]) || base.set(m[1], []).get(m[1])).push(n);
+    });
+    for (const [nome, ns] of base) {
+      if (ns.length < 2 || Math.max(...ns) - Math.min(...ns) <= 150) continue;
+      /* Distância sozinha não acusa: `.txtE` mora em dois lugares de propósito,
+         tipografia numa seção e espaçamento noutra, sem nada em comum. O que
+         denuncia reúso de nome é DISPUTAR A MESMA PROPRIEDADE de longe. */
+      const conjuntos = ns.map(props);
+      const briga = [...conjuntos[0]].filter((p) => conjuntos.slice(1).some((c) => c.has(p)));
+      if (briga.length)
+        achados.push({ tipo: 'classe-colidida',
+          nome: nome + ' (linhas ~' + ns.map((n) => n + 1).join(', ') + '; disputam ' + briga.slice(0, 3).join(', ') + ')' });
+    }
+  }
+
   /* ── ação sem rota ── o botão existe e o roteador não sabe dele ── */
   const rotas = new Set([...js.matchAll(/case\s+"([a-z0-9-]+)"/g)].map((x) => x[1]));
   if (rotas.size) {
@@ -160,6 +190,12 @@ const CASOS = [
   [null, `const T={"01":"data:image/png;base64,iVBOR//w0KGgoAAAA+/x=="};
 const capa=n=>T[n]||"";
 function a(){return capa(1)}`],
+  /* classe nova reusando nome que ja existia, longe no arquivo */
+  ['classe-colidida', '<style>.pend{display:inline-flex}'+String.fromCharCode(10)+
+    '.x{color:red}'.split(',').join('')+String.fromCharCode(10).repeat(200)+'.pend{display:block}</style>'+
+    '<script>1</script>'],
+  /* e variantes que moram juntas nao podem ser acusadas */
+  [null, ['<style>.a{display:flex}','.a{color:red}','.a.-b{display:block}</style>'].join(String.fromCharCode(10))+'<script>1</script>'],
   /* a declaracao orfa: sobrou de uma edicao por linha, e o navegador come a
      regra seguinte tentando se recuperar */
   ['css-orfao', `<style>.a{color:red}
@@ -190,7 +226,7 @@ if (falhas.length) {
   process.exit(2);
 }
 if (process.argv.includes('--autoteste') && !arqs.length) {
-  console.log('✓ autoteste: os seis detectores respondem, e nenhum acusa prosa');
+  console.log('✓ autoteste: os sete detectores respondem, e nenhum acusa prosa');
   process.exit(0);
 }
 if (!arqs.length) { console.error('uso: node scripts/verificar.mjs [--autoteste] <arquivo.html|.js> …'); process.exit(2); }
