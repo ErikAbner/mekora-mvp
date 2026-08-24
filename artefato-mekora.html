@@ -1324,7 +1324,10 @@ td.n{color:var(--ink);font-weight:600}
 .grupoE .acs .sec{font-size:13px;color:var(--ink-3);padding:6px 0}
 .grupoE .acs .sec:hover{color:var(--ink)}
 .grupoE .acs .sob{opacity:0;transition:opacity var(--d1) var(--curva)}
-.grupoE:hover .acs .sob,.grupoE .acs .sob:focus-visible{opacity:1}
+/* o gatilho estava no GRUPO: passar num cartao revelava a acao secundaria
+   de todos os outros. Medido: dois cartoes, duas secundarias acesas juntas. */
+.grupoE .cit:hover .acs .sob,.grupoE .cab:hover .acs .sob,
+.grupoE .acs .sob:focus-visible{opacity:1}
 @media(hover:none){.grupoE .acs .sob{opacity:1}}
 /* ═══ NOTAS ═══ Nada de card: as notas já têm uma forma nesta casa — filete
    à esquerda, degrau de papel, tipografia. A área de Notas usa a MESMA, e é
@@ -1442,10 +1445,17 @@ td.n{color:var(--ink);font-weight:600}
 .conj{display:flex;align-items:center;gap:var(--s3);flex-wrap:wrap;
   padding:var(--s2) var(--s3);background:var(--bg-2);border-left:2px solid var(--ink);
   margin-bottom:var(--s5)}
+.conj.-simples{background:none;border-left:0;padding:0;gap:var(--s2);
+  margin-bottom:var(--s4)}
+.conj.-simples .ant,.conj.-simples .prox,.conj.-simples .-off{padding:2px 5px}
 .conj .em{font-size:12.5px;color:var(--ink-2)}
 .conj .em b{color:var(--ink);font-weight:600}
 .conj .pos{font-family:var(--mono);font-size:10px;letter-spacing:.07em;color:var(--ink-3)}
 .conj .sp{flex:1}
+.conj .ant,.conj .prox{font-family:var(--mono);font-size:14px;line-height:1;
+  padding:2px 7px}
+.conj .-off{font-family:var(--mono);font-size:14px;line-height:1;padding:2px 7px;color:var(--ink-4)}
+.conj .sai{font-size:12.5px}
 .conj button{font-size:12.5px;color:var(--ink-3);padding:2px 6px;border-radius:0}
 .conj button:hover{color:var(--ink);background:var(--bg-3)}
 .conj .-off{font-size:12.5px;color:var(--ink-4);padding:2px 6px}
@@ -4145,10 +4155,13 @@ function conjuntoDaqui(){
     if(t)return {lista:t.notas.slice(),concId:t.id,nome:t.nome};
   }
   if(S.lugar==="notas"&&S.listaVisivel&&S.listaVisivel.length>1){
-    const nomes={todas:"Conhecimento",livros:"De livros",soltas:"Soltas",
-      rever:"Para revisar",pergunta:"esta pergunta"};
+    /* a lista inteira nao tem nome porque nao e um recorte: e a area. Sem
+       isto a migalha saia "Conhecimento > Conhecimento" e a faixa dizia
+       "Em Conhecimento", que e onde a pessoa esta sempre. */
+    const nomes={livros:"De livros",soltas:"Soltas",rever:"Para revisar",
+      pergunta:"esta pergunta"};
     return {lista:S.listaVisivel.slice(),concId:null,
-      nome:nomes[S.nfiltro||"todas"]||"Conhecimento"};
+      nome:nomes[S.nfiltro||"todas"]||null};
   }
   return null;
 }
@@ -4158,11 +4171,20 @@ function faixaConjunto(c){
   const bt=(k,rot,lado)=>k
     ? '<button data-a="nota-abrir" data-v="'+k+'" class="'+lado+'">'+rot+'</button>'
     : '<span class="'+lado+' -off">'+rot+'</span>';
-  return '<div class="conj">'+
-    '<span class="em">Em <b>'+esc(c.nome)+'</b></span>'+
+  /* Posicao e vizinhos sao a MESMA informacao — onde estou na fila, e como
+     ando nela — e estavam a 406px um do outro. Ficam juntos, e o nome do
+     recorte fica na outra ponta, que e o que a pessoa le uma vez so. */
+  /* Sem recorte nao ha o que anunciar, e a faixa vira uma barra cinza vazia
+     com tres controles encolhidos num canto. Ali ela e so um par de setas com
+     a posicao no meio, sem fundo e sem filete: o peso do recipiente tem que
+     acompanhar o peso do que ele carrega. */
+  return '<div class="conj'+(c.nome?'':' -simples')+'">'+
+    bt(ant,"\u2039","ant")+
     '<span class="pos">'+(c.i+1)+' de '+c.n+'</span>'+
+    bt(prox,"\u203a","prox")+
+    (c.nome?'<span class="em">em <b>'+esc(c.nome)+'</b></span>':'')+
     '<span class="sp"></span>'+
-    bt(ant,"\u2039 anterior","ant")+bt(prox,"pr\u00f3xima \u203a","prox")+
+    (c.nome?'<button class="sai" data-a="terr-todas">ver todas</button>':'')+
     '</div>';
 }
 function vNota(){
@@ -4182,7 +4204,7 @@ function vNota(){
   let h='<div class="pad larga"><div class="colE">'+
     migalhas(conj&&conj.conc
       ? [["Conhecimento","ir","notas"],["Ideias","ir-ideias",null],[conj.conc.nome,"conc-abrir",conj.conc.id]]
-      : conj
+      : conj&&conj.nome
       ? [["Conhecimento","ir","notas"],[conj.nome]]
       : [["Conhecimento","ir","notas"],
          d.livro?[d.livro,"ver-livro",d.livro]:["Soltas","nota-filtro","soltas"]])+
@@ -4225,8 +4247,19 @@ function vNota(){
      estavam separadas por 60px, o mesmo vao que separava tudo do resto. Com
      tudo a mesma distancia, nada agrupa. Agora sao um bloco, com respiro
      interno menor que o externo. */
-  h+='<div class="bloco"><div class="soltoE">Como voc\u00ea classifica</div>'+
-    secTags(d)+secConceitos(d)+'</div>';
+  /* Vazio, este bloco gastava 202px para dizer que nao ha nada: duas
+     etiquetas e dois convites, zero conteudo. Sem tag e sem conceito ele
+     encolhe para uma linha — as duas portas continuam ali, e o andaime
+     some. */
+  const semClas=!(d.tags||[]).length&&!S.terr.some(t=>t.notas.indexOf(d.k)>-1);
+  h+='<div class="bloco">'+
+    (semClas
+      ?'<div class="cabB"><div class="soltoE">Como voc\u00ea classifica</div>'+
+       '<button class="sec" data-a="tag-nova" data-v="'+d.k+'">+ tag</button>'+
+       '<button class="sec" data-a="conc-nova" data-v="'+d.k+'">criar um conceito</button></div>'+
+       (S.tagNova===d.k||S.concNova===d.k?secTags(d)+secConceitos(d):'')
+      :'<div class="soltoE">Como voc\u00ea classifica</div>'+secTags(d)+secConceitos(d))+
+    '</div>';
   h+=secRelacoes(d);
   return h+'</div></div>';
 }
@@ -4325,7 +4358,10 @@ function secRelacoes(d){
     return '<div class="relG"><span class="sublbl">'+rot+'</span>'+
       '<div class="grupoE">'+l.map(r=>{
         const o=escK(r.k);if(!o)return "";
-        const pal=r.termos.length?r.termos.map(x=>inteira(x,[d,o])).join(", "):"";
+        /* "repeticao, isolada" dentro de uma aspa so le como um termo
+           composto. Duas palavras, duas aspas. */
+        const ws=r.termos.map(x=>'\u201c'+esc(inteira(x,[d,o]))+'\u201d');
+        const pal=ws.length>1?ws.slice(0,-1).join(", ")+" e "+ws[ws.length-1]:ws[0]||"";
         /* "Talvez" e "Voce ligou" sao duas secoes da mesma pagina, e ligar
            move o item de uma para a outra. Sem movimento, o item some de um
            lugar e aparece noutro no mesmo quadro, e ninguem ve que foi o
@@ -4334,7 +4370,7 @@ function secRelacoes(d){
         return '<div class="cit'+(nova?" -subiu":"")+'"><p class="-nota"><button class="abre" data-a="nota-abrir" data-v="'+
           r.k+'">'+esc(o.nota)+'</button></p>'+
           '<cite>'+esc(o.livro||"sem livro")+
-          (pal?' · as duas falam de “'+esc(pal)+'”':'')+'</cite>'+
+          (pal?' · as duas falam de '+pal:'')+'</cite>'+
           '<div class="acs">'+(t==="sua"
             ?'<button class="sec" data-a="nota-desligar" data-v="'+d.k+'|'+r.k+'">desfazer a ligação</button>'
             :'<button class="sec" data-a="nota-ligar" data-v="'+d.k+'|'+r.k+'">Confirmar a ligação</button>'+
