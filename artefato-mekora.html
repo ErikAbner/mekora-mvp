@@ -2858,14 +2858,20 @@ function vLeitura(){
   h+=(S.escAqui==="livro"?notaLivre({k:"aqui",cap:null,nota:""}):"")+
     '<div class="lfimE"><span class="kicker">Fim do que foi preparado</span>'+
     '<button class="lnk mudo" data-a="esc-aqui" data-v="livro" style="padding:0;display:block;'+
-    'margin-bottom:var(--s3)">Escrever sobre o livro</button>'+
-    '<p class="txtE mudo">Você está lendo o EPUB que o Mekora gerou a partir de um PDF digitalizado de '+
-    ARQ.pgs+' páginas. O original continua guardado.</p>'+
-    '<div class="aparelho"><i class="pt pt-ok"></i><div style="flex:1">'+
+    'margin-bottom:var(--s3)">Escrever sobre '+(ARQ.tipo==="video"?"este vídeo":"o livro")+'</button>'+
+    /* a frase valia quando toda fonte era um PDF que virava EPUB. Num video ela
+       diz uma coisa que nao aconteceu. */
+    '<p class="txtE mudo">'+(ARQ.tipo==="video"
+      ?'Você leu a transcrição de '+mmss(ARQ.dur)+' de vídeo. O arquivo continua guardado, e a nota '
+        +'que você escreveu aqui sabe voltar ao segundo em que aquilo foi dito.'
+      :'Você está lendo o EPUB que o Mekora gerou a partir de um PDF digitalizado de '+
+        ARQ.pgs+' páginas. O original continua guardado.')+'</p>'+
+    (ARQ.tipo==="video"?''
+      :'<div class="aparelho"><i class="pt pt-ok"></i><div style="flex:1">'+
       '<b style="display:block;font-size:var(--t-ui)">Também está no seu Kindle</b>'+
       '<span style="font-size:var(--t-peq);color:var(--ink-2)">Enviado hoje, 09:12. Se você ler por lá, '+
       'a página em que parou volta para cá.</span></div>'+
-      '<button class="btnO" data-a="nada">Continuar no Kindle</button></div>'+
+      '<button class="btnO" data-a="nada">Continuar no Kindle</button></div>')+
   /* os tres fechamentos sao .lfimE, .colE e .ed — eu tinha contado colE, ed e
      um invólucro que nao existe, e a barra de pagina foi parar DENTRO do
      container que rola, empurrando 53px de texto para fora do corte. */
@@ -3148,7 +3154,9 @@ const dstTexto=escTxt;
 /* o endereco dito por extenso: com ancora e LUGAR, sem ancora e ASSUNTO.
    A preposicao faz o trabalho que uma terceira espessura de filete faria —
    e pendurar ontologia em 1px foi justamente o erro anterior. */
-const escEnd=d=>d.ini!=null?"Capítulo "+(d.cap+1)
+/* o endereco curto de uma nota: num video ele e o segundo. */
+const escEnd=d=>ehVideo(d.livro)?mmss(tempoDe(d))
+  :d.ini!=null?"Capítulo "+(d.cap+1)
   :(d.cap!=null?"sobre o capítulo "+(d.cap+1):"sobre o livro");
 const dstCap=escEnd;
 const semAncora=()=>S.dst.filter(d=>d.livro===ARQ.titulo&&!ancora(d)).sort(ordem);
@@ -3173,7 +3181,7 @@ function descBloco(){
       '</div></div>';
   }
   return '<div class="descL"><p>'+(minha?esc(S.desc):'\u201c'+esc(primeiraFrase())+'\u201d')+'</p>'+
-    '<span class="arco">'+(minha?'sua':'Primeira frase do arquivo')+' \u00b7 '+esc(arco())+
+    '<span class="arco">'+(minha?'sua':(ARQ.tipo==="video"?'Primeira fala da transcri\u00e7\u00e3o':'Primeira frase do arquivo'))+' \u00b7 '+esc(arco())+
     ' <button class="lnk mudo" data-a="desc-abrir" style="padding:0 0 0 var(--s2)">'+
     (minha?'editar':'escrever a minha')+'</button></span></div>';
 }
@@ -3701,7 +3709,7 @@ function vItem(){
     li("in","3","Gerar um sumário navegável","A partir dos 14 títulos de capítulo que encontrei.","","")+
     li(S.capaEsc==="gerada"?"ok":"in",S.capaEsc==="gerada"?"✓":"4",
       S.capaEsc==="gerada"?"Capa gerada":"Usar a página 1 como capa",
-      S.capaEsc==="gerada"?"Montei uma com o título, o autor e o formato — o arquivo não tinha nenhuma.":"Escolhido por você.","ver","capa")+
+      S.capaEsc==="gerada"?(preparaTexto()?"Montei uma com o título, o autor e o formato — o arquivo não tinha nenhuma.":"Um quadro do próprio vídeo, com o título e quem fala."):"Escolhido por você.","ver","capa")+
     li(S.traduzir?"ok":"in",S.traduzir?"✓":"5",
       S.traduzir?"Traduzir para "+S.traduzir:"Idioma: português, como no original",
       S.traduzir?"Sai um segundo arquivo. O original fica intacto na estante.":"Nada é traduzido a não ser que você peça.",
@@ -3792,9 +3800,12 @@ function itemPronto(){
   h+='<div class="sec" style="margin-top:var(--s6)"><button class="lnk" data-a="feito">'+
     (S.feitoAberto?"▾":"▸")+' O que foi feito neste arquivo</button>'+
     (S.feitoAberto?'<div class="lista" style="margin-top:var(--s3)">'+
-      li("ok","✓","Texto reconhecido em "+ARQ.lidas+" das "+ARQ.pgs+" páginas","Três eram fotografias sem texto legível.","","")+
-      li("ok","✓","Convertido de PDF para EPUB","O original continua na estante, intacto.","desfazer","undo")+
-      li("ok","✓","Sumário com "+CAPS.length+" capítulos","","desfazer","undo")+
+      (ARQ.tipo==="video"
+        ?li("ok","✓","Transcrição gerada","Automática, e revisada por você em 3 trechos.","","")+
+         li("ok","✓","Divisão em "+CAPS.length+" trechos","Pelos silêncios longos e pela mudança de assunto.","desfazer","undo")
+        :li("ok","✓","Texto reconhecido em "+ARQ.lidas+" das "+ARQ.pgs+" páginas","Três eram fotografias sem texto legível.","","")+
+         li("ok","✓","Convertido de PDF para EPUB","O original continua na estante, intacto.","desfazer","undo")+
+         li("ok","✓","Sumário com "+CAPS.length+" capítulos","","desfazer","undo"))+
       li("ok","✓","Capa gerada pelo Mekora","","alterar","capa")+
       '</div>':'')+'</div>';
   return h+'</div>';
@@ -3812,7 +3823,13 @@ function vLivro(){
      mesma tela. Repetir aqui era repetir com OUTRA conta — o cabecalho somava
      nota livre como marcado e dizia 8 onde a secao dizia 2. */
   if(S.enviado)cl.push("Enviado hoje, 09:12");
-  const fonte=["<b>EPUB</b>","reconhecido em "+ARQ.lidas+" de "+ARQ.pgs+" p\u00e1ginas"]
+  /* A ficha diz o que a FONTE e. Escrita para livro, ela dizia "EPUB" e
+     "undefined de undefined paginas" sobre uma aula gravada — video nao tem
+     pagina nem reconhecimento de texto; tem duracao e transcricao. */
+  const fonte=(ARQ.tipo==="video"
+    ?["<b>V\u00eddeo</b>","<b>"+mmss(ARQ.dur)+"</b> de dura\u00e7\u00e3o",
+      "transcri\u00e7\u00e3o "+esc(ARQ.transcrita||"autom\u00e1tica")]
+    :["<b>EPUB</b>","reconhecido em "+ARQ.lidas+" de "+ARQ.pgs+" p\u00e1ginas"])
     .concat(S.traduzir?["traduzido para "+esc(S.traduzir)+" \u2014 o original em portugu\u00eas continua na estante"]:[])
     .concat(["de <b>"+esc(ARQ.nome)+"</b>"]);
   return '<div class="pad">'+
@@ -3829,8 +3846,13 @@ function vLivro(){
       descBloco()+
       '<div class="acoes">'+
         '<button class="btn" data-a="ir" data-v="leitura">'+
-          (S.cap>0?"Continuar no cap\u00edtulo "+(S.cap+1):"Ler")+'</button>'+
-        (S.enviado?'':'<button class="btn sec2" data-a="folha" data-v="envio">Enviar ao Kindle</button>')+
+          (ARQ.tipo==="video"
+            ?(S.cap>0?"Continuar no trecho "+(S.cap+1):"Abrir a transcri\u00e7\u00e3o")
+            :(S.cap>0?"Continuar no cap\u00edtulo "+(S.cap+1):"Ler"))+'</button>'+
+        /* o Kindle e um destino que nem toda fonte tem — e aqui ele some da
+           fila em vez de dizer, porque a explicacao ja mora em Este arquivo e
+           repeti-la no lugar de acao seria transformar um fato em aviso. */
+        (S.enviado||ARQ.tipo==="video"?'':'<button class="btn sec2" data-a="folha" data-v="envio">Enviar ao Kindle</button>')+
       '</div>'+
       '<div class="acoes -mudas">'+
         (S.cap>0?'<button class="lnk mudo" data-a="ler-comeco">Ler do come\u00e7o</button>':'')+
@@ -3839,7 +3861,7 @@ function vLivro(){
       '</div>'+
     '</div></div>'+
     /* uma excecao por vez, e so enquanto ela ainda afeta a leitura */
-    (!S.pendResolvida?'<div style="margin:var(--s5) 0 0"><span class="pend">'+
+    (!S.pendResolvida&&preparaTexto()?'<div style="margin:var(--s5) 0 0"><span class="pend">'+
       '<span class="n">!</span>Tr\u00eas p\u00e1ginas ficaram sem texto.'+
       '<button class="lnk" data-a="folha" data-v="paginas" style="padding:0 0 0 var(--s2)">ver as p\u00e1ginas</button>'+
       '</span></div>':'')+
@@ -3914,7 +3936,7 @@ function citaE(d){
      (ab?'<p class="cheio">“'+esc(escTxt(d))+'”</p>':'')
     :'<p><button class="abre" data-a="dst-ir" data-v="'+d.k+'">“'+esc(escTxt(d))+'”</button></p>';
   return '<div class="cit" id="e-'+d.k+'">'+corpo+
-    '<cite>Capítulo '+(d.cap+1)+'</cite>'+kd+
+    '<cite>'+(ehVideo(d.livro)?mmss(tempoDe(d)):'Capítulo '+(d.cap+1))+'</cite>'+kd+
     lix("dst-tirar",d.k,"tirar")+acoesDst(d)+'</div>';
 }
 function secMarcado(){
@@ -4302,6 +4324,10 @@ function livrosDoEstudo(e){
    voce escreve, e sim a coordenada de onde aquilo veio: capitulo e paragrafo
    num texto, segundo num video. */
 const ehVideo=t=>!!(LIVROS[t]&&LIVROS[t].tipo==="video");
+/* TEM PIPELINE DE KINDLE? Reconhecimento de texto, contagem de paginas, EPUB
+   gerado e previa do aparelho sao telas do preparo para o Kindle — e nao telas
+   de uma fonte qualquer. Enquanto tudo virava EPUB a diferenca nao existia. */
+const preparaTexto=a=>(a||ARQ).tipo!=="video";
 const mmss=s=>{s=Math.max(0,Math.round(s));
   const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),g=s%60;
   return (h?h+":"+String(m).padStart(2,"0"):String(m))+":"+String(g).padStart(2,"0");};
@@ -4822,7 +4848,7 @@ function linhaPai(d){
 function linhaNota(d){
   const r=relacoesDe(d.k),tr=escTxt(d),an=ancoraDe(d);
   const rot=[];
-  if(d.livro!=null&&d.cap!=null)rot.push("Capítulo "+(d.cap+1));
+  if(d.livro!=null&&d.cap!=null)rot.push(ehVideo(d.livro)?mmss(tempoDe(d)):"Capítulo "+(d.cap+1));
   else if(!d.livro)rot.push("escrita aqui");
   rot.push(d.dia||"hoje");
   if(r.length)rot.push(num(r.length)+" relacionada"+(r.length>1?"s":""));
@@ -6055,8 +6081,13 @@ function vFolha(){
 
 'border-radius:var(--r1);flex:0 0 140px">'+
     '<div><p style="margin:0 0 var(--s3);font-size:14px;line-height:1.6;color:var(--ink-2)">'+
-    'Montei uma com o título, o autor e o formato, na mesma linguagem das outras capas da sua estante. '+
-    'Ela vai para o EPUB e para a biblioteca do Kindle.</p>'+
+    (preparaTexto()
+      ?'Montei uma com o título, o autor e o formato, na mesma linguagem das outras capas da sua '+
+       'estante. Ela vai para o EPUB e para a biblioteca do Kindle.'
+      /* um video TEM quadro; o que muda e o destino, que aqui e so a estante. */
+      :'Peguei um quadro do próprio vídeo e pus o título e quem fala, na mesma linguagem das outras '+
+       'capas da sua estante. Ela vale aqui dentro — vídeo não vai para o Kindle.')+
+    '</p>'+
     '<div class="lista">'+
     li(S.capaEsc==="gerada"?"ok":"in",S.capaEsc==="gerada"?"✓":"·","Manter a capa gerada","Recomendado.","","")+
     li(S.capaEsc==="pagina"?"ok":"in",S.capaEsc==="pagina"?"✓":"·","Usar a página 1","Ela tem texto corrido — vira um borrão como miniatura.","","")+
@@ -6085,7 +6116,7 @@ function vFolha(){
     li("in","·","Usar outro endereço","Precisa estar autorizado na sua conta da Amazon.","","")+
     li("in","·","Cabo USB","Abre a pasta do aparelho quando ele estiver conectado.","","")+
     '</div><div class="acoes" style="margin:var(--s4) 0 0">'+
-    '<button class="lnk" data-a="folha" data-v="viewport">Ver como fica no aparelho antes →</button></div>'+
+    (preparaTexto()?'<button class="lnk" data-a="folha" data-v="viewport">Ver como fica no aparelho antes →</button>':'')+'</div>'+
     '<div class="nota"><span>◆</span><div>O envio passa pelo serviço da Amazon. Avisamos quando ele '+
     '<b>aceitar</b> o arquivo — não temos como saber se já apareceu no aparelho.</div></div>',
     '<button class="lnk mudo" data-a="fechar">Cancelar</button><button class="btn" data-a="enviar">Enviar agora</button>');
@@ -6130,10 +6161,15 @@ function vFolha(){
       '<div style="background:var(--branco);padding:0 var(--s4)">'+
       l("Origem",esc(ARQ.nome))+
       l("Formato de origem",ARQ.fmt+" · "+ARQ.tam)+
-      l("Resultado",esc(ARQ.saida))+
-      l("Páginas",ARQ.pgs+" no original · texto reconhecido em "+ARQ.lidas)+
-      l("Idioma",ARQ.idioma)+
-      l("Sumário",CAPS.length+" capítulos, derivados dos títulos encontrados")+
+      (ARQ.tipo==="video"
+        ?l("Duração",mmss(ARQ.dur))+
+         l("Transcrição",esc(ARQ.transcrita||"automática"))+
+         l("Idioma",ARQ.idioma)+
+         l("Trechos",CAPS.length+", derivados dos silêncios e da mudança de assunto")
+        :l("Resultado",esc(ARQ.saida))+
+         l("Páginas",ARQ.pgs+" no original · texto reconhecido em "+ARQ.lidas)+
+         l("Idioma",ARQ.idioma)+
+         l("Sumário",CAPS.length+" capítulos, derivados dos títulos encontrados"))+
       l("No aparelho",S.enviado?"Enviado hoje, 09:12":"Ainda não enviado")+'</div>'+
       '<div class="nota"><span>◆</span><div>O original fica guardado enquanto o livro existir — '+
       'é ele que permite refazer o preparo com outras opções, sem você enviar de novo.</div></div>',
@@ -6332,6 +6368,15 @@ function vFolha(){
   /* A folha "Aa" foi deletada aqui: com a fita, ela ficou sem porta nenhuma.
      Guardar codigo inalcancavel "por garantia" foi como nasceram os dois
      vPerfil e a folha de dossie — e o historico do git ja e a garantia. */
+  /* a previa do aparelho e do Kindle, e o Kindle e um dos meios. Alcancada por
+     uma fonte que nao vai para la, ela diz isso em vez de mostrar uma tela que
+     nao descreve nada. */
+  if(f==="viewport"&&!preparaTexto())
+    return folha("Este arquivo","No aparelho",
+      '<p style="margin:0;font-size:14px;line-height:1.65;color:var(--ink-2)">'+
+      esc(ARQ.titulo)+' é um vídeo, e vídeo não vai para o Kindle. A prévia do aparelho '+
+      'descreve o preparo de texto — um dos meios, e não o destino de tudo.</p>',
+      '<button class="btn sec2" data-a="fechar">Entendi</button>');
   if(f==="viewport"){
     const d=DISP[S.disp];
     return folha("Antes de enviar","Como fica no "+d[0],
@@ -6660,7 +6705,7 @@ function vFolha(){
       (ARQ.tipo==="video"
         ?li("nada","","Enviar ao Kindle","Vídeo não vai para o Kindle. Ele é um dos meios, e não o destino de tudo.")
         :li("folha","envio","Enviar ao Kindle",S.enviado?"Enviado hoje, 09:12":""))+
-      li("baixar","","Baixar o EPUB","")+
+      (preparaTexto()?li("baixar","","Baixar o EPUB",""):li("baixar","","Baixar o arquivo",""))+
       /* A derivacao erra em dois casos previsiveis: quem termina o livro sem
          rolar o ultimo pixel, e quem quer recomecar. Por isso ela e corrigivel
          — e a correcao mora aqui, junto do que se faz com o arquivo, e nao num
@@ -6685,8 +6730,11 @@ function vFolha(){
       '<span class="kicker" style="display:block;margin-top:var(--s5)">De onde ele veio</span>'+
       '<div class="lista">'+
       li("ver-preparo","","Ver o preparo",esc(ARQ.nome))+
-      li("folha","paginas","Ver as páginas","Organização avançada")+
-      li("folha","info","Informações do arquivo",ARQ.fmt+" · "+ARQ.tam+" · "+ARQ.pgs+" páginas")+'</div>'+
+      /* paginas do original e tela do preparo de TEXTO: um video nao tem
+         original paginado, e a linha some junto com o pipeline. */
+      (preparaTexto()?li("folha","paginas","Ver as páginas","Organização avançada"):'')+
+      li("folha","info","Informações do arquivo",ARQ.fmt+" · "+ARQ.tam+" · "+
+        (ARQ.tipo==="video"?mmss(ARQ.dur):ARQ.pgs+" páginas"))+'</div>'+
       '<div class="lista" style="margin-top:var(--s5)">'+
       li("nada","","Remover da estante","Sai o livro e sai o original","-perigo")+'</div>',
       '<button class="btnO" data-a="fechar">Fechar</button>');

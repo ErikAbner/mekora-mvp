@@ -13,6 +13,14 @@
   /* cada filtro da estante e um caminho proprio, e eles acabaram de mudar */
   const fEst=["tudo","lendo","novo","nota","kindle","quadrinho"];
   const feito=[];
+  /* Contar bytes de innerHTML prova que a tela montou. Nao prova que ela diz
+     coisa com coisa: "undefined de undefined paginas" sobreviveu a 549 casos
+     porque nenhum deles leu o texto. Esta rede le. */
+  const LIXO=/undefined|NaN|\[object Object\]|,,|null/;
+  const olha=nome=>{const t=document.body.innerText;
+    const m=LIXO.exec(t);
+    if(m){const i=Math.max(0,m.index-50);
+      erros.push("lixo na tela "+nome+": …"+t.slice(i,m.index+40).replace(/\s+/g," ")+"…");}};
   /* COM E SEM CONTA. Sem isto a Mesa nunca era montada: vMesa() devolve
      mesaNova() enquanto S.conta e false, que e o padrao do estado zero. */
   for(const conta of [false,true])
@@ -26,6 +34,7 @@
           notas:g.notas.map(d=>d.k),sua:false}]:[];
         S.estK=g?g.id:"nao-existe";}
       pinta();
+      olha((conta?"":"sem-conta/")+l+"/"+(f||"-"));
       feito.push((conta?"":"sem-conta/")+l+"/"+(f||"-")+":"+document.body.innerHTML.length);
     }catch(e){erros.push((conta?"":"sem-conta/")+l+"/"+f+" -> "+e.message);}
   }
@@ -39,6 +48,24 @@
      ele nao precisou de modelo proprio: a mesma ancora, a mesma nota, a
      mesma lista. Se alguma dessas tres divergir, o modelo estava errado. */
   try{
+    /* TODA tela que mostra uma fonte, com um VIDEO aberto. Eu tinha
+       construido a fonte e nunca aberto a tela do arquivo com ela: o
+       smoke rendia "livro", mas sempre com ARQ sendo um livro, e a tela
+       dizia "EPUB · undefined de undefined paginas". */
+    const antesARQ=ARQ;
+    ARQ=LIVROS["Oficina de imagem — aula 4"];
+    for(const l of ["livro","leitura"])
+      for(const f of [null,"controles","sumario","envio","capa","paginas","viewport"]){
+        S.lugar=l;S.folha=f;S.dentro=(l==="leitura");pinta();
+        olha("video/"+l+"/"+(f||"-"));
+        const t=document.body.innerText;
+        /* a rede pega tambem "Capitulo N", que vazava no cartao de uma nota de
+           video — o padrao antigo so olhava o vocabulario do PREPARO. */
+        if(/EPUB|páginas|Convertido de PDF|Capítulo \d|cap\. \d/.test(t))
+          erros.push("video/"+l+"/"+(f||"-")+": fala de livro sobre um video");
+        feito.push("video/"+l+"/"+(f||"-")+":"+document.body.innerHTML.length);
+      }
+    ARQ=antesARQ;S.dentro=false;S.folha=null;
     const vs=levadas().filter(d=>d.livro&&ehVideo(d.livro));
     if(vs.length<2)erros.push("video: as notas de video nao chegaram ao Conhecimento ("+vs.length+")");
     /* o endereco e um segundo, e nao um capitulo */
