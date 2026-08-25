@@ -476,6 +476,13 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .estLv .q{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;
   color:var(--ink-3);margin-top:2px}
 .estLv .estLvI:hover .t{color:var(--acc)}
+/* a fonte de video ganha o simbolo de reproduzir sobre a capa: o cartao e
+   igual porque a coisa e igual — uma fonte —, e o simbolo diz o que muda. */
+.estLv .estLvI.-vid{position:relative}
+.estLv .estLvI.-vid::after{content:"\25b6";position:absolute;left:50%;top:48px;
+  transform:translate(-50%,-50%);width:26px;height:26px;border-radius:var(--rp);
+  background:var(--ink);color:var(--bg);font-size:10px;display:flex;
+  align-items:center;justify-content:center;padding-left:2px}
 /* a relacionada aberta no lugar: ela cresce onde esta, e nao troca a tela */
 .relD{margin-top:var(--s3);padding-top:var(--s3);border-top:1px solid var(--line-2)}
 .relD .tr{font-family:var(--serif);font-style:italic;font-size:.95rem;line-height:1.55;
@@ -508,6 +515,27 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
    60px que separa a nota do que esta em volta dela. Com tudo a mesma
    distancia, nada agrupa: ele sobe para junto das acoes. */
 .acsN+.bloco{margin-top:var(--s5)}
+/* ═══ VIDEO ═══ */
+.vidT{display:grid;grid-template-columns:180px minmax(0,1fr);gap:var(--s5);align-items:start;
+  background:var(--bg-2);padding:var(--s5);margin-bottom:var(--s7)}
+@media(max-width:640px){.vidT{grid-template-columns:1fr;gap:var(--s4)}}
+.vidQ{position:relative;line-height:0}
+.vidQ img{width:100%;height:auto;display:block;border:1px solid var(--line)}
+.vidP{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:40px;height:40px;border-radius:var(--rp);background:var(--ink);color:var(--bg);
+  display:flex;align-items:center;justify-content:center;font-size:14px;padding-left:3px}
+.vidM .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-3);display:block}
+.vidD{font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:var(--s3) 0 0;max-width:56ch}
+.vidD b{color:var(--ink)}
+.vidF{font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--ink-3);margin:var(--s3) 0 0}
+/* o timecode e ENDERECO: ele mora na margem, e nao no meio da frase */
+.txtE.-vid{position:relative}
+@media(min-width:900px){.txtE.-vid{padding-left:0}
+  .txtE.-vid .vidTc{position:absolute;left:-74px;top:.35em;width:60px;text-align:right}}
+.vidTc{font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--ink-3);
+  padding:0;margin-right:var(--s3)}
+.vidTc:hover{color:var(--acc)}
 .prat{margin-bottom:var(--s5)}
 .lombs{display:flex;align-items:flex-end;gap:2px;padding:0 var(--s5);min-height:150px}
 .lombs img{display:block;width:auto;border-radius:var(--rm) var(--rm) 0 0;transition:transform var(--d2) var(--curva)}
@@ -2212,7 +2240,10 @@ const ACERVO=[
  {c:"11",t:"Diário 02",a:"Ana Duarte",f:"PDF",prog:78,nn:8,kin:true,tipo:"texto",q:"",l:"12",h:178},
  {c:"12",t:"Ata da reunião",a:"Ana Duarte",f:"PDF",prog:0,nn:0,kin:false,tipo:"texto",q:"junho",l:"13",h:192},
  {c:"13",t:"Briefing de Marca",a:"Ana Duarte",f:"PDF",prog:100,nn:1,kin:false,tipo:"texto",q:"",l:"01",h:168},
- {c:"14",t:"Apresentação Institucional",a:"Ana Duarte",f:"PDF",prog:0,nn:0,kin:false,tipo:"quadrinho",q:"",l:"14",h:206}
+ {c:"14",t:"Apresentação Institucional",a:"Ana Duarte",f:"PDF",prog:0,nn:0,kin:false,tipo:"quadrinho",q:"",l:"14",h:206},
+ /* kin:false porque video nao vai para o Kindle — e isso e a regra, e nao uma
+    falta: o Kindle e um destino que nem toda fonte tem. */
+ {c:"15",t:"Oficina de imagem — aula 4",a:"Marina Rocha",f:"MP4",prog:31,nn:2,kin:false,tipo:"video",q:"",l:"03",h:188}
 ];
 const capa=n=>"capas/capa-"+n+".jpg";
 const lomb=n=>"capas/lombada-"+n+".png";
@@ -2242,6 +2273,25 @@ const LIVROS={
      "Uma s\u00e9rie permite transformar registro em compara\u00e7\u00e3o. Uma imagem sozinha s\u00f3 permite lembrar."]},
    {n:"O que a cidade repete",p:["A malha n\u00e3o muda de uma vez: ela muda um pouco em muitos lugares, e s\u00f3 quem volta percebe.",
      "Quem passa uma vez v\u00ea uma cidade. Quem passa cem vezes v\u00ea um sistema."]}
+  ]},
+ /* UMA FONTE QUE NAO E LIVRO. tipo:"video" muda tres coisas e mais nada: a
+    superficie de leitura e a transcricao, o paragrafo carrega timecode em tp,
+    e o Kindle deixa de ser destino possivel. A ancora e a mesma. */
+ "Oficina de imagem \u2014 aula 4":{nome:"oficina-imagem-04.mp4",saida:null,fmt:"MP4",
+  tipo:"video",dur:2114,tam:"412 MB",idioma:"Portugu\u00eas",
+  titulo:"Oficina de imagem \u2014 aula 4",autor:"Marina Rocha",capa:"03",gerada:"03",
+  transcrita:"autom\u00e1tica, revisada por voc\u00ea em 3 trechos",
+  caps:[
+   {n:"Abertura",t:0,tp:[0,74],
+    p:["Todo mundo chega aqui querendo a foto boa. A foto boa \u00e9 o fim de um processo, e n\u00e3o o come\u00e7o dele.",
+      "Ent\u00e3o vamos come\u00e7ar pelo que ningu\u00e9m fotografa: a segunda vez que voc\u00ea aponta a c\u00e2mera para a mesma coisa."]},
+   {n:"O que a repeti\u00e7\u00e3o faz",t:396,tp:[396,509,660],
+    p:["Uma imagem sozinha te d\u00e1 um instante. Duas imagens do mesmo lugar te d\u00e3o uma diferen\u00e7a, e diferen\u00e7a \u00e9 informa\u00e7\u00e3o.",
+      "Quando voc\u00ea repete o registro, voc\u00ea para de colecionar lembran\u00e7as e come\u00e7a a produzir medida.",
+      "N\u00e3o \u00e9 sobre quantidade. \u00c9 sobre o intervalo entre uma e outra ser escolhido, e n\u00e3o sorteado."]},
+   {n:"Onde isso quebra",t:1180,tp:[1180,1302],
+    p:["A s\u00e9rie mente quando o intervalo muda no meio e ningu\u00e9m anota que mudou.",
+      "Por isso o caderno vale mais que a c\u00e2mera: ele guarda a decis\u00e3o, e a c\u00e2mera guarda s\u00f3 o resultado."]}
   ]},
  "Estudo de Viabilidade":{nome:"estudo-viabilidade.pdf",saida:"Estudo de Viabilidade.epub",fmt:"PDF",
   tam:"7,9 MB",pgs:64,lidas:64,estreitas:0,idioma:"Portugu\u00eas",
@@ -2645,7 +2695,8 @@ function progresso(){
   return m?m.prog:(S.leit.lidoAte||0);
 }
 function rotuloProg(prog){
-  return S.leit.progresso==="capitulo"?"cap. "+(S.cap+1)+" de "+CAPS.length:prog+"%";
+  return S.leit.progresso==="capitulo"
+    ?(ARQ.tipo==="video"?"trecho ":"cap. ")+(S.cap+1)+" de "+CAPS.length:prog+"%";
 }
 /* uma passada de scroll atualiza fio, rotulo e S.cap sem repintar: repintar
    aqui destruiria a selecao e o cursor de quem esta escrevendo uma nota. */
@@ -2686,7 +2737,8 @@ function vLeitura(){
       '<button class="obra" data-a="ir-livro" data-v="'+esc(ARQ.titulo)+'" title="Voltar ao livro">'+
         esc(ARQ.titulo)+'<i> / '+esc(ARQ.autor)+'</i></button>'+
       '<span class="sp"></span>'+
-      '<span class="cap">Cap\u00edtulo '+(S.cap+1)+' de '+CAPS.length+'</span>'+
+      /* a mesma estrutura, outra palavra: numa aula gravada nao ha capitulo. */
+      '<span class="cap">'+(ARQ.tipo==="video"?"Trecho":"Capítulo")+' '+(S.cap+1)+' de '+CAPS.length+'</span>'+
     '</div>'+
     '<div class="lin -fer">'+
       '<span class="ferL">'+
@@ -2733,13 +2785,28 @@ function vLeitura(){
   const pg=S.leit.modo==="paginado";
   h+='<div class="ed'+cls+'"'+(pg?' id="edPag"':' style="padding-bottom:var(--s8)"')+'>'+
     (S.leit.regua==="sim"?'<div class="regua" id="regua"></div>':'')+'<div class="colE">';
+  /* O VIDEO NAO TOCA AQUI, e nao e limitacao do prototipo: o que se explora e
+     como se ANOTA um video, e o que se anota e a transcricao. O quadro em cima
+     existe para dizer onde voce esta no tempo — e o mesmo papel que a capa e o
+     cabecalho tem num livro. */
+  if(ARQ.tipo==="video")
+    h+='<div class="vidT"><div class="vidQ"><img src="'+capa(ARQ.capa)+'" alt="">'+
+      '<span class="vidP">\u25b6</span></div>'+
+      '<div class="vidM"><span class="lbl">Vídeo · '+mmss(ARQ.dur)+'</span>'+
+      '<p class="vidD">A transcrição é o que se lê e o que se anota. Marcar uma frase aqui '+
+      'guarda o <b>segundo</b> em que ela foi dita — e segundo não muda quando a fonte muda, '+
+      'que é mais do que uma página pode prometer.</p>'+
+      '<p class="vidF">Transcrição '+esc(ARQ.transcrita||"automática")+'.</p></div></div>';
   CAPS.forEach((c,i)=>{
     h+='<section class="lsec" id="cap'+i+'"><div class="lcap"><span>'+esc(c.n)+'</span>'+
-      '<button class="escq" data-a="esc-aqui" data-v="'+i+'">escrever sobre este cap\u00edtulo</button>'+
+      '<button class="escq" data-a="esc-aqui" data-v="'+i+'">escrever sobre este '+
+      (ARQ.tipo==="video"?"trecho":"capítulo")+'</button>'+
       /* marcar o capitulo: um lugar para voltar, sem trecho e sem nota. */
       '<button class="escq mrc" data-a="marca-por" data-v="'+i+'">'+
       (S.marcas.some(m=>m.livro===ARQ.titulo&&m.cap===i)?"◆ marcado":"◇ marcar")+'</button>'+
-      '<span>Cap\u00edtulo '+(i+1)+' de '+CAPS.length+'</span></div>'+
+      '<span>'+(ARQ.tipo==="video"
+        ? mmss(c.t)+' \u00b7 trecho '+(i+1)+' de '+CAPS.length
+        : 'Cap\u00edtulo '+(i+1)+' de '+CAPS.length)+'</span></div>'+
       (S.escAqui===String(i)?notaLivre({k:"aqui",cap:i,nota:""}):"");
     c.p.forEach((p,j)=>{
       const vs=ARQ.fmt==="PDF"?(S.vista||"adaptado"):"adaptado";
@@ -2751,6 +2818,12 @@ function vLeitura(){
         h+='<div class="cmp"><div class="cmpO">'+blocoOriginal(i,j,p)+'</div>'+
           '<div class="cmpA"><p class="txtE" data-cap="'+i+'" data-p="'+j+'" data-tr>'+
           paragrafo(i,j,p)+'</p></div></div>'+notasDo(i,j);
+      /* o timecode fica na margem, e nao no meio da frase: ele e endereco, e
+         endereco nao se le junto com o conteudo. */
+      else if(ARQ.tipo==="video")
+        h+='<p class="txtE -vid" data-cap="'+i+'" data-p="'+j+'" data-tr>'+
+          '<button class="vidTc" data-a="nada" title="Ir a este ponto">'+
+          mmss(c.tp&&c.tp[j]!=null?c.tp[j]:c.t)+'</button>'+paragrafo(i,j,p)+'</p>'+notasDo(i,j);
       else h+='<p class="txtE" data-cap="'+i+'" data-p="'+j+'" data-tr>'+paragrafo(i,j,p)+
         (i===1&&j===0?'<button class="marcaN" data-a="folha" data-v="nota">1</button>':'')+'</p>'+
         notasDo(i,j);
@@ -2860,6 +2933,16 @@ function sementes(){
     semente(0,1,"O padr\u00e3o s\u00f3 aparece depois que a observa\u00e7\u00e3o se repete.",null,
       "Terceira vez que encontro isto. Começa a parecer regra, e não coincidência.",
       "leitura","n-obs-3","Estudo de Viabilidade"),
+    /* DE UM VIDEO. Nascem do mesmo jeito que as de livro, do mesmo gesto e com
+       a mesma ancora — a diferenca e que o endereco delas e um segundo, e nao
+       um capitulo. Se elas parecessem outra coisa na lista, seria porque o
+       modelo estava errado, e nao porque video e diferente. */
+    semente(1,1,"voc\u00ea para de colecionar lembran\u00e7as e come\u00e7a a produzir medida",null,
+      "Ela diz da câmera o que a Ana diz do caderno. Repetir não é acumular — é medir.",
+      "leitura","n-vid-1","Oficina de imagem \u2014 aula 4"),
+    semente(2,1,"o caderno vale mais que a c\u00e2mera: ele guarda a decis\u00e3o",null,
+      "Isto é o argumento inteiro do Mekora dito por outra pessoa, sobre outra coisa.",
+      "leitura","n-vid-2","Oficina de imagem \u2014 aula 4"),
     /* nota solta: nasceu fora de livro nenhum */
     {k:"n-solta-1",livro:null,cap:null,par:null,ini:null,fim:null,perg:null,
      nota:"Vale testar: quantas passagens s\u00e3o precisas antes de um padr\u00e3o virar decis\u00e3o?",
@@ -2869,7 +2952,7 @@ function sementes(){
      lugar e nao separa nada. */
   const DIAS={q0:"2 ago",q1:"2 ago",q2:"4 ago",q3:"9 ago",q4:"9 ago",e0:"9 ago",
     ddiar20:"4 ago","n-obs-1":"14 ago","n-obs-2":"16 ago","n-obs-3":"18 ago",
-    "n-solta-1":"ontem"};
+"n-vid-1":"20 ago","n-vid-2":"21 ago","n-solta-1":"ontem"};
   const todas=q.concat(fora).concat([
     semente(1,1,"Adotamos a regra de escrever antes de conversar. Duas horas por dia sem falar com ningu\u00e9m, cada um com o pr\u00f3prio caderno.","q1"),
     semente(2,0,"A repeti\u00e7\u00e3o \u00e9 o que transforma imagem em dado.","q2",
@@ -2880,6 +2963,7 @@ function sementes(){
   /* nem tudo que foi escrito foi levado: quatro anotacoes ficam so no livro,
      porque a tela precisa MOSTRAR a diferenca em vez de explica-la. */
   const LEVADAS={q1:1,q2:1,ddiar20:1,"n-obs-1":1,"n-obs-2":1,"n-obs-3":1,"n-solta-1":1};
+  LEVADAS["n-vid-1"]=1;LEVADAS["n-vid-2"]=1;
   todas.forEach(d=>{if(DIAS[d.k])d.dia=DIAS[d.k];d.levada=!!LEVADAS[d.k];});
   return todas;
 }
@@ -3016,7 +3100,12 @@ function sementeEstudos(){
     {id:"est-metodo",nome:"Método de campo",
      sobre:"O que a repetição produz que uma foto isolada não produz?",
      livros:["Diário 02","Estudo de Viabilidade"],
-     notas:doTermo.slice(0,3).map(d=>d.k),sua:true,fechado:false},
+     /* uma nota de VIDEO e tres de livro no mesmo estudo: e o caso que prova
+        que a fonte nao muda o que a nota e. Entra aqui, e nao em est-serie,
+        porque este ja esta "andando" pelo Diario 02 — em est-serie o video em
+        curso levaria o estudo para andando e a coluna Guardado ficaria vazia,
+        e a semente deixaria de mostrar as tres. */
+     notas:doTermo.slice(0,3).map(d=>d.k).concat(["n-vid-2"]),sua:true,fechado:false},
     /* o centro deste é uma AFIRMAÇÃO, e é de propósito: das cinco notas
        escritas lendo neste material, cinco são afirmações. Exigir pergunta
        faria o centro do estudo ser gramaticalmente diferente de tudo o que
@@ -3698,7 +3787,7 @@ function vLivro(){
      um campo vazio nao e informacao, e "ainda nao enviado" ja esta dito pelo
      botao que continua ali. */
   const cl=[];
-  if(S.cap>0)cl.push("Cap\u00edtulo "+(S.cap+1)+" de "+CAPS.length);
+  if(S.cap>0)cl.push((ARQ.tipo==="video"?"Trecho":"Capítulo")+" "+(S.cap+1)+" de "+CAPS.length);
   /* o saldo do que ficou nao entra aqui: ele e da secao "O que ficou", que
      conta pela regra certa (ancora e nota sao coisas diferentes) e esta na
      mesma tela. Repetir aqui era repetir com OUTRA conta — o cabecalho somava
@@ -4187,6 +4276,21 @@ const semEstudo=()=>levadas().filter(d=>!estudosDaNota(d.k).length);
 function livrosDoEstudo(e){
   return [...new Set((e.livros||[]).concat(
     e.notas.map(escK).filter(Boolean).map(d=>d.livro).filter(Boolean)))];
+}
+/* ═══ FONTE ═══
+   Um livro e uma fonte; um video tambem. O que muda entre eles nao e o que
+   voce escreve, e sim a coordenada de onde aquilo veio: capitulo e paragrafo
+   num texto, segundo num video. */
+const ehVideo=t=>!!(LIVROS[t]&&LIVROS[t].tipo==="video");
+const mmss=s=>{s=Math.max(0,Math.round(s));
+  const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),g=s%60;
+  return (h?h+":"+String(m).padStart(2,"0"):String(m))+":"+String(g).padStart(2,"0");};
+/* o timecode do paragrafo, que e a ancora de tempo da nota */
+function tempoDe(d){
+  if(!d||!d.livro||!ehVideo(d.livro))return null;
+  const c=LIVROS[d.livro].caps[d.cap];
+  if(!c)return null;
+  return c.tp&&c.tp[d.par]!=null?c.tp[d.par]:c.t;
 }
 const levadas=()=>S.dst.filter(d=>d.nota&&d.levada);
 const anotadasDe=lv=>S.dst.filter(d=>d.nota&&d.livro===lv);
@@ -4850,7 +4954,12 @@ function vNota(){
   const tr=escTxt(d),lv=d.livro?LIVROS[d.livro]:null;
   const onde=[];
   if(d.livro){onde.push(esc(d.livro));if(lv&&lv.autor)onde.push(esc(lv.autor));
-    if(d.cap!=null)onde.push("Capítulo "+(d.cap+1)+(lv?" — "+esc(lv.caps[d.cap].n):""));}
+    /* num video a coordenada e o SEGUNDO, e nao o capitulo. E ele e mais
+       estavel que pagina: video nao reflui, entao a nota volta ao ponto exato
+       sem os cinco passos de reancoragem que o texto precisa. */
+    if(d.cap!=null)onde.push(ehVideo(d.livro)
+      ? "Vídeo · " + mmss(tempoDe(d)) + (lv?" — "+esc(lv.caps[d.cap].n):"")
+      : "Capítulo "+(d.cap+1)+(lv?" — "+esc(lv.caps[d.cap].n):""));}
   else onde.push("Escrita aqui");   /* "sem livro" ja estava dito por "aqui" */
   onde.push(d.dia||"hoje");
   const conj=conjuntoDe(d.k);
@@ -4877,7 +4986,9 @@ function vNota(){
   const r=ancoraDe(d), aviso=r&&COMO[r.como];
   if(tr)h+='<div class="trechoN"><p>“'+esc(tr)+'”</p>'+
     (aviso?'<p class="reanc">'+aviso+'</p>':'')+
-    '<button class="volta" data-a="nota-origem" data-v="'+d.k+'">↩ abrir no livro, onde isto está</button></div>';
+    '<button class="volta" data-a="nota-origem" data-v="'+d.k+'">↩ '+
+    (ehVideo(d.livro)?'abrir no vídeo, em '+mmss(tempoDe(d)):'abrir no livro, onde isto está')+
+    '</button></div>';
   /* uma nota cujo trecho sumiu nao vira lixo: ela continua sendo o que voce
      escreveu, e a tela diz o que perdeu em vez de fingir que nada mudou. */
   else if(perdida(d))h+='<div class="trechoN -perdida"><p>O trecho que originou esta nota '+
@@ -4889,7 +5000,8 @@ function vNota(){
      o que muda o estado da nota, e o que a destroi — este ultimo sozinho,
      no fim. */
   h+='<div class="acs acsN">'+
-    (tr?'<button class="pri" data-a="nota-origem" data-v="'+d.k+'">Abrir no livro</button>':'')+
+    (tr?'<button class="pri" data-a="nota-origem" data-v="'+d.k+'">'+
+      (ehVideo(d.livro)?'Abrir no vídeo':'Abrir no livro')+'</button>':'')+
     '<button class="'+(tr?"sec":"pri")+'" data-a="nota-editar" data-v="'+d.k+'">Editar</button>'+
     '<span class="di"></span>'+
     '<button class="sec" data-a="levar" data-v="'+d.k+'">'+
@@ -5224,12 +5336,12 @@ function vEstudo() {
       ? '<p class="sobreG">' + esc(t.sobre) + '</p>'
       : '<p class="sobreX"><button class="lnk" data-a="est-renomear" data-v="' + esc(t.id) +
         '">Do que se trata este estudo?</button></p>';
-  h += '<p class="ondeN">' + lvs.length + ' livro' + (lvs.length === 1 ? '' : 's') +
+  h += '<p class="ondeN">' + lvs.length + ' fonte' + (lvs.length === 1 ? '' : 's') +
     ' · ' + ns.length + ' nota' + (ns.length === 1 ? '' : 's') +
     ' · ' + (t.sua ? 'você reuniu' : 'o Mekora contou, você nomeou') + '</p>';
   h += '<div class="acs acsN">' +
     '<button class="pri" data-a="est-ver" data-v="' + esc(t.id) + '">Ver as notas na lista</button>' +
-    '<button class="sec" data-a="est-filtrar-ir" data-v="' + esc(t.id) + '">Ver os livros na Estante</button>' +
+    '<button class="sec" data-a="est-filtrar-ir" data-v="' + esc(t.id) + '">Ver as fontes na Estante</button>' +
     '<button class="sec" data-a="est-renomear" data-v="' + esc(t.id) + '">Renomear</button>' +
     '<span class="sp" style="flex:1"></span>' +
     '<button class="sec -dan" data-a="est-soltar" data-v="' + esc(t.id) + '">Desfazer o estudo</button></div>';
@@ -5238,18 +5350,24 @@ function vEstudo() {
      nunca encontrar as notas que sairam deles. Um livro entra por "Este
      arquivo" dentro do proprio livro, que e o menu de objeto dele — e nao por
      um seletor aqui, que seria uma segunda porta para o mesmo gesto. */
-  h += '<div class="soltoE">Os livros</div>';
+  /* FONTES, e nao livros. Um estudo reune do que voce estudou, e nem tudo do
+     que se estuda vira EPUB — video ja entra aqui, imagem entra depois. */
+  h += '<div class="soltoE">As fontes</div>';
   h += lvs.length
     ? '<div class="estLv">' + lvs.map(nome => {
         const b = noAcervo(nome);
         const postos = (t.livros || []).indexOf(nome) > -1;
-        return '<button class="estLvI" data-a="ir-livro" data-v="' + esc(nome) + '">' +
+        const vid = ehVideo(nome);
+        return '<button class="estLvI' + (vid ? ' -vid' : '') + '" data-a="ir-livro" data-v="' + esc(nome) + '">' +
           (b ? '<img src="' + capa(b.c) + '" alt="" loading="lazy">' : '') +
           '<span class="t">' + esc(nome) + '</span>' +
-          '<span class="q">' + (postos ? 'posto aqui' : 'veio de uma nota') + '</span></button>';
+          /* o tipo primeiro, a procedencia depois: qual coisa isto e importa
+             mais do que como ela entrou. */
+          '<span class="q">' + (vid ? 'vídeo · ' : '') +
+          (postos ? 'posto aqui' : 'veio de uma nota') + '</span></button>';
       }).join("") + '</div>'
-    : '<p class="vazioN">Nenhum livro ainda. Dentro de um livro, <b>Este arquivo › Estudos</b> ' +
-      'põe ele aqui.</p>';
+    : '<p class="vazioN">Nenhuma fonte ainda. Dentro de uma delas, <b>Este arquivo › Estudos</b> ' +
+      'põe ela aqui.</p>';
   /* A TRILHA, que era uma das três direções de Conexões e agora é o corpo
      desta página: ela é a forma DESTE conceito, e não uma vista do acervo. */
   h += '<div class="soltoE">Como isto se formou</div>';
@@ -6498,7 +6616,12 @@ function vFolha(){
       (st?'<span class="st">'+st+'</span>':'')+'</span><span class="ac">›</span></button>';
     return folha("Este arquivo",esc(ARQ.titulo),
       '<div class="lista">'+
-      li("folha","envio","Enviar ao Kindle",S.enviado?"Enviado hoje, 09:12":"")+
+      /* O Kindle e um MEIO, e nao o foco — como desktop, celular e tablet. Um
+         video nao vai para la, e a linha fica dizendo por que em vez de sumir:
+         sumir ensinaria que falta alguma coisa neste arquivo. */
+      (ARQ.tipo==="video"
+        ?li("nada","","Enviar ao Kindle","Vídeo não vai para o Kindle. Ele é um dos meios, e não o destino de tudo.")
+        :li("folha","envio","Enviar ao Kindle",S.enviado?"Enviado hoje, 09:12":""))+
       li("baixar","","Baixar o EPUB","")+
       /* A derivacao erra em dois casos previsiveis: quem termina o livro sem
          rolar o ultimo pixel, e quem quer recomecar. Por isso ela e corrigivel

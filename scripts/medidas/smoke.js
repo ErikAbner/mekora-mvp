@@ -35,6 +35,48 @@
     catch(e){erros.push("estante/"+fe+" -> "+e.message);}
   }
   S.fEstante="tudo";S.conta=true;
+  /* VIDEO COMO FONTE. O que se prova aqui nao e que video funciona — e que
+     ele nao precisou de modelo proprio: a mesma ancora, a mesma nota, a
+     mesma lista. Se alguma dessas tres divergir, o modelo estava errado. */
+  try{
+    const vs=levadas().filter(d=>d.livro&&ehVideo(d.livro));
+    if(vs.length<2)erros.push("video: as notas de video nao chegaram ao Conhecimento ("+vs.length+")");
+    /* o endereco e um segundo, e nao um capitulo */
+    S.lugar="nota";S.notaK=vs[0].k;S.conj=null;S.folha=null;pinta();
+    const onde=(document.querySelector(".ondeN")||{innerText:""}).innerText;
+    if(onde.indexOf("Vídeo · ")<0||!/\d+:\d\d/.test(onde))
+      erros.push("video: a nota nao diz o segundo de onde veio — \""+onde.trim()+"\"");
+    if(tempoDe(vs[0])==null)erros.push("video: tempoDe devolveu nulo para nota de video");
+    if(tempoDe(levadas().find(d=>d.livro&&!ehVideo(d.livro)))!==null)
+      erros.push("video: tempoDe devolveu tempo para nota de LIVRO");
+    feito.push("nota/de-video:"+document.body.innerHTML.length);
+    /* uma nota de video se liga a notas de livro: a fonte nao muda o que ela e */
+    const cruza=vs.some(d=>relacoesDe(d.k).some(r=>{const o=escK(r.k);
+      return o&&o.livro&&!ehVideo(o.livro);}));
+    if(!cruza)erros.push("video: nenhuma nota de video encosta numa nota de livro");
+    /* a superficie: transcricao ancoravel, com o timecode na margem */
+    const antes=ARQ;
+    ARQ=LIVROS["Oficina de imagem — aula 4"];
+    S.lugar="leitura";S.dentro=true;S.folha=null;pinta();
+    if(!document.querySelector(".vidT"))erros.push("video: a superficie nao tem o quadro do tempo");
+    const tcs=document.querySelectorAll(".vidTc").length;
+    const ancoraveis=document.querySelectorAll(".txtE.-vid[data-tr]").length;
+    if(!tcs||tcs!==ancoraveis)
+      erros.push("video: timecode e paragrafo ancoravel nao batem ("+tcs+" contra "+ancoraveis+")");
+    /* e a palavra "capitulo" nao pode sobrar numa aula gravada */
+    if(/[Cc]apítulo|cap\./.test(document.body.innerText))
+      erros.push("video: sobrou vocabulario de livro na superficie de video");
+    feito.push("leitura/transcricao:"+document.body.innerHTML.length);
+    /* o Kindle diz POR QUE nao, em vez de sumir */
+    S.lugar="livro";S.folha="controles";pinta();
+    const txt=document.body.innerText;
+    if(txt.indexOf("Enviar ao Kindle")<0)
+      erros.push("video: a linha do Kindle sumiu em vez de dizer por que nao");
+    if(!/não vai para o Kindle/.test(txt))
+      erros.push("video: a linha do Kindle nao explica por que nao");
+    feito.push("arquivo/kindle-nao-serve:"+document.body.innerHTML.length);
+    ARQ=antes;S.lugar="notas";S.nfiltro="estudos";S.dentro=false;S.folha=null;pinta();
+  }catch(e){erros.push("video -> "+e.message);}
   /* O QUE FICOU PELA METADE. A faixa e a unica coisa da entrada com acao
      pendente, e o que ela conta muda com o estado do acervo: cada extremo
      mostra uma versao diferente do cabecalho. */
