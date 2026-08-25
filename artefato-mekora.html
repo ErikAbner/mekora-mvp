@@ -384,6 +384,48 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .fVazio{font-size:12px;color:var(--ink-3);line-height:1.5;padding:var(--s3) 0}
 .fMais{font-family:var(--mono);font-size:10px;color:var(--ink-3);padding-top:var(--s2)}
 .fRegra{font-size:12.5px;color:var(--ink-2);line-height:1.55;max-width:74ch;margin:var(--s6) 0 var(--s6)}
+/* ═══ QUADRO DE ESTUDOS ═══
+   Mesma linguagem da Fila, e a regra invertida. La duas colunas sao
+   consequencia da leitura e voce ARRANJA a primeira; aqui duas sao
+   consequencia da leitura e voce DECIDE a ultima.
+   Fechar escapa da regra contra campo de estado porque status apodrece por
+   exigir manutencao continua, e fechar acontece uma vez. */
+.quadro{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s6);
+  align-items:start;margin-top:var(--s5)}
+.qCol{min-width:0}
+.qCab{display:flex;align-items:baseline;gap:var(--s2);padding-bottom:var(--s2);
+  border-bottom:1px solid var(--line);margin-bottom:var(--s4)}
+.qCab h2{font-family:var(--ui);font-size:13px;font-weight:600;margin:0;letter-spacing:.01em}
+.qCab .n{font-family:var(--mono);font-size:10px;color:var(--ink-3)}
+.qCab .lb{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;color:var(--ink-3);margin-left:auto}
+.qPil{display:flex;flex-direction:column;gap:var(--s3);min-height:60px}
+.qCard{background:var(--bg-2);padding:var(--s4);cursor:grab;touch-action:none;
+  transition:transform var(--d2) var(--curva)}
+.qCard h3{margin:0;font-family:var(--ui);font-size:12.5px;font-weight:600;letter-spacing:.01em}
+.qCard h3 .abre{text-align:left;width:100%}
+.qCard h3 .abre:hover{color:var(--acc)}
+.qCard .sobre{font-family:var(--serif);font-size:1.02rem;line-height:1.34;color:var(--ink);
+  margin:var(--s2) 0 0}
+.qCard .me{font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--ink-3);
+  margin:var(--s3) 0 0}
+.qCard .caps{display:flex;gap:5px;margin-top:var(--s3)}
+.qCard .caps img{width:26px;height:auto;display:block;border:1px solid var(--line)}
+.qAcs{margin-top:var(--s3);opacity:0;transition:opacity var(--d1) var(--curva)}
+.qCard:hover .qAcs,.qCard:focus-within .qAcs{opacity:1}
+.qAcs button{font-family:var(--ui);font-size:11.5px;color:var(--ink-2);padding:0}
+.qAcs button:hover{color:var(--acc)}
+.qCard.-arrastando{cursor:grabbing;background:var(--branco);position:relative;z-index:5}
+/* a coluna que aceita marca com filete, e nao com chao: chao aqui competiria
+   com o proprio cartao, que ja e chao. */
+.qCol.-alvo .qPil{outline:1px dashed var(--line-3);outline-offset:var(--s3)}
+.qCol.-recusa .qPil{outline:1px dashed var(--dan);outline-offset:var(--s3)}
+.qCol.-fechado .qCard{background:transparent;border:1px solid var(--line)}
+.qCol.-fechado .qCard .sobre{color:var(--ink-2)}
+.qVazio{font-size:12.5px;color:var(--ink-3);line-height:1.5;margin:0}
+.qPor{font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--dan);
+  margin:var(--s4) 0 0;min-height:13px}
+.qRegra{font-size:12.5px;color:var(--ink-2);line-height:1.55;max-width:74ch;margin:var(--s2) 0 0}
+@media(max-width:900px){.quadro{grid-template-columns:1fr;gap:var(--s5)}}
 /* ═══ ESTUDOS ═══ */
 /* o segundo nivel e visivelmente menor que o primeiro: sao recortes de uma
    lista, e nao lugares. Antes os seis estavam lado a lado com o mesmo peso. */
@@ -402,7 +444,7 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .estC h3 .abre:hover{color:var(--acc)}
 /* a PERGUNTA e o que o cartao mostra de longe: o nome diz como o estudo se
    chama, e a pergunta diz para que ele existe. */
-.estC .perg{font-family:var(--serif);font-size:1.5rem;line-height:1.32;margin:var(--s2) 0 0;
+.estC .sobre{font-family:var(--serif);font-size:1.5rem;line-height:1.32;margin:var(--s2) 0 0;
   letter-spacing:-.01em;max-width:34ch}
 .estC .me{font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--ink-3);
   margin:var(--s3) 0 0}
@@ -410,11 +452,11 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .estC .caps img{width:40px;height:auto;display:block;border:1px solid var(--line)}
 .estC+.estC{margin-top:0}
 /* o sugerido: filete, e nao chao */
-.pergG{font-family:var(--serif);font-size:1.7rem;line-height:1.32;color:var(--ink);
+.sobreG{font-family:var(--serif);font-size:1.7rem;line-height:1.32;color:var(--ink);
   background:var(--bg-2);padding:var(--s5);margin:var(--s4) 0 0;letter-spacing:-.01em;box-sizing:border-box}
-.pergX{margin:var(--s4) 0 0}
-.pergX .lnk{padding:0;font-size:13px;color:var(--ink-3)}
-.pergX .lnk:hover{color:var(--acc)}
+.sobreX{margin:var(--s4) 0 0}
+.sobreX .lnk{padding:0;font-size:13px;color:var(--ink-3)}
+.sobreX .lnk:hover{color:var(--acc)}
 .estLv{display:flex;flex-wrap:wrap;gap:var(--s4);margin-top:var(--s3)}
 .estLv .estLvI{display:block;text-align:left;width:96px}
 .estLv img{display:block;width:96px;height:auto;border:1px solid var(--line)}
@@ -2220,7 +2262,7 @@ const zero={
      "rel" e "terr" sao seus; "ignoradas" existe porque uma sugestao que volta
      depois de dispensada deixa de ser sugestao e vira insistencia. */
   nfiltro:"estudos",qNotas:"",qPergunta:"",pgComo:false,notaK:null,sumAba:"conteudo",qLivro:"",vista:"adaptado",conteudoVista:"capitulos",tagNova:null,fEstudo:null,relAberta:null,pautaAberta:false,marcas:[{livro:"Diário 02",cap:2,dia:"9 ago"}],estK:null,redeAberta:false,renomeando:null,conj:null,listaVisivel:null,linhaMenu:null,recorteMotivo:null,conectando:null,qConectar:"",novaRel:null,rever:[],rel:[["n-solta-1","n-obs-1"]],
-  estudos:[],ignoradas:[],comoIdeia:false,nomeando:null,estNova:null,canvasPos:{},cvModo:"mover",cvLigando:null,trazendo:false,voltarCanvas:false,naoRel:[],canvasN:[],mantidos:[],verEst:null,verEstId:null,
+  estudos:[],estVista:"lista",ignoradas:[],comoIdeia:false,nomeando:null,estNova:null,canvasPos:{},cvModo:"mover",cvLigando:null,trazendo:false,voltarCanvas:false,naoRel:[],canvasN:[],mantidos:[],verEst:null,verEstId:null,
   sel:[],filtro:"todas",mud:[],fora:[],giradas:[],capaPag:1,
   disp:1,fonte:2,orient:"retrato",formato:"epub",nome:null,
   /* ── PERFIL ── uma seção por vez, e o estado de cada fluxo ao lado ── */
@@ -2361,7 +2403,7 @@ const AJUDA=[
 let S=Object.assign({},zero),timer=null,ultimoLugar=null;
 function reset(cena){
   clearInterval(timer);timer=null;S=Object.assign({},zero);
-  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardandoNota=null;S.guardando=null;S.tirando=null;S.apagando=null;S.escNovo=null;S.paraLivro=false;S.desc="";S.descAberta=false;S.escAqui=null;S.aaAberto=false;S.foco=false;S.rever=[];S.rel=[["n-solta-1","n-obs-1"]];S.ignoradas=[];S.nomeando=null;S.estNova=null;S.comoIdeia=false;S.nfiltro="estudos";S.qNotas="";S.qPergunta="";S.pgComo=false;S.notaK=null;S.sumAba="conteudo";S.qLivro="";S.vista="adaptado";S.conteudoVista="capitulos";S.tagNova=null;S.estudos=sementeEstudos();S.fEstudo=null;S.relAberta=null;S.pautaAberta=false;S.marcas=[{livro:"Diário 02",cap:2,dia:"9 ago"}];S.estK=null;S.redeAberta=false;S.renomeando=null;S.conj=null;S.listaVisivel=null;S.linhaMenu=null;S.recorteMotivo=null;S.conectando=null;S.qConectar="";S.novaRel=null;S.naoRel=[];S.canvasN=[];S.mantidos=[];S.verEst=null;S.verEstId=null;S.canvasPos={};S.cvModo="mover";S.cvLigando=null;S.trazendo=false;S.voltarCanvas=false;
+  S.dst=sementes();S.selE=null;S.notaAberta=null;S.rasc={};S.dstUndo=null;S.erroNota=false;S.guardandoNota=null;S.guardando=null;S.tirando=null;S.apagando=null;S.escNovo=null;S.paraLivro=false;S.desc="";S.descAberta=false;S.escAqui=null;S.aaAberto=false;S.foco=false;S.rever=[];S.rel=[["n-solta-1","n-obs-1"]];S.ignoradas=[];S.nomeando=null;S.estNova=null;S.comoIdeia=false;S.nfiltro="estudos";S.qNotas="";S.qPergunta="";S.pgComo=false;S.notaK=null;S.sumAba="conteudo";S.qLivro="";S.vista="adaptado";S.conteudoVista="capitulos";S.tagNova=null;S.estudos=sementeEstudos();S.estVista="lista";S.fEstudo=null;S.relAberta=null;S.pautaAberta=false;S.marcas=[{livro:"Diário 02",cap:2,dia:"9 ago"}];S.estK=null;S.redeAberta=false;S.renomeando=null;S.conj=null;S.listaVisivel=null;S.linhaMenu=null;S.recorteMotivo=null;S.conectando=null;S.qConectar="";S.novaRel=null;S.naoRel=[];S.canvasN=[];S.mantidos=[];S.verEst=null;S.verEstId=null;S.canvasPos={};S.cvModo="mover";S.cvLigando=null;S.trazendo=false;S.voltarCanvas=false;
   if(cena==="nova"){S.cena="nova";}
   if(cena==="sem-conta"){S.cena="nova";S.conta=false;}
   pinta();
@@ -2956,11 +2998,28 @@ S.dst=sementes();
    UM estudo seu e o resto solto: os dois estados precisam aparecer, senão a
    tela ensina que tudo tem de estar guardado. */
 function sementeEstudos(){
-  const daPergunta=(S.dst||[]).filter(d=>d.nota&&d.levada&&/repeti|s[ée]rie|isolad/i.test(d.nota));
-  return [{id:"est-metodo",nome:"Método de campo",
-    pergunta:"O que a repetição produz que uma foto isolada não produz?",
-    livros:["Diário 02","Estudo de Viabilidade"],
-    notas:daPergunta.slice(0,3).map(d=>d.k),sua:true}];
+  const doTermo=(S.dst||[]).filter(d=>d.nota&&d.levada&&/repeti|s[ée]rie|isolad/i.test(d.nota));
+  return [
+    {id:"est-metodo",nome:"Método de campo",
+     sobre:"O que a repetição produz que uma foto isolada não produz?",
+     livros:["Diário 02","Estudo de Viabilidade"],
+     notas:doTermo.slice(0,3).map(d=>d.k),sua:true,fechado:false},
+    /* o centro deste é uma AFIRMAÇÃO, e é de propósito: das cinco notas
+       escritas lendo neste material, cinco são afirmações. Exigir pergunta
+       faria o centro do estudo ser gramaticalmente diferente de tudo o que
+       mora dentro dele. */
+    {id:"est-serie",nome:"A série é a medida",
+     sobre:"Uma imagem sozinha permite lembrar; a série permite comparar.",
+     livros:["Malha Urbana","Censo de Fauna"],
+     notas:["n-obs-2"],sua:true,fechado:false},
+    /* fechado com um livro dele ainda aberto — n-obs-3 vem do Estudo de
+       Viabilidade, que está em 34%. É de propósito: fechar é decisão sua, e
+       continuar lendo não a desfaz. */
+    {id:"est-decidir",nome:"Decidir cedo",
+     sobre:"Nenhuma decisão de projeto sobreviveu ao primeiro contato com o terreno.",
+     livros:["Ata da reunião"],
+     notas:["n-obs-3"],sua:true,fechado:true}
+  ];
 }
 S.estudos=sementeEstudos();
 const dstTexto=escTxt;
@@ -4086,7 +4145,7 @@ const FORCA={sua:"você ligou",forte:"parecem próximas",possivel:"talvez"};
    vira o arquivo que ninguem abre — que e exatamente contra o que uma das
    notas do acervo argumenta. */
 /* ═══ ESTUDO ═══
-   Um estudo reúne LIVROS e NOTAS sob uma pergunta. Ele nasce de dois jeitos e
+   Um estudo reúne LIVROS e NOTAS em volta de uma mesma coisa. Ele nasce de dois jeitos e
    continua sendo um: você monta um, ou dá nome a um grupo que o Mekora contou.
    Dois conceitos para a mesma coisa era a confusão que a área tinha — coleção
    de um lado, na Estante; conceito do outro, no Conhecimento.
@@ -4235,7 +4294,7 @@ function vNotas(){
   const abA=(k,rot,n)=>'<button data-a="nota-filtro" data-v="'+k+'"'+
     (area===k?' aria-current="true"':'')+'>'+rot+(n!=null?' <i>'+n+'</i>':'')+'</button>';
   let h='<div class="pad larga"><div class="colE larga">'+
-    '<h1 class="t">Conhecimento</h1><p class="sub">Livros e notas reunidos sob uma pergunta. '+
+    '<h1 class="t">Conhecimento</h1><p class="sub">Livros e notas reunidos em volta de uma mesma coisa. '+
     'Uma nota pode ficar de fora \u2014 nem toda ideia entra numa gaveta.</p>'+
     '<div class="nfila">'+
       abA("estudos","Estudos",S.estudos.length)+
@@ -4359,26 +4418,140 @@ function vPergunta(){
    Os seus primeiro, depois o que o Mekora acha que pode virar um, e no fim o
    que ficou de fora. A ordem e essa porque e a ordem da posse: coisa sua,
    coisa proposta, coisa solta. */
+/* ═══ QUADRO DE ESTUDOS ═══
+   A Fila provou que kanban nao serve para estado de leitura: leitura e
+   derivada de prog, e arrastar nao e ler. Aqui a conta INVERTE. Fechar um
+   estudo e uma decisao que so a pessoa toma, e nenhuma leitura a produz —
+   entao o gesto de kanban vale exatamente para esta coluna, e para nenhuma
+   outra. As outras duas continuam saindo do livro.
+   E "fechado" nao e daqueles campos de status que apodrecem: status apodrece
+   por exigir manutencao continua, e fechar acontece uma vez. */
+const estadoEstudo=e=>e.fechado?"fechado"
+  :(livrosDoEstudo(e).some(t=>{const b=noAcervo(t);return b&&estadoDe(b)==="lendo";})?"andando":"guardado");
+/* so fechar e reabrir sao movimento: entre andando e guardado quem decide e o
+   livro, e nao a mao. */
+const qLegal=(de,para)=>de!==para&&(de==="fechado"||para==="fechado");
+const Q_COLS=[["andando","Andando"],["guardado","Guardado"],["fechado","Fechado"]];
+const Q_VAZIO={andando:"Nenhum estudo tem livro aberto agora.",
+  guardado:"Nada guardado — o que existe está andando ou fechado.",
+  fechado:"Nada fechado ainda."};
+function vQuadro(){
+  const cartao=e=>{
+    const ns=e.notas.map(escK).filter(Boolean),lvs=livrosDoEstudo(e),fech=!!e.fechado;
+    return '<div class="qCard" data-e="'+esc(e.id)+'">'+
+      '<h3><button class="abre" data-a="est-abrir" data-v="'+esc(e.id)+'">'+esc(e.nome)+'</button></h3>'+
+      (e.sobre?'<p class="sobre">'+esc(e.sobre)+'</p>':'')+
+      '<p class="me">'+lvs.length+' livro'+(lvs.length===1?'':'s')+' · '+
+        ns.length+' nota'+(ns.length===1?'':'s')+'</p>'+
+      (lvs.length?'<div class="caps">'+lvs.map(t=>{const b=noAcervo(t);
+        return b?'<img src="'+capa(b.c)+'" alt="'+esc(t)+'" title="'+esc(t)+'" loading="lazy">':'';}).join("")+'</div>':'')+
+      /* arrastar sozinho seria inacessivel: o botao faz o mesmo pelo teclado */
+      '<div class="qAcs"><button data-a="'+(fech?"est-reabrir":"est-fechar")+
+        '" data-v="'+esc(e.id)+'">'+(fech?"reabrir":"fechar")+'</button></div>'+
+      '</div>';
+  };
+  return '<div class="quadro" id="quadroEst">'+Q_COLS.map(c=>{
+    const es=S.estudos.filter(e=>estadoEstudo(e)===c[0]);
+    return '<div class="qCol -'+c[0]+'" data-c="'+c[0]+'">'+
+      '<div class="qCab"><h2>'+c[1]+'</h2><span class="n">'+es.length+'</span>'+
+      (c[0]==="fechado"?'<span class="lb">arraste para cá</span>':'')+'</div>'+
+      '<div class="qPil">'+(es.length?es.map(cartao).join("")
+        :'<p class="qVazio">'+Q_VAZIO[c[0]]+'</p>')+'</div></div>';
+  }).join("")+'</div>'+
+  '<p class="qPor" id="quadroPor"></p>'+
+  '<p class="qRegra">Você move para <b>fechado</b> — essa é a decisão, e nenhuma '+
+  'leitura a toma por você. As outras duas são consequência da leitura: um estudo anda '+
+  'enquanto algum livro dele está aberto. Fechar não apaga nada, e reabrir é o mesmo '+
+  'gesto ao contrário.</p>';
+}
+/* a mesma receita da Fila, e nenhuma parte dela e opcional: nada no DOM se
+   mexe durante o arrasto, a captura mora no container que nao se move, e o
+   limiar de 4px impede que todo clique vire arrasto de zero pixel. */
+function quadroArrastavel(){
+  const q=document.getElementById("quadroEst");
+  if(!q)return;
+  const por=document.getElementById("quadroPor");
+  q.addEventListener("pointerdown",ev=>{
+    const c=ev.target.closest(".qCard");
+    if(!c||ev.button||ev.target.closest("[data-a]"))return;
+    const de=c.closest(".qCol").dataset.c;
+    ev.preventDefault();
+    const cols=[...q.querySelectorAll(".qCol")];
+    const rs=cols.map(x=>x.getBoundingClientRect());
+    const x0=ev.clientX,y0=ev.clientY;
+    let arrastando=false,alvo=de;
+    q.setPointerCapture(ev.pointerId);
+    if(por)por.textContent="";
+    const marca=()=>cols.forEach(x=>{
+      const k=x.dataset.c,mira=arrastando&&k===alvo&&k!==de;
+      x.classList.toggle("-alvo",mira&&qLegal(de,k));
+      x.classList.toggle("-recusa",mira&&!qLegal(de,k));
+    });
+    const move=e=>{
+      const dx=e.clientX-x0,dy=e.clientY-y0;
+      if(!arrastando){if(Math.abs(dx)<4&&Math.abs(dy)<4)return;
+        arrastando=true;c.classList.add("-arrastando");}
+      c.style.transform="translate("+dx+"px,"+dy+"px)";
+      /* o alvo sai do PONTEIRO e testa os DOIS eixos. So o eixo X funcionava a
+         1440 e mentia a 390: empilhadas, as tres colunas tem o mesmo left e
+         right, entao todas casavam e a ultima vencia — qualquer arrasto
+         fechava o estudo. */
+      let novo=de;
+      rs.forEach((r,i)=>{
+        if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom)
+          novo=cols[i].dataset.c;});
+      if(novo!==alvo){
+        alvo=novo;marca();
+        if(por)por.textContent=(alvo!==de&&!qLegal(de,alvo))
+          ?"Arrastar não é ler: andando e guardado saem do livro, e não do gesto."
+          :"";
+      }
+    };
+    const solta=()=>{
+      q.removeEventListener("pointermove",move);
+      q.removeEventListener("pointerup",solta);
+      q.removeEventListener("pointercancel",solta);
+      c.style.transform="";c.classList.remove("-arrastando");
+      cols.forEach(x=>x.classList.remove("-alvo","-recusa"));
+      if(!arrastando)return;
+      if(alvo===de||!qLegal(de,alvo)){pinta();return;}
+      const alv=estudoK(c.dataset.e);
+      if(alv)alv.fechado=(alvo==="fechado");
+      pinta();
+    };
+    q.addEventListener("pointermove",move);
+    q.addEventListener("pointerup",solta);
+    q.addEventListener("pointercancel",solta);
+  });
+}
 function vEstudos(){
   const abertos=ideias().filter(g=>S.ignoradas.indexOf(g.id)<0&&!S.estudos.some(e=>e.id===g.id));
   const fora=semEstudo();
   let h=faixaPendente();
+  /* Quadro e VISTA, e nao lugar: a navegacao tem quatro e nenhum deles e um
+     recorte do Conhecimento. Mesma disciplina da Fila na Estante. */
   h+='<div class="acs estNv">'+
+     '<span class="vista"><button data-a="est-vista" data-v="lista" aria-pressed="'+
+       (S.estVista!=="quadro")+'">Lista</button>'+
+     '<button data-a="est-vista" data-v="quadro" aria-pressed="'+
+       (S.estVista==="quadro")+'">Quadro</button></span>'+
+     '<span class="sp" style="flex:1"></span>'+
      (S.estNova==="novo"
        ?''
        :'<button class="sec" data-a="est-nova" data-v="novo">+ Novo estudo</button>')+'</div>';
   if(S.estNova==="novo")
     h+='<div class="nomeia"><label for="nomeEst">Que estudo \u00e9 este?</label>'+
       '<input id="nomeEst" class="campoB" placeholder="M\u00e9todo de campo" autocomplete="off">'+
-      '<label for="pergEst" style="margin-top:var(--s3)">E a pergunta dele, se j\u00e1 houver uma</label>'+
-      '<input id="pergEst" class="campoB" placeholder="O que a repeti\u00e7\u00e3o produz?" autocomplete="off">'+
+      '<label for="sobreEst" style="margin-top:var(--s3)">Do que se trata — pergunta, suspeita, ou uma frase que você quer testar</label>'+
+      '<input id="sobreEst" class="campoB" placeholder="A série é a medida; a foto isolada é lembrança" autocomplete="off">'+
       '<div class="acs"><button class="pri" data-a="est-criar-ok" data-v="novo">Criar</button>'+
       '<button class="sec" data-a="est-nova" data-v="">cancelar</button></div></div>';
   if(S.estudos.length)
-    h+='<div class="estL">'+S.estudos.map(cartaoEstudo).join("")+'</div>';
+    h+=S.estVista==="quadro"?vQuadro()
+      :'<div class="estL">'+S.estudos.map(cartaoEstudo).join("")+'</div>';
   else if(S.estNova!=="novo")
     h+='<p class="vazioN">Nenhum estudo ainda. Um estudo re\u00fane os livros e as notas de '+
-      'uma pergunta s\u00f3 \u2014 e \u00e9 o que faz um assunto poder terminar.</p>';
+      'uma coisa só — e é você quem decide quando ela acabou.</p>';
   if(abertos.length)
     h+='<div class="soltoE" style="margin-top:var(--s7)">Talvez um estudo</div>'+
       abertos.map(blocoIdeias).join("");
@@ -4416,15 +4589,15 @@ function faixaPendente(){
       :'')+'</div>'+
     linha(P[0])+(S.pautaAberta?resto.map(linha).join(""):'')+'</div>';
 }
-/* O cartao carrega a PERGUNTA em destaque, e nao o nome: o nome diz como o
-   estudo se chama, e a pergunta diz para que ele existe. As capas entram
-   pequenas porque aqui elas contam quantos livros, e nao quais. */
+/* O cartao carrega O CENTRO em destaque, e nao o nome: o nome diz como o
+   estudo se chama, e o centro diz do que ele trata — e ele nao precisa ser
+   pergunta. As capas entram pequenas porque aqui contam quantos, nao quais. */
 function cartaoEstudo(e){
   const ns=e.notas.map(escK).filter(Boolean);
   const lvs=livrosDoEstudo(e);
   return '<div class="estC"><h3><button class="abre" data-a="est-abrir" data-v="'+esc(e.id)+'">'+
     esc(e.nome)+'</button></h3>'+
-    (e.pergunta?'<p class="perg">'+esc(e.pergunta)+'</p>':'')+
+    (e.sobre?'<p class="sobre">'+esc(e.sobre)+'</p>':'')+
     '<p class="me">'+lvs.length+' livro'+(lvs.length===1?'':'s')+' \u00b7 '+
       ns.length+' nota'+(ns.length===1?'':'s')+' \u00b7 '+
       (e.sua?'voc\u00ea reuniu':'voc\u00ea nomeou')+'</p>'+
@@ -5007,18 +5180,18 @@ function vEstudo() {
   h += S.renomeando === t.id
     ? '<div class="nomeia"><label for="nomeConc2">Como você chama este estudo?</label>' +
       '<input id="nomeConc2" class="campoB" value="' + esc(t.nome) + '" autocomplete="off">' +
-      '<label for="pergConc2" style="margin-top:var(--s3)">E a pergunta dele</label>' +
-      '<input id="pergConc2" class="campoB" value="' + esc(t.pergunta || "") + '" autocomplete="off">' +
+      '<label for="sobreConc2" style="margin-top:var(--s3)">Do que se trata</label>' +
+      '<input id="sobreConc2" class="campoB" value="' + esc(t.sobre || "") + '" autocomplete="off">' +
       '<div class="acs"><button class="pri" data-a="est-renomear-ok" data-v="' + esc(t.id) + '">Guardar</button>' +
       '<button class="sec" data-a="est-renomear" data-v="">cancelar</button></div></div>'
     : '<h1 class="tConc">' + esc(t.nome) + '</h1>';
-  /* A PERGUNTA e o assunto da pagina, e por isso ela leva o chao e o corpo
-     grande. Sem ela o estudo e so uma pasta com nome, e pasta nao termina. */
+  /* O CENTRO e o assunto da pagina, e leva o chao e o corpo grande. Ele nao
+     precisa ser pergunta — o que faz um estudo terminar e voce fechar. */
   if (S.renomeando !== t.id)
-    h += t.pergunta
-      ? '<p class="pergG">' + esc(t.pergunta) + '</p>'
-      : '<p class="pergX"><button class="lnk" data-a="est-renomear" data-v="' + esc(t.id) +
-        '">Qual é a pergunta deste estudo?</button></p>';
+    h += t.sobre
+      ? '<p class="sobreG">' + esc(t.sobre) + '</p>'
+      : '<p class="sobreX"><button class="lnk" data-a="est-renomear" data-v="' + esc(t.id) +
+        '">Do que se trata este estudo?</button></p>';
   h += '<p class="ondeN">' + lvs.length + ' livro' + (lvs.length === 1 ? '' : 's') +
     ' · ' + ns.length + ' nota' + (ns.length === 1 ? '' : 's') +
     ' · ' + (t.sua ? 'você reuniu' : 'o Mekora contou, você nomeou') + '</p>';
@@ -6671,6 +6844,7 @@ function pinta(){
      altura: medir e o unico jeito de a linha encostar no que ela liga. */
   if(S.lugar==="canvas"){desenhaLigacoes();arrastavel();}
   if(S.lugar==="estante"&&S.estante==="fila")filaArrastavel();
+  if(S.lugar==="notas"&&S.nfiltro==="estudos"&&S.estVista==="quadro")quadroArrastavel();
   /* A regua acompanha o cursor porque e assim que ela serve: uma faixa fixa
      no meio da tela obrigaria a pessoa a mover o texto ate ela, que e o
      contrario do problema que ela resolve. */
@@ -7177,9 +7351,14 @@ function roteia(a,v,el){
     case "est-renomear-ok":{
       const c=document.getElementById("nomeConc2"),nome=c?c.value.trim():"";
       if(!nome){if(c)c.focus();break;}
-      const pg=document.getElementById("pergConc2"),t=estudoK(v);
-      if(t){t.nome=nome;if(pg)t.pergunta=pg.value.trim();}
+      const pg=document.getElementById("sobreConc2"),t=estudoK(v);
+      if(t){t.nome=nome;if(pg)t.sobre=pg.value.trim();}
       S.renomeando=null;break;}
+    case "est-vista":S.estVista=v==="quadro"?"quadro":"lista";break;
+    /* fechar e reabrir sao o MESMO gesto ao contrario, e nenhum dos dois
+       apaga coisa alguma: o estudo continua inteiro nos dois estados. */
+    case "est-fechar":{const t=estudoK(v);if(t)t.fechado=true;break;}
+    case "est-reabrir":{const t=estudoK(v);if(t)t.fechado=false;break;}
     case "est-nova":S.estNova=v||null;break;
     case "est-criar-ok":{
       /* dois nascimentos, um objeto: do zero na entrada, ou a partir de uma
@@ -7187,9 +7366,9 @@ function roteia(a,v,el){
       const doZero=v==="novo";
       const c=document.getElementById(doZero?"nomeEst":"nomeConc"),nome=c?c.value.trim():"";
       if(!nome){if(c)c.focus();break;}
-      const pg=document.getElementById("pergEst");
+      const pg=document.getElementById("sobreEst");
       S.estudos.push({id:"u-"+S.estudos.length+"-"+nome.length,nome:nome,
-        pergunta:doZero&&pg?pg.value.trim():"",livros:[],
+        sobre:doZero&&pg?pg.value.trim():"",fechado:false,livros:[],
         notas:doZero?[]:[v],quando:"agora",sua:true});
       S.estNova=null;break;}
     case "est-por":{
@@ -7225,7 +7404,7 @@ function roteia(a,v,el){
       /* nomear um grupo sugerido CRIA um estudo — uma entrada emergente e uma
          manual para o mesmo objeto. Se fossem dois objetos, a confusao que
          esta area tinha voltaria com outro nome. */
-      S.estudos.push({id:v,nome:nome,pergunta:"",livros:[],
+      S.estudos.push({id:v,nome:nome,sobre:"",fechado:false,livros:[],
         notas:v.split("|"),quando:"agora",sua:false});
       S.nomeando=null;S.nfiltro="estudos";break;}
     case "dst-ir":{
@@ -7874,7 +8053,7 @@ mais notas sobre este assunto. A trilha reflete o material, e não uma simetria 
 <p>O parágrafo que ensinava isso morava em Conexões e saiu junto. Ele fica aqui, que é onde argumento
 mora:</p>
 <table><thead><tr><th>Palavra</th><th>O que é</th><th>Quem começou</th></tr></thead><tbody>
-<tr><td class="n">Estudo</td><td>Livros <b>e</b> notas sob uma pergunta. Mora no Conhecimento.</td><td>você monta, ou nomeia um que foi contado</td></tr>
+<tr><td class="n">Estudo</td><td>Livros <b>e</b> notas em volta de uma mesma coisa. Mora no Conhecimento.</td><td>você monta, ou nomeia um que foi contado</td></tr>
 <tr><td class="n">Tag</td><td>Palavra colada numa nota. Não tem página.</td><td>você</td></tr>
 <tr><td class="n">Conceito</td><td>Grupo de notas com nome, e tem página.</td><td>você nomeia; o Mekora pode ter notado</td></tr>
 <tr><td class="n">Conexão</td><td>Relação entre duas notas. Não é lugar nenhum.</td><td>você liga, ou aceita uma sugestão</td></tr>
@@ -7899,7 +8078,7 @@ faltava, e o que continua de fora está dito no fim, com o motivo.</p>
 <tr><td class="n">Marcador</td><td>Quarta aba do painel, e o gesto no cabeçalho do capítulo. Não é destaque nem nota: é um lugar para voltar, sem texto seu e sem trecho escolhido.</td></tr>
 <tr><td class="n">Régua de leitura</td><td>Em Aparência. Segue o cursor — uma faixa fixa no meio da tela obrigaria a pessoa a mover o texto até ela.</td></tr>
 <tr><td class="n">Tag</td><td>Palavra colada na nota, normalizada. Tocar numa recorta a lista. <b>Tag não tem página</b>; se tivesse, seria um conceito com outro nome.</td></tr>
-<tr><td class="n">Estudo</td><td>No Conhecimento, porque agrupa <b>livros e notas</b> sob uma pergunta. Coleção e Conceito eram as duas metades disto, em áreas diferentes, e nenhuma servia sozinha.</td></tr>
+<tr><td class="n">Estudo</td><td>No Conhecimento, porque agrupa <b>livros e notas</b> em volta de uma mesma coisa. Coleção e Conceito eram as duas metades disto, em áreas diferentes, e nenhuma servia sozinha.</td></tr>
 <tr><td class="n">Paginação</td><td>Em Aparência. Colunas reais, e o número de colunas é calculado da largura: com <span class="mono">column-width</span> solto cabia uma só e ela esticava para 133 caracteres por linha. Agora mede 69 em 1100, 1440 e 1920.</td></tr>
 <tr><td class="n">Original, adaptado e comparar</td><td>No leitor, e só quando o arquivo veio de PDF. O original mostra as quebras rígidas, a hifenização no fim da linha, o cabeçalho corrido e o fólio — <b>e os destaques continuam marcados nos dois</b>.</td></tr>
 <tr><td class="n">PDF ≠ EPUB</td><td>No painel do livro, um PDF oferece também a lista de páginas do original. São as que se citam; as da leitura mudam com a fonte.</td></tr>

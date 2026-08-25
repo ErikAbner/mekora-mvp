@@ -22,7 +22,7 @@
       S.lugar=l;S.folha=f;S.dentro=(l==="leitura");
       if(l==="nota")S.notaK=S.dst.filter(d=>d.nota)[0].k;
       if(l==="estudo"){const g=ideias()[0];
-        S.estudos=g?[{id:g.id,nome:"Um nome",pergunta:"",livros:[],
+        S.estudos=g?[{id:g.id,nome:"Um nome",sobre:"Uma frase que eu quero testar.",livros:[],
           notas:g.notas.map(d=>d.k),sua:false}]:[];
         S.estK=g?g.id:"nao-existe";}
       pinta();
@@ -172,6 +172,14 @@
        estourava ao abrir, e o smoke respondia 0 erros. Caso novo, vista
        nova — senao o instrumento cobre o codigo de ontem. */
     ["notas-estudos",()=>{S.lugar="notas";S.nfiltro="estudos";}],
+    /* O QUADRO. Vista nova pede caso novo: a licao desta serie e que o
+       instrumento cobre o codigo de ontem se ninguem o estender. */
+    ["notas-quadro",()=>{S.lugar="notas";S.nfiltro="estudos";
+      S.estudos=sementeEstudos();S.estVista="quadro";}],
+    ["notas-quadro-tudo-fechado",()=>{S.estudos.forEach(e=>{e.fechado=true;});}],
+    ["notas-quadro-nada-fechado",()=>{S.estudos.forEach(e=>{e.fechado=false;});}],
+    ["notas-quadro-sem-estudo",()=>{S.estudos=[];}],
+    ["notas-quadro-volta-a-lista",()=>{S.estudos=sementeEstudos();S.estVista="lista";}],
     ["notas-pergunta-vazia",()=>{S.lugar="notas";S.nfiltro="pergunta";S.qPergunta="";}],
     ["notas-pergunta-com-acerto",()=>{S.qPergunta="repeticao";}],
     ["notas-pergunta-sem-acerto",()=>{S.qPergunta="blockchain";}],
@@ -186,20 +194,20 @@
     ["painel-busca",()=>{S.sumAba="conteudo";S.qLivro="repeti";}],
     ["painel-paginas",()=>{S.qLivro="";S.conteudoVista="paginas";}],
     ["notas-estudo-nomeado",()=>{S.lugar="notas";S.nfiltro="estudos";
-      const g=ideias()[0];S.estudos=g?[{id:g.id,nome:"Um nome",pergunta:"",livros:[],
+      const g=ideias()[0];S.estudos=g?[{id:g.id,nome:"Um nome",sobre:"Uma frase que eu quero testar.",livros:[],
         notas:g.notas.map(d=>d.k),sua:false}]:[];}],
     /* os quatro extremos da entrada: sem estudo nenhum, um estudo sem
        pergunta, um sem livros e um sem notas — cada um mostra uma metade do
        cartao que a semente nao mostra. */
     ["notas-estudos-nenhum",()=>{S.estudos=[];}],
     ["notas-estudos-criando",()=>{S.estNova="novo";}],
-    ["notas-estudo-sem-pergunta",()=>{S.estNova=null;
-      S.estudos=[{id:"e1",nome:"Sem pergunta",pergunta:"",livros:["Diário 02"],notas:[],sua:true}];}],
+    ["notas-estudo-sem-centro",()=>{S.estNova=null;
+      S.estudos=[{id:"e1",nome:"Sem centro",sobre:"",livros:["Diário 02"],notas:[],sua:true}];}],
     ["notas-estudo-sem-livros",()=>{
-      S.estudos=[{id:"e2",nome:"Só notas",pergunta:"Uma pergunta?",livros:[],
+      S.estudos=[{id:"e2",nome:"Só notas",sobre:"Uma pergunta?",livros:[],
         notas:levadas().slice(0,2).map(d=>d.k),sua:true}];}],
     ["notas-estudo-vazio",()=>{
-      S.estudos=[{id:"e3",nome:"Recém-criado",pergunta:"",livros:[],notas:[],sua:true}];}],
+      S.estudos=[{id:"e3",nome:"Recém-criado",sobre:"Uma frase que eu quero testar.",livros:[],notas:[],sua:true}];}],
     ["notas-busca",()=>{S.lugar="notas";S.nfiltro="todas";S.qNotas="zzzz";}],
     ["notas-recorte",()=>{S.qNotas="";S.verTerr=g0?g0.notas.map(d=>d.k):["n-obs-1"];}],
     ["notas-nomeando",()=>{S.verTerr=null;S.nomeando=g0?g0.id:null;}],
@@ -217,7 +225,7 @@
       if(b)b.click();}],
     ["notas-pergunta-como",()=>{S.lugar="notas";S.nfiltro="pergunta";S.pgComo=true;}],
     ["nota-no-comeco-do-conjunto",()=>{const g=ideias()[0];
-      S.estudos=g?[{id:g.id,nome:"Um nome",pergunta:"",livros:[],
+      S.estudos=g?[{id:g.id,nome:"Um nome",sobre:"Uma frase que eu quero testar.",livros:[],
         notas:g.notas.map(d=>d.k),sua:false}]:[];
       S.conj=g?{lista:g.notas.map(d=>d.k),concId:g.id,nome:"Um nome"}:null;
       S.notaK=g?g.notas[0].k:"n-obs-1";}],
@@ -227,15 +235,15 @@
     ["nota-fora-do-conjunto",()=>{S.conj={lista:["n-obs-2"],concId:null,nome:"outro"};
       S.notaK="n-obs-1";}],
     ["estudo-com-trilha",()=>{S.notaAberta=null;S.lugar="estudo";
-      S.estudos=g0?[{id:g0.id,nome:"Um nome",pergunta:"Uma pergunta?",
+      S.estudos=g0?[{id:g0.id,nome:"Um nome",sobre:"Uma pergunta?",
         livros:["Diário 02"],notas:g0.notas.map(d=>d.k),sua:false}]:[];
       S.estK=g0?g0.id:null;}],
     ["estudo-rede-aberta",()=>{S.redeAberta=true;}],
     ["estudo-renomeando",()=>{S.redeAberta=false;S.renomeando=S.estK;}],
-    /* sem pergunta a pagina oferece o convite no lugar do titulo grande:
-       e um estado, e nao um vazio. */
-    ["estudo-sem-pergunta",()=>{S.renomeando=null;
-      S.estudos=[{id:"u1",nome:"So uma",pergunta:"",livros:[],
+    /* sem centro a pagina oferece o convite no lugar do titulo grande: e um
+       estado, e nao um vazio. E o centro nao precisa ser pergunta. */
+    ["estudo-sem-centro",()=>{S.renomeando=null;
+      S.estudos=[{id:"u1",nome:"So uma",sobre:"",livros:[],
         notas:["n-obs-1"],sua:true}];S.estK="u1";}],
     ["estudo-sem-livro-nenhum",()=>{
       S.estudos=[{id:"u2",nome:"Sem livro",pergunta:"E agora?",livros:[],notas:[],sua:true}];
@@ -252,14 +260,14 @@
     ["nota-relacionada-aberta",()=>{const d=escK(S.notaK);
       const r=d?relacoesDe(d.k)[0]:null;S.relAberta=r?r.k:null;}],
     ["nota-em-dois-estudos",()=>{S.relAberta=null;
-      S.estudos=[{id:"r1",nome:"Primeiro",pergunta:"",livros:[],notas:[S.notaK],sua:true},
-        {id:"r2",nome:"Segundo",pergunta:"",livros:[],notas:[S.notaK],sua:true}];}],
+      S.estudos=[{id:"r1",nome:"Primeiro",sobre:"Uma frase que eu quero testar.",livros:[],notas:[S.notaK],sua:true},
+        {id:"r2",nome:"Segundo",sobre:"Uma frase que eu quero testar.",livros:[],notas:[S.notaK],sua:true}];}],
     /* a Estante recortada por um estudo, que era o que a colecao fazia */
     ["estante-recortada-por-estudo",()=>{S.lugar="estante";S.estante="lista";
-      S.estudos=[{id:"r1",nome:"Um estudo",pergunta:"",livros:["Diário 02"],notas:[],sua:true}];
+      S.estudos=[{id:"r1",nome:"Um estudo",sobre:"Uma frase que eu quero testar.",livros:["Diário 02"],notas:[],sua:true}];
       S.fEstudo="r1";}],
     ["estante-estudo-sem-livro",()=>{
-      S.estudos=[{id:"r2",nome:"Vazio",pergunta:"",livros:[],notas:[],sua:true}];S.fEstudo="r2";}],
+      S.estudos=[{id:"r2",nome:"Vazio",sobre:"Uma frase que eu quero testar.",livros:[],notas:[],sua:true}];S.fEstudo="r2";}],
     ["estante-sem-estudo-nenhum",()=>{S.estudos=[];S.fEstudo=null;}],
     ["notas-sem-nota-nenhuma",()=>{S.lugar="notas";S.nfiltro="todas";
       S.dst=S.dst.filter(d=>!d.nota);}],
@@ -270,6 +278,34 @@
       feito.push(nome+":"+document.body.innerHTML.length);}
     catch(e){erros.push(nome+" -> "+e.message);}
   }
+  /* O QUADRO, por verdade e nao por nao-estouro: a coluna tem que sair do
+     LIVRO, e o movimento ilegal tem que continuar ilegal. Sem isto o quadro
+     passaria a mentir em silencio no dia em que alguem mexer na derivacao. */
+  try{
+    S.lugar="notas";S.nfiltro="estudos";S.estudos=sementeEstudos();S.estVista="quadro";pinta();
+    const onde=id=>{const e=estudoK(id);return e?estadoEstudo(e):"sumiu";};
+    if(onde("est-metodo")!=="andando")
+      erros.push("quadro: est-metodo tem livro em 78% e nao esta em andando — "+onde("est-metodo"));
+    if(onde("est-serie")!=="guardado")
+      erros.push("quadro: est-serie nao tem livro aberto e nao esta em guardado — "+onde("est-serie"));
+    if(onde("est-decidir")!=="fechado")
+      erros.push("quadro: fechar deixou de vencer a derivacao — "+onde("est-decidir"));
+    if(qLegal("andando","guardado"))
+      erros.push("quadro: andando->guardado virou movimento legal, e arrastar nao e ler");
+    if(!qLegal("guardado","fechado")||!qLegal("fechado","andando"))
+      erros.push("quadro: fechar ou reabrir deixou de ser possivel");
+    /* ler ate o fim tem que MOVER o estudo, senao a derivacao e decorativa.
+       TODOS os livros dele: com um so, "andando" continua sendo a resposta
+       certa — e foi assim que esta assercao pegou a si mesma. */
+    const lv=livrosDoEstudo(estudoK("est-metodo")).map(noAcervo).filter(Boolean);
+    const antes=lv.map(b=>b.prog);lv.forEach(b=>{b.prog=100;});
+    if(onde("est-metodo")==="andando")
+      erros.push("quadro: terminei os "+lv.length+" livros e o estudo continuou andando");
+    lv.forEach((b,i)=>{b.prog=antes[i];});
+    if(onde("est-metodo")!=="andando")
+      erros.push("quadro: devolvi o progresso e o estudo nao voltou a andar");
+    S.estudos=sementeEstudos();S.estVista="lista";
+  }catch(e){erros.push("quadro -> "+e.message);}
   /* piso de regras: uma emenda derrubou o CSS de 779 para 422 e quatro
      artefatos sairam assim, porque pagina sem metade das regras RENDERIZA.
      "Renderizou?" nao pega isso; contar pega, e custa nada. */
