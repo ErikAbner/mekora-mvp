@@ -44,6 +44,57 @@
     catch(e){erros.push("estante/"+fe+" -> "+e.message);}
   }
   S.fEstante="tudo";S.conta=true;
+  /* O CANVAS SEGURANDO FONTE. Fonte e continente, nota e atomo, e no campo
+     isso tem de ser visivel: se os dois cartoes ficarem iguais, o Canvas
+     volta a ser uma pilha de retangulos de texto. */
+  try{
+    const antesC=S.canvasN.slice();
+    S.lugar="canvas";S.folha=null;S.cvModo="mover";pinta();
+    const cf=document.querySelector(".cvIt.-fonte"),cn=document.querySelector(".cvIt:not(.-fonte)");
+    if(!cf)erros.push("canvas: a fonte semeada nao apareceu no campo");
+    if(!cn)erros.push("canvas: a nota semeada nao apareceu no campo");
+    if(cf&&cn){
+      const a=getComputedStyle(cf),b=getComputedStyle(cn);
+      if(a.backgroundColor===b.backgroundColor&&a.width===b.width)
+        erros.push("canvas: fonte e nota tem o mesmo chao e a mesma largura");
+      if(!cf.querySelector("img"))erros.push("canvas: a fonte nao entra pela imagem");}
+    feito.push("canvas/com-fonte:"+document.body.innerHTML.length);
+    /* por e tirar sao o mesmo gesto */
+    const antesARQ2=ARQ;ARQ=LIVROS["Oficina de imagem — aula 4"];
+    roteia("cv-fonte","");
+    if(!noCanvas(ARQ.titulo))erros.push("canvas: por a fonte no campo nao pos");
+    roteia("cv-fonte","");
+    if(noCanvas(ARQ.titulo))erros.push("canvas: tirar a fonte do campo nao tirou");
+    ARQ=antesARQ2;
+    /* ligar ainda nao vale para fonte, e o campo diz isso em vez de calar */
+    S.lugar="canvas";S.cvModo="ligar";S.aviso=null;pinta();
+    roteia("cv-tocar",S.canvasN.find(ehChaveFonte));
+    if(!S.aviso)erros.push("canvas: tocar numa fonte em Ligar nao disse nada");
+    S.aviso=null;S.cvModo="mover";S.cvLigando=null;
+    feito.push("canvas/ligar-numa-fonte:"+document.body.innerHTML.length);
+    /* campo so com fonte, e campo vazio */
+    S.canvasN=S.canvasN.filter(ehChaveFonte);pinta();
+    feito.push("canvas/so-fonte:"+document.body.innerHTML.length);
+    S.canvasN=[];pinta();
+    if(!/campo está vazio/.test(document.body.innerText))
+      erros.push("canvas: o vazio nao fala do campo");
+    feito.push("canvas/vazio:"+document.body.innerHTML.length);
+    S.canvasN=antesC;
+    /* e Conexoes nao pode voltar a ser citada: ela saiu da navegacao */
+    pinta();
+    if(/Em Conexões/.test(document.body.innerText))
+      erros.push("canvas: a legenda voltou a apontar para Conexoes");
+    /* A MESA diz o que esta andando */
+    S.lugar="mesa";S.cena="trabalho";S.mesaVar="reduzida";S.mesaEstado="com-pendencia";pinta();
+    const and=S.estudos.filter(e=>estadoEstudo(e)==="andando");
+    if(and.length&&!document.querySelector(".mand"))
+      erros.push("mesa: ha "+and.length+" estudo(s) andando e a Mesa nao diz");
+    feito.push("mesa/estudo-andando:"+document.body.innerHTML.length);
+    S.estudos=[];pinta();
+    if(document.querySelector(".mand"))
+      erros.push("mesa: sem estudo nenhum, a linha de Andando ficou");
+    S.estudos=sementeEstudos();S.lugar="notas";S.nfiltro="estudos";pinta();
+  }catch(e){erros.push("canvas com fonte -> "+e.message);}
   /* VIDEO COMO FONTE. O que se prova aqui nao e que video funciona — e que
      ele nao precisou de modelo proprio: a mesma ancora, a mesma nota, a
      mesma lista. Se alguma dessas tres divergir, o modelo estava errado. */

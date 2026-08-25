@@ -941,6 +941,14 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .mfoco .desde{font-size:13.5px;line-height:1.6;color:var(--ink-3);margin:0 0 var(--s2)}
 /* a fila e outro assunto que este livro: respiro maior antes das acoes, e um
    filete acima para dizer que o que vem depois nao e sobre ele. */
+.mand{display:flex;align-items:baseline;gap:var(--s3);flex-wrap:wrap;
+  margin:var(--s6) 0 0;padding-top:var(--s3);border-top:1px solid var(--line-2)}
+.mand .lb{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-3)}
+.mand button{font-size:13.5px;color:var(--ink-2)}
+.mand button:hover{color:var(--acc)}
+.mand i{font-style:normal;color:var(--ink-4)}
+.mand .mais{font-family:var(--mono);font-size:10px;color:var(--ink-3)}
 .mfoco .mfila{font-size:13px;line-height:1.6;color:var(--ink-3);margin:var(--s4) 0 var(--s5);
   padding-top:var(--s3);border-top:1px solid var(--line-2)}
 .mfoco .mfila .lnk{padding:0;font-size:13px;color:var(--ink-2)}
@@ -2107,6 +2115,18 @@ td.n{color:var(--ink);font-weight:600}
 .cvIt{position:absolute;width:210px;background:var(--branco);border:1px solid var(--line-3);
   padding:var(--s3) var(--s4);cursor:grab;user-select:none}
 .cvIt.-arrastando{cursor:grabbing;border-color:var(--ink)}
+/* FONTE E CONTINENTE, NOTA E ATOMO — e no campo isso e visivel de longe: a
+   fonte entra pela imagem e leva chao; a nota continua texto no papel. Iguais,
+   o Canvas voltaria a ser uma pilha de retangulos de texto. */
+.cvIt.-fonte{width:168px;background:var(--bg-2);border-color:var(--line);
+  padding:var(--s3);position:absolute}
+.cvIt.-fonte img{display:block;width:100%;height:auto;border:1px solid var(--line)}
+.cvIt.-fonte b{display:block;font-size:12.5px;font-weight:600;line-height:1.25;margin-top:var(--s3)}
+.cvIt.-fonte cite{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;
+  color:var(--ink-3);font-style:normal;margin-top:3px}
+.cvIt.-fonte .cvPlay{position:absolute;left:50%;top:64px;transform:translate(-50%,-50%);
+  width:30px;height:30px;border-radius:var(--rp);background:var(--ink);color:var(--bg);
+  display:flex;align-items:center;justify-content:center;font-size:11px;padding-left:2px}
 .cvIt.-sel{border-color:var(--acc);outline:1px solid var(--acc)}
 .cvIt>p{margin:0;font-family:var(--serif);font-size:14px;line-height:1.5;color:var(--ink)}
 .cvIt>cite{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;
@@ -2258,6 +2278,7 @@ const ACERVO=[
  {c:"14",t:"Apresentação Institucional",a:"Ana Duarte",f:"PDF",prog:0,nn:0,kin:false,tipo:"quadrinho",q:"",l:"14",h:206},
  /* kin:false porque video nao vai para o Kindle — e isso e a regra, e nao uma
     falta: o Kindle e um destino que nem toda fonte tem. */
+ {c:"16",mini:"07",t:"Contatos — rolo 07",a:"você",f:"JPG",prog:0,nn:1,kin:false,tipo:"imagem",q:"",l:"07",h:170},
  {c:"15",mini:"03",t:"Oficina de imagem — aula 4",a:"Marina Rocha",f:"MP4",prog:31,nn:2,kin:false,tipo:"video",q:"",l:"03",h:188}
 ];
 /* mini: um video nao tem capa, tem quadro. O codigo do acervo continua unico
@@ -2292,6 +2313,21 @@ const LIVROS={
      "Uma s\u00e9rie permite transformar registro em compara\u00e7\u00e3o. Uma imagem sozinha s\u00f3 permite lembrar."]},
    {n:"O que a cidade repete",p:["A malha n\u00e3o muda de uma vez: ela muda um pouco em muitos lugares, e s\u00f3 quem volta percebe.",
      "Quem passa uma vez v\u00ea uma cidade. Quem passa cem vezes v\u00ea um sistema."]}
+  ]},
+ /* UMA FONTE SEM TEXTO NENHUM. Aqui o modelo de 24 ago realmente nao serve:
+    imagem nao tem paragrafo, entao a ancora nao pode ser {cap,par,ini,fim}. O
+    que sobra e o que basta — QUAL imagem. Uma nota sobre imagem tem cap (o
+    indice) e par nulo, que e o mesmo formato das notas de pergunta, escritas
+    sobre um capitulo inteiro. O modelo ja previa "sem trecho"; ele so nunca
+    tinha sido usado por uma fonte inteira. */
+ "Contatos \u2014 rolo 07":{nome:"contatos-rolo-07.zip",saida:null,fmt:"JPG",
+  tipo:"imagem",tam:"38 MB",idioma:null,
+  titulo:"Contatos \u2014 rolo 07",autor:"voc\u00ea",capa:"07",gerada:"07",mini:"07",
+  imagens:3,
+  caps:[
+   {n:"01 \u2014 a mesma esquina, manh\u00e3",p:[]},
+   {n:"02 \u2014 a mesma esquina, tarde",p:[]},
+   {n:"03 \u2014 a mesma esquina, chuva",p:[]}
   ]},
  /* UMA FONTE QUE NAO E LIVRO. tipo:"video" muda tres coisas e mais nada: a
     superficie de leitura e a transcricao, o paragrafo carrega timecode em tp,
@@ -2652,7 +2688,9 @@ function vHome(){
     '<p class="txtE" style="margin-top:var(--s5);max-width:60ch">Nos dois casos o problema não é '+
     'converter uma vez. É que <b>o acervo cresce e nada o segura.</b></p>'+
     '<div class="tagsE" style="margin-top:var(--s5)">'+
-      ["PDF","EPUB","DOCX","TXT","CBZ","CBR","ZIP","JPG","PNG"].map(f=>'<span class="tagE'+
+      /* MP4 entrou porque uma fonte de video ja existe na estante, e a lista que
+         o produto anuncia nao pode ser menor do que a que ele aceita. */
+      ["PDF","EPUB","DOCX","TXT","CBZ","CBR","MP4","JPG","PNG"].map(f=>'<span class="tagE'+
 
 (f==="PDF"?" main":"")+'">'+f+'</span>').join("")+'</div>'+
     '<p class="txtE mudo" style="margin-top:var(--s3);font-size:var(--t-peq)">Documento vira EPUB com '+
@@ -3149,6 +3187,9 @@ function sementeEstudos(){
   ];
 }
 S.estudos=sementeEstudos();
+/* O campo comeca com uma fonte e uma nota solta: e o caso do diario — coisas
+   jogadas que ainda nao tem lugar, e que talvez nunca tenham. */
+S.canvasN=["f:Contatos — rolo 07","n-solta-1"];
 const dstTexto=escTxt;
 /* null+1 === 1 em JS: o dstCap antigo nao estourava, ele MENTIA "Capitulo 1" */
 /* o endereco dito por extenso: com ancora e LUGAR, sem ancora e ASSUNTO.
@@ -3515,6 +3556,19 @@ function mesaReduzida(){
       'Continuar lendo →</button><button class="lnk mudo" data-a="ir-livro" data-v="'+esc(l.titulo)+'#notas">Ver as notas</button></div>'+
       '</div></div>';
   }
+  /* ESTUDO ANDANDO. A promessa da Mesa e "aquilo que ainda esta em movimento",
+     e um estudo aberto e a coisa mais em movimento que este produto tem — ela
+     so nao sabia disso, porque foi escrita quando o produto era preparo. Uma
+     linha, e nao um bloco: o lugar do estudo e o Conhecimento, e aqui ele so
+     avisa que existe. */
+  (function(){
+    const andando=S.estudos.filter(e=>estadoEstudo(e)==="andando");
+    if(!andando.length)return;
+    h+='<p class="mand"><span class="lb">Andando</span>'+
+      andando.slice(0,3).map(e=>'<button data-a="est-abrir" data-v="'+esc(e.id)+'">'+
+        esc(e.nome)+'</button>').join('<i>·</i>')+
+      (andando.length>3?'<span class="mais">e mais '+(andando.length-3)+'</span>':'')+'</p>';
+  })();
   if(d.pends.length){
     h+='<div class="mexc"><div class="cab"><span class="r">Precisa de você</span>'+
       '<span class="n">'+String(d.pends.length).padStart(2,"0")+'</span></div>'+
@@ -3563,7 +3617,7 @@ function mCab(){
 function mSolta(){
   return '<button class="msolta" data-a="soltar"><span class="tx">'+
     '<span class="tt">Ou solte um arquivo aqui</span>'+
-    '<span class="fm">PDF · EPUB · DOCX · CBZ · CBR · ZIP · imagens</span></span>'+
+    '<span class="fm">PDF · EPUB · DOCX · CBZ · CBR · MP4 · imagens</span></span>'+
     '<span class="lnk mudo">escolher no computador →</span></button>';
 }
 function mResumo(d,fina){
@@ -3670,7 +3724,7 @@ function mesaNova(){
     '<button class="solta" data-a="soltar">'+
       '<span class="tt">Solte um arquivo aqui</span>'+
       '<span class="ds">ou clique para escolher no computador</span>'+
-      '<span class="fm">PDF · EPUB · DOCX · CBZ · CBR · ZIP · imagens</span></button>'+
+      '<span class="fm">PDF · EPUB · DOCX · CBZ · CBR · MP4 · imagens</span></button>'+
     '<div class="passos">'+
       '<div class="passo"><b>Assim que chegar</b><span>Eu abro, conto as páginas e digo o que encontrei.</span></div>'+
       '<div class="passo"><b>Você confirma</b><span>Uma tela, uma lista, um botão. Só pergunto quando há dúvida de verdade.</span></div>'+
@@ -4327,7 +4381,16 @@ const ehVideo=t=>!!(LIVROS[t]&&LIVROS[t].tipo==="video");
 /* TEM PIPELINE DE KINDLE? Reconhecimento de texto, contagem de paginas, EPUB
    gerado e previa do aparelho sao telas do preparo para o Kindle — e nao telas
    de uma fonte qualquer. Enquanto tudo virava EPUB a diferenca nao existia. */
-const preparaTexto=a=>(a||ARQ).tipo!=="video";
+const preparaTexto=a=>["video","imagem"].indexOf((a||ARQ).tipo)<0;
+const semTexto=a=>(a||ARQ).tipo==="imagem";
+/* ═══ O CANVAS SEGURA FONTE ═══
+   Uma so lista de chaves, com prefixo: "f:" e fonte, o resto e nota. Duas
+   listas separadas dariam duas posicoes, duas ordens e duas maneiras de ligar
+   — e ligar uma nota a uma fonte e justamente o que o Canvas serve para fazer. */
+const ehChaveFonte=k=>typeof k==="string"&&k.slice(0,2)==="f:";
+const fonteDaChave=k=>ehChaveFonte(k)?LIVROS[k.slice(2)]||null:null;
+const tituloDaChave=k=>ehChaveFonte(k)?k.slice(2):null;
+const noCanvas=t=>S.canvasN.indexOf("f:"+t)>-1;
 const mmss=s=>{s=Math.max(0,Math.round(s));
   const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),g=s%60;
   return (h?h+":"+String(m).padStart(2,"0"):String(m))+":"+String(g).padStart(2,"0");};
@@ -5633,31 +5696,59 @@ function cvPos(k, i) {
   return { x: 28 + col * (CVL + 26), y: 28 + lin * 150 };
 }
 function vCanvas() {
-  const ns = S.canvasN.map(escK).filter(Boolean);
+  /* itens do campo: fonte e nota na mesma lista, porque a linha que liga uma a
+     outra e o ponto do Canvas. */
+  const itens = S.canvasN.map(k => ehChaveFonte(k)
+    ? (fonteDaChave(k) ? {fonte:true, k:k, t:tituloDaChave(k)} : null)
+    : escK(k)).filter(Boolean);
+  const ns = itens.filter(x => !x.fonte);
   const modo = S.cvModo || "mover";
   const bt = (m, rot) => '<button data-a="cv-modo" data-v="' + m + '"' +
     (modo === m ? ' aria-pressed="true"' : '') + '>' + rot + '</button>';
   let h = '<div class="pad larga"><div class="cvTopo">' +
     '<div><h1 class="t">Canvas</h1>' +
-    '<p class="sub">Aqui você organiza de propósito. Em Conexões, o Mekora mostra o que notou.</p></div>' +
+    '<p class="sub">Aqui você junta de propósito o que ainda não tem lugar — fontes e notas, soltas. No Conhecimento elas viram estudo, se um dia virarem.</p></div>' +
     '<div class="cvFer">' + bt("mover", "Mover") + bt("ligar", "Ligar") + bt("tirar", "Tirar") +
     '<span class="di"></span>' +
     '<button data-a="cv-nota">Escrever aqui</button>' +
     '<button data-a="cv-trazer">Trazer uma nota</button></div></div>';
-  if (!ns.length)
-    return h + '<div class="cvVazio"><p>A mesa está vazia.</p>' +
+  if (!itens.length)
+    return h + '<div class="cvVazio"><p>O campo está vazio.</p>' +
       '<p class="sub2"><b>Trazer uma nota</b> põe aqui algo que você já escreveu, com a origem junto. ' +
-      '<b>Escrever aqui</b> começa uma nota nova, que passa a existir também em Notas.</p></div></div>';
+      '<b>Escrever aqui</b> começa uma nota nova, que passa a existir também no Conhecimento. ' +
+      'E uma <b>fonte</b> entra por <b>Este arquivo › Pôr no Canvas</b> — vídeo, imagem ou livro.</p></div></div>';
   h += '<div class="cvCampo" id="cvCampo"' + (modo === "ligar" ? ' data-ligando="1"' : '') + '>' +
     '<svg class="cvLinhas" id="cvLinhas"></svg>';
-  ns.forEach((d, i) => {
+  itens.forEach((d, i) => {
+    /* A FONTE E CONTINENTE E A NOTA E ATOMO, e no campo isso tem de ser visivel
+       de longe: a fonte entra pela imagem e leva chao; a nota continua sendo
+       texto no papel. Se as duas parecessem iguais, o Canvas viraria uma pilha
+       de retangulos de texto — que e o que ele ja era. */
+    if (d.fonte) {
+      const b = noAcervo(d.t), lv = fonteDaChave(d.k);
+      const p2 = cvPos(d.k, i), sel2 = S.cvLigando === d.k;
+      const tipo = lv && lv.tipo === "video" ? "vídeo" : (lv && lv.tipo === "imagem" ? "imagem" : "livro");
+      h += '<div class="cvIt -fonte' + (sel2 ? ' -sel' : '') + '" data-k="' + d.k + '" ' +
+        'style="left:' + p2.x + 'px;top:' + p2.y + 'px">' +
+        (b ? '<img src="' + capaDe(b) + '" alt="">' : '') +
+        (lv && lv.tipo === "video" ? '<span class="cvPlay">\u25b6</span>' : '') +
+        '<b>' + esc(d.t) + '</b>' +
+        '<cite>' + tipo + (lv && lv.autor ? ' \u00b7 ' + esc(lv.autor) : '') + '</cite>' +
+        '<div class="cvAcs">' +
+        '<button data-a="ir-livro" data-v="' + esc(d.t) + '">abrir</button>' +
+        '</div></div>';
+      return;
+    }
     const p = cvPos(d.k, i), tr = escTxt(d);
     const sel = S.cvLigando === d.k;
     h += '<div class="cvIt' + (sel ? ' -sel' : '') + '" data-k="' + d.k + '" ' +
       'style="left:' + p.x + 'px;top:' + p.y + 'px">' +
       '<p>' + esc((d.nota || tr).slice(0, 120)) + ((d.nota || tr).length > 120 ? "…" : "") + '</p>' +
-      '<cite>' + (d.livro ? esc(d.livro) + (d.cap != null ? ' · cap. ' + (d.cap + 1) : '') : 'escrita aqui') +
-      '</cite>' +
+      '<cite>' + (d.livro
+        ? esc(d.livro) + (d.cap != null
+            ? ' · ' + (ehVideo(d.livro) ? mmss(tempoDe(d)) : 'cap. ' + (d.cap + 1))
+            : '')
+        : 'escrita aqui') + '</cite>' +
       '<div class="cvAcs">' +
       (ancora(d) ? '<button data-a="nota-origem" data-v="' + d.k + '">abrir no livro</button>' : '') +
       '<button data-a="nota-abrir" data-v="' + d.k + '">ver a nota</button></div></div>';
@@ -5666,7 +5757,10 @@ function vCanvas() {
   /* o que foi ligado aqui é dito em palavras logo abaixo: uma linha diz que
      existe relação, e nunca diz qual. */
   const suas = S.rel.filter(r => S.canvasN.indexOf(r[0]) > -1 && S.canvasN.indexOf(r[1]) > -1);
-  h += '<p class="cvSaldo">' + ns.length + (ns.length > 1 ? ' notas' : ' nota') + ' na mesa · ' +
+  /* conta os DOIS, agora que o campo segura fonte tambem */
+  const nf = itens.length - ns.length;
+  h += '<p class="cvSaldo">' + ns.length + (ns.length === 1 ? ' nota' : ' notas') +
+    (nf ? ' e ' + nf + (nf === 1 ? ' fonte' : ' fontes') : '') + ' no campo · ' +
     (suas.length ? suas.length + (suas.length > 1 ? ' ligações suas' : ' ligação sua') +
       ', e elas aparecem em <b>Você ligou</b> dentro de cada nota'
       : 'nenhuma ligação ainda — em <b>Ligar</b>, toque em duas') + '.</p>';
@@ -6706,6 +6800,10 @@ function vFolha(){
         ?li("nada","","Enviar ao Kindle","Vídeo não vai para o Kindle. Ele é um dos meios, e não o destino de tudo.")
         :li("folha","envio","Enviar ao Kindle",S.enviado?"Enviado hoje, 09:12":""))+
       (preparaTexto()?li("baixar","","Baixar o EPUB",""):li("baixar","","Baixar o arquivo",""))+
+      /* a fonte inteira vai para o campo, e nao so uma nota dela: e assim que
+         um video ou uma imagem entram no modo solto. */
+      li("cv-fonte","",noCanvas(ARQ.titulo)?"Tirar do Canvas":"Pôr no Canvas",
+        noCanvas(ARQ.titulo)?"Está no campo":"Para juntar com notas e outras fontes")+
       /* A derivacao erra em dois casos previsiveis: quem termina o livro sem
          rolar o ultimo pixel, e quem quer recomecar. Por isso ela e corrigivel
          — e a correcao mora aqui, junto do que se faz com o arquivo, e nao num
@@ -7478,11 +7576,25 @@ function roteia(a,v,el){
       S.canvasN.push(k);S.lugar="nota";S.notaK=k;S.notaAberta=k;S.rasc[k]="";
       S.voltarCanvas=true;break;}
     case "cv-trazer":S.lugar="notas";S.trazendo=true;break;
+    /* por e tirar sao o mesmo gesto invertido, como em todo lugar deste
+       prototipo onde a coisa ou esta ou nao esta. */
+    case "cv-fonte":{
+      const k="f:"+(v||ARQ.titulo),i=S.canvasN.indexOf(k);
+      if(i>-1){S.canvasN.splice(i,1);delete S.canvasPos[k];}
+      else S.canvasN.push(k);
+      S.folha=null;break;}
     case "cv-cancelar":S.trazendo=false;S.lugar="canvas";break;
     case "cv-tocar":{
       const modo=S.cvModo||"mover";
       if(modo==="tirar"){S.canvasN=S.canvasN.filter(x=>x!==v);delete S.canvasPos[v];break;}
       if(modo!=="ligar")break;
+      /* Ligar e uma relacao ENTRE NOTAS: ela vive em S.rel e alimenta
+         "Relacionadas". Uma linha de nota para fonte seria outra coisa, com
+         outro significado, e inventar isso de passagem faria o Canvas ter duas
+         relacoes que parecem uma. Enquanto nao existir, ele diz. */
+      if(ehChaveFonte(v)){
+        aviso("Ligar vale entre notas. Uma fonte se liga pelo que voc\u00ea escreve dela \u2014 "+
+          "abra e escreva, e a nota entra no campo.");break;}
       if(!S.cvLigando){S.cvLigando=v;break;}
       if(S.cvLigando===v){S.cvLigando=null;break;}
       const par=[S.cvLigando,v];
