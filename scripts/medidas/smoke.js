@@ -103,8 +103,9 @@
     ACERVO.forEach((b,k)=>b.prog=antes[k]);pinta();
     /* e a porta leva mesmo para a Fila */
     roteia("ir-fila","");
-    if(!(S.lugar==="estante"&&S.estante==="fila"))
-      erros.push("mesa: ir-fila nao chegou na Fila ("+S.lugar+"/"+S.estante+")");
+    /* a Fila mudou de casa: ela e vista do Conhecimento, e nao da Estante */
+    if(!(S.lugar==="notas"&&S.nfiltro==="estudos"&&S.estVista==="leitura"))
+      erros.push("mesa: ir-fila nao chegou na Leitura ("+S.lugar+"/"+S.nfiltro+"/"+S.estVista+")");
     feito.push("mesa/porta-chega-na-fila:"+document.body.innerHTML.length);
     /* a Mesa nao pode voltar a discordar do acervo sobre o mesmo livro */
     S.lugar="mesa";pinta();
@@ -120,29 +121,36 @@
      terminado. O quarto caso e a coluna "Li" estourando o corte de 4. */
   try{
     const antes=ACERVO.map(b=>b.prog);
-    S.lugar="estante";S.estante="fila";S.folha=null;S.fColecao=null;pinta();
-    feito.push("estante/fila:"+document.body.innerHTML.length);
+    S.lugar="notas";S.nfiltro="estudos";S.estVista="leitura";S.folha=null;pinta();
+    feito.push("notas/leitura:"+document.body.innerHTML.length);
     /* ordenar a mao, que e a unica coisa manual do quadro */
     const novos=ACERVO.filter(b=>estadoDe(b)==="novo");
     if(novos.length>1){
       S.ordemFila=novos.map(b=>b.c).reverse();pinta();
-      feito.push("estante/fila-ordenada:"+document.body.innerHTML.length);
+      feito.push("notas/leitura-ordenada:"+document.body.innerHTML.length);
       roteia("fila-topo",novos[novos.length-1].c);
-      feito.push("estante/fila-topo:"+document.body.innerHTML.length);
+      feito.push("notas/leitura-topo:"+document.body.innerHTML.length);
       S.ordemFila=[];}
     /* corrigir a derivacao pelos dois lados, do proprio quadro */
     const lendo=ACERVO.find(b=>estadoDe(b)==="lendo");
-    if(lendo){roteia("livro-terminei",lendo.c);feito.push("estante/fila-terminei:"+document.body.innerHTML.length);
-      roteia("livro-recomecar",lendo.c);feito.push("estante/fila-reler:"+document.body.innerHTML.length);}
-    ACERVO.forEach(b=>b.prog=0);   pinta();feito.push("estante/fila-so-a-ler:"+document.body.innerHTML.length);
-    ACERVO.forEach(b=>b.prog=50);  pinta();feito.push("estante/fila-so-lendo:"+document.body.innerHTML.length);
-    ACERVO.forEach(b=>b.prog=100); pinta();feito.push("estante/fila-so-li:"+document.body.innerHTML.length);
+    if(lendo){roteia("livro-terminei",lendo.c);feito.push("notas/leitura-terminei:"+document.body.innerHTML.length);
+      roteia("livro-recomecar",lendo.c);feito.push("notas/leitura-reler:"+document.body.innerHTML.length);}
+    ACERVO.forEach(b=>b.prog=0);   pinta();feito.push("notas/leitura-so-a-ler:"+document.body.innerHTML.length);
+    ACERVO.forEach(b=>b.prog=50);  pinta();feito.push("notas/leitura-so-lendo:"+document.body.innerHTML.length);
+    ACERVO.forEach(b=>b.prog=100); pinta();feito.push("notas/leitura-so-li:"+document.body.innerHTML.length);
     ACERVO.forEach((b,k)=>b.prog=antes[k]);
     /* o recorte de estado nao pode sobreviver a troca de vista */
-    S.estante="lista";S.fEstante="lendo";roteia("vista","fila");pinta();
-    if(S.fEstante!=="tudo")erros.push("fila: recorte de estado sobreviveu a troca de vista");
-    feito.push("estante/fila-sem-eixo-repetido:"+document.body.innerHTML.length);
-    S.estante="lista";S.fEstante="tudo";S.ordemFila=[];pinta();
+    pinta();   /* o DOM ainda era do caso anterior, com tudo em "Li" */
+    /* cada livro da fila diz a qual estudo serve — era o que faltava para a
+       ordem nao ser preferencia solta */
+    if(!document.querySelector("#filaPilha .fCard .serve"))
+      erros.push("leitura: o cartao nao diz a qual estudo o livro serve");
+    feito.push("notas/leitura-com-vinculo:"+document.body.innerHTML.length);
+    S.estudos=[];pinta();
+    if(!document.querySelector("#filaPilha .fCard .serve.-sem"))
+      erros.push("leitura: sem estudo nenhum, o cartao devia dizer \"sem estudo\"");
+    feito.push("notas/leitura-sem-estudo:"+document.body.innerHTML.length);
+    S.estudos=sementeEstudos();S.estVista="lista";S.ordemFila=[];pinta();
   }catch(e){erros.push("fila -> "+e.message);}
   /* o estado de leitura agora e escrito pela leitura e corrigivel a mao:
      os dois caminhos precisam de caso, senao o filtro volta a ser enfeite. */

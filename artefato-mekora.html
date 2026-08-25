@@ -353,6 +353,14 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .fCard .ttl{display:block;text-align:left;font-size:12.5px;font-weight:600;line-height:1.25;width:100%}
 .fCard .ttl:hover{color:var(--acc)}
 .fCard .a{display:block;font-size:11.5px;color:var(--ink-3);margin-top:1px}
+/* o vinculo com o estudo e mono e pequeno: ele nao compete com o titulo do
+   livro, mas e o que explica por que aquele livro esta na fila. */
+.fCard .serve{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;
+  margin-top:5px;color:var(--ink-3)}
+.fCard .serve button{color:var(--ink-2);font:inherit}
+.fCard .serve button:hover{color:var(--acc)}
+.fCard .serve i{font-style:normal;color:var(--ink-4);margin:0 4px}
+.fCard .serve.-sem{color:var(--ink-4)}
 .fCard .pos{font-family:var(--mono);font-size:10px;color:var(--ink-3);padding-top:2px;min-width:11px}
 .fAcs{display:flex;gap:var(--s3);margin-top:var(--s2)}
 /* O mesmo botao empilhado seis vezes vira textura, e some como coisa
@@ -3893,8 +3901,18 @@ function vFila(acervo){
   const agora=acervo.filter(b=>estadoDe(b)==="lendo").sort((a,b)=>b.prog-a.prog);
   const lidos=acervo.filter(b=>estadoDe(b)==="lido");
   const capaDe=b=>'<img src="'+capa(b.c)+'" alt="Capa de '+esc(b.t)+'" loading="lazy">';
+  /* A QUAL ESTUDO ESTE LIVRO SERVE. Era o que faltava para a ordem da fila
+     nao ser preferencia solta: voce nao arruma um monte abstrato, voce arruma
+     os livros que os seus estudos abertos pedem. */
+  const serve=b=>{
+    const es=S.estudos.filter(e=>livrosDoEstudo(e).indexOf(b.t)>-1);
+    return es.length
+      ?'<span class="serve">'+es.map(e=>'<button data-a="est-abrir" data-v="'+esc(e.id)+'">'+
+        esc(e.nome)+'</button>').join('<i>·</i>')+'</span>'
+      :'<span class="serve -sem">sem estudo</span>';
+  };
   const nome=b=>'<button class="ttl" data-a="ir-livro" data-v="'+esc(b.t)+'">'+esc(b.t)+'</button>'+
-    '<span class="a">'+esc(b.a)+(b.q?' \u00b7 '+esc(b.q):'')+'</span>';
+    '<span class="a">'+esc(b.a)+(b.q?' \u00b7 '+esc(b.q):'')+'</span>'+serve(b);
   const cartaoFila=(b,i)=>'<div class="fCard" data-t="'+b.c+'">'+
     '<span class="pos">'+(i+1)+'</span>'+capaDe(b)+'<div>'+nome(b)+
     /* arrastar sozinho seria inacessivel: "por no topo" faz o mesmo pelo teclado */
@@ -3912,9 +3930,10 @@ function vFila(acervo){
     '<div class="fAcs"><button data-a="livro-recomecar" data-v="'+b.c+'">reler</button></div>'+
     '</div></div>';
   const corte=4, mostra=lidos.slice(0,corte);
-  return '<p class="fRegra">Voc\u00ea arranja <b>a ler</b> \u2014 essa \u00e9 a decis\u00e3o. As outras duas '+
-    'colunas s\u00e3o consequ\u00eancia da leitura: abrir um livro o tira da fila, e chegar ao fim o '+
-    'termina. N\u00e3o se arrasta entre colunas porque arrastar n\u00e3o \u00e9 ler.</p>'+
+  return '<p class="fRegra">Voc\u00ea arranja <b>a ler</b> \u2014 essa \u00e9 a decis\u00e3o, e cada livro diz '+
+    'a qual estudo ele serve. As outras duas colunas s\u00e3o consequ\u00eancia da leitura: abrir um '+
+    'livro o tira da fila, e chegar ao fim o termina. N\u00e3o se arrasta entre colunas porque '+
+    'arrastar n\u00e3o \u00e9 ler.</p>'+
     '<div class="fila">'+
     '<div class="fCol -fila"><div class="fCab"><h2>A ler</h2><span class="n">'+aler.length+'</span>'+
       (aler.length>1?'<span class="lb">arraste para ordenar</span>':'')+'</div>'+
@@ -4007,9 +4026,10 @@ function vEstante(){
       ' itens \u00b7 tudo que j\u00e1 foi preparado.</p></div>'+
     '<span class="sp"></span>'+
     '<span class="vista"><button data-a="vista" data-v="lista" aria-pressed="'+(S.estante==="lista")+'">Capas</button>'+
-    /* A Fila e vista, e nao pagina: a navegacao tem quatro lugares e nenhum
-       deles e um recorte da Estante. O interruptor ja existia. */
-    '<button data-a="vista" data-v="fila" aria-pressed="'+(S.estante==="fila")+'">Fila</button>'+
+    /* A Fila saiu daqui. Na Estante um livro e objeto estatico esperando ser
+       aberto; organizar o que se le e o que se pretende ler e TRABALHO, e ele
+       mora no Conhecimento, junto dos estudos que pedem aqueles livros. Os
+       recortes de estado ficam — filtrar um inventario e outra coisa. */
     /* o Caderno 03 poe a Estante 3D em "adiar" com a instrucao de marcar como
        experimento. Marcar so depois do clique seria marcar tarde: o aviso mora
        no botao, e a razao medida aparece quando a vista abre. */
@@ -4036,8 +4056,7 @@ function vEstante(){
   if(!acervo.length)
     return h+'<p class="sub">Nenhum item com esse recorte'+
       (col?', dentro de “'+esc(col.nome)+'”':'')+'.</p></div>';
-  if(S.estante==="fila"){h+=vFila(acervo);}
-  else if(S.estante==="lista"){
+  if(S.estante==="lista"||S.estante==="fila"){
     h+='<div class="grade">'+acervo.map(b=>'<button class="bk" data-a="ir-livro" data-v="'+esc(b.t)+'">'+
       '<img src="'+capa(b.c)+'" alt="Capa de '+esc(b.t)+'" loading="lazy">'+
       '<span class="t">'+esc(b.t)+'</span><span class="a">'+esc(b.a)+(b.q?' · '+esc(b.q):'')+'</span>'+
@@ -4534,7 +4553,12 @@ function vEstudos(){
      '<span class="vista"><button data-a="est-vista" data-v="lista" aria-pressed="'+
        (S.estVista!=="quadro")+'">Lista</button>'+
      '<button data-a="est-vista" data-v="quadro" aria-pressed="'+
-       (S.estVista==="quadro")+'">Quadro</button></span>'+
+       (S.estVista==="quadro")+'">Quadro</button>'+
+     /* LEITURA e a terceira vista do mesmo material: Lista diz o que voce
+        estuda, Quadro diz em que pe estao os estudos, e Leitura diz o que os
+        estudos pedem que voce leia. */
+     '<button data-a="est-vista" data-v="leitura" aria-pressed="'+
+       (S.estVista==="leitura")+'">Leitura</button></span>'+
      '<span class="sp" style="flex:1"></span>'+
      (S.estNova==="novo"
        ?''
@@ -4546,6 +4570,9 @@ function vEstudos(){
       '<input id="sobreEst" class="campoB" placeholder="A série é a medida; a foto isolada é lembrança" autocomplete="off">'+
       '<div class="acs"><button class="pri" data-a="est-criar-ok" data-v="novo">Criar</button>'+
       '<button class="sec" data-a="est-nova" data-v="">cancelar</button></div></div>';
+  /* Leitura existe mesmo sem estudo nenhum: os livros do acervo continuam
+     esperando, e a fila e onde se decide por onde comecar. */
+  if(S.estVista==="leitura")return h+vFila(ACERVO);
   if(S.estudos.length)
     h+=S.estVista==="quadro"?vQuadro()
       :'<div class="estL">'+S.estudos.map(cartaoEstudo).join("")+'</div>';
@@ -6843,7 +6870,7 @@ function pinta(){
   /* as ligacoes so podem ser desenhadas depois que as caixas existem e tem
      altura: medir e o unico jeito de a linha encostar no que ela liga. */
   if(S.lugar==="canvas"){desenhaLigacoes();arrastavel();}
-  if(S.lugar==="estante"&&S.estante==="fila")filaArrastavel();
+  if(S.lugar==="notas"&&S.nfiltro==="estudos"&&S.estVista==="leitura")filaArrastavel();
   if(S.lugar==="notas"&&S.nfiltro==="estudos"&&S.estVista==="quadro")quadroArrastavel();
   /* A regua acompanha o cursor porque e assim que ela serve: uma faixa fixa
      no meio da tela obrigaria a pessoa a mover o texto ate ela, que e o
@@ -7193,7 +7220,8 @@ function roteia(a,v,el){
     case "est-filtrar":S.fEstudo=S.fEstudo===v?null:v;break;
     /* a Mesa diz onde voce parou; a Fila diz o que vem depois. Um item contra
        uma lista, e por isso a porta e um link e nao um bloco repetido. */
-    case "ir-fila":S.lugar="estante";S.estante="fila";S.fEstante="tudo";S.fEstudo=null;break;
+    case "ir-fila":S.lugar="notas";S.nfiltro="estudos";S.estVista="leitura";
+      S.folha=null;S.pautaAberta=false;break;
     case "est-filtrar-ir":S.lugar="estante";S.estante="lista";S.fEstudo=v;S.fEstante="tudo";break;
     /* por e tirar sao o mesmo gesto invertido, e por isso o mesmo botao */
     case "est-livro":{
@@ -7354,7 +7382,7 @@ function roteia(a,v,el){
       const pg=document.getElementById("sobreConc2"),t=estudoK(v);
       if(t){t.nome=nome;if(pg)t.sobre=pg.value.trim();}
       S.renomeando=null;break;}
-    case "est-vista":S.estVista=v==="quadro"?"quadro":"lista";break;
+    case "est-vista":S.estVista=["quadro","leitura"].indexOf(v)>-1?v:"lista";break;
     /* fechar e reabrir sao o MESMO gesto ao contrario, e nenhum dos dois
        apaga coisa alguma: o estudo continua inteiro nos dois estados. */
     case "est-fechar":{const t=estudoK(v);if(t)t.fechado=true;break;}
