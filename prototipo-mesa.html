@@ -515,6 +515,26 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
    60px que separa a nota do que esta em volta dela. Com tudo a mesma
    distancia, nada agrupa: ele sobe para junto das acoes. */
 .acsN+.bloco{margin-top:var(--s5)}
+/* ═══ O CONTINENTE E O ATOMO ═══
+   Medido: na pagina do estudo, o maior elemento era uma NOTA de 19,9px, e nao
+   o assunto do estudo. O continente perdia para o conteudo na propria pagina
+   dele — e um continente que nao domina a propria pagina nao parece um lugar,
+   parece mais um item. Dentro de um estudo a nota e REFERENCIA, e por isso
+   encolhe: e a mesma regra que ja vale para Relacionadas dentro de uma nota. */
+.colE .trl .pas .nt,
+.colE > .grupoE .cit > p.-nota{font-size:.98rem;line-height:1.55;max-width:56ch}
+/* e o assunto do estudo cresce, porque e ele o objeto da tela */
+.pergG{font-size:2rem}
+/* o estado do estudo, na propria pagina: e a unica coisa aqui que diz "em que
+   pe isto esta", e ele estava so no Quadro. */
+.estE{font-family:var(--mono);font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  font-size:9.5px;padding:2px 6px;border:1px solid var(--line-3);color:var(--ink-2)}
+.estE.-andando{border-color:var(--ink);color:var(--ink)}
+.estE.-fechado{border-color:var(--line-2);color:var(--ink-3)}
+.acDes{margin:var(--s5) 0 0}
+.acDes .lnk{padding:0;font-size:12.5px;color:var(--ink-3);font-weight:400}
+.acDes .lnk:hover{color:var(--dan);background:none}
+
 /* ═══ VIDEO ═══ */
 .vidT{display:grid;grid-template-columns:180px minmax(0,1fr);gap:var(--s5);align-items:start;
   background:var(--bg-2);padding:var(--s5);margin-bottom:var(--s7)}
@@ -2243,9 +2263,13 @@ const ACERVO=[
  {c:"14",t:"Apresentação Institucional",a:"Ana Duarte",f:"PDF",prog:0,nn:0,kin:false,tipo:"quadrinho",q:"",l:"14",h:206},
  /* kin:false porque video nao vai para o Kindle — e isso e a regra, e nao uma
     falta: o Kindle e um destino que nem toda fonte tem. */
- {c:"15",t:"Oficina de imagem — aula 4",a:"Marina Rocha",f:"MP4",prog:31,nn:2,kin:false,tipo:"video",q:"",l:"03",h:188}
+ {c:"15",mini:"03",t:"Oficina de imagem — aula 4",a:"Marina Rocha",f:"MP4",prog:31,nn:2,kin:false,tipo:"video",q:"",l:"03",h:188}
 ];
+/* mini: um video nao tem capa, tem quadro. O codigo do acervo continua unico
+   porque a ordem da fila usa ele como chave; a imagem e que passa a poder
+   apontar para outro lugar. */
 const capa=n=>"capas/capa-"+n+".jpg";
+const capaDe=b=>capa(b&&b.mini?b.mini:(b?b.c:"01"));
 const lomb=n=>"capas/lombada-"+n+".png";
 /* Cada livro tem texto proprio, e por isso uma nota sabe voltar para onde
    nasceu — em qualquer um deles. Os dois novos existem porque o cenario que
@@ -2559,7 +2583,7 @@ function vHome(){
     '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:var(--s4);'+
 
 'align-items:end">'+
-      ACERVO.slice(0,7).map(b=>'<img src="'+capa(b.c)+'" alt="Capa de '+esc(b.t)+'" loading="lazy" '+
+      ACERVO.slice(0,7).map(b=>'<img src="'+capaDe(b)+'" alt="Capa de '+esc(b.t)+'" loading="lazy" '+
       'style="width:100%;height:auto;border:1px solid var(--line);border-radius:var(--rm);background:var(--paper)">').join("")+
     '</div>'+
     '<p style="width:100%;max-width:var(--col);margin:var(--s4) auto 0;text-align:center;'+
@@ -3509,7 +3533,7 @@ function mesaReduzida(){
       '<span class="n">'+d.acervo+'</span>'+
       '<button class="lnk" data-a="ir" data-v="estante">Ver estante →</button></div>'+
       '<div class="capas">'+ACERVO.slice(0,5).map(b=>'<button data-a="ir-livro" data-v="'+esc(b.t)+'" title="'+esc(b.t)+'">'+
-        '<img src="'+capa(b.c)+'" alt="Capa de '+esc(b.t)+'" loading="lazy"></button>').join("")+'</div></div>';
+        '<img src="'+capaDe(b)+'" alt="Capa de '+esc(b.t)+'" loading="lazy"></button>').join("")+'</div></div>';
   }
   return h+mEstados()+'</div>';
 }
@@ -3588,7 +3612,7 @@ function mProntos(d){
 function mEstante(d){
   if(!d.acervo)return"";
   return '<div class="msec" id="mestante"><h2>Na estante<span class="ct">'+d.acervo+' itens</span></h2>'+
-    '<div class="mcapas">'+ACERVO.slice(0,7).map(b=>'<img src="'+capa(b.c)+'" alt="Capa de '+esc(b.t)+
+    '<div class="mcapas">'+ACERVO.slice(0,7).map(b=>'<img src="'+capaDe(b)+'" alt="Capa de '+esc(b.t)+
       '" loading="lazy">').join("")+'</div>'+
     '<div style="margin-top:var(--s3)"><button class="lnk" data-a="ir" data-v="estante">Ver a estante →</button></div>'+
     '</div>';
@@ -3994,7 +4018,8 @@ function vFila(acervo){
   /* quem esta mais perto do fim primeiro: e o que se termina com menos esforco */
   const agora=acervo.filter(b=>estadoDe(b)==="lendo").sort((a,b)=>b.prog-a.prog);
   const lidos=acervo.filter(b=>estadoDe(b)==="lido");
-  const capaDe=b=>'<img src="'+capa(b.c)+'" alt="Capa de '+esc(b.t)+'" loading="lazy">';
+  /* o helper local desenha a TAG; a funcao global resolve o ARQUIVO. */
+  const imgDe=b=>'<img src="'+capaDe(b)+'" alt="Capa de '+esc(b.t)+'" loading="lazy">';
   /* A QUAL ESTUDO ESTE LIVRO SERVE. Era o que faltava para a ordem da fila
      nao ser preferencia solta: voce nao arruma um monte abstrato, voce arruma
      os livros que os seus estudos abertos pedem. */
@@ -4008,18 +4033,18 @@ function vFila(acervo){
   const nome=b=>'<button class="ttl" data-a="ir-livro" data-v="'+esc(b.t)+'">'+esc(b.t)+'</button>'+
     '<span class="a">'+esc(b.a)+(b.q?' \u00b7 '+esc(b.q):'')+'</span>'+serve(b);
   const cartaoFila=(b,i)=>'<div class="fCard" data-t="'+b.c+'">'+
-    '<span class="pos">'+(i+1)+'</span>'+capaDe(b)+'<div>'+nome(b)+
+    '<span class="pos">'+(i+1)+'</span>'+imgDe(b)+'<div>'+nome(b)+
     /* arrastar sozinho seria inacessivel: "por no topo" faz o mesmo pelo teclado */
     (i>0?'<div class="fAcs"><button data-a="fila-topo" data-v="'+b.c+'">p\u00f4r no topo</button></div>':'')+
     '</div></div>';
-  const cartaoAgora=b=>'<div class="fCard" data-t="'+b.c+'">'+capaDe(b)+'<div>'+nome(b)+
+  const cartaoAgora=b=>'<div class="fCard" data-t="'+b.c+'">'+imgDe(b)+'<div>'+nome(b)+
     '<div class="fBarra"><i style="width:'+b.prog+'%"></i></div>'+
     '<span class="fPct">'+b.prog+'%'+(b.nn?' \u00b7 '+b.nn+' nota'+(b.nn>1?'s':''):'')+'</span>'+
     '<div class="fAcs"><button data-a="ir-livro" data-v="'+esc(b.t)+'">continuar</button>'+
     '<button data-a="livro-terminei" data-v="'+b.c+'">terminei</button></div>'+
     '</div></div>';
   const cartaoLido=b=>'<div class="fCard" data-t="'+b.c+'"><span class="pos">\u2713</span>'+
-    capaDe(b)+'<div>'+nome(b)+
+    imgDe(b)+'<div>'+nome(b)+
     (b.nn?'<span class="fPct">'+b.nn+' nota'+(b.nn>1?'s':'')+'</span>':'')+
     '<div class="fAcs"><button data-a="livro-recomecar" data-v="'+b.c+'">reler</button></div>'+
     '</div></div>';
@@ -4152,7 +4177,7 @@ function vEstante(){
       (col?', dentro de “'+esc(col.nome)+'”':'')+'.</p></div>';
   if(S.estante==="lista"||S.estante==="fila"){
     h+='<div class="grade">'+acervo.map(b=>'<button class="bk" data-a="ir-livro" data-v="'+esc(b.t)+'">'+
-      '<img src="'+capa(b.c)+'" alt="Capa de '+esc(b.t)+'" loading="lazy">'+
+      '<img src="'+capaDe(b)+'" alt="Capa de '+esc(b.t)+'" loading="lazy">'+
       '<span class="t">'+esc(b.t)+'</span><span class="a">'+esc(b.a)+(b.q?' · '+esc(b.q):'')+'</span>'+
       /* sem esta linha, "Malha Urbana · Ana Duarte · EPUB" aparece duas vezes
          identica: o campo que separa a edicao da variante existia no acervo e
@@ -4572,7 +4597,7 @@ function vQuadro(){
       '<p class="me">'+lvs.length+' livro'+(lvs.length===1?'':'s')+' · '+
         ns.length+' nota'+(ns.length===1?'':'s')+'</p>'+
       (lvs.length?'<div class="caps">'+lvs.map(t=>{const b=noAcervo(t);
-        return b?'<img src="'+capa(b.c)+'" alt="'+esc(t)+'" title="'+esc(t)+'" loading="lazy">':'';}).join("")+'</div>':'')+
+        return b?'<img src="'+capaDe(b)+'" alt="'+esc(t)+'" title="'+esc(t)+'" loading="lazy">':'';}).join("")+'</div>':'')+
       /* arrastar sozinho seria inacessivel: o botao faz o mesmo pelo teclado */
       '<div class="qAcs"><button data-a="'+(fech?"est-reabrir":"est-fechar")+
         '" data-v="'+esc(e.id)+'">'+(fech?"reabrir":"fechar")+'</button></div>'+
@@ -4738,7 +4763,7 @@ function cartaoEstudo(e){
       ns.length+' nota'+(ns.length===1?'':'s')+' \u00b7 '+
       (e.sua?'voc\u00ea reuniu':'voc\u00ea nomeou')+'</p>'+
     (lvs.length?'<div class="caps">'+lvs.map(t=>{const b=noAcervo(t);
-      return b?'<img src="'+capa(b.c)+'" alt="'+esc(t)+'" title="'+esc(t)+'" loading="lazy">':'';}).join("")+'</div>':'')+
+      return b?'<img src="'+capaDe(b)+'" alt="'+esc(t)+'" title="'+esc(t)+'" loading="lazy">':'';}).join("")+'</div>':'')+
     '</div>';
 }
 /* agrupada por livro: é a organização que já existe no material, e não uma
@@ -5134,10 +5159,12 @@ function secRelacoes(d){
      argumento meu mora no painel de notas. */
   const bloco=(t,rot)=>{
     const l=g(t);if(!l.length)return "";
-    /* o grupo de menor confianca leva a classe que esconde as acoes ate a
-       pessoa chegar perto: cinco "Confirmar a ligacao" identicos empilhados
-       viram textura, e a de cima e a unica que alguem le. */
-    return '<div class="relG'+(t==="possivel"?" -fraco":"")+'"><span class="sublbl">'+rot+'</span>'+
+    /* TODOS os grupos escondem as acoes ate a aproximacao, e nao so o de menor
+       confianca. Medido, "Relacionadas" concentrava 21 dos 39 botoes da pagina:
+       mais da metade da nota era convite para continuar relacionando, que e
+       exatamente o buraco sem fim. Ler quem esta perto e o padrao; agir e o
+       gesto. */
+    return '<div class="relG -fraco"><span class="sublbl">'+rot+'</span>'+
       '<div class="grupoE">'+l.map(r=>{
         const o=escK(r.k);if(!o)return "";
         /* "repeticao, isolada" dentro de uma aspa so le como um termo
@@ -5336,15 +5363,31 @@ function vEstudo() {
       ? '<p class="sobreG">' + esc(t.sobre) + '</p>'
       : '<p class="sobreX"><button class="lnk" data-a="est-renomear" data-v="' + esc(t.id) +
         '">Do que se trata este estudo?</button></p>';
-  h += '<p class="ondeN">' + lvs.length + ' fonte' + (lvs.length === 1 ? '' : 's') +
+  /* O ESTADO NA PROPRIA PAGINA. Ele existia e so o Quadro mostrava — a pagina
+     onde se terminaria um estudo nao dizia em que pe ele estava nem oferecia o
+     fim. Sem um fim visivel, so restava continuar acrescentando. */
+  const EST_ESTADO={andando:"andando",guardado:"guardado",fechado:"fechado"};
+  const est0=estadoEstudo(t);
+  h += '<p class="ondeN"><b class="estE -' + est0 + '">' + EST_ESTADO[est0] + '</b>' +
+    ' · ' + lvs.length + ' fonte' + (lvs.length === 1 ? '' : 's') +
     ' · ' + ns.length + ' nota' + (ns.length === 1 ? '' : 's') +
     ' · ' + (t.sua ? 'você reuniu' : 'o Mekora contou, você nomeou') + '</p>';
   h += '<div class="acs acsN">' +
     '<button class="pri" data-a="est-ver" data-v="' + esc(t.id) + '">Ver as notas na lista</button>' +
     '<button class="sec" data-a="est-filtrar-ir" data-v="' + esc(t.id) + '">Ver as fontes na Estante</button>' +
     '<button class="sec" data-a="est-renomear" data-v="' + esc(t.id) + '">Renomear</button>' +
-    '<span class="sp" style="flex:1"></span>' +
-    '<button class="sec -dan" data-a="est-soltar" data-v="' + esc(t.id) + '">Desfazer o estudo</button></div>';
+    '<span class="di"></span>' +
+    /* FECHAR mora aqui, e nao so no Quadro: e a unica acao desta area que diz
+       "acabou", e ela estava no lugar onde se olha, e nao no lugar onde se
+       trabalha. */
+    '<button class="sec" data-a="' + (t.fechado ? 'est-reabrir' : 'est-fechar') + '" data-v="' + esc(t.id) + '">' +
+    (t.fechado ? 'Reabrir este estudo' : 'Fechar este estudo') + '</button>' +
+    '</div>' +
+    /* Desfazer saiu da fila: com "Fechar" ao lado, a fila quebrava em duas
+       linhas e a acao destrutiva ficava orfa no meio da pagina, parecendo
+       secao. Ela e o fim de tudo, e por isso vem depois de tudo, discreta. */
+    '<p class="acDes"><button class="lnk" data-a="est-soltar" data-v="' + esc(t.id) +
+    '">Desfazer o estudo</button></p>';
 
   /* OS LIVROS. Este e o lado que a colecao guardava sozinha, na Estante, sem
      nunca encontrar as notas que sairam deles. Um livro entra por "Este
@@ -5359,7 +5402,7 @@ function vEstudo() {
         const postos = (t.livros || []).indexOf(nome) > -1;
         const vid = ehVideo(nome);
         return '<button class="estLvI' + (vid ? ' -vid' : '') + '" data-a="ir-livro" data-v="' + esc(nome) + '">' +
-          (b ? '<img src="' + capa(b.c) + '" alt="" loading="lazy">' : '') +
+          (b ? '<img src="' + capaDe(b) + '" alt="" loading="lazy">' : '') +
           '<span class="t">' + esc(nome) + '</span>' +
           /* o tipo primeiro, a procedencia depois: qual coisa isto e importa
              mais do que como ela entrou. */
