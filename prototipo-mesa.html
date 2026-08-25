@@ -945,14 +945,13 @@ p.sub{font-size:14px;color:var(--ink-2);margin:0 0 var(--s5);line-height:1.55;ma
 .mfoco .desde{font-size:13.5px;line-height:1.6;color:var(--ink-3);margin:0 0 var(--s2)}
 /* a fila e outro assunto que este livro: respiro maior antes das acoes, e um
    filete acima para dizer que o que vem depois nao e sobre ele. */
-.mand{display:flex;align-items:baseline;gap:var(--s3);flex-wrap:wrap;
-  margin:var(--s6) 0 0;padding-top:var(--s3);border-top:1px solid var(--line-2)}
-.mand .lb{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
-  color:var(--ink-3)}
-.mand button{font-size:13.5px;color:var(--ink-2)}
-.mand button:hover{color:var(--acc)}
-.mand i{font-style:normal;color:var(--ink-4)}
-.mand .mais{font-family:var(--mono);font-size:10px;color:var(--ink-3)}
+/* de onde o item vem: e o que permite uma lista so de "precisa de voce" sem
+   a pessoa perder de vista se aquilo e preparo ou trabalho. */
+.mexc .it .qt{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;
+  color:var(--ink-3);margin-top:var(--s2)}
+.mexc.mand .it .nm{font-size:15px}
+.mexc.mand .it .pq{font-family:var(--serif);font-size:1.02rem;line-height:1.5;color:var(--ink);
+  max-width:48ch}
 .mfoco .mfila{font-size:13px;line-height:1.6;color:var(--ink-3);margin:var(--s4) 0 var(--s5);
   padding-top:var(--s3);border-top:1px solid var(--line-2)}
 .mfoco .mfila .lnk{padding:0;font-size:13px;color:var(--ink-2)}
@@ -3569,19 +3568,46 @@ function mesaReduzida(){
   (function(){
     const andando=S.estudos.filter(e=>estadoEstudo(e)==="andando");
     if(!andando.length)return;
-    h+='<p class="mand"><span class="lb">Andando</span>'+
-      andando.slice(0,3).map(e=>'<button data-a="est-abrir" data-v="'+esc(e.id)+'">'+
-        esc(e.nome)+'</button>').join('<i>·</i>')+
-      (andando.length>3?'<span class="mais">e mais '+(andando.length-3)+'</span>':'')+'</p>';
+    h+='<div class="mexc mand"><div class="cab"><span class="r">Andando</span>'+
+      '<span class="n">'+String(andando.length).padStart(2,"0")+'</span></div>'+
+      andando.slice(0,3).map(e=>{
+        const lvs=livrosDoEstudo(e);
+        const abertas=lvs.filter(t=>{const b=noAcervo(t);return b&&estadoDe(b)==="lendo";});
+        /* o que o estudo ESPERA, e nao quanto ele tem: um estudo com quatro
+           fontes e nenhuma aberta esta parado, e isso e o que interessa aqui. */
+        const espera=abertas.length
+          ? abertas.length+(abertas.length>1?' fontes abertas':' fonte aberta')
+          : 'nenhuma fonte aberta';
+        return '<div class="it"><span class="nm">'+esc(e.nome)+'</span>'+
+          '<p class="pq">'+(e.sobre?esc(e.sobre):'Sem centro ainda.')+'</p>'+
+          '<button class="btnO" data-a="est-abrir" data-v="'+esc(e.id)+'">Abrir \u2192</button>'+
+          '<span class="qt">'+espera+' \u00b7 '+e.notas.length+
+          (e.notas.length===1?' nota':' notas')+'</span></div>';
+      }).join("")+
+      (andando.length>3?'<p class="maisN">e mais '+(andando.length-3)+'.</p>':'')+
+      '</div>';
   })();
-  if(d.pends.length){
+  /* A LISTA VIRA UMA SO. "Precisa de voce" conhecia dois itens, os dois do
+     preparo, enquanto o Conhecimento contava doze do trabalho — duas listas do
+     mesmo nome que nunca se encontravam. Resto de quando o produto era
+     preparo: com o Kindle virando um meio, precisa de voce significa precisa
+     de voce, e cada item leva para onde se age nele. */
+  (function(){
+    const P=pauta();
+    const total=d.pends.length+P.reduce((a,x)=>a+x.n,0);
+    if(!total)return;
     h+='<div class="mexc"><div class="cab"><span class="r">Precisa de você</span>'+
-      '<span class="n">'+String(d.pends.length).padStart(2,"0")+'</span></div>'+
+      '<span class="n">'+String(total).padStart(2,"0")+'</span></div>'+
       d.pends.map(p=>'<div class="it"><span class="nm">'+esc(p.nm)+'</span>'+
         '<p class="pq">'+esc(p.cons)+'</p>'+
-        '<button class="btnO" data-a="'+p.a+'"'+(p.v?' data-v="'+p.v+'"':'')+'>'+p.acao+' →</button></div>').join("")+
+        '<button class="btnO" data-a="'+p.a+'"'+(p.v?' data-v="'+p.v+'"':'')+'>'+p.acao+' →</button>'+
+        '<span class="qt">no preparo</span></div>').join("")+
+      P.map(x=>'<div class="it"><span class="nm">'+esc(x.t)+'</span>'+
+        '<p class="pq">'+esc(x.r)+'</p>'+
+        '<button class="btnO" data-a="'+x.a+'" data-v="'+esc(x.v||x.k)+'">Ver \u2192</button>'+
+        '<span class="qt">no Conhecimento</span></div>').join("")+
       '</div>';
-  }
+  })();
   if(d.preps.length){
     h+='<div class="mest"><div class="cab"><span class="r">Em preparo</span>'+
       '<span class="n">'+String(d.preps.length).padStart(2,"0")+'</span></div>'+

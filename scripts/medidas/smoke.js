@@ -89,7 +89,16 @@
     const and=S.estudos.filter(e=>estadoEstudo(e)==="andando");
     if(and.length&&!document.querySelector(".mand"))
       erros.push("mesa: ha "+and.length+" estudo(s) andando e a Mesa nao diz");
-    feito.push("mesa/estudo-andando:"+document.body.innerHTML.length);
+    /* "precisa de voce" nao pode voltar a conhecer so o preparo: eram duas
+       listas do mesmo nome, 2 contra 12, que nunca se encontravam. */
+    const esperado=mDados().pends.length+pauta().reduce((a,x)=>a+x.n,0);
+    const cab=(document.querySelector(".mexc:not(.mand) .cab")||{innerText:""}).innerText;
+    if(cab.indexOf(String(esperado).padStart(2,"0"))<0&&cab.indexOf(String(esperado))<0)
+      erros.push("mesa: precisa de voce conta "+cab.replace(/\s+/g," ").trim()+" e deveria contar "+esperado);
+    const proc=[...document.querySelectorAll(".mexc:not(.mand) .it .qt")].map(e=>e.innerText.trim());
+    if(!proc.some(t=>/preparo/.test(t))||!proc.some(t=>/Conhecimento/.test(t)))
+      erros.push("mesa: os itens nao dizem de onde vem — "+proc.join(" | "));
+    feito.push("mesa/precisa-de-voce-unificado:"+document.body.innerHTML.length);
     S.estudos=[];pinta();
     if(document.querySelector(".mand"))
       erros.push("mesa: sem estudo nenhum, a linha de Andando ficou");
