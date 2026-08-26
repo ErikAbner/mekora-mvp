@@ -2,6 +2,10 @@
 
 **Data:** 2026-08-20
 **Estado:** evidência reunida. **Nenhuma decisão foi tomada aqui.**
+**Revisões corrigidas em 2026-08-25:** a reobservação do Mac (`0916fb3`) achou dois hashes velhos
+no registro — `operational_app` foi de `65bb244` para **`12d7062`**, e `canvas_motion` de `e862326`
+para **`e0a5204`**. O segundo é uma convergência útil: a revisão que o registro rastreia passou a
+ser exatamente o commit do schema que A4 e A5 mandam auditar.
 **Base:** a seção A do `ABERTO.md` — as nove que decidem forma de sistema. O arquivo era rascunho
 daqui e hoje é canônico, em [`docs/ABERTO.md`](../docs/ABERTO.md); a numeração não mudou.
 
@@ -76,7 +80,7 @@ o custo é aceitável, ou que a V1 a reusa.
 
 ### Por que esta é a terceira do Mac, e não a quarta a decidir
 
-O backend está em `mac-mini-erik:/Users/sipnm/dev/kindle-local-tool`, revisão `65bb244` — **não
+O backend está em `mac-mini-erik:/Users/sipnm/dev/kindle-local-tool`, revisão `12d7062` — **não
 existe nesta máquina.** Decidir como construir a tradução sem ler os quinze serviços que já a
 constroem é exatamente o erro que A4 e A5 estão evitando.
 
@@ -133,7 +137,7 @@ máquina atual não alcança o código."*
 |---|---|
 | **O schema** | Drizzle com `livros`, `notas`, `tags`, `livro_tags`, criado na madrugada de 14/08 |
 | **Commit** | `e0a5204`, no `canvas_motion` |
-| **Onde** | `mac-mini-erik:/Users/sipnm/dev/mekora-canvas-motion`, revisão `e862326` — **não existe nesta máquina** |
+| **Onde** | `mac-mini-erik:/Users/sipnm/dev/mekora-canvas-motion`, revisão `e0a5204` — **não existe nesta máquina** |
 
 **Encontrar quatro tabelas não responde nada.** Chave primária, formato do id, fingerprint de
 conteúdo e regra de deduplicação são justamente o que não se lê de uma lista de nomes de tabela.
@@ -314,7 +318,7 @@ vem depois dela é sólida; a decisão sem ela seria escrita duas vezes.
 | | pergunta | estado |
 |---|---|---|
 | **A1** | onde a infraestrutura fica | **pronta para decidir** — decidir jurisdição, deixar provedor fora da norma |
-| **A2** | como a tradução própria é construída | **aguardando auditoria no Mac** — o pipeline NLLB, em `65bb244` |
+| **A2** | como a tradução própria é construída | **aguardando auditoria no Mac** — o pipeline NLLB, em `12d7062` |
 | **A3** | serviços externos além da tradução | **pronta para decidir** — estender o item 7 a todo processamento de conteúdo |
 | **A4** | formato do identificador | **aguardando auditoria do schema no Mac** — `e0a5204` |
 | **A5** | duas importações do mesmo título | **aguardando auditoria do schema no Mac** — `e0a5204` |

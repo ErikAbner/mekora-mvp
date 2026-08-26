@@ -44,7 +44,7 @@ Decidem forma de sistema. Errar aqui custa refação, não ajuste.
 
 | | pergunta | o que destrava | origem |
 |---|---|---|---|
-| **A2** | **Como a tradução própria é construída.** A regra é o limite; a arquitetura que a cumpre pode ter custo relevante | auditar o pipeline NLLB no Mac — `mac-mini-erik:/Users/sipnm/dev/kindle-local-tool`, revisão `65bb244`. **Precedente não é conformidade** | DEC-0022 |
+| **A2** | **Como a tradução própria é construída.** A regra é o limite; a arquitetura que a cumpre pode ter custo relevante | auditar o pipeline NLLB no Mac — `mac-mini-erik:/Users/sipnm/dev/kindle-local-tool`, revisão `12d7062`. **Precedente não é conformidade** | DEC-0022 |
 | **A4** | **O formato do identificador de conteúdo.** UUID foi exemplo, não especificação | auditar o schema no Mac — Drizzle com `livros`, `notas`, `tags`, `livro_tags`, commit `e0a5204` | DEC-0021 |
 | **A5** | **Como relacionar duas importações do mesmo título.** A norma proíbe colisão; não define agrupamento, metadado de edição nem deduplicação | mesma auditoria de A4 | DEC-0021 |
 | **A7** | **Sobre qual base a interface será implementada.** Três pilhas incompatíveis existem, e a DEC-0025 não nomeou substituto | **A2 e A9.** Decidir antes delas é decidir na ordem errada | DEC-0025 |
