@@ -45,6 +45,25 @@ na página e o valor volta como JSON.
 | `medidas/folha-bancada.js` | quanto sobra para a prévia e para a tira dentro da folha? |
 | `medidas/estante-3d.js` | quanto da prateleira as lombadas ocupam? |
 
+As oito abaixo saíram de uma pasta temporária em 28/08. Elas são **método**, e
+não estado: cada uma responde uma pergunta que já valeu uma rodada, e a
+conclusão de várias virou regra no `CLAUDE.md` — enquanto a conta que a
+produziu vivia num diretório que se apaga.
+
+| medida | responde |
+|---|---|
+| `medidas/massa-visual.js` | o teste dos cinco segundos: que elemento domina, e qual fração da massa ele leva? |
+| `medidas/critica.js` | auditoria só de leitura — contagem, nunca adjetivo |
+| `medidas/rota.js` | andar a rota: o que a interface diz sobre onde você está, a cada salto |
+| `medidas/continente-e-atomo.js` | a página do pai domina a si mesma, ou o filho a vence? |
+| `medidas/acoes-visiveis.js` | quantas ações em repouso, e quantas alcançáveis por Tab |
+| `medidas/acoes-por-secao.js` | onde as ações se concentram dentro de uma tela |
+| `medidas/posicao-significa.js` | num arranjo espacial, a posição carrega informação? |
+| `medidas/ancora.js` | o que a conversão faz com o texto, e se a nota sabe voltar |
+
+**Massa visual = caracteres × corpo × contraste com o fundo.** É a conta que o
+`CLAUDE.md` cita como a régua de hierarquia, e `massa-visual.js` é ela.
+
 Exemplos:
 
 ```
