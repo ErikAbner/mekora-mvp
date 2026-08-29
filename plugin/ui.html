@@ -219,6 +219,32 @@
   <button class="primaria" onclick="rodar('tinta-escuro')">Criar text/on-inverse e mover</button>
 </section>
 
+<section>
+  <h2>13 · A reconciliação</h2>
+  <p class="porque">
+    Havia <b>duas paletas base</b> e elas não concordavam. A regra desta reconciliação:
+    <b>mantém a estrutura e a luminância da quente, e tira o matiz.</b> A quente é a que
+    foi medida e tem três degraus, estados e tema escuro; a do Figma tem os nomes certos,
+    com escopo, ligados a mil e poucos nós. Cada uma tinha metade.<br><br>
+    A medição decidiu um detalhe que ninguém tinha olhado: <b>nenhum valor do Figma é
+    neutro</b> — todos puxam pro azul, até o <code>#0C0D0D</code>. O <code>--ink</code>
+    quente, por sinal, já era <code>#151515</code>: neutro puro desde sempre.
+  </p>
+  <div class="aviso">
+    <b>Dois nomes mudam, e não é cosmético.</b> O <code>surface/raised</code> é
+    <b>mais escuro</b> que o <code>surface/base</code> — promete relevo e entrega
+    profundidade. Vira <code>surface/sunken</code>, e o terceiro degrau que faltava entra
+    como <code>surface/deep</code>.<br><br>
+    <b>Cor só em três endereços:</b> <code>nota/*</code> com o conjunto vivo (marca
+    pequena, precisa ser vista), <code>capa/*</code> com o claro (área grande, pode ser
+    sutil), e <code>estado/*</code>, que <b>não</b> é neutralizado — estado sem cor não é
+    estado.<br><br>
+    Os conjuntos <b>médio</b> e <b>quebrado</b> não viram variável: ninguém pediu endereço
+    pra eles, e token sem uso é token que mente sobre existir.
+  </div>
+  <button class="primaria" onclick="rodar('reconciliar')">Reconciliar</button>
+</section>
+
 <pre id="saida">Pronto. Abra a página <b>Wireframing - Media</b> antes de rodar.</pre>
 
 <script>

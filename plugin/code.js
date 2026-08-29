@@ -1023,6 +1023,160 @@ async function tintaNoEscuro() {
   return relato;
 }
 
+// --- Ato 13 - a reconciliacao ---------------------------------------------
+//
+// A decisao do Erik em 29/08: base preta e branca NEUTRA, e cor so em tres
+// enderecos — nota, capa de livro, estado do sistema.
+//
+// Havia duas paletas base e elas nao concordavam. A regra desta reconciliacao,
+// escrita para poder ser conferida depois:
+//
+//   mantem a ESTRUTURA e a LUMINANCIA da paleta quente, e tira o matiz.
+//
+// A quente e a que foi medida (196 pares, AA 4,5 adotado), a que tem tres
+// degraus de superficie, estados e tema escuro. A do Figma tem os NOMES certos
+// — por papel, com escopo, ligados a mil e poucos nos. Cada uma tinha metade.
+//
+// E a medicao decidiu um detalhe que ninguem tinha olhado: NENHUM valor do
+// Figma e neutro. Todos puxam para o azul — #F3F4F7, #D2D3D6, ate o #0C0D0D.
+// "Preto e branco neutro" aponta para o conjunto neutralizado, nao para eles.
+// O --ink quente, por sinal, ja era #151515: neutro puro desde sempre.
+//
+// DOIS NOMES MUDAM, e nao e cosmetico. `surface/raised` e MAIS ESCURO que o
+// `surface/base` — um nome que promete relevo e entrega profundidade. Na regra
+// do produto as camadas vem do fundo, nunca da borda, entao elas descem. Vira
+// `surface/sunken`, e o terceiro degrau que faltava entra como `surface/deep`.
+
+function rgb(hex) {
+  const h = hex.replace("#", "");
+  return {
+    r: parseInt(h.slice(0, 2), 16) / 255,
+    g: parseInt(h.slice(2, 4), 16) / 255,
+    b: parseInt(h.slice(4, 6), 16) / 255,
+  };
+}
+
+// de: o que a medicao registrou hoje. Se nao bater, o ato para e conta.
+const RECONCILIACAO = [
+  { style: "text/strong",     de: "#0C0D0D", para: "#151515", escopos: ["TEXT_FILL"] },
+  { style: "text/primary",    de: "#323233", para: "#535353", escopos: ["TEXT_FILL"] },
+  { style: "text/secondary",  de: "#666668", para: "#6A6A6A", escopos: ["TEXT_FILL"] },
+  { style: "icon/default",    de: "#727274", para: "#6A6A6A", escopos: ["SHAPE_FILL", "STROKE_COLOR"] },
+  { style: "border/subtle",   de: "#D2D3D6", para: "#B1B1B1", escopos: ["STROKE_COLOR"] },
+  { style: "surface/base",    de: "#FFFFFF", para: "#F9F9F9", escopos: ["FRAME_FILL", "SHAPE_FILL"] },
+  { style: "surface/raised",  de: "#F3F4F7", para: "#F3F3F3", escopos: ["FRAME_FILL", "SHAPE_FILL"], renomear: "surface/sunken" },
+  { style: "surface/inverse", de: "#070808", para: "#161616", escopos: ["FRAME_FILL", "SHAPE_FILL"] },
+  { style: "text/on-inverse", de: "#F3F4F7", para: "#F3F3F3", escopos: ["TEXT_FILL"] },
+];
+
+// Nascem agora. Os tres enderecos onde a cor tem permissao, mais o degrau de
+// superficie que faltava.
+const NOVAS = [
+  { nome: "surface/deep", hex: "#EBEBEB", escopos: ["FRAME_FILL", "SHAPE_FILL"] },
+
+  // nota: marca pequena, precisa ser vista. Conjunto `vivo`, o de maior croma
+  // (109) e maior contraste contra o papel (1,66 a 1,75 de media).
+  { nome: "nota/verde",   hex: "#D7F285", escopos: ["FRAME_FILL", "SHAPE_FILL"] },
+  { nome: "nota/rosa",    hex: "#F28587", escopos: ["FRAME_FILL", "SHAPE_FILL"] },
+  { nome: "nota/amarelo", hex: "#F2E685", escopos: ["FRAME_FILL", "SHAPE_FILL"] },
+  { nome: "nota/azul",    hex: "#85BCF2", escopos: ["FRAME_FILL", "SHAPE_FILL"] },
+
+  // capa: area grande, pode ser sutil. Conjunto `claro`, que a 1,01 nao serve
+  // de marca — mas uma capa inteira tingida se le mesmo fraca.
+  { nome: "capa/verde",   hex: "#EFFFBF", escopos: ["FRAME_FILL", "SHAPE_FILL"] },
+  { nome: "capa/rosa",    hex: "#FFBFC0", escopos: ["FRAME_FILL", "SHAPE_FILL"] },
+  { nome: "capa/amarelo", hex: "#FFF8BF", escopos: ["FRAME_FILL", "SHAPE_FILL"] },
+  { nome: "capa/azul",    hex: "#BFDFFF", escopos: ["FRAME_FILL", "SHAPE_FILL"] },
+
+  // estado: tinta, nao superficie. Vem da paleta quente e NAO e neutralizado —
+  // estado sem cor nao e estado.
+  { nome: "estado/ok",      hex: "#2F7D55", escopos: ["TEXT_FILL", "SHAPE_FILL"] },
+  { nome: "estado/atencao", hex: "#976519", escopos: ["TEXT_FILL", "SHAPE_FILL"] },
+  { nome: "estado/perigo",  hex: "#B23B2A", escopos: ["TEXT_FILL", "SHAPE_FILL"] },
+];
+
+async function reconciliar() {
+  const relato = [];
+  const cols = await figma.variables.getLocalVariableCollectionsAsync();
+  const col = cols.filter(function (c) { return c.name === "Mekora"; })[0];
+  if (!col) return [{ estado: "colecao Mekora nao encontrada. Nada foi tocado.", tocados: 0 }];
+  const modoId = col.modes[0].modeId;
+
+  const porNome = {};
+  for (const id of col.variableIds) {
+    const v = await figma.variables.getVariableByIdAsync(id);
+    if (v) porNome[v.name] = v;
+  }
+
+  // 1 · trocar o valor dos nove que existem, pela VARIAVEL. E o retorno de ter
+  // feito variavel antes: um setValueForMode chega em todo no que usa o style.
+  for (const item of RECONCILIACAO) {
+    const estilos = await acharCor(item.style);
+    if (estilos.length !== 1) {
+      relato.push({ style: item.style, estado: "esperava 1 style, achei " + estilos.length + ". Nada foi tocado.", tocados: 0 });
+      continue;
+    }
+    const antes = hexDe(estilos[0]);
+    if (antes !== item.de) {
+      relato.push({ style: item.style, estado: "esperava " + item.de + ", achei " + antes + ". Nada foi tocado.", tocados: 0 });
+      continue;
+    }
+    const v = porNome[item.style];
+    if (!v) {
+      relato.push({ style: item.style, estado: "sem variavel ligada. Nada foi tocado.", tocados: 0 });
+      continue;
+    }
+    v.setValueForMode(modoId, rgb(item.para));
+    v.scopes = item.escopos;
+    if (item.renomear) {
+      v.name = item.renomear;
+      estilos[0].name = item.renomear;
+    }
+    const depois = hexDe((await acharCor(item.renomear || item.style))[0]);
+    relato.push({
+      style: item.renomear ? item.style + " -> " + item.renomear : item.style,
+      de: item.de, para: item.para, conferido: depois,
+      estado: depois === item.para ? "aplicado" : "FALHOU ao conferir",
+      tocados: depois === item.para ? 1 : 0,
+    });
+  }
+
+  // 2 · criar as treze que nascem agora, cada uma com style E variavel ligada.
+  for (const nova of NOVAS) {
+    const jah = await acharCor(nova.nome);
+    if (jah.length) {
+      relato.push({ novo: nova.nome, estado: "ja existia — nada foi criado", tocados: 0 });
+      continue;
+    }
+    const ps = figma.createPaintStyle();
+    ps.name = nova.nome;
+    ps.paints = [{ type: "SOLID", color: rgb(nova.hex) }];
+
+    let v = porNome[nova.nome];
+    if (!v) {
+      v = figma.variables.createVariable(nova.nome, col, "COLOR");
+      v.setValueForMode(modoId, rgb(nova.hex));
+    }
+    v.scopes = nova.escopos;
+    ps.paints = [figma.variables.setBoundVariableForPaint(ps.paints[0], "color", v)];
+
+    const ok = ps.paints[0].boundVariables && ps.paints[0].boundVariables.color;
+    relato.push({
+      novo: nova.nome, valor: nova.hex, escopos: nova.escopos,
+      estado: ok ? "style e variavel criados e ligados" : "FALHOU ao ligar",
+      tocados: ok ? 1 : 0,
+    });
+  }
+
+  relato.push({
+    regra: "tinta de estado nao pousa em surface/deep",
+    porque: "estado/ok da 4,21 la, estado/atencao 4,20 — os dois abaixo de 4,5. " +
+            "Escurecer os tres para atender uma combinacao que nenhuma tela faz " +
+            "embaçaria o estado inteiro. A regra custa menos que o conserto.",
+  });
+  return relato;
+}
+
 // ─── Ligação com a interface ───────────────────────────────────────────────
 
 figma.ui.onmessage = async (msg) => {
@@ -1041,6 +1195,7 @@ figma.ui.onmessage = async (msg) => {
     else if (msg.tipo === "sobras") relato = await corrigirSobras();
     else if (msg.tipo === "diagnostico") relato = await diagnosticarSuperficieComoTinta();
     else if (msg.tipo === "tinta-escuro") relato = await tintaNoEscuro();
+    else if (msg.tipo === "reconciliar") relato = await reconciliar();
     else relato = [{ estado: "ação desconhecida" }];
 
     figma.ui.postMessage({ ok: true, relato });
