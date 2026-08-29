@@ -462,6 +462,11 @@ async function acharCor(nome) {
   return todos.filter((s) => s.name === nome);
 }
 
+function hexCor(c) {
+  const h = (v) => Math.round(v * 255).toString(16).padStart(2, "0");
+  return ("#" + h(c.r) + h(c.g) + h(c.b)).toUpperCase();
+}
+
 function hexDe(style) {
   const p = style.paints && style.paints[0];
   if (!p || p.type !== "SOLID") return null;
@@ -570,7 +575,7 @@ function fundoDe(no) {
     const f = n.fills;
     if (Array.isArray(f) && f.length) {
       const solido = f.filter((x) => x.type === "SOLID" && x.visible !== false).pop();
-      if (solido) return { lum: luminancia(solido.color), no: n.name };
+      if (solido) return { lum: luminancia(solido.color), no: n.name, hex: hexCor(solido.color) };
     }
     n = n.parent;
   }
@@ -765,6 +770,122 @@ async function criarVariaveisDeCor() {
   return relato;
 }
 
+// --- Ato 10 - os dois desvios que sobraram --------------------------------
+//
+// A DEC-0035 fixa entrelinha = corpo + 8, com UMA excecao escrita: o corpo 20
+// de leitura fica em 30. Estes dois nao sao a excecao; sao defeito.
+//
+// Heading/XL a 48/48 tem delta ZERO. Num titulo de uma linha nao aparece, mas
+// e o mesmo defeito do Ato 1: nasce invisivel e explode na primeira quebra.
+// Label/Large a 18/28 esta 2 acima da regra, sem razao escrita em lugar nenhum.
+//
+// A DIFERENCA para o Ato 1: aqui a mudanca PODE ser visivel. Se algum no ja
+// quebra em duas linhas, subir a entrelinha empurra o texto para baixo — que e
+// justamente a correcao funcionando. Por isso este ato CONTA as multilinha e
+// relata antes, em vez de prometer que nada muda.
+
+const SOBRARAM = [
+  { style: "Heading/XL",   de: 48, para: 56 },
+  { style: "Label/Large",  de: 28, para: 26 },
+];
+
+async function corrigirSobras() {
+  const relato = [];
+
+  for (const item of SOBRARAM) {
+    const achados = await acharStyle(item.style);
+    if (achados.length !== 1) {
+      relato.push({ style: item.style, estado: "esperava 1 style, achei " + achados.length + ". Nada foi tocado.", tocados: 0 });
+      continue;
+    }
+    const st = achados[0];
+    const antes = st.lineHeight && st.lineHeight.value;
+    if (antes !== item.de) {
+      relato.push({ style: item.style, estado: "esperava " + item.de + ", achei " + antes + ". Nada foi tocado.", tocados: 0 });
+      continue;
+    }
+
+    // Quantos nos usam, e quantos ja quebram linha. A altura de uma linha e
+    // a entrelinha atual; acima disso, o no e multilinha.
+    const usam = figma.currentPage.findAllWithCriteria({ types: ["TEXT"] })
+      .filter(function (n) { return n.textStyleId === st.id; });
+    const multi = usam.filter(function (n) { return n.height > antes * 1.5; });
+
+    await carregarFonte(st);
+    st.lineHeight = px(item.para);
+
+    const conferido = (await acharStyle(item.style))[0].lineHeight.value;
+    relato.push({
+      style: item.style,
+      estado: conferido === item.para ? "aplicado" : "FALHOU ao conferir",
+      antes: item.de,
+      depois: conferido,
+      corpo: st.fontSize,
+      nos: usam.length,
+      multilinha: multi.length,
+      aparencia: multi.length === 0
+        ? "nenhum no quebra linha: nada muda na tela"
+        : multi.length + " no(s) quebram linha e VAO mudar de altura",
+      tocados: usam.length,
+    });
+  }
+  return relato;
+}
+
+// --- Ato 11 - diagnostico, sem escrever nada ------------------------------
+//
+// A medicao disse que surface/raised pinta 94 TEXTOS e surface/base pinta 2.
+// Superficie usada como tinta. A hipotese e texto sobre fundo escuro, onde o
+// #F3F4F7 da 18,26 de contraste e funciona — mas o NOME mente, e um nome que
+// mente e o defeito que esta migracao inteira existiu para tirar.
+//
+// Este ato nao corrige: ele diz ONDE estao e sobre QUE fundo, para a decisao
+// ser tomada com o caso na frente em vez de por hipotese.
+
+async function diagnosticarSuperficieComoTinta() {
+  const alvos = ["surface/raised", "surface/base", "surface/inverse"];
+  const relato = [];
+
+  for (const nome of alvos) {
+    const estilos = await acharCor(nome);
+    if (estilos.length !== 1) {
+      relato.push({ style: nome, estado: "esperava 1, achei " + estilos.length });
+      continue;
+    }
+    const id = estilos[0].id;
+    const textos = figma.currentPage.findAllWithCriteria({ types: ["TEXT"] })
+      .filter(function (n) { return n.fillStyleId === id; });
+
+    const porFundo = {};
+    const exemplos = [];
+    for (const n of textos) {
+      const f = fundoDe(n);
+      const chave = f ? f.hex + " (lum " + f.lum.toFixed(3) + ")" : "sem fundo solido encontrado";
+      porFundo[chave] = (porFundo[chave] || 0) + 1;
+      if (exemplos.length < 8) {
+        exemplos.push({
+          texto: n.characters.slice(0, 40),
+          tela: telaDe(n),
+          fundo: chave,
+        });
+      }
+    }
+    relato.push({ style: nome, textos_pintados: textos.length, por_fundo: porFundo, exemplos: exemplos });
+  }
+  return relato;
+}
+
+// Sobe pelos pais ate achar um quadro nomeado de topo — e a tela onde o no vive.
+function telaDe(no) {
+  let p = no.parent;
+  let ultimo = null;
+  while (p && p.type !== "PAGE") {
+    ultimo = p.name;
+    p = p.parent;
+  }
+  return ultimo || "?";
+}
+
 // ─── Ligação com a interface ───────────────────────────────────────────────
 
 figma.ui.onmessage = async (msg) => {
@@ -780,6 +901,8 @@ figma.ui.onmessage = async (msg) => {
     else if (msg.tipo === "cor1") relato = await corRodada1();
     else if (msg.tipo === "cor2") relato = await corRodada2();
     else if (msg.tipo === "variaveis") relato = await criarVariaveisDeCor();
+    else if (msg.tipo === "sobras") relato = await corrigirSobras();
+    else if (msg.tipo === "diagnostico") relato = await diagnosticarSuperficieComoTinta();
     else relato = [{ estado: "ação desconhecida" }];
 
     figma.ui.postMessage({ ok: true, relato });

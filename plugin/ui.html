@@ -167,6 +167,38 @@
   <button class="primaria" onclick="rodar('variaveis')">Criar as variáveis</button>
 </section>
 
+<section>
+  <h2>10 · Os dois desvios que sobraram</h2>
+  <p class="porque">
+    <b>Heading/XL</b> está em 48/48 — <b>delta zero</b>, o mesmo defeito do passo 1:
+    invisível num título de uma linha, e some o espaço na primeira quebra. Vai para
+    48/56.<br>
+    <b>Label/Large</b> está em 18/28, dois acima da regra, sem razão escrita em lugar
+    nenhum. Vai para 18/26.
+  </p>
+  <div class="aviso">
+    <b>Aqui pode mudar de aparência</b>, ao contrário do passo 1. Se algum nó já quebra
+    em duas linhas, subir a entrelinha empurra o texto — que é a correção funcionando.
+    O ato <b>conta as multilinha</b> e diz quantas são, em vez de prometer que nada muda.
+  </div>
+  <button class="primaria" onclick="rodar('sobras')">Corrigir os dois</button>
+</section>
+
+<section>
+  <h2>11 · Diagnóstico — superfície usada como tinta</h2>
+  <p class="porque">
+    <code>surface/raised</code> pinta <b>94 textos</b> e <code>surface/base</code> pinta
+    <b>2</b>. A hipótese é texto sobre fundo escuro, onde o <code>#F3F4F7</code> dá
+    18,26 e funciona — mas então o <b>nome mente</b>, e nome que mente é o defeito que
+    esta migração inteira existiu para tirar.
+  </p>
+  <div class="aviso">
+    <b>Este não escreve nada.</b> Ele diz onde estão, sobre que fundo, e mostra oito
+    exemplos com a tela — para a decisão sair do caso real, não da hipótese.
+  </div>
+  <button onclick="rodar('diagnostico')">Diagnosticar</button>
+</section>
+
 <pre id="saida">Pronto. Abra a página <b>Wireframing - Media</b> antes de rodar.</pre>
 
 <script>
