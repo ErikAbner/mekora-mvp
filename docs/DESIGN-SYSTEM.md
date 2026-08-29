@@ -133,8 +133,19 @@ simpatia de uma curva de verdade."*
 
 ## Tipografia · REGRA `DEC-0035`, `DEC-0037`
 
-Uma família só: **Zodiak Variable**. Dezesseis styles, 1.768 nós — e **392 nós sem style
-nenhum**, que é o número que diz que esta escala descreve 82% do arquivo, não ele inteiro.
+Os dezesseis styles são todos **Zodiak Variable** — serifada em tudo, e isso é decisão de
+produto pela `DEC-0035`, não economia.
+
+**Mas o arquivo tem quatro famílias, não uma.** As capas geradas usam `Satoshi Variable`
+(72 nós), `IBM Plex Mono` (16) e `Archivo` (2). Nenhuma tem style, e nenhuma está no
+sistema. Ver *As capas geradas* abaixo.
+
+E há **um buraco declarado**: o produto usa **monoespaçada** para o registro técnico —
+numeração, formato de arquivo, metadado —, o protótipo declara `--mono` para isso, e **não
+existe style de mono** entre os dezesseis. Hoje esse papel é servido por fonte solta.
+
+Dos 392 nós que estavam sem style, **33 foram adotados** em 2026-08-29 por baterem exatamente
+com um style existente — mudança de zero pixels. Restam 359.
 
 ### A escala, nos dois modos
 
@@ -209,6 +220,38 @@ consegue defender depois.
 peso é Italic. É um **rótulo de data**. O tracking de `23.8px` — **119% do corpo**, mais que
 um caractere inteiro entre letras — não foi tocado: a hipótese é que seja 10× o pretendido,
 já que `2.38px` daria 11,9%, tracking de rótulo largo normal. Um zero a mais num campo.
+
+### As capas geradas
+
+**São conteúdo, não interface, e a diferença é operacional.** Numa capa o corpo do título
+sai do **comprimento do texto**, para preencher a caixa: *"Malha Urbana"* e *"Apresentação
+Institucional"* têm de ocupar o mesmo retângulo e as duas parecerem deliberadas. Por isso os
+valores lá são `24/24`, `32/44`, `48/64`, `30/33` — **encaixes, não degraus**.
+
+Escala de interface existe para tornar coisas **diferentes** comparáveis. Capa existe para
+**uma** coisa preencher um espaço. Forçar a segunda na primeira faz título estourar ou sobrar.
+
+**A fonte, porém, pode ser a mesma** — e provavelmente deve. Uma capa em Zodiak Black fica
+editorial e literária, que é o idioma do produto; Satoshi é uma geométrica neutra e não diz
+isso. Aqui a mudança melhora, não só uniformiza.
+
+O `Archivo`, com 2 nós, sai: duas ocorrências de uma terceira família não fazem trabalho que
+as outras não façam. Isso é acidente, não decisão.
+
+O `IBM Plex Mono` é o caso a pensar duas vezes. Os 16 nós são numeração e formato — `01`,
+`Epub`. **Mono ali carrega significado**: é o registro técnico. Trocar por serifada perde uma
+distinção que o próprio sistema faz.
+
+### O `28/24` é conteúdo, não tipografia
+
+Quarenta nós em `28/24 Bold` — entrelinha **menor** que o corpo, o mesmo defeito que o
+`Heading/H5-Bold-28` tinha antes de ser corrigido. Mas a distribuição conta outra história:
+**4 nós em cada uma de 10 telas**, todos com o texto `Link link link`. É um componente com
+**placeholder que nunca foi preenchido**, repetido em produção.
+
+Quatro dos quarenta quebram linha, então adotar `Heading/SM` (28/36) é quase invisível — e
+vale, porque `28/24` é quebrado independente do texto que entrar. Mas os 40 ficam registrados
+como pendência de **conteúdo**, não de tipo.
 
 ## Movimento · REGRA
 
