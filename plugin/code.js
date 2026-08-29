@@ -1177,6 +1177,64 @@ async function reconciliar() {
   return relato;
 }
 
+// --- Ato 14 - a escala tipografica, sem escrever nada ---------------------
+//
+// A cor ja foi reconciliada. A tipografia nao: os 16 styles do Figma nunca
+// foram comparados com a escala do Prototipo de Produto, e ja se sabe que elas
+// discordam em pelo menos um ponto — o corpo de leitura e 20 num e 18,56 no
+// outro.
+//
+// Este ato so mede. A reconciliacao de cor so foi honesta porque a comparacao
+// veio antes da proposta, e citar de memoria e o erro que ja custou uma rodada
+// nesta sessao: os numeros 48/48 e 18/28 vinham de uma auditoria de dois dias
+// antes e ja eram falsos.
+
+async function escalaTipografica() {
+  const styles = await figma.getLocalTextStylesAsync();
+  const nos = figma.currentPage.findAllWithCriteria({ types: ["TEXT"] });
+
+  const uso = {};
+  for (const n of nos) uso[n.textStyleId] = (uso[n.textStyleId] || 0) + 1;
+
+  const linhas = styles.map(function (st) {
+    const lh = st.lineHeight;
+    const entre = lh && lh.unit === "PIXELS" ? lh.value
+                : lh && lh.unit === "PERCENT" ? Math.round(st.fontSize * lh.value / 100)
+                : null;
+    const ls = st.letterSpacing;
+    return {
+      nome: st.name,
+      corpo: st.fontSize,
+      entre: entre,
+      delta: entre === null ? null : Math.round((entre - st.fontSize) * 10) / 10,
+      razao: entre === null ? null : Math.round(entre / st.fontSize * 100) / 100,
+      peso: st.fontName.style,
+      familia: st.fontName.family,
+      tracking: ls ? (ls.unit === "PERCENT" ? ls.value + "%" : ls.value + "px") : "0",
+      nos: uso[st.id] || 0,
+    };
+  });
+
+  linhas.sort(function (a, b) { return b.corpo - a.corpo; });
+
+  // A DEC-0035 fixa entrelinha = corpo + 8, com UMA excecao escrita: o corpo 20
+  // de leitura fica em 30. Quem foge disso aparece nomeado, nao contado.
+  const foraDaRegra = linhas.filter(function (l) {
+    if (l.delta === null) return true;
+    if (l.corpo === 20 && l.entre === 30) return false;
+    return l.delta !== 8;
+  }).map(function (l) { return l.nome + " " + l.corpo + "/" + l.entre + " (delta " + l.delta + ")"; });
+
+  return [{
+    total: linhas.length,
+    nos_com_style: nos.filter(function (n) { return n.textStyleId; }).length,
+    nos_sem_style: nos.filter(function (n) { return !n.textStyleId; }).length,
+    familias: Array.from(new Set(linhas.map(function (l) { return l.familia; }))),
+    fora_da_regra_corpo_mais_8: foraDaRegra,
+    escala: linhas,
+  }];
+}
+
 // ─── Ligação com a interface ───────────────────────────────────────────────
 
 figma.ui.onmessage = async (msg) => {
@@ -1196,6 +1254,7 @@ figma.ui.onmessage = async (msg) => {
     else if (msg.tipo === "diagnostico") relato = await diagnosticarSuperficieComoTinta();
     else if (msg.tipo === "tinta-escuro") relato = await tintaNoEscuro();
     else if (msg.tipo === "reconciliar") relato = await reconciliar();
+    else if (msg.tipo === "escala") relato = await escalaTipografica();
     else relato = [{ estado: "ação desconhecida" }];
 
     figma.ui.postMessage({ ok: true, relato });
