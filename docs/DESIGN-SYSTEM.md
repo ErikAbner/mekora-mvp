@@ -131,78 +131,84 @@ reta, uma curva vira sinal.
 O raio 4px foi retirado por ser *"o pior dos dois mundos: perdia a nitidez do 0 sem comprar a
 simpatia de uma curva de verdade."*
 
-## Tipografia · REGRA
+## Tipografia · REGRA `DEC-0035`, `DEC-0037`
+
+Uma família só: **Zodiak Variable**. Dezesseis styles, 1.768 nós — e **392 nós sem style
+nenhum**, que é o número que diz que esta escala descreve 82% do arquivo, não ele inteiro.
+
+### A escala, nos dois modos
+
+Coleção `Mekora Tipografia`, modos **Desktop** e **Mobile**, 32 variáveis ligadas.
+
+| style | peso | desktop | mobile | razão |
+|---|---|---|---|---|
+| `Display/Large` | Extrabold | 64/72 | 40/48 | 0,63 |
+| `Display/Large/Capitular` | Italic | 64/72 | 40/48 | 0,63 |
+| `Heading/XL` | Bold | 48/56 | 32/40 | 0,67 |
+| `Heading/LG` | Bold | 40/48 | 28/36 | 0,70 |
+| `Heading/MD` | Bold | 32/40 | 24/32 | 0,75 |
+| `Heading/SM` | Bold | 28/36 | 22/30 | 0,79 |
+| `Heading/XS` · `/Italic` | Bold · Italic | 24/32 | 20/28 | 0,83 |
+| `Body/Large` | Regular | 24/32 | 20/28 | 0,83 |
+| `Body/Medium` | Regular | 20/30 | 18/27 | 0,90 |
+| `Body/Medium/Prosa` | Regular | 20/30 | 18/27 | 0,90 |
+| `Label/Small/Caps` | Italic | 20/28 | 18/26 | 0,90 |
+| `Label/Large` | Regular | 18/26 | 18/26 | 1,00 |
+| `Body/Small` · `Label/Medium` | Regular | 16/24 | 16/24 | 1,00 |
+| `Label/Small` | Regular | 14/22 | 14/22 | 1,00 |
+
+### As quatro regras que governam o tipo
+
+**1 · Entrelinha = corpo + 8.** Uma exceção escrita: o corpo de leitura fica em razão
+**1,5**. Somar 8 absolutos produz uma razão que cai conforme o corpo cresce — 1,44 no 18 e
+1,17 no 48 — que é exatamente a curva que a tipografia pede. **Por isso a regra não precisa
+de versão mobile.**
+
+**2 · A exceção atravessa como razão, nunca como número.** `20/30` vira `18/27`, não
+`18/30` — copiar o 30 daria razão 1,67, frouxo e desperdiçando tela.
+
+**3 · O piso do mobile é 18.** Nada abaixo do corpo encolhe. Diminuir texto pequeno
+justamente na tela menor é o sinal invertido.
+
+**4 · Tracking é relativo, nunca absoluto.** Corrigido em 29/08: o mesmo `-1.6px` valia
+**-2,5%** num corpo 64 e **-6,7%** num corpo 24 — invertido, porque tipo grande precisa de
+*mais* aperto, não menos. E o mobile amplificava: a 32px o mesmo valor daria -5%.
 
 ```
---ui      -apple-system, "Segoe UI", Inter, "Helvetica Neue", Arial, sans-serif
---serif   "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif
---mono    ui-monospace, "SF Mono", Menlo, Consolas, monospace
+64 → -2,5%    48 → -2,0%    40 → -1,5%    ≤ 32 → 0
 ```
 
-**A escala, e a entrelinha inversa** — quanto maior o texto, menor a entrelinha:
+O `Heading/MD` e o `Heading/SM` ficaram em zero de propósito: dar tracking a quem não tem
+é inventar curva nova, e isso é trabalho do playbook, com o olho junto.
 
-| | tamanho | entrelinha | tracking |
-|---|---|---|---|
-| display | `clamp(2.6rem, 1.6rem + 3.4vw, 5.2rem)` | .94 | −.03em |
-| h1 | 2.15rem | 1.06 | −.025em |
-| h2 | 1.5rem | 1.2 | −.015em |
-| h3 | 1.14rem | 1.34 | — |
-| leitura | 1.16rem | **1.62** | — |
-| ui | .94rem | 1.5 | — |
-| pequeno | .83rem | — | — |
-| mono | .68rem | — | +.06em |
+### Medida de leitura · MEDIDO
 
-### A escala está em `rem`, e isso é regra de acessibilidade · REGRA
-
-O `clamp` opera sobre **o tamanho que a pessoa escolheu no navegador** — de 87,5% a 125% dele.
-
-Fixar `html { font-size: 14px }` daria a mesma identidade visual e **anularia a preferência de
-tamanho de fonte** de quem lê muito, que é exatamente quem a aumenta. **Inaceitável.**
-
-## Contraste · MEDIDO
-
-`node scripts/contraste.mjs` — lê o protótipo agora, não uma cópia da paleta.
+O avanço médio da Zodiak Regular é **0,5204 em**, medido no arquivo da fonte e ponderado
+pela frequência de letras do português, espaço incluído.
 
 ```
-196 pares medidos
-  0 abaixo de 3,0   nenhum par é inutilizável
-  7 entre 3,0 e 4,5 só servem em texto grande — e nenhum dos 7 existe no arquivo
+tela 375   medida 343px    18px → 37 caracteres    16px → 41
+tela 393   medida 361px    18px → 39               16px → 43
+tela 430   medida 398px    18px → 42               16px → 48
 ```
 
-O tema escuro, que este documento marca como exploração, **passa inteiro em 4,5**. É o
-claro que carregava a dívida, e ela era de três tokens.
+Abaixo dos 45 clássicos — **e isso é a tela, não a escolha**: chegar a 45 em 343px exigiria
+corpo 15, pequeno demais para leitura contínua. Trinta e sete é o que um celular dá.
 
-### Os três que mudaram, em 2026-08-29
+### Duas coisas que a medição achou e que não foram consertadas
 
-| token | era | virou | por quê |
-|---|---|---|---|
-| `--warn` | `#a8701c` | `#976519` | 3,78 sobre `--bg-2` e 3,85 sobre `--warn-soft` — texto âmbar pequeno num chip, o único dos três que se enxerga |
-| `--acc` | `#c8481f` | `#c0451d` | 4,28 sobre `--acc-soft` |
-| `--ink-3` | `#6f6b64` | `#6e6a63` | 4,44 sobre `--bg-3`, em mono de 8px |
+**A exceção da leitura vazou para o style geral.** A `DEC-0035` escreve a exceção para *o
+corpo 20 de leitura*, que é o `Body/Medium/Prosa` — os 12 nós dele são a prosa das telas de
+Leitura. Mas o `Body/Medium`, 448 nós de corpo de **interface**, também está em 20/30. Pela
+regra seria 20/28. **Não foi mexido**, porque 1,5 em corpo de interface é tipografia boa e
+não defeito — mas hoje isso é escolha implícita, e escolha implícita é a que ninguém
+consegue defender depois.
 
-**O que NÃO mudou, e por quê.** A medição acusou 15 pares abaixo de 4,5, e só **três**
-existiam no arquivo. Os outros doze eram tinta de estado sobre `--bg-3` e `--paper` —
-combinação que a paleta permite e que nenhuma tela faz. Corrigir os doze teria escurecido
-a paleta inteira para consertar telas que não existem.
-
-**Filete e `--ink-4` são medidos e não julgados.** A WCAG cobra 3,0 de componente de
-interface, não de separador decorativo, e o `--ink-4` já está proibido em texto por regra
-própria. A primeira versão do instrumento cobrava 3,0 de tudo e acusou 93 falhas em 196
-pares — número que não descreve nada e que ninguém lê duas vezes.
-
-## Medida de leitura · MEDIDO
-
-```
---col   575px  →  675px (≥1200)  →  775px (≥1600)
-```
-
-**A medida é o alvo; a largura é consequência.** Na leitura paginada, o número de colunas é calculado
-da largura real: com `column-width` solto, cabia uma coluna só numa tela de 1440 e ela esticava para
-**133 caracteres por linha**. Contando quantas medidas cabem e transformando o resto em margem,
-**mede 69** em 1100, 1440 e 1920.
-
-Outras medidas usadas, e todas medidas na captura, não escolhidas: `60ch` para citação dentro de
-grupo — *"a caixa é larga; a linha, não"* —, `52ch` e `56ch` para texto auxiliar.
+**O `Label/Small/Caps` tem um nome que mente três vezes.** Os 2 nós são *"14 de agosto de
+2026"* e *"12 de agosto de 2026"*: não é caps, é minúscula; não é small, 20px é o corpo; e o
+peso é Italic. É um **rótulo de data**. O tracking de `23.8px` — **119% do corpo**, mais que
+um caractere inteiro entre letras — não foi tocado: a hipótese é que seja 10× o pretendido,
+já que `2.38px` daria 11,9%, tracking de rótulo largo normal. Um zero a mais num campo.
 
 ## Movimento · REGRA
 
