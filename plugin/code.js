@@ -395,6 +395,151 @@ async function renomear() {
   return relato;
 }
 
+// ─── Ato 6 · Body-medium-20px absorvido em Body/Medium ─────────────────────
+//
+// EXCEÇÃO APROVADA, e por isso não passa pela guarda genérica do Ato 2: as
+// métricas DIFEREM — 20/32 contra 20/30. Absorver muda a entrelinha de 64 nós.
+//
+// O que autoriza: os 64 são de UMA LINHA, máximo 27 caracteres, e 38 são hug.
+// A entrelinha de 32 nunca aparece em nenhum deles — é invisível hoje e
+// continuaria invisível. Medido em 2026-08-29, e RECONFERIDO aqui antes de
+// escrever, porque medição envelhece.
+//
+// Se qualquer nó tiver virado multilinha desde a medição, isto para.
+
+async function absorverBodyMedium() {
+  const saiN = "Body-medium-20px";
+  const ficaN = "Body/Medium";
+  const sais = await acharStyle(saiN);
+  const ficas = await acharStyle(ficaN);
+  if (sais.length !== 1 || ficas.length !== 1) {
+    return [{ estado: `esperava 1 de cada, achei ${sais.length} e ${ficas.length}. Nada foi tocado.`, tocados: 0 }];
+  }
+  const sai = sais[0], fica = ficas[0];
+
+  const page = figma.currentPage;
+  const alvos = page.findAllWithCriteria({ types: ["TEXT"] }).filter((t) => t.textStyleId === sai.id);
+
+  // A prova, refeita agora: nenhum pode ser multilinha.
+  const entreAtual = sai.lineHeight.value;
+  const multilinha = alvos.filter((t) => t.height >= 2 * entreAtual - 6);
+  if (multilinha.length > 0) {
+    return [
+      {
+        estado:
+          `${multilinha.length} nós QUEBRAM linha — a entrelinha deixou de ser invisível e ` +
+          `absorver mudaria a aparência. Nada foi tocado.`,
+        nos: multilinha.slice(0, 6).map((t) => ({ id: t.id, texto: (t.characters || "").slice(0, 30) })),
+        tocados: 0,
+      },
+    ];
+  }
+
+  const tocados = [];
+  for (const t of alvos) {
+    await figma.loadFontAsync(t.fontName);
+    await t.setTextStyleIdAsync(fica.id);
+    tocados.push({ id: t.id, texto: (t.characters || "").slice(0, 24) });
+  }
+  const restantes = page.findAllWithCriteria({ types: ["TEXT"] }).filter((t) => t.textStyleId === sai.id).length;
+  if (restantes > 0) {
+    return [{ estado: `${tocados.length} reaplicados, mas ${restantes} ainda usam. NÃO apaguei.`, tocados: tocados.length }];
+  }
+  sai.remove();
+  return [
+    {
+      estado: `absorvido em "${ficaN}" e apagado — entrelinha 32 → 30, invisível nos ${tocados.length}`,
+      tocados: tocados.length,
+      nos: tocados.slice(0, 8),
+    },
+  ];
+}
+
+// ─── Cor · utilidades ──────────────────────────────────────────────────────
+
+async function acharCor(nome) {
+  const todos = await figma.getLocalPaintStylesAsync();
+  return todos.filter((s) => s.name === nome);
+}
+
+function hexDe(style) {
+  const p = style.paints && style.paints[0];
+  if (!p || p.type !== "SOLID") return null;
+  const h = (v) => Math.round(v * 255).toString(16).padStart(2, "0");
+  return ("#" + h(p.color.r) + h(p.color.g) + h(p.color.b)).toUpperCase();
+}
+
+// ─── Ato 7 · cor, rodada 1: superfícies e nomes ────────────────────────────
+//
+// Duas superfícies claras são absorvidas em branco puro. Medido: #F9FAFD está
+// a 1,044:1 de #FFFFFF e #F8F8FA a 1,061:1. Nenhum olho separa isso — e
+// "Azull of white - cards" ainda tem erro de digitação e codifica um COMPONENTE
+// no nome de uma paleta, que é o que o próprio sistema proíbe na tipografia.
+//
+// E a inversão que a medição pediu: `Cinza escuro` é a tinta de 214 nós de
+// texto, quase todo título e corpo grande. `Preto` tem 20. O primário real é o
+// Cinza escuro; o Preto é a exceção. Ver auditoria de UX de 27/08, Parte A.
+
+const SUPERFICIES_ABSORVER = [
+  { sai: "Branco - Azul", fica: "Branco 100%", dist: "1,044:1" },
+  { sai: "Azull of white - cards", fica: "Branco 100%", dist: "1,061:1" },
+];
+
+const COR_RENOMEAR = [
+  { de: "Cinza escuro",  para: "text/primary",    nota: "12,81 sobre branco · 214 nós de texto" },
+  { de: "Preto",         para: "text/strong",     nota: "19,46 · reservado, 20 nós" },
+  { de: "Branco 100%",   para: "surface/base",    nota: "" },
+  { de: "Branco - mid",  para: "surface/raised",  nota: "a única separação real, 1,10:1" },
+  { de: "Estado - Ativo", para: "surface/inverse", nota: "38 nós, TODOS em FRAME e nenhum em TEXT" },
+  { de: "Cinza - Claro", para: "border/subtle",   nota: "246 nós, só traço" },
+];
+
+async function corRodada1() {
+  const relato = [];
+  const page = figma.currentPage;
+  const todos = page.findAll(() => true);
+
+  for (const item of SUPERFICIES_ABSORVER) {
+    const sais = await acharCor(item.sai);
+    const ficas = await acharCor(item.fica);
+    if (sais.length !== 1 || ficas.length !== 1) {
+      relato.push({ acao: "absorver", de: item.sai, estado: `esperava 1 de cada, achei ${sais.length} e ${ficas.length}. Pulado.`, tocados: 0 });
+      continue;
+    }
+    const sai = sais[0], fica = ficas[0];
+    const tocados = [];
+    for (const n of todos) {
+      if ("fillStyleId" in n && n.fillStyleId === sai.id) { await n.setFillStyleIdAsync(fica.id); tocados.push(n.id); }
+      if ("strokeStyleId" in n && n.strokeStyleId === sai.id) { await n.setStrokeStyleIdAsync(fica.id); tocados.push(n.id); }
+    }
+    const sobrou = todos.filter((n) => ("fillStyleId" in n && n.fillStyleId === sai.id) || ("strokeStyleId" in n && n.strokeStyleId === sai.id)).length;
+    if (sobrou > 0) {
+      relato.push({ acao: "absorver", de: item.sai, estado: `${tocados.length} movidos, ${sobrou} sobraram. NÃO apaguei.`, tocados: tocados.length });
+      continue;
+    }
+    sai.remove();
+    relato.push({ acao: "absorver", de: item.sai, para: item.fica, dist: item.dist, estado: "absorvido e apagado", tocados: tocados.length });
+  }
+
+  for (const item of COR_RENOMEAR) {
+    const achados = await acharCor(item.de);
+    if (achados.length !== 1) {
+      relato.push({ acao: "renomear", de: item.de, estado: `esperava 1, achei ${achados.length}. Pulado.`, tocados: 0 });
+      continue;
+    }
+    const jaExiste = await acharCor(item.para);
+    if (jaExiste.length > 0) {
+      relato.push({ acao: "renomear", de: item.de, estado: `"${item.para}" JÁ EXISTE. Pulado.`, tocados: 0 });
+      continue;
+    }
+    const s = achados[0];
+    const hex = hexDe(s);
+    s.name = item.para;
+    relato.push({ acao: "renomear", de: item.de, para: item.para, hex, nota: item.nota, estado: "renomeado", tocados: 1 });
+  }
+  return relato;
+}
+
 // ─── Ligação com a interface ───────────────────────────────────────────────
 
 figma.ui.onmessage = async (msg) => {
@@ -406,6 +551,8 @@ figma.ui.onmessage = async (msg) => {
     else if (msg.tipo === "kindle") relato = await corrigirContadorKindle();
     else if (msg.tipo === "duplicata") relato = await absorverDuplicata();
     else if (msg.tipo === "renomear") relato = await renomear();
+    else if (msg.tipo === "body-medium") relato = await absorverBodyMedium();
+    else if (msg.tipo === "cor1") relato = await corRodada1();
     else relato = [{ estado: "ação desconhecida" }];
 
     figma.ui.postMessage({ ok: true, relato });
