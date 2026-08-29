@@ -1235,6 +1235,199 @@ async function escalaTipografica() {
   }];
 }
 
+// --- Ato 15 - a tipografia: conserto, relato e os dois modos ---------------
+//
+// O Erik: "melhorar tudo depois nao significa descaso agora". Entao este ato
+// separa o que se conserta com certeza do que precisa do olho dele, e nao
+// mistura os dois. Aplicar no escuro seria o descaso.
+//
+// CONSERTA (A): o tracking esta ABSOLUTO onde deveria ser RELATIVO. O mesmo
+// -1.6px vale -2,5% num corpo 64 e -6,7% num corpo 24 — invertido, porque tipo
+// grande precisa de MAIS aperto, nao menos. E o mobile piora: a 32px o mesmo
+// valor vira -5%. Convertido para porcentagem, com a curva na direcao certa.
+//
+// So os cinco que JA TEM tracking sao tocados. O Heading/MD e o Heading/SM
+// estao em zero e continuam: dar tracking a quem nao tem e inventar curva
+// nova, e isso e trabalho do DS e do playbook, com o olho junto.
+//
+// CONSERTA (B): o Label/Small/Caps em 20/24 e o unico fora do corpo + 8.
+// Entrelinha vai para 28. O tracking dele — 23,8px, ou +119% do corpo — NAO e
+// tocado: pode ser recurso editorial de proposito, e 119% e absurdo o bastante
+// para merecer o olho antes da mao. O ato relata o texto dos dois nos.
+//
+// SO RELATA (C): Body/Medium/Prosa tem metrica identica ao Body/Medium — 20/30
+// Regular, mesmo tracking, 12 nos contra 448. Parece duplicata, mas "Prosa"
+// pode ser a prosa de leitura, que um dia diverge do corpo de interface. O ato
+// diz ONDE os 12 vivem, e a absorcao fica para depois de olhar.
+//
+// CONSTROI (D): a colecao de tipografia com dois modos, Desktop e Mobile. A
+// escala mobile foi derivada de uma curva log-linear ancorada em 20 -> 18, com
+// piso em 18: nada abaixo do corpo encolhe, porque diminuir texto pequeno
+// justamente na tela menor e o sinal invertido.
+
+const TRACKING = [
+  { style: "Display/Large",           de: -1.6, para: -2.5 },
+  { style: "Display/Large/Capitular", de: -1.6, para: -2.5 },
+  { style: "Heading/XL",              de: -1.6, para: -2.0 },
+  { style: "Heading/LG",              de: -1.6, para: -1.5 },
+  { style: "Heading/XS/Italic",       de: -1.6, para:  0.0 },
+];
+
+// corpo e entrelinha nos dois modos. A entrelinha segue corpo + 8, com a
+// excecao escrita da DEC-0035 atravessando como RAZAO e nao como numero:
+// o corpo de leitura fica em 1,5, entao 20/30 no desktop vira 18/27 no mobile.
+const ESCALA = [
+  { style: "Display/Large",           d: [64, 72], m: [40, 48] },
+  { style: "Display/Large/Capitular", d: [64, 72], m: [40, 48] },
+  { style: "Heading/XL",              d: [48, 56], m: [32, 40] },
+  { style: "Heading/LG",              d: [40, 48], m: [28, 36] },
+  { style: "Heading/MD",              d: [32, 40], m: [24, 32] },
+  { style: "Heading/SM",              d: [28, 36], m: [22, 30] },
+  { style: "Heading/XS",              d: [24, 32], m: [20, 28] },
+  { style: "Heading/XS/Italic",       d: [24, 32], m: [20, 28] },
+  { style: "Body/Large",              d: [24, 32], m: [20, 28] },
+  { style: "Body/Medium",             d: [20, 30], m: [18, 27] },
+  { style: "Body/Medium/Prosa",       d: [20, 30], m: [18, 27] },
+  { style: "Label/Small/Caps",        d: [20, 28], m: [18, 26] },
+  { style: "Label/Large",             d: [18, 26], m: [18, 26] },
+  { style: "Body/Small",              d: [16, 24], m: [16, 24] },
+  { style: "Label/Medium",            d: [16, 24], m: [16, 24] },
+  { style: "Label/Small",             d: [14, 22], m: [14, 22] },
+];
+
+function chave(nome) {
+  return nome.toLowerCase().replace(/\//g, "-");
+}
+
+async function acharTexto(nome) {
+  const todos = await figma.getLocalTextStylesAsync();
+  return todos.filter(function (s) { return s.name === nome; });
+}
+
+async function tipografia() {
+  const relato = [];
+  const nos = figma.currentPage.findAllWithCriteria({ types: ["TEXT"] });
+
+  // A · tracking absoluto vira relativo
+  for (const t of TRACKING) {
+    const achados = await acharTexto(t.style);
+    if (achados.length !== 1) {
+      relato.push({ style: t.style, estado: "esperava 1, achei " + achados.length + ". Nada foi tocado.", tocados: 0 });
+      continue;
+    }
+    const st = achados[0];
+    const ls = st.letterSpacing;
+    if (!ls || ls.unit !== "PIXELS" || Math.abs(ls.value - t.de) > 0.01) {
+      relato.push({ style: t.style, estado: "esperava " + t.de + "px, achei " + (ls ? ls.value + ls.unit : "nada") + ". Nada foi tocado.", tocados: 0 });
+      continue;
+    }
+    const emAntes = Math.round(t.de / st.fontSize * 1000) / 10;
+    await carregarFonte(st);
+    st.letterSpacing = { unit: "PERCENT", value: t.para };
+    relato.push({
+      style: t.style, corpo: st.fontSize,
+      antes: t.de + "px (" + emAntes + "%)", depois: t.para + "%",
+      estado: "tracking agora e relativo", tocados: 1,
+    });
+  }
+
+  // B · Label/Small/Caps: entrelinha entra na regra, tracking fica para o olho
+  const caps = await acharTexto("Label/Small/Caps");
+  if (caps.length === 1) {
+    const st = caps[0];
+    const antes = st.lineHeight && st.lineHeight.value;
+    const textos = nos.filter(function (n) { return n.textStyleId === st.id; })
+                      .map(function (n) { return n.characters.slice(0, 40) + "  [" + telaDe(n) + "]"; });
+    if (antes === 24) {
+      await carregarFonte(st);
+      st.lineHeight = px(28);
+    }
+    relato.push({
+      style: "Label/Small/Caps",
+      entrelinha: antes === 24 ? "24 -> 28, entra na regra corpo + 8" : "esperava 24, achei " + antes + ". Nao tocada.",
+      tracking_NAO_tocado: st.letterSpacing.value + (st.letterSpacing.unit === "PIXELS" ? "px" : "%") +
+        " = " + Math.round(st.letterSpacing.value / st.fontSize * 1000) / 10 + "% do corpo",
+      porque: "119% e mais que um caractere inteiro entre letras. Pode ser recurso editorial de proposito. Olha os nos antes:",
+      nos: textos,
+      tocados: antes === 24 ? 1 : 0,
+    });
+  }
+
+  // C · onde vivem os 12 do Prosa — so relato
+  const prosa = await acharTexto("Body/Medium/Prosa");
+  if (prosa.length === 1) {
+    const usam = nos.filter(function (n) { return n.textStyleId === prosa[0].id; });
+    relato.push({
+      style: "Body/Medium/Prosa",
+      estado: "NAO absorvido — so localizado",
+      porque: "metrica identica ao Body/Medium (20/30 Regular), mas 'Prosa' pode ser a prosa de leitura, " +
+              "que um dia diverge do corpo de interface. Absorver seria decidir isso sem olhar.",
+      nos: usam.map(function (n) { return n.characters.slice(0, 44) + "  [" + telaDe(n) + "]"; }),
+      tocados: 0,
+    });
+  }
+
+  // D · a colecao com os dois modos
+  const cols = await figma.variables.getLocalVariableCollectionsAsync();
+  let col = cols.filter(function (c) { return c.name === "Mekora Tipografia"; })[0];
+  let mDesk, mMob;
+  if (!col) {
+    col = figma.variables.createVariableCollection("Mekora Tipografia");
+    mDesk = col.modes[0].modeId;
+    col.renameMode(mDesk, "Desktop");
+    mMob = col.addMode("Mobile");
+    relato.push({ acao: "colecao", estado: "criada com os modos Desktop e Mobile", nome: "Mekora Tipografia" });
+  } else {
+    mDesk = (col.modes.filter(function (m) { return m.name === "Desktop"; })[0] || col.modes[0]).modeId;
+    const mm = col.modes.filter(function (m) { return m.name === "Mobile"; })[0];
+    mMob = mm ? mm.modeId : col.addMode("Mobile");
+    relato.push({ acao: "colecao", estado: "reaproveitada", nome: col.name });
+  }
+
+  const porNome = {};
+  for (const id of col.variableIds) {
+    const v = await figma.variables.getVariableByIdAsync(id);
+    if (v) porNome[v.name] = v;
+  }
+
+  let ligados = 0, falhou = [];
+  for (const item of ESCALA) {
+    const achados = await acharTexto(item.style);
+    if (achados.length !== 1) { falhou.push(item.style + " (nao encontrado)"); continue; }
+    const st = achados[0];
+    const k = chave(item.style);
+
+    for (const campo of [["corpo", "fontSize", 0], ["entre", "lineHeight", 1]]) {
+      const nome = campo[0] + "/" + k;
+      let v = porNome[nome];
+      if (!v) {
+        v = figma.variables.createVariable(nome, col, "FLOAT");
+        porNome[nome] = v;
+      }
+      v.setValueForMode(mDesk, item.d[campo[2]]);
+      v.setValueForMode(mMob, item.m[campo[2]]);
+      v.scopes = campo[0] === "corpo" ? ["FONT_SIZE"] : ["LINE_HEIGHT"];
+      try {
+        st.setBoundVariable(campo[1], v);
+        ligados++;
+      } catch (e) {
+        falhou.push(item.style + " " + campo[1] + ": " + e.message);
+      }
+    }
+  }
+
+  relato.push({
+    acao: "escala nos dois modos",
+    variaveis: ESCALA.length * 2,
+    ligacoes_ok: ligados,
+    falhas: falhou,
+    piso: "18 — nada abaixo do corpo encolhe no mobile",
+    entrelinha: "corpo + 8, com a leitura atravessando como razao 1,5: 20/30 vira 18/27",
+  });
+
+  return relato;
+}
+
 // ─── Ligação com a interface ───────────────────────────────────────────────
 
 figma.ui.onmessage = async (msg) => {
@@ -1255,6 +1448,7 @@ figma.ui.onmessage = async (msg) => {
     else if (msg.tipo === "tinta-escuro") relato = await tintaNoEscuro();
     else if (msg.tipo === "reconciliar") relato = await reconciliar();
     else if (msg.tipo === "escala") relato = await escalaTipografica();
+    else if (msg.tipo === "tipografia") relato = await tipografia();
     else relato = [{ estado: "ação desconhecida" }];
 
     figma.ui.postMessage({ ok: true, relato });

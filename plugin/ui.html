@@ -261,6 +261,30 @@
   <button onclick="rodar('escala')">Medir a escala</button>
 </section>
 
+<section>
+  <h2>15 · Tipografia — conserto, relato e os dois modos</h2>
+  <p class="porque">
+    <b>Conserta:</b> o tracking está <b>absoluto</b> onde deveria ser relativo. O mesmo
+    <code>-1.6px</code> vale <b>-2,5%</b> num corpo 64 e <b>-6,7%</b> num corpo 24 —
+    invertido, porque tipo grande precisa de <i>mais</i> aperto, não menos. E o mobile
+    piora: a 32px vira -5%.<br><br>
+    <b>Constrói:</b> a coleção <code>Mekora Tipografia</code> com os modos
+    <b>Desktop</b> e <b>Mobile</b>. Trocar de modo troca a escala inteira.
+  </p>
+  <div class="aviso">
+    <b>Só os cinco que já têm tracking são tocados.</b> Dar tracking a quem está em zero é
+    inventar curva nova, e isso é trabalho do DS com o teu olho junto.<br><br>
+    <b>Duas coisas ele NÃO conserta, de propósito:</b><br>
+    O tracking de <code>+119%</code> do <code>Label/Small/Caps</code> — pode ser recurso
+    editorial, e ele mostra o texto dos 2 nós pra você julgar. Só a entrelinha entra na
+    regra.<br>
+    O <code>Body/Medium/Prosa</code> — métrica idêntica ao <code>Body/Medium</code>, mas
+    "Prosa" pode ser a prosa de leitura, que um dia diverge do corpo de interface. Ele diz
+    <b>onde os 12 nós vivem</b> e para aí.
+  </div>
+  <button class="primaria" onclick="rodar('tipografia')">Consertar e criar os dois modos</button>
+</section>
+
 <pre id="saida">Pronto. Abra a página <b>Wireframing - Media</b> antes de rodar.</pre>
 
 <script>
