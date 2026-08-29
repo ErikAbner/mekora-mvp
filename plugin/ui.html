@@ -1,0 +1,78 @@
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font: 12px/1.5 -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+    margin: 0; padding: 16px; background: #fff; color: #111;
+  }
+  @media (prefers-color-scheme: dark) { body { background: #2c2c2c; color: #e8e8e8; } }
+  h1 { font-size: 13px; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .sub { opacity: .6; margin: 0 0 18px; }
+  section { border-top: 1px solid rgba(128,128,128,.28); padding: 14px 0; }
+  h2 { font-size: 12px; margin: 0 0 6px; }
+  p.porque { margin: 0 0 10px; opacity: .72; }
+  button {
+    font: inherit; font-weight: 500; padding: 7px 12px; margin: 0 6px 0 0;
+    border: 1px solid rgba(128,128,128,.4); border-radius: 6px;
+    background: transparent; color: inherit; cursor: pointer;
+  }
+  button:hover { border-color: currentColor; }
+  button.primaria { background: #111; color: #fff; border-color: #111; }
+  @media (prefers-color-scheme: dark) { button.primaria { background: #e8e8e8; color: #111; border-color: #e8e8e8; } }
+  pre {
+    white-space: pre-wrap; word-break: break-word; margin: 12px 0 0; padding: 10px;
+    background: rgba(128,128,128,.12); border-radius: 6px; font-size: 11px; line-height: 1.5;
+  }
+  .aviso { border-left: 2px solid #d97706; padding-left: 10px; margin: 8px 0 12px; opacity: .85; }
+</style>
+
+<h1>Mekora — correções do sistema</h1>
+<p class="sub">Cada botão relata o que fez: nó tocado, antes e depois. Nada aplica em silêncio.</p>
+
+<section>
+  <h2>1 · Entrelinha — os dois sem ambiguidade</h2>
+  <p class="porque">
+    <b>H6-Italico-24</b> está em 24/54, 225% do corpo — vai para 24/32.<br>
+    <b>DestaquePersonalizado-italico-64</b> está em 64/54 — vai para 64/72.<br>
+    Os 39 nós que usam os dois são de uma linha só, e o <code>leadingTrim</code> é
+    <code>CAP_HEIGHT</code>: <b>nenhuma tela muda de aparência.</b>
+  </p>
+  <button class="primaria" onclick="rodar('entrelinha')">Corrigir os dois</button>
+</section>
+
+<section>
+  <h2>2 · Heading/H5-Bold-28 — precisa da tua escolha</h2>
+  <p class="porque">
+    28/24 é o único style com entrelinha <b>menor</b> que o corpo. Já foi contornado
+    por cópia: o gêmeo <code>Sem padding</code> é 28/36 e tem mais consumidores.
+  </p>
+  <div class="aviso">
+    <b>Corrigir o valor</b> deixa os dois idênticos — a duplicata some depois, na migração.<br>
+    <b>Absorver</b> reaplica o gêmeo nos nós e <b>apaga</b> o style quebrado. Mais limpo, e irreversível.
+  </div>
+  <button onclick="rodar('h5-valor')">Corrigir o valor</button>
+  <button onclick="rodar('h5-absorver')">Absorver e apagar</button>
+</section>
+
+<section>
+  <h2>3 · O “3” duplicado na entrada do Kindle</h2>
+  <p class="porque">
+    A lista da tela <code>Kindle · 0 — vamos conectar</code> numera
+    <b>1, 2, 3, 3</b>. O quarto item vira <b>4</b>. Só roda se a sequência for
+    exatamente essa — se alguém já mexeu, ele para e conta.
+  </p>
+  <button onclick="rodar('kindle')">Corrigir para 4</button>
+</section>
+
+<pre id="saida">Pronto. Abra a página <b>Wireframing - Media</b> antes de rodar.</pre>
+
+<script>
+  function rodar(tipo) {
+    document.getElementById('saida').textContent = 'rodando…';
+    parent.postMessage({ pluginMessage: { tipo } }, '*');
+  }
+  onmessage = (e) => {
+    const m = e.data.pluginMessage;
+    const el = document.getElementById('saida');
+    el.textContent = m.ok ? JSON.stringify(m.relato, null, 2) : 'ERRO\n\n' + m.erro;
+  };
+</script>
