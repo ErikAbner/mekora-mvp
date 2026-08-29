@@ -146,6 +146,27 @@
   <button class="primaria" onclick="rodar('cor2')">Dividir o Cinza</button>
 </section>
 
+<section>
+  <h2>9 · Cor vira variável</h2>
+  <p class="porque">
+    Os oito styles de cor viram <b>oito variáveis</b>, e cada style passa a
+    <b>apontar para a sua</b> — quem usa o style continua usando o style, e o valor
+    passa a ter um lugar só.
+  </p>
+  <div class="aviso">
+    <b>A coleção que existe é reaproveitada</b>, não duplicada: ela já tem uma
+    variável chamada <code>Preto</code> com o <code>text/strong</code> ligado. Ela é
+    renomeada e ganha escopo.<br><br>
+    <b>Um modo só, chamado <code>Claro</code>.</b> A tela <code>Leitura — aparência</code>
+    tem Claro / Escuro, então o escuro vai existir — mas os valores dele não foram
+    decididos, e inventá-los aqui seria registrar escolha que ninguém fez.<br><br>
+    <b>Escopo explícito em cada uma:</b> <code>text/*</code> só aparece em tinta de
+    texto, <code>border/subtle</code> só em traço. Sem isso, toda variável aparece em
+    todo seletor.
+  </div>
+  <button class="primaria" onclick="rodar('variaveis')">Criar as variáveis</button>
+</section>
+
 <pre id="saida">Pronto. Abra a página <b>Wireframing - Media</b> antes de rodar.</pre>
 
 <script>

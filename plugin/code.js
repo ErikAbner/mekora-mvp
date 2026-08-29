@@ -647,6 +647,124 @@ async function corRodada2() {
   return relato;
 }
 
+// ─── Ato 9 · variáveis de cor ──────────────────────────────────────────────
+//
+// Era o plano do Erik desde o começo: "criar estilos para que só depois a gente
+// transforme em variável, já que é melhor você ter uma boa base para só
+// converter". A base ficou pronta — nomes por papel, zero duplicata, valores
+// decididos —, então a conversão é mecânica.
+//
+// O QUE JÁ EXISTE, e é aproveitado em vez de duplicado: uma coleção com uma
+// variável chamada "Preto", e o `text/strong` já ligado a ela. Ela é renomeada,
+// não recriada — recriar quebraria o vínculo que já existe.
+//
+// UM MODO SÓ, chamado "Claro". A tela `Leitura — aparência` do protótipo tem
+// Tema: Claro / Escuro, então o escuro vai existir. Mas os valores dele NÃO
+// estão decididos, e inventá-los aqui seria registrar uma escolha que ninguém
+// fez. Nomear o modo agora faz o segundo entrar depois sem reestruturar nada.
+//
+// ESCOPO EXPLÍCITO em cada variável. O padrão ALL_SCOPES polui todo seletor de
+// propriedade — cor de texto aparecendo como opção de borda, superfície como
+// opção de tinta. É o mesmo defeito de nome que promete mais do que entrega,
+// na forma de menu.
+
+const VARIAVEIS_COR = [
+  { style: "text/strong",     escopos: ["TEXT_FILL"] },
+  { style: "text/primary",    escopos: ["TEXT_FILL"] },
+  { style: "text/secondary",  escopos: ["TEXT_FILL"] },
+  { style: "surface/base",    escopos: ["FRAME_FILL", "SHAPE_FILL"] },
+  { style: "surface/raised",  escopos: ["FRAME_FILL", "SHAPE_FILL"] },
+  { style: "surface/inverse", escopos: ["FRAME_FILL", "SHAPE_FILL"] },
+  { style: "icon/default",    escopos: ["SHAPE_FILL", "STROKE_COLOR"] },
+  { style: "border/subtle",   escopos: ["STROKE_COLOR"] },
+];
+
+async function criarVariaveisDeCor() {
+  const relato = [];
+  const cols = await figma.variables.getLocalVariableCollectionsAsync();
+
+  // Reaproveita a coleção existente. Criar outra deixaria duas, e a antiga já
+  // carrega um vínculo vivo.
+  let col = cols[0];
+  if (!col) {
+    col = figma.variables.createVariableCollection("Mekora");
+    relato.push({ acao: "coleção", estado: "criada — não existia nenhuma", nome: "Mekora" });
+  } else {
+    const antes = col.name;
+    if (col.name !== "Mekora") col.name = "Mekora";
+    const modo = col.modes[0];
+    const modoAntes = modo.name;
+    if (modo.name !== "Claro") col.renameMode(modo.modeId, "Claro");
+    relato.push({
+      acao: "coleção",
+      estado: `reaproveitada — "${antes}" → "Mekora", modo "${modoAntes}" → "Claro"`,
+      nota: "o modo Escuro entra depois, quando os valores forem decididos",
+    });
+  }
+  const modoId = col.modes[0].modeId;
+
+  // Índice do que já existe, por nome.
+  const existentes = {};
+  for (const id of col.variableIds) {
+    const v = await figma.variables.getVariableByIdAsync(id);
+    if (v) existentes[v.name] = v;
+  }
+
+  for (const item of VARIAVEIS_COR) {
+    const estilos = await acharCor(item.style);
+    if (estilos.length !== 1) {
+      relato.push({ style: item.style, estado: `esperava 1 paint style, achei ${estilos.length}. Pulado.`, tocados: 0 });
+      continue;
+    }
+    const ps = estilos[0];
+    const paint = ps.paints[0];
+    if (!paint || paint.type !== "SOLID") {
+      relato.push({ style: item.style, estado: "não é preenchimento sólido. Pulado.", tocados: 0 });
+      continue;
+    }
+
+    // Já ligado? Então só acerta nome e escopo, e não recria.
+    const jaLigado = paint.boundVariables && paint.boundVariables.color;
+    let v = existentes[item.style];
+
+    if (!v && jaLigado) {
+      const atual = await figma.variables.getVariableByIdAsync(jaLigado.id);
+      if (atual) {
+        const nomeAntes = atual.name;
+        atual.name = item.style;
+        atual.scopes = item.escopos;
+        relato.push({
+          style: item.style,
+          estado: `variável JÁ EXISTIA e estava ligada — renomeada de "${nomeAntes}" e escopo corrigido`,
+          escopos: item.escopos,
+          tocados: 1,
+        });
+        continue;
+      }
+    }
+
+    if (!v) {
+      v = figma.variables.createVariable(item.style, col, "COLOR");
+      v.setValueForMode(modoId, { r: paint.color.r, g: paint.color.g, b: paint.color.b });
+    }
+    v.scopes = item.escopos;
+
+    // Liga o paint style à variável. setBoundVariableForPaint devolve um paint
+    // NOVO — tem de ser capturado e reatribuído, senão nada acontece.
+    const novo = figma.variables.setBoundVariableForPaint(paint, "color", v);
+    ps.paints = [novo];
+
+    const conferido = ps.paints[0].boundVariables && ps.paints[0].boundVariables.color;
+    relato.push({
+      style: item.style,
+      estado: conferido ? "variável criada e ligada" : "FALHOU ao ligar",
+      escopos: item.escopos,
+      tocados: conferido ? 1 : 0,
+    });
+  }
+  return relato;
+}
+
 // ─── Ligação com a interface ───────────────────────────────────────────────
 
 figma.ui.onmessage = async (msg) => {
@@ -661,6 +779,7 @@ figma.ui.onmessage = async (msg) => {
     else if (msg.tipo === "body-medium") relato = await absorverBodyMedium();
     else if (msg.tipo === "cor1") relato = await corRodada1();
     else if (msg.tipo === "cor2") relato = await corRodada2();
+    else if (msg.tipo === "variaveis") relato = await criarVariaveisDeCor();
     else relato = [{ estado: "ação desconhecida" }];
 
     figma.ui.postMessage({ ok: true, relato });
