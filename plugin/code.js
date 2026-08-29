@@ -1536,6 +1536,106 @@ async function semStyle() {
   }];
 }
 
+// --- Ato 17 - adotar os 33, contar os 40, e olhar as capas ----------------
+//
+// O Ato 16 partiu os 392 em quatro coisas diferentes. Este age na unica parte
+// que e comprovadamente invisivel, mede a que nao e, e coleta o dado que
+// faltava para decidir a terceira.
+//
+// A · ADOTA os 33 cuja metrica bate EXATAMENTE com um style existente. Corpo,
+// entrelinha e peso iguais: ligar nao muda um pixel. Sao nos que nunca foram
+// ligados, e nada mais.
+//
+// B · CONTA os 40 nos em 28/24 Bold, sem tocar. E o mesmo defeito do antigo
+// Heading/H5-Bold-28 que o Ato 2 consertou nos styles — entrelinha MENOR que o
+// corpo — mas estes nunca tiveram style, entao guardaram o valor quebrado. O
+// destino natural e o Heading/SM, que e 28/36, e a diferenca de 24 para 36 e
+// grande: em no multilinha ela empurra o texto. Conta antes de propor, como o
+// Ato 10 fez.
+//
+// C · OLHA as capas. O Erik disse que elas podem usar a fonte da interface, e
+// eu nao sei qual fonte elas usam hoje — o Ato 16 coletou corpo, entrelinha e
+// peso, e nao familia. Sem isso, "podem usar a mesma" e uma frase sobre um
+// estado que ninguem verificou.
+
+async function adotarEContar() {
+  const relato = [];
+  const styles = await figma.getLocalTextStylesAsync();
+  const todos = figma.currentPage.findAllWithCriteria({ types: ["TEXT"] });
+  const nus = todos.filter(function (n) { return n.textStyleId === ""; });
+
+  // A · adotar so o que e identico
+  const porStyle = {};
+  let adotados = 0;
+  for (const n of nus) {
+    const v = valorDe(n);
+    if (!v) continue;
+    const exato = styles.filter(function (c) {
+      const lh = c.lineHeight;
+      return c.fontSize === v.corpo && lh && lh.unit === "PIXELS" &&
+             lh.value === v.entre && c.fontName.style === v.peso;
+    })[0];
+    if (!exato) continue;
+    await figma.loadFontAsync(exato.fontName);
+    await n.setTextStyleIdAsync(exato.id);
+    porStyle[exato.name] = (porStyle[exato.name] || 0) + 1;
+    adotados++;
+  }
+  relato.push({
+    acao: "adotar os identicos",
+    adotados: adotados,
+    por_style: porStyle,
+    aparencia: "nenhuma mudanca: corpo, entrelinha e peso ja eram os mesmos",
+    tocados: adotados,
+  });
+
+  // B · contar os 28/24 sem tocar
+  const quebrados = nus.filter(function (n) {
+    const v = valorDe(n);
+    return v && v.corpo === 28 && v.entre === 24 && v.peso === "Bold";
+  });
+  const multi = quebrados.filter(function (n) { return n.height > 24 * 1.5; });
+  const telas = {};
+  for (const n of quebrados) { const t = telaDe(n); telas[t] = (telas[t] || 0) + 1; }
+  relato.push({
+    acao: "28/24 Bold — contado, NAO tocado",
+    nos: quebrados.length,
+    multilinha: multi.length,
+    consequencia: multi.length === 0
+      ? "nenhum quebra linha: adotar Heading/SM (28/36) seria invisivel"
+      : multi.length + " quebram linha e VAO mudar de altura ao virar 28/36",
+    telas: Object.keys(telas).map(function (t) { return t + ": " + telas[t]; }),
+    exemplos: quebrados.slice(0, 5).map(function (n) { return n.characters.slice(0, 40); }),
+    tocados: 0,
+  });
+
+  // C · as capas: familia, peso e valor, sem tocar
+  const capas = nus.filter(function (n) { return telaDe(n).indexOf("Capa para arquivos") === 0; });
+  const familias = {};
+  const grupos = {};
+  for (const n of capas) {
+    const f = n.fontName === figma.mixed ? "misto" : n.fontName.family;
+    familias[f] = (familias[f] || 0) + 1;
+    const v = valorDe(n);
+    const k = f + "  " + (v ? v.corpo + "/" + v.entre + " " + v.peso : "misto");
+    if (!grupos[k]) grupos[k] = { nos: 0, exemplo: n.characters.slice(0, 34) };
+    grupos[k].nos++;
+  }
+  relato.push({
+    acao: "capas geradas — so olhadas",
+    nos: capas.length,
+    familias: familias,
+    grupos: Object.keys(grupos).map(function (k) { return { valor: k, nos: grupos[k].nos, exemplo: grupos[k].exemplo }; })
+                  .sort(function (a, b) { return b.nos - a.nos; }),
+    porque: "a fonte pode ser a mesma da interface sem problema. A ESCALA e outra coisa: " +
+            "numa capa o corpo do titulo sai do comprimento do texto, para preencher a caixa. " +
+            "Por isso os valores aqui sao encaixes e nao degraus.",
+    tocados: 0,
+  });
+
+  return relato;
+}
+
 // ─── Ligação com a interface ───────────────────────────────────────────────
 
 figma.ui.onmessage = async (msg) => {
@@ -1558,6 +1658,7 @@ figma.ui.onmessage = async (msg) => {
     else if (msg.tipo === "escala") relato = await escalaTipografica();
     else if (msg.tipo === "tipografia") relato = await tipografia();
     else if (msg.tipo === "sem-style") relato = await semStyle();
+    else if (msg.tipo === "adotar") relato = await adotarEContar();
     else relato = [{ estado: "ação desconhecida" }];
 
     figma.ui.postMessage({ ok: true, relato });
