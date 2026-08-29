@@ -748,9 +748,11 @@ async function criarVariaveisDeCor() {
       }
     }
 
+    let nasceu = false;
     if (!v) {
       v = figma.variables.createVariable(item.style, col, "COLOR");
       v.setValueForMode(modoId, { r: paint.color.r, g: paint.color.g, b: paint.color.b });
+      nasceu = true;
     }
     v.scopes = item.escopos;
 
@@ -762,7 +764,9 @@ async function criarVariaveisDeCor() {
     const conferido = ps.paints[0].boundVariables && ps.paints[0].boundVariables.color;
     relato.push({
       style: item.style,
-      estado: conferido ? "variável criada e ligada" : "FALHOU ao ligar",
+      estado: conferido
+        ? (nasceu ? "variável criada e ligada" : "variável JÁ EXISTIA — reaproveitada, escopo reaplicado")
+        : "FALHOU ao ligar",
       escopos: item.escopos,
       tocados: conferido ? 1 : 0,
     });
@@ -886,6 +890,139 @@ function telaDe(no) {
   return ultimo || "?";
 }
 
+// --- Ato 12 - a tinta que se chamava superficie ---------------------------
+//
+// O Ato 11 mediu, e a hipotese estava certa: os 94 textos pintados com
+// surface/raised estao TODOS sobre fundo escuro — 83 sobre #070808 e 11 sobre
+// #000000. Os 2 de surface/base tambem. O contraste passa folgado nos dois
+// casos (18,1 e 18,9), entao ninguem nunca viu problema. O defeito e o NOME.
+//
+// Um style chamado surface/ que pinta letra promete a coisa errada em todo
+// seletor onde aparece, e e a razao de a variavel ter escopo: agora que
+// surface/raised so aceita FRAME_FILL e SHAPE_FILL, o nome e o escopo estao
+// dizendo coisas opostas sobre os mesmos 94 nos.
+//
+// UM valor para os 96, e nao dois. Os 94 usam #F3F4F7 e os 2 usam #FFFFFF
+// para o mesmo trabalho — e duas tintas para um trabalho e exatamente o que
+// esta migracao passou o dia inteiro desfazendo. Fica o #F3F4F7: e o off-white
+// que o idioma do produto pede, e e o valor dos 94, nao dos 2.
+//
+// Os 2 nos MUDAM DE APARENCIA — de #FFFFFF para #F3F4F7 sobre preto, 21 para
+// 18,9 de contraste. Imperceptivel, mas e mudanca, e vem relatada separada.
+
+const TINTA_NO_ESCURO = {
+  nome: "text/on-inverse",
+  hex: "#F3F4F7",
+  rgb: { r: 0xF3 / 255, g: 0xF4 / 255, b: 0xF7 / 255 },
+  origens: ["surface/raised", "surface/base"],
+};
+
+async function tintaNoEscuro() {
+  const relato = [];
+
+  // Nao recriar se ja existe: rodar duas vezes nao pode dobrar nada.
+  let alvos = await acharCor(TINTA_NO_ESCURO.nome);
+  let estilo;
+  if (alvos.length > 1) {
+    return [{ estado: "ja existem " + alvos.length + " styles chamados " + TINTA_NO_ESCURO.nome + ". Nada foi tocado.", tocados: 0 }];
+  }
+  if (alvos.length === 1) {
+    estilo = alvos[0];
+    relato.push({ acao: "style", estado: "ja existia — reaproveitado", nome: TINTA_NO_ESCURO.nome });
+  } else {
+    estilo = figma.createPaintStyle();
+    estilo.name = TINTA_NO_ESCURO.nome;
+    estilo.paints = [{ type: "SOLID", color: TINTA_NO_ESCURO.rgb }];
+    relato.push({ acao: "style", estado: "criado", nome: TINTA_NO_ESCURO.nome, valor: TINTA_NO_ESCURO.hex });
+  }
+
+  // A variavel, na mesma colecao e com o escopo de tinta de texto. Hoje o valor
+  // e igual ao do surface/raised, e isso NAO e duplicata: sao dois papeis que
+  // podem divergir no modo Escuro, e e para poderem divergir que existem dois.
+  const cols = await figma.variables.getLocalVariableCollectionsAsync();
+  const col = cols.filter(function (c) { return c.name === "Mekora"; })[0];
+  if (!col) {
+    relato.push({ acao: "variavel", estado: "colecao Mekora nao encontrada. Style criado, variavel nao." });
+  } else {
+    let v = null;
+    for (const id of col.variableIds) {
+      const cand = await figma.variables.getVariableByIdAsync(id);
+      if (cand && cand.name === TINTA_NO_ESCURO.nome) { v = cand; break; }
+    }
+    const nasceu = !v;
+    if (!v) {
+      v = figma.variables.createVariable(TINTA_NO_ESCURO.nome, col, "COLOR");
+      v.setValueForMode(col.modes[0].modeId, TINTA_NO_ESCURO.rgb);
+    }
+    v.scopes = ["TEXT_FILL"];
+    const novo = figma.variables.setBoundVariableForPaint(estilo.paints[0], "color", v);
+    estilo.paints = [novo];
+    const ok = estilo.paints[0].boundVariables && estilo.paints[0].boundVariables.color;
+    relato.push({
+      acao: "variavel",
+      estado: ok ? (nasceu ? "criada e ligada" : "ja existia — religada") : "FALHOU ao ligar",
+      escopos: ["TEXT_FILL"],
+    });
+  }
+
+  // Mover os nos. So os que estao COMPROVADAMENTE sobre fundo escuro: se algum
+  // texto com surface/raised estiver sobre fundo claro, e outro problema, e
+  // mover as cegas trocaria um defeito por outro invisivel.
+  const todos = figma.currentPage.findAllWithCriteria({ types: ["TEXT"] });
+  for (const origem of TINTA_NO_ESCURO.origens) {
+    const achados = await acharCor(origem);
+    if (achados.length !== 1) {
+      relato.push({ de: origem, estado: "esperava 1 style, achei " + achados.length + ". Nada foi tocado.", tocados: 0 });
+      continue;
+    }
+    const antesHex = hexDe(achados[0]);
+    const usam = todos.filter(function (n) { return n.fillStyleId === achados[0].id; });
+
+    const movidos = [];
+    const noClaro = [];
+    for (const n of usam) {
+      const f = fundoDe(n);
+      if (!f || f.lum >= 0.18) {
+        noClaro.push({ texto: n.characters.slice(0, 40), tela: telaDe(n), fundo: f ? f.hex : "nenhum" });
+        continue;
+      }
+      await n.setFillStyleIdAsync(estilo.id);
+      movidos.push(n.id);
+    }
+    relato.push({
+      de: origem,
+      valor_antes: antesHex,
+      valor_depois: TINTA_NO_ESCURO.hex,
+      movidos: movidos.length,
+      recusados_por_fundo_claro: noClaro.length,
+      detalhe_recusados: noClaro.slice(0, 6),
+      aparencia: antesHex === TINTA_NO_ESCURO.hex
+        ? "mesmo valor: nada muda na tela"
+        : movidos.length + " no(s) mudam de " + antesHex + " para " + TINTA_NO_ESCURO.hex,
+      tocados: movidos.length,
+    });
+  }
+
+  // O achado de borda do Ato 11: existe preto puro como fundo, e o sistema nao
+  // tem preto puro. Contado, nao corrigido — sao quadros, nao texto, e mexer
+  // em superficie e outro risco.
+  const pretos = figma.currentPage.findAllWithCriteria({ types: ["FRAME", "RECTANGLE", "COMPONENT", "INSTANCE"] })
+    .filter(function (n) {
+      const f = n.fills;
+      if (!Array.isArray(f) || !f.length) return false;
+      const solido = f.filter(function (x) { return x.type === "SOLID" && x.visible !== false; }).pop();
+      return solido && hexCor(solido.color) === "#000000";
+    });
+  relato.push({
+    achado: "fundos em preto puro",
+    quantos: pretos.length,
+    telas: pretos.slice(0, 8).map(function (n) { return telaDe(n) + " / " + n.name; }),
+    nota: "o sistema nao tem #000000: surface/inverse e #070808. Nao corrigido aqui — sao superficies, nao texto.",
+  });
+
+  return relato;
+}
+
 // ─── Ligação com a interface ───────────────────────────────────────────────
 
 figma.ui.onmessage = async (msg) => {
@@ -903,6 +1040,7 @@ figma.ui.onmessage = async (msg) => {
     else if (msg.tipo === "variaveis") relato = await criarVariaveisDeCor();
     else if (msg.tipo === "sobras") relato = await corrigirSobras();
     else if (msg.tipo === "diagnostico") relato = await diagnosticarSuperficieComoTinta();
+    else if (msg.tipo === "tinta-escuro") relato = await tintaNoEscuro();
     else relato = [{ estado: "ação desconhecida" }];
 
     figma.ui.postMessage({ ok: true, relato });

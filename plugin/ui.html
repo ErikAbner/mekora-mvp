@@ -168,20 +168,19 @@
 </section>
 
 <section>
-  <h2>10 · Os dois desvios que sobraram</h2>
+  <h2>10 · Os dois desvios que sobraram <span style="opacity:.5">— não existiam</span></h2>
   <p class="porque">
-    <b>Heading/XL</b> está em 48/48 — <b>delta zero</b>, o mesmo defeito do passo 1:
-    invisível num título de uma linha, e some o espaço na primeira quebra. Vai para
-    48/56.<br>
-    <b>Label/Large</b> está em 18/28, dois acima da regra, sem razão escrita em lugar
-    nenhum. Vai para 18/26.
+    Rodado em 29/08 e <b>recusado nos dois</b>: <code>Heading/XL</code> já estava em 56
+    e <code>Label/Large</code> já estava em 26 — os dois <b>alvos</b>. Os números
+    48/48 e 18/28 vinham da auditoria de 27/08, <b>antes</b> da migração.
   </p>
   <div class="aviso">
-    <b>Aqui pode mudar de aparência</b>, ao contrário do passo 1. Se algum nó já quebra
-    em duas linhas, subir a entrelinha empurra o texto — que é a correção funcionando.
-    O ato <b>conta as multilinha</b> e diz quantas são, em vez de prometer que nada muda.
+    Fica aqui como o caso que prova a guarda: a correção não conferiu o valor porque
+    desconfiava, conferiu porque <b>toda correção confere</b>. Sem isso, ela teria
+    escrito 56 sobre 56 e relatado sucesso, e o registro ganharia um conserto que
+    nunca existiu.
   </div>
-  <button class="primaria" onclick="rodar('sobras')">Corrigir os dois</button>
+  <button onclick="rodar('sobras')">Rodar de novo</button>
 </section>
 
 <section>
@@ -197,6 +196,27 @@
     exemplos com a tela — para a decisão sair do caso real, não da hipótese.
   </div>
   <button onclick="rodar('diagnostico')">Diagnosticar</button>
+</section>
+
+<section>
+  <h2>12 · A tinta que se chamava superfície</h2>
+  <p class="porque">
+    O passo 11 mediu: os <b>94</b> textos de <code>surface/raised</code> estão
+    <b>todos</b> sobre fundo escuro, e os <b>2</b> de <code>surface/base</code> também.
+    O contraste passa folgado — 18,1 e 18,9. <b>O defeito é o nome.</b><br><br>
+    Agora que a variável tem escopo, o nome e o escopo dizem coisas opostas sobre os
+    mesmos nós: <code>surface/raised</code> só aceita preenchimento, e pinta 94 letras.
+  </p>
+  <div class="aviso">
+    <b>Um valor para os 96, não dois.</b> Os 94 usam <code>#F3F4F7</code> e os 2 usam
+    <code>#FFFFFF</code> para o mesmo trabalho — duas tintas para um trabalho é o que
+    esta migração passou o dia desfazendo. Fica o <code>#F3F4F7</code>.<br><br>
+    <b>Os 2 mudam de aparência</b>, de branco puro para off-white sobre preto. Vem
+    relatado separado.<br><br>
+    Texto sobre fundo <b>claro</b> com esses styles, se houver, <b>não é movido</b>: é
+    outro problema, e mover às cegas trocaria um defeito por um invisível.
+  </div>
+  <button class="primaria" onclick="rodar('tinta-escuro')">Criar text/on-inverse e mover</button>
 </section>
 
 <pre id="saida">Pronto. Abra a página <b>Wireframing - Media</b> antes de rodar.</pre>
