@@ -1428,6 +1428,114 @@ async function tipografia() {
   return relato;
 }
 
+// --- Ato 16 - os 392 sem style ---------------------------------------------
+//
+// O Ato 14 contou 392 nos de texto sem style nenhum, 18% dos 2.160, e contar
+// foi tudo o que ele fez. Isso importa antes do fork do prismsystem: ele deriva
+// o sistema de tokens da fonte que recebe, e 392 valores soltos ou viram ruido
+// ou somem. Se forem exploracao mobile, otimo — ignora. Se tiver producao ali,
+// o Design System nasce com buraco e ninguem descobre ate doer.
+//
+// Este ato NAO escreve. Ele classifica cada no em tres baldes, e a diferenca
+// entre eles e o que decide o trabalho:
+//
+//   ADOTAVEL  a metrica bate EXATAMENTE com um style que ja existe. E so um no
+//             que nunca foi ligado. Ligar e mecanico e invisivel.
+//   QUASE     esta a 1px de um style. Provavelmente e o mesmo, digitado a mao.
+//   ORFAO     nao bate com nada. Ou e valor novo de proposito, e entao merece
+//             style, ou e acidente — e so o olho decide qual.
+//
+// Conta tambem os nos MISTOS, que o Ato 14 nao viu: um no com mais de um style
+// dentro devolve figma.mixed, que e um simbolo e portanto verdadeiro, entao ele
+// foi contado como "tem style". Se existirem, sao um terceiro caso.
+
+function valorDe(no) {
+  const m = figma.mixed;
+  if (no.fontSize === m || no.fontName === m || no.lineHeight === m) return null;
+  const lh = no.lineHeight;
+  const entre = lh.unit === "PIXELS" ? lh.value
+              : lh.unit === "PERCENT" ? Math.round(no.fontSize * lh.value / 100)
+              : "auto";
+  return { corpo: no.fontSize, entre: entre, peso: no.fontName.style };
+}
+
+function assina(v) {
+  return v ? v.corpo + "/" + v.entre + " " + v.peso : "misto";
+}
+
+async function semStyle() {
+  const styles = await figma.getLocalTextStylesAsync();
+  const catalogo = styles.map(function (st) {
+    const lh = st.lineHeight;
+    return {
+      nome: st.name,
+      corpo: st.fontSize,
+      entre: lh && lh.unit === "PIXELS" ? lh.value : null,
+      peso: st.fontName.style,
+    };
+  });
+
+  const todos = figma.currentPage.findAllWithCriteria({ types: ["TEXT"] });
+  const mistos = todos.filter(function (n) { return n.textStyleId === figma.mixed; });
+  const nus = todos.filter(function (n) { return n.textStyleId === ""; });
+
+  const baldes = { adotavel: {}, quase: {}, orfao: {} };
+  const porTela = {};
+  const semValor = [];
+
+  for (const n of nus) {
+    const v = valorDe(n);
+    const tela = telaDe(n);
+    porTela[tela] = (porTela[tela] || 0) + 1;
+    if (!v) { semValor.push(tela); continue; }
+
+    // exato: corpo, entrelinha e peso iguais
+    const exato = catalogo.filter(function (c) {
+      return c.corpo === v.corpo && c.entre === v.entre && c.peso === v.peso;
+    })[0];
+    // quase: mesmo peso, corpo e entrelinha a 1px
+    const perto = exato ? null : catalogo.filter(function (c) {
+      return c.peso === v.peso && Math.abs(c.corpo - v.corpo) <= 1 &&
+             c.entre !== null && Math.abs(c.entre - v.entre) <= 1;
+    })[0];
+
+    const balde = exato ? "adotavel" : perto ? "quase" : "orfao";
+    const chave = assina(v) + (exato ? "  ->  " + exato.nome : perto ? "  ~  " + perto.nome : "");
+    if (!baldes[balde][chave]) baldes[balde][chave] = { nos: 0, telas: {}, exemplo: n.characters.slice(0, 40) };
+    baldes[balde][chave].nos++;
+    baldes[balde][chave].telas[tela] = (baldes[balde][chave].telas[tela] || 0) + 1;
+  }
+
+  function arruma(b) {
+    return Object.keys(b).map(function (k) {
+      return { valor: k, nos: b[k].nos, telas: Object.keys(b[k].telas).slice(0, 5), exemplo: b[k].exemplo };
+    }).sort(function (a, c) { return c.nos - a.nos; });
+  }
+
+  const totalBalde = function (b) {
+    return Object.keys(b).reduce(function (a, k) { return a + b[k].nos; }, 0);
+  };
+
+  return [{
+    sem_style: nus.length,
+    mistos: mistos.length,
+    nota_mistos: mistos.length
+      ? "nos com mais de um style dentro. O Ato 14 os contou como 'tem style' porque figma.mixed e um simbolo, e simbolo e verdadeiro."
+      : "nenhum — o Ato 14 nao tinha essa cegueira neste arquivo.",
+    resumo: {
+      adotavel: totalBalde(baldes.adotavel),
+      quase: totalBalde(baldes.quase),
+      orfao: totalBalde(baldes.orfao),
+      sem_valor_legivel: semValor.length,
+    },
+    por_tela: Object.keys(porTela).map(function (t) { return { tela: t, nos: porTela[t] }; })
+                    .sort(function (a, b) { return b.nos - a.nos; }).slice(0, 15),
+    adotavel: arruma(baldes.adotavel),
+    quase: arruma(baldes.quase),
+    orfao: arruma(baldes.orfao),
+  }];
+}
+
 // ─── Ligação com a interface ───────────────────────────────────────────────
 
 figma.ui.onmessage = async (msg) => {
@@ -1449,6 +1557,7 @@ figma.ui.onmessage = async (msg) => {
     else if (msg.tipo === "reconciliar") relato = await reconciliar();
     else if (msg.tipo === "escala") relato = await escalaTipografica();
     else if (msg.tipo === "tipografia") relato = await tipografia();
+    else if (msg.tipo === "sem-style") relato = await semStyle();
     else relato = [{ estado: "ação desconhecida" }];
 
     figma.ui.postMessage({ ok: true, relato });

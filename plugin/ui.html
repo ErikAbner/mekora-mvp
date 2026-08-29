@@ -285,6 +285,27 @@
   <button class="primaria" onclick="rodar('tipografia')">Consertar e criar os dois modos</button>
 </section>
 
+<section>
+  <h2>16 · Os 392 sem style <span style="opacity:.5">— só leitura</span></h2>
+  <p class="porque">
+    O passo 14 contou <b>392 nós de texto sem style nenhum</b>, 18% dos 2.160 — e contar
+    foi tudo o que ele fez. Isso importa <b>antes</b> do fork: o PrismSystem deriva o
+    sistema da fonte que recebe, e 392 valores soltos ou viram ruído ou somem.
+  </p>
+  <div class="aviso">
+    <b>Classifica em três baldes</b>, e a diferença entre eles é o trabalho:<br>
+    <code>ADOTÁVEL</code> — a métrica bate <b>exatamente</b> com um style que já existe. É
+    nó que nunca foi ligado. Ligar é mecânico e invisível.<br>
+    <code>QUASE</code> — está a 1px de um style. Provavelmente é o mesmo, digitado à mão.<br>
+    <code>ÓRFÃO</code> — não bate com nada. Ou é valor novo de propósito e merece style, ou
+    é acidente. Só o olho decide.<br><br>
+    Conta também os nós <b>mistos</b>, que o passo 14 não viu: um nó com mais de um style
+    dentro devolve <code>figma.mixed</code>, que é símbolo e portanto verdadeiro — foi
+    contado como "tem style".
+  </div>
+  <button onclick="rodar('sem-style')">Classificar os 392</button>
+</section>
+
 <pre id="saida">Pronto. Abra a página <b>Wireframing - Media</b> antes de rodar.</pre>
 
 <script>
