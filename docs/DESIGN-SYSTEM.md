@@ -40,10 +40,10 @@ ABERTO       não decidido. Está em ABERTO.md.
 
 ```
 FUNDO      --bg #faf9f5   --bg-2 #f4f3ef   --bg-3 #edebe4   --nav #f4f3ef   --branco #ffffff
-TINTA      --ink #151515  --ink-2 #57534d  --ink-3 #6f6b64  --ink-4 #b5b0a8
+TINTA      --ink #151515  --ink-2 #57534d  --ink-3 #6e6a63  --ink-4 #b5b0a8
 FILETE     --line 12%     --line-2 7%      --line-3 24%          (de #151515)
-ACENTO     --acc #c8481f  --acc-soft #fdf0ea
-ESTADO     --ok #2f7d55   --warn #a8701c   --dan #b23b2a         (+ as três -soft)
+ACENTO     --acc #c0451d  --acc-soft #fdf0ea
+ESTADO     --ok #2f7d55   --warn #976519   --dan #b23b2a         (+ as três -soft)
 PAPEL      --paper #f1eee7
 ```
 
@@ -136,6 +136,37 @@ O `clamp` opera sobre **o tamanho que a pessoa escolheu no navegador** — de 87
 Fixar `html { font-size: 14px }` daria a mesma identidade visual e **anularia a preferência de
 tamanho de fonte** de quem lê muito, que é exatamente quem a aumenta. **Inaceitável.**
 
+## Contraste · MEDIDO
+
+`node scripts/contraste.mjs` — lê o protótipo agora, não uma cópia da paleta.
+
+```
+196 pares medidos
+  0 abaixo de 3,0   nenhum par é inutilizável
+  7 entre 3,0 e 4,5 só servem em texto grande — e nenhum dos 7 existe no arquivo
+```
+
+O tema escuro, que este documento marca como exploração, **passa inteiro em 4,5**. É o
+claro que carregava a dívida, e ela era de três tokens.
+
+### Os três que mudaram, em 2026-08-29
+
+| token | era | virou | por quê |
+|---|---|---|---|
+| `--warn` | `#a8701c` | `#976519` | 3,78 sobre `--bg-2` e 3,85 sobre `--warn-soft` — texto âmbar pequeno num chip, o único dos três que se enxerga |
+| `--acc` | `#c8481f` | `#c0451d` | 4,28 sobre `--acc-soft` |
+| `--ink-3` | `#6f6b64` | `#6e6a63` | 4,44 sobre `--bg-3`, em mono de 8px |
+
+**O que NÃO mudou, e por quê.** A medição acusou 15 pares abaixo de 4,5, e só **três**
+existiam no arquivo. Os outros doze eram tinta de estado sobre `--bg-3` e `--paper` —
+combinação que a paleta permite e que nenhuma tela faz. Corrigir os doze teria escurecido
+a paleta inteira para consertar telas que não existem.
+
+**Filete e `--ink-4` são medidos e não julgados.** A WCAG cobra 3,0 de componente de
+interface, não de separador decorativo, e o `--ink-4` já está proibido em texto por regra
+própria. A primeira versão do instrumento cobrava 3,0 de tudo e acusou 93 falhas em 196
+pares — número que não descreve nada e que ninguém lê duas vezes.
+
 ## Medida de leitura · MEDIDO
 
 ```
@@ -220,6 +251,7 @@ Isto tem consequência visual direta, não só de texto:
 | | |
 |---|---|
 | **Tamanho de fonte** | escala em `rem`; a preferência do navegador é preservada |
+| **Contraste de texto** | **AA: 4,5 para texto normal, 3,0 a partir de 24px.** Medido, não estimado — `node scripts/contraste.mjs` |
 | **Contraste de texto** | `--ink-4` é proibido em texto — mede 2,05:1 |
 | **Limite de componente** | 3:1; nenhum token de filete alcança, então usa-se `--ink-3` |
 | **Movimento** | `prefers-reduced-motion` desliga as quatro animações e as transições globais |
