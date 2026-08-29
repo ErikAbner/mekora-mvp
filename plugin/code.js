@@ -158,6 +158,28 @@ async function corrigirH5(modo) {
   }
   const gemeo = gemeos[0];
 
+  // Guarda que faltava, e a ausência dela foi usada em 2026-08-29: a absorção
+  // rodou sobre um style que o Erik já tinha corrigido à mão. Deu certo por
+  // sorte — os dois estavam em 28/36 e mover os nós não mudou pixel. Se ele
+  // tivesse escolhido outro valor, os 10 nós teriam ido para um style
+  // diferente, em silêncio, e sem volta.
+  //
+  // Absorver é irreversível. Só se absorve o que é comprovadamente igual.
+  const a = { corpo: quebrado.fontSize, entre: quebrado.lineHeight.value, peso: quebrado.fontName.style };
+  const b = { corpo: gemeo.fontSize, entre: gemeo.lineHeight.value, peso: gemeo.fontName.style };
+  if (a.corpo !== b.corpo || a.entre !== b.entre || a.peso !== b.peso) {
+    return [
+      {
+        style: H5.style,
+        estado:
+          `MÉTRICAS DIFERENTES — ${a.corpo}/${a.entre} ${a.peso} contra ` +
+          `${b.corpo}/${b.entre} ${b.peso}. Absorver mudaria a aparência dos nós, ` +
+          `e é irreversível. Nada foi tocado.`,
+        tocados: 0,
+      },
+    ];
+  }
+
   // Reaplicar o gêmeo em cada consumidor do quebrado, e SÓ ENTÃO apagar.
   // A ordem importa: apagar antes deixaria os nós sem style nenhum.
   const page = figma.currentPage;
