@@ -34,41 +34,64 @@ ABERTO       não decidido. Está em ABERTO.md.
 
 # Fundamentos
 
-## Cor · REGRA
+## Cor · REGRA `DEC-0037 §5-6`
 
-**Editorial utility.** Off-white em vez de branco puro, preto levemente suavizado.
+**Preto e branco neutro, e a cor tem três endereços.** Verbatim do Erik, 29/08:
+*"preto e branco neutro, apenas itens como notas, capas de livro e estados do sistema que
+podem ter cor."*
 
 ```
-FUNDO      --bg #faf9f5   --bg-2 #f4f3ef   --bg-3 #edebe4   --nav #f4f3ef   --branco #ffffff
-TINTA      --ink #151515  --ink-2 #57534d  --ink-3 #6e6a63  --ink-4 #b5b0a8
-FILETE     --line 12%     --line-2 7%      --line-3 24%          (de #151515)
-ACENTO     --acc #c0451d  --acc-soft #fdf0ea
-ESTADO     --ok #2f7d55   --warn #976519   --dan #b23b2a         (+ as três -soft)
-PAPEL      --paper #f1eee7
+SUPERFÍCIE  surface/base #f9f9f9   surface/sunken #f3f3f3   surface/deep #ebebeb
+            surface/inverse #161616
+TINTA       text/strong #151515    text/primary #535353     text/secondary #6a6a6a
+            text/on-inverse #f3f3f3
+OBJETO      icon/default #6a6a6a   border/subtle #b1b1b1
+NOTA        nota/verde #d7f285  nota/rosa #f28587  nota/amarelo #f2e685  nota/azul #85bcf2
+CAPA        capa/verde #efffbf  capa/rosa #ffbfc0  capa/amarelo #fff8bf  capa/azul #bfdfff
+ESTADO      estado/ok #2f7d55   estado/atencao #976519   estado/perigo #b23b2a
 ```
 
-### As três regras que governam a cor
+### As quatro regras que governam a cor
 
-**1 · As camadas vêm do fundo, não da borda.** É o que permite tirar borda de quase tudo. Um degrau
-de superfície é uma troca de `--bg`, não um contorno.
+**1 · As camadas vêm do fundo, não da borda.** É o que permite tirar borda de quase tudo.
+Um degrau de superfície é uma troca de `surface/*`, não um contorno.
 
-**2 · O acento está reservado à exceção.** Ele não marca o caminho principal, não marca o estado
-normal e não marca frequência. Marca o que precisa de atenção.
+**2 · Cor é exceção, e tem endereço.** Nota, capa, estado. Fora desses três, o sistema é
+preto e branco. Um token de cor sem endereço não entra — foi por isso que os conjuntos
+`médio` e `quebrado` dos pastéis ficaram fora: existem no Figma, não viram token.
 
-**3 · Tinta cheia é o elemento mais alto da paleta, e o alto é da exceção.**
+**3 · Seleção é degrau de superfície, não matiz.** O acento `#c0451d` foi medido contra o
+`estado/perigo` `#b23b2a` e deu **11,9** de distância perceptual — abaixo do limiar de ~15
+em que duas cores se confundem. Marcar o gesto mais frequente do produto com o tom do
+alarme mais raro é sinal invertido. Seleção usa `surface/sunken` e `surface/deep`.
+
+**4 · Tinta cheia é o elemento mais alto da paleta, e o alto é da exceção.**
 
 > **Gastar preto no gesto mais frequente do produto seria inflação.**
 
-É por isso que a barra de seleção — o gesto mais repetido de todo o produto — é lasca de papel com
-filete, e não fundo escuro.
+### A regra que substituiu um conserto
 
-### Não há cor de grifo · REGRA
+**Tinta de estado não pousa em `surface/deep`.** Lá o `estado/ok` dá 4,21 e o
+`estado/atencao` dá 4,20, os dois abaixo de 4,5. Escurecer os três estados para atender uma
+combinação que nenhuma tela faz embaçaria o sinal inteiro. A regra custa menos que o
+conserto — e é conferível.
 
-O destaque no texto usa **a mesma camada que o sistema já usa para separar superfícies**, e mora
-dentro da linha. Cor de marca-texto seria o único elemento saturado da tela — **mais alto que o
-acento**, que está reservado à exceção.
+### Como esta paleta nasceu
 
-### Contraste · MEDIDO
+Havia **duas** paletas base e elas não concordavam. A regra da reconciliação foi: *mantém a
+estrutura e a luminância da quente, e tira o matiz.* A quente era a medida e a completa; a
+do Figma tinha os nomes por papel, com escopo, ligados a mil e poucos nós. Cada uma tinha
+metade.
+
+E a medição achou o que ninguém tinha olhado: **nenhum valor do Figma era neutro.** Todos
+puxavam para o azul, incluindo o `#0C0D0D`. O `--ink` quente já era `#151515` — neutro puro
+desde sempre.
+
+**O `prototipo-mesa.html` ainda renderiza a paleta quente**, e isso é sabido. Ele deixou de
+ser a autoridade de cor pela `DEC-0037 §1`; continua sendo a referência funcional e de
+interação. Repintá-lo é trabalho separado.
+
+## Contraste · MEDIDO
 
 | token | contra a página | onde pode |
 |---|---:|---|
