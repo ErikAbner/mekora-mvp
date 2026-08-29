@@ -127,6 +127,25 @@
   <button class="primaria" onclick="rodar('cor1')">Aplicar rodada 1</button>
 </section>
 
+<section>
+  <h2>8 · Cor, rodada 2 — o <code>Cinza</code> dividido pelo trabalho</h2>
+  <p class="porque">
+    Ele faz <b>três trabalhos</b> com exigências diferentes. Texto precisa de 4,5 e ele
+    dá <b>4,36</b> sobre a superfície elevada — <b>falha</b>. Traço precisa de 3,0 e
+    passa com folga.<br><br>
+    O <b>texto</b> vai para <code>#666668</code>: 5,73 sobre a base e 5,21 sobre a
+    elevada. O resto fica onde está e vira <code>icon/default</code>.
+  </p>
+  <div class="aviso">
+    <b>Nós sobre fundo escuro não são movidos.</b> Sobre <code>#070808</code> o
+    <code>#666668</code> dá 3,50 e o <code>#727274</code> dá 4,18 — os dois falham para
+    texto, e mover deixaria pior. O plugin detecta a superfície, recusa, e relata quais
+    são. Enquanto sobrar texto no escuro ele <b>não renomeia</b>: um nome
+    <code>icon/default</code> mentiria.
+  </div>
+  <button class="primaria" onclick="rodar('cor2')">Dividir o Cinza</button>
+</section>
+
 <pre id="saida">Pronto. Abra a página <b>Wireframing - Media</b> antes de rodar.</pre>
 
 <script>

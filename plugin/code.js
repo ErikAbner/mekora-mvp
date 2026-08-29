@@ -540,6 +540,113 @@ async function corRodada1() {
   return relato;
 }
 
+// ─── Ato 8 · cor, rodada 2: o Cinza dividido pelo trabalho ─────────────────
+//
+// `Cinza` #727274 faz TRÊS trabalhos ao mesmo tempo — preenchimento de texto,
+// traço de vetor e preenchimento de frame — e cada um tem exigência de
+// contraste diferente. Texto precisa de 4,5 e ele dá 4,36 sobre a superfície
+// elevada: FALHA. Traço precisa de 3,0 e ele passa com folga.
+//
+// A divisão: o TEXTO vai para #666668, que dá 5,73 sobre a base e 5,21 sobre a
+// elevada. O resto fica onde está.
+//
+// A ARMADILHA que a medição de 29/08 revelou tarde: sobre a superfície escura
+// #070808, o #666668 dá 3,50 e o #727274 dá 4,18. Os DOIS falham para texto —
+// e mover um nó que está no escuro o deixaria PIOR. Este ato detecta a
+// superfície de cada nó e recusa mover os que estão sobre fundo escuro,
+// relatando-os para decisão separada.
+
+function luminancia(c) {
+  const f = (v) => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+  return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b);
+}
+
+// Sobe a árvore procurando o primeiro ancestral com preenchimento sólido.
+// É aproximação — não resolve sobreposição nem gradiente —, e por isso o que
+// ela devolve serve para RECUSAR, nunca para autorizar em silêncio.
+function fundoDe(no) {
+  let n = no.parent;
+  while (n && n.type !== "PAGE") {
+    const f = n.fills;
+    if (Array.isArray(f) && f.length) {
+      const solido = f.filter((x) => x.type === "SOLID" && x.visible !== false).pop();
+      if (solido) return { lum: luminancia(solido.color), no: n.name };
+    }
+    n = n.parent;
+  }
+  return null; // sem fundo declarado: assume-se a superfície da página
+}
+
+async function corRodada2() {
+  const cinzas = await acharCor("Cinza");
+  const mids = await acharCor("Cinza - Mid ton");
+  if (cinzas.length !== 1 || mids.length !== 1) {
+    return [{ estado: `esperava 1 de cada, achei ${cinzas.length} e ${mids.length}. Nada foi tocado.`, tocados: 0 }];
+  }
+  const cinza = cinzas[0], mid = mids[0];
+
+  if (hexDe(cinza) !== "#727274" || hexDe(mid) !== "#666668") {
+    return [{ estado: `valores mudaram — ${hexDe(cinza)} e ${hexDe(mid)}. Nada foi tocado.`, tocados: 0 }];
+  }
+
+  const page = figma.currentPage;
+  const textos = page.findAllWithCriteria({ types: ["TEXT"] }).filter((t) => t.fillStyleId === cinza.id);
+
+  const movidos = [];
+  const noEscuro = [];
+  for (const t of textos) {
+    const fundo = fundoDe(t);
+    // Limiar: abaixo de 0,18 de luminância é fundo escuro. #070808 dá ~0,003;
+    // #F3F4F7 dá ~0,90. Não há nada ambíguo entre os dois neste arquivo.
+    if (fundo && fundo.lum < 0.18) {
+      noEscuro.push({ id: t.id, texto: (t.characters || "").slice(0, 28), fundo: fundo.no });
+      continue;
+    }
+    await t.setFillStyleIdAsync(mid.id);
+    movidos.push({ id: t.id, texto: (t.characters || "").slice(0, 24) });
+  }
+
+  const relato = [
+    {
+      acao: "dividir",
+      estado: `${movidos.length} nós de TEXTO movidos para #666668`,
+      ganho: "5,73 sobre surface/base e 5,21 sobre surface/raised — passa AA nas duas",
+      tocados: movidos.length,
+      nos: movidos.slice(0, 8),
+    },
+  ];
+
+  if (noEscuro.length) {
+    relato.push({
+      acao: "RECUSADO",
+      estado:
+        `${noEscuro.length} nós de texto estão sobre FUNDO ESCURO e NÃO foram movidos. ` +
+        `Sobre #070808 o #666668 dá 3,50 e o #727274 dá 4,18: os dois falham AA para texto. ` +
+        `Mover pioraria. Precisa de uma cor própria para texto no escuro — decisão do Erik.`,
+      tocados: 0,
+      nos: noEscuro.slice(0, 10),
+    });
+  }
+
+  // Só renomeia o que sobrou fazendo um trabalho só.
+  const restantes = page.findAll(() => true).filter(
+    (n) => ("fillStyleId" in n && n.fillStyleId === cinza.id) || ("strokeStyleId" in n && n.strokeStyleId === cinza.id)
+  ).length;
+
+  if (noEscuro.length === 0) {
+    mid.name = "text/secondary";
+    cinza.name = "icon/default";
+    relato.push({ acao: "renomear", estado: `"Cinza - Mid ton" → text/secondary · "Cinza" → icon/default (${restantes} usos restantes, todos não-texto)`, tocados: 2 });
+  } else {
+    relato.push({
+      acao: "renomear",
+      estado: `NÃO renomeei: o Cinza ainda carrega ${noEscuro.length} nós de texto no escuro. Um nome "icon/default" mentiria enquanto isso for verdade.`,
+      tocados: 0,
+    });
+  }
+  return relato;
+}
+
 // ─── Ligação com a interface ───────────────────────────────────────────────
 
 figma.ui.onmessage = async (msg) => {
@@ -553,6 +660,7 @@ figma.ui.onmessage = async (msg) => {
     else if (msg.tipo === "renomear") relato = await renomear();
     else if (msg.tipo === "body-medium") relato = await absorverBodyMedium();
     else if (msg.tipo === "cor1") relato = await corRodada1();
+    else if (msg.tipo === "cor2") relato = await corRodada2();
     else relato = [{ estado: "ação desconhecida" }];
 
     figma.ui.postMessage({ ok: true, relato });
