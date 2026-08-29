@@ -63,6 +63,39 @@
   <button onclick="rodar('kindle')">Corrigir para 4</button>
 </section>
 
+<section>
+  <h2>4 · A duplicata <code>Heading/H6-Medium-24</code></h2>
+  <p class="porque">
+    <b>Dois styles com o mesmo nome</b>, métricas idênticas — 24/32 Regular —, com
+    <b>32</b> e <b>261</b> consumidores. O de menos consumidores é absorvido no maior.
+    Métricas iguais, então <b>nenhum nó muda de aparência.</b>
+  </p>
+  <div class="aviso">
+    Precisa rodar <b>antes</b> do passo 5: se os dois forem renomeados, viram dois
+    <code>Body/Large</code> e o problema volta com nome novo.
+  </div>
+  <button class="primaria" onclick="rodar('duplicata')">Absorver a duplicata</button>
+</section>
+
+<section>
+  <h2>5 · Renomear os 16 styles</h2>
+  <p class="porque">
+    Do <b>menor</b> número de consumidores para o maior — erro de método aparece no
+    primeiro e custa 2 nós, não 477. Tamanho e peso saem do nome: a Zodiak tem padrão
+    de eixo <code>wght=900</code>, então o nome nem sempre bate com o que a ferramenta
+    reporta.<br><br>
+    Cada linha confere que o style existe, que é único, e que <b>o nome de destino
+    ainda não existe</b>. Qualquer uma que falhe é pulada e relatada.
+  </p>
+  <div class="aviso">
+    <b>Fora da lista de propósito:</b> <code>Body-medium-20px</code>, 20/32 com 64
+    consumidores. A auditoria mandava absorvê-lo em <code>Body-regular-20px</code>, mas
+    as métricas diferem — 32 contra 30 — e absorver mudaria a aparência. Precisa de
+    decisão tua antes de ter nome.
+  </div>
+  <button class="primaria" onclick="rodar('renomear')">Renomear</button>
+</section>
+
 <pre id="saida">Pronto. Abra a página <b>Wireframing - Media</b> antes de rodar.</pre>
 
 <script>

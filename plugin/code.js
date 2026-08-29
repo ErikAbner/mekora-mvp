@@ -261,6 +261,140 @@ async function corrigirContadorKindle() {
   ];
 }
 
+// ─── Ato 4 · a duplicata Heading/H6-Medium-24 ──────────────────────────────
+//
+// Dois styles, o MESMO nome, métricas idênticas: 24/32 Regular. Um tem 32
+// consumidores e o outro 261. Precisa morrer ANTES da renomeação — se os dois
+// virarem "Body/Large", o problema volta com nome novo.
+
+async function absorverDuplicata() {
+  const dups = await acharStyle("Heading/H6-Medium-24");
+  if (dups.length === 0) return [{ estado: "já não existe duplicata. Nada a fazer.", tocados: 0 }];
+  if (dups.length === 1) return [{ estado: "só existe um. A duplicata já foi resolvida.", tocados: 0 }];
+  if (dups.length > 2) return [{ estado: `achei ${dups.length} com este nome, esperava 2. Nada foi tocado.`, tocados: 0 }];
+
+  const page = figma.currentPage;
+  const textos = page.findAllWithCriteria({ types: ["TEXT"] });
+  const consumidores = (id) => textos.filter((t) => t.textStyleId === id);
+
+  const [a, b] = dups;
+  const na = consumidores(a.id).length;
+  const nb = consumidores(b.id).length;
+
+  // O que fica é o de MAIS consumidores: menos nós a mover, menos a errar.
+  const fica = na >= nb ? a : b;
+  const sai = na >= nb ? b : a;
+
+  // Mesma guarda do Ato 2: absorver é irreversível, só se absorve o igual.
+  if (
+    fica.fontSize !== sai.fontSize ||
+    fica.lineHeight.value !== sai.lineHeight.value ||
+    fica.fontName.style !== sai.fontName.style
+  ) {
+    return [
+      {
+        estado:
+          `MÉTRICAS DIFERENTES apesar do nome igual — ${sai.fontSize}/${sai.lineHeight.value} ` +
+          `${sai.fontName.style} contra ${fica.fontSize}/${fica.lineHeight.value} ${fica.fontName.style}. ` +
+          `Nada foi tocado.`,
+        tocados: 0,
+      },
+    ];
+  }
+
+  const alvos = consumidores(sai.id);
+  const tocados = [];
+  for (const t of alvos) {
+    await figma.loadFontAsync(t.fontName);
+    await t.setTextStyleIdAsync(fica.id);
+    tocados.push({ id: t.id, texto: (t.characters || "").slice(0, 24) });
+  }
+
+  const restantes = page.findAllWithCriteria({ types: ["TEXT"] }).filter((t) => t.textStyleId === sai.id).length;
+  if (restantes > 0) {
+    return [{ estado: `${tocados.length} reaplicados, mas ${restantes} ainda usam. NÃO apaguei.`, tocados: tocados.length }];
+  }
+
+  sai.remove();
+  return [
+    {
+      estado: `duplicata absorvida — ${tocados.length} nós movidos para o style de ${Math.max(na, nb)} consumidores, e o outro apagado`,
+      metricas: `${fica.fontSize}/${fica.lineHeight.value} ${fica.fontName.style}`,
+      tocados: tocados.length,
+      nos: tocados.slice(0, 8),
+    },
+  ];
+}
+
+// ─── Ato 5 · a renomeação ──────────────────────────────────────────────────
+//
+// Ordem CRESCENTE de consumidores, e o motivo não é conforto: erro de método
+// aparece no primeiro e custa 2 nós, não 477.
+//
+// Tamanho e peso saem do nome. O motivo forte não é elegância — é que a Zodiak
+// Variable tem padrão de eixo wght=900, então o que a API reporta nem sempre
+// bate com o que o nome declara. Nome que a ferramenta não confirma é nome
+// inverificável. Ver DEC-0035 §2.
+//
+// FORA desta lista, de propósito: `Body-medium-20px`, 20/32 com 64
+// consumidores. A auditoria mandava absorvê-lo em `Body-regular-20px`, mas as
+// métricas diferem — 32 contra 30 — e absorver mudaria a aparência. Nomear
+// exige decidir antes o que ele é, e isso é do Erik.
+
+const RENOMEAR = [
+  { de: "Heading/H1-Extrabold-64",          para: "Display/Large",            cons: 2 },
+  { de: "body-italico-20",                  para: "Label/Small/Caps",         cons: 2 },
+  { de: "Heading/H2-Semibold-48",           para: "Heading/XL",               cons: 7 },
+  { de: "Bodylongo-regular-20px",           para: "Body/Medium/Prosa",        cons: 12 },
+  { de: "Heading/H6-Semibold-24",           para: "Heading/XS",               cons: 16 },
+  { de: "Heading/H6-Italico-24",            para: "Heading/XS/Italic",        cons: 16 },
+  { de: "DestaquePersonalizado-italico-64", para: "Display/Large/Capitular",  cons: 23 },
+  { de: "Heading/H7-Regular-18",            para: "Label/Large",              cons: 30 },
+  { de: "Heading/H3-Semibold-40",           para: "Heading/LG",               cons: 32 },
+  { de: "Heading/H4-Bold-32",               para: "Heading/MD",               cons: 43 },
+  { de: "Heading/H5-Bold-28-Sem padding",   para: "Heading/SM",               cons: 52 },
+  { de: "label-small-regular-14",           para: "Label/Small",              cons: 117 },
+  { de: "Descricao-regular-16",             para: "Body/Small",               cons: 198 },
+  { de: "Heading/H6-Medium-24",             para: "Body/Large",               cons: 261 },
+  { de: "Body-regular-20px",                para: "Body/Medium",              cons: 384 },
+  { de: "labelbotao-regular-16",            para: "Label/Medium",             cons: 477 },
+];
+
+async function renomear() {
+  // Barreira: se a duplicata ainda existir, renomear criaria dois "Body/Large".
+  const dups = await acharStyle("Heading/H6-Medium-24");
+  if (dups.length > 1) {
+    return [{ estado: "A duplicata Heading/H6-Medium-24 ainda existe. Rode o Ato 4 primeiro. Nada foi tocado.", tocados: 0 }];
+  }
+
+  const relato = [];
+  for (const item of RENOMEAR) {
+    const achados = await acharStyle(item.de);
+    if (achados.length !== 1) {
+      relato.push({ de: item.de, estado: `esperava 1 style, achou ${achados.length}. Pulado.`, tocados: 0 });
+      continue;
+    }
+    // O destino não pode já existir — senão a renomeação cria uma duplicata.
+    const jaExiste = await acharStyle(item.para);
+    if (jaExiste.length > 0) {
+      relato.push({ de: item.de, estado: `"${item.para}" JÁ EXISTE. Pulado para não duplicar.`, tocados: 0 });
+      continue;
+    }
+    const s = achados[0];
+    s.name = item.para;
+    const conferido = (await acharStyle(item.para)).length === 1;
+    relato.push({
+      de: item.de,
+      para: item.para,
+      cons: item.cons,
+      metricas: `${s.fontSize}/${s.lineHeight.value} ${s.fontName.style}`,
+      estado: conferido ? "renomeado" : "FALHOU ao conferir",
+      tocados: conferido ? 1 : 0,
+    });
+  }
+  return relato;
+}
+
 // ─── Ligação com a interface ───────────────────────────────────────────────
 
 figma.ui.onmessage = async (msg) => {
@@ -270,6 +404,8 @@ figma.ui.onmessage = async (msg) => {
     else if (msg.tipo === "h5-valor") relato = await corrigirH5("valor");
     else if (msg.tipo === "h5-absorver") relato = await corrigirH5("absorver");
     else if (msg.tipo === "kindle") relato = await corrigirContadorKindle();
+    else if (msg.tipo === "duplicata") relato = await absorverDuplicata();
+    else if (msg.tipo === "renomear") relato = await renomear();
     else relato = [{ estado: "ação desconhecida" }];
 
     figma.ui.postMessage({ ok: true, relato });
