@@ -16,6 +16,8 @@ const ilustracaoLimpa = "/icones/ilustracao-mesa-limpa.svg";
 const iconeEnviar = "/icones/icone-enviar.svg";
 const marca = "/icones/marca-mekora.svg";
 
+import { Icone } from "../componentes/Icone.jsx";
+
 import "./mesa-vazia.css";
 
 const FORMATOS = [".pdf", ".epub", ".docx", ".cbz", ".cbr", ".zip"];
@@ -45,7 +47,7 @@ export function MesaVazia({ aoEscolherArquivos }) {
           </ul>
 
           <button type="button" className="primaria" onClick={aoEscolherArquivos}>
-            <img src={iconeEnviar} alt="" className="icone" aria-hidden="true" />
+            <Icone src={iconeEnviar} />
             <span>Selecionar arquivos</span>
           </button>
 

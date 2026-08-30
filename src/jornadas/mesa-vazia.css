@@ -61,7 +61,7 @@
   transition: background var(--d1, 160ms) cubic-bezier(.16, 1, .3, 1);
 }
 .primaria:hover { background: var(--primary-hover, var(--primary)); }
-.primaria .icone { width: 24px; height: 24px; filter: invert(1); }
+
 
 .sem-conta {
   margin: 0;

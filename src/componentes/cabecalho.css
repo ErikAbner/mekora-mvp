@@ -34,16 +34,17 @@
   cursor: pointer;
 }
 
-/* Ativo = degrau de superfície, nunca matiz. */
+/* Ativo = degrau de superfície, nunca matiz. O ícone acompanha sozinho: ele é
+ * máscara pintada por `currentColor`, então segue a tinta do rótulo ao lado sem
+ * precisar de um invert que alguém teria de lembrar de manter. */
 .lugar[aria-current="page"] {
   background: var(--foreground);
   color: var(--primary-foreground);
 }
-.lugar[aria-current="page"] .icone { filter: invert(1); }
 
 .lugar:not([aria-current]):hover { background: var(--muted); }
 
-.icone { width: 24px; height: 24px; display: block; }
+
 
 .busca {
   display: flex;

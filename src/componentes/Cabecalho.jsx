@@ -20,6 +20,8 @@ const iconeBuscar = "/icones/icone-buscar.svg";
 const iconeAtalho = "/icones/icone-atalho.svg";
 const iconeConta = "/icones/icone-conta.svg";
 
+import { Icone } from "./Icone.jsx";
+
 import "./cabecalho.css";
 
 const LUGARES = [
@@ -41,7 +43,7 @@ export function Cabecalho({ lugar = "mesa", aoIr }) {
             aria-current={l.id === lugar ? "page" : undefined}
             onClick={() => aoIr?.(l.id)}
           >
-            <img src={l.icone} alt="" className="icone" aria-hidden="true" />
+            <Icone src={l.icone} />
             <span>{l.rotulo}</span>
           </button>
         ))}
@@ -49,14 +51,14 @@ export function Cabecalho({ lugar = "mesa", aoIr }) {
 
       <div className="cabecalho-acoes">
         <button type="button" className="busca">
-          <img src={iconeBuscar} alt="" className="icone" aria-hidden="true" />
+          <Icone src={iconeBuscar} />
           <span>Buscar em Mekora</span>
         </button>
         <button type="button" className="acao" aria-label="Atalhos">
-          <img src={iconeAtalho} alt="" className="icone" aria-hidden="true" />
+          <Icone src={iconeAtalho} />
         </button>
         <button type="button" className="acao" aria-label="Conta">
-          <img src={iconeConta} alt="" className="icone" aria-hidden="true" />
+          <Icone src={iconeConta} />
         </button>
       </div>
     </header>
