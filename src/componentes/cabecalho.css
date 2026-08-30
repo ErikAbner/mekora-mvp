@@ -1,0 +1,77 @@
+.cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 16px 32px;
+  background: var(--background);
+}
+
+/* Duas caixas, não uma. Navegação e ferramenta são categorias diferentes, e
+ * juntá-las na mesma moldura faria o olho ler uma lista só. */
+.cabecalho-lugares,
+.cabecalho-acoes > .busca,
+.cabecalho-acoes > .acao {
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+
+.cabecalho-lugares { display: flex; padding: 12px; }
+.cabecalho-acoes { display: flex; align-items: center; gap: 16px; }
+
+.lugar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 130px;
+  padding: 16px;
+  border: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 16px;   /* Label/Medium */
+  line-height: 24px;
+  cursor: pointer;
+}
+
+/* Ativo = degrau de superfície, nunca matiz. */
+.lugar[aria-current="page"] {
+  background: var(--foreground);
+  color: var(--primary-foreground);
+}
+.lugar[aria-current="page"] .icone { filter: invert(1); }
+
+.lugar:not([aria-current]):hover { background: var(--muted); }
+
+.icone { width: 24px; height: 24px; display: block; }
+
+.busca {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1 0 0;
+  min-width: 0;
+  padding: 17px 24px;
+  color: var(--muted-foreground);
+  font-size: 16px;
+  line-height: 24px;
+  text-align: left;
+  cursor: pointer;
+}
+.cabecalho-acoes { flex: 0 1 476px; }
+.cabecalho-acoes > .busca { flex: 1 0 0; }
+
+.acao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 17px;
+  cursor: pointer;
+}
+
+.busca:hover, .acao:hover { background: var(--muted); }
+
+:where(.lugar, .busca, .acao):focus-visible {
+  outline: 1px solid var(--foreground);
+  outline-offset: 2px;
+}
