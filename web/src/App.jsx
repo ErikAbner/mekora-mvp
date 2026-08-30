@@ -60,21 +60,37 @@ function Mesa() {
 }
 
 function PaginaEstante() {
-  const { livros, carregarEstante } = useJornada();
+  const { livros, carregarEstante, enviar } = useJornada();
+  const [aberto, setAberto] = useState(null);
   const navegar = useNavigate();
   useEffect(() => { carregarEstante(); }, [carregarEstante]);
   const lista = livros.length ? livros : usaExemplo() ? EXEMPLO_ESTANTE : [];
+
+  /* A ficha mostra o livro ESCOLHIDO, e não um exemplo fixo. Antes ela exibia
+   * sempre o mesmo registro escrito à mão, o que fazia a estante parecer
+   * funcionar enquanto clicar em qualquer livro mostrava outro. */
+  const selecionado = lista.find((l) => l.chave === aberto) ?? lista[0] ?? null;
+
   return (
     <Estante
       livros={lista}
-      selecionado={lista.length ? EXEMPLO_FICHA : null}
-      aoAbrir={(l) => navegar(`/leitura/${l?.chave ?? 1}`)}
+      selecionado={selecionado ? { ...EXEMPLO_FICHA, ...selecionado } : null}
+      aoEscolher={(l) => setAberto(l.chave)}
+      aoEnviar={(l) => enviar(l.chave)}
+      aoAbrir={(l) => {
+        /* Sem arquivo convertido não há o que abrir. Navegar mesmo assim
+         * levaria a um leitor em branco, e o leitor em branco não distingue
+         * "ainda convertendo" de "quebrou". */
+        if (!l?.leituraUrl) return;
+        navegar(`/leitura/${l.chave}`, { state: { url: l.leituraUrl, titulo: l.titulo } });
+      }}
     />
   );
 }
 
 function PaginaLeitura() {
   const { id } = useParams();
+  const local = useLocation();
   const [livro, setLivro] = useState(null);
   const [erro, setErro] = useState(null);
 
@@ -86,8 +102,11 @@ function PaginaLeitura() {
     /* O ENDERECO, e nao o numero. `/storage/output/7/...` respondia para quem
      * contasse ate sete, e a DEC-0039 §5 trocou isso pela chave do trabalho.
      * O numero da rota continua sendo o da estante; a chave e buscada aqui. */
-    const chave = chaveDe(id) ?? id;
-    abrirLivro(`/storage/output/${chave}/livro.epub`)
+    /* A URL vem de quem mandou abrir — a estante já a recebeu pronta do
+     * backend. O caminho antigo montava `/storage/output/{id}/livro.epub`, e
+     * `livro.epub` era um chute: o arquivo real se chama `{slug}.epub`. */
+    const url = local.state?.url ?? `/storage/output/${chaveDe(id) ?? id}/livro.epub`;
+    abrirLivro(url)
       .then((l) => vivo && setLivro(l))
       .catch((e) => vivo && setErro(e.message));
     return () => { vivo = false; };

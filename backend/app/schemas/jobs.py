@@ -23,6 +23,10 @@ class JobResponse(BaseModel):
     # Por onde os arquivos deste trabalho são alcançados. Vem do backend porque
     # é ele que sabe — e porque o número ao lado não serve mais para isso.
     endereco: Optional[str] = None
+    # O endereço para abrir o livro. Vem pronto do backend porque o nome do
+    # arquivo é derivado do título, e a tela não tem como adivinhá-lo.
+    # `None` enquanto a conversão não terminou.
+    leitura_url: Optional[str] = None
     original_filename: str
     status: str
 
@@ -122,6 +126,10 @@ class HistoryEntry(BaseModel):
     # Por onde os arquivos deste trabalho são alcançados. Vem do backend porque
     # é ele que sabe — e porque o número ao lado não serve mais para isso.
     endereco: Optional[str] = None
+    # O endereço para abrir o livro. Vem pronto do backend porque o nome do
+    # arquivo é derivado do título, e a tela não tem como adivinhá-lo.
+    # `None` enquanto a conversão não terminou.
+    leitura_url: Optional[str] = None
     original_filename: str
     # URL da capa, montada no backend e não no cliente. A estante não deve
     # precisar conhecer o layout do storage para desenhar um livro — é o mesmo

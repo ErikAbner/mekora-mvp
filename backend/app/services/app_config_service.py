@@ -11,9 +11,9 @@ from __future__ import annotations
 
 import json
 
-from app.core.config import PROJECT_ROOT
+from app.core.config import PROJECT_ROOT, STORAGE_RAIZ
 
-CONFIG_PATH = PROJECT_ROOT / "storage" / "config.json"
+CONFIG_PATH = STORAGE_RAIZ / "config.json"
 
 # Valores padrão usados quando config.json não existe ou campo está ausente
 DEFAULTS: dict = {

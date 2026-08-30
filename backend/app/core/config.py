@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -6,11 +7,26 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 # parents: [0]=core  [1]=app  [2]=backend  [3]=kindle-local-tool/ (raiz)
 PROJECT_ROOT: Path = Path(__file__).resolve().parents[3]
 
-STORAGE_INPUT: Path = PROJECT_ROOT / "storage" / "input"
-STORAGE_OUTPUT: Path = PROJECT_ROOT / "storage" / "output"
-STORAGE_TEMP: Path = PROJECT_ROOT / "storage" / "temp"
-STORAGE_COVERS: Path = PROJECT_ROOT / "storage" / "covers"
-STORAGE_LOGS: Path = PROJECT_ROOT / "storage" / "logs"
+# ONDE OS DOCUMENTOS FICAM, e por que isto é uma variável.
+#
+# O caminho era derivado da posição deste arquivo, e só dela. Isso quer dizer que
+# QUALQUER processo rodando com este código escrevia no mesmo lugar — inclusive
+# um servidor de prova apontado para um banco descartável, que continuava
+# gravando arquivos no storage de verdade.
+#
+# Aconteceu em 30/08: um teste com banco isolado criou `output/2` e `output/3`
+# no storage real. Nada foi perdido, porque nenhum dos dois trabalhos reais
+# tinha saída — mas a colisão era questão de sorte, e sorte não é isolamento.
+#
+# Em container, o valor vem do Dockerfile e aponta para o volume. Fora dele, o
+# padrão é o de sempre: quem não configura nada não vê diferença.
+STORAGE_RAIZ: Path = Path(os.getenv("MEKORA_STORAGE", PROJECT_ROOT / "storage"))
+
+STORAGE_INPUT: Path = STORAGE_RAIZ / "input"
+STORAGE_OUTPUT: Path = STORAGE_RAIZ / "output"
+STORAGE_TEMP: Path = STORAGE_RAIZ / "temp"
+STORAGE_COVERS: Path = STORAGE_RAIZ / "covers"
+STORAGE_LOGS: Path = STORAGE_RAIZ / "logs"
 
 
 class Settings(BaseSettings):

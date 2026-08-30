@@ -56,7 +56,11 @@ RUN useradd --create-home --uid 10001 mekora \
     && chown -R mekora:mekora /app
 USER mekora
 
-ENV DATABASE_URL=sqlite:////app/storage/kindle_tool.db \
+# Uma variavel decide onde TUDO fica: banco, entrada, saida, miniaturas,
+# modelos. Antes o caminho vinha da posicao do arquivo de codigo, e com isso
+# qualquer processo rodando este codigo escrevia no mesmo disco — inclusive um
+# servidor de prova apontado para um banco descartavel.
+ENV MEKORA_STORAGE=/app/storage \
     ARGOS_PACKAGES_DIR=/app/storage/models/argos-packages
 
 VOLUME ["/app/storage"]

@@ -6,11 +6,11 @@ from sqlalchemy import MetaData, create_engine, text
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.core.config import (
-    PROJECT_ROOT,
     STORAGE_COVERS,
     STORAGE_INPUT,
     STORAGE_LOGS,
     STORAGE_OUTPUT,
+    STORAGE_RAIZ,
     STORAGE_TEMP,
 )
 
@@ -18,7 +18,7 @@ from app.core.config import (
 # variável existe porque dentro de um container o disco fica noutro lugar, e
 # porque gerar migração exige poder apontar para um banco descartável — sem
 # isso, a única forma de testar uma migração é rodá-la no banco de verdade.
-DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{PROJECT_ROOT}/storage/kindle_tool.db")
+DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{STORAGE_RAIZ}/kindle_tool.db")
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

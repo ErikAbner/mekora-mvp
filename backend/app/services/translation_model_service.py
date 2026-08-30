@@ -9,10 +9,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from app.core.config import PROJECT_ROOT
+from app.core.config import PROJECT_ROOT, STORAGE_RAIZ
 
 # Diretório padrão onde setup_nllb.py baixa o modelo
-NLLB_DEFAULT_MODEL_DIR: Path = PROJECT_ROOT / "storage" / "models" / "nllb"
+NLLB_DEFAULT_MODEL_DIR: Path = STORAGE_RAIZ / "models" / "nllb"
 
 
 # ---------------------------------------------------------------------------

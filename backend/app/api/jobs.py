@@ -47,6 +47,7 @@ def _to_job(record: ProcessingJob) -> dict:
     data = {c.name: getattr(record, c.name) for c in record.__table__.columns}
     data["upload_id"] = data.pop("id")
     data["endereco"] = record.token_publico
+    data["leitura_url"] = _leitura_url(record)
     data["thumbnails"] = get_thumbnail_urls(record.token_publico or "", data.get("page_count") or 0)
     return data
 
@@ -56,6 +57,24 @@ _HISTORY_STR_FIELDS = frozenset({
     "final_title", "final_author", "final_language",
     "translation_status", "comic_translation_status",
 })
+
+
+def _leitura_url(record: ProcessingJob) -> str | None:
+    """O endereço para ABRIR o livro, montado aqui e não na tela.
+
+    O arquivo se chama `{slug}.epub`, com o slug derivado do título — a tela não
+    tem como adivinhar isso, e passar a saber seria a tela conhecer o layout do
+    storage do servidor. É o mesmo princípio que `cover_url` já seguia.
+
+    Devolve `None` enquanto a conversão não terminou, e a distinção importa: uma
+    URL que existe mas ainda não responde faz a tela abrir um leitor vazio, em
+    vez de dizer que o livro ainda está sendo preparado.
+    """
+    from pathlib import Path
+
+    if not record.epub_path or not record.token_publico:
+        return None
+    return f"/storage/output/{record.token_publico}/{Path(record.epub_path).name}"
 
 
 def _to_history(record: ProcessingJob) -> dict:
@@ -85,6 +104,7 @@ def _to_history(record: ProcessingJob) -> dict:
         else None
     )
     data["endereco"] = record.token_publico
+    data["leitura_url"] = _leitura_url(record)
     return data
 
 

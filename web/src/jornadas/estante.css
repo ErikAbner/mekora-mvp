@@ -203,3 +203,63 @@
 
 .estante-comecar:hover { background: var(--muted-foreground); border-color: var(--muted-foreground); }
 .estante-comecar:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+
+/* O livro inteiro é clicável, e o alvo cobre a capa. Ele fica por cima com
+   `position: absolute` em vez de envolver o conteúdo: um `button` envolvendo
+   `img` e texto herda estilos de botão que teriam de ser desfeitos um a um. */
+.livro { position: relative; }
+
+.livro-alvo {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* O escolhido é marcado por DEGRAU DE SUPERFÍCIE, não por matiz — a regra que a
+   DEC-0037 §6 fixou quando o acento saiu do sistema. */
+.livro-alvo.escolhido { background: color-mix(in srgb, var(--foreground) 8%, transparent); }
+.livro-alvo:hover { background: color-mix(in srgb, var(--foreground) 4%, transparent); }
+.livro-alvo:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+
+.ficha-aviso {
+  margin: 12px 0 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--muted-foreground);
+}
+
+.visualmente-oculto {
+  position: absolute;
+  inline-size: 1px; block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* O envio ao Kindle fica abaixo das ações de leitura, separado: ele age FORA
+   da tela — manda um arquivo para um aparelho — e as duas de cima agem dentro
+   dela. Misturá-los faria "Enviar" parecer tão reversível quanto "Notas". */
+.ficha-kindle {
+  margin-block-start: 20px;
+  padding-block-start: 20px;
+  border-block-start: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.ficha-nota, .ficha-erro {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  text-wrap: pretty;
+}
+
+.ficha-nota { color: var(--muted-foreground); }
+/* O erro pede o degrau de tinta que o sistema reserva para ele. */
+.ficha-erro { color: var(--destructive, var(--foreground)); }

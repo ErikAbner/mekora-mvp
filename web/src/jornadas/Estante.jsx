@@ -22,9 +22,20 @@ import "./estante.css";
 const marcador = "/icones/marcador-notas.svg";
 const RECORTES = ["Tudo", "Com nota", "No Kindle", "Quadrinhos"];
 
-function Livro({ titulo, autor, notas, capa }) {
+function Livro({ titulo, autor, notas, capa, aoEscolher, escolhido }) {
   return (
     <li className="livro">
+      {/* O livro inteiro é o alvo do clique, e é um `button` de verdade: o
+          teclado chega nele, o leitor de tela o anuncia como ação, e o Enter
+          funciona. Um `div` com `onClick` pareceria igual e não seria. */}
+      <button
+        type="button"
+        className={`livro-alvo${escolhido ? " escolhido" : ""}`}
+        onClick={() => aoEscolher?.()}
+        aria-pressed={escolhido ? "true" : "false"}
+      >
+        <span className="visualmente-oculto">{titulo}{autor ? `, de ${autor}` : ""}</span>
+      </button>
       <div className="capa-caixa">
         {/* Livro sem capa não vira buraco: a caixa fica, com o título dentro.
             Uma grade com lacunas parece defeito de carregamento. */}
@@ -52,7 +63,7 @@ function Livro({ titulo, autor, notas, capa }) {
   );
 }
 
-export function Estante({ livros = [], selecionado, aoAbrir }) {
+export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnviar }) {
   return (
     <div className="mesa">
       <Cabecalho lugar="estante" />
@@ -87,7 +98,12 @@ export function Estante({ livros = [], selecionado, aoAbrir }) {
           ) : (
             <ul className="grade">
               {livros.map((l) => (
-                <Livro key={l.chave} {...l} />
+                <Livro
+                  key={l.chave}
+                  {...l}
+                  escolhido={l.chave === selecionado?.chave}
+                  aoEscolher={() => aoEscolher?.(l)}
+                />
               ))}
             </ul>
           )}
@@ -135,9 +151,59 @@ export function Estante({ livros = [], selecionado, aoAbrir }) {
               </div>
 
               <div className="ficha-acoes">
-                <Botao tom="primaria" onClick={() => aoAbrir?.(selecionado)}>Continuar</Botao>
+                {/* SEM ARQUIVO NÃO HÁ O QUE ABRIR, e o botão diz isso em vez de
+                    ficar clicável e não fazer nada. Um botão que não responde é
+                    lido como produto quebrado; um botão desabilitado com o
+                    motivo ao lado é lido como estado. */}
+                <Botao
+                  tom="primaria"
+                  onClick={() => aoAbrir?.(selecionado)}
+                  disabled={!selecionado.leituraUrl}
+                >
+                  Continuar
+                </Botao>
                 <Botao tom="secundaria">Notas</Botao>
               </div>
+
+              {/* ENVIAR AO KINDLE. É a promessa que dá nome ao produto, e até
+                  30/08 nenhuma tela a cumpria — o contrato tinha a chamada e
+                  ninguém a usava, então dava para converter e nunca mandar.
+
+                  Já enviado NÃO vira botão desabilitado: reenviar é legítimo
+                  (a pessoa apagou do aparelho, trocou de Kindle), e um botão
+                  morto ao lado de "No Kindle" faria parecer que não dá. O que
+                  muda é o rótulo, que passa a dizer o que o clique faz. */}
+              {selecionado.leituraUrl && (
+                <div className="ficha-kindle">
+                  <Botao
+                    tom="secundaria"
+                    onClick={() => aoEnviar?.(selecionado)}
+                    disabled={selecionado.envio === "enviando"}
+                  >
+                    {selecionado.envio === "enviando"
+                      ? "Enviando…"
+                      : selecionado.noKindle
+                        ? "Enviar de novo ao Kindle"
+                        : "Enviar ao Kindle"}
+                  </Botao>
+                  {selecionado.envio === "erro" && (
+                    <p className="ficha-erro" role="alert">
+                      {/* A mensagem do backend, e não "falhou": ela diz se foi
+                          SMTP, remetente não autorizado na Amazon, ou tamanho —
+                          e cada uma tem uma saída diferente. */}
+                      {selecionado.envioErro}
+                    </p>
+                  )}
+                  {selecionado.noKindle && selecionado.envio !== "erro" && (
+                    <p className="ficha-nota">Já está no seu Kindle.</p>
+                  )}
+                </div>
+              )}
+              {!selecionado.leituraUrl && (
+                <p className="ficha-aviso">
+                  Ainda em preparo. O texto abre quando a conversão terminar.
+                </p>
+              )}
             </article>
           )}
         </aside>

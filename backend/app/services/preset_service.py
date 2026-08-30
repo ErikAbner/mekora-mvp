@@ -16,9 +16,9 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-from app.core.config import PROJECT_ROOT
+from app.core.config import PROJECT_ROOT, STORAGE_RAIZ
 
-PRESET_PATH = PROJECT_ROOT / "storage" / "config_presets.json"
+PRESET_PATH = STORAGE_RAIZ / "config_presets.json"
 
 # ---------------------------------------------------------------------------
 # Presets padrão do sistema

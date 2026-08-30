@@ -10,7 +10,7 @@
  * discordar sobre o mesmo arquivo.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { enviarArquivo, analisar, esperarAnalise, converter, acompanhar, historico, backendNoAr } from "../../../contrato/api.js";
+import { enviarArquivo, analisar, esperarAnalise, converter, acompanhar, historico, backendNoAr, enviarAoKindle } from "../../../contrato/api.js";
 
 export function useJornada() {
   const [arquivos, setArquivos] = useState([]);
@@ -88,6 +88,15 @@ export function useJornada() {
     setLivros(
       h.map((e) => ({
         chave: e.upload_id,
+        endereco: e.endereco,
+        /* O endereço para ABRIR o livro vem pronto do backend: o arquivo se
+         * chama `{slug}.epub`, derivado do título, e montá-lo aqui faria a tela
+         * conhecer o layout do storage do servidor.
+         *
+         * `null` enquanto a conversão não terminou — e a distinção importa: uma
+         * URL que existe mas não responde faz o leitor abrir vazio, em vez de
+         * dizer que o livro ainda está sendo preparado. */
+        leituraUrl: e.leitura_url ?? null,
         titulo: e.final_title || e.original_filename,
         autor: e.final_author || "",
         noKindle: e.kindle_sent,
@@ -101,5 +110,30 @@ export function useJornada() {
     );
   }, []);
 
-  return { arquivos, livros, backend, receber, carregarEstante };
+  /* Enviar ao Kindle. É a promessa central do produto — "prepara documentos
+   * para o Kindle" — e até 30/08 o contrato tinha a chamada e nenhuma tela a
+   * usava: dava para converter e nunca mandar.
+   *
+   * O estado fica no livro, e não numa variável solta ao lado: com mais de um
+   * envio em curso, uma variável só faria o segundo apagar o primeiro. */
+  const enviar = useCallback(async (chave) => {
+    const marca = (campos) =>
+      setLivros((atual) => atual.map((l) => (l.chave === chave ? { ...l, ...campos } : l)));
+
+    marca({ envio: "enviando", envioErro: null });
+    try {
+      await enviarAoKindle(chave);
+      /* O `send_status` de verdade vem do backend, e o envio por e-mail é
+       * assíncrono: o SMTP aceita agora e a Amazon processa depois. Recarregar
+       * a estante lê o estado real em vez de a tela decidir sozinha que deu
+       * certo — que é como uma tela passa a mentir sobre o que está no
+       * aparelho. */
+      await carregarEstante();
+      marca({ envio: null });
+    } catch (e) {
+      marca({ envio: "erro", envioErro: e.message });
+    }
+  }, [carregarEstante]);
+
+  return { arquivos, livros, backend, receber, carregarEstante, enviar };
 }
