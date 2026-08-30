@@ -1,0 +1,94 @@
+.leitura {
+  display: flex; flex-direction: column; align-items: center;
+  background: var(--background);
+  min-block-size: 100vh;
+}
+
+/* O cromo flutua e recolhe. Duas caixas separadas, não uma: leitura e ferramenta
+ * são categorias diferentes de interação, e juntá-las faria o olho ler uma lista
+ * só. */
+.cromo {
+  position: sticky; inset-block-start: 8px; z-index: 2;
+  display: flex; justify-content: space-between; gap: 16px;
+  inline-size: 100%; max-inline-size: 1856px; padding: 8px;
+  transition: opacity var(--d2, 260ms) cubic-bezier(.16, 1, .3, 1);
+}
+.cromo.recolhido { opacity: 0.15; }
+.cromo.recolhido:hover, .cromo.recolhido:focus-within { opacity: 1; }
+
+.cromo-caixa {
+  display: flex; gap: 8px; padding: 12px;
+  border: 1px solid var(--border);
+  background: var(--background);
+}
+.cromo-caixa button {
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px; border: 0; background: transparent;
+  color: var(--muted-foreground); cursor: pointer;
+}
+.cromo-caixa button:hover { background: var(--muted); }
+.cromo-caixa button:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+
+.abertura {
+  display: flex; flex-direction: column; align-items: center; gap: 40px;
+  padding: 64px; text-align: center;
+}
+.abertura h1 {
+  margin: 0;
+  font-size: 64px; line-height: 72px;   /* Display/Large */
+  font-weight: 700;                     /* Extrabold da Zodiak esta em 700 */
+  letter-spacing: -2.5%;                /* tracking relativo, nunca absoluto */
+  color: var(--foreground);
+}
+.autoria {
+  margin: 0;
+  font-size: 20px; line-height: 30px;   /* Body/Medium */
+  color: var(--muted-foreground);
+}
+.ornamento { inline-size: 169px; height: auto; color: var(--foreground); }
+
+/* A COLUNA DE LEITURA.
+ *
+ * 680px é a medida do desenho. A 20px de corpo, com o avanço medido da Zodiak
+ * (0,5204 em), isso dá cerca de 65 caracteres por linha — dentro da faixa
+ * confortável, e é por isso que a medida é fixa e não fluida: coluna que estica
+ * com a janela vira linha de 120 caracteres num monitor grande. */
+.prosa {
+  inline-size: 100%; max-inline-size: 680px;
+  padding: 64px 32px 128px;
+  display: flex; flex-direction: column; gap: 32px;
+}
+
+.prosa p {
+  margin: 0;
+  text-indent: 32px;
+  font-size: 20px; line-height: 30px;   /* Body/Medium/Prosa, a excecao de razao 1,5 */
+  /* TINTA CHEIA, e nao a secundaria do desenho. O texto do livro e o conteudo
+   * pelo qual o produto existe; poe-lo na tinta mais fraca do sistema e inverter
+   * a hierarquia. E com destaque atras, a secundaria REPROVA no rosa (3,47) e no
+   * azul (3,92) — com a cheia, os oito pares passam. */
+  color: var(--foreground);
+  text-wrap: pretty;
+}
+
+/* O destaque acompanha o texto porque E o texto. O desenho usava retangulos
+ * posicionados por coordenada, que quebram na primeira mudanca de corpo, de
+ * largura ou de idioma — e somem para leitor de tela. */
+.prosa mark {
+  color: inherit;
+  padding: 0 2px;
+  /* Sem raio: destaque e marca sobre o texto, nao etiqueta. */
+  border-radius: 0;
+}
+
+@media (max-width: 1023px) {
+  .abertura { padding: 40px 24px; gap: 24px; }
+  .abertura h1 { font-size: 40px; line-height: 48px; }   /* Display/Large no mobile */
+  .autoria { font-size: 18px; line-height: 27px; }
+  .prosa { padding: 40px 24px 80px; gap: 24px; }
+  .prosa p { font-size: 18px; line-height: 27px; }       /* a excecao como RAZAO */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cromo { transition: none; }
+}

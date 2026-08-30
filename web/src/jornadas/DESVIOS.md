@@ -105,3 +105,62 @@ número dentro. Agora o fundo do número é o balão na tela **e** na árvore.
 O raio de pílula da etiqueta `#Design` e a borda de 2px na capa. Os dois estão
 certos por regra: `--rp` é de dado (tag, chip, trilho, interruptor) e `--rm` é de
 mídia recortada, para o canto não brigar com a borda.
+
+---
+
+# Leitura (`895:10472`)
+
+## Eu tinha trocado os dois conjuntos de pastel
+
+Chamei o conjunto `claro` de **`capa/*`** raciocinando *"área grande pode ser
+sutil"*, e o `vivo` de **`nota/*`** por *"marca pequena precisa ser vista"*.
+
+**A leitura mostra que é o contrário**, e a medição confirma. O destaque existe
+para receber texto por cima, e só o `claro` mantém a prosa legível:
+
+| matiz | vivo, com a tinta da prosa | claro, com a tinta da prosa |
+|---|---|---|
+| verde | 4,36 **falha** | 5,08 ok |
+| rosa | 2,18 **falha** | 3,47 **falha** |
+| amarelo | 4,23 **falha** | 5,00 ok |
+| azul | 2,70 **falha** | 3,92 **falha** |
+
+Meu raciocínio media a coisa errada: contraste do destaque **contra o papel**, que
+é sobre notar a marca. O que decide é o contraste **do texto sobre a marca**, que
+é sobre continuar lendo.
+
+Os nomes `nota/*` e `capa/*` no Figma estão trocados e precisam de um ato.
+
+## A prosa estava na tinta mais fraca do sistema
+
+O desenho põe o texto do livro em `text/secondary` — a terceira tinta — num
+produto cuja razão de existir é ler. Com destaque atrás, o rosa dá **3,47** e o
+azul **3,92**: reprovam.
+
+Com `text/strong`, os oito pares passam, o pior deles em **11,71**. Medido na
+página servida:
+
+```
+#151515 sobre #efffbf  17,15      #151515 sobre #bfdfff  13,23
+#151515 sobre #fff8bf  16,90      #151515 sobre #ffbfc0  11,71
+```
+
+## O destaque virou `<mark>`, e não retângulo posicionado
+
+O desenho tem **oito retângulos** com `top` e `left` em pixel, atrás do texto.
+Isso quebra na primeira mudança de corpo, de largura ou de idioma — e some para
+leitor de tela: o trecho destacado deixa de ser destacado e vira um retângulo
+colorido ao lado de um texto qualquer.
+
+`<mark>` acompanha o texto **porque é o texto**, e é anunciado como marcação. Os
+destaques do exemplo vêm por **índice de caractere**, que é como eles chegarão do
+servidor — não por coordenada de tela.
+
+## Cada passo virou endereçável, e isso não é conveniência
+
+`?passo=leitura` abre a tela direto. Sem isso o portão precisa clicar pela jornada
+inteira para chegar na última, o que amarra a medição da estante ao funcionamento
+do upload: uma falha no backend viraria *"a estante tem defeito de contraste"*.
+
+**Tela medível sozinha é a diferença entre um portão que diz ONDE está o problema
+e um que só diz que existe.**

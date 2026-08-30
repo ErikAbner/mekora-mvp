@@ -42,7 +42,7 @@ function Livro({ titulo, autor, notas, capa }) {
   );
 }
 
-export function Estante({ livros = [], selecionado }) {
+export function Estante({ livros = [], selecionado, aoAbrir }) {
   return (
     <div className="mesa">
       <Cabecalho lugar="estante" />
@@ -107,7 +107,7 @@ export function Estante({ livros = [], selecionado }) {
               </div>
 
               <div className="ficha-acoes">
-                <button type="button" className="primaria">Continuar</button>
+                <button type="button" className="primaria" onClick={() => aoAbrir?.(selecionado)}>Continuar</button>
                 <button type="button" className="secundaria">Notas</button>
               </div>
             </article>

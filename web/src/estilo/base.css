@@ -47,3 +47,12 @@ button, input, textarea, select { border-radius: 0; font: inherit; color: inheri
     transition-duration: 0.01ms !important;
   }
 }
+
+/* As quatro cores de destaque, vindas do sistema. Nomeadas por PAPEL aqui
+ * tambem, para que trocar o valor no design system chegue sem editar componente. */
+:root {
+  --nota-verde: #efffbf;
+  --nota-amarelo: #fff8bf;
+  --nota-rosa: #ffbfc0;
+  --nota-azul: #bfdfff;
+}
