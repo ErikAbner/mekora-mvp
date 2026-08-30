@@ -18,17 +18,27 @@ import "./mesa-cheia.css";
 
 const iconeEnviar = "/icones/icone-enviar.svg";
 
+/* Os quatro estados vêm do contrato, não daqui. Se esta lista divergir da de
+ * `contrato/estado.js`, a tela passa a mostrar rótulo para um estado que não
+ * existe — ou a esconder um que existe. */
+import { ESTADOS as DO_CONTRATO } from "../../../contrato/estado.js";
+
 const ESTADOS = {
-  enviando: { rotulo: "Enviando", classe: "enviando" },
   fila: { rotulo: "Na fila", classe: "fila" },
+  trabalhando: { rotulo: "Em preparo", classe: "enviando" },
   pronto: { rotulo: "Pronto", classe: "pronto" },
   erro: { rotulo: "Com erro", classe: "erro" },
 };
 
+/* Falha alto e cedo, e não na tela do usuário. */
+for (const e of DO_CONTRATO) {
+  if (!ESTADOS[e]) throw new Error(`o contrato conhece o estado "${e}" e esta tela não`);
+}
+
 function contar(arquivos) {
   // Derivado, sempre. A contagem não pode divergir da lista porque ela É a lista.
-  const c = { enviando: 0, fila: 0, pronto: 0, erro: 0 };
-  for (const a of arquivos) c[a.estado] += 1;
+  const c = Object.fromEntries(DO_CONTRATO.map((e) => [e, 0]));
+  for (const a of arquivos) if (c[a.estado] !== undefined) c[a.estado] += 1;
   return c;
 }
 

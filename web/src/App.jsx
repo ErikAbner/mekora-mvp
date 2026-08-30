@@ -13,7 +13,7 @@ import { Estante } from "./jornadas/Estante.jsx";
 /* Dados de exemplo com os nomes do desenho. Ficam aqui, e não dentro da tela,
  * porque tela que carrega o próprio dado não se prova com outro. */
 const ARQUIVOS = [
-  { nome: "Enviesados.pdf", estado: "enviando", feito: 16, total: 24, progresso: 85, detalhe: "Pronto em 3 segundos" },
+  { nome: "Enviesados.pdf", estado: "trabalhando", feito: 16, total: 24, progresso: 85, detalhe: "Pronto em 3 segundos" },
   { nome: "Inviesados.pdf", estado: "erro", progresso: 85, detalhe: "Interrompido" },
   { nome: "Another.pdf", estado: "pronto", detalhe: "Na estante" },
 ];
