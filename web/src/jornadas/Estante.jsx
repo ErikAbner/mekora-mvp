@@ -15,6 +15,7 @@
  * serem raros.
  */
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
+import { Botao } from "../componentes/Botao.jsx";
 import "./estante.css";
 
 const marcador = "/icones/marcador-notas.svg";
@@ -107,8 +108,8 @@ export function Estante({ livros = [], selecionado, aoAbrir }) {
               </div>
 
               <div className="ficha-acoes">
-                <button type="button" className="primaria" onClick={() => aoAbrir?.(selecionado)}>Continuar</button>
-                <button type="button" className="secundaria">Notas</button>
+                <Botao tom="primaria" onClick={() => aoAbrir?.(selecionado)}>Continuar</Botao>
+                <Botao tom="secundaria">Notas</Botao>
               </div>
             </article>
           )}

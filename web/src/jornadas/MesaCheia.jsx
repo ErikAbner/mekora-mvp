@@ -14,6 +14,7 @@
  */
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Icone } from "../componentes/Icone.jsx";
+import { Botao } from "../componentes/Botao.jsx";
 import "./mesa-cheia.css";
 
 const iconeEnviar = "/icones/icone-enviar.svg";
@@ -116,10 +117,9 @@ export function MesaCheia({ arquivos = [], aoVerEstante }) {
             ))}
           </ul>
 
-          <button type="button" className="primaria" onClick={aoVerEstante}>
-            <Icone src={iconeEnviar} />
-            <span>Ver na estante</span>
-          </button>
+          <Botao tom="primaria" icone={iconeEnviar} onClick={aoVerEstante}>
+            Ver na estante
+          </Botao>
         </div>
       </section>
     </div>

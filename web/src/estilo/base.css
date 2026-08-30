@@ -76,7 +76,27 @@ button, input, textarea, select { border-radius: 0; font: inherit; color: inheri
  *
  * O rosa escuro fica a 19 de distância perceptual do `estado/perigo`, acima do
  * limiar de ~15 em que duas cores se confundem, mas é o mais apertado dos quatro. */
+/* BORDA DE CONTROLE — o token que faltava, e a história de como ele apareceu.
+ *
+ * O sistema tinha `border/subtle` `#b1b1b1`, que é **filete**: separador
+ * decorativo, sem mínimo de contraste pela WCAG. E usava o mesmo token para o
+ * limite de botão, campo e rádio — que é **componente de interface**, e pede
+ * 3,0.
+ *
+ * `#b1b1b1` sobre `surface/base` dá **2,04**. Reprova.
+ *
+ * O desenho já sabia disso sem ter nome para dizer: a borda do rádio de
+ * Preferências e a tinta dos ícones vinham em `#878787`, que dá **3,41** e
+ * passa. Eu troquei esse valor por `border/subtle` chamando de correção, e
+ * piorei — terceira vez no mesmo dia em que um valor solto carregava uma
+ * distinção que o sistema não tinha.
+ *
+ * Filete e limite de controle são dois papéis. Agora são dois tokens. */
 :root {
+  --borda-controle: #878787;
+  /* O degrau de aproximacao da primaria: um passo CLARO a partir da tinta cheia.
+   * Medido em 1,16 contra o repouso — visivel, e nao mais que isso. */
+  --degrau-primaria: #232323;
   --nota-verde: #efffbf;
   --nota-amarelo: #fff8bf;
   --nota-rosa: #ffbfc0;
@@ -85,6 +105,9 @@ button, input, textarea, select { border-radius: 0; font: inherit; color: inheri
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-tema="claro"]) {
+    /* No escuro o `#666666` do design system já passa 3,15 sobre o fundo, mas
+     * não sobre os degraus mais claros. `#6d6d6d` passa nos três. */
+    --borda-controle: #6d6d6d;
     --nota-verde: #61722f;
     --nota-amarelo: #746c2f;
     --nota-rosa: #a34344;

@@ -103,6 +103,17 @@ inventar regra.
 **Cor só em três endereços:** nota, capa, estado. Fora deles o sistema é preto e
 branco neutro.
 
+**Filete e limite de controle são dois tokens, não um.** `--border`
+(`border/subtle`) é separador decorativo, e a WCAG não lhe cobra mínimo.
+`--borda-controle` é limite de botão, campo e rádio, e **pede 3,0**. O filete dá
+**2,04** sobre a superfície e reprova.
+
+Isso foi achado construindo o botão, e o desenho já sabia sem ter nome para
+dizer: a borda do rádio e a tinta dos ícones vinham em `#878787`, que passa. Eu
+troquei por `border/subtle` chamando de correção, e piorei — **terceira vez no
+mesmo dia em que um valor solto carregava uma distinção que o sistema não
+tinha**.
+
 **Seleção é degrau de superfície, não matiz.** O acento estava a 11,9 de distância
 perceptual do estado de perigo — abaixo do limiar de ~15 em que duas cores se
 confundem.
@@ -160,12 +171,30 @@ não foi coerência, foi conserto.
 
 ---
 
-## 7 · Rodar o portão, e consertar a árvore em vez de calar o alarme
+## 7 · Rodar o portão nos DOIS temas
+
+```bash
+node scripts/medir.mjs "http://localhost:5180/sua-rota" 1440 1200 scripts/portao.js
+node scripts/medir.mjs "http://localhost:5180/sua-rota" 1440 1200 scripts/portao.js --escuro
+node scripts/tokens.mjs      # procedência dos tokens, que o portão não vê
+```
 
 ```
 0 cor fora do sistema · 0 contraste abaixo · 0 corpo fora da escala
 0 tinta cravada em ícone
 ```
+
+**O escuro não é o claro invertido.** Ele tem valores próprios, e os estados são
+outros: o `estado/ok` do claro dá 3,64 sobre fundo escuro e reprova. O destaque
+da leitura também muda — no escuro ele escurece e a tinta continua clara, porque
+destaque claro numa página escura vira mancha de luz.
+
+Sem `--escuro` um tema nasce com preto puro e branco puro sem ninguém ver. Já
+nasceu assim uma vez.
+
+**O `tokens.mjs` vê o que o portão não vê.** O portão mede a página SERVIDA, então
+variável declarada e não usada não aparece nele — e `web/tokens/` carrega 501
+declarações com valor do template, que explodem no dia em que alguém as usar.
 
 Quando ele acusar, a pergunta não é *"como faço passar"*.
 

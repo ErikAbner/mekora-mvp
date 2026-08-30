@@ -18,6 +18,7 @@ const iconeEnviar = "/icones/icone-enviar.svg";
 const marca = "/icones/marca-mekora.svg";
 
 import { Icone } from "../componentes/Icone.jsx";
+import { Botao } from "../componentes/Botao.jsx";
 
 import "./mesa-vazia.css";
 
@@ -72,10 +73,9 @@ export function MesaVazia({ aoReceberArquivos, backend }) {
             hidden
             onChange={(e) => e.target.files?.length && aoReceberArquivos?.(e.target.files)}
           />
-          <button type="button" className="primaria" onClick={() => campo.current?.click()}>
-            <Icone src={iconeEnviar} />
-            <span>Selecionar arquivos</span>
-          </button>
+          <Botao tom="primaria" icone={iconeEnviar} onClick={() => campo.current?.click()}>
+            Selecionar arquivos
+          </Botao>
 
           <p className="sem-conta">
             {/* O produto diz o que não sabe. Uma área de soltar que não funciona

@@ -39,7 +39,10 @@
 
 .marca {
   inline-size: 40px; block-size: 40px; flex: none;
-  border: 1px solid var(--border);
+  /* Limite de CONTROLE, nao filete. O `border/subtle` da 2,04 sobre a superficie
+   * e reprova o minimo de 3,0 que a WCAG cobra de componente de interface — e a
+   * marca do radio e o unico limite que ele tem. */
+  border: 1px solid var(--borda-controle);
   background: var(--background);
   transition: background var(--d1, 160ms) cubic-bezier(.16, 1, .3, 1);
 }

@@ -61,14 +61,7 @@
 }
 .arquivo-detalhe .dado { font-size: 14px; line-height: 22px; }  /* Dado/Medida */
 
-.preparo-caixa .primaria {
-  align-self: flex-start;
-  display: inline-flex; align-items: center; gap: 12px;
-  padding: 16px 32px; border: 0;
-  background: var(--primary); color: var(--primary-foreground);
-  font-size: 16px; line-height: 24px; font-weight: 540;
-  cursor: pointer;
-}
+.preparo-caixa .botao { align-self: flex-start; }
 
 @media (max-width: 1023px) {
   .preparo { padding: 24px; }

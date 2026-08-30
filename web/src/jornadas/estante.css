@@ -132,19 +132,11 @@
   color: var(--muted-foreground);
 }
 
+/* O botao e componente: quem manda no estilo dele e o Botao, nao esta tela.
+ * A versao anterior repetia border, fundo e tinta aqui, e vencia por
+ * especificidade — o componente ficava com a regra e a tela com o valor. */
 .ficha-acoes { display: flex; flex-direction: column; gap: 16px; }
-.ficha-acoes button {
-  padding: 17px 32px;
-  font-size: 16px; line-height: 24px;
-  cursor: pointer;
-}
-.ficha-acoes .primaria {
-  border: 0; background: var(--primary); color: var(--primary-foreground);
-}
-.ficha-acoes .secundaria {
-  border: 1px solid var(--border); background: var(--background); color: var(--muted-foreground);
-}
-.ficha-acoes .secundaria:hover { background: var(--muted); }
+.ficha-acoes .botao { inline-size: 100%; }
 
 :where(.recortes button, .ficha-acoes button):focus-visible {
   outline: 1px solid var(--foreground); outline-offset: 2px;
