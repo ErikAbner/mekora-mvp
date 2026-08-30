@@ -115,3 +115,57 @@
   color: var(--muted-foreground);
   text-wrap: pretty;
 }
+
+/* A ilustração do livro. Ocupa a coluna do texto e não sangra para fora: numa
+   tela de leitura, imagem maior que a medida quebra o ritmo da coluna. */
+.prosa .ilustracao {
+  margin: 32px 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.prosa .ilustracao img {
+  max-inline-size: 100%;
+  block-size: auto;
+  /* Fundo claro atrás de PNG transparente: muita ilustração de livro é preta
+     sobre nada, e no tema escuro ela sumiria contra o próprio fundo. */
+  background: var(--branco, #ffffff);
+}
+
+/* Virar o capítulo. Depois do texto, com respiro que separa a leitura da
+   navegação — o que fica sempre à vista disputa atenção com o texto. */
+.virar {
+  inline-size: 100%;
+  max-inline-size: 680px;
+  margin: 64px auto 96px;
+  padding-block-start: 24px;
+  border-block-start: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.virar button {
+  padding: 10px 18px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 24px;
+  cursor: pointer;
+}
+
+.virar button:hover:not(:disabled) { border-color: var(--foreground); }
+.virar button:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+.virar button:disabled { color: var(--muted-foreground); cursor: default; }
+
+.virar-conta {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}

@@ -28,6 +28,7 @@ from app.db.database import init_db
 from app.api.acesso import router as acesso_router
 from app.api.porta import exigir_acesso
 from app.api.health import router as health_router
+from app.api.progresso import router as progresso_router
 from app.api.config import router as config_router
 from app.api.jobs import router as jobs_router
 from app.api.app_config import router as app_config_router
@@ -79,6 +80,8 @@ from app.api.files import router as files_router  # noqa: E402
 app.include_router(files_router)
 app.include_router(acesso_router)
 app.include_router(health_router)
+# Atrás da mesma porta: as rotas falam de um trabalho específico.
+app.include_router(progresso_router, dependencies=[Depends(exigir_acesso)])
 app.include_router(config_router)
 app.include_router(jobs_router, dependencies=[Depends(exigir_acesso)])
 app.include_router(app_config_router)

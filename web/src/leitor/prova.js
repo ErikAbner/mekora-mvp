@@ -84,5 +84,43 @@
   caso("zip: indice lido", zipOk.nomes, ["a.txt"]);
   caso("zip: conteudo extraido", zipOk.texto, "ola");
 
-  return { total: 9, falhas: falhas.length, detalhe: falhas };
+  // A IMAGEM É UM BLOCO PRÓPRIO, e o caminho dela é relativo ao CAPÍTULO — não
+  // à raiz do EPUB. Um capítulo em `OEBPS/texto/` que pede `../figuras/mapa.png`
+  // está falando de `OEBPS/figuras/mapa.png`.
+  caso(
+    "imagem vira bloco, com caminho resolvido a partir do capitulo",
+    lerCapitulo(
+      xhtml('<p>Antes.</p><figure><img src="../figuras/mapa.png" alt="Mapa"/><figcaption>A legenda</figcaption></figure><p>Depois.</p>'),
+      { caminho: "OEBPS/texto/cap1.xhtml" },
+    ).blocos.map((b) => (b.tipo === "imagem" ? `${b.tipo}:${b.dentro}:${b.alt}` : b.tipo)),
+    ["paragrafo", "imagem:OEBPS/figuras/mapa.png:Mapa", "legenda", "paragrafo"],
+  );
+
+  // IMAGEM SEM TEXTO NÃO É BLOCO VAZIO. O filtro que descarta o `<p></p>` de
+  // conversão chamava `b.texto.trim()` — verdade para todo bloco, até a imagem
+  // existir. Uma figura entre dois parágrafos derrubava o capítulo inteiro com
+  // `Cannot read properties of undefined`.
+  caso(
+    "figura no meio do texto nao derruba o capitulo",
+    lerCapitulo(xhtml('<p>Um.</p><p></p><img src="a.png" alt=""/><p>Dois.</p>'), { caminho: "cap.xhtml" }).blocos.map((b) => b.tipo),
+    ["paragrafo", "imagem", "paragrafo"],
+  );
+
+  // `alt=""` num EPUB quer dizer "decorativa, não anuncie". Inventar uma
+  // descrição faria o leitor de tela narrar enfeite.
+  caso(
+    "alt vazio e preservado",
+    lerCapitulo(xhtml('<p>x</p><img src="a.png" alt=""/>'), { caminho: "cap.xhtml" }).blocos.find((b) => b.tipo === "imagem").alt,
+    "",
+  );
+
+  // Endereço absoluto não vira bloco: o EPUB é lido offline, e uma imagem
+  // remota faria a leitura depender de um servidor de terceiro.
+  caso(
+    "imagem com endereco externo e ignorada",
+    lerCapitulo(xhtml('<p>x</p><img src="https://exemplo.com/a.png" alt="fora"/>'), { caminho: "cap.xhtml" }).blocos.map((b) => b.tipo),
+    ["paragrafo"],
+  );
+
+  return { total: 13, falhas: falhas.length, detalhe: falhas };
 })()

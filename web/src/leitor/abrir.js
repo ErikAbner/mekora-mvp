@@ -55,9 +55,51 @@ export async function abrirLivro(url, { capitulo = 0 } = {}) {
     autor: epub.autor,
     capitulos: epub.capitulos,
     capitulo: indice,
-    blocos,
+    blocos: await comImagens(epub, blocos),
     /* O objeto do EPUB fica disponível para os próximos capítulos, sem baixar o
      * arquivo de novo. */
     epub,
   };
+}
+
+/* Troca o caminho de cada imagem por uma URL que o navegador consegue mostrar.
+ *
+ * Uma imagem que não abre NÃO vira bloco: um `<img>` quebrado no meio do texto
+ * é pior que a ausência dele, porque o ícone de imagem faltando parece defeito
+ * do produto e não do arquivo. EPUB de conversão tem referência solta com
+ * frequência.
+ */
+async function comImagens(epub, blocos) {
+  const fora = [];
+  for (const b of blocos) {
+    if (b.tipo !== "imagem") { fora.push(b); continue; }
+    try {
+      fora.push({ ...b, src: await epub.imagem(b.dentro) });
+    } catch {
+      /* silêncio deliberado: o capítulo continua legível sem ela */
+    }
+  }
+  return fora;
+}
+
+/* Abre OUTRO capítulo do livro já carregado.
+ *
+ * LIBERA AS IMAGENS DO CAPÍTULO ANTERIOR. Cada `blob:` é uma referência que o
+ * navegador segura até alguém devolvê-la — e num livro ilustrado, virar
+ * cinquenta páginas sem isso deixa cinquenta capítulos de imagens na memória.
+ * O vazamento não aparece em teste curto: aparece em quem lê por uma hora.
+ */
+export async function irParaCapitulo(livro, indice) {
+  const i = Math.max(0, Math.min(indice, livro.capitulos - 1));
+  if (i === livro.capitulo) return livro;
+
+  const cap = await livro.epub.capitulo(i);
+  const { blocos } = lerCapitulo(cap.html, { caminho: cap.caminho });
+  const novos = await comImagens(livro.epub, blocos);
+
+  for (const b of livro.blocos) {
+    if (b.src?.startsWith("blob:")) URL.revokeObjectURL(b.src);
+  }
+
+  return { ...livro, capitulo: i, blocos: novos };
 }

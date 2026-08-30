@@ -87,6 +87,16 @@ def _to_history(record: ProcessingJob) -> dict:
         if field in data and data[field] is None:
             data[field] = ""
 
+    # O mesmo para os booleanos, e pela mesma razão que motivou a lista acima:
+    # um registro anterior à coluna guarda NULL, e um NULL num campo declarado
+    # `bool` derruba a resposta INTEIRA com 500 — a estante não abre por causa
+    # de um item. `is_scanned` fica de fora porque é `Optional` de propósito:
+    # "não sei se é digitalizado" é uma resposta legítima, e diferente de "não".
+    for field in ("ocr_used", "kindle_sent", "translation_enabled", "comic_mode",
+                  "manga_rtl", "comic_translation_enabled"):
+        if data.get(field) is None:
+            data[field] = False
+
     # A capa vira URL aqui, e não no cliente. O caminho em disco é detalhe do
     # servidor; a estante só precisa de algo que possa pôr num <img>.
     #

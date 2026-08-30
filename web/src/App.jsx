@@ -22,7 +22,8 @@ import { ContaKindle } from "./jornadas/ContaKindle.jsx";
 import { LUGARES } from "./lugares.js";
 import { useJornada } from "./estado/useJornada.js";
 import { usePessoa } from "./estado/usePessoa.js";
-import { abrirLivro } from "./leitor/abrir.js";
+import { abrirLivro, irParaCapitulo } from "./leitor/abrir.js";
+import { gravarProgresso, lerProgresso } from "../../contrato/api.js";
 import { chaveDe } from "../../contrato/api.js";
 import { EXEMPLO_FILA, EXEMPLO_ESTANTE, EXEMPLO_FICHA, EXEMPLO_LEITURA } from "./exemplos.js";
 
@@ -94,6 +95,8 @@ function PaginaLeitura() {
   const [livro, setLivro] = useState(null);
   const [erro, setErro] = useState(null);
 
+  const [progresso, setProgresso] = useState(null);
+
   useEffect(() => {
     let vivo = true;
     /* O EPUB é lido NO NAVEGADOR, não servido como texto pelo backend. É o mesmo
@@ -106,9 +109,25 @@ function PaginaLeitura() {
      * backend. O caminho antigo montava `/storage/output/{id}/livro.epub`, e
      * `livro.epub` era um chute: o arquivo real se chama `{slug}.epub`. */
     const url = local.state?.url ?? `/storage/output/${chaveDe(id) ?? id}/livro.epub`;
-    abrirLivro(url)
-      .then((l) => vivo && setLivro(l))
+
+    /* A MARCA É LIDA ANTES DE ABRIR O LIVRO, e não em paralelo.
+     *
+     * O capítulo salvo decide QUAL capítulo carregar. Buscar os dois ao mesmo
+     * tempo faria o livro abrir no primeiro e depois pular para o salvo — e
+     * pior: o primeiro capítulo teria sido baixado e descartado à toa.
+     *
+     * O `catch` devolve o começo em vez de propagar. Não conseguir ler a marca
+     * é motivo para começar do início, e não para deixar de abrir o livro. */
+    lerProgresso(id)
+      .catch(() => ({ capitulo: 0, deslocamento: 0, guardado: false }))
+      .then(async (marca) => {
+        if (!vivo) return;
+        setProgresso(marca);
+        const l = await abrirLivro(url, { capitulo: marca?.capitulo ?? 0 });
+        if (vivo) setLivro(l);
+      })
       .catch((e) => vivo && setErro(e.message));
+
     return () => { vivo = false; };
   }, [id]);
 
@@ -117,7 +136,28 @@ function PaginaLeitura() {
   if (erro || !livro) {
     return <Leitura livro={EXEMPLO_LEITURA} aviso={erro ? `Este é um texto de exemplo. O livro não pôde ser aberto: ${erro}` : null} />;
   }
-  return <Leitura livro={livro} />;
+
+  return (
+    <Leitura
+      livro={livro}
+      progresso={progresso}
+      aoTrocarCapitulo={async (i) => {
+        const novo = await irParaCapitulo(livro, i);
+        setLivro(novo);
+        /* Virar o capítulo é ler o começo dele. Gravar aqui, e não esperar a
+         * rolagem, garante que fechar a aba logo depois de virar não perca a
+         * virada — que é o caso mais comum de parar de ler. */
+        gravarProgresso(id, { capitulo: novo.capitulo, deslocamento: 0 }).catch(() => {});
+        window.scrollTo({ top: 0, behavior: "auto" });
+      }}
+      aoMarcar={(deslocamento) => {
+        /* Falha em silêncio: isto roda enquanto a pessoa lê, e um erro visível
+         * a cada rolagem de quem não entrou faria o produto parecer quebrado
+         * quando o que acontece é o previsto — sem conta não há onde guardar. */
+        gravarProgresso(id, { capitulo: livro.capitulo ?? 0, deslocamento }).catch(() => {});
+      }}
+    />
+  );
 }
 
 /* Rota que não existe não é erro do usuário: é o produto ainda não ter chegado

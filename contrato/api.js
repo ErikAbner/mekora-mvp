@@ -208,3 +208,24 @@ export function quemSouEu() {
 export function sair() {
   return pede("/sair", { method: "POST" });
 }
+
+/* ─── Onde a pessoa parou ───────────────────────────────────────────────────
+ *
+ * Capitulo e deslocamento, e nao pagina. A pagina muda quando a fonte muda —
+ * aumentar o corpo do texto faz a pagina 40 virar outro trecho —, entao voltar
+ * para "a pagina 40" devolve a pessoa a um lugar que ela nao deixou.
+ */
+
+/** GET /jobs/{id}/progresso — devolve o comeco do livro se nao houver marca. */
+export function lerProgresso(jobId) {
+  return pede(`/jobs/${jobId}/progresso`);
+}
+
+/** PUT /jobs/{id}/progresso — sem conta, o servidor ignora em silencio. */
+export function gravarProgresso(jobId, { capitulo, deslocamento }) {
+  return pede(`/jobs/${jobId}/progresso`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ capitulo, deslocamento }),
+  });
+}

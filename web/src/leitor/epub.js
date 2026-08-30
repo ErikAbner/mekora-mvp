@@ -46,6 +46,20 @@ export async function abrirEpub(dados) {
 
   /* A ESPINHA é o livro; o manifesto é o pacote. Um EPUB tem capa, folha de
    * estilo, fonte embutida e sumário no manifesto, e nada disso é capítulo. */
+  /* O manifesto indexado por CAMINHO, para responder "que tipo é este
+   * arquivo?" — que é a pergunta que a imagem faz, tendo só o caminho. */
+  const porCaminho = new Map([...manifesto.values()].map((i) => [i.caminho, i.tipo]));
+
+  const PELA_EXTENSAO = {
+    png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", gif: "image/gif",
+    svg: "image/svg+xml", webp: "image/webp", avif: "image/avif",
+  };
+
+  const tipoDe = (caminho) =>
+    porCaminho.get(caminho) ??
+    PELA_EXTENSAO[caminho.split(".").pop()?.toLowerCase()] ??
+    "application/octet-stream";
+
   const espinha = [...opf.querySelectorAll("spine > itemref")]
     .map((r) => manifesto.get(r.getAttribute("idref")))
     .filter((i) => i && /xhtml|html/.test(i.tipo ?? ""));
@@ -69,7 +83,17 @@ export async function abrirEpub(dados) {
      * segundo carrega os bytes dentro do HTML e infla a página. */
     imagem: async (caminho) => {
       const bytes = await zip.bytes(caminho);
-      return URL.createObjectURL(new Blob([bytes]));
+      /* O TIPO É OBRIGATÓRIO, e a falta dele não dá erro nenhum.
+       *
+       * `new Blob([bytes])` produz um blob sem tipo. A URL funciona, o `fetch`
+       * devolve 200, os bytes estão todos lá — e o `<img>` não desenha nada,
+       * porque o navegador não decodifica um conteúdo que não sabe identificar.
+       * Uma imagem 4x4 aparecia como 0x0 sem uma linha de erro em lugar nenhum.
+       *
+       * O tipo vem do MANIFESTO do próprio EPUB, que é quem sabe. A extensão é
+       * só o plano B: arquivo de conversão às vezes traz `.jpg` guardando PNG,
+       * e nesse caso o manifesto está certo e o nome está errado. */
+      return URL.createObjectURL(new Blob([bytes], { type: tipoDe(caminho) }));
     },
     zip,
   };

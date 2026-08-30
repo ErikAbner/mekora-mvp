@@ -25,6 +25,29 @@ const BLOCOS = {
   FIGCAPTION: "legenda",
 };
 
+/* O caminho de uma imagem dentro do EPUB é relativo ao CAPÍTULO que a cita, e
+ * não à raiz do arquivo. Um capítulo em `OEBPS/texto/cap1.xhtml` que pede
+ * `../imagens/mapa.png` está falando de `OEBPS/imagens/mapa.png`.
+ *
+ * Resolver isso a mão parece simples e não é: `..` no meio, `.` redundante,
+ * barras duplicadas. Fazer com `URL` e uma base falsa entrega o algoritmo pronto
+ * — o mesmo que o navegador usa — e o `pathname` volta sem a base.
+ */
+function resolverCaminho(src, doCapitulo) {
+  if (!src || /^(https?:|data:|blob:)/i.test(src)) return null;
+  const base = doCapitulo.includes("/") ? doCapitulo.replace(/\/[^/]*$/, "/") : "";
+  try {
+    return new URL(src, `mekora:/${base}`).pathname.replace(/^\//, "");
+  } catch {
+    return null;
+  }
+}
+
+/* Guardado no módulo porque `percorrer` desce recursivamente e passar o caminho
+ * por todos os níveis só para chegar na imagem seria ruído em cada chamada.
+ * É seguro porque a leitura é síncrona do começo ao fim. */
+let caminhoDoCapitulo = "";
+
 export function lerCapitulo(html, { caminho = "" } = {}) {
   const doc = new DOMParser().parseFromString(html, "application/xhtml+xml");
   const corpo = doc.querySelector("body") ?? doc.documentElement;
@@ -33,18 +56,41 @@ export function lerCapitulo(html, { caminho = "" } = {}) {
    * "ignorar depois" é como um `<style>` acaba injetado numa tela. */
   corpo.querySelectorAll?.("style, script, link").forEach((n) => n.remove());
 
+  caminhoDoCapitulo = caminho;
   const blocos = [];
   percorrer(corpo, blocos);
 
   return {
     caminho,
-    blocos: blocos.filter((b) => b.texto.trim().length > 0),
+    /* IMAGEM SEM TEXTO NÃO É BLOCO VAZIO. Este filtro existe para descartar o
+     * `<p></p>` que sobra de conversão, e assumia que todo bloco tinha `texto`
+     * — o que era verdade até a imagem existir. Uma figura entre dois
+     * parágrafos era lida como vazia e derrubava a leitura do capítulo inteiro
+     * com `Cannot read properties of undefined`. */
+    blocos: blocos.filter((b) => b.tipo === "imagem" || (b.texto ?? "").trim().length > 0),
   };
 }
 
 function percorrer(no, saida) {
   for (const filho of no.children ?? []) {
-    const tipo = BLOCOS[filho.tagName?.toUpperCase()];
+    const marca = filho.tagName?.toUpperCase();
+
+    /* A IMAGEM É UM BLOCO, e não um detalhe dentro do parágrafo. Num EPUB ela
+     * costuma vir sozinha entre dois textos — mapa, gravura, quadro —, e tratá-la
+     * como parte de um bloco de texto faria o deslocamento do destaque contar
+     * caracteres que não existem.
+     *
+     * O `alt` é preservado como está, inclusive vazio: `alt=""` num EPUB quer
+     * dizer "decorativa, não anuncie", e inventar uma descrição no lugar faria o
+     * leitor de tela narrar enfeite. */
+    if (marca === "IMG" || marca === "IMAGE") {
+      const src = filho.getAttribute("src") || filho.getAttribute("xlink:href") || filho.getAttribute("href");
+      const dentro = resolverCaminho(src, caminhoDoCapitulo);
+      if (dentro) saida.push({ tipo: "imagem", dentro, alt: filho.getAttribute("alt") ?? "" });
+      continue;
+    }
+
+    const tipo = BLOCOS[marca];
     if (tipo) {
       saida.push({ tipo, ...lerBloco(filho) });
       // Não desce: um <p> dentro de <blockquote> já foi lido, e descer
