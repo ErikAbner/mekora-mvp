@@ -1636,6 +1636,137 @@ async function adotarEContar() {
   return relato;
 }
 
+// --- Ato 18 - as capas viram Zodiak, e o mono e contado ------------------
+//
+// O Erik decidiu: as capas usam a fonte da interface, e o mono delas vira um
+// mono do sistema. Este ato faz a primeira metade e MEDE a segunda.
+//
+// A FAMILIA. Lido do fvar da Zodiak Variable: um eixo wght, e seis instancias
+// nomeadas — Thin 100, Light 300, Regular 400, Bold 540,8, Extrabold 700,
+// Black 900. Duas coisas saem dai:
+//
+//   1. A Zodiak NAO TEM Medium. O Medium dos nos e peso da Satoshi.
+//   2. O Bold dela esta em 540,8 e nao em 700. E um bold leve, e o Extrabold e
+//      que ocupa o lugar onde a maioria das fontes poe o bold.
+//
+// O MAPEAMENTO de peso, e onde ele contraria o numero de proposito:
+// Satoshi Medium e 500. O mais perto na Zodiak e o Bold, a 40,8 de distancia,
+// contra 100 do Regular. Mesmo assim vai para REGULAR — os nos Medium sao
+// creditos de 9 e 10px, e serifada em peso 540 nesse tamanho empasta. O papel
+// manda no numero.
+//
+// O IBM PLEX MONO NAO E TOCADO. Ele ja e o mono do sistema: esta no arquivo, e
+// OFL, e o Figma consegue renderiza-lo — coisa que `ui-monospace` do prototipo
+// nao e, porque e uma pilha do sistema operacional e nao uma fonte.
+//
+// E o ato MEDE o que falta para decidir a escala de mono: a familia dos 359
+// nos sem style que sobraram. O Ato 16 coletou corpo, entrelinha e peso, e nao
+// familia — entao ninguem sabe quanto mono existe fora das capas.
+
+const MAPA_PESO = {
+  "Black": "Black",
+  "ExtraBold": "Extrabold",   // grafia com B maiusculo, que o Archivo usa
+  "Extrabold": "Extrabold",
+  "Bold": "Bold",
+  "Medium": "Regular",        // contraria o numero de proposito: ver acima
+  "Medium Italic": "Italic",
+  "Regular": "Regular",
+  "Italic": "Italic",
+};
+
+const FAMILIAS_QUE_SAEM = ["Satoshi Variable", "Archivo"];
+
+async function capasViramZodiak() {
+  const relato = [];
+  const todos = figma.currentPage.findAllWithCriteria({ types: ["TEXT"] });
+  const nus = todos.filter(function (n) { return n.textStyleId === ""; });
+
+  // A · familia de TODOS os que sobraram, para dimensionar o mono
+  const porFamilia = {};
+  const monoFora = {};
+  for (const n of nus) {
+    const f = n.fontName === figma.mixed ? "misto" : n.fontName.family;
+    const capa = telaDe(n).indexOf("Capa para arquivos") === 0;
+    const chave = f + (capa ? "  [capa]" : "  [interface]");
+    porFamilia[chave] = (porFamilia[chave] || 0) + 1;
+    if (!capa && f.toLowerCase().indexOf("mono") >= 0) {
+      const v = valorDe(n);
+      const k = f + " " + (v ? v.corpo + "/" + v.entre + " " + v.peso : "misto") + "  [" + telaDe(n) + "]";
+      if (!monoFora[k]) monoFora[k] = { nos: 0, exemplo: n.characters.slice(0, 30) };
+      monoFora[k].nos++;
+    }
+  }
+  relato.push({
+    acao: "familias dos que sobraram — so medido",
+    por_familia: porFamilia,
+    mono_fora_das_capas: Object.keys(monoFora).map(function (k) {
+      return { valor: k, nos: monoFora[k].nos, exemplo: monoFora[k].exemplo };
+    }),
+    porque: "o Ato 16 coletou corpo, entrelinha e peso, e nao familia. Sem isto ninguem " +
+            "sabe quanto mono existe fora das capas, e a escala de mono seria inventada.",
+    tocados: 0,
+  });
+
+  // B · trocar a familia dos nos de capa que nao sao mono
+  const capas = nus.filter(function (n) {
+    if (telaDe(n).indexOf("Capa para arquivos") !== 0) return false;
+    if (n.fontName === figma.mixed) return false;
+    return FAMILIAS_QUE_SAEM.indexOf(n.fontName.family) >= 0;
+  });
+
+  const trocados = {};
+  const recusados = [];
+  for (const n of capas) {
+    const de = n.fontName;
+    const destino = MAPA_PESO[de.style];
+    if (!destino) {
+      recusados.push(de.family + " " + de.style + " — peso sem destino no mapa");
+      continue;
+    }
+    const novo = { family: "Zodiak Variable", style: destino };
+    try {
+      await figma.loadFontAsync(novo);
+      await figma.loadFontAsync(de);
+      n.fontName = novo;
+      const k = de.family + " " + de.style + "  ->  Zodiak " + destino;
+      trocados[k] = (trocados[k] || 0) + 1;
+    } catch (e) {
+      recusados.push(de.family + " " + de.style + ": " + e.message);
+    }
+  }
+  relato.push({
+    acao: "capas viram Zodiak",
+    trocados: Object.keys(trocados).map(function (k) { return k + ": " + trocados[k]; }),
+    total: capas.length - recusados.length,
+    recusados: recusados,
+    nota_medium: "Satoshi Medium (500) foi para Zodiak Regular (400) e nao para Bold (540,8), " +
+                 "que e numericamente mais perto. Sao creditos de 9 e 10px, e serifada em 540 " +
+                 "nesse tamanho empasta.",
+    ibm_plex_mono: "NAO tocado — ja e o mono do sistema.",
+    tocados: capas.length - recusados.length,
+  });
+
+  // C · como as capas ficaram, para a escala propria nascer de dados
+  const depois = {};
+  for (const n of figma.currentPage.findAllWithCriteria({ types: ["TEXT"] })) {
+    if (telaDe(n).indexOf("Capa para arquivos") !== 0) continue;
+    if (n.textStyleId !== "") continue;
+    const v = valorDe(n);
+    const f = n.fontName === figma.mixed ? "misto" : n.fontName.family;
+    const k = f + "  " + (v ? v.corpo + "/" + v.entre + " " + v.peso : "misto");
+    if (!depois[k]) depois[k] = { nos: 0, exemplo: n.characters.slice(0, 30) };
+    depois[k].nos++;
+  }
+  relato.push({
+    acao: "as capas depois — para a escala propria",
+    grupos: Object.keys(depois).map(function (k) { return { valor: k, nos: depois[k].nos, exemplo: depois[k].exemplo }; })
+                  .sort(function (a, b) { return b.nos - a.nos; }),
+    tocados: 0,
+  });
+
+  return relato;
+}
+
 // ─── Ligação com a interface ───────────────────────────────────────────────
 
 figma.ui.onmessage = async (msg) => {
@@ -1659,6 +1790,7 @@ figma.ui.onmessage = async (msg) => {
     else if (msg.tipo === "tipografia") relato = await tipografia();
     else if (msg.tipo === "sem-style") relato = await semStyle();
     else if (msg.tipo === "adotar") relato = await adotarEContar();
+    else if (msg.tipo === "capas") relato = await capasViramZodiak();
     else relato = [{ estado: "ação desconhecida" }];
 
     figma.ui.postMessage({ ok: true, relato });
