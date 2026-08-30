@@ -113,6 +113,10 @@ class HistoryEntry(BaseModel):
 
     upload_id: int
     original_filename: str
+    # URL da capa, montada no backend e não no cliente. A estante não deve
+    # precisar conhecer o layout do storage para desenhar um livro — é o mesmo
+    # princípio que `get_thumbnail_urls` já seguia.
+    cover_url: Optional[str] = None
     final_title: str = ""
     final_author: str = ""
     final_language: str = ""

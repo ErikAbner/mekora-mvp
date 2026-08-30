@@ -65,6 +65,20 @@ def _to_history(record: ProcessingJob) -> dict:
     for field in _HISTORY_STR_FIELDS:
         if field in data and data[field] is None:
             data[field] = ""
+
+    # A capa vira URL aqui, e não no cliente. O caminho em disco é detalhe do
+    # servidor; a estante só precisa de algo que possa pôr num <img>.
+    #
+    # Sem capa escolhida, a primeira página serve — um livro sem capa nenhuma na
+    # estante parece defeito, e a primeira página é o que o leitor reconhece.
+    pagina = data.get("selected_cover_page")
+    if pagina is None and (data.get("page_count") or 0) > 0:
+        pagina = 0
+    data["cover_url"] = (
+        f"/storage/temp/{data['upload_id']}/page_{pagina}.png"
+        if pagina is not None
+        else None
+    )
     return data
 
 

@@ -25,6 +25,8 @@ function Livro({ titulo, autor, notas, capa }) {
   return (
     <li className="livro">
       <div className="capa-caixa">
+        {/* Livro sem capa não vira buraco: a caixa fica, com o título dentro.
+            Uma grade com lacunas parece defeito de carregamento. */}
         {notas > 0 && (
           <span
             className="marcador"
@@ -33,7 +35,13 @@ function Livro({ titulo, autor, notas, capa }) {
             <span className="marcador-numero dado">{notas}</span>
           </span>
         )}
-        <img src={capa} alt={`Capa de ${titulo}`} className="capa" />
+        {capa ? (
+          <img src={capa} alt={`Capa de ${titulo}`} className="capa" />
+        ) : (
+          <div className="capa capa-vazia" aria-hidden="true">
+            <span>{titulo}</span>
+          </div>
+        )}
       </div>
       <div className="livro-texto">
         <h3>{titulo}</h3>

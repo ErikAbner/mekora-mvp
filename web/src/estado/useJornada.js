@@ -91,9 +91,12 @@ export function useJornada() {
         titulo: e.final_title || e.original_filename,
         autor: e.final_author || "",
         noKindle: e.kindle_sent,
-        // Capa vem do backend quando existe. Inventar caminho aqui daria 404
-        // silencioso, e a tela decide o que mostrar quando não há.
-        capa: null,
+        /* A capa vem PRONTA do backend, como URL. A versão anterior devolvia
+         * `null` sempre, porque o `/history` não expunha nada — e montar o
+         * caminho aqui faria a tela conhecer o layout do storage do servidor,
+         * que é exatamente o acoplamento que o contrato existe para evitar. */
+        capa: e.cover_url ?? null,
+        notas: 0,
       })),
     );
   }, []);

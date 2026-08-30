@@ -150,3 +150,13 @@
   .livro-texto p { font-size: 18px; line-height: 27px; }
   .ficha-caixa h2 { font-size: 24px; line-height: 32px; }
 }
+
+/* Capa ausente: a caixa fica e mostra o titulo. Grade com lacuna parece
+ * defeito de carregamento, e o livro existe mesmo sem imagem. */
+.capa-vazia {
+  display: grid; place-items: center; padding: 24px;
+  background: var(--card);
+  color: var(--muted-foreground);
+  font-size: 16px; line-height: 24px; text-align: center;
+  text-wrap: pretty;
+}
