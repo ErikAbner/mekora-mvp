@@ -116,6 +116,19 @@ try {
   await manda('Network.setCacheDisabled', { cacheDisabled: true });
   await manda('Emulation.setDeviceMetricsOverride',
     { width: +larg, height: +alt, deviceScaleFactor: 1, mobile: false });
+
+  /* --escuro emula a preferência de tema do sistema operacional.
+   *
+   * Sem isto o portão só media o tema claro, e o escuro passava a existir sem
+   * nunca ter sido medido — que é como um tema nasce com preto puro e branco
+   * puro sem ninguém ver. Ele já nasceu assim uma vez: o gerador entregou
+   * `#000000` e `#ffffff`, os dois valores que a regra de cor rejeita na
+   * primeira linha. */
+  if (process.argv.includes('--escuro')) {
+    await manda('Emulation.setEmulatedMedia', {
+      features: [{ name: 'prefers-color-scheme', value: 'dark' }],
+    });
+  }
   const nav = await manda('Page.navigate', { url });
   if (nav.errorText) throw new Error(`a página não carregou: ${nav.errorText} — ${url}`);
   await espera(1500);

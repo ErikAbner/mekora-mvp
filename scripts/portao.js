@@ -35,7 +35,17 @@
     '#f3f3f3': 'text/on-inverse',
     '#2f7d55': 'estado/ok',
     '#976519': 'estado/atencao',
-    '#b23b2a': 'estado/perigo'
+    '#b23b2a': 'estado/perigo',
+    // ESCURO. A primeira versão só conhecia o claro e reprovava a tela inteira
+    // no escuro, acusando valores que ERAM do sistema — só não estavam na lista
+    // dela. Mesma falha que o instrumento de token teve no mesmo dia: medida que
+    // não conhece o alvo mede o alvo errado, e mede com confiança.
+    '#eeeeee': 'text/strong (escuro)',
+    '#b3b3b3': 'text/secondary (escuro)',
+    '#8e8e8e': 'text/terciaria (escuro)',
+    '#3a9b69': 'estado/ok (escuro)',
+    '#bb7d1f': 'estado/atencao (escuro)',
+    '#d86858': 'estado/perigo (escuro)'
   };
   const SUP = {
     '#f9f9f9': 'surface/base',
@@ -49,7 +59,17 @@
     '#efffbf': 'capa/verde',
     '#ffbfc0': 'capa/rosa',
     '#fff8bf': 'capa/amarelo',
-    '#bfdfff': 'capa/azul'
+    '#bfdfff': 'capa/azul',
+    // escuro: o fundo reusa surface/inverse, e os degraus sobem a partir dele
+    '#1c1c1c': 'surface/sunken (escuro)',
+    '#232323': 'surface/deep (escuro)',
+    '#666666': 'border/subtle (escuro)',
+    // destaque no escuro: mesmo matiz, saturacao baixa, escuro o bastante para
+    // receber a tinta clara. Ver base.css para a razao.
+    '#61722f': 'nota/verde (escuro)',
+    '#746c2f': 'nota/amarelo (escuro)',
+    '#a34344': 'nota/rosa (escuro)',
+    '#406f9e': 'nota/azul (escuro)'
   };
   const CORPOS = [14, 16, 18, 20, 22, 24, 28, 32, 40, 48, 64];
 

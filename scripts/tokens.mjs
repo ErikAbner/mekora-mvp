@@ -23,14 +23,31 @@ const raiz = join(dirname(fileURLToPath(import.meta.url)), "..");
 const TOKENS = ["web/tokens/theme.css", "web/tokens/variables.css"];
 
 /* O sistema, decidido em 29/08 e registrado na DEC-0037. Qualquer outro valor é
- * herança do produto de onde o template veio. */
-const SISTEMA = new Set([
+ * herança do produto de onde o template veio.
+ *
+ * SÃO DOIS CONJUNTOS, e a primeira versão só conhecia um. Ela acusou o tema
+ * escuro inteiro depois que ele foi corrigido — o incompleto era o instrumento,
+ * não os tokens. Medida que não conhece o alvo mede o alvo errado.
+ *
+ * O escuro não é o claro invertido: ele nasce da mesma regra — estrutura e
+ * luminância da paleta quente do protótipo, sem o matiz — e os ESTADOS são
+ * outros, clareados o mínimo para passar sobre fundo escuro. Cor que funciona
+ * sobre papel claro não funciona sobre preto: o `estado/ok` do claro dá 3,64 ali. */
+const CLARO = [
   "#151515", "#535353", "#6a6a6a", "#b1b1b1",              // tinta e traço
   "#f9f9f9", "#f3f3f3", "#ebebeb", "#161616",              // superfície
   "#2f7d55", "#976519", "#b23b2a",                          // estado
+];
+const ESCURO = [
+  "#161616", "#1c1c1c", "#232323",                          // superfície
+  "#eeeeee", "#b3b3b3", "#8e8e8e", "#666666",              // tinta e traço
+  "#3a9b69", "#bb7d1f", "#d86858",                          // estado, clareado
+];
+const MARCA = [
   "#d7f285", "#f28587", "#f2e685", "#85bcf2",              // nota
   "#efffbf", "#ffbfc0", "#fff8bf", "#bfdfff",              // capa
-]);
+];
+const SISTEMA = new Set([...CLARO, ...ESCURO, ...MARCA]);
 
 function todosArquivos(dir, ext, saida = []) {
   for (const n of readdirSync(dir)) {

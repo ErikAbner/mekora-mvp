@@ -15,6 +15,18 @@
   font-display: swap;
 }
 
+/* O tema escuro vive na classe `.dark` do design system. Aqui ele é ligado por
+ * `prefers-color-scheme`, para que o padrão seja o que a pessoa já escolheu no
+ * sistema operacional — e a tela de Preferências, que tem Claro e Escuro,
+ * sobrepõe isso quando ela decidir outra coisa.
+ *
+ * O escuro nasceu pela mesma regra do claro: estrutura e luminância da paleta
+ * quente do protótipo, sem o matiz. E os ESTADOS são outros, clareados o mínimo:
+ * o `estado/ok` do claro dá 3,64 sobre fundo escuro e reprova. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) { color-scheme: dark; }
+}
+
 *, *::before, *::after { box-sizing: border-box; }
 
 html { -webkit-text-size-adjust: 100%; }
@@ -48,11 +60,34 @@ button, input, textarea, select { border-radius: 0; font: inherit; color: inheri
   }
 }
 
-/* As quatro cores de destaque, vindas do sistema. Nomeadas por PAPEL aqui
- * tambem, para que trocar o valor no design system chegue sem editar componente. */
+/* As quatro cores de destaque, nomeadas por PAPEL para que trocar o valor
+ * chegue sem editar componente.
+ *
+ * O ESCURO TEM VALORES PRÓPRIOS, e isso foi achado medindo. No escuro a tinta da
+ * prosa vira clara, e o destaque pastel continuava claro: `#eeeeee` sobre
+ * `#bfdfff` dá **1,19**. Ilegível, e passava sem ninguém ver porque o portão só
+ * media o tema claro.
+ *
+ * A saída não foi forçar tinta escura sobre o pastel: destaque claro numa página
+ * escura vira mancha de luz, e escuro é o que se usa à noite. O destaque escurece
+ * e a tinta continua clara — mesmo matiz, saturação baixa, escuro o bastante para
+ * receber a tinta. Abafado e não vibrante: `#DB0003` foi o primeiro cálculo, e
+ * gritava como alarme dentro de um parágrafo.
+ *
+ * O rosa escuro fica a 19 de distância perceptual do `estado/perigo`, acima do
+ * limiar de ~15 em que duas cores se confundem, mas é o mais apertado dos quatro. */
 :root {
   --nota-verde: #efffbf;
   --nota-amarelo: #fff8bf;
   --nota-rosa: #ffbfc0;
   --nota-azul: #bfdfff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) {
+    --nota-verde: #61722f;
+    --nota-amarelo: #746c2f;
+    --nota-rosa: #a34344;
+    --nota-azul: #406f9e;
+  }
 }
