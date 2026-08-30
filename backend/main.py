@@ -153,7 +153,12 @@ def run_startup_cleanup() -> None:
 # Registrado por último para que as rotas de API tenham prioridade.
 # ---------------------------------------------------------------------------
 
-_FRONTEND_DIST = PROJECT_ROOT / "frontend" / "dist"
+# `frontend/` virou `legado/` quando os repositorios viraram um so (DEC-0038).
+# O nome mudou porque o papel mudou: este e o frontend LEGADO, e ele sai quando a
+# interface nova cobrir importar com validacao, acompanhar a conversao ate o fim,
+# e enviar ao Kindle — a condicao que a DEC-0011 §6 escreveu e que so agora tem
+# como ser conferida, com os dois lado a lado.
+_FRONTEND_DIST = PROJECT_ROOT / "legado" / "dist"
 
 if _FRONTEND_DIST.exists():
     app.mount(
