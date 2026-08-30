@@ -2034,6 +2034,102 @@ async function registroDeDado() {
   return relato;
 }
 
+// --- Ato 21 - os pasteis trocados, e o token sem usuario -----------------
+//
+// Eu nomeei os dois conjuntos de pastel ao contrario, e a tela de leitura
+// provou. O raciocinio errado esta registrado porque o defeito nele e sutil:
+//
+//   eu media o contraste do destaque CONTRA O PAPEL, que e sobre notar a marca,
+//   quando o que decide e o contraste do TEXTO SOBRE a marca, que e sobre
+//   continuar lendo.
+//
+// Medido com a tinta da prosa, o conjunto vivo reprova nos QUATRO matizes —
+// 4,36, 2,18, 4,23 e 2,70 — e o claro passa em dois. Com a tinta cheia, o claro
+// passa nos quatro, o pior em 11,71. Destaque existe para receber texto por
+// cima; e o claro que serve.
+//
+// O QUE ESTE ATO FAZ: troca os VALORES entre nota/* e capa/*, mantendo os nomes.
+// Trocar valor e nao nome porque `nota` continua sendo o endereco certo para
+// marca-texto — o que estava errado era a cor que ele carregava.
+//
+// E RELATA, sem apagar: `capa/*` nao tem usuario. As capas da estante sao
+// imagens, nao superficie tingida. Token sem uso e token que mente sobre
+// existir, que foi a razao de os conjuntos medio e quebrado terem ficado de
+// fora. Apagar e do Erik; contar e meu.
+
+const PASTEIS_TROCADOS = [
+  { nota: "nota/verde",   capa: "capa/verde",   deNota: "#D7F285", deCapa: "#EFFFBF" },
+  { nota: "nota/rosa",    capa: "capa/rosa",    deNota: "#F28587", deCapa: "#FFBFC0" },
+  { nota: "nota/amarelo", capa: "capa/amarelo", deNota: "#F2E685", deCapa: "#FFF8BF" },
+  { nota: "nota/azul",    capa: "capa/azul",    deNota: "#85BCF2", deCapa: "#BFDFFF" },
+];
+
+async function trocarPasteis() {
+  const relato = [];
+  const cols = await figma.variables.getLocalVariableCollectionsAsync();
+  const col = cols.filter(function (c) { return c.name === "Mekora"; })[0];
+  if (!col) return [{ estado: "colecao Mekora nao encontrada. Nada foi tocado.", tocados: 0 }];
+  const modoId = col.modes[0].modeId;
+
+  const porNome = {};
+  for (const id of col.variableIds) {
+    const v = await figma.variables.getVariableByIdAsync(id);
+    if (v) porNome[v.name] = v;
+  }
+
+  for (const par of PASTEIS_TROCADOS) {
+    const en = await acharCor(par.nota);
+    const ec = await acharCor(par.capa);
+    if (en.length !== 1 || ec.length !== 1) {
+      relato.push({ par: par.nota + " / " + par.capa, estado: "esperava 1 de cada, achei " + en.length + " e " + ec.length + ". Nada foi tocado.", tocados: 0 });
+      continue;
+    }
+    const hn = hexDe(en[0]), hc = hexDe(ec[0]);
+    if (hn !== par.deNota || hc !== par.deCapa) {
+      relato.push({ par: par.nota + " / " + par.capa, estado: "esperava " + par.deNota + " e " + par.deCapa + ", achei " + hn + " e " + hc + ". Nada foi tocado.", tocados: 0 });
+      continue;
+    }
+    const vn = porNome[par.nota], vc = porNome[par.capa];
+    if (!vn || !vc) {
+      relato.push({ par: par.nota + " / " + par.capa, estado: "sem variavel ligada. Nada foi tocado.", tocados: 0 });
+      continue;
+    }
+    vn.setValueForMode(modoId, rgb(par.deCapa));
+    vc.setValueForMode(modoId, rgb(par.deNota));
+    relato.push({
+      par: par.nota + " / " + par.capa,
+      nota: par.deNota + " -> " + par.deCapa,
+      capa: par.deCapa + " -> " + par.deNota,
+      conferido: hexDe((await acharCor(par.nota))[0]) + " / " + hexDe((await acharCor(par.capa))[0]),
+      tocados: 2,
+    });
+  }
+
+  // Quem usa o que, depois da troca. Contado e nao apagado.
+  const nos = figma.currentPage.findAllWithCriteria({ types: ["TEXT", "FRAME", "RECTANGLE", "COMPONENT", "INSTANCE", "ELLIPSE", "VECTOR"] });
+  const uso = {};
+  for (const nome of PASTEIS_TROCADOS.map(function (p) { return p.nota; }).concat(PASTEIS_TROCADOS.map(function (p) { return p.capa; }))) {
+    const e = await acharCor(nome);
+    if (e.length !== 1) continue;
+    const id = e[0].id;
+    uso[nome] = nos.filter(function (n) { return n.fillStyleId === id; }).length;
+  }
+  const capasSemUso = Object.keys(uso).filter(function (k) { return k.indexOf("capa/") === 0 && uso[k] === 0; });
+  relato.push({
+    acao: "quem usa o que — contado, NAO apagado",
+    uso: uso,
+    capa_sem_usuario: capasSemUso,
+    porque: capasSemUso.length
+      ? "capa/* nao pinta nada: as capas da estante sao imagens, nao superficie tingida. " +
+        "Token sem uso e token que mente sobre existir — foi a razao de os conjuntos medio e " +
+        "quebrado ficarem de fora. Apagar e decisao do Erik."
+      : "todos tem usuario",
+    tocados: 0,
+  });
+
+  return relato;
+}
+
 // ─── Ligação com a interface ───────────────────────────────────────────────
 
 figma.ui.onmessage = async (msg) => {
@@ -2060,6 +2156,7 @@ figma.ui.onmessage = async (msg) => {
     else if (msg.tipo === "capas") relato = await capasViramZodiak();
     else if (msg.tipo === "styles-capa") relato = await stylesDeCapa();
     else if (msg.tipo === "dado") relato = await registroDeDado();
+    else if (msg.tipo === "pasteis") relato = await trocarPasteis();
     else relato = [{ estado: "ação desconhecida" }];
 
     figma.ui.postMessage({ ok: true, relato });
