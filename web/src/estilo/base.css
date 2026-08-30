@@ -1,0 +1,49 @@
+/* A folha de base, e so ela.
+ *
+ * Tudo que e valor — cor, corpo, entrelinha, raio, duracao — vem do mekora-ds
+ * por variavel. Nada de hex aqui dentro: o portao recusa cor fora do sistema, e
+ * recusa medindo a pagina servida, entao um valor solto nao passa nem escondido
+ * dentro de um componente.
+ */
+@import "@ds/tema";
+@import "@ds/variaveis";
+
+@font-face {
+  font-family: "Zodiak Variable";
+  src: local("Zodiak Variable"), local("Zodiak-Variable");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 20px;   /* Body/Medium, o corpo do desktop */
+  line-height: 30px; /* a excecao escrita: leitura em razao 1,5 */
+  font-weight: var(--font-weight-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Mobile: o corpo cai para 18 e a entrelinha o acompanha em RAZAO, nao em
+ * numero. Copiar o 30 daria 1,67, frouxo e desperdicando tela. */
+@media (max-width: 767px) {
+  body { font-size: 18px; line-height: 27px; }
+}
+
+/* Raio zero em acao e estrutura. Pilula e circulo sao os 5% que quebram a
+ * regra, e funcionam por serem raros: numa composicao reta, uma curva e sinal. */
+button, input, textarea, select { border-radius: 0; font: inherit; color: inherit; }
+
+/* Movimento amacia o que a geometria endureceu — e desliga quando pedido. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
