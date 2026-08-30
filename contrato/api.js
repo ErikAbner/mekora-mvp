@@ -54,6 +54,31 @@ export async function situacao(jobId) {
   return { ...estadoDe(bruto), bruto };
 }
 
+/**
+ * Espera a análise terminar antes de deixar converter.
+ *
+ * `GET /analyze/{id}` DISPARA a análise e volta na hora, com `status:
+ * "analyzing"`. Chamar `converter()` em seguida falha, e o backend diz por quê:
+ * *"Job deve estar analisado antes de converter (status atual: analyzing)."*
+ *
+ * Isso só apareceu quando a mensagem do backend chegou até a tela. Enquanto ela
+ * era engolida, o arquivo ficava "em preparo" para sempre e parecia lentidão.
+ *
+ * A espera mora aqui porque é conhecimento sobre o CICLO DE VIDA do backend —
+ * se ficasse na tela, a próxima tela que converter repetiria o mesmo erro.
+ */
+export async function esperarAnalise(jobId, { intervaloMs = 800, tetoMs = 5 * 60 * 1000 } = {}) {
+  const limite = Date.now() + tetoMs;
+  while (Date.now() < limite) {
+    const bruto = await pede(`/jobs/${jobId}/status`);
+    if (bruto.status !== "analyzing" && bruto.status !== "uploaded") {
+      return { ...estadoDe(bruto), bruto };
+    }
+    await new Promise((r) => setTimeout(r, intervaloMs));
+  }
+  throw new Error(`a análise não terminou em ${Math.round(tetoMs / 60000)} minutos`);
+}
+
 /** POST /jobs/{id}/convert — jobs.py:891. */
 export function converter(jobId, opcoes = {}) {
   return pede(`/jobs/${jobId}/convert`, {

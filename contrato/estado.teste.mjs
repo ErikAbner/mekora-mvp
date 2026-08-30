@@ -24,7 +24,7 @@ caso("interrompido", { status: "interrupted" }, "erro");
 
 console.log("\nTRABALHANDO vence pronto: enquanto uma etapa anda, nao esta pronto.");
 caso("convertido mas enviando", { status: "converted", conversion_status: "done", send_status: "in_progress" }, "trabalhando");
-caso("OCR pedido", { status: "analyzed", ocr_status: "needed" }, "trabalhando");
+caso("analisando", { status: "analyzing" }, "trabalhando");
 
 console.log("\nPRONTO exige o trabalho PEDIDO, e nao todo trabalho possivel.");
 caso("documento sem traducao", { status: "done", conversion_status: "done", translation_status: "not_started" }, "pronto");
@@ -34,13 +34,32 @@ console.log("\nFILA e o estado de quem ainda nao comecou — e o de quem termino
 console.log("uma sub-etapa: OCR pronto com conversao pendente ainda espera.");
 caso("recem enviado", { status: "uploaded", conversion_status: "pending" }, "fila");
 caso("OCR pronto, conversao pendente", { ocr_status: "done", conversion_status: "pending" }, "fila");
+// Aprendido rodando: ocr_status "needed" e propriedade do documento, nao fase.
+// Trata-lo como fase deixava todo PDF digitalizado em "em preparo" para sempre.
+caso("digitalizado e ja convertido", { status: "converted", ocr_status: "needed" }, "pronto");
+caso("digitalizado, nada comecou", { status: "uploaded", ocr_status: "needed" }, "fila");
 caso("sem resposta ainda", null, "fila");
 
 console.log("\nO motivo do erro vem do BACKEND, nunca inventado aqui.");
 const e = estadoDe({ send_status: "failed", send_error: "SMTP recusou o anexo" });
-const temMotivo = e.motivo === "SMTP recusou o anexo" && e.etapa === "envio";
+const temMotivo = e.motivo === "SMTP recusou o anexo" && e.etapa === "o envio ao Kindle";
 if (!temMotivo) falhas++;
 console.log(`  ${temMotivo ? "ok  " : "FALHA"} etapa e motivo preservados  ->  ${e.etapa} / ${e.motivo}`);
+
+console.log("\nUma resposta REAL do backend, capturada em 30/08. O ocrmypdf nao");
+console.log("estava instalado, e a falha de verdade virou o melhor caso de teste.");
+const real = {
+  upload_id: 1, status: "error", ocr_status: "needed",
+  conversion_status: "not_started", send_status: "not_started",
+  translation_status: "not_started", comic_translation_status: "not_started",
+  error_message: "Erro na análise do PDF: No module named 'ocrmypdf'",
+  send_error: null, comic_export_status: "not_started", comic_export_error: null,
+  flow_mode: "advanced", active_operation: null, progress: null, phase: "failed",
+};
+const r = estadoDe(real);
+const certo = r.estado === "erro" && /análise/.test(r.etapa) && /ocrmypdf/.test(r.motivo ?? "");
+if (!certo) falhas++;
+console.log(`  ${certo ? "ok  " : "FALHA"} resposta real -> ${r.estado} / ${r.etapa} / ${r.motivo}`);
 
 console.log("\nTODO valor que o backend emite cai em balde nomeado.");
 const orfaos = estadosNaoCobertos();

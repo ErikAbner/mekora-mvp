@@ -56,3 +56,6 @@ npm-debug.log*
 # ── a interface nova ──
 web/node_modules/
 web/dist/
+
+# ambiente Python local, reconstruivel
+.venv/

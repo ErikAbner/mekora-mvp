@@ -21,26 +21,37 @@
  * branco.
  */
 
-/** O que o backend pode emitir. Lido de backend/app/, não suposto. */
+/* O que o backend pode emitir. Lido de backend/, não suposto — e lido de DOIS
+ * lugares, porque um só não bastou.
+ *
+ * A primeira versão varreu atribuições e comparações no código Python e deu a
+ * lista por completa. A primeira chamada ao vivo devolveu
+ * `conversion_status: "not_started"`, que não estava nela: o valor não vinha de
+ * atribuição nenhuma, vinha do **padrão do schema Pydantic**. Um campo que
+ * ninguém escreve ainda assim chega na resposta.
+ *
+ * Varredura de código encontra o que é escrito. O que é omitido só aparece
+ * quando alguém chama. */
 export const VALORES = {
   status: ["uploaded", "analyzing", "analyzed", "converting", "converted", "sending", "done", "success", "completed", "error", "failed", "interrupted", "skipped"],
   ocr_status: ["not_needed", "needed", "done", "failed"],
-  conversion_status: ["pending", "in_progress", "done", "failed"],
-  send_status: ["pending", "in_progress", "sent", "failed"],
+  conversion_status: ["not_started", "pending", "in_progress", "done", "failed"],
+  send_status: ["not_started", "pending", "in_progress", "sent", "failed"],
   translation_status: ["not_started", "in_progress", "done", "failed"],
-  comic_export_status: ["in_progress", "done", "failed"],
+  comic_translation_status: ["not_started", "in_progress", "done", "failed"],
+  comic_export_status: ["not_started", "in_progress", "done", "failed"],
 };
 
 /** Os quatro estados que a interface conhece. Mais que isto vira ruído. */
 export const ESTADOS = ["fila", "trabalhando", "pronto", "erro"];
 
 const FALHOU = new Set(["failed", "error", "interrupted"]);
-const ANDANDO = new Set(["in_progress", "analyzing", "converting", "sending", "needed"]);
+const ANDANDO = new Set(["in_progress", "analyzing", "converting", "sending"]);
 /* Valores que legitimamente NÃO mexem no estado de tela. Uma sub-etapa concluída
  * — OCR, tradução, exportação — não deixa o arquivo pronto: ela só terminou a
  * parte dela. Estão nomeados aqui, e não escondidos, para que a lista sirva de
  * resposta a "e o `done` do OCR, por que não conta?". */
-const NEUTRO = new Set(["uploaded", "pending", "not_started", "not_needed", "skipped", "done", "sent", "success", "completed", "converted", "analyzed"]);
+const NEUTRO = new Set(["uploaded", "pending", "not_started", "not_needed", "needed", "skipped", "done", "sent", "success", "completed", "converted", "analyzed"]);
 
 /**
  * Reduz um JobStatusResponse a um estado de tela.
@@ -61,14 +72,17 @@ const NEUTRO = new Set(["uploaded", "pending", "not_started", "not_needed", "ski
 export function estadoDe(j) {
   if (!j) return { estado: "fila", motivo: "sem resposta do backend ainda" };
 
+  /* Os rótulos são o que o usuário lê, então são frases e não nomes de campo.
+   * "Parou em: status" não fala com ninguém; "Parou em: a análise do arquivo"
+   * fala. O nome do campo continua disponível em `bruto`, para quem depura. */
   const erro = [
-    ["status", j.status],
-    ["conversao", j.conversion_status],
-    ["envio", j.send_status],
-    ["ocr", j.ocr_status],
-    ["traducao", j.translation_status],
-    ["traducao de quadrinho", j.comic_translation_status],
-    ["exportacao", j.comic_export_status],
+    ["a análise do arquivo", j.status],
+    ["a conversão", j.conversion_status],
+    ["o envio ao Kindle", j.send_status],
+    ["a leitura do texto na imagem", j.ocr_status],
+    ["a tradução", j.translation_status],
+    ["a tradução do quadrinho", j.comic_translation_status],
+    ["a exportação", j.comic_export_status],
   ].find(([, v]) => FALHOU.has(v));
 
   if (erro) {
@@ -81,12 +95,22 @@ export function estadoDe(j) {
     };
   }
 
+  /* `ocr_status: "needed"` NÃO entra aqui, e isso foi aprendido rodando.
+   *
+   * A primeira versão o tratava como fase, e a primeira execução contra o
+   * backend real mostrou o custo: o backend devolveu `status: "converted"` com
+   * `ocr_status: "needed"`, e a tela ficou em "em preparo" para sempre.
+   *
+   * Lendo o Python: `ocr_status = "needed" if result["is_scanned"]`. É
+   * **propriedade do documento** — este PDF é digitalizado —, não etapa em
+   * andamento. Quem anda é `in_progress`, `analyzing`, `converting`, `sending`.
+   * Deixá-lo governar o estado fazia todo PDF digitalizado parecer eternamente
+   * ocupado se o OCR não rodasse. */
   const andando = [
-    ["enviando", j.send_status],
+    ["enviando ao Kindle", j.send_status],
     ["convertendo", j.conversion_status],
     ["traduzindo", j.translation_status],
     ["exportando", j.comic_export_status],
-    ["lendo o arquivo", j.ocr_status],
     ["analisando", j.status],
   ].find(([, v]) => ANDANDO.has(v));
 
@@ -95,13 +119,21 @@ export function estadoDe(j) {
       estado: "trabalhando",
       etapa: j.phase || andando[0],
       progresso: leProgresso(j.progress),
+      digitalizado: j.ocr_status === "needed" || j.ocr_status === "done",
     };
   }
 
   const enviado = j.send_status === "sent";
   const convertido = j.conversion_status === "done";
   if (enviado || convertido || ["done", "success", "completed", "converted"].includes(j.status)) {
-    return { estado: "pronto", noKindle: enviado };
+    return {
+      estado: "pronto",
+      noKindle: enviado,
+      /* Informativo, e não estado: o documento ser digitalizado muda o que a
+       * tela pode dizer sobre ele, não se ele está pronto. */
+      digitalizado: j.ocr_status === "needed" || j.ocr_status === "done",
+      ocrFeito: j.ocr_status === "done",
+    };
   }
 
   return { estado: "fila" };

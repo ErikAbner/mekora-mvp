@@ -42,8 +42,12 @@ function contar(arquivos) {
   return c;
 }
 
-function Arquivo({ nome, estado, feito, total, progresso, detalhe }) {
+function Arquivo({ nome, estado, feito, total, progresso, detalhe, etapa, motivo, digitalizado }) {
   const e = ESTADOS[estado];
+  /* O motivo vem do backend e É mostrado. O contrato o preserva justamente para
+   * isto — uma linha que diz "Com erro" e cala o porquê faz o usuário abrir um
+   * chamado que ninguém consegue responder. */
+  const explicacao = motivo || detalhe;
   return (
     <li className={`arquivo ${e.classe}`}>
       <div className="arquivo-topo">
@@ -70,7 +74,11 @@ function Arquivo({ nome, estado, feito, total, progresso, detalhe }) {
             {feito} MB de {total} MB
           </span>
         )}
-        {detalhe && <span className="detalhe-texto">{detalhe}</span>}
+        {/* A etapa diz ONDE parou; o motivo diz o quê. Os dois juntos são o que
+            transforma "falhou" em algo que dá para resolver. */}
+        {estado === "erro" && etapa && <span className="detalhe-texto">Parou em: {etapa}.</span>}
+        {explicacao && <span className="detalhe-texto">{explicacao}</span>}
+        {digitalizado && <span className="detalhe-texto">Documento digitalizado.</span>}
         {progresso != null && <span className="dado">{progresso}%</span>}
       </p>
     </li>

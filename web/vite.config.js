@@ -22,5 +22,16 @@ export default defineConfig({
       "@": resolve(import.meta.dirname, "src"),
     },
   },
-  server: { port: 5180 },
+  server: {
+    port: 5180,
+    /* O backend e outro processo — Python, FastAPI — e isso e fato de runtime,
+     * nao de organizacao (DEC-0038 §1). Em desenvolvimento o proxy evita CORS e,
+     * mais importante, faz o caminho da chamada ser o MESMO em dev e em producao:
+     * `/upload` dos dois lados. Base de API diferente por ambiente e como um bug
+     * so aparece depois do deploy. */
+    proxy: Object.fromEntries(
+      ["/upload", "/analyze", "/jobs", "/history", "/health", "/config", "/storage", "/presets", "/metrics", "/batch"]
+        .map((r) => [r, { target: process.env.MEKORA_API ?? "http://127.0.0.1:8000", changeOrigin: true }]),
+    ),
+  },
 });

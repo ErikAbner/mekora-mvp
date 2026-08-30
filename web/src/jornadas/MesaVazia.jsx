@@ -8,6 +8,7 @@
  * decidir se aquilo é estado ou defeito. É a regra do produto dizer o que não
  * sabe, aplicada ao que ele sabe que não tem.
  */
+import { useRef, useState } from "react";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 // Assets do Figma, servidos de `publico/`. Caminho e nao import: o import ES
 // so vale para asset dentro de src/, que o Vite processa e versiona.
@@ -22,7 +23,18 @@ import "./mesa-vazia.css";
 
 const FORMATOS = [".pdf", ".epub", ".docx", ".cbz", ".cbr", ".zip"];
 
-export function MesaVazia({ aoEscolherArquivos }) {
+export function MesaVazia({ aoReceberArquivos, backend }) {
+  /* O input fica escondido e o botão o aciona: input de arquivo nativo não se
+   * estiliza, e recriar um por fora quebraria teclado e leitor de tela. */
+  const campo = useRef(null);
+  const [sobre, setSobre] = useState(false);
+
+  const soltar = (e) => {
+    e.preventDefault();
+    setSobre(false);
+    if (e.dataTransfer?.files?.length) aoReceberArquivos?.(e.dataTransfer.files);
+  };
+
   return (
     <div className="mesa">
       <Cabecalho lugar="mesa" />
@@ -36,7 +48,14 @@ export function MesaVazia({ aoEscolherArquivos }) {
       </section>
 
       <section className="entrada">
-        <div className="soltar">
+        {/* Arrastar É a instrução principal da tela, então a área toda recebe o
+            arquivo — não só o botão. */}
+        <div
+          className={`soltar${sobre ? " sobre" : ""}`}
+          onDragOver={(e) => { e.preventDefault(); setSobre(true); }}
+          onDragLeave={() => setSobre(false)}
+          onDrop={soltar}
+        >
           <img src={ilustracaoSoltar} alt="" className="ilustracao-soltar" aria-hidden="true" />
           <h2>Arraste arquivos ou clique para selecionar</h2>
 
@@ -46,12 +65,25 @@ export function MesaVazia({ aoEscolherArquivos }) {
             ))}
           </ul>
 
-          <button type="button" className="primaria" onClick={aoEscolherArquivos}>
+          <input
+            ref={campo}
+            type="file"
+            multiple
+            hidden
+            onChange={(e) => e.target.files?.length && aoReceberArquivos?.(e.target.files)}
+          />
+          <button type="button" className="primaria" onClick={() => campo.current?.click()}>
             <Icone src={iconeEnviar} />
             <span>Selecionar arquivos</span>
           </button>
 
-          <p className="sem-conta">Não é preciso criar conta para converter.</p>
+          <p className="sem-conta">
+            {/* O produto diz o que não sabe. Uma área de soltar que não funciona
+                porque o servidor caiu é pior que uma que avisa. */}
+            {backend === "fora do ar"
+              ? "O conversor não está respondendo. Os arquivos não seriam preparados agora."
+              : "Não é preciso criar conta para converter."}
+          </p>
         </div>
       </section>
 

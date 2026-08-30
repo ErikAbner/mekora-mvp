@@ -113,3 +113,7 @@
   .vazio-texto p { font-size: 18px; line-height: 27px; } /* a excecao como RAZAO */
   .rodape { padding: 64px 24px 0; }
 }
+
+/* A area inteira recebe o arquivo, entao ela precisa dizer quando esta pronta
+ * para receber. Degrau de superficie, nao matiz — a mesma regra da selecao. */
+.soltar.sobre { background: var(--muted); outline: 1px solid var(--foreground); outline-offset: -1px; }
