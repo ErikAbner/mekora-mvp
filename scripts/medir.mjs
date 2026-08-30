@@ -130,9 +130,15 @@ try {
      `smoke` devolvia "162 telas → 0, pinta is not defined" e isso lê como
      defeito no protótipo — eu quase fui atrás de um que não existia. Medida
      sobre nada não é medida: é para falhar, não para reportar. */
-  const carregou = await avalia('({t:document.title,app:!!document.getElementById("app"),n:document.body?document.body.children.length:0})');
-  if (!carregou.app || !carregou.n) {
-    throw new Error(`a página respondeu mas não montou (título "${carregou.t}", ${carregou.n} elementos, #app ${carregou.app ? 'existe' : 'ausente'}) — ${url}`);
+  /* A guarda media a presença de `#app`, que era o raiz do protótipo. Isso a
+     fazia recusar qualquer outra página — o mekora-web monta em `#raiz` e ela
+     parou tudo dizendo "#app ausente", que descreve o instrumento e não a
+     página. A intenção continua a mesma; o que muda é o que ela conta: nós
+     RENDERIZADOS, e não um id específico. Um app que montou tem dezenas; um
+     que não montou tem o contêiner vazio e mais nada. */
+  const carregou = await avalia('({t:document.title,n:document.body?document.body.querySelectorAll("*").length:0})');
+  if (carregou.n < 5) {
+    throw new Error(`a página respondeu mas não montou (título "${carregou.t}", ${carregou.n} nós renderizados) — ${url}`);
   }
 
   if (arqSetup) { await avalia(readFileSync(arqSetup, 'utf8')); await espera(400); }
