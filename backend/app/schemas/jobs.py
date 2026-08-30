@@ -10,12 +10,19 @@ class UploadResponse(BaseModel):
     upload_id: int
     filename: str
     status: str
+    # O endereço pelo qual o arquivo deste trabalho é alcançável. Vai na
+    # resposta porque quem acabou de enviar precisa dele para abrir o
+    # resultado — e o número do trabalho não serve mais para isso.
+    endereco: Optional[str] = None
 
 
 class JobResponse(BaseModel):
     """Retornado por GET /analyze/{upload_id} e POST /jobs/{id}/metadata|cover."""
 
     upload_id: int
+    # Por onde os arquivos deste trabalho são alcançados. Vem do backend porque
+    # é ele que sabe — e porque o número ao lado não serve mais para isso.
+    endereco: Optional[str] = None
     original_filename: str
     status: str
 
@@ -112,6 +119,9 @@ class HistoryEntry(BaseModel):
     """Item retornado por GET /history e GET /batch/jobs."""
 
     upload_id: int
+    # Por onde os arquivos deste trabalho são alcançados. Vem do backend porque
+    # é ele que sabe — e porque o número ao lado não serve mais para isso.
+    endereco: Optional[str] = None
     original_filename: str
     # URL da capa, montada no backend e não no cliente. A estante não deve
     # precisar conhecer o layout do storage para desenhar um livro — é o mesmo

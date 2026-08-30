@@ -30,7 +30,7 @@ def test_upload_pdf(client, sample_pdf):
     assert data["status"] == "uploaded"
 
 
-def test_get_history_after_upload(client, sample_pdf):
+def test_get_history_after_upload(client, sample_pdf, logado):
     with open(sample_pdf, "rb") as f:
         client.post("/upload", files={"file": ("sample.pdf", f, "application/pdf")})
     response = client.get("/history")
@@ -38,7 +38,7 @@ def test_get_history_after_upload(client, sample_pdf):
     assert len(response.json()) == 1
 
 
-def test_get_history_tolerates_null_str_fields(client, test_engine):
+def test_get_history_tolerates_null_str_fields(client, test_engine, logado):
     """GET /history deve retornar 200 quando input_format/processing_mode são NULL no banco.
 
     Simula jobs criados antes da Fase A, quando esses campos não existiam.
@@ -51,6 +51,9 @@ def test_get_history_tolerates_null_str_fields(client, test_engine):
     db = Session()
     try:
         job = ProcessingJob(
+            # A estante é de alguém a partir da DEC-0039: sem dono, este
+            # trabalho não apareceria — e é isso que o teste quer ver.
+            dono_id=logado[1],
             original_filename="legado.pdf",
             status="uploaded",
             input_format=None,    # NULL — campo não preenchido em jobs antigos

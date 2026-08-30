@@ -28,7 +28,46 @@ import { estadoDe } from "./estado.js";
  * outro — logo nao ha o que configurar, nem como configurar errado. */
 const BASE = "";
 
+/* AS CHAVES DOS TRABALHOS DESTA MAQUINA.
+ *
+ * A partir da DEC-0039, toda rota que fala de um trabalho especifico exige
+ * prova: a sessao do dono, ou a chave do trabalho. Um trabalho feito SEM conta
+ * — que a DEC-0018 garante existir — nao tem dono para conferir, entao a prova
+ * e conhecer a chave.
+ *
+ * Ela fica no `localStorage`, e a diferenca em relacao a sessao e o que decide:
+ * a SESSAO nunca mora aqui, porque o que o JavaScript da pagina le, o
+ * JavaScript injetado numa pagina tambem le — e ela vive num cookie httpOnly.
+ * A chave de um trabalho vale para UM trabalho, o proprio navegador ja a
+ * conhece por te-lo criado, e sem ela o arquivo que a pessoa acabou de enviar
+ * simplesmente nao abre depois de fechar a aba.
+ */
+const CHAVES = "mekora:chaves";
+
+function chaves() {
+  try { return JSON.parse(localStorage.getItem(CHAVES) || "{}"); } catch { return {}; }
+}
+
+export function guardarChave(id, chave) {
+  if (!id || !chave) return;
+  try { localStorage.setItem(CHAVES, JSON.stringify({ ...chaves(), [id]: chave })); } catch { /* sem espaco */ }
+}
+
+export function chaveDe(id) {
+  return chaves()[String(id)] ?? null;
+}
+
+/* Acha o numero do trabalho no caminho para saber qual chave apresentar. Sem
+ * isto, cada chamada precisaria receber a chave de quem a chama — e o lugar
+ * esquecido nao daria erro de compilacao, daria um 404 na tela. */
+const NO_CAMINHO = /^\/(?:jobs|analyze|batch)\/(\d+)/;
+
 async function pede(caminho, opcoes) {
+  const m = NO_CAMINHO.exec(caminho);
+  const chave = m ? chaveDe(m[1]) : null;
+  if (chave) {
+    opcoes = { ...opcoes, headers: { "X-Mekora-Chave": chave, ...(opcoes?.headers ?? {}) } };
+  }
   const r = await fetch(BASE + caminho, opcoes);
   if (!r.ok) {
     // O corpo do erro do backend vale mais que o código HTTP: ele diz o que
@@ -45,10 +84,15 @@ async function pede(caminho, opcoes) {
 }
 
 /** POST /upload — jobs.py:565. Importar. */
-export function enviarArquivo(arquivo) {
+export async function enviarArquivo(arquivo) {
   const corpo = new FormData();
   corpo.append("file", arquivo);
-  return pede("/upload", { method: "POST", body: corpo });
+  const r = await pede("/upload", { method: "POST", body: corpo });
+  /* A chave e guardada AQUI, na unica volta em que ela existe. Deixar isso para
+   * quem chama significaria um lugar esquecido — e o esquecimento nao daria erro
+   * agora: daria um 404 depois, quando a pessoa voltasse para abrir o arquivo. */
+  guardarChave(r?.upload_id, r?.endereco);
+  return r;
 }
 
 /** GET /analyze/{upload_id} — jobs.py:653. Validar: páginas, se é digitalizado, o que foi detectado. */

@@ -227,7 +227,7 @@ def test_upload_over_limit_returns_413(client, monkeypatch):
     assert r.status_code == 413
 
 
-def test_upload_server_controls_filename(client):
+def test_upload_server_controls_filename(client, logado):
     r = client.post(
         "/upload",
         files={"file": ("My Book (2).pdf", _pdf_bytes(), "application/pdf")},

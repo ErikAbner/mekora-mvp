@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Cookie, BackgroundTasks, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
 from app.core.config import STORAGE_INPUT, STORAGE_OUTPUT, STORAGE_TEMP
@@ -45,7 +46,8 @@ def _to_job(record: ProcessingJob) -> dict:
     """Converte um registro ORM em dict compatível com JobResponse."""
     data = {c.name: getattr(record, c.name) for c in record.__table__.columns}
     data["upload_id"] = data.pop("id")
-    data["thumbnails"] = get_thumbnail_urls(data["upload_id"], data.get("page_count") or 0)
+    data["endereco"] = record.token_publico
+    data["thumbnails"] = get_thumbnail_urls(record.token_publico or "", data.get("page_count") or 0)
     return data
 
 
@@ -74,11 +76,15 @@ def _to_history(record: ProcessingJob) -> dict:
     pagina = data.get("selected_cover_page")
     if pagina is None and (data.get("page_count") or 0) > 0:
         pagina = 0
+    # O ENDEREÇO USA O TOKEN, e não o número. Pelo número a capa só abriria
+    # para quem estivesse logado E fosse o dono — e um trabalho recém-enviado,
+    # sem conta, não é de ninguém ainda. A estante mostraria molduras vazias.
     data["cover_url"] = (
-        f"/storage/temp/{data['upload_id']}/page_{pagina}.png"
-        if pagina is not None
+        f"/storage/temp/{record.token_publico}/page_{pagina}.png"
+        if pagina is not None and record.token_publico
         else None
     )
+    data["endereco"] = record.token_publico
     return data
 
 
@@ -579,6 +585,7 @@ def _bg_comic_translate(job_id: int, operation_id: str | None = None) -> None:
 @router.post("/upload", response_model=UploadResponse, status_code=201)
 async def upload_file(
     file: UploadFile = File(...),
+    mekora_sessao: Optional[str] = Cookie(default=None),
     db: Session = Depends(get_db),
 ) -> dict:
     """
@@ -611,8 +618,17 @@ async def upload_file(
     fmt = detect_input_format(safe_name)
     mode = detect_processing_mode(safe_name)
 
+    # Se houver alguém logado, o trabalho nasce dela. Se não houver, nasce sem
+    # dono — e isso NÃO é um caso degradado: a DEC-0018 fixou que converter não
+    # exige conta, e a DEC-0039 §2 manteve. O que protege o trabalho sem dono é
+    # o endereço público, não a conta.
+    from app.services import acesso_service
+
+    pessoa = acesso_service.quem_e(db, mekora_sessao)
+
     # 3. Cria o job (original_filename = nome exibível; nome no disco é derivado)
     job = ProcessingJob(
+        dono_id=pessoa.id if pessoa else None,
         original_filename=safe_name,
         status="uploaded",
         input_format=fmt,
@@ -657,7 +673,12 @@ async def upload_file(
     record_stage(job.id, "upload", "completed",
                  processing_mode=job.processing_mode, input_format=job.input_format)
 
-    return {"upload_id": job.id, "filename": file.filename, "status": job.status}
+    return {
+        "upload_id": job.id,
+        "filename": file.filename,
+        "status": job.status,
+        "endereco": job.token_publico,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -700,10 +721,29 @@ async def analyze_upload(
 # ---------------------------------------------------------------------------
 
 @router.get("/history", response_model=list[HistoryEntry])
-def get_history(db: Session = Depends(get_db)) -> list[dict]:
-    """Lista todos os processamentos registrados."""
+def get_history(
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> list[dict]:
+    """A estante de quem está pedindo — e só dela.
+
+    Antes de 30/08 isto listava TODOS os processamentos registrados, o que era
+    correto num produto de uma pessoa só rodando na própria máquina. No ar, com
+    conta, listar tudo entregaria a estante de todo mundo a qualquer visitante —
+    e diferente do endereço dos arquivos, aqui nem seria preciso adivinhar nada.
+
+    Sem sessão a lista vem vazia, e não com os trabalhos sem dono. Trabalho sem
+    dono pertence a quem tem o endereço dele, não a quem chegou primeiro.
+    """
+    from app.services import acesso_service
+
+    pessoa = acesso_service.quem_e(db, mekora_sessao)
+    if pessoa is None:
+        return []
+
     records = (
         db.query(ProcessingJob)
+        .filter(ProcessingJob.dono_id == pessoa.id)
         .order_by(ProcessingJob.created_at.desc())
         .all()
     )
@@ -1319,6 +1359,10 @@ def duplicate_job(
     original = _get_or_404(db, job_id)
 
     new_job = ProcessingJob(
+        # O dono é herdado. Sem isto, duplicar um trabalho produzia uma cópia
+        # sem dono — que some da estante de quem a pediu, e passa a pertencer a
+        # quem tiver o endereço dela.
+        dono_id=original.dono_id,
         original_filename=original.original_filename,
         input_path=original.input_path,
         input_format=original.input_format,

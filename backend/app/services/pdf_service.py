@@ -42,9 +42,14 @@ def analyze_pdf(pdf_path: str, thumbnails_dir: Path) -> dict:
     }
 
 
-def get_thumbnail_urls(upload_id: int, page_count: int) -> list[str]:
-    """Retorna as URLs relativas dos thumbnails gerados para um upload."""
+def get_thumbnail_urls(endereco: str, page_count: int) -> list[str]:
+    """Retorna as URLs relativas dos thumbnails gerados para um upload.
+
+    Recebe o ENDEREÇO PÚBLICO do trabalho, não o número dele. A miniatura é
+    vista durante a análise, que acontece antes de existir conta — e pelo número
+    ela só abriria para um dono que ainda não há (DEC-0039 §5).
+    """
     return [
-        f"/storage/temp/{upload_id}/page_{i}.png"
+        f"/storage/temp/{endereco}/page_{i}.png"
         for i in range(min(5, page_count))
     ]

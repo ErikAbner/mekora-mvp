@@ -74,7 +74,7 @@ def test_duplicate_unknown_job_404(client, tmp_storage):
     assert resp.status_code == 404
 
 
-def test_duplicate_increments_total(client, tmp_storage):
+def test_duplicate_increments_total(client, tmp_storage, logado):
     """Após duplicar, histórico tem 2 jobs."""
     _upload(client, tmp_storage)
     _upload(client, tmp_storage)

@@ -1,6 +1,7 @@
+import secrets
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String
 
 from app.db.database import Base
 
@@ -14,6 +15,26 @@ class ProcessingJob(Base):
     __tablename__ = "processing_jobs"
 
     id = Column(Integer, primary_key=True, index=True)
+
+    # O ENDEREÇO PÚBLICO DO TRABALHO, e ele existe por um defeito concreto: o
+    # `id` acima é um número em sequência, e `/storage/output/7/livro.epub`
+    # respondia para quem pedisse. Num endereço público, qualquer visitante leria
+    # os documentos de todos só contando (DEC-0039 §5).
+    #
+    # O número continua servindo por dentro, onde nunca foi problema. Para fora
+    # vai este token, que ninguém adivinha.
+    # O valor nasce AQUI, e não em quem cria o trabalho. Há dois lugares que
+    # criam `ProcessingJob` hoje e haverá mais; um deles esquecendo daria um
+    # trabalho sem endereço, cujo arquivo não abre — e o esquecimento não faria
+    # barulho nenhum até alguém clicar.
+    token_publico = Column(
+        String, unique=True, index=True, default=lambda: secrets.token_urlsafe(16)
+    )
+
+    # Nulo de propósito. A DEC-0018 fixou que converter NÃO exige conta, e a
+    # DEC-0039 §2 manteve: a conta nasce quando a pessoa quer guardar na estante,
+    # e não quando quer converter um arquivo.
+    dono_id = Column(Integer, ForeignKey("pessoas.id", ondelete="SET NULL"), index=True)
 
     # Arquivo original e caminhos gerados
     original_filename = Column(String, nullable=False)

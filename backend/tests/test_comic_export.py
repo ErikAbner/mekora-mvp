@@ -580,7 +580,18 @@ def test_send_document_unchanged(client, test_engine) -> None:
 # Migração de banco antigo
 # ---------------------------------------------------------------------------
 
-def test_migration_adds_columns_preserving_data(tmp_path, monkeypatch) -> None:
+def test_banco_antigo_e_recusado_com_instrucao(tmp_path, monkeypatch) -> None:
+    """Um banco anterior às migrações não é migrado às cegas: ele é recusado.
+
+    Até 30/08 `init_db()` trazia 24 `ALTER TABLE ADD COLUMN` num laço com
+    `except Exception: pass`, e este teste provava que eles rodavam. A fundação
+    de deploy trocou isso por alembic, e com isso a pergunta muda: o que
+    acontece ao subir contra um banco cujo esquema ninguém conferiu?
+
+    A resposta certa é PARAR E DIZER O QUE FAZER. Marcá-lo automaticamente como
+    já migrado esconderia uma divergência de esquema — e ela apareceria depois,
+    como `no such column`, no meio do trabalho de alguém.
+    """
     import sqlite3
 
     db_file = tmp_path / "old.db"
@@ -600,19 +611,18 @@ def test_migration_adds_columns_preserving_data(tmp_path, monkeypatch) -> None:
 
     old_engine = create_engine(f"sqlite:///{db_file}")
     monkeypatch.setattr(db_mod, "engine", old_engine)
-    db_mod.init_db()
+
+    with pytest.raises(RuntimeError) as erro:
+        db_mod.init_db()
+
+    # A mensagem tem de trazer o COMANDO, e não só o diagnóstico: quem a lê está
+    # com o deploy parado.
+    assert "alembic stamp head" in str(erro.value)
+    assert "backup" in str(erro.value).lower()
+
     old_engine.dispose()
 
+    # E os dados continuam lá — a recusa não escreveu nada.
     conn = sqlite3.connect(db_file)
-    cols = [r[1] for r in conn.execute("PRAGMA table_info(processing_jobs)")]
-    for col in ("comic_export_status", "comic_export_path", "comic_export_source",
-                "comic_export_error", "flow_mode", "active_operation"):
-        assert col in cols, f"coluna {col} ausente após migração"
-    row = conn.execute(
-        "SELECT original_filename, status, comic_export_status, flow_mode "
-        "FROM processing_jobs"
-    ).fetchone()
+    assert conn.execute("SELECT count(*) FROM processing_jobs").fetchone()[0] == 1
     conn.close()
-    assert row[0] == "velho.pdf" and row[1] == "done"
-    assert row[2] == "not_started"
-    assert row[3] == "advanced"

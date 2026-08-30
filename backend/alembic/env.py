@@ -20,6 +20,7 @@ from sqlalchemy import engine_from_config, pool
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.db.database import DATABASE_URL, Base  # noqa: E402
+from app.models.pessoa import Chave, Pessoa, Sessao  # noqa: E402,F401
 from app.models.processing_job import ProcessingJob  # noqa: E402,F401
 from app.models.stage_metric import StageMetric  # noqa: E402,F401
 
@@ -32,6 +33,32 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 
+def comparar_tipo(contexto, coluna, coluna_do_modelo, tipo_no_banco, tipo_no_modelo):
+    """Diz ao alembic quais diferenças de tipo são diferenças de verdade.
+
+    O SQLite não guarda o tipo declarado: ele guarda uma AFINIDADE. `VARCHAR`,
+    `TEXT` e `CHAR(9)` têm todos afinidade TEXT e são a mesma coisa; `BOOLEAN` e
+    `INTEGER` guardam ambos 0 e 1.
+
+    Sem isto, o autogenerate vê 23 "mudanças de tipo" entre o que o modelo diz e
+    o que a migração inline escreveu à mão — e cada uma vira um
+    `batch_alter_table`, que no SQLite significa CRIAR A TABELA DE NOVO e copiar
+    todas as linhas. Recriar uma tabela com dados dentro para não mudar nada é
+    risco sem contrapartida, e voltaria em toda migração futura.
+
+    Devolver `False` é "não há diferença aqui"; `None` deixa o alembic decidir.
+    """
+    familia_texto = {"TEXT", "VARCHAR", "CHAR", "CLOB"}
+    familia_numero = {"INTEGER", "BOOLEAN", "BIGINT", "SMALLINT"}
+    banco = str(tipo_no_banco).split("(")[0].upper()
+    modelo = str(tipo_no_modelo).split("(")[0].upper()
+    if banco in familia_texto and modelo in familia_texto:
+        return False
+    if banco in familia_numero and modelo in familia_numero:
+        return False
+    return None
+
+
 def run_migrations_offline() -> None:
     context.configure(
         url=DATABASE_URL,
@@ -39,6 +66,7 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         render_as_batch=True,
+        compare_type=comparar_tipo,
     )
     with context.begin_transaction():
         context.run_migrations()
@@ -55,6 +83,7 @@ def run_migrations_online() -> None:
             connection=connection,
             target_metadata=target_metadata,
             render_as_batch=True,
+            compare_type=comparar_tipo,
         )
         with context.begin_transaction():
             context.run_migrations()

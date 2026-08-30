@@ -21,6 +21,7 @@ import { ContaKindle } from "./jornadas/ContaKindle.jsx";
 import { LUGARES } from "./lugares.js";
 import { useJornada } from "./estado/useJornada.js";
 import { abrirLivro } from "./leitor/abrir.js";
+import { chaveDe } from "../../contrato/api.js";
 import { EXEMPLO_FILA, EXEMPLO_ESTANTE, EXEMPLO_FICHA, EXEMPLO_LEITURA } from "./exemplos.js";
 
 /* O exemplo entra SÓ quando a URL pede — `?exemplo`. Nunca no caminho normal,
@@ -75,7 +76,11 @@ function PaginaLeitura() {
     /* O EPUB é lido NO NAVEGADOR, não servido como texto pelo backend. É o mesmo
      * arquivo que vai para o Kindle, então o que se lê na tela e o que se lê no
      * aparelho não podem divergir. */
-    abrirLivro(`/storage/output/${id}/livro.epub`)
+    /* O ENDERECO, e nao o numero. `/storage/output/7/...` respondia para quem
+     * contasse ate sete, e a DEC-0039 §5 trocou isso pela chave do trabalho.
+     * O numero da rota continua sendo o da estante; a chave e buscada aqui. */
+    const chave = chaveDe(id) ?? id;
+    abrirLivro(`/storage/output/${chave}/livro.epub`)
       .then((l) => vivo && setLivro(l))
       .catch((e) => vivo && setErro(e.message));
     return () => { vivo = false; };

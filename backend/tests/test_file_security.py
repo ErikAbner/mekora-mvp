@@ -11,6 +11,28 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+import pytest
+
+
+# A partir de 30/08 um arquivo só é servido se houver um TRABALHO registrado
+# para ele, e o endereço é o token do trabalho — não o número (DEC-0039 §5).
+#
+# Antes, qualquer pasta dentro de `output/` era servida, existisse ou não um
+# registro. Estes testes usavam o número 1 sem criar trabalho nenhum, e passavam
+# — o que mostra exatamente o que mudou.
+@pytest.fixture
+def endereco(test_engine):
+    """Cria um trabalho e devolve o endereço público dele."""
+    from sqlalchemy.orm import Session
+
+    from app.models.processing_job import ProcessingJob
+
+    with Session(test_engine) as db:
+        job = ProcessingJob(original_filename="arquivo.pdf", status="completed")
+        db.add(job)
+        db.commit()
+        return job.token_publico
+
 
 def _make_png(path: Path) -> Path:
     from PIL import Image
@@ -120,39 +142,39 @@ def test_symlink_escape_rejected(client, tmp_storage):
 # Artefatos autorizados → funcionam
 # ---------------------------------------------------------------------------
 
-def test_allowed_page_image_served(client, tmp_storage):
+def test_allowed_page_image_served(client, tmp_storage, endereco):
     _make_jpg(tmp_storage / "output" / "1" / "pages" / "page_001.jpg")
-    r = client.get("/storage/output/1/pages/page_001.jpg")
+    r = client.get(f"/storage/output/{endereco}/pages/page_001.jpg")
     assert r.status_code == 200
     assert r.headers["content-type"] == "image/jpeg"
 
 
-def test_allowed_final_and_export_served(client, tmp_storage):
+def test_allowed_final_and_export_served(client, tmp_storage, endereco):
     _make_png(tmp_storage / "output" / "1" / "final_pages" / "page_001.png")
-    assert client.get("/storage/output/1/final_pages/page_001.png").status_code == 200
+    assert client.get(f"/storage/output/{endereco}/final_pages/page_001.png").status_code == 200
 
     ce = tmp_storage / "output" / "1" / "comic_export"
     ce.mkdir(parents=True, exist_ok=True)
     (ce / "meu-manga.epub").write_bytes(b"PK epub fake")
-    r = client.get("/storage/output/1/comic_export/meu-manga.epub")
+    r = client.get(f"/storage/output/{endereco}/comic_export/meu-manga.epub")
     assert r.status_code == 200
     assert r.headers["content-type"] == "application/epub+zip"
 
 
-def test_allowed_translation_sidecar_and_archives_served(client, tmp_storage):
+def test_allowed_translation_sidecar_and_archives_served(client, tmp_storage, endereco):
     out = tmp_storage / "output" / "1"
     out.mkdir(parents=True, exist_ok=True)
     (out / "comic_translation.json").write_text('{"pages": []}')
     (out / "final_pages.cbz").write_bytes(b"PK fake")
     (out / "documento.epub").write_bytes(b"PK fake")
-    assert client.get("/storage/output/1/comic_translation.json").status_code == 200
-    assert client.get("/storage/output/1/final_pages.cbz").status_code == 200
-    assert client.get("/storage/output/1/documento.epub").status_code == 200
+    assert client.get(f"/storage/output/{endereco}/comic_translation.json").status_code == 200
+    assert client.get(f"/storage/output/{endereco}/final_pages.cbz").status_code == 200
+    assert client.get(f"/storage/output/{endereco}/documento.epub").status_code == 200
 
 
-def test_allowed_thumbnail_served(client, tmp_storage):
+def test_allowed_thumbnail_served(client, tmp_storage, endereco):
     _make_png(tmp_storage / "temp" / "1" / "page_0.png")
-    r = client.get("/storage/temp/1/page_0.png")
+    r = client.get(f"/storage/temp/{endereco}/page_0.png")
     assert r.status_code == 200
     assert r.headers["content-type"] == "image/png"
 

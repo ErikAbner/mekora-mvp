@@ -16,10 +16,15 @@ manifests internos (comic_*_manifest.json, comic_render.json etc.) e ocultos.
 from __future__ import annotations
 
 import re
+from typing import Optional
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Cookie, Depends, HTTPException
 from fastapi.responses import FileResponse
+from sqlalchemy.orm import Session
+
+from app.db.database import get_db
+from app.models.processing_job import ProcessingJob
 
 router = APIRouter(tags=["files"])
 
@@ -123,24 +128,83 @@ def _serve_validated(base_dir: Path, segments: list[str]) -> FileResponse:
 # Rotas
 # ---------------------------------------------------------------------------
 
-@router.get("/storage/output/{job_id}/{artifact_path:path}")
-def serve_job_artifact(job_id: int, artifact_path: str) -> FileResponse:
+def _autorizar(ref: str, sessao: Optional[str], db: Session) -> int:
+    """Diz de qual pasta o arquivo pode sair, ou nega.
+
+    `ref` é o que veio no endereço, e ele aceita duas formas:
+
+    O ENDEREÇO PÚBLICO — um token aleatório. Quem o tem, pode ler. É o que
+    sustenta o trabalho feito SEM conta, que a DEC-0018 garante existir: não há
+    dono para conferir, então a prova é conhecer um endereço que ninguém
+    adivinha.
+
+    O NÚMERO DO TRABALHO — que era a única forma até 30/08 e é a razão desta
+    função existir. Ele é sequencial, então `/storage/output/7/livro.epub`
+    respondia para quem contasse até sete (DEC-0039 §5). Por número, agora, só
+    passa quem está logado E é o dono.
+
+    O 404 é o mesmo nos dois casos de recusa, e isso é deliberado: um 403 em
+    trabalho existente e 404 em inexistente contaria quais números existem, que é
+    metade do que se está protegendo.
+    """
+    from app.services import acesso_service
+
+    trabalho = None
+    if ref.isdigit():
+        trabalho = db.query(ProcessingJob).filter(ProcessingJob.id == int(ref)).first()
+        if trabalho is None:
+            raise _not_found()
+        # Sem dono e pedido por número: não há como provar nada. O endereço
+        # público existe justamente para este caso.
+        if trabalho.dono_id is None:
+            raise _not_found()
+        pessoa = acesso_service.quem_e(db, sessao)
+        if pessoa is None or pessoa.id != trabalho.dono_id:
+            raise _not_found()
+    else:
+        trabalho = db.query(ProcessingJob).filter(ProcessingJob.token_publico == ref).first()
+        if trabalho is None:
+            raise _not_found()
+
+    return trabalho.id
+
+
+@router.get("/storage/output/{ref}/{artifact_path:path}")
+def serve_job_artifact(
+    ref: str,
+    artifact_path: str,
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> FileResponse:
     """Serve um artefato permitido de um job. Tudo fora da allowlist → 404."""
     from app.core.config import STORAGE_OUTPUT  # lazy p/ testes
 
     segments = _validate_segments(artifact_path)
     if not _is_allowed_artifact(segments):
         raise _not_found()
+    job_id = _autorizar(ref, mekora_sessao, db)
     return _serve_validated(STORAGE_OUTPUT / str(job_id), segments)
 
 
-@router.get("/storage/temp/{job_id}/{filename}")
-def serve_thumbnail(job_id: int, filename: str) -> FileResponse:
-    """Serve apenas thumbnails de análise (page_0..page_4.png)."""
+@router.get("/storage/temp/{ref}/{filename}")
+def serve_thumbnail(
+    ref: str,
+    filename: str,
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> FileResponse:
+    """Serve apenas thumbnails de análise (page_0..page_4.png).
+
+    Passa pela mesma porta: a miniatura é a PRIMEIRA PÁGINA do documento, e a
+    primeira página costuma trazer título, autor e às vezes o nome de quem
+    recebeu. Proteger o EPUB e deixar a miniatura aberta protegeria o livro e
+    entregaria a capa.
+    """
     from app.core.config import STORAGE_TEMP  # lazy p/ testes
 
     if not _THUMBNAIL_NAME.match(filename):
         raise _not_found()
+    job_id = _autorizar(ref, mekora_sessao, db)
     return _serve_validated(STORAGE_TEMP / str(job_id), [filename])
 
 

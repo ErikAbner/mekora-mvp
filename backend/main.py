@@ -18,13 +18,15 @@ _local_argos_dir = _project_root / "storage" / "models" / "argos-packages"
 if "ARGOS_PACKAGES_DIR" not in os.environ:
     os.environ["ARGOS_PACKAGES_DIR"] = str(_local_argos_dir)
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import PROJECT_ROOT
 from app.db.database import init_db
+from app.api.acesso import router as acesso_router
+from app.api.porta import exigir_acesso
 from app.api.health import router as health_router
 from app.api.config import router as config_router
 from app.api.jobs import router as jobs_router
@@ -75,26 +77,27 @@ app.add_middleware(
 from app.api.files import router as files_router  # noqa: E402
 
 app.include_router(files_router)
+app.include_router(acesso_router)
 app.include_router(health_router)
 app.include_router(config_router)
-app.include_router(jobs_router)
+app.include_router(jobs_router, dependencies=[Depends(exigir_acesso)])
 app.include_router(app_config_router)
-app.include_router(translation_router)
-app.include_router(comic_review_router)
-app.include_router(comic_overlay_router)
-app.include_router(comic_render_router)
-app.include_router(comic_inpaint_router)
-app.include_router(comic_finalize_router)
-app.include_router(comic_suggestions_router)
+app.include_router(translation_router, dependencies=[Depends(exigir_acesso)])
+app.include_router(comic_review_router, dependencies=[Depends(exigir_acesso)])
+app.include_router(comic_overlay_router, dependencies=[Depends(exigir_acesso)])
+app.include_router(comic_render_router, dependencies=[Depends(exigir_acesso)])
+app.include_router(comic_inpaint_router, dependencies=[Depends(exigir_acesso)])
+app.include_router(comic_finalize_router, dependencies=[Depends(exigir_acesso)])
+app.include_router(comic_suggestions_router, dependencies=[Depends(exigir_acesso)])
 app.include_router(presets_router)
-app.include_router(batch_router)
-app.include_router(metrics_router)
-app.include_router(comic_finish_router)
-app.include_router(comic_consistency_router)
-app.include_router(comic_preset_recommendation_router)
-app.include_router(job_health_router)
-app.include_router(comic_export_router)
-app.include_router(comic_quick_router)
+app.include_router(batch_router, dependencies=[Depends(exigir_acesso)])
+app.include_router(metrics_router, dependencies=[Depends(exigir_acesso)])
+app.include_router(comic_finish_router, dependencies=[Depends(exigir_acesso)])
+app.include_router(comic_consistency_router, dependencies=[Depends(exigir_acesso)])
+app.include_router(comic_preset_recommendation_router, dependencies=[Depends(exigir_acesso)])
+app.include_router(job_health_router, dependencies=[Depends(exigir_acesso)])
+app.include_router(comic_export_router, dependencies=[Depends(exigir_acesso)])
+app.include_router(comic_quick_router, dependencies=[Depends(exigir_acesso)])
 
 
 @app.on_event("startup")
