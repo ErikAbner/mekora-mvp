@@ -17,6 +17,7 @@ import { Estante } from "./jornadas/Estante.jsx";
 import { Leitura } from "./jornadas/Leitura.jsx";
 import { AindaNao } from "./jornadas/AindaNao.jsx";
 import { Conta } from "./jornadas/Conta.jsx";
+import { ContaKindle } from "./jornadas/ContaKindle.jsx";
 import { LUGARES } from "./lugares.js";
 import { useJornada } from "./estado/useJornada.js";
 import { EXEMPLO_FILA, EXEMPLO_ESTANTE, EXEMPLO_FICHA, EXEMPLO_LEITURA } from "./exemplos.js";
@@ -26,6 +27,15 @@ import { EXEMPLO_FILA, EXEMPLO_ESTANTE, EXEMPLO_FICHA, EXEMPLO_LEITURA } from ".
 /* Enquanto não há autenticação — a AUTH-001 está `proposed`, não aceita — a
  * pessoa é de exemplo. Fica nomeado para ninguém confundir com login. */
 const PESSOA = { nome: "Erik Abner", email: "erik@exemplo.com" };
+
+/* Aparelhos de exemplo, com os nomes do desenho. Enquanto o backend não os
+ * serve, eles ficam aqui e não dentro da tela. */
+const APARELHOS = [
+  { id: "paperwhite", nome: "Kindle de Erik", detalhe: "Paperwhite · 1236 × 1680",
+    endereco: "erik@kindle.com", ultimoEnvio: "hoje, 09:12", principal: true },
+  { id: "scribe", nome: "Scribe do escritório", detalhe: "erik_scribe@kindle.com",
+    endereco: "erik_scribe@kindle.com", ultimoEnvio: "6 de agosto", principal: false },
+];
 
 function usaExemplo() {
   return new URLSearchParams(location.search).has("exemplo");
@@ -88,8 +98,8 @@ export function App() {
         {/* Conta tem quatro páginas; só Preferências existe. As outras usam a
             mesma tela de "ainda não", que nomeia o lugar em vez de dar 404. */}
         <Route path="/conta/preferencias" element={<Conta pessoa={PESSOA} />} />
-        <Route path="/conta" element={<AindaNao lugar={{ rotulo: "Conta", oQueE: "Quem você é, e o que o Mekora sabe sobre isso." }} />} />
-        <Route path="/conta/kindle" element={<AindaNao lugar={{ rotulo: "Dispositivos Kindle", oQueE: "Para onde os arquivos preparados são enviados." }} />} />
+        <Route path="/conta" element={<ContaKindle pessoa={PESSOA} aparelhos={APARELHOS} />} />
+        <Route path="/conta/kindle" element={<ContaKindle pessoa={PESSOA} aparelhos={APARELHOS} />} />
         <Route path="/conta/privacidade" element={<AindaNao lugar={{ rotulo: "Privacidade", oQueE: "O que fica guardado, onde, e por quanto tempo." }} />} />
         <Route path="*" element={<NaoEncontrada />} />
       </Routes>

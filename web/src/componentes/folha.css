@@ -1,0 +1,54 @@
+.folha {
+  padding: 0; border: 0; background: transparent;
+  max-inline-size: min(680px, calc(100vw - 48px));
+  inline-size: 100%;
+}
+
+/* O veu escurece o que ficou atras, e escurece pelo TOM DA TINTA e nao por preto
+ * puro: preto puro nao existe no sistema. */
+.folha::backdrop { background: color-mix(in srgb, var(--foreground) 55%, transparent); }
+
+.folha-caixa {
+  display: flex; flex-direction: column;
+  background: var(--background);
+  border: 1px solid var(--borda-controle);
+  /* Raio zero: e superficie grande. */
+  border-radius: 0;
+}
+
+.folha-topo { padding: 32px 40px; }
+.folha-topo h2 {
+  margin: 0;
+  font-size: 28px; line-height: 36px; font-weight: 540;   /* Heading/SM */
+  color: var(--card-foreground);
+}
+
+.folha-conteudo {
+  display: flex; flex-direction: column; gap: 24px;
+  padding: 0 40px 32px;
+  font-size: 20px; line-height: 30px;
+  color: var(--muted-foreground);
+}
+.folha-conteudo p { margin: 0; text-wrap: pretty; }
+
+.folha-acoes {
+  display: flex; gap: 16px; justify-content: flex-end;
+  padding: 0 40px 40px;
+}
+
+/* O movimento explica de onde a folha veio. Desliga quando pedido. */
+.folha[open] { animation: folha-entra var(--d2, 260ms) cubic-bezier(.16, 1, .3, 1); }
+@keyframes folha-entra {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .folha[open] { animation: none; }
+}
+
+@media (max-width: 767px) {
+  .folha-topo { padding: 24px; }
+  .folha-conteudo { padding: 0 24px 24px; }
+  .folha-acoes { padding: 0 24px 24px; flex-direction: column-reverse; }
+  .folha-acoes .botao { inline-size: 100%; }
+}

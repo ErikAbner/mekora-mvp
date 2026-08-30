@@ -1,0 +1,48 @@
+.aparelhos { display: flex; flex-direction: column; gap: 24px; padding: 0 40px 32px; }
+
+.aparelho {
+  display: flex; align-items: center; gap: 24px;
+  padding: 40px;
+  border: 1px solid var(--border);
+  background: var(--background);
+}
+/* O principal e marcado por DEGRAU DE SUPERFICIE, como toda selecao no sistema.
+ * A borda mais forte reforca sem gastar cor. */
+.aparelho.principal { background: var(--card); border-color: var(--borda-controle); }
+
+.aparelho-retrato {
+  inline-size: 79px; block-size: 93px; flex: none;
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 2px;                    /* midia recortada */
+}
+
+.aparelho-texto { display: flex; flex-direction: column; gap: 16px; flex: 1 0 0; min-inline-size: 0; }
+.aparelho-nome { margin: 0; font-size: 20px; line-height: 30px; color: var(--card-foreground); }
+.aparelho-detalhe { margin: 0; font-size: 16px; line-height: 24px; color: var(--muted-foreground); overflow-wrap: anywhere; }
+.aparelho-envio { margin: 0; font-size: 14px; line-height: 22px; color: var(--muted-foreground); }
+
+.aparelho-acoes { display: flex; gap: 16px; flex: none; }
+
+.aparelho-novo {
+  display: flex; align-items: center; gap: 40px;
+  padding: 32px 40px;
+  border: 1px solid var(--border);
+}
+.aparelho-novo p { margin: 0; font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
+
+.conta-nota {
+  margin: 0; padding: 0 40px 40px;
+  font-size: 16px; line-height: 24px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+@media (max-width: 1023px) {
+  .aparelhos { padding: 0 24px 24px; }
+  .aparelho { flex-direction: column; align-items: flex-start; padding: 24px; }
+  .aparelho-acoes { inline-size: 100%; flex-direction: column; }
+  .aparelho-acoes .botao { inline-size: 100%; }
+  .aparelho-novo { flex-direction: column; align-items: flex-start; gap: 16px; padding: 24px; }
+  .conta-nota { padding: 0 24px 24px; }
+}

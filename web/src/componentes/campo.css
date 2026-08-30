@@ -1,0 +1,49 @@
+.campo { display: flex; flex-direction: column; gap: 16px; }
+
+.campo label {
+  font-size: 20px; line-height: 30px;      /* Body/Medium */
+  color: var(--muted-foreground);
+}
+.campo-ajuda {
+  margin: 0;
+  font-size: 16px; line-height: 24px;      /* Body/Small */
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+.campo input {
+  min-block-size: 58px;
+  padding: 16px 24px;
+  /* Raio zero: campo e estrutura. E a borda e de CONTROLE, nao filete — o
+   * filete da 2,04 sobre a superficie e reprova o minimo de 3,0. */
+  border-radius: 0;
+  border: 1px solid var(--borda-controle);
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 20px; line-height: 30px;
+}
+.campo input::placeholder { color: var(--muted-foreground); }
+
+/* O foco engrossa a borda ALEM do contorno: quem enxerga pouco pode nao ver um
+ * contorno de 1px, e quem usa alto contraste pode nao ver o contorno nenhum. */
+.campo input:focus-visible {
+  outline: 1px solid var(--foreground);
+  outline-offset: 2px;
+  border-color: var(--foreground);
+}
+
+.campo input:disabled {
+  background: var(--muted);
+  cursor: not-allowed;
+}
+
+/* O erro nao e so cor. A borda muda de ESPESSURA junto, para quem nao distingue
+ * vermelho de cinza, e a mensagem diz o que fazer. */
+.com-erro input { border-color: var(--destructive); border-inline-start-width: 4px; }
+.campo-erro {
+  margin: 0;
+  font-size: 16px; line-height: 24px;
+  color: var(--destructive);
+  text-wrap: pretty;
+}
