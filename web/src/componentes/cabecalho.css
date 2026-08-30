@@ -76,3 +76,6 @@
   outline: 1px solid var(--foreground);
   outline-offset: 2px;
 }
+
+/* NavLink vira <a>: precisa dos mesmos limites do botao que ele substituiu. */
+a.lugar { text-decoration: none; }

@@ -12,40 +12,39 @@
  */
 // Assets do Figma, servidos de `publico/`. Caminho e nao import: o import ES
 // so vale para asset dentro de src/, que o Vite processa e versiona.
-const iconeMesa = "/icones/icone-mesa.svg";
-const iconeEstante = "/icones/icone-estante.svg";
-const iconeCanvas = "/icones/icone-canvas.svg";
-const iconeEstudos = "/icones/icone-estudos.svg";
 const iconeBuscar = "/icones/icone-buscar.svg";
 const iconeAtalho = "/icones/icone-atalho.svg";
 const iconeConta = "/icones/icone-conta.svg";
 
+import { NavLink, useLocation } from "react-router-dom";
 import { Icone } from "./Icone.jsx";
 
 import "./cabecalho.css";
 
-const LUGARES = [
-  { id: "mesa", rotulo: "Mesa", icone: iconeMesa },
-  { id: "estante", rotulo: "Estante", icone: iconeEstante },
-  { id: "canvas", rotulo: "Canvas", icone: iconeCanvas },
-  { id: "estudos", rotulo: "Estudos", icone: iconeEstudos },
-];
+/* A lista vem de `lugares.js`, não daqui. Ter os lugares em dois arquivos é como
+ * o menu passa a oferecer um lugar que a rota não conhece, e o clique vira tela
+ * branca. */
+import { LUGARES, lugarDaRota } from "../lugares.js";
 
-export function Cabecalho({ lugar = "mesa", aoIr }) {
+export function Cabecalho() {
+  const { pathname } = useLocation();
+  const aqui = lugarDaRota(pathname);
   return (
     <header className="cabecalho">
       <nav className="cabecalho-lugares" aria-label="Lugares do Mekora">
         {LUGARES.map((l) => (
-          <button
+          <NavLink
             key={l.id}
-            type="button"
+            to={l.rota}
+            end={l.rota === "/"}
             className="lugar"
-            aria-current={l.id === lugar ? "page" : undefined}
-            onClick={() => aoIr?.(l.id)}
+            /* O lugar ainda não construído continua clicável e leva a uma tela
+               que DIZ isso. Desabilitar o botão esconderia que ele existe. */
+            aria-current={aqui?.id === l.id ? "page" : undefined}
           >
             <Icone src={l.icone} />
             <span>{l.rotulo}</span>
-          </button>
+          </NavLink>
         ))}
       </nav>
 
