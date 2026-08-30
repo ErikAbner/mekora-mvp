@@ -29,7 +29,7 @@ def correio(monkeypatch):
 
 
 def entrar(client, correio, email="erik@exemplo.com"):
-    r = client.post("/entrar", json={"email": email})
+    r = client.post("/entrar/pedir", json={"email": email})
     assert r.status_code == 204
     token = correio[-1]["token"]
     r = client.get(f"/entrar/{token}", follow_redirects=False)
@@ -61,8 +61,8 @@ def test_sem_sessao_a_resposta_e_normal_e_nao_erro(client):
 def test_a_resposta_e_igual_para_email_conhecido_e_desconhecido(client, correio):
     """Se ela variasse, qualquer um descobriria quem usa o Mekora perguntando um
     endereço de cada vez."""
-    primeira = client.post("/entrar", json={"email": "novo@exemplo.com"})
-    segunda = client.post("/entrar", json={"email": "novo@exemplo.com"})
+    primeira = client.post("/entrar/pedir", json={"email": "novo@exemplo.com"})
+    segunda = client.post("/entrar/pedir", json={"email": "novo@exemplo.com"})
     assert primeira.status_code == segunda.status_code == 204
     assert primeira.content == segunda.content == b""
 
@@ -71,7 +71,7 @@ def test_limite_de_pedidos_responde_igual(client, correio):
     """Passar do limite não pode ser distinguível de não passar — senão o limite
     vira o próprio detector de conta existente."""
     for _ in range(acesso_service.PEDIDOS_POR_JANELA + 3):
-        r = client.post("/entrar", json={"email": "insistente@exemplo.com"})
+        r = client.post("/entrar/pedir", json={"email": "insistente@exemplo.com"})
         assert r.status_code == 204
     assert len(correio) == acesso_service.PEDIDOS_POR_JANELA
 
@@ -81,7 +81,7 @@ def test_limite_de_pedidos_responde_igual(client, correio):
 def test_o_banco_guarda_o_resumo_e_nunca_o_link(client, correio, test_engine):
     from sqlalchemy.orm import Session
 
-    client.post("/entrar", json={"email": "erik@exemplo.com"})
+    client.post("/entrar/pedir", json={"email": "erik@exemplo.com"})
     token = correio[-1]["token"]
 
     with Session(test_engine) as db:
@@ -108,7 +108,7 @@ def test_a_sessao_tambem_e_guardada_por_resumo(client, correio, test_engine):
 def test_o_cookie_nao_e_legivel_por_javascript(client, correio):
     """`httpOnly` é o que impede uma falha de XSS em qualquer canto do produto
     de virar conta roubada — e é por isso que a sessão não mora em localStorage."""
-    client.post("/entrar", json={"email": "erik@exemplo.com"})
+    client.post("/entrar/pedir", json={"email": "erik@exemplo.com"})
     r = client.get(f"/entrar/{correio[-1]['token']}", follow_redirects=False)
     bruto = r.headers.get("set-cookie", "").lower()
     assert "httponly" in bruto
@@ -120,7 +120,7 @@ def test_o_cookie_nao_e_legivel_por_javascript(client, correio):
 def test_o_link_serve_uma_vez_so(client, correio):
     """Um link que continua valendo depois de usado é uma senha permanente
     escrita em texto puro dentro de um e-mail."""
-    client.post("/entrar", json={"email": "erik@exemplo.com"})
+    client.post("/entrar/pedir", json={"email": "erik@exemplo.com"})
     token = correio[-1]["token"]
 
     primeira = client.get(f"/entrar/{token}", follow_redirects=False)
@@ -137,7 +137,7 @@ def test_o_link_serve_uma_vez_so(client, correio):
 def test_o_link_vence(client, correio, test_engine):
     from sqlalchemy.orm import Session
 
-    client.post("/entrar", json={"email": "erik@exemplo.com"})
+    client.post("/entrar/pedir", json={"email": "erik@exemplo.com"})
     token = correio[-1]["token"]
 
     with Session(test_engine) as db:
@@ -183,13 +183,13 @@ def test_email_e_guardado_em_minusculas(client, correio, test_engine):
     e a pessoa perde a dela por causa da tecla shift."""
     from sqlalchemy.orm import Session
 
-    client.post("/entrar", json={"email": "  ERIK@Exemplo.COM  "})
+    client.post("/entrar/pedir", json={"email": "  ERIK@Exemplo.COM  "})
     with Session(test_engine) as db:
         assert db.query(Pessoa).one().email == "erik@exemplo.com"
 
 
 def test_endereco_sem_forma_de_email_e_recusado(client):
-    r = client.post("/entrar", json={"email": "isto nao e email"})
+    r = client.post("/entrar/pedir", json={"email": "isto nao e email"})
     assert r.status_code == 400
 
 

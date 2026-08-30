@@ -215,7 +215,7 @@ def logado(client, test_engine, monkeypatch):
     from app.models.pessoa import Pessoa
 
     email = "teste@exemplo.com"
-    client.post("/entrar", json={"email": email})
+    client.post("/entrar/pedir", json={"email": email})
     client.get(f"/entrar/{caixa[-1]}", follow_redirects=False)
     with _Session(test_engine) as db:
         return email, db.query(Pessoa).filter(Pessoa.email == email).one().id

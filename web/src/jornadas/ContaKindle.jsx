@@ -17,7 +17,7 @@ import { Campo } from "../componentes/Campo.jsx";
 import { Folha } from "../componentes/Folha.jsx";
 import "./conta-kindle.css";
 
-export function ContaKindle({ pessoa, aparelhos: iniciais = [] }) {
+export function ContaKindle({ pessoa, aparelhos: iniciais = [] , aoSair }) {
   const [aparelhos, setAparelhos] = useState(iniciais);
   const [conectando, setConectando] = useState(false);
   const [endereco, setEndereco] = useState("");
@@ -41,7 +41,7 @@ export function ContaKindle({ pessoa, aparelhos: iniciais = [] }) {
     <div className="mesa">
       <Cabecalho />
       <div className="conta">
-        <TrilhaConta pessoa={pessoa} />
+        <TrilhaConta pessoa={pessoa} aoSair={aoSair} />
 
         <main className="conta-painel">
           <section className="conta-secao">

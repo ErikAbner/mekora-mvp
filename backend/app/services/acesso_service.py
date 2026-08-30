@@ -7,6 +7,7 @@ aparece depois de estar no ar.
 from __future__ import annotations
 
 import hashlib
+import os
 import re
 import secrets
 import smtplib
@@ -94,6 +95,11 @@ def pedir_link(db: Session, email: str, base_url: str) -> tuple[str, str] | None
     return token, pessoa.email
 
 
+def _em_producao() -> bool:
+    dominio = os.getenv("MEKORA_DOMINIO", "").strip()
+    return bool(dominio) and dominio != "localhost"
+
+
 def enviar_link(email: str, token: str, base_url: str) -> None:
     """Manda o link. Reusa o mesmo SMTP que já leva os documentos ao Kindle."""
     faltando = [
@@ -103,10 +109,28 @@ def enviar_link(email: str, token: str, base_url: str) -> None:
             "SMTP_PASS": settings.smtp_pass,
         }.items() if not v
     ]
-    if faltando:
-        raise RuntimeError("Configuração SMTP incompleta: " + ", ".join(faltando))
-
     link = f"{base_url.rstrip('/')}/entrar/{token}"
+
+    if faltando:
+        # SEM SMTP EM PRODUÇÃO, NINGUÉM ENTRA — e isso precisa ser barulhento,
+        # porque é uma configuração faltando e não um caso de uso.
+        if _em_producao():
+            raise RuntimeError("Configuração SMTP incompleta: " + ", ".join(faltando))
+
+        # Fora de produção, o link vai para o terminal do servidor. Sem isto,
+        # desenvolver o produto exigiria um servidor de e-mail configurado só
+        # para conseguir passar da primeira tela — e a saída fácil seria abrir
+        # um buraco permanente, do tipo "modo de teste que entra sem link".
+        print(
+            "\n" + "=" * 70
+            + f"\nSEM SMTP CONFIGURADO — o link de {email} vai aqui, e não por e-mail:"
+            + f"\n\n    {link}\n\n"
+            + "Isto só acontece fora de produção. Com MEKORA_DOMINIO definido,\n"
+            + "a falta de SMTP vira erro, porque ali ela impede qualquer um de entrar.\n"
+            + "=" * 70 + "\n",
+            flush=True,
+        )
+        return
     msg = EmailMessage()
     msg["Subject"] = "Entrar no Mekora"
     msg["From"] = settings.smtp_user

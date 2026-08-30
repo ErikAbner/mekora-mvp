@@ -1,0 +1,83 @@
+/* A tela de entrar. Uma coluna estreita, centrada, sem nada em volta: é o único
+   lugar do produto onde não há navegação, porque não há para onde ir antes. */
+.entrar {
+  max-inline-size: 480px;
+  margin: 0 auto;
+  padding: 96px 24px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.entrar h1 {
+  margin: 0;
+  /* 32, e nao 34: o portao recusou o 34 por estar fora da escala, e ele
+     estava certo — o degrau existe e e este. Heading/MD, o mesmo da Mesa. */
+  font-size: 32px;
+  line-height: 40px;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+
+.entrar-conta {
+  margin: 0;
+  font-size: 18px;
+  line-height: 28px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+.entrar form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.entrar form .campo { inline-size: 100%; }
+
+/* O filete marca a fala do produto sobre si — a mesma regra do aviso da
+   leitura. Chão marcaria conteúdo, e isto não é conteúdo. */
+.entrar-aviso {
+  margin: 0;
+  padding: 16px 0 16px 24px;
+  border-inline-start: 1px solid var(--foreground);
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+.entrar-nao-chegou {
+  padding: 24px 0 0;
+  border-block-start: 1px solid var(--border);
+}
+
+.entrar-nao-chegou h2 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 540;
+  color: var(--foreground);
+}
+
+.entrar-nao-chegou ul {
+  margin: 0;
+  padding-inline-start: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--muted-foreground);
+}
+
+.entrar-rodape {
+  margin: 8px 0 0;
+  padding-block-start: 24px;
+  border-block-start: 1px solid var(--border);
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}

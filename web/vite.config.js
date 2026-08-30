@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "node:path";
-import { PREFIXOS_API } from "../contrato/rotas.js";
+import { COM_SUBCAMINHO, EXATAS } from "../contrato/rotas.js";
 
 // O design system e um GERADOR, e nao parte do produto: ele e copia de terceiro
 // sob MIT, e por isso ficou de fora da fusao (DEC-0038 §5). O que entra aqui e a
@@ -11,6 +11,10 @@ import { PREFIXOS_API } from "../contrato/rotas.js";
 // quebrava no dia em que alguem clonasse so um dos dois — e quebrava em silencio,
 // servindo o ultimo build que tivesse por perto.
 const TOKENS = resolve(import.meta.dirname, "tokens");
+
+function alvo() {
+  return { target: process.env.MEKORA_API ?? "http://127.0.0.1:8000", changeOrigin: true };
+}
 
 export default defineConfig({
   plugins: [react()],
@@ -34,8 +38,14 @@ export default defineConfig({
      * scripts/rotas.py, e o Caddy de producao le a mesma. Escrita a mao ela
      * ficava certa em desenvolvimento e faltando em producao — e a rota nova
      * caia no SPA, voltava HTML, e o erro era `Unexpected token '<'`. */
-    proxy: Object.fromEntries(
-      PREFIXOS_API.map((r) => [r, { target: process.env.MEKORA_API ?? "http://127.0.0.1:8000", changeOrigin: true }]),
-    ),
+    /* As chaves sao EXPRESSOES REGULARES, e nao prefixos soltos. Com prefixo
+     * solto, `/entrar` casava tambem a TELA de entrar e a mandava para o
+     * backend — que respondia com o frontend legado. E so acontecia aqui: a
+     * borda de producao ja separava as duas formas, entao a tela abria no
+     * servidor e nao abria na maquina de quem a escreveu. */
+    proxy: Object.fromEntries([
+      ...COM_SUBCAMINHO.map((r) => [`^${r}/`, alvo()]),
+      ...EXATAS.map((r) => [`^${r}$`, alvo()]),
+    ]),
   },
 });

@@ -10,16 +10,18 @@
  * enxuta — resposta para `react-router` existe em qualquer lugar.
  */
 import { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, useNavigate, useParams, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams, useLocation } from "react-router-dom";
 import { MesaVazia } from "./jornadas/MesaVazia.jsx";
 import { MesaCheia } from "./jornadas/MesaCheia.jsx";
 import { Estante } from "./jornadas/Estante.jsx";
 import { Leitura } from "./jornadas/Leitura.jsx";
 import { AindaNao } from "./jornadas/AindaNao.jsx";
 import { Conta } from "./jornadas/Conta.jsx";
+import { Entrar } from "./jornadas/Entrar.jsx";
 import { ContaKindle } from "./jornadas/ContaKindle.jsx";
 import { LUGARES } from "./lugares.js";
 import { useJornada } from "./estado/useJornada.js";
+import { usePessoa } from "./estado/usePessoa.js";
 import { abrirLivro } from "./leitor/abrir.js";
 import { chaveDe } from "../../contrato/api.js";
 import { EXEMPLO_FILA, EXEMPLO_ESTANTE, EXEMPLO_FICHA, EXEMPLO_LEITURA } from "./exemplos.js";
@@ -28,7 +30,12 @@ import { EXEMPLO_FILA, EXEMPLO_ESTANTE, EXEMPLO_FICHA, EXEMPLO_LEITURA } from ".
  * porque tela que inventa dado esconde backend fora do ar. */
 /* Enquanto não há autenticação — a AUTH-001 está `proposed`, não aceita — a
  * pessoa é de exemplo. Fica nomeado para ninguém confundir com login. */
-const PESSOA = { nome: "Erik Abner", email: "erik@exemplo.com" };
+/* A pessoa VEM DO SERVIDOR agora. O que sobrou do exemplo é o nome, porque a
+ * conta guarda um e-mail e nada mais — a DEC-0039 §1 não pede nome, e pedir um
+ * dado que o produto não usa é coletar por hábito. */
+function comoChamar(pessoa) {
+  return pessoa ? { nome: pessoa.email.split("@")[0], email: pessoa.email } : null;
+}
 
 /* Aparelhos de exemplo, com os nomes do desenho. Enquanto o backend não os
  * serve, eles ficam aqui e não dentro da tela. */
@@ -108,21 +115,36 @@ function NaoEncontrada() {
   );
 }
 
+/* Uma página que só existe para quem entrou.
+ *
+ * Enquanto NÃO SE SABE, não decide nada: mandar para /entrar durante a
+ * verificação faria quem já está logado ser expulso a cada abertura de página,
+ * e voltar sozinho um instante depois. */
+function SoParaQuemEntrou({ acesso, children }) {
+  if (acesso.carregando) return <main className="carregando" aria-busy="true" />;
+  if (!acesso.pessoa) return <Navigate to="/entrar" replace />;
+  return children;
+}
+
 export function App() {
+  const acesso = usePessoa();
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/entrar" element={<Entrar />} />
         <Route path="/" element={<Mesa />} />
-        <Route path="/estante" element={<PaginaEstante />} />
+        {/* A estante É a conta (DEC-0018). Sem entrar não há o que listar —
+            e listar tudo seria mostrar a estante de todo mundo. */}
+        <Route path="/estante" element={<SoParaQuemEntrou acesso={acesso}><PaginaEstante /></SoParaQuemEntrou>} />
         <Route path="/leitura/:id" element={<PaginaLeitura />} />
         {LUGARES.filter((l) => !l.pronto).map((l) => (
           <Route key={l.id} path={l.rota} element={<AindaNao lugar={l} />} />
         ))}
         {/* Conta tem quatro páginas; só Preferências existe. As outras usam a
             mesma tela de "ainda não", que nomeia o lugar em vez de dar 404. */}
-        <Route path="/conta/preferencias" element={<Conta pessoa={PESSOA} />} />
-        <Route path="/conta" element={<ContaKindle pessoa={PESSOA} aparelhos={APARELHOS} />} />
-        <Route path="/conta/kindle" element={<ContaKindle pessoa={PESSOA} aparelhos={APARELHOS} />} />
+        <Route path="/conta/preferencias" element={<SoParaQuemEntrou acesso={acesso}><Conta pessoa={comoChamar(acesso.pessoa)} aoSair={acesso.sair} /></SoParaQuemEntrou>} />
+        <Route path="/conta" element={<SoParaQuemEntrou acesso={acesso}><ContaKindle pessoa={comoChamar(acesso.pessoa)} aparelhos={APARELHOS} aoSair={acesso.sair} /></SoParaQuemEntrou>} />
+        <Route path="/conta/kindle" element={<SoParaQuemEntrou acesso={acesso}><ContaKindle pessoa={comoChamar(acesso.pessoa)} aparelhos={APARELHOS} aoSair={acesso.sair} /></SoParaQuemEntrou>} />
         <Route path="/conta/privacidade" element={<AindaNao lugar={{ rotulo: "Privacidade", oQueE: "O que fica guardado, onde, e por quanto tempo." }} />} />
         <Route path="*" element={<NaoEncontrada />} />
       </Routes>

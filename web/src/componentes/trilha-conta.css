@@ -52,3 +52,23 @@
   .trilha { inline-size: 100%; }
   .trilha-item { padding: 16px 24px; font-size: 18px; line-height: 27px; }
 }
+
+/* Sair: no fim, atrás de um filete, e com o respiro que diz que não pertence à
+   navegação acima. Hierarquia é distância. */
+.trilha-sair {
+  margin-block-start: 32px;
+  padding-block-start: 24px;
+  border-block-start: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.trilha-sair p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}

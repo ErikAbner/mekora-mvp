@@ -14,6 +14,7 @@
  * interruptor. Pílula e círculo são os 5% que quebram a retidão, e funcionam por
  * serem raros.
  */
+import { Link } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import "./estante.css";
@@ -67,11 +68,29 @@ export function Estante({ livros = [], selecionado, aoAbrir }) {
             ))}
           </nav>
 
-          <ul className="grade">
-            {livros.map((l) => (
-              <Livro key={l.chave} {...l} />
-            ))}
-          </ul>
+          {/* A ESTANTE VAZIA PRECISA FALAR. Uma conta recém-criada chega
+              exatamente aqui, e uma tela em branco não distingue "você ainda não
+              tem nada" de "alguma coisa quebrou" — e quem acabou de entrar pela
+              primeira vez está inclinado a supor o segundo.
+
+              O texto diz o que ela é e onde começa, e o único caminho oferecido
+              é o que resolve: a Mesa. */}
+          {livros.length === 0 ? (
+            <div className="estante-vazia">
+              <h2>Sua estante ainda está vazia</h2>
+              <p>
+                Ela guarda o que você preparou: os documentos convertidos, as
+                notas que fez neles, e o que já foi para o Kindle.
+              </p>
+              <Link to="/" className="estante-comecar">Preparar um documento</Link>
+            </div>
+          ) : (
+            <ul className="grade">
+              {livros.map((l) => (
+                <Livro key={l.chave} {...l} />
+              ))}
+            </ul>
+          )}
         </div>
 
         <aside className="ficha" aria-label="Livro selecionado">

@@ -55,17 +55,31 @@ IGNORADAS = {
 
 
 def prefixos():
-    fora = set()
+    """Devolve `(exatas, com_subcaminho)`.
+
+    A divisão existe por causa de `/entrar`: o backend responde em
+    `/entrar/pedir` e `/entrar/{token}`, e `/entrar` sozinho é uma TELA — a
+    caixa de e-mail que a pessoa vê. Tratar tudo como prefixo mandaria a tela
+    para o backend; tratar tudo como exato deixaria o link do e-mail cair no
+    SPA.
+
+    Então um caminho só entra em `exatas` se o backend de fato responder nele
+    sem nada depois.
+    """
+    exatas, com_sub = set(), set()
     for rota in app.routes:
         caminho = getattr(rota, "path", "")
         if not caminho.startswith("/") or caminho in IGNORADAS:
             continue
-        primeiro = caminho.split("/")[1] if len(caminho.split("/")) > 1 else ""
-        # Um segmento com chave é o catch-all do SPA, não uma rota de API.
-        if not primeiro or primeiro.startswith("{"):
+        partes = [p for p in caminho.split("/") if p]
+        if not partes or partes[0].startswith("{"):
             continue
-        fora.add("/" + primeiro)
-    return sorted(fora)
+        raiz = "/" + partes[0]
+        if len(partes) == 1:
+            exatas.add(raiz)
+        else:
+            com_sub.add(raiz)
+    return sorted(exatas), sorted(com_sub)
 
 
 CABECALHO_JS = '''/* GERADO por scripts/rotas.py — não editar à mão.
@@ -74,30 +88,49 @@ CABECALHO_JS = '''/* GERADO por scripts/rotas.py — não editar à mão.
  * produção leem a MESMA lista, para que uma rota nova funcione nos dois lugares
  * ou em nenhum — e nunca só em desenvolvimento, que é o modo de falhar caro.
  *
+ * A LISTA VEM PARTIDA EM DUAS, e a partição custou uma sessão para aparecer:
+ *
+ *   COM_SUBCAMINHO  o backend responde ABAIXO deste caminho — /jobs/1/status,
+ *                   /entrar/{token}. O caminho sozinho não é dele.
+ *   EXATAS          o backend responde NELE — /eu, /health, /upload.
+ *
+ * `/entrar` é o caso que obriga a distinção: o backend responde em
+ * /entrar/pedir e /entrar/{token}, e /entrar sozinho é uma TELA. Tratado como
+ * prefixo simples, o pedido da tela ia para o backend — e ia SÓ EM
+ * DESENVOLVIMENTO, porque a borda de produção já separava. A tela abria no
+ * servidor e não abria na máquina de quem a escreveu.
+ *
  * Para atualizar:  python3 scripts/rotas.py
  */
 '''
 
 
-def escrever_js(lista):
+def escrever_js(exatas, com_sub):
     destino = RAIZ / "contrato" / "rotas.js"
-    corpo = CABECALHO_JS + "export const PREFIXOS_API = [\n"
-    corpo += "".join(f'  "{p}",\n' for p in lista)
-    corpo += "];\n"
+    corpo = CABECALHO_JS
+    corpo += "export const COM_SUBCAMINHO = [\n"
+    corpo += "".join(f'  "{p}",\n' for p in com_sub)
+    corpo += "];\n\nexport const EXATAS = [\n"
+    corpo += "".join(f'  "{p}",\n' for p in exatas)
+    corpo += "];\n\n/* Todos, para quem só precisa saber se um caminho é do backend. */\n"
+    corpo += "export const PREFIXOS_API = [...new Set([...COM_SUBCAMINHO, ...EXATAS])].sort();\n"
     return destino, corpo
 
 
-def escrever_caddy(lista):
+def escrever_caddy(exatas, com_sub):
     destino = RAIZ / "Caddyfile"
     atual = destino.read_text(encoding="utf-8")
     inicio = "\t# ── rotas do backend ── GERADO por scripts/rotas.py, não editar à mão\n"
     fim = "\t# ── fim das rotas geradas ──\n"
     bloco = inicio
-    bloco += "\thandle " + " ".join(f"{p}/*" for p in lista) + " {\n"
-    bloco += "\t\treverse_proxy backend:8000\n\t}\n"
-    # As rotas exatas, sem barra: /health responde em /health, não em /health/.
-    bloco += "\thandle " + " ".join(lista) + " {\n"
-    bloco += "\t\treverse_proxy backend:8000\n\t}\n"
+    if com_sub:
+        bloco += "\thandle " + " ".join(f"{p}/*" for p in com_sub) + " {\n"
+        bloco += "\t\treverse_proxy backend:8000\n\t}\n"
+    if exatas:
+        # Sem barra: /health responde em /health. E `/entrar` NÃO está aqui —
+        # o backend não responde nele, quem responde é a tela.
+        bloco += "\thandle " + " ".join(exatas) + " {\n"
+        bloco += "\t\treverse_proxy backend:8000\n\t}\n"
     bloco += fim
 
     if inicio in atual:
@@ -130,15 +163,18 @@ def main():
     p.add_argument("--conferir", action="store_true")
     a = p.parse_args()
 
-    lista = prefixos()
+    exatas, com_sub = prefixos()
+    lista = sorted(set(exatas) | set(com_sub))
 
-    colisao = conferir_colisao(lista)
+    # A colisão só é fatal para as EXATAS: `/entrar` de tela convive com
+    # `/entrar/pedir` de backend, porque a borda separa por caminho.
+    colisao = conferir_colisao(exatas)
     if colisao:
         print("COLISÃO entre rota de tela e rota de API: " + " ".join(colisao))
         print("Uma das duas precisa mudar de nome — a borda não tem como servir as duas.")
         return 1
 
-    saidas = [escrever_js(lista), escrever_caddy(lista)]
+    saidas = [escrever_js(exatas, com_sub), escrever_caddy(exatas, com_sub)]
 
     if a.conferir:
         ruim = [d for d, c in saidas if not d.exists() or d.read_text(encoding="utf-8") != c]

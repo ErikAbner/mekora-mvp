@@ -160,3 +160,46 @@
   font-size: 16px; line-height: 24px; text-align: center;
   text-wrap: pretty;
 }
+
+/* A estante sem nada dentro. Ocupa o lugar da grade, e não flutua no meio: o
+   vazio tem endereço, como o cheio teria. */
+.estante-vazia {
+  padding: 64px 0 0;
+  max-inline-size: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.estante-vazia h2 {
+  margin: 0;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 540;
+  color: var(--foreground);
+}
+
+.estante-vazia p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+/* Um caminho só, e ele é o que resolve. Dois botões aqui fariam a pessoa
+   escolher antes de ter o que escolher. */
+.estante-comecar {
+  margin-block-start: 8px;
+  padding: 10px 20px;
+  border: 1px solid var(--foreground);
+  background: var(--foreground);
+  color: var(--background);
+  font-size: 16px;
+  line-height: 24px;
+  text-decoration: none;
+}
+
+.estante-comecar:hover { background: var(--muted-foreground); border-color: var(--muted-foreground); }
+.estante-comecar:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }

@@ -98,14 +98,14 @@ const PADROES = Object.fromEntries(
   GRUPOS.flatMap((g) => g.escolhas).map((e) => [e.id, e.padrao]),
 );
 
-export function Conta({ pessoa }) {
+export function Conta({ pessoa , aoSair }) {
   const [pref, setPref] = useState(PADROES);
 
   return (
     <div className="mesa">
       <Cabecalho />
       <div className="conta">
-        <TrilhaConta pessoa={pessoa} aqui="preferencias" />
+        <TrilhaConta pessoa={pessoa} aoSair={aoSair} aqui="preferencias" />
 
         <main className="conta-painel">
           {GRUPOS.map((g) => (

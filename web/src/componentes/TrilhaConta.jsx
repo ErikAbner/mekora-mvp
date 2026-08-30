@@ -5,6 +5,7 @@
  * a diferença aparece para quem navega por teclado ou leitor de tela.
  */
 import { NavLink } from "react-router-dom";
+import { Botao } from "./Botao.jsx";
 import "./trilha-conta.css";
 
 const PAGINAS = [
@@ -14,7 +15,7 @@ const PAGINAS = [
   { id: "privacidade", rotulo: "Privacidade", rota: "/conta/privacidade" },
 ];
 
-export function TrilhaConta({ pessoa }) {
+export function TrilhaConta({ pessoa, aoSair }) {
   return (
     <aside className="trilha">
       <div className="pessoa">
@@ -37,6 +38,22 @@ export function TrilhaConta({ pessoa }) {
           </NavLink>
         ))}
       </nav>
+
+      {/* Sair fica no fim da trilha, separado por filete e longe da navegação.
+          Junto dos itens ele viraria mais um lugar para onde ir — e é o
+          contrário disso.
+
+          `perigo` seria exagero: sair não destrói nada, e um botão vermelho
+          para uma ação reversível gasta o alarme que a exclusão vai precisar. */}
+      {aoSair && (
+        <div className="trilha-sair">
+          <Botao onClick={aoSair}>Sair desta conta</Botao>
+          <p>
+            Você sai deste navegador. Para voltar, peça outro link — não há
+            senha para lembrar.
+          </p>
+        </div>
+      )}
     </aside>
   );
 }

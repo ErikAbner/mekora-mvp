@@ -178,3 +178,33 @@ export async function acompanhar(jobId, aoMudar, { intervaloMs = 1500, tetoMs = 
   }
   return { estado: "erro", etapa: "acompanhamento", motivo: `parei de perguntar depois de ${Math.round(tetoMs / 60000)} minutos` };
 }
+
+/* ─── Entrar ────────────────────────────────────────────────────────────────
+ *
+ * As tres chamadas do acesso. Nenhuma delas manda ou recebe a sessao: ela vive
+ * num cookie httpOnly, que o navegador anexa sozinho e o JavaScript nao le
+ * (DEC-0039 §4). E por isso que nao ha nada aqui parecido com `guardarSessao`.
+ */
+
+/** POST /entrar/pedir — pede o link. Responde igual sempre, inclusive no limite.
+ *
+ * O caminho tem `/pedir` porque `/entrar` sozinho e a TELA. Abaixo dela, o
+ * backend; nela, a caixa de e-mail. A borda separa por caminho, e nao por
+ * metodo HTTP — que seria uma sutileza a mais para alguem quebrar sem ver. */
+export function pedirLink(email) {
+  return pede("/entrar/pedir", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+}
+
+/** GET /eu — quem esta logado. Nao entrar NAO e erro: e estado previsto. */
+export function quemSouEu() {
+  return pede("/eu");
+}
+
+/** POST /sair — encerra no servidor, e nao so apaga o cookie. */
+export function sair() {
+  return pede("/sair", { method: "POST" });
+}

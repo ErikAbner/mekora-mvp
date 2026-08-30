@@ -49,7 +49,11 @@ def _gravar_cookie(resposta: Response, token: str) -> None:
     )
 
 
-@router.post("/entrar", status_code=204)
+# O caminho é /entrar/pedir e não /entrar porque /entrar é uma TELA — a caixa
+# de e-mail que a pessoa vê. Os dois no mesmo caminho só se distinguiriam pelo
+# método HTTP, e uma borda que roteia por método é uma sutileza a mais para
+# alguém quebrar sem perceber. Abaixo de /entrar, a divisão é por caminho.
+@router.post("/entrar/pedir", status_code=204)
 def entrar(pedido: PedidoDeEntrada, request: Request, db: Session = Depends(get_db)) -> Response:
     """Pede um link.
 
