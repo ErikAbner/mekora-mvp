@@ -1893,6 +1893,147 @@ async function stylesDeCapa() {
   return relato;
 }
 
+// --- Ato 20 - o registro de dado, o titulo de capa, e o Roboto ------------
+//
+// O Ato 19 mediu os 43 estranhos e reabriu a questao do mono com um argumento
+// melhor do que o meu primeiro.
+//
+// EU DISSE duas coisas erradas sobre o mono, em ordem. Primeiro que ele entrava
+// no sistema como "registro tecnico", com base no PROTOTIPO e nao na base —
+// argumento mal fundamentado. Depois, corrigindo, que ele era so fonte de capa,
+// porque no Figma o mono aparecia so la — verdade sobre a FONTE, e falso sobre
+// o PAPEL.
+//
+// O que o Ato 19 mostrou: existem 28 nos de leitura numerica na interface —
+// "24 MB de 24 MB" nas quatro Mesa, e "24" nas duas Estante — todos em Satoshi.
+// O papel existe. Alguem escolheu uma sans neutra porque algarismo de serifada
+// de display fica errado num contador, e a escolha estava certa e nao declarada.
+//
+// E a razao que fecha: FIGURA TABULAR. Num contador de progresso o digito nao
+// pode mudar de largura ao trocar, senao o numero treme enquanto conta. Mono
+// resolve isso por construcao. Por isso o registro vira IBM Plex Mono e nao
+// Zodiak nem Satoshi.
+//
+// A entrelinha segue corpo + 8 como o resto do sistema. Os nos sao de uma
+// linha, entao ela nunca aparece — a regra e adotada por consistencia, de graca.
+//
+// TITULO DE CAPA: corpo + 4. Mesmo mecanismo do sistema, constante mais
+// apertada porque display quer menos entrelinha. Os dois grupos grandes, 24/24
+// com 14 nos e 32/44 com 11, sao de UMA LINHA — mudar e invisivel. So o 32/36 e
+// o 48/64 quebram, e os dois ja estao perto do destino.
+//
+// O QUE NAO E TOCADO: os 12 especimes "Ab" em Satoshi nas telas de aparencia.
+// Essas telas oferecem escolha de fonte ao leitor, e a Satoshi e uma das
+// opcoes. Nao e defeito, e conteudo — e provavelmente decisao de produto.
+
+const REGISTRO_DADO = [
+  { nome: "Dado/Medida",   corpo: 14, entre: 22, de: { familia: "Satoshi Variable", peso: "Regular", corpo: 14 } },
+  { nome: "Dado/Contagem", corpo: 16, entre: 24, de: { familia: "Satoshi Variable", peso: "Medium",  corpo: 16 } },
+];
+
+const TITULO_CAPA = [
+  { de: [24, 24], para: 28 },
+  { de: [32, 44], para: 36 },
+  { de: [48, 64], para: 52 },
+  { de: [30, 33], para: 34 },
+  { de: [32, 36], para: 36 },
+];
+
+async function registroDeDado() {
+  const relato = [];
+  const todos = figma.currentPage.findAllWithCriteria({ types: ["TEXT"] });
+
+  // A · o registro numerico vira IBM Plex Mono
+  for (const d of REGISTRO_DADO) {
+    const jah = await acharTexto(d.nome);
+    if (jah.length) { relato.push({ style: d.nome, estado: "ja existia", tocados: 0 }); continue; }
+
+    const fonte = { family: "IBM Plex Mono", style: "Regular" };
+    let st;
+    try {
+      await figma.loadFontAsync(fonte);
+      st = figma.createTextStyle();
+      st.name = d.nome; st.fontName = fonte; st.fontSize = d.corpo; st.lineHeight = px(d.entre);
+    } catch (e) { relato.push({ style: d.nome, estado: "falhou: " + e.message, tocados: 0 }); continue; }
+
+    const alvos = todos.filter(function (n) {
+      if (ehCapa(n) || n.textStyleId !== "" || n.fontName === figma.mixed) return false;
+      return n.fontName.family === d.de.familia && n.fontName.style === d.de.peso && n.fontSize === d.de.corpo;
+    });
+    const multi = alvos.filter(function (n) { return n.height > d.corpo * 2; });
+    for (const n of alvos) {
+      await figma.loadFontAsync(n.fontName);
+      await n.setTextStyleIdAsync(st.id);
+    }
+    relato.push({
+      style: d.nome, fonte: "IBM Plex Mono Regular", valor: d.corpo + "/" + d.entre,
+      de: d.de.familia + " " + d.de.peso, ligados: alvos.length, multilinha: multi.length,
+      porque: "figura tabular: num contador o digito nao pode mudar de largura ao trocar",
+      exemplos: alvos.slice(0, 3).map(function (n) { return n.characters.slice(0, 24) + " [" + telaDe(n) + "]"; }),
+      tocados: alvos.length,
+    });
+  }
+
+  // B · o Roboto solto vai para Zodiak
+  const roboto = todos.filter(function (n) {
+    return n.fontName !== figma.mixed && n.fontName.family === "Roboto";
+  });
+  for (const n of roboto) {
+    const novo = { family: "Zodiak Variable", style: "Regular" };
+    await figma.loadFontAsync(novo);
+    await figma.loadFontAsync(n.fontName);
+    n.fontName = novo;
+  }
+  relato.push({
+    acao: "Roboto solto", nos: roboto.length,
+    detalhe: roboto.map(function (n) { return n.characters.slice(0, 20) + " [" + telaDe(n) + "]"; }),
+    porque: "padrao do Figma vindo de um colar — nunca foi escolha",
+    tocados: roboto.length,
+  });
+
+  // C · titulo de capa: corpo + 4
+  const mudados = [];
+  for (const t of TITULO_CAPA) {
+    const alvos = todos.filter(function (n) {
+      if (!ehCapa(n) || n.textStyleId !== "" || n.fontName === figma.mixed) return false;
+      const v = valorDe(n);
+      return v && v.corpo === t.de[0] && v.entre === t.de[1];
+    });
+    if (!alvos.length) continue;
+    const multi = alvos.filter(function (n) { return n.height > t.de[1] * 1.5; });
+    for (const n of alvos) {
+      await figma.loadFontAsync(n.fontName);
+      n.lineHeight = px(t.para);
+    }
+    mudados.push({
+      de: t.de[0] + "/" + t.de[1], para: t.de[0] + "/" + t.para,
+      nos: alvos.length, multilinha: multi.length,
+      aparencia: multi.length === 0 ? "uma linha so: invisivel" : multi.length + " quebram e mudam de altura",
+    });
+  }
+  relato.push({ acao: "titulo de capa vira corpo + 4", grupos: mudados, tocados: mudados.reduce(function (a, m) { return a + m.nos; }, 0) });
+
+  // D · o que sobrou em Satoshi, so contado
+  const sobrou = {};
+  for (const n of figma.currentPage.findAllWithCriteria({ types: ["TEXT"] })) {
+    if (n.fontName === figma.mixed || n.fontName.family !== "Satoshi Variable") continue;
+    const v = valorDe(n);
+    const k = n.fontName.style + " " + (v ? v.corpo + "/" + v.entre : "?") + "  [" + telaDe(n) + "]";
+    if (!sobrou[k]) sobrou[k] = { nos: 0, exemplo: n.characters.slice(0, 24) };
+    sobrou[k].nos++;
+  }
+  relato.push({
+    acao: "Satoshi que sobrou — NAO tocado",
+    grupos: Object.keys(sobrou).map(function (k) { return { onde: k, nos: sobrou[k].nos, exemplo: sobrou[k].exemplo }; })
+                  .sort(function (a, b) { return b.nos - a.nos; }),
+    porque: "os especimes 'Ab' sao as opcoes de fonte que a tela de aparencia oferece ao " +
+            "leitor. Nao e defeito, e conteudo — e provavelmente decisao de produto.",
+    tocados: 0,
+  });
+
+  return relato;
+}
+
 // ─── Ligação com a interface ───────────────────────────────────────────────
 
 figma.ui.onmessage = async (msg) => {
@@ -1918,6 +2059,7 @@ figma.ui.onmessage = async (msg) => {
     else if (msg.tipo === "adotar") relato = await adotarEContar();
     else if (msg.tipo === "capas") relato = await capasViramZodiak();
     else if (msg.tipo === "styles-capa") relato = await stylesDeCapa();
+    else if (msg.tipo === "dado") relato = await registroDeDado();
     else relato = [{ estado: "ação desconhecida" }];
 
     figma.ui.postMessage({ ok: true, relato });
