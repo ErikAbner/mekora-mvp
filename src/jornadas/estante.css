@@ -1,0 +1,160 @@
+.estante {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 476px;
+  gap: 48px;
+  align-items: start;
+  padding: 64px 32px 128px;
+}
+
+.estante-grade { display: flex; flex-direction: column; gap: 40px; min-inline-size: 0; }
+
+/* Recorte nomeado. Zero raio: e acao e estrutura, nao dado. */
+.recortes {
+  display: flex; align-self: flex-start;
+  padding: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+.recortes button {
+  padding: 14px 24px; border: 0;
+  background: transparent; color: var(--muted-foreground);
+  font-size: 16px; line-height: 24px; cursor: pointer;
+}
+.recortes button[aria-pressed="true"] {
+  background: var(--foreground);
+  color: var(--primary-foreground);
+}
+.recortes button:not([aria-pressed="true"]):hover { background: var(--muted); }
+.recortes.vista { align-self: stretch; }
+.recortes.vista button { flex: 1 0 0; }
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 64px 48px;
+  margin: 0; padding: 0; list-style: none;
+}
+
+.livro { display: flex; flex-direction: column; gap: 24px; }
+
+.capa-caixa { position: relative; display: flex; flex-direction: column; }
+
+/* A capa e MIDIA RECORTADA: 2px de raio, o unico lugar onde ele existe, para o
+ * canto nao brigar com a borda. */
+.capa {
+  inline-size: 100%; aspect-ratio: 420 / 594;
+  object-fit: cover; display: block;
+  border: 2px solid var(--foreground);
+  border-radius: 2px;
+}
+
+/* O marcador de notas e forma, nao icone: a mascara vai no PROPRIO marcador, com
+ * o fundo escuro nele e o numero dentro.
+ *
+ * A primeira versao punha a forma como IRMA do numero, absoluta atras. Ficava
+ * certa na tela e ERRADA na arvore: o fundo do numero passava a ser a pagina, e
+ * o portao acusou 1,05 de contraste — #f3f3f3 sobre #f9f9f9.
+ *
+ * Nao era falso alarme para calar. O portao avisa de si mesmo que nao resolve
+ * sobreposicao, entao o que ele devolve serve para RECUSAR; e recusar aqui
+ * estava certo, porque uma arvore que so fica certa quando pintada e uma arvore
+ * que leitor de tela, seletor de CSS e instrumento nenhum consegue ler. Com a
+ * mascara no proprio elemento, o fundo do numero E o balao — na tela e na
+ * arvore. */
+.marcador {
+  position: absolute; inset-block-start: -12px; inset-inline-end: 12px;
+  z-index: 1; inline-size: 36px; block-size: 50px;
+  display: flex; justify-content: center; padding-block-start: 12px;
+  background: var(--foreground);
+  mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat;
+  mask-size: contain; -webkit-mask-size: contain;
+}
+.marcador-numero {
+  color: var(--primary-foreground);
+  font-size: 14px; line-height: 22px;   /* Dado/Medida */
+}
+
+.livro-texto { display: flex; flex-direction: column; gap: 16px; }
+.livro-texto h3 {
+  margin: 0;
+  font-size: 24px; line-height: 32px;   /* Body/Large */
+  font-weight: 400;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+.livro-texto p {
+  margin: 0;
+  font-size: 20px; line-height: 30px;   /* Body/Medium */
+  color: var(--muted-foreground);
+}
+
+.ficha { display: flex; flex-direction: column; gap: 40px; position: sticky; inset-block-start: 24px; }
+
+.ficha-caixa {
+  display: flex; flex-direction: column; gap: 32px;
+  padding: 40px;
+  background: var(--background);
+  border: 1px solid var(--border);
+}
+.ficha-caixa header { display: flex; flex-direction: column; gap: 20px; }
+.ficha-caixa h2 {
+  margin: 0;
+  font-size: 32px; line-height: 40px; font-weight: 540;   /* Heading/MD */
+  color: var(--card-foreground);
+  text-wrap: pretty;
+}
+.ficha-meta { margin: 0; font-size: 20px; line-height: 30px; color: var(--muted-foreground); }
+
+.progresso { block-size: 28px; padding: 6px; background: var(--card); }
+.progresso-feito { block-size: 100%; background: var(--foreground); }
+
+.ficha-notas { display: flex; flex-direction: column; gap: 16px; }
+.ficha-notas h3 {
+  margin: 0;
+  font-size: 24px; line-height: 32px; font-weight: 400;
+  color: var(--muted-foreground);
+}
+.ficha-notas blockquote {
+  margin: 0; padding: 16px 0 16px 16px;
+  border-inline-start: 1px solid var(--muted-foreground);
+  font-size: 20px; line-height: 30px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+.etiquetas { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; }
+/* Pilula por regra: `--rp` e de DADO — tag, chip, trilho, interruptor. */
+.etiqueta {
+  padding: 12px 24px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 16px; line-height: 24px;   /* Body/Small */
+  color: var(--muted-foreground);
+}
+
+.ficha-acoes { display: flex; flex-direction: column; gap: 16px; }
+.ficha-acoes button {
+  padding: 17px 32px;
+  font-size: 16px; line-height: 24px;
+  cursor: pointer;
+}
+.ficha-acoes .primaria {
+  border: 0; background: var(--primary); color: var(--primary-foreground);
+}
+.ficha-acoes .secundaria {
+  border: 1px solid var(--border); background: var(--background); color: var(--muted-foreground);
+}
+.ficha-acoes .secundaria:hover { background: var(--muted); }
+
+:where(.recortes button, .ficha-acoes button):focus-visible {
+  outline: 1px solid var(--foreground); outline-offset: 2px;
+}
+
+@media (max-width: 1279px) {
+  .estante { grid-template-columns: minmax(0, 1fr); padding: 40px 24px 80px; }
+  .ficha { position: static; }
+  .grade { gap: 40px 24px; }
+  .livro-texto h3 { font-size: 20px; line-height: 28px; }
+  .livro-texto p { font-size: 18px; line-height: 27px; }
+  .ficha-caixa h2 { font-size: 24px; line-height: 32px; }
+}

@@ -22,14 +22,26 @@ Onde o desenho traz um valor solto que o sistema já nomeou, o token vence, porq
 | `#d5d5d5` (links do rodapé) | `text/on-inverse` `#f3f3f3` | não existe no sistema |
 | `#585858` | `text/primary` `#535353` | idem |
 
-## Geometria: o raio dos chips
+## Geometria: o raio dos chips — e um erro meu, corrigido
 
-Os chips de formato tinham `border-radius: 16px`. **Foram para zero.**
+Os chips de formato tinham `border-radius: 16px`. Eu os **zerei**, citando *"raio
+zero em ação e estrutura é REGRA"*.
 
-Raio zero em ação e estrutura é **REGRA**, e a razão está escrita: pílula e círculo
-são os 5% que quebram a regra, e funcionam *por serem raros* — numa composição
-reta, uma curva vira sinal. Seis chips arredondados gastariam esse sinal em algo
-que não é sinal nenhum.
+**A regra existe e não cobre este caso.** Ela é explícita sobre o que recebe cada
+valor:
+
+```
+--r1  0px      ação e estrutura: botão, campo, card, lista, folha
+--rp  pílula   dado: tag, chip, trilho, interruptor
+```
+
+Um chip de formato de arquivo é **dado**. Por regra ele é **pílula**. O desenho
+estava em 16px, que é errado dos dois lados — nem a nitidez do zero, nem a curva
+de verdade —, e a minha correção trocou um erro por outro.
+
+Corrigido para `999px`. Fica registrado porque o defeito foi citar uma regra
+verdadeira para um caso que ela não governa, e isso é mais difícil de pegar do
+que inventar regra.
 
 ## Tipografia: três corpos fora da escala
 
@@ -53,3 +65,43 @@ a página é o caso em que uma sombra sutil é o certo. Ficaram.
 **A largura de 1920px do quadro.** O desenho é de uma tela específica; a
 implementação é fluida, com o conteúdo limitado por `max-width`. Copiar 1920 fixo
 seria copiar a moldura em vez do desenho.
+
+---
+
+# Estante — grade (`895:7315`)
+
+## Os três estados do desenho falham AA. Os três do sistema passam.
+
+Este é o desvio que mais importa, e não é preferência: é conserto.
+
+| papel | no desenho | sobre base / sunken | no sistema | sobre base / sunken |
+|---|---|---|---|---|
+| ok | `#1da832` | 2,98 / 2,82 **falha** | `#2f7d55` | 4,77 / 4,52 passa |
+| perigo | `#dd2525` | 4,57 / 4,33 **falha** | `#b23b2a` | 5,62 / 5,33 passa |
+| atenção | `#e2791e` | 2,85 / 2,71 **falha** | `#976519` | 4,76 / 4,52 passa |
+
+## Cor: mais sete valores soltos
+
+`#d8d8d8` e `#dfdfdf` e `#e0e0e0` viraram `border/subtle`. `#636363` e `#666668` e
+`#727274` viraram `text/secondary`. `#d3d3d3` virou `text/on-inverse`. E o
+`#0c0d0d` da borda da capa virou `text/strong` — ele é o valor **antigo** do
+`text/strong`, de antes da reconciliação neutra.
+
+## Um alarme do portão que era verdadeiro, e o conserto certo
+
+O portão acusou o número do marcador de notas em **1,05** — `#f3f3f3` sobre
+`#f9f9f9`. Na tela ele estava certo, sobre o balão escuro.
+
+**Não era falso alarme para calar.** A forma do balão estava como *irmã*
+absolutamente posicionada atrás do número, então a árvore dizia que o fundo do
+número era a página. Uma árvore que só fica certa quando pintada é uma árvore que
+leitor de tela, seletor de CSS e instrumento nenhum consegue ler.
+
+O conserto foi pôr a máscara no **próprio** elemento, com o fundo escuro nele e o
+número dentro. Agora o fundo do número é o balão na tela **e** na árvore.
+
+## O que veio do desenho sem mudar
+
+O raio de pílula da etiqueta `#Design` e a borda de 2px na capa. Os dois estão
+certos por regra: `--rp` é de dado (tag, chip, trilho, interruptor) e `--rm` é de
+mídia recortada, para o canto não brigar com a borda.

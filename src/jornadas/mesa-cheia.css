@@ -1,0 +1,77 @@
+.preparo { display: flex; justify-content: center; padding: 40px 64px 128px; }
+
+.preparo-caixa {
+  display: flex; flex-direction: column; gap: 32px;
+  width: 100%; max-width: 1096px; padding: 40px 32px;
+  background: var(--card);
+}
+
+.preparo-topo { display: flex; flex-direction: column; gap: 16px; }
+.preparo-topo h2 {
+  margin: 0;
+  font-size: 32px; line-height: 40px; font-weight: 540;   /* Heading/MD */
+  color: var(--foreground);
+}
+
+.resumo { display: flex; flex-wrap: wrap; gap: 24px; margin: 0; }
+.contagem { font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
+
+/* Numero sai do modelo e se le em monoespacada: num contador o digito nao pode
+ * mudar de largura ao trocar, senao o numero treme enquanto conta. */
+.dado {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+}
+
+.adicionados { margin: 0; font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
+
+.lista { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+
+/* O chao marca o item; nao ha borda em volta de cada um. As camadas vem do
+ * fundo, e um filete por grupo — nao por item. */
+.arquivo {
+  display: flex; flex-direction: column; gap: 12px;
+  padding: 20px 0;
+  border-block-end: 1px solid var(--border);
+}
+.arquivo:last-child { border-block-end: 0; }
+
+.arquivo-topo { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.arquivo-nome {
+  font-size: 20px; line-height: 30px;    /* Body/Medium */
+  color: var(--foreground);
+}
+.arquivo-estado { font-size: 16px; line-height: 24px; }
+
+/* Estado tem cor, e e um dos tres enderecos onde ela e permitida. */
+.pronto   .arquivo-estado { color: var(--success); }
+.erro     .arquivo-estado { color: var(--destructive); }
+.enviando .arquivo-estado { color: var(--warning); }
+.fila     .arquivo-estado { color: var(--muted-foreground); }
+
+.barra { block-size: 4px; background: var(--muted); }
+.barra-feita { block-size: 100%; background: var(--foreground); }
+.erro .barra-feita { background: var(--destructive); }
+
+.arquivo-detalhe {
+  display: flex; flex-wrap: wrap; gap: 8px; margin: 0;
+  font-size: 16px; line-height: 24px;    /* Label/Medium */
+  color: var(--muted-foreground);
+}
+.arquivo-detalhe .dado { font-size: 14px; line-height: 22px; }  /* Dado/Medida */
+
+.preparo-caixa .primaria {
+  align-self: flex-start;
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 16px 32px; border: 0;
+  background: var(--primary); color: var(--primary-foreground);
+  font-size: 16px; line-height: 24px; font-weight: 540;
+  cursor: pointer;
+}
+
+@media (max-width: 1023px) {
+  .preparo { padding: 24px; }
+  .preparo-topo h2 { font-size: 24px; line-height: 32px; }
+  .arquivo-nome { font-size: 18px; line-height: 27px; }
+}
