@@ -133,19 +133,29 @@ simpatia de uma curva de verdade."*
 
 ## Tipografia · REGRA `DEC-0035`, `DEC-0037`
 
-Os dezesseis styles são todos **Zodiak Variable** — serifada em tudo, e isso é decisão de
-produto pela `DEC-0035`, não economia.
+**Duas famílias, e cada uma tem um papel escrito.**
 
-**Mas o arquivo tem quatro famílias, não uma.** As capas geradas usam `Satoshi Variable`
-(72 nós), `IBM Plex Mono` (16) e `Archivo` (2). Nenhuma tem style, e nenhuma está no
-sistema. Ver *As capas geradas* abaixo.
+- **Zodiak Variable** — a interface inteira e os títulos de capa. Serifada em tudo, e isso é
+  decisão de produto pela `DEC-0035`, não economia.
+- **IBM Plex Mono** — a **leitura de dado**: contador, medida, percentual, numeração de capa.
 
-E há **um buraco declarado**: o produto usa **monoespaçada** para o registro técnico —
-numeração, formato de arquivo, metadado —, o protótipo declara `--mono` para isso, e **não
-existe style de mono** entre os dezesseis. Hoje esse papel é servido por fonte solta.
+A razão do mono é **figura tabular**, e não estética: num contador o dígito não pode mudar de
+largura ao trocar, senão o número treme enquanto conta. Mono resolve isso por construção.
 
-Dos 392 nós que estavam sem style, **33 foram adotados** em 2026-08-29 por baterem exatamente
-com um style existente — mudança de zero pixels. Restam 359.
+Isso foi descoberto ao contrário. O papel já existia — 28 nós de `"24 MB de 24 MB"` e `"24"`
+na Mesa e na Estante — mas estava vestido de **Satoshi**, uma terceira família que ninguém
+tinha declarado. Alguém escolheu uma sans neutra porque algarismo de serifada de display fica
+errado num contador; **a escolha estava certa e não estava escrita.**
+
+Saíram em 29/08: `Satoshi` da interface e das capas, `Archivo` (2 nós) e um `Roboto` solto —
+padrão do Figma vindo de um colar, que nunca foi escolha.
+
+**Satoshi permanece em 14 nós, de propósito:** são os espécimes `Ab` das telas
+`Leitura · aparência`. Essas telas oferecem **escolha de fonte ao leitor**, e Satoshi é uma
+das opções. Não é sistema, é conteúdo.
+
+Dos 392 nós que estavam sem style, **33 foram adotados** por baterem exatamente com um style
+existente, e mais **86** ganharam style próprio — capa e dado. Restam 273.
 
 ### A escala, nos dois modos
 
@@ -221,6 +231,16 @@ peso é Italic. É um **rótulo de data**. O tracking de `23.8px` — **119% do 
 um caractere inteiro entre letras — não foi tocado: a hipótese é que seja 10× o pretendido,
 já que `2.38px` daria 11,9%, tracking de rótulo largo normal. Um zero a mais num campo.
 
+### Dado · REGRA
+
+| style | fonte | valor | onde |
+|---|---|---|---|
+| `Dado/Medida` | IBM Plex Mono Regular | 14/22 | contador, medida, percentual |
+| `Dado/Contagem` | IBM Plex Mono Regular | 16/24 | contagem na Estante |
+
+Entrelinha por `corpo + 8` como o resto do sistema. Os nós são de uma linha, então ela nunca
+aparece — a regra é adotada por consistência, de graça.
+
 ### As capas geradas
 
 **São conteúdo, não interface, e a diferença é operacional.** Numa capa o corpo do título
@@ -238,9 +258,23 @@ isso. Aqui a mudança melhora, não só uniformiza.
 O `Archivo`, com 2 nós, sai: duas ocorrências de uma terceira família não fazem trabalho que
 as outras não façam. Isso é acidente, não decisão.
 
-O `IBM Plex Mono` é o caso a pensar duas vezes. Os 16 nós são numeração e formato — `01`,
-`Epub`. **Mono ali carrega significado**: é o registro técnico. Trocar por serifada perde uma
-distinção que o próprio sistema faz.
+**As styles de capa**, criadas em 29/08:
+
+| style | fonte | valor |
+|---|---|---|
+| `Capa/Data` | Zodiak Italic | 10/auto |
+| `Capa/Credito` | Zodiak Regular | 10/auto |
+| `Capa/Nota` | Zodiak Regular | 9/12 |
+| `Capa/Numero` | IBM Plex Mono | 8/auto |
+| `Capa/Formato` | IBM Plex Mono | 10/auto |
+
+**`auto` é decisão, não omissão:** são rótulos de uma linha, e a entrelinha natural da fonte é
+a certa quando não há segunda linha para espaçar.
+
+**O título de capa segue `corpo + 4`**, não `corpo + 8`: mesmo mecanismo do sistema, constante
+mais apertada porque display quer menos entrelinha. Dá `24/28`, `32/36`, `48/52`, `30/34`.
+Antes disso a razão variava de **1,00 a 1,38 no mesmo papel** — não era escala, era falta de
+regra. Vinte e sete nós, dos quais **quatro mudaram de altura**.
 
 ### O `28/24` é conteúdo, não tipografia
 
