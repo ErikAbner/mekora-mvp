@@ -1767,6 +1767,132 @@ async function capasViramZodiak() {
   return relato;
 }
 
+// --- Ato 19 - as styles de capa, e os 43 estranhos da interface -----------
+//
+// O Ato 18 mediu e derrubou uma decisao que o Erik e eu tinhamos tomado. Eu
+// perguntei "o mono entra no sistema?" argumentando que o produto usa mono para
+// o registro tecnico, e o argumento veio do PROTOTIPO, que declara --mono e usa
+// em rotulos de 8 e 9px. Mas a base e o Figma pela DEC-0037, e la o mono aparece
+// em exatamente um lugar: as 16 numeracoes das capas. Fora delas, zero.
+//
+// Entao o mono e fonte de CAPA e nao fonte de sistema. Duas styles, nao uma
+// escala. Criar Mono/Small e Mono/Medium seria inventar um registro que a base
+// nao usa — o mesmo erro que esta migracao passou o dia desfazendo.
+//
+// O QUE ESTE ATO CRIA: as cinco styles de capa cujo valor e inequivoco, uma
+// unica metrica em cada uma. Entrelinha AUTO onde ela ja era auto, e isso e
+// decisao e nao omissao: sao rotulos de uma linha, e a entrelinha natural da
+// fonte e a certa quando nao ha segunda linha para espacar.
+//
+// O QUE ELE NAO CRIA: a style de TITULO. Os titulos de capa tem 24/24, 32/44,
+// 48/64, 32/36, 30/33 — e a razao varia de 1,00 a 1,37 no mesmo papel. Isso nao
+// e escala, e falta de regra, e escolher uma razao muda a aparencia de 25 nos.
+// Ele relata e propoe; a mao fica parada.
+//
+// O QUE ELE MEDE: os 42 nos de Satoshi e o 1 de Roboto que estao na INTERFACE,
+// nao nas capas. Ninguem sabia que existiam ate o Ato 18.
+
+const STYLES_CAPA = [
+  { nome: "Capa/Data",    familia: "Zodiak Variable", peso: "Italic",  corpo: 10, entre: "AUTO", de: { corpo: 10, peso: "Italic" } },
+  { nome: "Capa/Credito", familia: "Zodiak Variable", peso: "Regular", corpo: 10, entre: "AUTO", de: { corpo: 10, peso: "Regular" } },
+  { nome: "Capa/Nota",    familia: "Zodiak Variable", peso: "Regular", corpo: 9,  entre: 12,     de: { corpo: 9,  peso: "Regular" } },
+  { nome: "Capa/Numero",  familia: "IBM Plex Mono",   peso: "Regular", corpo: 8,  entre: "AUTO", de: { corpo: 8,  peso: "Regular" } },
+  { nome: "Capa/Formato", familia: "IBM Plex Mono",   peso: "Regular", corpo: 10, entre: "AUTO", de: { corpo: 10, peso: "Regular" } },
+];
+
+function ehCapa(no) {
+  return telaDe(no).indexOf("Capa para arquivos") === 0;
+}
+
+async function stylesDeCapa() {
+  const relato = [];
+  const todos = figma.currentPage.findAllWithCriteria({ types: ["TEXT"] });
+
+  // A · os 43 estranhos da interface, so medidos
+  const estranhos = todos.filter(function (n) {
+    if (ehCapa(n)) return false;
+    if (n.fontName === figma.mixed) return false;
+    return n.fontName.family !== "Zodiak Variable";
+  });
+  const agrupado = {};
+  for (const n of estranhos) {
+    const v = valorDe(n);
+    const k = n.fontName.family + " " + n.fontName.style + "  " + (v ? v.corpo + "/" + v.entre : "?") +
+              "  [" + telaDe(n) + "]" + (n.textStyleId ? "  COM STYLE" : "");
+    if (!agrupado[k]) agrupado[k] = { nos: 0, exemplo: n.characters.slice(0, 34) };
+    agrupado[k].nos++;
+  }
+  relato.push({
+    acao: "fontes estranhas NA INTERFACE — so medido",
+    total: estranhos.length,
+    grupos: Object.keys(agrupado).map(function (k) { return { onde: k, nos: agrupado[k].nos, exemplo: agrupado[k].exemplo }; })
+                  .sort(function (a, b) { return b.nos - a.nos; }),
+    tocados: 0,
+  });
+
+  // B · criar as cinco styles de capa e ligar
+  for (const st of STYLES_CAPA) {
+    const jah = await acharTexto(st.nome);
+    if (jah.length) { relato.push({ style: st.nome, estado: "ja existia — nada criado", tocados: 0 }); continue; }
+
+    const fonte = { family: st.familia, style: st.peso };
+    let novo;
+    try {
+      await figma.loadFontAsync(fonte);
+      novo = figma.createTextStyle();
+      novo.name = st.nome;
+      novo.fontName = fonte;
+      novo.fontSize = st.corpo;
+      novo.lineHeight = st.entre === "AUTO" ? { unit: "AUTO" } : px(st.entre);
+    } catch (e) {
+      relato.push({ style: st.nome, estado: "falhou ao criar: " + e.message, tocados: 0 });
+      continue;
+    }
+
+    // Ligar so os nos de CAPA que batem exatamente, e que ainda nao tem style.
+    const alvos = todos.filter(function (n) {
+      if (!ehCapa(n) || n.textStyleId !== "") return false;
+      if (n.fontName === figma.mixed) return false;
+      if (n.fontName.family !== st.familia || n.fontName.style !== st.peso) return false;
+      return n.fontSize === st.de.corpo;
+    });
+    for (const n of alvos) await n.setTextStyleIdAsync(novo.id);
+
+    relato.push({
+      style: st.nome, fonte: st.familia + " " + st.peso, valor: st.corpo + "/" + st.entre,
+      ligados: alvos.length,
+      entrelinha_auto: st.entre === "AUTO"
+        ? "AUTO e decisao, nao omissao: rotulo de uma linha, e a entrelinha natural da fonte e a certa quando nao ha segunda linha"
+        : "explicita",
+      tocados: alvos.length,
+    });
+  }
+
+  // C · os titulos, relatados e nao tocados
+  const titulos = {};
+  for (const n of todos) {
+    if (!ehCapa(n) || n.textStyleId !== "") continue;
+    if (n.fontName === figma.mixed) continue;
+    const v = valorDe(n);
+    if (!v || v.corpo < 20) continue;
+    const razao = v.entre === "auto" ? "auto" : Math.round(v.entre / v.corpo * 100) / 100;
+    const k = v.corpo + "/" + v.entre + " " + v.peso + "   razao " + razao;
+    if (!titulos[k]) titulos[k] = { nos: 0, exemplo: n.characters.slice(0, 30) };
+    titulos[k].nos++;
+  }
+  relato.push({
+    acao: "titulos de capa — relatados, NAO tocados",
+    grupos: Object.keys(titulos).map(function (k) { return { valor: k, nos: titulos[k].nos, exemplo: titulos[k].exemplo }; })
+                  .sort(function (a, b) { return b.nos - a.nos; }),
+    porque: "a razao varia de 1,00 a 1,37 no mesmo papel. Isso nao e escala, e falta de " +
+            "regra — mas escolher uma razao muda a aparencia dos nos, e o corpo do titulo " +
+            "de capa sai do comprimento do texto e nao de um degrau.",
+    tocados: 0,
+  });
+
+  return relato;
+}
+
 // ─── Ligação com a interface ───────────────────────────────────────────────
 
 figma.ui.onmessage = async (msg) => {
@@ -1791,6 +1917,7 @@ figma.ui.onmessage = async (msg) => {
     else if (msg.tipo === "sem-style") relato = await semStyle();
     else if (msg.tipo === "adotar") relato = await adotarEContar();
     else if (msg.tipo === "capas") relato = await capasViramZodiak();
+    else if (msg.tipo === "styles-capa") relato = await stylesDeCapa();
     else relato = [{ estado: "ação desconhecida" }];
 
     figma.ui.postMessage({ ok: true, relato });

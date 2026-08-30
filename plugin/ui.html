@@ -347,6 +347,29 @@
   <button class="primaria" onclick="rodar('capas')">Converter e medir</button>
 </section>
 
+<section>
+  <h2>19 · Styles de capa, e os 43 estranhos da interface</h2>
+  <p class="porque">
+    O passo 18 derrubou uma decisão que tomamos: <b>não existe mono fora das capas</b>. Meu
+    argumento vinha do protótipo, que declara <code>--mono</code>; mas a base é o Figma, e lá
+    o mono aparece em <b>um lugar só</b>. Então ele é fonte de <b>capa</b>, não de sistema —
+    duas styles, não uma escala.
+  </p>
+  <div class="aviso">
+    <b>Cria cinco styles</b> de valor inequívoco: <code>Capa/Data</code>,
+    <code>Capa/Credito</code>, <code>Capa/Nota</code>, <code>Capa/Numero</code> e
+    <code>Capa/Formato</code>. Entrelinha <code>AUTO</code> onde já era — e isso é decisão,
+    não omissão: são rótulos de uma linha, e a entrelinha natural da fonte é a certa quando
+    não há segunda linha pra espaçar.<br><br>
+    <b>Não cria a style de título.</b> Os títulos têm razão de <b>1,00 a 1,37</b> no mesmo
+    papel — não é escala, é falta de regra. Mas escolher uma razão muda a aparência, e o
+    corpo do título de capa sai do comprimento do texto. Relata e para.<br><br>
+    <b>Mede os 42 Satoshi e o 1 Roboto</b> que estão na <b>interface</b>, não nas capas.
+    Ninguém sabia que existiam até o passo 18.
+  </div>
+  <button class="primaria" onclick="rodar('styles-capa')">Criar e medir</button>
+</section>
+
 <pre id="saida">Pronto. Abra a página <b>Wireframing - Media</b> antes de rodar.</pre>
 
 <script>
