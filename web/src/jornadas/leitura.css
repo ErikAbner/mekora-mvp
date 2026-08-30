@@ -92,3 +92,26 @@
 @media (prefers-reduced-motion: reduce) {
   .cromo { transition: none; }
 }
+
+/* A estrutura que veio do livro. Cada uma com o papel do sistema, e nenhuma
+ * com o estilo do editor — que foi removido na leitura. */
+.prosa .titulo { margin: 24px 0 0; font-size: 32px; line-height: 40px; font-weight: 540; text-indent: 0; color: var(--foreground); }
+.prosa .subtitulo { margin: 16px 0 0; font-size: 24px; line-height: 32px; font-weight: 540; text-indent: 0; color: var(--foreground); }
+.prosa .citacao { margin: 0; padding: 16px 0 16px 32px; text-indent: 0; border-inline-start: 1px solid var(--foreground); color: var(--muted-foreground); }
+.prosa .item { text-indent: 0; }
+.prosa .legenda { text-indent: 0; font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
+
+/* Enfase do AUTOR, distinta do destaque do LEITOR: uma e do texto, a outra e
+ * marca sobre o texto. */
+.prosa .enfase { font-style: italic; }
+.prosa .forte { font-style: normal; font-weight: 540; }
+
+/* O aviso de que o texto e exemplo. Filete marca a fala do produto sobre si. */
+.leitura-aviso {
+  inline-size: 100%; max-inline-size: 680px;
+  margin: 0; padding: 16px 0 16px 32px;
+  border-inline-start: 1px solid var(--foreground);
+  font-size: 16px; line-height: 24px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}

@@ -33,6 +33,40 @@ export const DESTAQUES = {
   azul: "var(--nota-azul, #bfdfff)",
 };
 
+/* O bloco do EPUB e o parágrafo do exemplo passam pelo MESMO componente: os dois
+ * carregam texto e marcas por deslocamento de caractere. Foi para isso que a
+ * ênfase do livro virou deslocamento em vez de HTML aninhado — o destaque do
+ * usuário e a ênfase do autor vivem no mesmo sistema de coordenadas, e a tela
+ * não precisa saber de onde cada um veio. */
+const TAG = { titulo: "h2", subtitulo: "h3", citacao: "blockquote", item: "li", legenda: "figcaption" };
+
+function Bloco({ tipo = "paragrafo", texto, destaques = [], marcas = [] }) {
+  const Como = TAG[tipo] ?? "p";
+  const todas = [
+    ...marcas.map((m) => ({ ...m, classe: m.tipo })),
+    ...destaques.map((d) => ({ ...d, classe: "destaque", cor: d.cor })),
+  ].sort((a, b) => a.de - b.de);
+
+  if (!todas.length) return <Como className={`bloco ${tipo}`}>{texto}</Como>;
+
+  const partes = [];
+  let i = 0;
+  for (const m of todas) {
+    if (m.de < i) continue;   // sobreposição: a primeira ganha, e a segunda some
+    if (m.de > i) partes.push(texto.slice(i, m.de));
+    partes.push(
+      m.classe === "destaque" ? (
+        <mark key={`${m.de}-d`} style={{ background: DESTAQUES[m.cor] }}>{texto.slice(m.de, m.ate)}</mark>
+      ) : (
+        <em key={`${m.de}-${m.classe}`} className={m.classe}>{texto.slice(m.de, m.ate)}</em>
+      ),
+    );
+    i = m.ate;
+  }
+  if (i < texto.length) partes.push(texto.slice(i));
+  return <Como className={`bloco ${tipo}`}>{partes}</Como>;
+}
+
 function Paragrafo({ texto, destaques = [] }) {
   if (!destaques.length) return <p>{texto}</p>;
 
@@ -60,7 +94,7 @@ function Paragrafo({ texto, destaques = [] }) {
   return <p>{partes}</p>;
 }
 
-export function Leitura({ livro }) {
+export function Leitura({ livro, aviso }) {
   const [cromoVisivel, setCromo] = useState(true);
 
   if (!livro) return null;
@@ -91,9 +125,13 @@ export function Leitura({ livro }) {
 
       {/* A medida vem do sistema: 680px é a coluna do desenho, e a 20px dá
           cerca de 65 caracteres por linha — dentro da faixa confortável. */}
+      {/* O produto diz o que não sabe. Um texto de exemplo sem aviso passaria por
+          conteúdo do usuário, que é a pior confusão possível numa tela de leitura. */}
+      {aviso && <p className="leitura-aviso" role="status">{aviso}</p>}
+
       <article className="prosa">
-        {livro.paragrafos.map((p, i) => (
-          <Paragrafo key={i} {...p} />
+        {(livro.blocos ?? livro.paragrafos ?? []).map((b, i) => (
+          <Bloco key={i} {...b} />
         ))}
       </article>
     </div>

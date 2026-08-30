@@ -9,7 +9,7 @@
  * Depois que o agente sair, ferramenta conhecida vale mais que ferramenta
  * enxuta — resposta para `react-router` existe em qualquer lugar.
  */
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, useNavigate, useParams, useLocation } from "react-router-dom";
 import { MesaVazia } from "./jornadas/MesaVazia.jsx";
 import { MesaCheia } from "./jornadas/MesaCheia.jsx";
@@ -20,6 +20,7 @@ import { Conta } from "./jornadas/Conta.jsx";
 import { ContaKindle } from "./jornadas/ContaKindle.jsx";
 import { LUGARES } from "./lugares.js";
 import { useJornada } from "./estado/useJornada.js";
+import { abrirLivro } from "./leitor/abrir.js";
 import { EXEMPLO_FILA, EXEMPLO_ESTANTE, EXEMPLO_FICHA, EXEMPLO_LEITURA } from "./exemplos.js";
 
 /* O exemplo entra SÓ quando a URL pede — `?exemplo`. Nunca no caminho normal,
@@ -66,9 +67,26 @@ function PaginaEstante() {
 
 function PaginaLeitura() {
   const { id } = useParams();
-  /* O conteúdo do livro ainda não vem do backend: a rota já carrega o id para
-   * que, quando vier, seja só trocar a fonte — e não a navegação. */
-  return <Leitura livro={{ ...EXEMPLO_LEITURA, id }} />;
+  const [livro, setLivro] = useState(null);
+  const [erro, setErro] = useState(null);
+
+  useEffect(() => {
+    let vivo = true;
+    /* O EPUB é lido NO NAVEGADOR, não servido como texto pelo backend. É o mesmo
+     * arquivo que vai para o Kindle, então o que se lê na tela e o que se lê no
+     * aparelho não podem divergir. */
+    abrirLivro(`/storage/output/${id}/livro.epub`)
+      .then((l) => vivo && setLivro(l))
+      .catch((e) => vivo && setErro(e.message));
+    return () => { vivo = false; };
+  }, [id]);
+
+  /* Sem o livro, o exemplo — e o produto DIZ que é exemplo, em vez de deixar
+   * parecer que aquele é o teu texto. */
+  if (erro || !livro) {
+    return <Leitura livro={EXEMPLO_LEITURA} aviso={erro ? `Este é um texto de exemplo. O livro não pôde ser aberto: ${erro}` : null} />;
+  }
+  return <Leitura livro={livro} />;
 }
 
 /* Rota que não existe não é erro do usuário: é o produto ainda não ter chegado
