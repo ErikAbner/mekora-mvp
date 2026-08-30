@@ -1,0 +1,19 @@
+# Dependências opcionais para o motor de tradução NLLB-200 (Fase C)
+#
+# Estas dependências NÃO estão em requirements.txt pois são pesadas (~2 GB
+# com o modelo) e opcionais — só são necessárias se você quiser usar o
+# motor NLLB Premium em vez do Argos Translate padrão.
+#
+# Instalação:
+#   pip install -r requirements-nllb.txt
+#
+# Após instalar, baixe o modelo:
+#   python scripts/setup_nllb.py
+#
+# Modelos disponíveis:
+#   facebook/nllb-200-distilled-600M   (~600 MB, padrão)
+#   facebook/nllb-200-distilled-1.3B   (~2.5 GB, maior qualidade)
+#
+torch>=2.0.0
+transformers>=4.35.0
+huggingface_hub>=0.20.0

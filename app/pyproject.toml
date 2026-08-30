@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "kindle-local-tool"
+version = "1.0.0"
+description = "Ferramenta local para converter PDFs em EPUB e enviar ao Kindle"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.27.0",
+    "python-multipart>=0.0.9",
+    "sqlalchemy>=2.0.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "pymupdf>=1.24.0",
+    "aiofiles>=23.0.0",
+    "ocrmypdf>=16.0.0",
+]
+
+[project.scripts]
+kindle-tool = "backend.main:run"
+
+[tool.hatch.build.targets.wheel]
+packages = ["backend"]
+
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]
+asyncio_mode = "auto"
