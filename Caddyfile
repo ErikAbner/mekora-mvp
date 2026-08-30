@@ -1,0 +1,42 @@
+# A borda do Mekora. Ela serve a interface, entrega o TLS e é o único ponto que
+# fala com a internet.
+#
+# O DOMÍNIO VEM DO AMBIENTE, e não escrito aqui: o mesmo arquivo tem de servir
+# para o servidor de verdade e para uma prova local, e um domínio cravado
+# obrigaria a editar arquivo a cada uma — que é como se sobe a configuração
+# errada.
+#
+# O bloco de rotas abaixo é GERADO a partir do próprio FastAPI, por
+# `scripts/rotas.py`. Ele não é escrito à mão porque já foi, em dois lugares —
+# aqui e no proxy do `vite.config.js` — e duas listas da mesma coisa divergem no
+# dia em que alguém cria uma rota e só atualiza uma delas.
+{$MEKORA_DOMINIO:localhost} {
+	encode gzip zstd
+
+	# ── rotas do backend ── GERADO por scripts/rotas.py, não editar à mão
+	handle /analyze/* /app-config/* /batch/* /config/* /health/* /history/* /jobs/* /metrics/* /pending-send/* /presets/* /storage/* /tools/* /translation/* /upload/* {
+		reverse_proxy backend:8000
+	}
+	handle /analyze /app-config /batch /config /health /history /jobs /metrics /pending-send /presets /storage /tools /translation /upload {
+		reverse_proxy backend:8000
+	}
+	# ── fim das rotas geradas ──
+
+	handle {
+		root * /srv
+		# O roteador vive no navegador: recarregar /leitura/1 tem de devolver o
+		# index, e não um 404 do servidor de arquivos.
+		try_files {path} /index.html
+		file_server
+	}
+
+	header {
+		# Sem esta linha o navegador pode adivinhar o tipo de um arquivo pelo
+		# conteúdo, e um documento enviado por alguém pode ser adivinhado como
+		# HTML — que é execução de código de estranho no domínio do produto.
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+}

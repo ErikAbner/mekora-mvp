@@ -1,6 +1,8 @@
+import os
 from collections.abc import Generator
+from pathlib import Path
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.core.config import (
@@ -12,7 +14,11 @@ from app.core.config import (
     STORAGE_TEMP,
 )
 
-DATABASE_URL = f"sqlite:///{PROJECT_ROOT}/storage/kindle_tool.db"
+# O caminho padrão é o de sempre, e continua valendo sem configurar nada. A
+# variável existe porque dentro de um container o disco fica noutro lugar, e
+# porque gerar migração exige poder apontar para um banco descartável — sem
+# isso, a única forma de testar uma migração é rodá-la no banco de verdade.
+DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{PROJECT_ROOT}/storage/kindle_tool.db")
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -35,43 +41,45 @@ def init_db() -> None:
     for directory in (STORAGE_INPUT, STORAGE_OUTPUT, STORAGE_TEMP, STORAGE_COVERS, STORAGE_LOGS):
         directory.mkdir(parents=True, exist_ok=True)
 
-    # Importa modelos para registrá-los no metadata do SQLAlchemy
-    from app.models.processing_job import ProcessingJob  # noqa: F401
-    from app.models.stage_metric import StageMetric  # noqa: F401
+    # As tabelas nascem da migração, e não de `create_all`. Os dois juntos
+    # divergem: `create_all` cria o que o modelo diz hoje, a migração cria o que
+    # foi escrito — e quando discordam, ninguém sabe qual venceu.
 
-    Base.metadata.create_all(bind=engine)
+    _migrar()
 
-    # Migração inline: adiciona colunas novas sem Alembic (SQLite suporta ADD COLUMN)
-    with engine.connect() as conn:
-        for stmt in [
-            "ALTER TABLE processing_jobs ADD COLUMN send_error TEXT",
-            "ALTER TABLE processing_jobs ADD COLUMN input_format TEXT",
-            "ALTER TABLE processing_jobs ADD COLUMN processing_mode TEXT DEFAULT 'document'",
-            "ALTER TABLE processing_jobs ADD COLUMN translation_enabled INTEGER DEFAULT 0",
-            "ALTER TABLE processing_jobs ADD COLUMN source_language TEXT",
-            "ALTER TABLE processing_jobs ADD COLUMN target_language TEXT",
-            "ALTER TABLE processing_jobs ADD COLUMN translation_status TEXT DEFAULT 'not_started'",
-            "ALTER TABLE processing_jobs ADD COLUMN translation_error TEXT",
-            "ALTER TABLE processing_jobs ADD COLUMN translator_engine TEXT",
-            "ALTER TABLE processing_jobs ADD COLUMN comic_mode INTEGER DEFAULT 0",
-            "ALTER TABLE processing_jobs ADD COLUMN manga_rtl INTEGER DEFAULT 0",
-            "ALTER TABLE processing_jobs ADD COLUMN translated_artifact_path TEXT",
-            "ALTER TABLE processing_jobs ADD COLUMN translated_artifact_format TEXT",
-            "ALTER TABLE processing_jobs ADD COLUMN comic_translation_enabled INTEGER DEFAULT 0",
-            "ALTER TABLE processing_jobs ADD COLUMN comic_translation_status TEXT DEFAULT 'not_started'",
-            "ALTER TABLE processing_jobs ADD COLUMN comic_translation_error TEXT",
-            "ALTER TABLE processing_jobs ADD COLUMN comic_translation_artifact_path TEXT",
-            "ALTER TABLE processing_jobs ADD COLUMN comic_translation_artifact_format TEXT",
-            # Estabilização v1 — export final comic + modo de fluxo + operação ativa
-            "ALTER TABLE processing_jobs ADD COLUMN comic_export_status TEXT DEFAULT 'not_started'",
-            "ALTER TABLE processing_jobs ADD COLUMN comic_export_path TEXT",
-            "ALTER TABLE processing_jobs ADD COLUMN comic_export_source TEXT",
-            "ALTER TABLE processing_jobs ADD COLUMN comic_export_error TEXT",
-            "ALTER TABLE processing_jobs ADD COLUMN flow_mode TEXT DEFAULT 'advanced'",
-            "ALTER TABLE processing_jobs ADD COLUMN active_operation TEXT",
-        ]:
-            try:
-                conn.execute(text(stmt))
-                conn.commit()
-            except Exception:
-                pass  # Coluna já existe — ignorar
+
+def _migrar() -> None:
+    """Leva o banco até a última migração.
+
+    Isto era, até 30/08, uma lista de 24 `ALTER TABLE ADD COLUMN` num laço com
+    `except Exception: pass`. Ela funcionava, e três coisas nela custavam caro:
+
+    A lista só crescia — uma linha por mudança, para sempre, sem que ninguém
+    pudesse dizer quais já tinham rodado.
+
+    Ela só sabia acrescentar coluna. Renomear, mudar tipo, criar índice ou
+    desfazer não tinham caminho nenhum.
+
+    E o `except Exception: pass` engolia qualquer falha, não só a esperada. Banco
+    travado, disco cheio, arquivo corrompido: a migração falhava em silêncio e a
+    aplicação subia parecendo saudável, para quebrar depois com `no such column`
+    no meio do trabalho de alguém. Em produção, com dados dentro, esse silêncio é
+    o defeito — não a falha.
+
+    O alembic troca isso por uma versão gravada no próprio banco e por uma falha
+    que aparece na hora, no lugar certo.
+
+    Chamado aqui, e não só no deploy, de propósito: uma porta só, igual na
+    máquina de quem desenvolve e no servidor. Migração que roda por um caminho
+    diferente do que se testa é migração não testada.
+    """
+    from alembic import command
+    from alembic.config import Config
+
+    raiz_backend = Path(__file__).resolve().parents[2]
+    cfg = Config(str(raiz_backend / "alembic.ini"))
+    cfg.set_main_option("script_location", str(raiz_backend / "alembic"))
+    # SQLite aguenta um escritor por vez; a migração roda antes de servir, e o
+    # backend usa um worker só. Com vários, isto precisaria de trava.
+    command.upgrade(cfg, "head")
+

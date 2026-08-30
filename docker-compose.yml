@@ -1,18 +1,46 @@
+# Como o Mekora sobe. Um comando, e o mesmo em qualquer máquina:
+#
+#     docker compose up -d --build
+#
+# Vale a pena dizer o que NÃO está aqui: nenhum segredo. Eles vivem num `.env` ao
+# lado, que o git ignora e a imagem não copia.
+
 services:
-  kindle-tool:
-    build: .
-    ports:
-      # v1.2.1 — bind restrito ao localhost do host (ferramenta local,
-      # sem autenticação; não expor na rede)
-      - "127.0.0.1:8000:8000"
-    volumes:
-      - ./storage:/app/storage
-    env_file:
-      - .env
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+    env_file: [.env]
+    volumes:
+      # O storage é o produto do usuário: os documentos que entraram, os EPUBs
+      # que saíram, o banco com o registro de tudo. Ele fica FORA da imagem para
+      # sobreviver a toda reconstrução — que é o ponto inteiro de um volume.
+      - ./storage:/app/storage
+    # Sem `ports`. O backend só é alcançável pela rede interna do compose: quem
+    # fala com a internet é a borda, e uma porta aberta que ninguém precisava é
+    # como a maioria das coisas vaza.
+    expose: ["8000"]
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+      args:
+        VITE_API: /api
+    restart: unless-stopped
+    environment:
+      # Sem domínio definido o Caddy sobe em localhost com certificado próprio,
+      # que é exatamente o que se quer para provar a pilha antes de apontar o DNS.
+      MEKORA_DOMINIO: ${MEKORA_DOMINIO:-localhost}
+    ports: ["80:80", "443:443"]
+    volumes:
+      - caddy_dados:/data
+      - caddy_config:/config
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  caddy_dados:
+  caddy_config:

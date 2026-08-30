@@ -1,25 +1,24 @@
-# Python
-.venv/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.pytest_cache/
-*.egg-info/
-
-# Node
-frontend/node_modules/
-frontend/dist/
-
-# Storage (montado como volume em runtime)
+# O storage tem mais de um gigabyte e não é código: ele entra por volume, para
+# viver mais que a imagem. Copiá-lo aqui incharia toda construção e ainda faria
+# a imagem carregar documentos pessoais.
 storage/
-
-# Ambiente e segredos
-.env
-.env.local
-.env.*.local
-
-# Ferramentas de desenvolvimento
+.venv/
+venv/
+node_modules/
+**/node_modules/
+**/dist/
 .git/
-.gitignore
-*.md
+# Os segredos entram por ambiente, no servidor. Dentro da imagem eles ficariam
+# legíveis em qualquer camada, para sempre — inclusive depois de trocados.
+.env
+.env.*
+!.env.example
+*.db
+__pycache__/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+scratchpad/
+legado/
+plugin/
+docs/

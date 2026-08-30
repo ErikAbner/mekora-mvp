@@ -15,7 +15,18 @@
  */
 import { estadoDe } from "./estado.js";
 
-const BASE = import.meta?.env?.VITE_API ?? "";
+/* NAO existe base de API configuravel, e a ausencia e deliberada.
+ *
+ * Havia `import.meta.env.VITE_API`, e ele nao funcionava: este arquivo mora fora
+ * da raiz do Vite, entao a substituicao de build nunca o alcancava. O literal
+ * `import.meta.env` sobrevivia ate o navegador, onde e undefined — a base virava
+ * "" e o build passava verde.
+ *
+ * A correcao nao foi fazer a variavel funcionar. O proprio vite.config ja tinha
+ * escrito a regra: "o caminho da chamada e o MESMO em dev e em producao". A
+ * borda repassa `/upload` para `/upload`, e nao ha ambiente onde o caminho seja
+ * outro — logo nao ha o que configurar, nem como configurar errado. */
+const BASE = "";
 
 async function pede(caminho, opcoes) {
   const r = await fetch(BASE + caminho, opcoes);

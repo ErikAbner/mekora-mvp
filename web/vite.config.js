@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "node:path";
+import { PREFIXOS_API } from "../contrato/rotas.js";
 
 // O design system e um GERADOR, e nao parte do produto: ele e copia de terceiro
 // sob MIT, e por isso ficou de fora da fusao (DEC-0038 §5). O que entra aqui e a
@@ -29,9 +30,12 @@ export default defineConfig({
      * mais importante, faz o caminho da chamada ser o MESMO em dev e em producao:
      * `/upload` dos dois lados. Base de API diferente por ambiente e como um bug
      * so aparece depois do deploy. */
+    /* A lista nao e escrita aqui: ela e GERADA do proprio FastAPI por
+     * scripts/rotas.py, e o Caddy de producao le a mesma. Escrita a mao ela
+     * ficava certa em desenvolvimento e faltando em producao — e a rota nova
+     * caia no SPA, voltava HTML, e o erro era `Unexpected token '<'`. */
     proxy: Object.fromEntries(
-      ["/upload", "/analyze", "/jobs", "/history", "/health", "/config", "/storage", "/presets", "/metrics", "/batch"]
-        .map((r) => [r, { target: process.env.MEKORA_API ?? "http://127.0.0.1:8000", changeOrigin: true }]),
+      PREFIXOS_API.map((r) => [r, { target: process.env.MEKORA_API ?? "http://127.0.0.1:8000", changeOrigin: true }]),
     ),
   },
 });
