@@ -16,12 +16,17 @@ import { MesaCheia } from "./jornadas/MesaCheia.jsx";
 import { Estante } from "./jornadas/Estante.jsx";
 import { Leitura } from "./jornadas/Leitura.jsx";
 import { AindaNao } from "./jornadas/AindaNao.jsx";
+import { Conta } from "./jornadas/Conta.jsx";
 import { LUGARES } from "./lugares.js";
 import { useJornada } from "./estado/useJornada.js";
 import { EXEMPLO_FILA, EXEMPLO_ESTANTE, EXEMPLO_FICHA, EXEMPLO_LEITURA } from "./exemplos.js";
 
 /* O exemplo entra SÓ quando a URL pede — `?exemplo`. Nunca no caminho normal,
  * porque tela que inventa dado esconde backend fora do ar. */
+/* Enquanto não há autenticação — a AUTH-001 está `proposed`, não aceita — a
+ * pessoa é de exemplo. Fica nomeado para ninguém confundir com login. */
+const PESSOA = { nome: "Erik Abner", email: "erik@exemplo.com" };
+
 function usaExemplo() {
   return new URLSearchParams(location.search).has("exemplo");
 }
@@ -80,6 +85,12 @@ export function App() {
         {LUGARES.filter((l) => !l.pronto).map((l) => (
           <Route key={l.id} path={l.rota} element={<AindaNao lugar={l} />} />
         ))}
+        {/* Conta tem quatro páginas; só Preferências existe. As outras usam a
+            mesma tela de "ainda não", que nomeia o lugar em vez de dar 404. */}
+        <Route path="/conta/preferencias" element={<Conta pessoa={PESSOA} />} />
+        <Route path="/conta" element={<AindaNao lugar={{ rotulo: "Conta", oQueE: "Quem você é, e o que o Mekora sabe sobre isso." }} />} />
+        <Route path="/conta/kindle" element={<AindaNao lugar={{ rotulo: "Dispositivos Kindle", oQueE: "Para onde os arquivos preparados são enviados." }} />} />
+        <Route path="/conta/privacidade" element={<AindaNao lugar={{ rotulo: "Privacidade", oQueE: "O que fica guardado, onde, e por quanto tempo." }} />} />
         <Route path="*" element={<NaoEncontrada />} />
       </Routes>
     </BrowserRouter>

@@ -164,3 +164,54 @@ do upload: uma falha no backend viraria *"a estante tem defeito de contraste"*.
 
 **Tela medível sozinha é a diferença entre um portão que diz ONDE está o problema
 e um que só diz que existe.**
+
+---
+
+# Conta — preferências (`895:10715`)
+
+## O teste dos componentes do design system, e o resultado
+
+Esta tela existia para responder uma pergunta: **os onze componentes construídos
+servem?**
+
+**Não servem para esta.** Ela é feita de **seis grupos de escolha**, e entre os
+onze não há rádio, caixa de marcar nem interruptor. O que dava para aproveitar
+era `Text` e `Divider` — e nenhum dos dois é o problema.
+
+Os onze são: Button, Chip, Divider, Icon, IconButton, Input, Link, Text, Toast,
+mais `AdContainer`, `CommentsDisabled`, `Article` e `Flag` — **estes quatro são
+do produto de notícias de onde o template veio**, e não têm uso aqui.
+
+Então `Escolha` nasceu no produto, e não no `mekora-ds`: o design system é cópia
+de terceiro sob MIT, e componente do Mekora não entra lá.
+
+## Três decisões que o desenho não tomava
+
+**A forma é quadrada, e o custo fica escrito.** Vem da regra — raio zero em ação e
+estrutura — e do próprio desenho. Mas redondo contra quadrado é **como o olho
+distingue "escolha uma" de "marque quantas quiser"**. Se um dia existir caixa de
+marcar no produto, ela precisa de outra distinção que não seja a forma.
+
+**O selecionado é degrau de superfície.** O desenho não mostrava este estado:
+todos os quadrados estão vazios nele. A regra decidiu — seleção é superfície,
+nunca matiz.
+
+**A borda era `#878787`**, o mesmo valor que estava cravado nos ícones e que não
+existe no sistema. Virou `border/subtle`.
+
+## É um `<input type="radio">` de verdade
+
+Um `<div>` com `onClick` parece igual e não é: perde seta do teclado, perde
+agrupamento por `name`, perde o anúncio de *"opção 2 de 3"*, e perde o
+comportamento de formulário. O que se desenha é a aparência; **o que responde
+continua sendo o controle nativo**.
+
+O input fica com `opacity: 0` e não `display: none` — `display: none` tira do
+foco. E o `:focus-visible` é desenhado na marca, porque o controle está
+invisível: sem isso, quem navega por teclado não sabe onde está.
+
+`fieldset` e `legend` não são decoração: são o que faz o leitor de tela anunciar o
+título do grupo antes de cada opção. Um `<p>` solto acima das opções fica órfão.
+
+Conferido na página servida: **6 grupos, 13 rádios, agrupamento por `name`
+funcionando**, seleção trocando dentro do grupo certo.

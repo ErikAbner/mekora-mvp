@@ -1,0 +1,54 @@
+.trilha {
+  display: flex; flex-direction: column; gap: 24px;
+  inline-size: 300px; flex: none;
+}
+
+.pessoa { display: flex; align-items: center; gap: 24px; }
+.pessoa-retrato {
+  inline-size: 80px; block-size: 80px; flex: none;
+  display: grid; place-items: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  /* Retrato e MIDIA RECORTADA: 2px, o unico lugar do sistema onde o raio existe
+   * fora da pilula. */
+  border-radius: 2px;
+  overflow: hidden;
+  color: var(--muted-foreground);
+  font-size: 24px; line-height: 32px;
+}
+.pessoa-retrato img { inline-size: 100%; block-size: 100%; object-fit: cover; display: block; }
+
+.pessoa-texto { display: flex; flex-direction: column; gap: 16px; min-inline-size: 0; }
+.pessoa-nome {
+  margin: 0;
+  font-size: 24px; line-height: 32px; font-weight: 540;   /* Heading/XS */
+  color: var(--card-foreground);
+}
+.pessoa-email {
+  margin: 0;
+  font-size: 18px; line-height: 26px;                     /* Label/Large */
+  color: var(--muted-foreground);
+  overflow-wrap: anywhere;
+}
+
+.trilha nav { display: flex; flex-direction: column; }
+
+.trilha-item {
+  display: flex; align-items: center; gap: 24px;
+  padding: 16px 32px;
+  color: var(--muted-foreground);
+  text-decoration: none;
+  font-size: 20px; line-height: 30px;                     /* Body/Medium */
+}
+/* Aqui = degrau de superficie, nunca matiz. */
+.trilha-item[aria-current="page"] {
+  background: var(--foreground);
+  color: var(--primary-foreground);
+}
+.trilha-item:not([aria-current]):hover { background: var(--muted); }
+.trilha-item:focus-visible { outline: 1px solid var(--foreground); outline-offset: -1px; }
+
+@media (max-width: 1023px) {
+  .trilha { inline-size: 100%; }
+  .trilha-item { padding: 16px 24px; font-size: 18px; line-height: 27px; }
+}

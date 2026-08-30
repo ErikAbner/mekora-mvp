@@ -1,0 +1,81 @@
+.escolha {
+  display: flex; flex-direction: column; gap: 40px;
+  margin: 0; padding: 40px;
+  border: 1px solid var(--border);
+  /* Raio zero: e estrutura. */
+  border-radius: 0;
+}
+
+.escolha legend {
+  display: flex; flex-direction: column; gap: 16px;
+  padding: 0; float: left; inline-size: 100%;
+}
+.escolha-titulo {
+  font-size: 24px; line-height: 32px;   /* Body/Large */
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+.escolha-explicacao {
+  font-size: 16px; line-height: 24px;   /* Body/Small */
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+.escolha-opcoes { display: flex; flex-direction: column; gap: 32px; clear: both; }
+
+.opcao {
+  display: flex; align-items: center; gap: 40px;
+  cursor: pointer;
+}
+
+/* O input nativo continua ali, e continua sendo ele que responde: seta do
+ * teclado, agrupamento por name, anuncio de "opcao 2 de 3". O que se esconde e a
+ * APARENCIA padrao, nunca o controle. `opacity: 0` e nao `display: none`, porque
+ * display none tira do foco. */
+.opcao input {
+  position: absolute; inline-size: 40px; block-size: 40px;
+  margin: 0; opacity: 0; cursor: pointer;
+}
+
+.marca {
+  inline-size: 40px; block-size: 40px; flex: none;
+  border: 1px solid var(--border);
+  background: var(--background);
+  transition: background var(--d1, 160ms) cubic-bezier(.16, 1, .3, 1);
+}
+
+/* Selecionado = degrau de superficie, nunca matiz. O desenho nao mostrava este
+ * estado; a regra do sistema decidiu. */
+.opcao input:checked + .marca { background: var(--foreground); }
+.opcao:hover .marca { background: var(--muted); }
+.opcao input:checked:hover + .marca { background: var(--foreground); }
+
+/* O foco tem de aparecer no DESENHO, ja que o input esta invisivel. Sem isto,
+ * quem navega por teclado nao sabe onde esta. */
+.opcao input:focus-visible + .marca {
+  outline: 1px solid var(--foreground);
+  outline-offset: 2px;
+}
+
+.opcao-texto { display: flex; flex-direction: column; gap: 16px; min-inline-size: 0; }
+.opcao-rotulo {
+  font-size: 20px; line-height: 30px;   /* Body/Medium */
+  color: var(--muted-foreground);
+}
+.opcao-detalhe {
+  font-size: 16px; line-height: 24px;   /* Body/Small */
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+@media (max-width: 1023px) {
+  .escolha { padding: 24px; gap: 24px; }
+  .escolha-opcoes { gap: 24px; }
+  .opcao { gap: 24px; }
+  .escolha-titulo { font-size: 20px; line-height: 28px; }
+  .opcao-rotulo { font-size: 18px; line-height: 27px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marca { transition: none; }
+}
