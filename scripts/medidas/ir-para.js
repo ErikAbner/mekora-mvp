@@ -20,7 +20,7 @@
  * pessoa entrou.
  */
 (async () => {
-  const tela = window.__MEKORA_TELA__ || "/notas";
+  const tela = window.__MEKORA_TELA__ || "/estante/9";
   await new Promise((r) => setTimeout(r, 1200));
 
   const post = (u, corpo) =>
@@ -61,7 +61,29 @@
     await post(`/estudos/${estudo.id}/notas`, { nota_id: notas[0].nota_id });
   }
 
-  history.pushState({}, "", tela);
+  /* UMA TELA COM `:id` PRECISA DE UM ID QUE ESTA PESSOA TENHA.
+   *
+   * `/estante/9` media 6 nós — a tela de erro. Cada medida entra com uma conta
+   * nova, e conta nova não é dona do livro 9: o backend responde 404, como
+   * deve, e o portão media a mensagem de erro achando que media a ficha.
+   *
+   * É o mesmo defeito que fez o Canvas passar com 19 nós, aparecendo num
+   * segundo lugar. Então o setup CRIA um livro e troca o `:id` pelo dele. */
+  let destino = tela;
+  if (tela.includes(":id") || /\/(estante|leitura)\/\d+/.test(tela)) {
+    const pdf = new Blob(
+      ["%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\ntrailer<</Root 1 0 R>>"],
+      { type: "application/pdf" },
+    );
+    const corpo = new FormData();
+    corpo.append("file", new File([pdf], "medida.pdf", { type: "application/pdf" }));
+    const enviado = await fetch("/upload", { method: "POST", body: corpo }).then((r) =>
+      r.ok ? r.json() : null,
+    );
+    if (enviado) destino = tela.replace(/(:id|\d+)$/, enviado.upload_id);
+  }
+
+  history.pushState({}, "", destino);
   window.dispatchEvent(new PopStateEvent("popstate"));
 
   /* Espera por CONTEÚDO, e não por relógio: o número de elementos com texto
@@ -80,5 +102,5 @@
     anterior = agora;
   }
 
-  return { onde: location.pathname, nos_com_texto: anterior, semeadas: notas.length };
+  return { onde: location.pathname, nos_com_texto: anterior, semeadas: notas.length, pedido: tela };
 })()

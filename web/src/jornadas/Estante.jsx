@@ -174,7 +174,12 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnvia
           {selecionado && (
             <article className="ficha-caixa">
               <header>
-                <h2>{selecionado.titulo}</h2>
+                {/* O TÍTULO LEVA À FICHA. A ficha lateral cabe o resumo; o que
+                    não cabe — todas as notas, e o que a conversão fez — tem
+                    tela própria. */}
+                <h2>
+                  <Link to={`/estante/${selecionado.chave}`}>{selecionado.titulo}</Link>
+                </h2>
                 {/* CADA PEDAÇO SÓ APARECE SE EXISTIR.
                     A linha era `autor · formato · 80% lido`, com formato e
                     porcentagem vindos de um exemplo — iguais em todo livro. */}
