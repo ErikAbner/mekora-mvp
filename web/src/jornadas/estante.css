@@ -263,3 +263,16 @@
 .ficha-nota { color: var(--muted-foreground); }
 /* O erro pede o degrau de tinta que o sistema reserva para ele. */
 .ficha-erro { color: var(--destructive, var(--foreground)); }
+
+/* O NÚMERO DENTRO DO RECORTE HERDA A COR DO BOTÃO.
+   `.dado` fixa `color: var(--foreground)`, e o recorte ativo pinta o FUNDO com
+   a mesma variável — tinta e fundo idênticos, contraste 1, o número invisível.
+   O portão pegou: "#eeeeee sobre #eeeeee, razão 1, texto '0'".
+
+   `currentColor` faz o número seguir o botão em qualquer estado: ativo,
+   desabilitado, ou normal. */
+.recortes button .dado { color: currentColor; }
+
+/* Desabilitado não é só cor mais fraca: o cursor também diz que não dá. */
+.recortes button:disabled { opacity: 0.55; cursor: default; }
+.recortes button:disabled:hover { background: transparent; }

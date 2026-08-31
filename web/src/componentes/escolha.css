@@ -82,3 +82,13 @@
 @media (prefers-reduced-motion: reduce) {
   .marca { transition: none; }
 }
+
+/* O aviso de que a escolha ainda não muda nada. Tinta secundária e corpo menor:
+   ele qualifica a opção, não compete com ela. */
+.escolha-aviso {
+  display: block;
+  margin-block-start: 4px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--muted-foreground);
+}

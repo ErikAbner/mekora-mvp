@@ -253,11 +253,13 @@ export function lerProgresso(jobId) {
 }
 
 /** PUT /jobs/{id}/progresso — sem conta, o servidor ignora em silencio. */
-export function gravarProgresso(jobId, { capitulo, deslocamento }) {
+export function gravarProgresso(jobId, { capitulo, deslocamento, capitulos }) {
   return pede(`/jobs/${jobId}/progresso`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ capitulo, deslocamento }),
+    /* `capitulos` so vai quando quem chama sabe. O gravador de rolagem nao
+     * sabe, e mandar `null` apagaria o total que o abridor do livro registrou. */
+    body: JSON.stringify({ capitulo, deslocamento, ...(capitulos ? { capitulos } : {}) }),
   });
 }
 
@@ -303,6 +305,32 @@ export function apagarNota(jobId, notaId) {
  * funciona, porque a instalação e a pessoa são a mesma; servido na internet,
  * todo envio de todo mundo iria para o mesmo aparelho.
  */
+
+/** GET /config/formatos — o que o Mekora aceita, dito por quem decide.
+ *
+ * A tela listava seis extensoes escritas a mao e elas divergiam nos DOIS
+ * sentidos: ofereciam `.zip`, que o backend recusa, e escondiam ODT, RTF, TXT,
+ * HTML, CB7 e CBC, que ele aceita. */
+/** GET /preferencias — vazio sem conta, e a tela usa os padroes. */
+export function lerPreferencias() {
+  return pede("/preferencias");
+}
+
+/** PUT /preferencias — grava so o que vai, e nao substitui o conjunto.
+ *
+ * Um PUT que apagasse as chaves ausentes faria uma versao antiga da tela, que
+ * nao conhece uma opcao nova, apagar a escolha da pessoa sem ninguem pedir. */
+export function gravarPreferencias(escolhas) {
+  return pede("/preferencias", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ escolhas }),
+  });
+}
+
+export function lerFormatos() {
+  return pede("/config/formatos");
+}
 
 export function lerAparelhos() {
   return pede("/aparelhos");

@@ -26,7 +26,7 @@ import { abrirLivro, irParaCapitulo } from "./leitor/abrir.js";
 import { gravarProgresso, lerProgresso } from "../../contrato/api.js";
 import { usarNotas } from "./leitor/usarNotas.js";
 import { analisar, chaveDe } from "../../contrato/api.js";
-import { EXEMPLO_FILA, EXEMPLO_ESTANTE, EXEMPLO_FICHA, EXEMPLO_LEITURA } from "./exemplos.js";
+import { EXEMPLO_FILA, EXEMPLO_ESTANTE, EXEMPLO_LEITURA } from "./exemplos.js";
 
 /* O exemplo entra SÓ quando a URL pede — `?exemplo`. Nunca no caminho normal,
  * porque tela que inventa dado esconde backend fora do ar. */
@@ -70,7 +70,17 @@ function PaginaEstante() {
   return (
     <Estante
       livros={lista}
-      selecionado={selecionado ? { ...EXEMPLO_FICHA, ...selecionado } : null}
+      /* O LIVRO INTEIRO, e nada por cima dele.
+       *
+       * Era `{ ...EXEMPLO_FICHA, ...selecionado }`: o livro real sobrescrevia
+       * título e autor, e o resto do exemplo SOBREVIVIA — porcentagem lida,
+       * contagem de notas, uma citação e a etiqueta "#Design" —, porque não
+       * havia campo real para substituí-lo. Todo livro da estante mostrava 80%
+       * lido e a mesma frase entre aspas.
+       *
+       * Agora o servidor manda esses campos, e o que ele não sabe vem nulo: a
+       * tela cala em vez de completar. */
+      selecionado={selecionado}
       aoEscolher={(l) => setAberto(l.chave)}
       aoEnviar={(l) => enviar(l.chave)}
       aoAbrir={(l) => {
@@ -130,7 +140,17 @@ function PaginaLeitura() {
         const url = await acharUrl();
         if (!url) throw new Error("este livro ainda não tem texto para ler");
         const l = await abrirLivro(url, { capitulo: marca?.capitulo ?? 0 });
-        if (vivo) setLivro(l);
+        if (!vivo) return;
+        setLivro(l);
+        /* Quantos capítulos o livro tem só se descobre ABRINDO: a espinha do
+         * EPUB é lida aqui, no navegador. Sem gravar isso, a estante não teria
+         * como dizer onde a leitura está — e a alternativa era a porcentagem
+         * inventada que a ficha vinha mostrando. */
+        gravarProgresso(id, {
+          capitulo: l.capitulo,
+          deslocamento: marca?.deslocamento ?? 0,
+          capitulos: l.capitulos,
+        }).catch(() => {});
       })
       .catch((e) => vivo && setErro(e.message));
 

@@ -27,6 +27,15 @@ class JobResponse(BaseModel):
     # arquivo é derivado do título, e a tela não tem como adivinhá-lo.
     # `None` enquanto a conversão não terminou.
     leitura_url: Optional[str] = None
+
+    # O que a ficha da estante mostra sobre a LEITURA. Tudo derivado — antes
+    # estes quatro vinham de um exemplo escrito à mão, iguais em todo livro.
+    # `None` quer dizer "não sei", e a tela cala em vez de inventar.
+    notas: int = 0
+    capitulo: Optional[int] = None
+    capitulos: Optional[int] = None
+    ultima_nota: Optional[dict] = None
+
     original_filename: str
     status: str
 
@@ -130,6 +139,15 @@ class HistoryEntry(BaseModel):
     # arquivo é derivado do título, e a tela não tem como adivinhá-lo.
     # `None` enquanto a conversão não terminou.
     leitura_url: Optional[str] = None
+
+    # O que a ficha da estante mostra sobre a LEITURA. Tudo derivado — antes
+    # estes quatro vinham de um exemplo escrito à mão, iguais em todo livro.
+    # `None` quer dizer "não sei", e a tela cala em vez de inventar.
+    notas: int = 0
+    capitulo: Optional[int] = None
+    capitulos: Optional[int] = None
+    ultima_nota: Optional[dict] = None
+
     original_filename: str
     # URL da capa, montada no backend e não no cliente. A estante não deve
     # precisar conhecer o layout do storage para desenhar um livro — é o mesmo

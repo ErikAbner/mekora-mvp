@@ -90,6 +90,62 @@ def _sem_buracos(data: dict) -> dict:
     return data
 
 
+def _leitura_de(db: Session, job: ProcessingJob) -> dict:
+    """O que a estante precisa saber sobre a LEITURA de um livro.
+
+    Isto existe porque a ficha da estante vinha completando o que não sabia com
+    valores escritos à mão: "80% lido", "24 notas", uma citação inventada e a
+    etiqueta "#Design" — os mesmos, em todo livro, misturados por
+    `{ ...EXEMPLO_FICHA, ...livroReal }`. O livro real sobrescrevia título e
+    autor, e o resto do exemplo sobrevivia porque não havia campo real para
+    substituí-lo.
+
+    O `CLAUDE.md` deste repositório já dizia: "número na interface sai do
+    modelo, não da mão. Dois números escritos à mão ao lado de um derivado fazem
+    da tela uma coisa meio honesta, que é pior."
+
+    NÃO HÁ PORCENTAGEM AQUI, e a ausência é deliberada: o servidor não conhece o
+    tamanho do texto — o EPUB é lido no navegador. O que ele sabe é em que
+    capítulo a pessoa está e quantos existem, e "capítulo 2 de 3" é exato onde
+    uma porcentagem seria chute.
+    """
+    from app.models.nota import Nota
+    from app.models.progresso import Progresso
+
+    fora = {"notas": 0, "capitulo": None, "capitulos": None, "ultima_nota": None}
+    if not job.dono_id:
+        return fora
+
+    fora["notas"] = (
+        db.query(Nota)
+        .filter(Nota.pessoa_id == job.dono_id, Nota.job_id == job.id)
+        .count()
+    )
+
+    # A amostra é a ÚLTIMA nota de verdade, e não um texto de enfeite. Quando
+    # não há nenhuma, o campo vem nulo e a tela cala — em vez de mostrar uma
+    # citação que ninguém escreveu.
+    ultima = (
+        db.query(Nota)
+        .filter(Nota.pessoa_id == job.dono_id, Nota.job_id == job.id)
+        .order_by(Nota.criada_em.desc())
+        .first()
+    )
+    if ultima is not None:
+        fora["ultima_nota"] = {"trecho": ultima.trecho, "cor": ultima.cor, "comentario": ultima.comentario}
+
+    p = (
+        db.query(Progresso)
+        .filter(Progresso.pessoa_id == job.dono_id, Progresso.job_id == job.id)
+        .first()
+    )
+    if p is not None and p.capitulos:
+        fora["capitulo"] = p.capitulo
+        fora["capitulos"] = p.capitulos
+
+    return fora
+
+
 def _destino_de(db: Session, job: ProcessingJob) -> str | None:
     """Para qual Kindle este trabalho vai.
 
@@ -825,7 +881,7 @@ def get_history(
         .order_by(ProcessingJob.created_at.desc())
         .all()
     )
-    return [_to_history(r) for r in records]
+    return [{**_to_history(r), **_leitura_de(db, r)} for r in records]
 
 
 # ---------------------------------------------------------------------------

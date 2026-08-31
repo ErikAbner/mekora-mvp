@@ -47,4 +47,15 @@ class Progresso(Base):
     # índices seguintes, e o de caracteres não se move.
     deslocamento = Column(Integer, nullable=False, default=0)
 
+    # Quantos capítulos o livro tem, gravado por quem ABRE o livro.
+    #
+    # O servidor não sabe: o EPUB é lido no navegador, e é lá que a espinha do
+    # arquivo é contada. Sem este número, a estante não tem como dizer onde a
+    # leitura está — e a alternativa era inventar uma porcentagem, que foi
+    # exatamente o que a ficha vinha fazendo com "80% lido" em todo livro.
+    #
+    # Zero significa "ninguém abriu ainda", e a tela trata isso como não
+    # começado em vez de como zero por cento.
+    capitulos = Column(Integer, nullable=False, default=0)
+
     atualizado_em = Column(DateTime, default=agora, onupdate=agora, nullable=False)

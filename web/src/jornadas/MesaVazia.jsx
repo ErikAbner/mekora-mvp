@@ -8,7 +8,7 @@
  * decidir se aquilo é estado ou defeito. É a regra do produto dizer o que não
  * sabe, aplicada ao que ele sabe que não tem.
  */
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 // Assets do Figma, servidos de `publico/`. Caminho e nao import: o import ES
 // so vale para asset dentro de src/, que o Vite processa e versiona.
@@ -18,13 +18,30 @@ const iconeEnviar = "/icones/icone-enviar.svg";
 const marca = "/icones/marca-mekora.svg";
 
 import { Icone } from "../componentes/Icone.jsx";
+import { lerFormatos } from "../../../contrato/api.js";
 import { Botao } from "../componentes/Botao.jsx";
 
 import "./mesa-vazia.css";
 
-const FORMATOS = [".pdf", ".epub", ".docx", ".cbz", ".cbr", ".zip"];
+/* Enquanto a lista de verdade não chega, estes quatro. São os mais comuns e
+ * todos aceitos — o objetivo é a caixa não nascer vazia, e não descrever o que
+ * o produto suporta. Quem descreve isso é o servidor. */
+const ENQUANTO_CHEGA = [".pdf", ".epub", ".docx", ".cbz"];
 
 export function MesaVazia({ aoReceberArquivos, backend }) {
+  /* A LISTA VEM DE QUEM DECIDE. Escrita aqui, ela divergia do backend nos dois
+   * sentidos, e nenhuma das metades aparecia testando: oferecer a mais dá erro
+   * depois do upload, esconder de menos não dá erro nenhum — a pessoa
+   * simplesmente não tenta. */
+  const [formatos, setFormatos] = useState(ENQUANTO_CHEGA);
+  useEffect(() => {
+    let vivo = true;
+    lerFormatos()
+      .then((f) => vivo && f?.todos?.length && setFormatos(f.todos))
+      .catch(() => {});
+    return () => { vivo = false; };
+  }, []);
+
   /* O input fica escondido e o botão o aciona: input de arquivo nativo não se
    * estiliza, e recriar um por fora quebraria teclado e leitor de tela. */
   const campo = useRef(null);
@@ -61,7 +78,7 @@ export function MesaVazia({ aoReceberArquivos, backend }) {
           <h2>Arraste arquivos ou clique para selecionar</h2>
 
           <ul className="formatos">
-            {FORMATOS.map((f) => (
+            {formatos.map((f) => (
               <li key={f}>{f}</li>
             ))}
           </ul>

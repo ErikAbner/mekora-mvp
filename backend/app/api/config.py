@@ -20,6 +20,31 @@ async def get_config() -> dict:
     }
 
 
+@router.get("/formatos")
+async def formatos() -> dict:
+    """Quais arquivos o Mekora aceita.
+
+    A tela listava seis extensões escritas à mão, e elas divergiam nos DOIS
+    sentidos: ofereciam `.zip`, que o backend recusa, e escondiam ODT, RTF, TXT,
+    HTML, CB7 e CBC, que ele aceita. Quem tivesse um `.odt` olhava a lista e
+    concluía que não dava.
+
+    Nenhuma das duas metades do erro apareceria testando: oferecer a mais dá uma
+    mensagem de erro depois do upload, e esconder de menos não dá erro nenhum —
+    a pessoa simplesmente não tenta.
+
+    A lista sai de `input_router_service`, que é quem decide de verdade para
+    onde cada arquivo vai.
+    """
+    from app.services.input_router_service import COMIC_EXTENSIONS, DOCUMENT_EXTENSIONS
+
+    return {
+        "documentos": sorted(DOCUMENT_EXTENSIONS),
+        "quadrinhos": sorted(COMIC_EXTENSIONS),
+        "todos": sorted(DOCUMENT_EXTENSIONS | COMIC_EXTENSIONS),
+    }
+
+
 @router.post("/test-email", response_model=TestEmailResponse)
 async def test_email() -> TestEmailResponse:
     """

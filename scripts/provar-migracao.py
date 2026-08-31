@@ -21,6 +21,21 @@ DESFAZER IMPORTA MAIS DO QUE PARECE
 Uma migração que aplica e não desfaz prende o produto na versão nova. Descobrir
 isso durante um problema em produção — quando voltar é justamente o que se quer
 — é a pior hora possível.
+
+TABELA VAZIA NÃO PROVA NADA
+===========================
+Em 31/08 este script aprovou uma migração que quebrava. A coluna era NOT NULL
+sem `server_default`, e o SQLite só RECUSA isso quando a tabela tem linhas —
+com ela vazia, a migração passa. A tabela em questão estava vazia no banco de
+origem, então a prova rodou contra o caso fácil e não disse nada.
+
+O padrão é traiçoeiro porque é o inverso do esperado: a migração funciona em
+banco novo e falha em banco usado, então quem testa em ambiente limpo nunca a
+vê quebrar.
+
+Agora o script SEMEIA uma linha em cada tabela vazia antes de aplicar. Não é
+para testar os dados: é para que a migração encontre o caso que ela precisa
+saber tratar.
 """
 
 import os
@@ -45,6 +60,61 @@ def contar(caminho: Path) -> dict:
     fora["_integridade"] = c.execute("PRAGMA integrity_check").fetchone()[0]
     c.close()
     return fora
+
+
+def semear_vazias(caminho: Path) -> list:
+    """Põe uma linha em cada tabela vazia, para a migração ter o que quebrar.
+
+    Os valores são o mínimo que satisfaz as restrições: zero para número, texto
+    vazio para texto, agora para data. Eles não precisam fazer sentido — o que
+    importa é EXISTIR uma linha, porque é a existência dela que faz o SQLite
+    recusar uma coluna NOT NULL sem default.
+    """
+    c = sqlite3.connect(caminho)
+    c.execute("PRAGMA foreign_keys = OFF")
+    semeadas = []
+
+    tabelas = [
+        t for (t,) in c.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' "
+            "AND name NOT LIKE 'sqlite_%' AND name != 'alembic_version'"
+        )
+    ]
+    for t in tabelas:
+        if c.execute(f"SELECT count(*) FROM '{t}'").fetchone()[0]:
+            continue
+        colunas = list(c.execute(f"PRAGMA table_info('{t}')"))
+        nomes, valores = [], []
+        for _, nome, tipo, nao_nulo, padrao, pk in colunas:
+            if pk:
+                continue  # deixa o SQLite atribuir
+            if not nao_nulo or padrao is not None:
+                continue  # aceita nulo ou já tem valor
+            tipo = (tipo or "").upper()
+            nomes.append(f'"{nome}"')
+            if "INT" in tipo or "REAL" in tipo or "NUM" in tipo or "BOOL" in tipo:
+                valores.append(0)
+            elif "DATE" in tipo or "TIME" in tipo:
+                valores.append("2000-01-01 00:00:00")
+            else:
+                valores.append("")
+        try:
+            if nomes:
+                c.execute(
+                    f"INSERT INTO '{t}' ({', '.join(nomes)}) VALUES ({', '.join('?' * len(valores))})",
+                    valores,
+                )
+            else:
+                c.execute(f"INSERT INTO '{t}' DEFAULT VALUES")
+            semeadas.append(t)
+        except Exception:
+            # Tabela que não aceita linha mínima fica de fora: semear não é o
+            # objetivo, é o meio.
+            pass
+
+    c.commit()
+    c.close()
+    return semeadas
 
 
 def alembic(passo: list, banco: Path) -> tuple:
@@ -73,6 +143,13 @@ def main() -> int:
             origem.backup(destino)
         origem.close()
         destino.close()
+
+        # SEMEAR AS TABELAS VAZIAS. Ver a explicação no topo: uma coluna NOT
+        # NULL sem default só quebra quando há linhas, então provar contra
+        # tabela vazia é provar o caso que sempre passa.
+        semeadas = semear_vazias(copia)
+        if semeadas:
+            print(f"\nsemeadas para valer a prova: {', '.join(semeadas)}")
 
         antes = contar(copia)
         # A cópia vazia foi exatamente o defeito de 30/08. Se ela não tem os

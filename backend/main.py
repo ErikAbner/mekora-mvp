@@ -30,6 +30,7 @@ from app.api.porta import exigir_acesso
 from app.api.health import router as health_router
 from app.api.aparelhos import router as aparelhos_router
 from app.api.notas import router as notas_router
+from app.api.preferencias import router as preferencias_router
 from app.api.progresso import router as progresso_router
 from app.api.config import router as config_router
 from app.api.jobs import router as jobs_router
@@ -88,6 +89,7 @@ app.include_router(notas_router, dependencies=[Depends(exigir_acesso)])
 # Sem porta de trabalho: as rotas de aparelho falam da CONTA, e a sessão é a
 # única credencial possível — não há chave de trabalho que dê acesso a elas.
 app.include_router(aparelhos_router)
+app.include_router(preferencias_router)
 app.include_router(config_router)
 app.include_router(jobs_router, dependencies=[Depends(exigir_acesso)])
 app.include_router(app_config_router)

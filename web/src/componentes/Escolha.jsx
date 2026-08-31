@@ -27,7 +27,7 @@
 import { useId } from "react";
 import "./escolha.css";
 
-export function Escolha({ titulo, explicacao, opcoes, valor, aoTrocar, nome }) {
+export function Escolha({ titulo, explicacao, opcoes, valor, aoTrocar, nome, aviso }) {
   const id = useId();
   const grupo = nome ?? id;
 
@@ -39,6 +39,9 @@ export function Escolha({ titulo, explicacao, opcoes, valor, aoTrocar, nome }) {
       <legend>
         <span className="escolha-titulo">{titulo}</span>
         {explicacao && <span className="escolha-explicacao">{explicacao}</span>}
+        {/* DENTRO da `legend` de propósito: assim o leitor de tela anuncia o
+            aviso ANTES das opções, e não depois de a pessoa ter escolhido. */}
+        {aviso && <span className="escolha-aviso">{aviso}</span>}
       </legend>
 
       <div className="escolha-opcoes">

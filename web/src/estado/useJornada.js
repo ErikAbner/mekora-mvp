@@ -113,12 +113,21 @@ export function useJornada() {
         titulo: e.final_title || e.original_filename,
         autor: e.final_author || "",
         noKindle: e.kindle_sent,
+        /* O que a ficha mostra sobre a LEITURA, tudo vindo do servidor.
+         * Antes ela completava o que não sabia com um exemplo escrito à mão:
+         * "80% lido", "24 notas", uma citação inventada e a etiqueta "#Design"
+         * — os mesmos, em todo livro. */
+        formato: (e.input_format || "").toUpperCase() || null,
+        notas: e.notas ?? 0,
+        capitulo: e.capitulo,
+        capitulos: e.capitulos,
+        ultima_nota: e.ultima_nota ?? null,
+        quadrinho: !!e.comic_mode,
         /* A capa vem PRONTA do backend, como URL. A versão anterior devolvia
          * `null` sempre, porque o `/history` não expunha nada — e montar o
          * caminho aqui faria a tela conhecer o layout do storage do servidor,
          * que é exatamente o acoplamento que o contrato existe para evitar. */
         capa: e.cover_url ?? null,
-        notas: 0,
       })),
     );
   }, []);

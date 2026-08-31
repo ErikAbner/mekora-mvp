@@ -14,13 +14,31 @@
  * interruptor. Pílula e círculo são os 5% que quebram a retidão, e funcionam por
  * serem raros.
  */
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
+import { DESTAQUES } from "./Leitura.jsx";
 import "./estante.css";
 
 const marcador = "/icones/marcador-notas.svg";
-const RECORTES = ["Tudo", "Com nota", "No Kindle", "Quadrinhos"];
+const RECORTES = [
+  { id: "tudo", rotulo: "Tudo", cabe: () => true },
+  { id: "nota", rotulo: "Com nota", cabe: (l) => (l.notas ?? 0) > 0 },
+  { id: "kindle", rotulo: "No Kindle", cabe: (l) => !!l.noKindle },
+  { id: "quadrinho", rotulo: "Quadrinhos", cabe: (l) => !!l.quadrinho },
+];
+
+/* Onde a leitura está, em palavras que o produto pode sustentar.
+ *
+ * Não devolve porcentagem: o servidor não conhece o tamanho do texto. Devolve
+ * `null` quando ninguém abriu o livro, e a linha simplesmente não mostra nada —
+ * em vez de "0% lido", que afirma algo sobre uma leitura que não começou. */
+function onde(l) {
+  if (!l.capitulos) return null;
+  if (l.capitulo + 1 >= l.capitulos) return "no último capítulo";
+  return `capítulo ${l.capitulo + 1} de ${l.capitulos}`;
+}
 
 function Livro({ titulo, autor, notas, capa, aoEscolher, escolhido }) {
   return (
@@ -64,6 +82,19 @@ function Livro({ titulo, autor, notas, capa, aoEscolher, escolhido }) {
 }
 
 export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnviar }) {
+  /* OS RECORTES FILTRAM AGORA.
+   *
+   * Eram quatro botões sem `onClick`, com "Tudo" marcado por `aria-pressed={i === 0}`
+   * — um valor fixo, então nem a marcação mudava. Quatro alvos que respondiam ao
+   * clique com nada, o que é lido como produto quebrado e não como recurso
+   * ausente.
+   *
+   * A contagem ao lado de cada um vem da mesma lista que ele filtra: assim um
+   * recorte vazio se anuncia antes de ser clicado, em vez de levar a uma estante
+   * em branco sem explicação. */
+  const [recorte, setRecorte] = useState("tudo");
+  const regra = RECORTES.find((r) => r.id === recorte) ?? RECORTES[0];
+  const mostrados = livros.filter(regra.cabe);
   return (
     <div className="mesa">
       <Cabecalho lugar="estante" />
@@ -72,11 +103,23 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnvia
         <div className="estante-grade">
           {/* Recorte nomeado, nao eixo repetido. */}
           <nav className="recortes" aria-label="Recortes da estante">
-            {RECORTES.map((r, i) => (
-              <button key={r} type="button" aria-pressed={i === 0}>
-                {r}
-              </button>
-            ))}
+            {RECORTES.map((r) => {
+              const quantos = livros.filter(r.cabe).length;
+              return (
+                <button
+                  key={r.id}
+                  type="button"
+                  aria-pressed={r.id === recorte ? "true" : "false"}
+                  onClick={() => setRecorte(r.id)}
+                  /* Um recorte sem nada dentro não é clicável: levar alguém a
+                     uma estante vazia é fazê-lo procurar o erro num lugar onde
+                     não há erro. */
+                  disabled={quantos === 0 && r.id !== "tudo"}
+                >
+                  {r.rotulo} <span className="dado">{quantos}</span>
+                </button>
+              );
+            })}
           </nav>
 
           {/* A ESTANTE VAZIA PRECISA FALAR. Uma conta recém-criada chega
@@ -97,7 +140,7 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnvia
             </div>
           ) : (
             <ul className="grade">
-              {livros.map((l) => (
+              {mostrados.map((l) => (
                 <Livro
                   key={l.chave}
                   {...l}
@@ -119,35 +162,62 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnvia
             <article className="ficha-caixa">
               <header>
                 <h2>{selecionado.titulo}</h2>
+                {/* CADA PEDAÇO SÓ APARECE SE EXISTIR.
+                    A linha era `autor · formato · 80% lido`, com formato e
+                    porcentagem vindos de um exemplo — iguais em todo livro. */}
                 <p className="ficha-meta">
-                  {selecionado.autor} · {selecionado.formato} ·{" "}
-                  <span className="dado">{selecionado.lido}%</span> lido
+                  {[
+                    selecionado.autor || null,
+                    selecionado.formato || null,
+                    onde(selecionado),
+                  ].filter(Boolean).join(" · ")}
                 </p>
               </header>
 
-              {/* O progresso e derivado da leitura, nunca um campo mantido. */}
-              <div
-                className="progresso"
-                role="progressbar"
-                aria-valuenow={selecionado.lido}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-label={`${selecionado.titulo}: ${selecionado.lido}% lido`}
-              >
-                <div className="progresso-feito" style={{ inlineSize: `${selecionado.lido}%` }} />
-              </div>
+              {/* A BARRA MEDE CAPÍTULOS, e o rótulo diz isso.
+                  Ela media uma porcentagem que ninguém calculava: o servidor não
+                  conhece o tamanho do texto, porque o EPUB é lido no navegador.
+                  Capítulo lido de capítulos totais é aproximado — capítulos têm
+                  tamanhos diferentes — mas é DERIVADO, e o rótulo não promete
+                  mais do que isso.
+
+                  Sem ninguém ter aberto o livro, não há barra: uma barra vazia
+                  diz "0% lido", que é diferente de "ainda não sei". */}
+              {selecionado.capitulos > 0 && (
+                <div
+                  className="progresso"
+                  role="progressbar"
+                  aria-valuenow={selecionado.capitulo + 1}
+                  aria-valuemin={1}
+                  aria-valuemax={selecionado.capitulos}
+                  aria-label={`${selecionado.titulo}: capítulo ${selecionado.capitulo + 1} de ${selecionado.capitulos}`}
+                >
+                  <div
+                    className="progresso-feito"
+                    style={{ inlineSize: `${((selecionado.capitulo + 1) / selecionado.capitulos) * 100}%` }}
+                  />
+                </div>
+              )}
 
               <div className="ficha-notas">
                 <h3>
-                  <span className="dado">{selecionado.notas}</span> notas
+                  <span className="dado">{selecionado.notas ?? 0}</span>{" "}
+                  {selecionado.notas === 1 ? "nota" : "notas"}
                 </h3>
-                {/* O filete marca a citacao; o chao marca o conteudo. */}
-                <blockquote>{selecionado.amostra}</blockquote>
-                <p className="etiquetas">
-                  {selecionado.etiquetas.map((e) => (
-                    <span key={e} className="etiqueta">{e}</span>
-                  ))}
-                </p>
+
+                {/* A ÚLTIMA NOTA DE VERDADE, ou nada.
+                    Aqui havia uma frase de enfeite entre aspas, apresentada como
+                    citação do livro — em todo livro, a mesma. */}
+                {selecionado.ultima_nota ? (
+                  <blockquote style={{ background: DESTAQUES[selecionado.ultima_nota.cor] }}>
+                    {selecionado.ultima_nota.trecho}
+                  </blockquote>
+                ) : (
+                  <p className="ficha-nota">
+                    Nada marcado ainda. Selecione um trecho durante a leitura para
+                    guardar aqui.
+                  </p>
+                )}
               </div>
 
               <div className="ficha-acoes">

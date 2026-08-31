@@ -19,6 +19,9 @@ router = APIRouter()
 class Marca(BaseModel):
     capitulo: int = Field(ge=0)
     deslocamento: int = Field(ge=0)
+    # Opcional porque quem grava ao rolar não precisa repetir o total a cada
+    # vez; quem abre o livro manda uma vez e ele fica.
+    capitulos: Optional[int] = Field(default=None, ge=0)
 
 
 @router.get("/jobs/{job_id}/progresso")
@@ -36,7 +39,7 @@ def ler(
     """
     pessoa = acesso_service.quem_e(db, mekora_sessao)
     if pessoa is None:
-        return {"capitulo": 0, "deslocamento": 0, "guardado": False}
+        return {"capitulo": 0, "deslocamento": 0, "capitulos": 0, "guardado": False}
 
     p = (
         db.query(Progresso)
@@ -44,8 +47,11 @@ def ler(
         .first()
     )
     if p is None:
-        return {"capitulo": 0, "deslocamento": 0, "guardado": False}
-    return {"capitulo": p.capitulo, "deslocamento": p.deslocamento, "guardado": True}
+        return {"capitulo": 0, "deslocamento": 0, "capitulos": 0, "guardado": False}
+    return {
+        "capitulo": p.capitulo, "deslocamento": p.deslocamento,
+        "capitulos": p.capitulos, "guardado": True,
+    }
 
 
 @router.put("/jobs/{job_id}/progresso", status_code=204)
@@ -77,6 +83,10 @@ def gravar(
 
     p.capitulo = marca.capitulo
     p.deslocamento = marca.deslocamento
+    # Só sobrescreve quando veio: um `null` do gravador de rolagem não pode
+    # apagar o total que o abridor do livro já registrou.
+    if marca.capitulos:
+        p.capitulos = marca.capitulos
     p.atualizado_em = agora()
     db.commit()
     return None
