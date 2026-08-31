@@ -58,7 +58,7 @@ function Mesa() {
   const lista = arquivos.length ? arquivos : usaExemplo() ? EXEMPLO_FILA : [];
 
   if (!lista.length) return <MesaVazia aoReceberArquivos={receber} backend={backend} />;
-  return <MesaCheia arquivos={lista} aoVerEstante={() => navegar("/estante")} />;
+  return <MesaCheia arquivos={lista} aoVerEstante={() => navegar("/estante")} aoReceberArquivos={receber} />;
 }
 
 function PaginaEstante() {

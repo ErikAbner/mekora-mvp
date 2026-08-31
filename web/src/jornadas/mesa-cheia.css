@@ -68,3 +68,26 @@
   .preparo-topo h2 { font-size: 24px; line-height: 32px; }
   .arquivo-nome { font-size: 18px; line-height: 27px; }
 }
+
+/* O input nativo escondido, acionado pelo botão. `sr-only` em vez de
+   `display:none` porque um input escondido com `display:none` não recebe o
+   clique programático em alguns navegadores. */
+.campo-arquivo {
+  position: absolute;
+  inline-size: 1px; block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.preparo-acoes {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Arrastar por cima da mesa cheia. O realce é DEGRAU DE SUPERFÍCIE, e não cor
+   nova: a regra que vale desde que o acento saiu do sistema (DEC-0037 §6). */
+.mesa.recebendo { background: color-mix(in srgb, var(--foreground) 5%, var(--background)); }
+.mesa.recebendo .preparo-caixa { border-color: var(--foreground); }

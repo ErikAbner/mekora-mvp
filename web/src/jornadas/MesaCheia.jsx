@@ -22,6 +22,7 @@ const iconeEnviar = "/icones/icone-enviar.svg";
 /* Os quatro estados vêm do contrato, não daqui. Se esta lista divergir da de
  * `contrato/estado.js`, a tela passa a mostrar rótulo para um estado que não
  * existe — ou a esconder um que existe. */
+import { useRef, useState } from "react";
 import { ESTADOS as DO_CONTRATO } from "../../../contrato/estado.js";
 
 const ESTADOS = {
@@ -53,6 +54,11 @@ function Arquivo({ nome, estado, feito, total, progresso, detalhe, etapa, motivo
     <li className={`arquivo ${e.classe}`}>
       <div className="arquivo-topo">
         <span className="arquivo-nome">{nome}</span>
+        {/* O estado é COR e PALAVRA. A cor já estava certa — as três do sistema
+            passam AA —, mas quem não vê a cor precisa da palavra, e ela está
+            aqui em texto desde sempre. O que faltava era o anúncio quando ela
+            MUDA, e isso vive no resumo acima: anunciar cada linha faria um lote
+            de dez arquivos falar dez vezes por transição. */}
         <span className="arquivo-estado">{e.rotulo}</span>
       </div>
 
@@ -78,7 +84,16 @@ function Arquivo({ nome, estado, feito, total, progresso, detalhe, etapa, motivo
         {/* A etapa diz ONDE parou; o motivo diz o quê. Os dois juntos são o que
             transforma "falhou" em algo que dá para resolver. */}
         {estado === "erro" && etapa && <span className="detalhe-texto">Parou em: {etapa}.</span>}
-        {explicacao && <span className="detalhe-texto">{explicacao}</span>}
+        {explicacao && (
+          /* `role="alert"` só no ERRO. Ele interrompe o que o leitor de tela
+             estiver dizendo, e isso é certo para uma falha e errado para um
+             detalhe: usar em tudo faria a tela gritar a cada MB carregado, e
+             quem ouve isso desliga o leitor — perdendo também os avisos que
+             importam. */
+          <span className="detalhe-texto" role={estado === "erro" ? "alert" : undefined}>
+            {explicacao}
+          </span>
+        )}
         {digitalizado && <span className="detalhe-texto">Documento digitalizado.</span>}
         {progresso != null && <span className="dado">{progresso}%</span>}
       </p>
@@ -86,17 +101,54 @@ function Arquivo({ nome, estado, feito, total, progresso, detalhe, etapa, motivo
   );
 }
 
-export function MesaCheia({ arquivos = [], aoVerEstante }) {
+export function MesaCheia({ arquivos = [], aoVerEstante, aoReceberArquivos }) {
   const c = contar(arquivos);
+  const campo = useRef(null);
+  const [sobre, setSobre] = useState(false);
+
+  /* SOLTAR CONTINUA VALENDO COM A MESA CHEIA.
+   *
+   * A zona de arrastar só existia na mesa vazia, e com um arquivo dentro a tela
+   * trocava para esta — sem input, sem botão, sem zona. Quem subiu um arquivo
+   * ficava preso: para adicionar o segundo, tinha que recarregar a página.
+   *
+   * Achado tentando fazer exatamente isso: soltar um arquivo, depois outro. */
+  const soltar = (e) => {
+    e.preventDefault();
+    setSobre(false);
+    if (e.dataTransfer?.files?.length) aoReceberArquivos?.(e.dataTransfer.files);
+  };
+
   return (
-    <div className="mesa">
+    <div
+      className={`mesa${sobre ? " recebendo" : ""}`}
+      onDragOver={(e) => { e.preventDefault(); setSobre(true); }}
+      onDragLeave={(e) => {
+        /* Só apaga o realce quando o ponteiro sai da MESA, e não de um filho:
+         * sem esta conferência, passar por cima de qualquer item da lista faz o
+         * realce piscar. */
+        if (!e.currentTarget.contains(e.relatedTarget)) setSobre(false);
+      }}
+      onDrop={soltar}
+    >
       <Cabecalho lugar="mesa" />
 
       <section className="preparo">
         <div className="preparo-caixa">
           <header className="preparo-topo">
-            <h2>Em preparo</h2>
-            <p className="resumo">
+            {/* O título era "Em preparo", que é também o nome de um ESTADO —
+                e a tela se contradizia sozinha: "Em preparo" no topo, "0 Em
+                preparo" logo abaixo. O nome do lugar não pode ser o nome de um
+                dos estados que ele mostra. */}
+            <h2>A mesa</h2>
+            {/* O RESUMO É QUEM ANUNCIA. Ele já é a contagem derivada da lista,
+                então muda exatamente quando algo muda de estado — e é uma frase
+                curta, contra a lista inteira relida a cada transição.
+
+                Sem isto, um arquivo ia de "Em preparo" a "Pronto" ou a "Com
+                erro" em silêncio total para quem usa leitor de tela, numa tela
+                cujo propósito inteiro é mostrar progresso. */}
+            <p className="resumo" role="status" aria-live="polite">
               {/* Cada número sai do mesmo lugar: a lista. */}
               {Object.entries(c).map(([k, n]) => (
                 <span key={k} className="contagem">
@@ -117,9 +169,33 @@ export function MesaCheia({ arquivos = [], aoVerEstante }) {
             ))}
           </ul>
 
-          <Botao tom="primaria" icone={iconeEnviar} onClick={aoVerEstante}>
-            Ver na estante
-          </Botao>
+          <div className="preparo-acoes">
+            <Botao tom="primaria" icone={iconeEnviar} onClick={aoVerEstante}>
+              Ver na estante
+            </Botao>
+            {aoReceberArquivos && (
+              <>
+                <Botao tom="secundaria" onClick={() => campo.current?.click()}>
+                  Adicionar mais
+                </Botao>
+                {/* O input nativo fica escondido e o botão o aciona: input de
+                    arquivo não se estiliza, e recriar um por fora quebraria
+                    teclado e leitor de tela. */}
+                <input
+                  ref={campo}
+                  type="file"
+                  multiple
+                  className="campo-arquivo"
+                  onChange={(e) => {
+                    if (e.target.files?.length) aoReceberArquivos(e.target.files);
+                    /* Limpa o valor: sem isto, escolher O MESMO arquivo duas
+                       vezes seguidas não dispara `change` na segunda. */
+                    e.target.value = "";
+                  }}
+                />
+              </>
+            )}
+          </div>
         </div>
       </section>
     </div>

@@ -222,6 +222,27 @@
     return fora;
   };
 
+  /* ACENTO PERDIDO NO CAMINHO.
+   *
+   * Já aconteceu duas vezes neste repositório: uma frase escrita dentro de um
+   * heredoc chega ao arquivo sem acento e vai para a tela do usuário assim. O
+   * `CLAUDE.md` até nomeia a armadilha, e nomear não impediu.
+   *
+   * A lista é só de palavras INEQUÍVOCAS. `esta`, `e`, `ja` e `sao` ficam de
+   * fora de propósito: "esta casa", "e também", "São Paulo" são texto correto, e
+   * um detector que acusa texto certo é lido uma vez e ignorado depois.
+   */
+  const SEM_ACENTO = /\b(nao|voce|tambem|atencao|informacao|conversao|operacao|possivel|disponivel|ultimo|proximo|pagina|codigo|automatico|preparacao|instrucao|traducao|selecao|conexao|reuniao|versao)\b/i;
+
+  const semAcento = [];
+  for (const n of document.querySelectorAll("body *")) {
+    if (n.children.length) continue;
+    const t = (n.textContent || "").trim();
+    if (!t) continue;
+    const m = SEM_ACENTO.exec(t);
+    if (m) semAcento.push({ palavra: m[0], trecho: t.slice(0, 70) });
+  }
+
   return {
     url: location.pathname,
     nos_com_texto: medidos,
@@ -230,10 +251,12 @@
     corpo_fora_da_escala: unico(corpoFora, (x) => x.corpo),
     assets_conferidos: fontes.size,
     tinta_cravada_em_asset: tintaEmAsset,
+    texto_sem_acento: unico(semAcento, (x) => x.palavra + x.trecho),
     passou:
       corFora.length === 0 &&
       contraste.length === 0 &&
       corpoFora.length === 0 &&
+      semAcento.length === 0 &&
       tintaEmAsset.every((a) => a.fora_do_sistema.length === 0),
     nota: 'Filete e traço decorativo não são julgados: a WCAG cobra 3,0 de componente de interface, não de separador.'
   };

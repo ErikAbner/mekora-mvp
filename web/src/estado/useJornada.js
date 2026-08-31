@@ -46,11 +46,23 @@ export function useJornada() {
        * lista de exemplo: dado escrito à mão nunca falha no meio. */
       let atual = provisorio;
 
+      /* ONDE ESTAMOS AGORA, para o erro dizer a verdade.
+       *
+       * O `catch` gravava `etapa: "envio"` em qualquer falha, e a tela mostrava
+       * "Parou em: envio." para um arquivo recusado no UPLOAD por formato não
+       * suportado — que nunca chegou perto do envio ao Kindle.
+       *
+       * A mensagem do backend estava certa e visível; o rótulo ao lado dela
+       * contava outra história. Duas frases sobre o mesmo erro, discordando —
+       * e a errada é a que a pessoa lê primeiro, porque é a curta. */
+      let etapa = "envio do arquivo";
+
       try {
         const up = await enviarArquivo(f);
         grava(atual, { id: up.upload_id, estado: "trabalhando", etapa: "analisando" });
         atual = up.upload_id;
 
+        etapa = "análise";
         const analise = await analisar(atual);
         grava(atual, {
           paginas: analise.page_count ?? null,
@@ -64,6 +76,7 @@ export function useJornada() {
         const pronta = await esperarAnalise(atual);
         if (pronta.estado === "erro") { grava(atual, pronta); continue; }
 
+        etapa = "conversão";
         await converter(atual);
         if (vivos.current.has(atual)) continue;
         const id = atual;
@@ -78,7 +91,7 @@ export function useJornada() {
         // O erro do backend é preservado, e escrito no id VIGENTE. Trocar a
         // mensagem por "falhou" esconderia a única informação que resolve o
         // problema.
-        grava(atual, { estado: "erro", etapa: "envio", motivo: e.message });
+        grava(atual, { estado: "erro", etapa, motivo: e.message });
       }
     }
   }, [grava]);

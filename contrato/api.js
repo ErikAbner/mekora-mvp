@@ -62,20 +62,51 @@ export function chaveDe(id) {
  * esquecido nao daria erro de compilacao, daria um 404 na tela. */
 const NO_CAMINHO = /^\/(?:jobs|analyze|batch)\/(\d+)/;
 
+/* O que dizer quando o backend nao explicou o proprio erro. */
+function frasePara(status, caminho) {
+  if (status >= 500) return "O Mekora não está respondendo agora. Tente de novo em instantes.";
+  if (status === 404) return "Isso não foi encontrado.";
+  if (status === 401 || status === 403) return "Entre para continuar.";
+  if (status === 413) return "O arquivo é grande demais.";
+  if (status === 429) return "Muitos pedidos seguidos. Espere um pouco.";
+  return `Não foi possível completar (${status} em ${caminho}).`;
+}
+
 async function pede(caminho, opcoes) {
   const m = NO_CAMINHO.exec(caminho);
   const chave = m ? chaveDe(m[1]) : null;
   if (chave) {
     opcoes = { ...opcoes, headers: { "X-Mekora-Chave": chave, ...(opcoes?.headers ?? {}) } };
   }
-  const r = await fetch(BASE + caminho, opcoes);
+  let r;
+  try {
+    r = await fetch(BASE + caminho, opcoes);
+  } catch (falha) {
+    /* `fetch` LANCA quando nao ha resposta nenhuma: rede caida, servidor
+     * inalcancavel, DNS. A mensagem nativa e "Failed to fetch", que nao diz a
+     * ninguem o que fazer. */
+    const e = new Error("Sem conexão com o Mekora. Verifique a internet e tente de novo.");
+    e.rede = true;
+    e.caminho = caminho;
+    e.original = falha?.message;
+    throw e;
+  }
+
   if (!r.ok) {
     // O corpo do erro do backend vale mais que o código HTTP: ele diz o que
     // aconteceu. Engolir e mostrar "erro 500" é o que faz o usuário abrir um
     // chamado que ninguém consegue responder.
     let detalhe = "";
     try { detalhe = (await r.json())?.detail ?? ""; } catch { /* corpo nao-JSON */ }
-    const e = new Error(detalhe || `${r.status} em ${caminho}`);
+    /* SEM DETALHE, UMA FRASE E NAO UM CODIGO.
+     *
+     * O fallback era `${r.status} em ${caminho}` — "500 em /upload" —, que e
+     * util para quem escreve o codigo e inutil para quem esta usando o produto.
+     * Ele aparecia justamente no pior caso: o backend fora do ar, quando nao ha
+     * corpo de erro nenhum para explicar.
+     *
+     * O caminho e o codigo continuam no objeto do erro, para quem depurar. */
+    const e = new Error(detalhe || frasePara(r.status, caminho));
     e.status = r.status;
     e.caminho = caminho;
     throw e;
