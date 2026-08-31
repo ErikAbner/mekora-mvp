@@ -2967,8 +2967,10 @@ function escrito(cap,par,frag,nota,origem,k,livro){
     ini=i<0?0:i;fim=i<0?t.length:i+frag.length;
     /* a citacao e o contexto viajam com a nota: o deslocamento e so a dica */
     cita=t.slice(ini,fim);
-    antes=t.slice(Math.max(0,ini-CTX),ini);
-    depois=t.slice(fim,fim+CTX);
+    /* o contexto segue a politica de describe: sem cortar palavra, e ampliado
+       ate desambiguar quando a citacao aparece mais de uma vez na fonte. */
+    const cx=contextoDe((LIVROS[lv]||ARQ).caps,cap,par,ini,fim);
+    antes=cx.antes;depois=cx.depois;
   }
   return {k:k||("d"+sig(lv)+cap+par),livro:lv,cita:cita,antes:antes,depois:depois,cap:(cap===undefined?null:cap),
     par:(tem?par:null),ini:ini,fim:fim,perg:null,nota:nota||"",origem:origem||"leitura"};
@@ -3069,12 +3071,175 @@ const livroDe=d=>LIVROS[d.livro]||ARQ;
    vem depois. O deslocamento continua guardado, mas rebaixado a dica de
    por onde começar a procurar.
 
-   Quando a nota é reencontrada fora do lugar previsto, a tela DIZ. Uma
-   âncora que se conserta em silêncio é uma âncora em que ninguém pode
-   confiar, porque ninguém sabe quando ela falhou.
+   E o casamento não é só exato. Uma transcrição automática revisada
+   troca palavra DENTRO do trecho — não move a frase, reescreve um
+   pedaço dela — e contra isso deslocamento e busca literal falham do
+   mesmo jeito. Por isso a última tentativa é aproximada, e ela devolve
+   um NÚMERO.
+
+   Quando a nota é reencontrada fora do lugar previsto, a tela DIZ, com o
+   número ao lado. Uma âncora que se conserta em silêncio é uma âncora em
+   que ninguém pode confiar, porque ninguém sabe quando ela falhou — e um
+   conserto sem número é um conserto com que ninguém pode discordar.
    ═══════════════════════════════════════════════════════════════════ */
-const CTX = 28;   /* letras de contexto de cada lado */
-let versaoTexto = 0;   /* sobe quando o texto de um livro muda */
+
+/* ── QUANTO CONTEXTO GRAVAR ──────────────────────────────────────────
+   A política vem do `describe` do apache/incubator-annotator (Apache-2.0,
+   arquivado em 2025): gravar mais do que o estritamente necessário, não
+   cortar no meio de palavra, e ampliar até desambiguar quando a citação
+   aparece mais de uma vez na fonte. É leitura, não dependência — o match
+   daquele pacote é exato, e exato é justamente o que falha aqui. */
+const CTX = 28;       /* letras de contexto de cada lado, ponto de partida */
+const CTX_MAX = 112;  /* teto: contexto que cresce sem parar vira o texto todo */
+let versaoTexto = 0;  /* sobe quando o texto de um livro muda */
+
+/* cortar "colecio" no meio faz o prefixo casar PIOR do que se ele não
+   existisse: meia palavra não é contexto, é ruído com o peso de contexto. */
+function ctxAntes(t, i, n) {
+  let j = Math.max(0, i - n);
+  while (j > 0 && !/\s/.test(t[j - 1])) j--;
+  return t.slice(j, i);
+}
+function ctxDepois(t, f, n) {
+  let j = Math.min(t.length, f + n);
+  while (j < t.length && !/\s/.test(t[j])) j++;
+  return t.slice(f, j);
+}
+const ocorre = (t, s) => {
+  if (!s) return 0;
+  let n = 0, i = t.indexOf(s);
+  while (i > -1) { n++; i = t.indexOf(s, i + 1); }
+  return n;
+};
+/* amplia enquanto a citação com o contexto ainda aparecer mais de uma vez
+   na fonte inteira: contexto que não desambigua não é contexto. */
+function contextoDe(caps, cap, par, ini, fim) {
+  const t = caps[cap].p[par], cita = t.slice(ini, fim);
+  const todo = caps.map(c => c.p.join("\n")).join("\n");
+  let n = CTX, antes = ctxAntes(t, ini, n), depois = ctxDepois(t, fim, n);
+  while (n < CTX_MAX && ocorre(todo, antes + cita + depois) > 1) {
+    n += CTX; antes = ctxAntes(t, ini, n); depois = ctxDepois(t, fim, n);
+  }
+  return { antes: antes, depois: depois };
+}
+
+/* ── REANCORAGEM APROXIMADA ──────────────────────────────────────────
+   Método e pesos de `src/annotator/anchoring/match-quote.ts` do
+   hypothesis/client (BSD-2-Clause), conferido por leitura em 31/08 e
+   registrado em docs/references/colheita-github-mekora-2026-08-31.md do
+   Project OS. Os quatro pesos e a tolerância são os de lá, literais.
+
+   O que NÃO veio de lá é a implementação do casamento. O original depende
+   de approx-string-match, que faz Myers por palavra de bit para aguentar
+   texto de milhões de caracteres. Uma fonte aqui tem alguns milhares, e a
+   mesma resposta — a menor distância de edição terminando em cada posição
+   — cabe numa tabela direta de quarenta linhas. Adotar o método, não a
+   dependência: é a mesma regra que já valeu para o axe-core. */
+const PESO_CITA = 50, PESO_ANTES = 20, PESO_DEPOIS = 20, PESO_POS = 2;
+const PESO_TOT = PESO_CITA + PESO_ANTES + PESO_DEPOIS + PESO_POS;
+
+/* ── O LIMIAR DE RECUSA — decisão de produto, não da biblioteca ───────
+   O match-quote.ts não recusa nada: `maxErrors = cita/2` aceita metade da
+   citação errada, e quem decide que a âncora ficou órfã é quem usa.
+
+   São DOIS números, porque um só não separa os dois casos que importam.
+
+   PISO_CITA = 0,75 — a citação precisa continuar sendo a citação: até um
+   erro a cada quatro letras. Abaixo disso ela não reancora por melhor que
+   esteja o texto em volta. É este número que fecha o buraco da
+   biblioteca: com contexto perfeito e metade da citação errada o score
+   composto dá 0,73 e passaria por cima de qualquer limiar razoável.
+
+   LIMIAR = 0,55 — o score composto. O caso que OBRIGA este valor: citação
+   intacta com todo o texto em volta reescrito dá (50+0+0+2)/92 = 0,565, e
+   ele TEM de passar, porque a âncora é a citação e o contexto é só o
+   desempate. 0,55 fica logo abaixo dele.
+
+   Os dois juntos RECUSAM: citação 25% quebrada com o contexto também
+   perdido — (37,5+0+0+2)/92 = 0,43. Isso é passagem reescrita, e não
+   trecho movido. E ACEITAM: citação 25% quebrada com o contexto inteiro
+   de pé — 0,87 — porque aí o lugar é o mesmo e só a frase foi mexida.
+
+   Os dois números aparecem na tela quando recusam. Limiar escondido é
+   limiar em que ninguém pode discordar. */
+const PISO_CITA = .75, LIMIAR = .55;
+
+/* menor distância de edição entre `p` e QUALQUER trecho de `t`, com início
+   livre. Devolve um candidato por posição final que couber em `maxErr`. */
+function aprox(t, p, maxErr) {
+  const m = p.length, n = t.length;
+  if (!m || !n) return [];
+  let d = new Int32Array(m + 1), dS = new Int32Array(m + 1),
+      e = new Int32Array(m + 1), eS = new Int32Array(m + 1);
+  for (let j = 0; j <= m; j++) { d[j] = j; dS[j] = 0; }
+  const cand = [];
+  for (let i = 1; i <= n; i++) {
+    e[0] = 0; eS[0] = i;
+    for (let j = 1; j <= m; j++) {
+      let v = d[j - 1] + (t.charCodeAt(i - 1) === p.charCodeAt(j - 1) ? 0 : 1), s = dS[j - 1];
+      if (d[j] + 1 < v) { v = d[j] + 1; s = dS[j]; }        /* sobra letra no texto */
+      if (e[j - 1] + 1 < v) { v = e[j - 1] + 1; s = eS[j - 1]; } /* falta letra no texto */
+      e[j] = v; eS[j] = s;
+    }
+    if (e[m] <= maxErr) cand.push({ ini: eS[m], fim: i, erros: e[m] });
+    const td = d; d = e; e = td;
+    const ts = dS; dS = eS; eS = ts;
+  }
+  return cand;
+}
+/* a tabela devolve um candidato por posição final, então o mesmo trecho
+   aparece dezenas de vezes. Fica o melhor de cada região, sem sobreposição
+   — que é o que o approx-string-match entrega —, no máximo `n`: pontuar
+   custa mais que achar. */
+function melhores(cand, n) {
+  const ord = cand.slice().sort((a, b) => a.erros - b.erros || a.ini - b.ini), fica = [];
+  for (const c of ord) {
+    if (fica.some(f => c.ini < f.fim && f.ini < c.fim)) continue;
+    fica.push(c);
+    if (fica.length >= n) break;
+  }
+  return fica;
+}
+/* o quanto `alvo` ainda aparece em `t`: 1 é idêntico, 0 é irreconhecível.
+   É o textMatchScore do match-quote.ts. */
+function quanto(t, alvo) {
+  if (!alvo.length || !t.length) return 0;
+  const c = aprox(t, alvo, alvo.length);
+  if (!c.length) return 0;
+  let min = alvo.length;
+  for (const x of c) if (x.erros < min) min = x.erros;
+  return 1 - min / alvo.length;
+}
+
+/* ── A FONTE COMO UMA FITA ───────────────────────────────────────────
+   Procurar parágrafo a parágrafo perde o caso em que a revisão PARTE um
+   trecho em dois: nenhum dos dois pedaços contém a citação inteira. Na
+   fita a quebra é uma letra a mais no meio, e não um limite — um erro,
+   e não uma perda. O mapa devolve (capítulo, parágrafo, deslocamento). */
+function fitaDe(caps) {
+  let s = "";
+  const mapa = [], off = [];
+  for (let c = 0; c < caps.length; c++) {
+    off.push([]);
+    for (let p = 0; p < caps[c].p.length; p++) {
+      off[c].push(s.length);
+      mapa.push({ cap: c, par: p, off: s.length });
+      s += caps[c].p[p] + "\n";
+    }
+  }
+  return { s: s, mapa: mapa, off: off };
+}
+let _fita = {}, _fitaV = -1;
+function fitaLivro(d) {
+  if (_fitaV !== versaoTexto) { _fita = {}; _fitaV = versaoTexto; }
+  const nome = d.livro || ARQ.titulo;
+  return _fita[nome] || (_fita[nome] = fitaDe(livroDe(d).caps));
+}
+function ondeNaFita(mapa, i) {
+  let m = mapa[0];
+  for (const x of mapa) { if (x.off <= i) m = x; else break; }
+  return m;
+}
 
 /* acha `cita` num texto, preferindo a ocorrência mais perto de `perto` */
 function achaPerto(txt, cita, perto) {
@@ -3087,12 +3252,29 @@ function achaPerto(txt, cita, perto) {
   return melhor;
 }
 
+/* a nota do match-quote.ts, com os pesos de lá. `c` vem em coordenada de
+   fita; a janela de contexto tem exatamente o tamanho do contexto gravado,
+   como no original. */
+function pontua(F, c, cita, antes, depois, dica) {
+  const pC = 1 - c.erros / cita.length;
+  const pA = antes ? quanto(F.s.slice(Math.max(0, c.ini - antes.length), c.ini), antes) : 1;
+  const pD = depois ? quanto(F.s.slice(c.fim, c.fim + depois.length), depois) : 1;
+  const pP = dica == null ? 1 : 1 - Math.abs(c.ini - dica) / F.s.length;
+  return {
+    score: (PESO_CITA * pC + PESO_ANTES * pA + PESO_DEPOIS * pD + PESO_POS * pP) / PESO_TOT,
+    pC: pC, pA: pA, pD: pD
+  };
+}
+
 /* resolve a âncora contra o texto ATUAL do livro da nota */
 function resolve(d) {
   if (!d.cita) return null;
   const caps = livroDe(d).caps;
   const cita = d.cita, antes = d.antes || '', depois = d.depois || '';
-  const achado = (cap, par, ini, como) => ({ cap, par, ini, fim: ini + cita.length, como });
+  const F = fitaLivro(d);
+  const dica = (F.off[d.cap] && F.off[d.cap][d.par] != null && d.ini != null)
+    ? F.off[d.cap][d.par] + d.ini : null;
+  const achado = (cap, par, ini, como) => ({ cap: cap, par: par, ini: ini, fim: ini + cita.length, como: como });
 
   const noPar = (cap, par, exigeContexto) => {
     const c = caps[cap]; if (!c) return null;
@@ -3107,34 +3289,74 @@ function resolve(d) {
     return i > -1 ? achado(cap, par, i, 'citacao') : null;
   };
 
+  let r = null;
   /* 1 · onde ela disse que estava */
   const c0 = caps[d.cap];
   if (c0 && c0.p[d.par] != null && d.ini != null
       && c0.p[d.par].substr(d.ini, cita.length) === cita)
-    return achado(d.cap, d.par, d.ini, 'exata');
+    r = achado(d.cap, d.par, d.ini, 'exata');
   /* 2 e 3 · o mesmo parágrafo, com e sem contexto */
-  let r = noPar(d.cap, d.par, true) || noPar(d.cap, d.par, false);
-  if (r) return r;
+  if (!r) r = noPar(d.cap, d.par, true) || noPar(d.cap, d.par, false);
   /* 4 · o mesmo capítulo */
-  if (c0) for (let p = 0; p < c0.p.length; p++) {
+  if (!r && c0) for (let p = 0; p < c0.p.length && !r; p++) {
     r = noPar(d.cap, p, true) || noPar(d.cap, p, false);
-    if (r) { r.como = 'capitulo'; return r; }
+    if (r) r.como = 'capitulo';
   }
   /* 5 · o livro inteiro */
-  for (let c = 0; c < caps.length; c++) for (let p = 0; p < caps[c].p.length; p++) {
-    r = noPar(c, p, true) || noPar(c, p, false);
-    if (r) { r.como = 'livro'; return r; }
+  if (!r) for (let c = 0; c < caps.length && !r; c++)
+    for (let p = 0; p < caps[c].p.length && !r; p++) {
+      r = noPar(c, p, true) || noPar(c, p, false);
+      if (r) r.como = 'livro';
+    }
+  /* achou letra por letra: o score sai da mesma conta, com zero erro na
+     citação, para que o número na tela signifique sempre a mesma coisa. */
+  if (r) {
+    const g = F.off[r.cap][r.par] + r.ini;
+    const p = pontua(F, { ini: g, fim: g + cita.length, erros: 0 }, cita, antes, depois, dica);
+    r.score = p.score; r.pC = p.pC; r.pA = p.pA; r.pD = p.pD;
+    return r;
   }
-  /* 6 · o trecho não existe mais neste texto */
-  return null;
+
+  /* 6 · a citação mudou de LETRA, e não só de lugar. É o caso da
+     transcrição revisada, e é aqui que a busca literal acabava e a nota
+     virava órfã sem ninguém ter apagado nada. */
+  const maxErr = Math.min(256, Math.floor(cita.length / 2));  /* o da biblioteca */
+  const cands = melhores(aprox(F.s, cita, maxErr), 12);
+  let mel = null;
+  for (const c of cands) {
+    const p = pontua(F, c, cita, antes, depois, dica);
+    if (!mel || p.score > mel.score) mel = { c: c, score: p.score, pC: p.pC, pA: p.pA, pD: p.pD };
+  }
+  /* 7 · nem aproximado: o trecho não existe mais neste texto */
+  if (!mel) return null;
+  const m = ondeNaFita(F.mapa, mel.c.ini);
+  const r2 = {
+    cap: m.cap, par: m.par, ini: mel.c.ini - m.off, fim: mel.c.fim - m.off,
+    como: 'aproximada', score: mel.score, pC: mel.pC, pA: mel.pA, pD: mel.pD
+  };
+  /* a recusa VOLTA, em vez de virar null: a tela precisa poder dizer o
+     quanto o melhor candidato bateu, senão o limiar é uma decisão secreta. */
+  if (mel.pC >= PISO_CITA && mel.score >= LIMIAR) return r2;
+  r2.recusada = true;
+  return r2;
 }
 
-/* memória por nota: resolve() varre o livro no pior caso, e escTxt() é
+/* memória por nota: resolve() varre a fonte no pior caso, e escTxt() é
    chamado em todo filtro, toda busca e toda contagem de palavra. */
-function ancoraDe(d) {
+function resolvida(d) {
   if (!ancora(d) && !d.cita) return null;
   if (d._v !== versaoTexto) { d._r = resolve(d); d._v = versaoTexto; }
   return d._r;
+}
+function ancoraDe(d) {
+  const r = resolvida(d);
+  return r && !r.recusada ? r : null;
+}
+/* o melhor candidato REPROVADO, para a tela poder mostrar o número que
+   fez a recusa em vez de só afirmar que o trecho sumiu. */
+function quaseDe(d) {
+  const r = resolvida(d);
+  return r && r.recusada ? r : null;
 }
 /* "perdida" é um estado que a nota pode ter, e a tela precisa poder dizê-lo:
    o que você escreveu continua seu mesmo quando o trecho sumiu. */
@@ -3145,7 +3367,16 @@ const COMO = {
   citacao: 'O parágrafo mudou; o trecho foi reencontrado pela citação.',
   capitulo: 'O trecho mudou de parágrafo dentro do capítulo.',
   livro: 'O trecho mudou de capítulo.',
+  aproximada: 'A citação mudou de letra; o trecho foi reencontrado por aproximação.',
 };
+/* o número da âncora, sempre pela mesma régua e sempre saído do modelo */
+const pc = x => Math.round(x * 100);
+const conf = r => r ? 'confere ' + pc(r.score) + ' de 100' : '';
+/* decomposto, porque um número que não diz do que é feito não pode ser
+   discordado — só acreditado. */
+const confLongo = r => !r ? '' :
+  'Confere ' + pc(r.score) + ' de 100: a citação bate ' + pc(r.pC) +
+  ', o texto em volta ' + pc((r.pA + r.pD) / 2) + '.';
 
 /* o texto do trecho vem da ancora resolvida, e nao mais de um slice fixo */
 const escTxt=d=>{const r=ancoraDe(d);
@@ -3511,7 +3742,7 @@ function itemPainel(d,ab){
     esc(prim.slice(0,110))+(prim.length>110?"\u2026":"")+'</button>'+
     (ab==="notas"&&ancora(d)&&d.nota?'<span class="pq">\u201c'+esc(tr.slice(0,58))+
       (tr.length>58?"\u2026":"")+'\u201d</span>':'')+
-    '<cite>'+onde+(perdida(d)?' \u00b7 trecho perdido':(r&&COMO[r.como]?' \u00b7 reencontrado':''))+'</cite>'+
+    '<cite>'+onde+(perdida(d)?' \u00b7 trecho perdido':(r&&COMO[r.como]?' \u00b7 reencontrado \u00b7 '+conf(r):''))+'</cite>'+
     gesto+'</div>';
 }
 function mDados(){
@@ -4428,9 +4659,14 @@ const mmss=s=>{s=Math.max(0,Math.round(s));
 /* o timecode do paragrafo, que e a ancora de tempo da nota */
 function tempoDe(d){
   if(!d||!d.livro||!ehVideo(d.livro))return null;
-  const c=LIVROS[d.livro].caps[d.cap];
+  /* o tempo sai da ancora RESOLVIDA, e nao do paragrafo gravado: depois de
+     uma revisao de transcricao que parte um trecho em dois, o paragrafo
+     gravado deixa de ser o paragrafo onde a frase esta, e o timecode dele
+     seria um numero escrito a mao com outro nome. */
+  const r=ancoraDe(d),cap=r?r.cap:d.cap,par=r?r.par:d.par;
+  const c=LIVROS[d.livro].caps[cap];
   if(!c)return null;
-  return c.tp&&c.tp[d.par]!=null?c.tp[d.par]:c.t;
+  return c.tp&&c.tp[par]!=null?c.tp[par]:c.t;
 }
 const levadas=()=>S.dst.filter(d=>d.nota&&d.levada);
 const anotadasDe=lv=>S.dst.filter(d=>d.nota&&d.livro===lv);
@@ -4940,7 +5176,7 @@ function linhaPai(d){
     menuLinha(d)+'</div>';
 }
 function linhaNota(d){
-  const r=relacoesDe(d.k),tr=escTxt(d),an=ancoraDe(d);
+  const r=relacoesDe(d.k),tr=escTxt(d),an=ancoraDe(d),qs=quaseDe(d);
   const rot=[];
   if(d.livro!=null&&d.cap!=null)rot.push(ehVideo(d.livro)?mmss(tempoDe(d)):"Capítulo "+(d.cap+1));
   else if(!d.livro)rot.push("escrita aqui");
@@ -4951,7 +5187,8 @@ function linhaNota(d){
     (tr?'<button class="volta" data-a="nota-origem" data-v="'+d.k+'">↩ '+
       esc(tr.slice(0,72))+(tr.length>72?"…":"")+'</button>'
       :(perdida(d)?'<span class="volta -perdida">↩ o trecho não existe mais neste texto</span>':''))+
-    (an&&COMO[an.como]?'<span class="reanc">reencontrado</span>':'')+
+    (an&&COMO[an.como]?'<span class="reanc">reencontrado \u00b7 '+conf(an)+'</span>':'')+
+    (qs?'<span class="reanc">o mais parecido '+conf(qs)+', abaixo dos '+pc(LIMIAR)+' exigidos</span>':'')+
     '<cite>'+rot.join(" · ")+'</cite>'+
     ((d.tags||[]).length?'<span class="tgL">'+d.tags.map(t=>
       '<button data-a="tag-ver" data-v="'+esc(t)+'">#'+esc(t)+'</button>').join("")+'</span>':'')+
@@ -5123,9 +5360,9 @@ function vNota(){
   h+=S.notaAberta===d.k?notaLivre(d)
     :'<p class="notaG">'+esc(d.nota||"—")+'</p>';
   h+='<p class="ondeN">'+onde.join(" · ")+'</p>';
-  const r=ancoraDe(d), aviso=r&&COMO[r.como];
+  const r=ancoraDe(d), aviso=r&&COMO[r.como], qs=quaseDe(d);
   if(tr)h+='<div class="trechoN"><p>“'+esc(tr)+'”</p>'+
-    (aviso?'<p class="reanc">'+aviso+'</p>':'')+
+    (aviso?'<p class="reanc">'+aviso+' '+confLongo(r)+'</p>':'')+
     '<button class="volta" data-a="nota-origem" data-v="'+d.k+'">↩ '+
     (ehVideo(d.livro)?'abrir no vídeo, em '+mmss(tempoDe(d)):'abrir no livro, onde isto está')+
     '</button></div>';
@@ -5133,7 +5370,13 @@ function vNota(){
      escreveu, e a tela diz o que perdeu em vez de fingir que nada mudou. */
   else if(perdida(d))h+='<div class="trechoN -perdida"><p>O trecho que originou esta nota '+
     'não existe mais neste texto.</p><p class="reanc">Guardado: “'+esc(d.cita||"")+'” · '+
-    esc(d.livro||"")+(d.cap!=null?', capítulo '+(d.cap+1):'')+'.</p></div>';
+    esc(d.livro||"")+(d.cap!=null?', capítulo '+(d.cap+1):'')+'.</p>'+
+    /* o que fez a recusa, com os dois numeros que a fizeram: sem eles o
+       limiar e uma decisao secreta, e nao da para discordar de uma decisao
+       que nao aparece. */
+    (qs?'<p class="reanc">O mais parecido '+conf(qs)+', e a citação em si bate '+
+      pc(qs.pC)+'. Reancorar pede '+pc(LIMIAR)+' no conjunto e '+pc(PISO_CITA)+
+      ' na citação.</p>':'')+'</div>';
   const rev=S.rever.indexOf(d.k)>-1,noC=S.canvasN.indexOf(d.k)>-1;
   /* Cinco verbos de naturezas diferentes estavam na mesma fila com o mesmo
      peso. Agora sao tres grupos separados por filete vertical: o que abre,
@@ -8717,27 +8960,67 @@ document.getElementById("notasbt").addEventListener("click",()=>{notas.hidden=fa
     if(S.lugar!=="livro"){S.lugar="livro";S.conta=true;}
     pinta();
   });
-  /* Simula o que a conversao faz com o texto: nota de tradutor na frente do
-     paragrafo, uma palavra trocada por OCR, e a mesma frase mudando de
-     lugar. Nao e produto — e a forma de OLHAR se a ancora aguenta, em vez
-     de acreditar que aguenta. */
-  const bC=document.getElementById("btConv");
-  let convertido=false, guardado=null;
-  bC.addEventListener("click",()=>{
-    const L=ARQ;
-    if(!convertido){
-      guardado=JSON.parse(JSON.stringify(L.caps));
-      L.caps.forEach((c,i)=>{c.p=c.p.map((t,j)=>
+  /* Simula o que a conversao faz com o texto, e o que a REVISAO faz com uma
+     transcricao automatica. Nao e produto — e a forma de OLHAR se a ancora
+     aguenta, em vez de acreditar que aguenta.
+
+     Sao dois estragos de naturezas diferentes, de proposito. A CONVERSAO
+     mexe em volta do trecho: insere frase na frente, troca palavra vizinha,
+     move o paragrafo. A REVISAO DE TRANSCRICAO mexe DENTRO dele — corrige
+     uma palavra da propria citacao, e parte uma fala em duas no meio dela.
+     O primeiro estrago o casamento literal aguenta; o segundo, nao, e foi
+     ele que motivou a reancoragem aproximada. */
+  const REVISOES={
+    "Diário 02":{rot:"reconverter",feito:"texto reconvertido",f:caps=>{
+      caps.forEach((c,i)=>{c.p=c.p.map((t,j)=>
         (i===0&&j===0?"Nota do tradutor: esta edição segue o manuscrito. ":"")+
         t.replace(/Fotografia/g,"Fotografía").replace(/duzentos metros/g,"200 metros")
          .replace(/catorze meses/g,"14 meses").replace(/nove pontos/g,"9 pontos"));});
-      convertido=true;
-    }else{ L.caps.forEach((c,i)=>{c.p=guardado[i].p.slice();}); convertido=false; }
+    }},
+    /* tres trechos revistos, que e exatamente o que a ficha da fonte declara */
+    "Oficina de imagem — aula 4":{rot:"revisar a transcrição",feito:"transcrição revisada",f:caps=>{
+      /* parte uma fala em duas, pelo texto e nao pelo indice: quem parte uma
+         fala marca onde a segunda comeca, entao o timecode entra junto. */
+      const parte=(c,acha,tempo)=>{
+        const i=c.p.findIndex(t=>t.indexOf(acha)>-1),t=c.p[i],j=t.indexOf(acha);
+        c.p.splice(i,1,t.slice(0,j).trim(),t.slice(j));
+        if(c.tp)c.tp.splice(i+1,0,tempo);
+      };
+      /* 1 · o revisor separa duas frases que a maquina juntou numa fala so.
+             Isso DESLOCA tudo o que vem depois no capitulo — a nota n-vid-1
+             deixa de estar no paragrafo em que foi gravada. */
+      parte(caps[1],"Duas imagens do mesmo lugar",452);
+      /* 2 · palavra ouvida errada, corrigida DENTRO da citacao de n-vid-1 */
+      const c1=caps[1].p.findIndex(t=>t.indexOf("começa a produzir medida")>-1);
+      caps[1].p[c1]=caps[1].p[c1].replace("começa a produzir medida","passa a produzir uma medida");
+      /* 3 · e uma segunda fala partida, desta vez NO MEIO da citacao de
+             n-vid-2: nenhuma das duas metades contem a citacao inteira. */
+      parte(caps[2],"ele guarda",1348);
+    }}
+  };
+  const bC=document.getElementById("btConv");
+  /* guardado por FONTE: o botao segue o que esta aberto, e trocar de fonte
+     no meio nao pode devolver o texto de outra. */
+  const guardado={};
+  const rotulo=()=>{const r=REVISOES[ARQ.titulo];
+    bC.textContent=!r?"sem revisão para esta fonte":(guardado[ARQ.titulo]?r.feito:r.rot);
+    bC.setAttribute("aria-pressed",String(!!guardado[ARQ.titulo]));};
+  bC.addEventListener("click",()=>{
+    const L=ARQ,nome=L.titulo,r=REVISOES[nome];
+    if(!r){rotulo();return;}
+    if(!guardado[nome]){
+      guardado[nome]=JSON.parse(JSON.stringify(L.caps));
+      r.f(L.caps);
+    }else{
+      const g=guardado[nome];
+      L.caps.forEach((c,i)=>{c.p=g[i].p.slice();if(g[i].tp)c.tp=g[i].tp.slice();});
+      delete guardado[nome];
+    }
     versaoTexto++;
-    bC.textContent=convertido?"texto reconvertido":"reconverter";
-    bC.setAttribute("aria-pressed",String(convertido));
+    rotulo();
     pinta();
   });
+  rotulo();
   const bT=document.getElementById("btTema");
   bT.addEventListener("click",()=>{
     const claro=R.getAttribute("data-tema")!=="escuro";

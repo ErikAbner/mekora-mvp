@@ -14,6 +14,7 @@
  */
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Icone } from "../componentes/Icone.jsx";
+import { Link } from "react-router-dom";
 import { Botao } from "../componentes/Botao.jsx";
 import "./mesa-cheia.css";
 
@@ -44,7 +45,7 @@ function contar(arquivos) {
   return c;
 }
 
-function Arquivo({ nome, estado, feito, total, progresso, detalhe, etapa, motivo, digitalizado }) {
+function Arquivo({ nome, estado, feito, total, progresso, detalhe, etapa, motivo, digitalizado, preparo }) {
   const e = ESTADOS[estado];
   /* O motivo vem do backend e É mostrado. O contrato o preserva justamente para
    * isto — uma linha que diz "Com erro" e cala o porquê faz o usuário abrir um
@@ -73,6 +74,15 @@ function Arquivo({ nome, estado, feito, total, progresso, detalhe, etapa, motivo
         >
           <div className="barra-feita" style={{ inlineSize: `${progresso}%` }} />
         </div>
+      )}
+
+      {/* O ARQUIVO ANALISADO ESPERA POR UMA DECISÃO, e a tela oferece o lugar
+          onde ela é tomada. Sem isto, ele ficaria parado em "na fila" para
+          sempre, sem dizer o que falta. */}
+      {preparo && (
+        <p className="arquivo-preparo">
+          <Link to={`/preparo/${preparo}`}>Ver o que encontrei</Link>
+        </p>
       )}
 
       <p className="arquivo-detalhe">

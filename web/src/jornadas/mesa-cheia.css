@@ -91,3 +91,20 @@
    nova: a regra que vale desde que o acento saiu do sistema (DEC-0037 §6). */
 .mesa.recebendo { background: color-mix(in srgb, var(--foreground) 5%, var(--background)); }
 .mesa.recebendo .preparo-caixa { border-color: var(--foreground); }
+
+/* O caminho para o preparo. Ação e não estado, então o alvo tem borda — os
+   quatro estados ao lado são texto. */
+.arquivo-preparo { margin: 10px 0 0; }
+
+.arquivo-preparo a {
+  display: inline-block;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  font-size: 14px;
+  line-height: 20px;
+  text-decoration: none;
+}
+
+.arquivo-preparo a:hover { border-color: var(--foreground); }
+.arquivo-preparo a:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }

@@ -25,6 +25,7 @@ import { Estudos } from "./jornadas/Estudos.jsx";
 import { Notas } from "./jornadas/Notas.jsx";
 import { Livro } from "./jornadas/Livro.jsx";
 import { Nota } from "./jornadas/Nota.jsx";
+import { Preparo } from "./jornadas/Preparo.jsx";
 import { usarEstudos } from "./estado/usarEstudos.js";
 import { ContaKindle } from "./jornadas/ContaKindle.jsx";
 import { LUGARES } from "./lugares.js";
@@ -333,6 +334,9 @@ export function App() {
         <Route path="/notas" element={<SoParaQuemEntrou acesso={acesso}><PaginaNotas /></SoParaQuemEntrou>} />
         <Route path="/estante/:id" element={<SoParaQuemEntrou acesso={acesso}><Livro /></SoParaQuemEntrou>} />
         <Route path="/nota/:id" element={<SoParaQuemEntrou acesso={acesso}><Nota /></SoParaQuemEntrou>} />
+        {/* O preparo NÃO exige conta: converter sem cadastro é garantido pela
+            DEC-0018, e esta é a tela que decide a conversão. */}
+        <Route path="/preparo/:id" element={<Preparo />} />
         {LUGARES.filter((l) => !l.pronto && !["/canvas", "/estudos"].includes(l.rota)).map((l) => (
           <Route key={l.id} path={l.rota} element={<AindaNao lugar={l} />} />
         ))}

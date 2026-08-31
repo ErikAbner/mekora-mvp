@@ -10,10 +10,21 @@
  * discordar sobre o mesmo arquivo.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { enviarArquivo, analisar, esperarAnalise, converter, acompanhar, historico, backendNoAr, enviarAoKindle } from "../../../contrato/api.js";
+import { enviarArquivo, analisar, esperarAnalise, converter, acompanhar, historico, backendNoAr, enviarAoKindle, lerPreferencias } from "../../../contrato/api.js";
 
 export function useJornada() {
   const [arquivos, setArquivos] = useState([]);
+
+  /* O MODO DE PREPARO. Lido uma vez, e não a cada arquivo: mudar a preferência
+   * no meio de um lote faria metade dele seguir uma regra e metade outra. */
+  const [modo, setModo] = useState("guiado");
+  useEffect(() => {
+    let vivo = true;
+    lerPreferencias()
+      .then((r) => vivo && r?.escolhas?.modo && setModo(r.escolhas.modo))
+      .catch(() => {});
+    return () => { vivo = false; };
+  }, []);
   const [livros, setLivros] = useState([]);
   const [backend, setBackend] = useState("perguntando");
   const vivos = useRef(new Set());
@@ -76,6 +87,26 @@ export function useJornada() {
         const pronta = await esperarAnalise(atual);
         if (pronta.estado === "erro") { grava(atual, pronta); continue; }
 
+        /* GUIADO PARA AQUI, e é o que a preferência sempre prometeu.
+         *
+         * O fluxo convertia direto depois da análise, e a tela de Preparo — que
+         * mostra o que foi encontrado e o que vai ser feito — nunca era vista.
+         * O produto decidia sozinho e contava depois, que é exatamente o que o
+         * `CLAUDE.md` chama de "IA mágica".
+         *
+         * `personalizado` converte direto: quem escolheu não quer ser
+         * perguntado. A preferência estava guardada e sem efeito desde que
+         * existe; este é o efeito. */
+        if (modo !== "personalizado") {
+          grava(atual, {
+            estado: "fila",
+            etapa: "esperando você",
+            preparo: atual,
+            detalhe: "Analisado. Veja o que encontrei antes de preparar.",
+          });
+          continue;
+        }
+
         etapa = "conversão";
         await converter(atual);
         if (vivos.current.has(atual)) continue;
@@ -94,7 +125,7 @@ export function useJornada() {
         grava(atual, { estado: "erro", etapa, motivo: e.message });
       }
     }
-  }, [grava]);
+  }, [grava, modo]);
 
   const carregarEstante = useCallback(async () => {
     const h = await historico();

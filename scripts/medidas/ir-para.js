@@ -20,7 +20,7 @@
  * pessoa entrou.
  */
 (async () => {
-  const tela = window.__MEKORA_TELA__ || "/nota/1";
+  const tela = window.__MEKORA_TELA__ || "/preparo/1";
   await new Promise((r) => setTimeout(r, 1200));
 
   const post = (u, corpo) =>
@@ -75,13 +75,17 @@
    * semeadas acima, então basta usar a primeira. */
   if (/^\/nota\//.test(tela) && notas.length) {
     destino = `/nota/${notas[0].nota_id}`;
-  } else if (tela.includes(":id") || /\/(estante|leitura)\/\d+/.test(tela)) {
-    const pdf = new Blob(
-      ["%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\ntrailer<</Root 1 0 R>>"],
-      { type: "application/pdf" },
+  } else if (tela.includes(":id") || /\/(estante|leitura|preparo)\/\d+/.test(tela)) {
+    /* TXT, e não PDF. O PDF mínimo que cabe numa linha não é analisável: o
+     * backend tenta OCR nele e devolve erro, e a tela medida vira a de erro —
+     * 6 nós em vez de 30. Um `.txt` está na lista de formatos aceitos, dispensa
+     * OCR, e chega analisado. */
+    const texto = new Blob(
+      ["Documento de medida.\n\nUm paragrafo com texto suficiente para a analise ter o que contar.\n"],
+      { type: "text/plain" },
     );
     const corpo = new FormData();
-    corpo.append("file", new File([pdf], "medida.pdf", { type: "application/pdf" }));
+    corpo.append("file", new File([texto], "medida.txt", { type: "text/plain" }));
     const enviado = await fetch("/upload", { method: "POST", body: corpo }).then((r) =>
       r.ok ? r.json() : null,
     );
@@ -98,9 +102,21 @@
       [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()),
     ).length;
 
+  /* ESTABILIZAR NÃO É ESTAR PRONTO.
+   *
+   * A tela de Preparo mediu 6 nós e passou: ela dizia "Analisando o arquivo…",
+   * e um estado de espera é perfeitamente estável — o contador para de crescer
+   * porque não há nada crescendo.
+   *
+   * Sexta vez que o verde vem de o instrumento não ter alcançado o alvo. Agora
+   * a espera olha DUAS coisas: o número parou de mudar, E não há mais palavra de
+   * espera na tela. */
+  const esperando = () =>
+    /\b(analisando|buscando|carregando|preparando|enviando)\b/i.test(document.body.innerText);
+
   let anterior = -1;
   let estavel = 0;
-  for (let i = 0; i < 40 && estavel < 3; i++) {
+  for (let i = 0; i < 120 && (estavel < 3 || esperando()); i++) {
     await new Promise((r) => setTimeout(r, 250));
     const agora = conta();
     estavel = agora === anterior ? estavel + 1 : 0;

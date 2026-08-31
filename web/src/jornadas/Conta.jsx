@@ -116,7 +116,7 @@ const PADROES = Object.fromEntries(
  * A escolha é guardada de qualquer forma, para não se perder quando o efeito
  * chegar. O que muda é a tela dizer.
  */
-const SEM_EFEITO_AINDA = new Set(["modo", "dicas", "quando-pronto", "formato", "movimento"]);
+const SEM_EFEITO_AINDA = new Set(["dicas", "quando-pronto", "formato", "movimento"]);
 
 export function Conta({ pessoa , aoSair }) {
   const [pref, setPref] = useState(PADROES);
