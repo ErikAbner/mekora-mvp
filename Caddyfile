@@ -14,10 +14,10 @@
 	encode gzip zstd
 
 	# ── rotas do backend ── GERADO por scripts/rotas.py, não editar à mão
-	handle /analyze/* /aparelhos/* /app-config/* /batch/* /config/* /entrar/* /jobs/* /metrics/* /notas/* /pending-send/* /presets/* /storage/* /tools/* /translation/* {
+	handle /analyze/* /aparelhos/* /app-config/* /batch/* /config/* /entrar/* /jobs/* /metrics/* /notas/* /pending-send/* /presets/* /privacidade/* /storage/* /tools/* /translation/* {
 		reverse_proxy backend:8000
 	}
-	handle /aparelhos /app-config /config /eu /health /history /notas /preferencias /presets /sair /upload {
+	handle /aparelhos /app-config /config /eu /health /history /notas /preferencias /presets /privacidade /sair /upload {
 		reverse_proxy backend:8000
 	}
 	# ── fim das rotas geradas ──

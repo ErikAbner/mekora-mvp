@@ -1,0 +1,32 @@
+/* O que se guarda, item a item. Cada um traz a contagem e o que ela significa —
+   um número sozinho não diz o que está sendo guardado. */
+.guardado {
+  margin: 0 0 24px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.guardado li {
+  padding-block-end: 16px;
+  border-block-end: 1px solid var(--border);
+}
+
+.guardado li:last-child { border-block-end: 0; padding-block-end: 0; }
+
+.guardado-conta {
+  margin: 0 0 4px;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--foreground);
+}
+
+.guardado-explicacao {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}

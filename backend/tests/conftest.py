@@ -61,6 +61,12 @@ def test_engine(tmp_path):
         f"sqlite:///{db_path}",
         connect_args={"check_same_thread": False},
     )
+    # O MESMO PRAGMA do produto: sem ele o SQLite ignora chave estrangeira, e o
+    # teste de apagar conta provaria o contrário do que acontece no ar.
+    from app.db.database import ligar_chaves_estrangeiras
+
+    ligar_chaves_estrangeiras(engine)
+
     from app.db.database import Base
     from app.models.pessoa import Chave, Pessoa, Sessao  # noqa: F401 — registra modelos de acesso
     from app.models.aparelho import Aparelho  # noqa: F401 — registra os Kindles

@@ -327,6 +327,30 @@ export function apagarNota(jobId, notaId) {
  * sentidos: ofereciam `.zip`, que o backend recusa, e escondiam ODT, RTF, TXT,
  * HTML, CB7 e CBC, que ele aceita. */
 /** GET /preferencias — vazio sem conta, e a tela usa os padroes. */
+/* ─── Privacidade ───────────────────────────────────────────────────────────
+ *
+ * A lista do que o Mekora guarda e CONTADA no banco, e nao escrita a mao: um
+ * texto de politica envelhece na primeira coluna nova, e vira uma promessa que
+ * ninguem confere.
+ */
+
+export function lerPrivacidade() {
+  return pede("/privacidade");
+}
+
+export function levarMeusDados() {
+  return pede("/privacidade/levar");
+}
+
+/** POST /privacidade/apagar — exige o e-mail digitado. Nao ha volta. */
+export function apagarMinhaConta(email) {
+  return pede("/privacidade/apagar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+}
+
 export function lerPreferencias() {
   return pede("/preferencias");
 }

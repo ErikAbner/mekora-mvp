@@ -21,6 +21,42 @@ from app.core.config import (
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{STORAGE_RAIZ}/kindle_tool.db")
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+
+
+# ─── O SQLite IGNORA CHAVE ESTRANGEIRA POR PADRÃO ────────────────────────────
+#
+# Isto não é detalhe de configuração: é a diferença entre `ondelete="CASCADE"`
+# funcionar e ser decoração. Sem o PRAGMA, a declaração está no esquema, o
+# alembic a escreve na tabela, e o banco simplesmente não a aplica.
+#
+# Descoberto em 31/08 pelo teste de apagar conta: a pessoa sumia e o aparelho
+# dela continuava lá. O mesmo valeria para notas, progresso, sessões, chaves de
+# entrada e preferências — dados pessoais de alguém que pediu para sair,
+# sobrevivendo à saída, sem ninguém para reclamá-los.
+#
+# É POR CONEXÃO, e não uma vez no banco. Por isso a escuta: cada conexão nova
+# precisa ligar de novo, e uma única que esqueça é uma que apaga errado.
+from sqlalchemy import event  # noqa: E402
+
+
+def ligar_chaves_estrangeiras(motor) -> None:
+    """Liga o PRAGMA em toda conexão que este motor abrir.
+
+    Exportada porque os testes criam o próprio motor, e um motor de teste sem
+    isto prova o contrário do produto: o CASCADE funcionaria em produção e não
+    no teste, ou — pior, e foi o que aconteceu — o teste passaria a acusar um
+    defeito que só existe nele.
+    """
+
+    @event.listens_for(motor, "connect")
+    def _(conexao, _registro):
+        cursor = conexao.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
+
+
+if DATABASE_URL.startswith("sqlite"):
+    ligar_chaves_estrangeiras(engine)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 

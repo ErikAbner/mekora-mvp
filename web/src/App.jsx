@@ -18,6 +18,7 @@ import { Leitura } from "./jornadas/Leitura.jsx";
 import { AindaNao } from "./jornadas/AindaNao.jsx";
 import { Conta } from "./jornadas/Conta.jsx";
 import { Entrar } from "./jornadas/Entrar.jsx";
+import { Privacidade } from "./jornadas/Privacidade.jsx";
 import { ContaKindle } from "./jornadas/ContaKindle.jsx";
 import { LUGARES } from "./lugares.js";
 import { useJornada } from "./estado/useJornada.js";
@@ -247,7 +248,22 @@ export function App() {
         <Route path="/conta/preferencias" element={<SoParaQuemEntrou acesso={acesso}><Conta pessoa={comoChamar(acesso.pessoa)} aoSair={acesso.sair} /></SoParaQuemEntrou>} />
         <Route path="/conta" element={<SoParaQuemEntrou acesso={acesso}><ContaKindle pessoa={comoChamar(acesso.pessoa)} aoSair={acesso.sair} /></SoParaQuemEntrou>} />
         <Route path="/conta/kindle" element={<SoParaQuemEntrou acesso={acesso}><ContaKindle pessoa={comoChamar(acesso.pessoa)} aoSair={acesso.sair} /></SoParaQuemEntrou>} />
-        <Route path="/conta/privacidade" element={<AindaNao lugar={{ rotulo: "Privacidade", oQueE: "O que fica guardado, onde, e por quanto tempo." }} />} />
+        <Route
+          path="/conta/privacidade"
+          element={
+            <SoParaQuemEntrou acesso={acesso}>
+              <Privacidade
+                pessoa={comoChamar(acesso.pessoa)}
+                aoSair={acesso.sair}
+                /* Depois de apagar, a sessão não existe mais no servidor.
+                 * Reconferir em vez de mandar para uma rota fixa deixa o
+                 * guarda decidir — e ele já sabe levar quem não tem conta
+                 * para a tela de entrar. */
+                aoApagarConta={acesso.conferir}
+              />
+            </SoParaQuemEntrou>
+          }
+        />
         <Route path="*" element={<NaoEncontrada />} />
       </Routes>
     </BrowserRouter>

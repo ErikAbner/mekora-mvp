@@ -6,7 +6,7 @@
  */
 (async () => {
   await new Promise((r) => setTimeout(r, 2500));
-  const tela = window.__MEKORA_TELA__ || "/conta/preferencias";
+  const tela = window.__MEKORA_TELA__ || "/conta/privacidade";
   history.pushState({}, "", tela);
   window.dispatchEvent(new PopStateEvent("popstate"));
   await new Promise((r) => setTimeout(r, 3000));
