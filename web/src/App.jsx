@@ -9,7 +9,7 @@
  * Depois que o agente sair, ferramenta conhecida vale mais que ferramenta
  * enxuta — resposta para `react-router` existe em qualquer lugar.
  */
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams, useLocation } from "react-router-dom";
 import { MesaVazia } from "./jornadas/MesaVazia.jsx";
 import { MesaCheia } from "./jornadas/MesaCheia.jsx";
@@ -22,6 +22,7 @@ import { Privacidade } from "./jornadas/Privacidade.jsx";
 import { Canvas } from "./jornadas/Canvas.jsx";
 import { usarCanvas } from "./estado/usarCanvas.js";
 import { Estudos } from "./jornadas/Estudos.jsx";
+import { Notas } from "./jornadas/Notas.jsx";
 import { usarEstudos } from "./estado/usarEstudos.js";
 import { ContaKindle } from "./jornadas/ContaKindle.jsx";
 import { LUGARES } from "./lugares.js";
@@ -30,7 +31,7 @@ import { usePessoa } from "./estado/usePessoa.js";
 import { abrirLivro, irParaCapitulo } from "./leitor/abrir.js";
 import { gravarProgresso, lerProgresso } from "../../contrato/api.js";
 import { usarNotas } from "./leitor/usarNotas.js";
-import { analisar, chaveDe, importarClippings, lerTodasAsNotas } from "../../contrato/api.js";
+import { analisar, apagarNota, chaveDe, importarClippings, lerTodasAsNotas } from "../../contrato/api.js";
 import { EXEMPLO_FILA, EXEMPLO_ESTANTE, EXEMPLO_LEITURA } from "./exemplos.js";
 
 /* O exemplo entra SÓ quando a URL pede — `?exemplo`. Nunca no caminho normal,
@@ -285,6 +286,35 @@ function PaginaEstudos() {
   );
 }
 
+function PaginaNotas() {
+  const [notas, setNotas] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+
+  const buscar = useCallback(() => {
+    lerTodasAsNotas()
+      .then(setNotas)
+      .catch(() => setNotas([]))
+      .finally(() => setCarregando(false));
+  }, []);
+
+  useEffect(() => { buscar(); }, [buscar]);
+
+  return (
+    <Notas
+      notas={notas}
+      carregando={carregando}
+      aoApagar={async (n) => {
+        /* Apagar de VERDADE, e não tirar de uma lista: aqui é o lugar onde a
+         * nota mora. No Canvas e no estudo, "tirar" desfaz a reunião; aqui não
+         * há reunião para desfazer. */
+        if (!n.job_id) return;
+        await apagarNota(n.job_id, n.id);
+        buscar();
+      }}
+    />
+  );
+}
+
 export function App() {
   const acesso = usePessoa();
   return (
@@ -298,6 +328,7 @@ export function App() {
         <Route path="/leitura/:id" element={<PaginaLeitura />} />
         <Route path="/canvas" element={<SoParaQuemEntrou acesso={acesso}><PaginaCanvas /></SoParaQuemEntrou>} />
         <Route path="/estudos" element={<SoParaQuemEntrou acesso={acesso}><PaginaEstudos /></SoParaQuemEntrou>} />
+        <Route path="/notas" element={<SoParaQuemEntrou acesso={acesso}><PaginaNotas /></SoParaQuemEntrou>} />
         {LUGARES.filter((l) => !l.pronto && !["/canvas", "/estudos"].includes(l.rota)).map((l) => (
           <Route key={l.id} path={l.rota} element={<AindaNao lugar={l} />} />
         ))}

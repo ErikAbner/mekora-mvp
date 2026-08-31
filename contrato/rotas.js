@@ -45,7 +45,6 @@ export const EXATAS = [
   "/eu",
   "/health",
   "/history",
-  "/notas",
   "/preferencias",
   "/presets",
   "/privacidade",

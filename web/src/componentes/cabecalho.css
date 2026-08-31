@@ -79,3 +79,14 @@
 
 /* NavLink vira <a>: precisa dos mesmos limites do botao que ele substituiu. */
 a.lugar { text-decoration: none; }
+
+/* A busca desligada: cinza e sem cursor de clique. Um botão que parece ativo e
+   não responde é lido como produto quebrado; um desligado é lido como recurso
+   que ainda não existe. */
+.cabecalho-acoes .busca:disabled { opacity: 0.6; cursor: default; }
+.cabecalho-acoes .busca:disabled:hover { border-color: var(--border); }
+
+/* Os ícones do cabeçalho viraram links: precisam do mesmo alvo e do mesmo foco
+   que os botões tinham. */
+a.acao { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+a.acao.active { background: var(--muted); }

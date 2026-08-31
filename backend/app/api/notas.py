@@ -80,7 +80,10 @@ def _fora(n: Nota) -> dict:
     }
 
 
-@router.get("/notas")
+# `/notas/todas` e nao `/notas`, porque `/notas` e uma TELA — o lugar onde as
+# notas vivem. Terceira vez que isto aparece (entrar, canvas, estudos), e a
+# terceira em que foi resolvido antes de doer.
+@router.get("/notas/todas")
 def todas(
     mekora_sessao: Optional[str] = Cookie(default=None),
     db: Session = Depends(get_db),

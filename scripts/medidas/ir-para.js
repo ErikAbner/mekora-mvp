@@ -20,7 +20,7 @@
  * pessoa entrou.
  */
 (async () => {
-  const tela = window.__MEKORA_TELA__ || "/canvas";
+  const tela = window.__MEKORA_TELA__ || "/notas";
   await new Promise((r) => setTimeout(r, 1200));
 
   const post = (u, corpo) =>

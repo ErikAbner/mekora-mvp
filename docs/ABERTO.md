@@ -26,15 +26,29 @@ D   backlog técnico             decide-se durante a implementação, por quem i
 
 | | quantas |
 |---|---:|
-| **A** — antes da arquitetura | 7 |
-| **B** — antes da feature afetada | 23 |
-| **C** — antes do lançamento | 19 |
+| **A** — antes da arquitetura | 6 |
+| **B** — antes da feature afetada | 22 |
+| **C** — antes do lançamento | 18 |
 | **D** — backlog técnico | 14 |
-| | **63** |
+| | **60** |
 
 ### Saíram da fila em 2026-08-21
 
 `A1` → `DEC-0031` · `A3` → `DEC-0032` · `A6` e `B19` → `DEC-0033`
+
+### Saíram da fila em 2026-08-31
+
+`A7` → **`DEC-0037`** nomeou a base do desenho, e a interface foi construída nela: React servido por
+Vite, oito telas medidas pelo portão. A pergunta era *sobre qual base*, e ela tem resposta com
+código rodando.
+
+`B22` → **implementado.** A posição no Canvas deixou de viver em memória.
+
+`C5` → **`DEC-0039`.** A `AUTH-001` era o documento que proibia desenhar tela de acesso, e por isso
+ela mesma travava. Virou decisão: entrar por link no e-mail.
+
+**Três linhas saíram, e o registro delas fica aqui e não some** — a numeração é estável porque as
+DECs apontam para ela.
 
 ---
 
@@ -47,7 +61,6 @@ Decidem forma de sistema. Errar aqui custa refação, não ajuste.
 | **A2** | **Como a tradução própria é construída.** A regra é o limite; a arquitetura que a cumpre pode ter custo relevante | auditar o pipeline NLLB no Mac — `mac-mini-erik:/Users/sipnm/dev/kindle-local-tool`, revisão `12d7062`. **Precedente não é conformidade** | DEC-0022 |
 | **A4** | **O formato do identificador de conteúdo.** UUID foi exemplo, não especificação | auditar o schema no Mac — Drizzle com `livros`, `notas`, `tags`, `livro_tags`, commit `e0a5204` | DEC-0021 |
 | **A5** | **Como relacionar duas importações do mesmo título.** A norma proíbe colisão; não define agrupamento, metadado de edição nem deduplicação | mesma auditoria de A4 | DEC-0021 |
-| **A7** | **Sobre qual base a interface será implementada.** Três pilhas incompatíveis existem, e a DEC-0025 não nomeou substituto | **A2 e A9.** Decidir antes delas é decidir na ordem errada | DEC-0025 |
 | **A8** | **O escopo por domínio do `baseline_revisions`.** Todo run carimba todos os repositórios — `bin/project-os.mjs:804`, sem filtro | **nada.** É do Project OS, não do produto: instrumento decide e implementa | DEC-0026 |
 | **A9** | **Como o Kindle por cabo funciona num produto web.** *"Pelo cabo o Mekora leva e traz"* é a afirmação mais frágil da interface | **verificação de bancada**, não decisão. Um Kindle e um Chrome, numa tarde | DEC-0022 |
 | **A10** | **Onde fica a fronteira entre metadado e conteúdo.** Título, autor e formato não são o texto do livro — mas uma lista de títulos é um perfil. A `DEC-0032` protege conteúdo e não trata metadado | decisão | DEC-0032 |
@@ -90,12 +103,13 @@ Não impedem outras frentes. Impedem aquela.
 | **B18** | O destino do `mekora-experience` — o conflito DEC-0011 §4 × DEC-0017 | reconciliação | DEC-0025 |
 | **B20** | Que eventos são coletados, com que granularidade | instrumentação | DEC-0029 |
 | **B21** | **Auto-ocultar as barras no celular** depois de segundos sem interação. Precisa de regra para nunca ocultar com campo em foco | Reader no telefone | DEC-0023 |
-| **B22** | **Persistência da posição no Canvas.** Hoje vive em memória — é uma das duas lacunas do contrato | Canvas | DEC-0024 · DEC-0030 |
 | **B23** | **Se o agrupamento entra no contrato do Canvas como capacidade.** Grupo não é só interação: é entidade, e o `canvas-motion` já o tratava como um dos cinco tipos | Canvas | DEC-0030 |
 | **B24** | **Que soluções dos ancestrais são efetivamente absorvidas, e quando.** Duas comprovadas estão ausentes do produto atual: agrupamento com moldura tracejada e rótulo, e zoom com "ajustar à tela" | Canvas | DEC-0030 |
 
-> **A outra lacuna do contrato do Canvas** — *remover da superfície sem apagar a entidade* — **não é
-> pergunta**: é implementação que falta. `DEC-0030 §5` já a exige.
+> **As duas lacunas do contrato do Canvas foram fechadas em 31/08.** *Remover da superfície sem
+> apagar a entidade* nunca foi pergunta — era implementação que a `DEC-0030 §5` já exigia. E a
+> *persistência da posição*, que era o `B22`, deixou de viver em memória: `canvas_nos` guarda `x` e
+> `y` por pessoa e nota, gravados ao soltar o arrasto.
 
 ---
 
@@ -109,11 +123,10 @@ Podem ser decididas durante a construção. Não podem ficar sem resposta na V1.
 | **C2** | O que é "processo mínimo necessário", e como o acesso humano interno é auditado e por quem | DEC-0022 |
 | **C3** | Por quanto tempo o original temporário sobrevive entre a falha e o descarte | DEC-0021 · DEC-0022 |
 | **C4** | **Prazo exato de retenção de sessões anônimas.** Sem conta os dados são temporários, e o prazo foi deliberadamente não fixado | DEC-0018 |
-| **C5** | Autenticação — a AUTH-001 continua pendente e proíbe desenhar | DEC-0022 |
 | **C6** | Se há consentimento para a coleta de uso, e como é pedido | DEC-0029 |
 | **C7** | Por quanto tempo os eventos coletados são mantidos | DEC-0029 |
 | **C8** | Qual ferramenta de instrumentação é usada, e se é própria | DEC-0029 |
-| **C9** | Quando as telas passam a ser efetivamente verificadas a 390px | DEC-0023 |
+| **C9** | **Quando as telas passam a ser efetivamente verificadas a 390px.** Em 31/08 o portão media oito telas nos dois temas — todas a 1440. Nenhuma foi medida no telefone | DEC-0023 |
 | **C10** | A migração do acervo e das notas existentes para identidade estável | DEC-0021 |
 | **C11** | Que estado cada uma das 19 DECs anteriores recebe além da normalização mecânica | DEC-0027 |
 | **C12** | O `role` literal de cada repositório existente | DEC-0026 |
@@ -122,8 +135,8 @@ Podem ser decididas durante a construção. Não podem ficar sem resposta na V1.
 | **C15** | Quando a V1 é lançada | DEC-0029 |
 | **C16** | **O limiar de "talvez" em Conexões.** Uma palavra em comum pode ser generoso demais num acervo grande; calibrar com onze notas seria no escuro | DEC-0024 |
 | **C17** | **Se o Mekora terá usuários fora do Brasil, e o que isso exige.** Jurisdição-base não é restrição de público: atender pessoa de outro país pode trazer obrigação adicional | DEC-0031 |
-| **C18** | **Onde a infraestrutura fisicamente fica.** Jurisdição e localização não são a mesma pergunta, e a segunda não foi feita | DEC-0031 |
-| **C19** | **O catálogo de componentes.** O `DESIGN-SYSTEM.md` cobre fundamentos e composição; não existe catálogo com estados, variantes e anatomia | DEC-0033 |
+| **C18** | **Em que país ficam os servidores da VPS.** A hospedagem foi escolhida em 30/08 — VPS da Hostinger com Cloudflare —, e isso responde *qual serviço*, não *onde*. A Hostinger tem data centers em vários países, e a escolha da região é feita na contratação | DEC-0031 |
+| **C19** | **O catálogo de componentes.** O `DESIGN-SYSTEM.md` cobre fundamentos e composição; não existe catálogo com estados, variantes e anatomia. Sete componentes foram construídos até 31/08 — Botao, Campo, Escolha, Folha, Icone, Cabecalho, TrilhaConta — e nenhum tem página que mostre seus estados | DEC-0033 |
 
 ---
 

@@ -49,16 +49,20 @@ export function Cabecalho() {
       </nav>
 
       <div className="cabecalho-acoes">
-        <button type="button" className="busca">
+        {/* A BUSCA AINDA NÃO EXISTE, e o botão diz isso em vez de responder ao
+            clique com nada. Não há rota de busca no backend, e uma busca que só
+            olha o que a tela já carregou encontraria menos do que a pessoa tem —
+            o que é pior que não buscar, porque parece que não achou. */}
+        <button type="button" className="busca" disabled title="A busca ainda não existe.">
           <Icone src={iconeBuscar} />
           <span>Buscar em Mekora</span>
         </button>
-        <button type="button" className="acao" aria-label="Atalhos">
+        <NavLink to="/notas" className="acao" aria-label="Notas">
           <Icone src={iconeAtalho} />
-        </button>
-        <button type="button" className="acao" aria-label="Conta">
+        </NavLink>
+        <NavLink to="/conta" className="acao" aria-label="Conta">
           <Icone src={iconeConta} />
-        </button>
+        </NavLink>
       </div>
     </header>
   );

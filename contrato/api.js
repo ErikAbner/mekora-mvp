@@ -284,7 +284,7 @@ export function importarClippings(arquivo) {
 
 /** GET /notas — todas as notas da pessoa, de todos os livros. */
 export function lerTodasAsNotas() {
-  return pede("/notas");
+  return pede("/notas/todas");
 }
 
 export function lerNotas(jobId) {
