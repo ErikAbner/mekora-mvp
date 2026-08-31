@@ -122,5 +122,52 @@
     ["paragrafo"],
   );
 
-  return { total: 13, falhas: falhas.length, detalhe: falhas };
+  // ─── O recorte das notas ──────────────────────────────────────────────────
+  //
+  // A nota é guardada em deslocamento do CAPÍTULO, porque é assim que ela
+  // sobrevive a uma mudança de extração. O bloco desenha em deslocamento
+  // PRÓPRIO. Sem recortar, uma nota que atravessa três parágrafos pintaria do
+  // começo do primeiro ao fim do último — incluindo o que está no meio e não
+  // foi marcado.
+  const { notasDoBloco } = await import("/src/leitor/selecao.js");
+
+  caso(
+    "nota inteiramente dentro do bloco",
+    notasDoBloco([{ id: 1, cor: "azul", de: 110, ate: 120 }], 100, 50),
+    [{ id: 1, cor: "azul", temComentario: false, de: 10, ate: 20 }],
+  );
+
+  caso(
+    "nota que comeca antes do bloco e um recorte, nao um deslocamento negativo",
+    notasDoBloco([{ id: 2, cor: "rosa", de: 80, ate: 115 }], 100, 50),
+    [{ id: 2, cor: "rosa", temComentario: false, de: 0, ate: 15 }],
+  );
+
+  caso(
+    "nota que passa do fim do bloco para no fim",
+    notasDoBloco([{ id: 3, cor: "verde", de: 140, ate: 300 }], 100, 50),
+    [{ id: 3, cor: "verde", temComentario: false, de: 40, ate: 50 }],
+  );
+
+  caso(
+    "nota que engloba o bloco inteiro cobre o bloco inteiro",
+    notasDoBloco([{ id: 4, cor: "amarelo", de: 0, ate: 999 }], 100, 50),
+    [{ id: 4, cor: "amarelo", temComentario: false, de: 0, ate: 50 }],
+  );
+
+  // Nota que termina exatamente onde o bloco começa não toca nele. Sem o `>`
+  // estrito, ela apareceria como um destaque de largura zero.
+  caso(
+    "nota que termina onde o bloco comeca nao entra",
+    notasDoBloco([{ id: 5, cor: "azul", de: 50, ate: 100 }], 100, 50),
+    [],
+  );
+
+  caso(
+    "nota de outro trecho do capitulo nao entra",
+    notasDoBloco([{ id: 6, cor: "azul", de: 500, ate: 520 }], 100, 50),
+    [],
+  );
+
+  return { total: 19, falhas: falhas.length, detalhe: falhas };
 })()

@@ -229,3 +229,38 @@ export function gravarProgresso(jobId, { capitulo, deslocamento }) {
     body: JSON.stringify({ capitulo, deslocamento }),
   });
 }
+
+/* ─── As notas ──────────────────────────────────────────────────────────────
+ *
+ * Ancoradas em capitulo e deslocamento — o mesmo par do progresso e da enfase do
+ * autor. O trecho vai junto: se a extracao mudar, o deslocamento escorrega, e o
+ * trecho e o que permite perceber isso em vez de destacar a palavra errada com
+ * toda a confianca.
+ */
+
+/** GET /jobs/{id}/notas — lista vazia sem conta, e nao erro. */
+export function lerNotas(jobId) {
+  return pede(`/jobs/${jobId}/notas`);
+}
+
+/** POST /jobs/{id}/notas — 401 sem conta: anotar sem onde guardar perderia o
+ *  que a pessoa escreveu sem avisar. */
+export function criarNota(jobId, nota) {
+  return pede(`/jobs/${jobId}/notas`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(nota),
+  });
+}
+
+export function editarNota(jobId, notaId, troca) {
+  return pede(`/jobs/${jobId}/notas/${notaId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(troca),
+  });
+}
+
+export function apagarNota(jobId, notaId) {
+  return pede(`/jobs/${jobId}/notas/${notaId}`, { method: "DELETE" });
+}

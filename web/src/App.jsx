@@ -24,7 +24,8 @@ import { useJornada } from "./estado/useJornada.js";
 import { usePessoa } from "./estado/usePessoa.js";
 import { abrirLivro, irParaCapitulo } from "./leitor/abrir.js";
 import { gravarProgresso, lerProgresso } from "../../contrato/api.js";
-import { chaveDe } from "../../contrato/api.js";
+import { usarNotas } from "./leitor/usarNotas.js";
+import { analisar, chaveDe } from "../../contrato/api.js";
 import { EXEMPLO_FILA, EXEMPLO_ESTANTE, EXEMPLO_FICHA, EXEMPLO_LEITURA } from "./exemplos.js";
 
 /* O exemplo entra SÓ quando a URL pede — `?exemplo`. Nunca no caminho normal,
@@ -96,6 +97,7 @@ function PaginaLeitura() {
   const [erro, setErro] = useState(null);
 
   const [progresso, setProgresso] = useState(null);
+  const { notas, erro: erroDeNota, marcar, comentar, trocarCor, remover } = usarNotas(id);
 
   useEffect(() => {
     let vivo = true;
@@ -105,10 +107,18 @@ function PaginaLeitura() {
     /* O ENDERECO, e nao o numero. `/storage/output/7/...` respondia para quem
      * contasse ate sete, e a DEC-0039 §5 trocou isso pela chave do trabalho.
      * O numero da rota continua sendo o da estante; a chave e buscada aqui. */
-    /* A URL vem de quem mandou abrir — a estante já a recebeu pronta do
-     * backend. O caminho antigo montava `/storage/output/{id}/livro.epub`, e
-     * `livro.epub` era um chute: o arquivo real se chama `{slug}.epub`. */
-    const url = local.state?.url ?? `/storage/output/${chaveDe(id) ?? id}/livro.epub`;
+    /* O ENDEREÇO DO ARQUIVO PRECISA SOBREVIVER A UM F5.
+     *
+     * A estante passa a URL pelo estado do roteador, o que é rápido e some ao
+     * recarregar — e recarregar no meio de uma leitura é comum. Sem estado, o
+     * caminho antigo montava `/storage/output/{id}/livro.epub`, com
+     * `livro.epub` sendo um chute; o arquivo real se chama `{slug}.epub`.
+     * Resultado: apertar F5 lendo um livro devolvia o TEXTO DE EXEMPLO.
+     *
+     * Então o estado do roteador vira atalho, e não fonte: quando ele não
+     * existe, o endereço é perguntado ao backend, que é quem sabe. */
+    const acharUrl = async () =>
+      local.state?.url ?? (await analisar(id))?.leitura_url;
 
     /* A MARCA É LIDA ANTES DE ABRIR O LIVRO, e não em paralelo.
      *
@@ -123,6 +133,8 @@ function PaginaLeitura() {
       .then(async (marca) => {
         if (!vivo) return;
         setProgresso(marca);
+        const url = await acharUrl();
+        if (!url) throw new Error("este livro ainda não tem texto para ler");
         const l = await abrirLivro(url, { capitulo: marca?.capitulo ?? 0 });
         if (vivo) setLivro(l);
       })
@@ -141,6 +153,15 @@ function PaginaLeitura() {
     <Leitura
       livro={livro}
       progresso={progresso}
+      notas={notas}
+      erroDeNota={erroDeNota}
+      /* O capítulo vem daqui, e não da seleção: quem marca um trecho está no
+       * capítulo aberto, e pedir isso à tela seria pedir que ela repita algo que
+       * já se sabe — e que pode discordar. */
+      aoAnotar={(t) => marcar({ ...t, capitulo: livro.capitulo ?? 0 })}
+      aoComentar={comentar}
+      aoTrocarCor={trocarCor}
+      aoApagarNota={remover}
       aoTrocarCapitulo={async (i) => {
         const novo = await irParaCapitulo(livro, i);
         setLivro(novo);

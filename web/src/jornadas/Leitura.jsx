@@ -16,6 +16,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Icone } from "../componentes/Icone.jsx";
 import { comDeslocamentos, irPara, ondeEstou } from "../leitor/onde-parei.js";
+import { lerSelecao, notasDoBloco } from "../leitor/selecao.js";
 import "./leitura.css";
 
 const iconeMenu = "/icones/icone-menu.svg";
@@ -113,8 +114,80 @@ function Paragrafo({ texto, destaques = [] }) {
   return <p>{partes}</p>;
 }
 
-export function Leitura({ livro, aviso, aoTrocarCapitulo, progresso, aoMarcar }) {
+/* O caderno: as notas do livro, fora do texto.
+ *
+ * Ele lista TODAS, e não só as do capítulo aberto — é o lugar de rever o que se
+ * marcou no livro inteiro, e limitar ao capítulo transformaria isso num resumo
+ * da página. As de outro capítulo levam até lá.
+ */
+function Caderno({ notas, capitulo, aoComentar, aoTrocarCor, aoApagar, aoIr, aoFechar }) {
+  return (
+    <aside className="caderno" aria-label="Notas do livro">
+      <header>
+        <h2>Notas <span className="dado">{notas.length}</span></h2>
+        <button type="button" onClick={aoFechar} aria-label="Fechar as notas">Fechar</button>
+      </header>
+
+      {!notas.length && (
+        <p className="caderno-vazio">
+          Selecione um trecho do texto para marcar. A cor é sua; o comentário é
+          opcional.
+        </p>
+      )}
+
+      <ul>
+        {notas.map((n) => (
+          <li key={n.id} className={n.capitulo === capitulo ? "aqui" : ""}>
+            {/* O trecho marcado, na cor escolhida. É por ele que se reconhece a
+                nota — a data e o número do capítulo não dizem nada sobre o que
+                foi marcado. */}
+            <blockquote style={{ background: DESTAQUES[n.cor] }}>{n.trecho}</blockquote>
+
+            <textarea
+              defaultValue={n.comentario}
+              placeholder="Escrever ao lado…"
+              aria-label="Comentário desta nota"
+              /* Grava ao SAIR do campo, e não a cada tecla: um pedido por
+                 caractere digitado é ruído, e o que interessa é o que ficou. */
+              onBlur={(e) => {
+                if (e.target.value !== n.comentario) aoComentar?.(n.id, e.target.value);
+              }}
+            />
+
+            <div className="nota-acoes">
+              <div className="nota-cores" role="group" aria-label="Trocar a cor">
+                {Object.keys(DESTAQUES).map((cor) => (
+                  <button
+                    key={cor}
+                    type="button"
+                    className={`paleta-cor${cor === n.cor ? " escolhida" : ""}`}
+                    style={{ background: DESTAQUES[cor] }}
+                    aria-label={`Trocar para ${cor}`}
+                    aria-pressed={cor === n.cor ? "true" : "false"}
+                    onClick={() => aoTrocarCor?.(n.id, cor)}
+                  />
+                ))}
+              </div>
+              {n.capitulo !== capitulo && (
+                <button type="button" className="nota-ir" onClick={() => aoIr?.(n.capitulo)}>
+                  Ir ao capítulo {n.capitulo + 1}
+                </button>
+              )}
+              <button type="button" className="nota-apagar" onClick={() => aoApagar?.(n.id)}>
+                Apagar
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </aside>
+  );
+}
+
+export function Leitura({ livro, aviso, aoTrocarCapitulo, progresso, aoMarcar, notas = [], aoAnotar, aoComentar, aoTrocarCor, aoApagarNota, erroDeNota }) {
   const [cromoVisivel, setCromo] = useState(true);
+  const [paleta, setPaleta] = useState(null);
+  const [caderno, setCaderno] = useState(false);
   const prosa = useRef(null);
   const restaurado = useRef(null);
 
@@ -122,6 +195,36 @@ export function Leitura({ livro, aviso, aoTrocarCapitulo, progresso, aoMarcar })
     () => comDeslocamentos(livro?.blocos ?? livro?.paragrafos ?? []),
     [livro?.blocos, livro?.paragrafos],
   );
+
+  /* Só as notas deste capítulo. As outras continuam carregadas — virar o
+   * capítulo com elas em mãos é imediato, contra um pedido a cada virada que
+   * faria o destaque aparecer um instante depois do texto. */
+  const daqui = useMemo(
+    () => notas.filter((n) => n.capitulo === (livro?.capitulo ?? 0)),
+    [notas, livro?.capitulo],
+  );
+
+  /* A PALETA APARECE AO SOLTAR O DEDO, e não a cada movimento da seleção.
+   * Durante o arrasto a seleção muda continuamente, e uma paleta que segue o
+   * cursor atrapalha justamente o gesto de escolher o trecho. */
+  useEffect(() => {
+    if (!aoAnotar) return;
+    const aoSoltar = () => {
+      const sel = lerSelecao(prosa.current);
+      setPaleta(sel);
+    };
+    document.addEventListener("mouseup", aoSoltar);
+    document.addEventListener("touchend", aoSoltar);
+    /* Rolar fecha a paleta: ela é posicionada em coordenadas de tela, e sem
+     * isto ficaria pairando longe do texto que marcou. */
+    const fechar = () => setPaleta(null);
+    window.addEventListener("scroll", fechar, { passive: true });
+    return () => {
+      document.removeEventListener("mouseup", aoSoltar);
+      document.removeEventListener("touchend", aoSoltar);
+      window.removeEventListener("scroll", fechar);
+    };
+  }, [aoAnotar]);
 
   /* RESTAURAR uma vez por capítulo, e não a cada render. Sem a trava, qualquer
    * re-render depois de a pessoa ter rolado a puxaria de volta para a marca —
@@ -180,7 +283,14 @@ export function Leitura({ livro, aviso, aoTrocarCapitulo, progresso, aoMarcar })
           <button type="button" aria-label="Menu" onClick={() => setCromo((v) => !v)}>
             <Icone src={iconeMenu} />
           </button>
-          <button type="button" aria-label="Notas"><Icone src={iconeCaderno} /></button>
+          <button
+            type="button"
+            aria-label={`Notas (${notas.length})`}
+            aria-pressed={caderno ? "true" : "false"}
+            onClick={() => setCaderno((v) => !v)}
+          >
+            <Icone src={iconeCaderno} />
+          </button>
           <button type="button" aria-label="Marcadores"><Icone src={iconeMarcador} /></button>
         </nav>
         <nav className="cromo-caixa" aria-label="Ferramentas">
@@ -203,7 +313,11 @@ export function Leitura({ livro, aviso, aoTrocarCapitulo, progresso, aoMarcar })
 
       <article className="prosa" ref={prosa}>
         {blocos.map((b, i) => (
-          <Bloco key={i} {...b} />
+          <Bloco
+            key={i}
+            {...b}
+            destaques={notasDoBloco(daqui, b.de, (b.texto ?? "").length)}
+          />
         ))}
       </article>
 
@@ -213,6 +327,48 @@ export function Leitura({ livro, aviso, aoTrocarCapitulo, progresso, aoMarcar })
           Os dois botões ficam DEPOIS do texto, e não flutuando por cima: numa
           tela de leitura, o que fica sempre visível disputa atenção com a
           única coisa que importa ali. */}
+      {/* A PALETA, junto do que foi marcado. Em canto fixo obrigaria a olhar
+          para longe do texto e voltar — e num leitor o olho está no texto. */}
+      {paleta && (
+        <div
+          className="paleta"
+          style={{ left: paleta.onde.x, top: paleta.onde.y }}
+          role="group"
+          aria-label="Marcar o trecho"
+        >
+          {Object.keys(DESTAQUES).map((cor) => (
+            <button
+              key={cor}
+              type="button"
+              className="paleta-cor"
+              style={{ background: DESTAQUES[cor] }}
+              aria-label={`Marcar de ${cor}`}
+              onClick={async () => {
+                await aoAnotar?.({ de: paleta.de, ate: paleta.ate, cor, trecho: paleta.trecho });
+                setPaleta(null);
+                /* Limpa a seleção: deixá-la azul por cima do destaque recém
+                   feito esconde exatamente o que a pessoa acabou de marcar. */
+                window.getSelection?.()?.removeAllRanges();
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      {erroDeNota && <p className="nota-erro" role="alert">{erroDeNota}</p>}
+
+      {caderno && (
+        <Caderno
+          notas={notas}
+          capitulo={livro.capitulo ?? 0}
+          aoComentar={aoComentar}
+          aoTrocarCor={aoTrocarCor}
+          aoApagar={aoApagarNota}
+          aoIr={aoTrocarCapitulo}
+          aoFechar={() => setCaderno(false)}
+        />
+      )}
+
       {livro.capitulos > 1 && aoTrocarCapitulo && (
         <nav className="virar" aria-label="Capítulos">
           <button

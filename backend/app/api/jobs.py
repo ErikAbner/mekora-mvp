@@ -49,6 +49,7 @@ def _to_job(record: ProcessingJob) -> dict:
     data["endereco"] = record.token_publico
     data["leitura_url"] = _leitura_url(record)
     data["thumbnails"] = get_thumbnail_urls(record.token_publico or "", data.get("page_count") or 0)
+    _sem_buracos(data)
     return data
 
 
@@ -56,7 +57,37 @@ _HISTORY_STR_FIELDS = frozenset({
     "input_format", "processing_mode", "conversion_status", "send_status",
     "final_title", "final_author", "final_language",
     "translation_status", "comic_translation_status",
+    "ocr_status",
 })
+
+# `is_scanned` fica FORA de propósito: ele é `Optional` no esquema, e "não sei
+# se é digitalizado" é resposta legítima — diferente de "não é".
+_CAMPOS_BOOLEANOS = frozenset({
+    "ocr_used", "kindle_sent", "translation_enabled", "comic_mode",
+    "manga_rtl", "comic_translation_enabled",
+})
+
+
+def _sem_buracos(data: dict) -> dict:
+    """Troca NULL por vazio nos campos que o esquema declara não-nulos.
+
+    UM registro com um NULL derruba a resposta INTEIRA com 500: a estante não
+    abre por causa de um item, e o livro não abre por causa de um campo. E o
+    NULL chega por um caminho banal — um registro criado antes de a coluna
+    existir, que é o normal num banco que já tem história.
+
+    Esta função existe num lugar só porque a mesma defesa já foi escrita duas
+    vezes: primeiro para textos no histórico, depois para booleanos no mesmo
+    lugar. Na terceira, o `/analyze` não tinha nenhuma das duas e quebrava
+    sozinho — que é exatamente como uma defesa copiada diverge.
+    """
+    for campo in _HISTORY_STR_FIELDS:
+        if campo in data and data[campo] is None:
+            data[campo] = ""
+    for campo in _CAMPOS_BOOLEANOS:
+        if campo in data and data[campo] is None:
+            data[campo] = False
+    return data
 
 
 def _leitura_url(record: ProcessingJob) -> str | None:
@@ -83,19 +114,7 @@ def _to_history(record: ProcessingJob) -> dict:
     # Coerce None → "" para campos str que podem ser NULL em registros antigos.
     # O @field_validator do HistoryEntry cobre o mesmo conjunto, mas coerção na
     # origem evita ResponseValidationError independente da versão Pydantic/FastAPI.
-    for field in _HISTORY_STR_FIELDS:
-        if field in data and data[field] is None:
-            data[field] = ""
-
-    # O mesmo para os booleanos, e pela mesma razão que motivou a lista acima:
-    # um registro anterior à coluna guarda NULL, e um NULL num campo declarado
-    # `bool` derruba a resposta INTEIRA com 500 — a estante não abre por causa
-    # de um item. `is_scanned` fica de fora porque é `Optional` de propósito:
-    # "não sei se é digitalizado" é uma resposta legítima, e diferente de "não".
-    for field in ("ocr_used", "kindle_sent", "translation_enabled", "comic_mode",
-                  "manga_rtl", "comic_translation_enabled"):
-        if data.get(field) is None:
-            data[field] = False
+    _sem_buracos(data)
 
     # A capa vira URL aqui, e não no cliente. O caminho em disco é detalhe do
     # servidor; a estante só precisa de algo que possa pôr num <img>.

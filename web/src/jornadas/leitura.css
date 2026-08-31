@@ -169,3 +169,137 @@
   color: var(--muted-foreground);
   font-variant-numeric: tabular-nums;
 }
+
+/* ─── A paleta ──────────────────────────────────────────────────────────────
+   Aparece junto do trecho marcado. `fixed` porque as coordenadas vêm de
+   `getBoundingClientRect`, que é relativo à janela — com `absolute` ela erraria
+   o lugar em qualquer página rolada. */
+.paleta {
+  position: fixed;
+  z-index: 20;
+  transform: translate(-50%, calc(-100% - 12px));
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  background: var(--card, var(--background));
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 12px rgb(0 0 0 / 12%);
+}
+
+.paleta-cor {
+  inline-size: 28px;
+  block-size: 28px;
+  padding: 0;
+  border: 1px solid var(--borda-controle, var(--border));
+  cursor: pointer;
+}
+
+.paleta-cor:hover { border-color: var(--foreground); }
+.paleta-cor:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+/* A escolhida ganha ESPESSURA, e não só cor: distinguir duas cores próximas por
+   cor é o que não funciona para quem não as distingue. */
+.paleta-cor.escolhida { border-width: 3px; border-color: var(--foreground); }
+
+/* ─── O caderno ─────────────────────────────────────────────────────────────
+   Coluna à direita, fixa. Fora do texto de propósito: a nota é sobre o texto, e
+   dentro dele competiria com a leitura. */
+.caderno {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-end: 0;
+  z-index: 15;
+  inline-size: min(380px, 92vw);
+  padding: 24px;
+  overflow-y: auto;
+  background: var(--card, var(--background));
+  border-inline-start: 1px solid var(--border);
+}
+
+.caderno header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-block-end: 20px;
+  padding-block-end: 16px;
+  border-block-end: 1px solid var(--border);
+}
+
+.caderno h2 { margin: 0; font-size: 20px; line-height: 28px; color: var(--foreground); }
+.caderno h2 .dado { color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+
+.caderno header button, .nota-ir, .nota-apagar {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.caderno header button:hover, .nota-ir:hover, .nota-apagar:hover { border-color: var(--foreground); }
+.caderno header button:focus-visible, .nota-ir:focus-visible, .nota-apagar:focus-visible,
+.caderno textarea:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+
+.caderno-vazio {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+.caderno ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 24px; }
+
+.caderno li { padding-block-end: 24px; border-block-end: 1px solid var(--border); }
+.caderno li:last-child { border-block-end: 0; }
+
+/* A nota do capítulo aberto é marcada por DEGRAU DE SUPERFÍCIE — a regra que
+   valeu quando o acento saiu do sistema (DEC-0037 §6). */
+.caderno li.aqui { margin-inline: -12px; padding-inline: 12px; background: var(--muted, color-mix(in srgb, var(--foreground) 5%, transparent)); }
+
+.caderno blockquote {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  /* A tinta é sempre a escura: os quatro pastéis foram medidos para carregar
+     #151515 com folga, de 7,37 a 17,15. */
+  color: #151515;
+  font-size: 15px;
+  line-height: 22px;
+  text-wrap: pretty;
+}
+
+.caderno textarea {
+  inline-size: 100%;
+  min-block-size: 60px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 22px;
+  resize: vertical;
+}
+
+.nota-acoes { margin-block-start: 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.nota-cores { display: flex; gap: 4px; }
+.nota-cores .paleta-cor { inline-size: 22px; block-size: 22px; }
+
+.nota-erro {
+  position: fixed;
+  inset-block-end: 24px;
+  inset-inline: 0;
+  z-index: 25;
+  margin: 0 auto;
+  inline-size: fit-content;
+  max-inline-size: 90vw;
+  padding: 12px 20px;
+  background: var(--card, var(--background));
+  border: 1px solid var(--destructive, var(--foreground));
+  color: var(--foreground);
+  font-size: 15px;
+  line-height: 22px;
+}

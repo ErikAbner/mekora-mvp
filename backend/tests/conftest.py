@@ -63,6 +63,7 @@ def test_engine(tmp_path):
     )
     from app.db.database import Base
     from app.models.pessoa import Chave, Pessoa, Sessao  # noqa: F401 — registra modelos de acesso
+    from app.models.nota import Nota  # noqa: F401 — registra as notas
     from app.models.progresso import Progresso  # noqa: F401 — registra onde a pessoa parou
     from app.models.processing_job import ProcessingJob  # noqa: F401 — registra modelo
     from app.models.stage_metric import StageMetric  # noqa: F401 — registra modelo Fase L
