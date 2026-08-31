@@ -7,6 +7,9 @@
  */
 @import "@ds/tema";
 @import "@ds/variaveis";
+/* O tema escolhido a mao, derivado do gerado. Depois dos dois, para vencer por
+ * ordem quando a especificidade empata. */
+@import "./tema-escolhido.css";
 
 @font-face {
   font-family: "Zodiak Variable";
@@ -26,6 +29,16 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-tema="claro"]) { color-scheme: dark; }
 }
+
+/* O MESMO, para quem ESCOLHEU escuro num sistema claro.
+ *
+ * O `@media` acima cobre duas das três situações: sistema escuro sem escolha, e
+ * sistema escuro com escolha de claro. Falta a terceira — sistema claro e
+ * escolha de escuro —, e nenhuma preferência de sistema a alcança.
+ *
+ * Sem isto, a opção "Escuro" em Preferências era guardada e não fazia nada para
+ * quem usa o computador no claro, que é justamente quem a escolheria. */
+:root[data-tema="escuro"] { color-scheme: dark; }
 
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -103,6 +116,9 @@ button, input, textarea, select { border-radius: 0; font: inherit; color: inheri
   --nota-azul: #bfdfff;
 }
 
+/* Os valores escuros vivem numa lista só, e os dois seletores a usam: o
+ * `@media` para o sistema escuro, o `[data-tema="escuro"]` para a escolha.
+ * Duas cópias divergiriam na primeira cor nova. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-tema="claro"]) {
     /* No escuro o `#666666` do design system já passa 3,15 sobre o fundo, mas
@@ -113,4 +129,12 @@ button, input, textarea, select { border-radius: 0; font: inherit; color: inheri
     --nota-rosa: #a34344;
     --nota-azul: #406f9e;
   }
+}
+
+:root[data-tema="escuro"] {
+  --borda-controle: #6d6d6d;
+  --nota-verde: #61722f;
+  --nota-amarelo: #746c2f;
+  --nota-rosa: #a34344;
+  --nota-azul: #406f9e;
 }

@@ -13,6 +13,7 @@
  */
 import { useEffect, useState } from "react";
 import { gravarPreferencias, lerPreferencias } from "../../../contrato/api.js";
+import { aplicarTema } from "../estado/tema.js";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Escolha } from "../componentes/Escolha.jsx";
 import { TrilhaConta } from "../componentes/TrilhaConta.jsx";
@@ -85,8 +86,15 @@ const GRUPOS = [
       {
         id: "tema",
         titulo: "Tema",
-        padrao: "claro",
+        /* `sistema` é o padrão, e é a opção que faltava.
+         *
+         * Sem ela, escolher uma vez era permanente: não havia como voltar a
+         * seguir o computador. E seguir o computador é o comportamento certo
+         * para a maioria — quem alterna claro de dia e escuro de noite no
+         * sistema espera que o Mekora acompanhe. */
+        padrao: "sistema",
         opcoes: [
+          { id: "sistema", rotulo: "Como o sistema", detalhe: "Acompanha a preferência do seu computador, inclusive quando ela muda sozinha." },
           { id: "claro", rotulo: "Claro" },
           { id: "escuro", rotulo: "Escuro" },
         ],
@@ -108,7 +116,7 @@ const PADROES = Object.fromEntries(
  * A escolha é guardada de qualquer forma, para não se perder quando o efeito
  * chegar. O que muda é a tela dizer.
  */
-const SEM_EFEITO_AINDA = new Set(["modo", "dicas", "quando-pronto", "formato", "movimento", "tema"]);
+const SEM_EFEITO_AINDA = new Set(["modo", "dicas", "quando-pronto", "formato", "movimento"]);
 
 export function Conta({ pessoa , aoSair }) {
   const [pref, setPref] = useState(PADROES);
@@ -119,7 +127,14 @@ export function Conta({ pessoa , aoSair }) {
   useEffect(() => {
     let vivo = true;
     lerPreferencias()
-      .then((r) => vivo && r?.escolhas && setPref((p) => ({ ...p, ...r.escolhas })))
+      .then((r) => {
+        if (!vivo || !r?.escolhas) return;
+        setPref((p) => ({ ...p, ...r.escolhas }));
+        /* O SERVIDOR CORRIGE O ESPELHO. Ele é a verdade — é dele que a escolha
+         * vem em outro aparelho —, e o `localStorage` só existe para a primeira
+         * tela não piscar. */
+        if (r.escolhas.tema) aplicarTema(r.escolhas.tema);
+      })
       .catch(() => {});
     return () => { vivo = false; };
   }, []);
@@ -127,11 +142,17 @@ export function Conta({ pessoa , aoSair }) {
   const escolher = (id, valor) => {
     const antes = pref;
     setPref((p) => ({ ...p, [id]: valor }));
+    /* O tema muda NA HORA, antes de o servidor confirmar: é a única preferência
+     * cujo efeito a pessoa vê imediatamente, e esperar a rede para trocar de
+     * cor faria o clique parecer que não pegou. Se a gravação falhar, o
+     * `catch` abaixo devolve tudo — inclusive o tema. */
+    if (id === "tema") aplicarTema(valor);
     /* Volta ao que era se o servidor recusar. Deixar a marcação nova numa
      * escolha que não foi gravada é a tela afirmando algo que não é verdade —
      * e a pessoa só descobre na próxima visita. */
     gravarPreferencias({ [id]: valor }).catch((e) => {
       setPref(antes);
+      if (id === "tema") aplicarTema(antes.tema);
       setErro(e.status === 401 ? "Entre para guardar suas preferências." : e.message);
     });
   };

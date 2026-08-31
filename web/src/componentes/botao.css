@@ -69,4 +69,8 @@
   :root:not([data-tema="claro"]) .botao.secundaria:hover { background: var(--muted); }
 }
 
+/* E para quem escolheu escuro num sistema claro. */
+:root[data-tema="escuro"] .botao.primaria:hover { background: var(--muted-foreground); }
+:root[data-tema="escuro"] .botao.secundaria:hover { background: var(--muted); }
+
 @media (prefers-reduced-motion: reduce) { .botao { transition: none; } }
