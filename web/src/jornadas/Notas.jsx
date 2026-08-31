@@ -120,7 +120,12 @@ export function Notas({ notas = [], carregando, aoApagar }) {
                     {/* O CHÃO marca o conteúdo — a nota é o que a pessoa marcou.
                         O comentário dela vem depois, com filete, porque é fala
                         sobre a fala. É a mesma regra da leitura. */}
-                    <blockquote style={{ background: DESTAQUES[n.cor] }}>{n.trecho}</blockquote>
+                    {/* O TRECHO LEVA À NOTA. A lista mostra o que foi marcado;
+                        a tela dela mostra o resto — estudos, ligadas, e de onde
+                        veio. */}
+                    <Link to={`/nota/${n.id}`} className="nota-link">
+                      <blockquote style={{ background: DESTAQUES[n.cor] }}>{n.trecho}</blockquote>
+                    </Link>
                     {n.comentario && <p className="nota-escrita">{n.comentario}</p>}
                     <div className="nota-pe">
                       {!porLivro && <span className="nota-origem">{ondeVeio(n)}</span>}

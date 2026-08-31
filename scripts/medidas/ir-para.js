@@ -20,7 +20,7 @@
  * pessoa entrou.
  */
 (async () => {
-  const tela = window.__MEKORA_TELA__ || "/estante/9";
+  const tela = window.__MEKORA_TELA__ || "/nota/1";
   await new Promise((r) => setTimeout(r, 1200));
 
   const post = (u, corpo) =>
@@ -70,7 +70,12 @@
    * É o mesmo defeito que fez o Canvas passar com 19 nós, aparecendo num
    * segundo lugar. Então o setup CRIA um livro e troca o `:id` pelo dele. */
   let destino = tela;
-  if (tela.includes(":id") || /\/(estante|leitura)\/\d+/.test(tela)) {
+
+  /* A tela de UMA nota precisa do id de uma nota desta pessoa. As notas foram
+   * semeadas acima, então basta usar a primeira. */
+  if (/^\/nota\//.test(tela) && notas.length) {
+    destino = `/nota/${notas[0].nota_id}`;
+  } else if (tela.includes(":id") || /\/(estante|leitura)\/\d+/.test(tela)) {
     const pdf = new Blob(
       ["%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\ntrailer<</Root 1 0 R>>"],
       { type: "application/pdf" },

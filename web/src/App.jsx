@@ -24,6 +24,7 @@ import { usarCanvas } from "./estado/usarCanvas.js";
 import { Estudos } from "./jornadas/Estudos.jsx";
 import { Notas } from "./jornadas/Notas.jsx";
 import { Livro } from "./jornadas/Livro.jsx";
+import { Nota } from "./jornadas/Nota.jsx";
 import { usarEstudos } from "./estado/usarEstudos.js";
 import { ContaKindle } from "./jornadas/ContaKindle.jsx";
 import { LUGARES } from "./lugares.js";
@@ -331,6 +332,7 @@ export function App() {
         <Route path="/estudos" element={<SoParaQuemEntrou acesso={acesso}><PaginaEstudos /></SoParaQuemEntrou>} />
         <Route path="/notas" element={<SoParaQuemEntrou acesso={acesso}><PaginaNotas /></SoParaQuemEntrou>} />
         <Route path="/estante/:id" element={<SoParaQuemEntrou acesso={acesso}><Livro /></SoParaQuemEntrou>} />
+        <Route path="/nota/:id" element={<SoParaQuemEntrou acesso={acesso}><Nota /></SoParaQuemEntrou>} />
         {LUGARES.filter((l) => !l.pronto && !["/canvas", "/estudos"].includes(l.rota)).map((l) => (
           <Route key={l.id} path={l.rota} element={<AindaNao lugar={l} />} />
         ))}

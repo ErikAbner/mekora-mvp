@@ -158,6 +158,33 @@ def conferir_colisao(lista):
     return sorted(set(lista) & topo)
 
 
+def conferir_subcaminho(com_sub):
+    """Uma tela ABAIXO de um caminho que pertence ao backend.
+
+    `/notas/93` é tela; `/notas/todas` e `/notas/{id}` são backend. Os dois
+    moram sob `/notas`, e a borda repassa tudo que está abaixo dele — então a
+    tela caía no backend, que respondia JSON onde a pessoa espera uma página.
+
+    Diferente da colisão de caminho exato, esta não é resolvível pela borda: as
+    duas formas são idênticas. Uma das duas precisa mudar de nome, e a saída
+    usada aqui foi o singular — `/nota/:id` para a tela.
+    """
+    import re
+
+    app_jsx = (RAIZ / "web" / "src" / "App.jsx").read_text(encoding="utf-8")
+    problemas = []
+    for tela in re.findall(r'path="([^"]*)"', app_jsx):
+        partes = [p for p in tela.strip("/").split("/") if p]
+        # Só interessa tela com mais de um segmento: o primeiro é o que a borda
+        # olha, e o segundo é o que a faz cair no backend.
+        if len(partes) < 2:
+            continue
+        raiz = "/" + partes[0]
+        if raiz in com_sub:
+            problemas.append(f"{tela} — a borda manda tudo abaixo de {raiz} para o backend")
+    return problemas
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--conferir", action="store_true")
@@ -172,6 +199,15 @@ def main():
     if colisao:
         print("COLISÃO entre rota de tela e rota de API: " + " ".join(colisao))
         print("Uma das duas precisa mudar de nome — a borda não tem como servir as duas.")
+        return 1
+
+    abaixo = conferir_subcaminho(com_sub)
+    if abaixo:
+        print("TELA ABAIXO DE CAMINHO DO BACKEND:")
+        for a in abaixo:
+            print("  " + a)
+        print("\nA borda não separa as duas formas: uma precisa mudar de nome.")
+        print("O singular resolveu o caso de /notas — a tela virou /nota/:id.")
         return 1
 
     saidas = [escrever_js(exatas, com_sub), escrever_caddy(exatas, com_sub)]

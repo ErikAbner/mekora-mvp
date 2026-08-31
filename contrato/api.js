@@ -287,6 +287,11 @@ export function lerTodasAsNotas() {
   return pede("/notas/todas");
 }
 
+/** GET /notas/{id} — uma nota, com estudos, ligadas e o livro de onde veio. */
+export function lerNota(id) {
+  return pede(`/notas/${id}`);
+}
+
 export function lerNotas(jobId) {
   return pede(`/jobs/${jobId}/notas`);
 }

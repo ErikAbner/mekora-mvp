@@ -106,6 +106,62 @@ def todas(
     return [_fora(n) for n in notas]
 
 
+@router.get("/notas/{nota_id}")
+def uma(
+    nota_id: int,
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Uma nota, com tudo que a rodeia.
+
+    Junta numa resposta o que a tela precisa: a nota, os estudos em que ela
+    está, as notas ligadas a ela e o livro de onde veio. São quatro consultas
+    que a tela faria em quatro idas à rede, e ela desenha tudo de uma vez.
+    """
+    from app.models.canvas import Ligacao
+    from app.models.estudo import Estudo, EstudoNota
+
+    pessoa = _quem(db, mekora_sessao)
+    n = db.query(Nota).filter(Nota.id == nota_id, Nota.pessoa_id == pessoa.id).first()
+    if n is None:
+        raise HTTPException(status_code=404, detail="Nota não encontrada.")
+
+    estudos = (
+        db.query(Estudo)
+        .join(EstudoNota, EstudoNota.estudo_id == Estudo.id)
+        .filter(EstudoNota.nota_id == n.id)
+        .all()
+    )
+
+    # A ligação é mútua: ela pode estar guardada em qualquer um dos dois lados,
+    # e a nota do "outro lado" é a que não é esta.
+    ligadas = []
+    for l in db.query(Ligacao).filter(
+        Ligacao.pessoa_id == pessoa.id,
+        (Ligacao.de_id == n.id) | (Ligacao.para_id == n.id),
+    ).all():
+        outro = l.para_id if l.de_id == n.id else l.de_id
+        vizinha = db.query(Nota).filter(Nota.id == outro).first()
+        if vizinha is not None:
+            ligadas.append({
+                "ligacao_id": l.id, "id": vizinha.id, "trecho": vizinha.trecho,
+                "cor": vizinha.cor, "origem": vizinha.origem, "como": l.como,
+            })
+
+    livro = None
+    if n.job_id:
+        j = db.query(ProcessingJob).filter(ProcessingJob.id == n.job_id).first()
+        if j is not None:
+            livro = {"id": j.id, "titulo": j.final_title or j.original_filename}
+
+    return {
+        **_fora(n),
+        "livro": livro,
+        "estudos": [{"id": e.id, "nome": e.nome, "sobre": e.sobre} for e in estudos],
+        "ligadas": ligadas,
+    }
+
+
 @router.post("/notas/importar")
 async def importar(
     arquivo: UploadFile = File(...),

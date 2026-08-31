@@ -99,3 +99,9 @@
 
 .nota-pe a:hover, .nota-pe button:hover { border-color: var(--foreground); }
 .nota-pe a:focus-visible, .nota-pe button:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+
+/* O trecho leva à nota aberta. Sem sublinhado: a citação já tem chão próprio, e
+   sublinhá-la a faria competir com o texto que ela carrega. */
+.nota-link { display: block; text-decoration: none; color: inherit; }
+.nota-link:hover blockquote { outline: 1px solid var(--foreground); outline-offset: -1px; }
+.nota-link:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
