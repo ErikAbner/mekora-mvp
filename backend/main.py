@@ -105,7 +105,7 @@ app.include_router(acesso_router)
 app.include_router(health_router)
 # Atrás da mesma porta: as rotas falam de um trabalho específico.
 app.include_router(progresso_router, dependencies=[Depends(exigir_acesso)])
-app.include_router(notas_router, dependencies=[Depends(exigir_acesso)])
+app.include_router(notas_router, dependencies=[Depends(exigir_acesso), Depends(exigir_conta)])
 # Sem porta de trabalho: as rotas de aparelho falam da CONTA, e a sessão é a
 # única credencial possível — não há chave de trabalho que dê acesso a elas.
 app.include_router(aparelhos_router)

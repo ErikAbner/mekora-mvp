@@ -276,3 +276,16 @@
 /* Desabilitado não é só cor mais fraca: o cursor também diz que não dá. */
 .recortes button:disabled { opacity: 0.55; cursor: default; }
 .recortes button:disabled:hover { background: transparent; }
+
+.estante-importar { align-self: flex-start; margin-block-end: 4px; }
+
+.importou-livros {
+  margin: 12px 0 0;
+  padding-inline-start: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--muted-foreground);
+}

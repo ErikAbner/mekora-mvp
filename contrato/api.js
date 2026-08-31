@@ -272,6 +272,21 @@ export function gravarProgresso(jobId, { capitulo, deslocamento, capitulos }) {
  */
 
 /** GET /jobs/{id}/notas — lista vazia sem conta, e nao erro. */
+/** POST /notas/importar — o `My Clippings.txt` do Kindle.
+ *
+ * Reimportar NAO duplica: o arquivo do Kindle cresce e nunca e limpo sozinho,
+ * entao a segunda importacao traz tudo da primeira mais o que e novo. */
+export function importarClippings(arquivo) {
+  const corpo = new FormData();
+  corpo.append("arquivo", arquivo);
+  return pede("/notas/importar", { method: "POST", body: corpo });
+}
+
+/** GET /notas — todas as notas da pessoa, de todos os livros. */
+export function lerTodasAsNotas() {
+  return pede("/notas");
+}
+
 export function lerNotas(jobId) {
   return pede(`/jobs/${jobId}/notas`);
 }

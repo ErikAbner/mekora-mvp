@@ -62,6 +62,35 @@ def contar(caminho: Path) -> dict:
     return fora
 
 
+def conferir_escrita(pasta: Path) -> list:
+    """Lê as migrações e acusa `NOT NULL` sem `server_default` antes de rodar.
+
+    Rodar já pega — foi assim que o defeito apareceu três vezes. Mas ler pega
+    ANTES, e diz qual arquivo e qual linha, em vez de um traceback do SQLite
+    sobre uma tabela temporária que não existe no código de ninguém.
+
+    A confusão que produz o erro é sempre a mesma: `default=0` no modelo parece
+    resolver, e não resolve — ele é aplicado pelo ORM, ao criar o objeto em
+    Python. O banco nunca o vê. Só `server_default` vira DEFAULT na tabela.
+    """
+    import re
+
+    problemas = []
+    for arquivo in sorted(pasta.glob("*.py")):
+        texto = arquivo.read_text(encoding="utf-8")
+        for numero, linha in enumerate(texto.splitlines(), start=1):
+            if "add_column" not in linha or "nullable=False" not in linha:
+                continue
+            if "server_default" in linha:
+                continue
+            coluna = re.search(r"sa\.Column\(\s*['\"]([^'\"]+)", linha)
+            problemas.append(
+                f"{arquivo.name}:{numero} — coluna '{coluna.group(1) if coluna else '?'}' "
+                "é NOT NULL e não tem server_default"
+            )
+    return problemas
+
+
 def semear_vazias(caminho: Path) -> list:
     """Põe uma linha em cada tabela vazia, para a migração ter o que quebrar.
 
@@ -130,6 +159,18 @@ def alembic(passo: list, banco: Path) -> tuple:
 def main() -> int:
     if not BANCO.exists():
         print(f"banco não encontrado em {BANCO}")
+        return 1
+
+    # A leitura vem antes: ela diz qual linha está errada, contra um traceback
+    # do SQLite sobre uma tabela temporária.
+    mal_escritas = conferir_escrita(RAIZ / "backend" / "alembic" / "versions")
+    if mal_escritas:
+        print("\nMIGRAÇÃO MAL ESCRITA — o `default` do modelo não chega ao banco:")
+        for m in mal_escritas:
+            print("  " + m)
+        print("\nUse `server_default` na coluna. Sem ele, a migração passa em tabela")
+        print("vazia e falha em tabela com linhas — funciona em banco novo e quebra")
+        print("em banco usado.\n")
         return 1
 
     with tempfile.TemporaryDirectory() as pasta:

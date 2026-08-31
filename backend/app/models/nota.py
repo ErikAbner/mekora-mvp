@@ -44,11 +44,37 @@ class Nota(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     pessoa_id = Column(Integer, ForeignKey("pessoas.id", ondelete="CASCADE"), nullable=False, index=True)
-    job_id = Column(Integer, ForeignKey("processing_jobs.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    # NULO QUANDO A NOTA NÃO VEIO DE UM LIVRO DAQUI.
+    #
+    # As notas do `My Clippings.txt` são de livros lidos no Kindle, e a maioria
+    # nunca passou pelo Mekora. Exigir `job_id` obrigaria a inventar um trabalho
+    # falso para cada livro importado — um registro de conversão que nunca
+    # aconteceu, poluindo a Mesa e a estante com coisas que não são arquivos.
+    job_id = Column(Integer, ForeignKey("processing_jobs.id", ondelete="CASCADE"), index=True)
+
+    # De onde a nota veio, quando não é de um trabalho. Para a nota importada é
+    # o título que o Kindle escreveu; para a nota feita lendo aqui, fica vazio
+    # porque o trabalho já diz.
+    origem = Column(String, nullable=False, default="")
+
+    # `leitura` (feita aqui, marcando um trecho), `kindle` (importada do
+    # My Clippings) ou `solta` (escrita direto no Canvas, sem livro).
+    #
+    # Guardado, e não deduzido de `job_id is None`: uma nota solta e uma nota do
+    # Kindle têm as duas `job_id` nulo, e são coisas diferentes na tela.
+    fonte = Column(String, nullable=False, default="leitura")
 
     capitulo = Column(Integer, nullable=False, default=0)
-    de = Column(Integer, nullable=False)
-    ate = Column(Integer, nullable=False)
+
+    # A ÂNCORA SÓ EXISTE PARA A NOTA FEITA AQUI.
+    #
+    # O Kindle informa "posição 176-178", que é a unidade dele e não a nossa: um
+    # deslocamento de caractere no texto que o Mekora extraiu. Guardar o número
+    # do Kindle nestes campos faria a nota importada apontar um trecho qualquer
+    # do capítulo zero, com toda a confiança de uma âncora de verdade.
+    de = Column(Integer, nullable=False, default=0)
+    ate = Column(Integer, nullable=False, default=0)
 
     cor = Column(String, nullable=False, default="amarelo")
 

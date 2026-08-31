@@ -25,7 +25,7 @@ import { usePessoa } from "./estado/usePessoa.js";
 import { abrirLivro, irParaCapitulo } from "./leitor/abrir.js";
 import { gravarProgresso, lerProgresso } from "../../contrato/api.js";
 import { usarNotas } from "./leitor/usarNotas.js";
-import { analisar, chaveDe } from "../../contrato/api.js";
+import { analisar, chaveDe, importarClippings } from "../../contrato/api.js";
 import { EXEMPLO_FILA, EXEMPLO_ESTANTE, EXEMPLO_LEITURA } from "./exemplos.js";
 
 /* O exemplo entra SÓ quando a URL pede — `?exemplo`. Nunca no caminho normal,
@@ -83,6 +83,14 @@ function PaginaEstante() {
       selecionado={selecionado}
       aoEscolher={(l) => setAberto(l.chave)}
       aoEnviar={(l) => enviar(l.chave)}
+      aoImportar={async (f) => {
+        const r = await importarClippings(f);
+        /* Recarrega a estante: as notas importadas mudam a contagem da ficha e
+         * o recorte "Com nota", e deixar isso para a próxima visita faria a
+         * pessoa duvidar de que a importação funcionou. */
+        await carregarEstante();
+        return r;
+      }}
       aoAbrir={(l) => {
         /* Sem arquivo convertido não há o que abrir. Navegar mesmo assim
          * levaria a um leitor em branco, e o leitor em branco não distingue
