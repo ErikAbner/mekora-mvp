@@ -17,12 +17,12 @@ import "./livro.css";
  * dela, e a única forma de saber é o produto contar.
  */
 
-/* Cada linha só aparece quando há o que dizer. Uma ficha com seis "—" descreve
+/* Cada linha só aparece quando há o que dizer. Uma ficha-arquivo com seis "—" descreve
  * a ausência de informação com a mesma ênfase da informação. */
 function Linha({ rotulo, children }) {
   if (children === null || children === undefined || children === "") return null;
   return (
-    <div className="ficha-linha">
+    <div className="ficha-arquivo-linha">
       <dt>{rotulo}</dt>
       <dd>{children}</dd>
     </div>
@@ -58,7 +58,7 @@ export function Livro() {
     return (
       <div className="mesa">
         <Cabecalho lugar="estante" />
-        <main className="livro"><p className="livro-erro" role="alert">{erro}</p></main>
+        <main className="livro-pagina"><p className="livro-pagina-erro" role="alert">{erro}</p></main>
       </div>
     );
   }
@@ -67,7 +67,7 @@ export function Livro() {
     return (
       <div className="mesa">
         <Cabecalho lugar="estante" />
-        <main className="livro"><p className="livro-nota">Buscando…</p></main>
+        <main className="livro-pagina"><p className="livro-pagina-nota">Buscando…</p></main>
       </div>
     );
   }
@@ -80,32 +80,32 @@ export function Livro() {
     <div className="mesa">
       <Cabecalho lugar="estante" />
 
-      <main className="livro">
-        <Link to="/estante" className="livro-volta">← Estante</Link>
+      <main className="livro-pagina">
+        <Link to="/estante" className="livro-pagina-volta">← Estante</Link>
 
-        <header className="livro-topo">
-          <div className="livro-capa">
+        <header className="livro-pagina-topo">
+          <div className="livro-pagina-capa">
             {capa ? (
               <img src={capa} alt={`Primeira página de ${titulo}`} />
             ) : (
               /* Livro sem capa não vira buraco: a caixa fica, com o título
                  dentro. Uma lacuna parece defeito de carregamento. */
-              <span className="livro-capa-vazia">{titulo}</span>
+              <span className="livro-pagina-capa-vazia">{titulo}</span>
             )}
           </div>
 
-          <div className="livro-identidade">
+          <div className="livro-pagina-identidade">
             <h1>{titulo}</h1>
-            {autor && <p className="livro-autor">{autor}</p>}
+            {autor && <p className="livro-pagina-autor">{autor}</p>}
 
             {onde?.capitulos > 0 && (
-              <p className="livro-onde">
+              <p className="livro-pagina-onde">
                 Você está no capítulo <span className="dado">{onde.capitulo + 1}</span> de{" "}
                 <span className="dado">{onde.capitulos}</span>
               </p>
             )}
 
-            <div className="livro-acoes">
+            <div className="livro-pagina-acoes">
               <Botao
                 tom="primaria"
                 disabled={!livro.leitura_url}
@@ -116,28 +116,28 @@ export function Livro() {
                 {onde?.capitulos > 0 ? "Continuar lendo" : "Começar a ler"}
               </Botao>
               {!livro.leitura_url && (
-                <p className="livro-nota">Ainda em preparo. O texto abre quando a conversão terminar.</p>
+                <p className="livro-pagina-nota">Ainda em preparo. O texto abre quando a conversão terminar.</p>
               )}
             </div>
           </div>
         </header>
 
-        <section className="livro-secao">
+        <section className="livro-pagina-secao">
           <h2>
             O que ficou <span className="dado">{notas.length}</span>
           </h2>
           {!notas.length && (
-            <p className="livro-nota">
+            <p className="livro-pagina-nota">
               Nada marcado neste livro ainda. Selecione um trecho durante a
               leitura para guardar aqui.
             </p>
           )}
-          <ul className="livro-notas">
+          <ul className="livro-pagina-notas">
             {notas.map((n) => (
               <li key={n.id}>
                 <blockquote style={{ background: DESTAQUES[n.cor] }}>{n.trecho}</blockquote>
-                {n.comentario && <p className="livro-comentario">{n.comentario}</p>}
-                <p className="livro-lugar">
+                {n.comentario && <p className="livro-pagina-comentario">{n.comentario}</p>}
+                <p className="livro-pagina-lugar">
                   {/* CAPÍTULO, e não página: a página muda quando a fonte muda,
                       e o número que se guarda é outro. */}
                   Capítulo {(n.capitulo ?? 0) + 1}
@@ -148,12 +148,12 @@ export function Livro() {
           </ul>
         </section>
 
-        <section className="livro-secao">
+        <section className="livro-pagina-secao">
           <h2>Este arquivo</h2>
-          <p className="livro-nota">
+          <p className="livro-pagina-nota">
             O que o Mekora fez com o documento que você enviou.
           </p>
-          <dl className="ficha">
+          <dl className="ficha-arquivo">
             <Linha rotulo="Formato de origem">
               {livro.input_format ? livro.input_format.toUpperCase() : null}
             </Linha>

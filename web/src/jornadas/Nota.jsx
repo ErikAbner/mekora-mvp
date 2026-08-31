@@ -86,7 +86,7 @@ export function Nota() {
     return (
       <div className="mesa">
         <Cabecalho lugar="notas" />
-        <main className="nota-pagina"><p className="nota-erro" role="alert">{erro}</p></main>
+        <main className="nota-pagina"><p className="npag-erro" role="alert">{erro}</p></main>
       </div>
     );
   }
@@ -157,10 +157,10 @@ export function Nota() {
             </div>
           </div>
         ) : (
-          nota.comentario && <p className="nota-escrita">{nota.comentario}</p>
+          nota.comentario && <p className="npag-escrita">{nota.comentario}</p>
         )}
 
-        <div className="nota-acoes">
+        <div className="npag-acoes">
           {nota.livro && (
             <Botao tom="secundaria" onClick={() => navegar(`/leitura/${nota.livro.id}`)}>
               Abrir no livro

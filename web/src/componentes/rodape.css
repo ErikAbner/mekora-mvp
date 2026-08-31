@@ -1,0 +1,66 @@
+/* O rodapé. Inverte a superfície — tinta vira fundo — porque ele fecha a
+   página, e o corte de cor é o que diz "acabou". */
+.rodape {
+  margin-block-start: 64px;
+  padding: 56px 40px 0;
+  background: var(--foreground);
+  color: var(--background);
+  /* `overflow: clip` e não `hidden`: os dois cortam, e só o `hidden` cria um
+     contexto de rolagem — que fazia a marca, maior que o container, empurrar o
+     conteúdo em vez de ser cortada por ele. */
+  overflow: clip;
+  display: flex;
+  flex-direction: column;
+}
+
+.rodape-colunas {
+  inline-size: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 32px;
+  max-inline-size: 1180px;
+  margin: 0 auto 48px;
+}
+
+.rodape h2 {
+  margin: 0 0 16px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 540;
+  /* A tinta secundária do rodapé é o fundo da página misturado à superfície
+     dele — o mesmo degrau que `--muted-foreground` faz do outro lado. */
+  color: color-mix(in srgb, var(--background) 70%, var(--foreground));
+}
+
+.rodape ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+
+.rodape a {
+  color: var(--background);
+  font-size: 16px;
+  line-height: 24px;
+  text-decoration: none;
+}
+
+.rodape a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.rodape a:focus-visible { outline: 2px solid var(--background); outline-offset: 3px; }
+
+/* A marca ocupa a largura e é cortada embaixo, como no desenho.
+   `filter: invert` porque o SVG é preto e o rodapé é escuro no tema claro — e
+   no tema escuro o rodapé é claro e ele volta ao preto. Uma marca que some no
+   próprio rodapé é o pior lugar onde ela pode sumir. */
+.rodape-marca {
+  display: block;
+  /* Largura do container, e a coluna de baixo do flex — assim ela fica ABAIXO
+     das colunas de links e não por cima delas. Antes ela transbordava e cortava
+     o primeiro título. */
+  inline-size: min(100%, 1180px);
+  margin: 0 auto -1.5%;
+  block-size: auto;
+  filter: invert(1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) .rodape-marca { filter: none; }
+}
+
+:root[data-tema="escuro"] .rodape-marca { filter: none; }

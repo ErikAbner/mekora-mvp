@@ -10,12 +10,12 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
+import { Rodape } from "../componentes/Rodape.jsx";
 // Assets do Figma, servidos de `publico/`. Caminho e nao import: o import ES
 // so vale para asset dentro de src/, que o Vite processa e versiona.
 const ilustracaoSoltar = "/icones/ilustracao-soltar-arquivo.svg";
 const ilustracaoLimpa = "/icones/ilustracao-mesa-limpa.svg";
 const iconeEnviar = "/icones/icone-enviar.svg";
-const marca = "/icones/marca-mekora.svg";
 
 import { Icone } from "../componentes/Icone.jsx";
 import { lerFormatos } from "../../../contrato/api.js";
@@ -116,9 +116,7 @@ export function MesaVazia({ aoReceberArquivos, backend }) {
         </div>
       </section>
 
-      <footer className="rodape">
-        <img src={marca} alt="Mekora" className="marca" />
-      </footer>
+      <Rodape />
     </div>
   );
 }

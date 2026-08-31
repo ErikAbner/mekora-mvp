@@ -1,12 +1,12 @@
-.preparo { max-inline-size: 760px; margin: 0 auto; padding: 32px 40px 80px; display: flex; flex-direction: column; gap: 28px; }
+.preparo-pagina { max-inline-size: 760px; margin: 0 auto; padding: 32px 40px 80px; display: flex; flex-direction: column; gap: 28px; }
 
-.preparo-volta { align-self: flex-start; font-size: 16px; line-height: 24px; color: var(--muted-foreground); text-decoration: none; }
-.preparo-volta:hover { color: var(--foreground); }
-.preparo-volta:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+.preparo-pagina-volta { align-self: flex-start; font-size: 16px; line-height: 24px; color: var(--muted-foreground); text-decoration: none; }
+.preparo-pagina-volta:hover { color: var(--foreground); }
+.preparo-pagina-volta:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
 
-.preparo-topo { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
+.preparo-pagina-pagina-topo { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
 
-.preparo-capa {
+.preparo-pagina-capa {
   flex: 0 0 auto;
   inline-size: 120px;
   aspect-ratio: 2 / 3;
@@ -23,11 +23,11 @@
   color: var(--muted-foreground);
 }
 
-.preparo-capa img { inline-size: 100%; block-size: 100%; object-fit: cover; }
+.preparo-pagina-capa img { inline-size: 100%; block-size: 100%; object-fit: cover; }
 
-.preparo h1 { margin: 0 0 12px; font-size: 28px; line-height: 40px; letter-spacing: -0.01em; color: var(--foreground); text-wrap: balance; }
+.preparo-pagina h1 { margin: 0 0 12px; font-size: 28px; line-height: 40px; letter-spacing: -0.01em; color: var(--foreground); text-wrap: balance; }
 
-.preparo-marcas { margin: 0; display: flex; gap: 8px; flex-wrap: wrap; }
+.preparo-pagina-marcas { margin: 0; display: flex; gap: 8px; flex-wrap: wrap; }
 
 /* As marcas do arquivo são PÍLULA: `tag, chip, trilho e interruptor são
    pílula`, e a regra de raio zero governa ação e estrutura. */
@@ -42,7 +42,7 @@
 
 /* O veredito: chão, porque é conteúdo — a resposta à pergunta que trouxe a
    pessoa aqui. */
-.preparo-veredito {
+.preparo-pagina-veredito {
   margin: 0;
   padding: 20px 24px;
   background: var(--card);
@@ -51,24 +51,24 @@
   gap: 6px;
 }
 
-.preparo-veredito strong { font-size: 18px; line-height: 28px; font-weight: 540; color: var(--foreground); }
-.preparo-veredito span { font-size: 14px; line-height: 20px; color: var(--muted-foreground); text-wrap: pretty; }
+.preparo-pagina-veredito strong { font-size: 18px; line-height: 28px; font-weight: 540; color: var(--foreground); }
+.preparo-pagina-veredito span { font-size: 14px; line-height: 20px; color: var(--muted-foreground); text-wrap: pretty; }
 
-.preparo-secao { padding-block-start: 8px; }
-.preparo-secao h2 { margin: 0 0 16px; font-size: 22px; line-height: 28px; color: var(--foreground); }
+.preparo-pagina-secao { padding-block-start: 8px; }
+.preparo-pagina-secao h2 { margin: 0 0 16px; font-size: 22px; line-height: 28px; color: var(--foreground); }
 
-.preparo-lista { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+.preparo-pagina-lista { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
 
-.preparo-lista li { background: var(--background); padding: 16px 20px; }
-.preparo-lista h3 { margin: 0 0 4px; font-size: 16px; line-height: 24px; font-weight: 540; color: var(--foreground); }
-.preparo-lista p { margin: 0; font-size: 14px; line-height: 20px; color: var(--muted-foreground); text-wrap: pretty; }
+.preparo-pagina-lista li { background: var(--background); padding: 16px 20px; }
+.preparo-pagina-lista h3 { margin: 0 0 4px; font-size: 16px; line-height: 24px; font-weight: 540; color: var(--foreground); }
+.preparo-pagina-lista p { margin: 0; font-size: 14px; line-height: 20px; color: var(--muted-foreground); text-wrap: pretty; }
 
-.preparo-ajuste { display: flex; flex-direction: column; gap: 16px; }
-.preparo-ajuste .campo { inline-size: 100%; }
+.preparo-pagina-ajuste { display: flex; flex-direction: column; gap: 16px; }
+.preparo-pagina-ajuste .campo { inline-size: 100%; }
 
-.preparo-nota { margin: 0; max-inline-size: 60ch; font-size: 14px; line-height: 20px; color: var(--muted-foreground); text-wrap: pretty; }
+.preparo-pagina-nota { margin: 0; max-inline-size: 60ch; font-size: 14px; line-height: 20px; color: var(--muted-foreground); text-wrap: pretty; }
 
-.preparo-erro {
+.preparo-pagina-erro {
   margin: 0;
   padding: 16px 0 16px 24px;
   border-inline-start: 1px solid var(--destructive, var(--foreground));
@@ -76,4 +76,4 @@
   line-height: 24px;
 }
 
-.preparo-acoes { display: flex; gap: 12px; flex-wrap: wrap; padding-block-start: 12px; border-block-start: 1px solid var(--border); }
+.preparo-pagina-pagina-acoes { display: flex; gap: 12px; flex-wrap: wrap; padding-block-start: 12px; border-block-start: 1px solid var(--border); }

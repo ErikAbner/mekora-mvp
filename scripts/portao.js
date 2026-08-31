@@ -116,6 +116,24 @@
   for (const el of document.querySelectorAll('body *')) {
     const cs = getComputedStyle(el);
     if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+
+    /* ORNAMENTO NÃO É TEXTO, E A ESCALA GOVERNA TEXTO.
+     *
+     * O portão já não julga filete nem traço decorativo, com a razão escrita: a
+     * WCAG cobra 3,0 de componente de interface, não de separador. `aria-hidden`
+     * é a mesma distinção dita pelo próprio HTML — o elemento declara que não é
+     * conteúdo, e um leitor de tela não o anuncia.
+     *
+     * O caso que trouxe isto: a marca do rodapé, em 230px. Ela é grafismo, e
+     * limitá-la aos 64px da escala descaracterizaria o desenho para satisfazer
+     * uma regra que existe para texto que se lê.
+     *
+     * ISTO NÃO É PORTA DOS FUNDOS. Pôr `aria-hidden` em texto de verdade é um
+     * defeito MAIOR que corpo fora da escala — ele some para quem usa leitor de
+     * tela —, e nenhum instrumento que mede a página consegue distinguir os dois
+     * casos. Quem escrever o atributo está afirmando que aquilo é ornamento.
+     */
+    if (el.closest('[aria-hidden="true"]')) continue;
     const texto = Array.from(el.childNodes)
       .filter((n) => n.nodeType === 3 && n.textContent.trim())
       .map((n) => n.textContent.trim())
@@ -252,7 +270,23 @@
     assets_conferidos: fontes.size,
     tinta_cravada_em_asset: tintaEmAsset,
     texto_sem_acento: unico(semAcento, (x) => x.palavra + x.trecho),
+
+    /* TELA EM BRANCO NÃO PASSA.
+     *
+     * `/estante/37` mediu ZERO nós e o portão respondeu `passou: true` — sem cor
+     * fora do sistema, sem contraste abaixo, sem corpo fora da escala. Todas as
+     * afirmações eram verdadeiras sobre o nada.
+     *
+     * A tela tinha quebrado com `ReferenceError` e o React não montou. É a forma
+     * mais pura do verde por omissão, e a sexta vez que ele aparece hoje.
+     *
+     * Cinco é o piso: até o cabeçalho sozinho tem quatro links e um botão. Menos
+     * que isso não é uma tela — é uma tela que não carregou.
+     */
+    tela_vazia: medidos < 5 ? { nos: medidos, nota: 'a tela não carregou' } : null,
+
     passou:
+      medidos >= 5 &&
       corFora.length === 0 &&
       contraste.length === 0 &&
       corpoFora.length === 0 &&

@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
+import { Rodape } from "../componentes/Rodape.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
 import { Folha } from "../componentes/Folha.jsx";
@@ -287,6 +288,8 @@ export function Canvas({ nos = [], ligacoes = [], notas = [], erro, aoTrazer, ao
           ))}
         </ul>
       </Folha>
+    
+      <Rodape />
     </div>
   );
 }

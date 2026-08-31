@@ -135,9 +135,31 @@
   line-height: 20px;
 }
 
-.nota-origem {
+/* A ORIGEM NÃO É ESMAECIDA POR OPACIDADE.
+ *
+ * Ela era `--foreground` a 65%, e sobre os quatro pastéis do tema escuro isso
+ * dava 2,53 a 2,55 — bem abaixo dos 4,5. Esmaecer funciona sobre um fundo só;
+ * sobre quatro fundos diferentes, cada um chega num contraste próprio, e o pior
+ * deles é o que vale.
+ *
+ * A hierarquia vem do CORPO e do peso: 14px contra os 14px do texto, mas sem o
+ * peso — e principalmente da posição, numa linha própria abaixo. Hierarquia é
+ * distância, não transparência. */
+/* ESCOPADA PELO CANVAS, e não solta.
+ *
+ * `.nota-origem` também é definida em `notas.css`, com `--muted-foreground`. Os
+ * dois arquivos entram no mesmo pacote, e o último a ser carregado vence — a
+ * regra daqui era desfeita pela de lá, sem erro nenhum, e sobre o pastel escuro
+ * o resultado media 2,53.
+ *
+ * Segunda colisão de classe no mesmo dia; a primeira foi `.rodape`, com dois
+ * rodapés. O CSS das jornadas divide um espaço de nomes global, e um nome
+ * genérico em dois arquivos é uma regra apagando a outra em silêncio. */
+.nota-canvas .nota-origem {
   flex: 1 0 100%;
-  color: color-mix(in srgb, var(--foreground) 65%, transparent);
+  color: var(--foreground);
+  font-size: 14px;
+  line-height: 20px;
 }
 
 .nota-abrir, .nota-canvas footer button {

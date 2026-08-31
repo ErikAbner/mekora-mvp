@@ -138,3 +138,28 @@ button, input, textarea, select { border-radius: 0; font: inherit; color: inheri
   --nota-rosa: #a34344;
   --nota-azul: #406f9e;
 }
+
+/* ─── A ARTE NO TEMA ESCURO ───────────────────────────────────────────────────
+ *
+ * As ilustrações são SVG com cor CRAVADA — `#262b09`, um verde muito escuro. O
+ * portão as relata e não as julga, com razão: "arte não é julgada pela paleta do
+ * sistema". Mas relatar não conserta: sobre o fundo escuro elas quase somem.
+ *
+ * `invert` com `hue-rotate` de meia volta: a luminância troca — o traço escuro
+ * clareia — e o matiz volta ao que era, em vez de o verde virar lilás.
+ *
+ * Isso é remendo, e fica dito: o certo é a arte usar `currentColor`, e aí ela
+ * acompanharia o tema sem filtro nenhum. Enquanto os arquivos tiverem cor
+ * cravada, o filtro é o que há.
+ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) .ilustracao-soltar,
+  :root:not([data-tema="claro"]) .ilustracao-limpa {
+    filter: invert(1) hue-rotate(180deg);
+  }
+}
+
+:root[data-tema="escuro"] .ilustracao-soltar,
+:root[data-tema="escuro"] .ilustracao-limpa {
+  filter: invert(1) hue-rotate(180deg);
+}

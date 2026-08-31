@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
+import { Rodape } from "../componentes/Rodape.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
 import { Folha } from "../componentes/Folha.jsx";
@@ -189,6 +190,8 @@ export function Estudos({ estudos = [], notas = [], erro, aoCriar, aoMudar, aoAp
           onChange={(e) => setSobre(e.target.value)}
         />
       </Folha>
+    
+      <Rodape />
     </div>
   );
 }

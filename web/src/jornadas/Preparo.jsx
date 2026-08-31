@@ -6,7 +6,7 @@ import { Campo } from "../componentes/Campo.jsx";
 import { analisar, converter, esperarAnalise } from "../../../contrato/api.js";
 import "./preparo.css";
 
-/* O preparo: o que o Mekora encontrou, e o que vai fazer.
+/* O preparo-pagina: o que o Mekora encontrou, e o que vai fazer.
  *
  * ESTA TELA É O CONTRÁRIO DE "IA MÁGICA".
  *
@@ -134,7 +134,7 @@ export function Preparo() {
     return (
       <div className="mesa">
         <Cabecalho lugar="mesa" />
-        <main className="preparo"><p className="preparo-erro" role="alert">{erro}</p></main>
+        <main className="preparo-pagina"><p className="preparo-pagina-erro" role="alert">{erro}</p></main>
       </div>
     );
   }
@@ -143,8 +143,8 @@ export function Preparo() {
     return (
       <div className="mesa">
         <Cabecalho lugar="mesa" />
-        <main className="preparo">
-          <p className="preparo-nota" role="status">Analisando o arquivo…</p>
+        <main className="preparo-pagina">
+          <p className="preparo-pagina-nota" role="status">Analisando o arquivo…</p>
         </main>
       </div>
     );
@@ -161,16 +161,16 @@ export function Preparo() {
     <div className="mesa">
       <Cabecalho lugar="mesa" />
 
-      <main className="preparo">
-        <Link to="/" className="preparo-volta">← Mesa</Link>
+      <main className="preparo-pagina">
+        <Link to="/" className="preparo-pagina-volta">← Mesa</Link>
 
-        <header className="preparo-topo">
-          <div className="preparo-capa">
+        <header className="preparo-pagina-pagina-topo">
+          <div className="preparo-pagina-capa">
             {capa ? <img src={capa} alt="" /> : <span>{titulo}</span>}
           </div>
           <div>
             <h1>{titulo}</h1>
-            <p className="preparo-marcas">
+            <p className="preparo-pagina-marcas">
               {marcas.map((m) => <span key={m} className="marca-arquivo">{m}</span>)}
             </p>
           </div>
@@ -178,7 +178,7 @@ export function Preparo() {
 
         {/* O VEREDITO PRIMEIRO. Quem abre esta tela quer saber uma coisa: dá
             para seguir? O detalhe vem depois, para quem quiser. */}
-        <p className="preparo-veredito">
+        <p className="preparo-pagina-veredito">
           <strong>Analisado. Nada aqui impede a preparação.</strong>
           <span>
             {job.page_count ? `${job.page_count} páginas, todas abriram. ` : ""}
@@ -186,9 +186,9 @@ export function Preparo() {
           </span>
         </p>
 
-        <section className="preparo-secao">
+        <section className="preparo-pagina-secao">
           <h2>O que encontrei</h2>
-          <ul className="preparo-lista">
+          <ul className="preparo-pagina-lista">
             {achados(job).map((a) => (
               <li key={a.titulo}>
                 <h3>{a.titulo}</h3>
@@ -198,9 +198,9 @@ export function Preparo() {
           </ul>
         </section>
 
-        <section className="preparo-secao">
+        <section className="preparo-pagina-secao">
           <h2>O que vou fazer</h2>
-          <ul className="preparo-lista">
+          <ul className="preparo-pagina-lista">
             {planos(job).map((p) => (
               <li key={p.titulo}>
                 <h3>{p.titulo}</h3>
@@ -210,18 +210,18 @@ export function Preparo() {
           </ul>
         </section>
 
-        <section className="preparo-secao">
+        <section className="preparo-pagina-secao">
           <h2>Como vai aparecer na estante</h2>
           {ajustando ? (
-            <div className="preparo-ajuste">
+            <div className="preparo-pagina-ajuste">
               <Campo rotulo="Título" value={titulo} onChange={(e) => setTitulo(e.target.value)} />
               <Campo rotulo="Autor" value={autor} onChange={(e) => setAutor(e.target.value)} />
-              <p className="preparo-nota">
+              <p className="preparo-pagina-nota">
                 O que você escrever aqui vale mais que o que veio do arquivo.
               </p>
             </div>
           ) : (
-            <ul className="preparo-lista">
+            <ul className="preparo-pagina-lista">
               <li>
                 <h3>Título: {titulo}</h3>
                 <p>{job.detected_title ? "Lido das propriedades do arquivo." : "Vem do nome do arquivo."}</p>
@@ -234,7 +234,7 @@ export function Preparo() {
           )}
         </section>
 
-        <div className="preparo-acoes">
+        <div className="preparo-pagina-pagina-acoes">
           <Botao
             tom="primaria"
             disabled={preparando}

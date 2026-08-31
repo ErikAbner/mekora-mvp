@@ -84,12 +84,8 @@
   text-wrap: pretty;
 }
 
-.rodape {
-  display: flex; justify-content: center;
-  padding: 128px 64px 0;
-  background: var(--foreground);
-}
-.marca { width: 100%; max-width: 1704px; height: auto; display: block; }
+/* A marca migrou para `componentes/Rodape.jsx`: havia dois rodapés, os dois
+   com a classe `.rodape`, e o CSS de um pintava o outro. */
 
 @media (max-width: 1023px) {
   .promessa { min-height: 0; padding: 40px 24px; }
@@ -99,7 +95,6 @@
   .vazio { flex-direction: column; gap: 32px; padding: 40px 24px 80px; }
   .vazio-texto h2 { font-size: 24px; line-height: 32px; }
   .vazio-texto p { font-size: 18px; line-height: 27px; } /* a excecao como RAZAO */
-  .rodape { padding: 64px 24px 0; }
 }
 
 /* A area inteira recebe o arquivo, entao ela precisa dizer quando esta pronta

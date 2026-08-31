@@ -1,6 +1,6 @@
-.livro { max-inline-size: 900px; margin: 0 auto; padding: 32px 40px 80px; display: flex; flex-direction: column; gap: 48px; }
+.livro-pagina { max-inline-size: 900px; margin: 0 auto; padding: 32px 40px 80px; display: flex; flex-direction: column; gap: 48px; }
 
-.livro-volta {
+.livro-pagina-volta {
   align-self: flex-start;
   font-size: 16px;
   line-height: 24px;
@@ -8,12 +8,12 @@
   text-decoration: none;
 }
 
-.livro-volta:hover { color: var(--foreground); }
-.livro-volta:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+.livro-pagina-volta:hover { color: var(--foreground); }
+.livro-pagina-volta:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
 
-.livro-topo { display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap; }
+.livro-pagina-topo { display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap; }
 
-.livro-capa {
+.livro-pagina-capa {
   flex: 0 0 auto;
   inline-size: 180px;
   aspect-ratio: 2 / 3;
@@ -25,9 +25,9 @@
   overflow: hidden;
 }
 
-.livro-capa img { inline-size: 100%; block-size: 100%; object-fit: cover; }
+.livro-pagina-capa img { inline-size: 100%; block-size: 100%; object-fit: cover; }
 
-.livro-capa-vazia {
+.livro-pagina-capa-vazia {
   padding: 16px;
   font-size: 16px;
   line-height: 24px;
@@ -36,19 +36,19 @@
   text-wrap: pretty;
 }
 
-.livro-identidade { flex: 1 1 320px; }
-.livro h1 { margin: 0 0 8px; font-size: 32px; line-height: 40px; letter-spacing: -0.01em; color: var(--foreground); text-wrap: balance; }
-.livro-autor { margin: 0 0 16px; font-size: 18px; line-height: 28px; color: var(--muted-foreground); }
-.livro-onde { margin: 0 0 20px; font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
-.livro-onde .dado { color: var(--foreground); font-variant-numeric: tabular-nums; }
-.livro-acoes { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.livro-pagina-identidade { flex: 1 1 320px; }
+.livro-pagina h1 { margin: 0 0 8px; font-size: 32px; line-height: 40px; letter-spacing: -0.01em; color: var(--foreground); text-wrap: balance; }
+.livro-pagina-autor { margin: 0 0 16px; font-size: 18px; line-height: 28px; color: var(--muted-foreground); }
+.livro-pagina-onde { margin: 0 0 20px; font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
+.livro-pagina-onde .dado { color: var(--foreground); font-variant-numeric: tabular-nums; }
+.livro-pagina-acoes { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
 
-.livro-secao { padding-block-start: 32px; border-block-start: 1px solid var(--border); }
-.livro-secao h2 { margin: 0 0 8px; font-size: 22px; line-height: 28px; color: var(--foreground); }
-.livro-secao h2 .dado { color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
-.livro-nota { margin: 0 0 20px; max-inline-size: 60ch; font-size: 16px; line-height: 24px; color: var(--muted-foreground); text-wrap: pretty; }
+.livro-pagina-secao { padding-block-start: 32px; border-block-start: 1px solid var(--border); }
+.livro-pagina-secao h2 { margin: 0 0 8px; font-size: 22px; line-height: 28px; color: var(--foreground); }
+.livro-pagina-secao h2 .dado { color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+.livro-pagina-nota { margin: 0 0 20px; max-inline-size: 60ch; font-size: 16px; line-height: 24px; color: var(--muted-foreground); text-wrap: pretty; }
 
-.livro-erro {
+.livro-pagina-erro {
   margin: 0;
   padding: 16px 0 16px 24px;
   border-inline-start: 1px solid var(--destructive, var(--foreground));
@@ -56,9 +56,9 @@
   line-height: 24px;
 }
 
-.livro-notas { margin: 20px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 24px; }
+.livro-pagina-notas { margin: 20px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 24px; }
 
-.livro-notas blockquote {
+.livro-pagina-notas blockquote {
   margin: 0;
   padding: 12px 16px;
   color: var(--foreground);
@@ -68,7 +68,7 @@
 }
 
 /* O filete marca a fala sobre a fala; o chão marcou o que foi lido. */
-.livro-comentario {
+.livro-pagina-comentario {
   margin: 12px 0 0;
   padding: 4px 0 4px 20px;
   border-inline-start: 1px solid var(--border);
@@ -78,13 +78,13 @@
   text-wrap: pretty;
 }
 
-.livro-lugar { margin: 10px 0 0; font-size: 14px; line-height: 20px; color: var(--muted-foreground); }
+.livro-pagina-lugar { margin: 10px 0 0; font-size: 14px; line-height: 20px; color: var(--muted-foreground); }
 
-/* A ficha do arquivo: rótulo e valor em duas colunas, com filete entre linhas.
+/* A ficha-arquivo do arquivo: rótulo e valor em duas colunas, com filete entre linhas.
    Grade e não tabela porque não há cabeçalho nem eixo — são pares. */
-.ficha { margin: 20px 0 0; display: flex; flex-direction: column; }
+.ficha-arquivo { margin: 20px 0 0; display: flex; flex-direction: column; }
 
-.ficha-linha {
+.ficha-arquivo-linha {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 2px;
@@ -93,10 +93,10 @@
 }
 
 @media (min-width: 620px) {
-  .ficha-linha { grid-template-columns: 220px minmax(0, 1fr); gap: 24px; }
+  .ficha-arquivo-linha { grid-template-columns: 220px minmax(0, 1fr); gap: 24px; }
 }
 
-.ficha-linha:last-child { border-block-end: 0; }
-.ficha dt { font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
-.ficha dd { margin: 0; font-size: 16px; line-height: 24px; color: var(--foreground); }
-.ficha dd .dado { font-variant-numeric: tabular-nums; }
+.ficha-arquivo-linha:last-child { border-block-end: 0; }
+.ficha-arquivo dt { font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
+.ficha-arquivo dd { margin: 0; font-size: 16px; line-height: 24px; color: var(--foreground); }
+.ficha-arquivo dd .dado { font-variant-numeric: tabular-nums; }

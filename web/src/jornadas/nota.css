@@ -18,7 +18,7 @@
 .nota-de-onde { margin: 0; font-size: 14px; line-height: 20px; color: var(--muted-foreground); }
 
 /* O filete marca a fala sobre a fala. */
-.nota-escrita {
+.npag-escrita {
   margin: 0;
   padding: 8px 0 8px 24px;
   border-inline-start: 1px solid var(--border);
@@ -46,7 +46,7 @@
 .nota-escrever textarea:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
 .nota-escrever-acoes { display: flex; gap: 10px; flex-wrap: wrap; }
 
-.nota-acoes { display: flex; gap: 10px; flex-wrap: wrap; padding-block-end: 8px; }
+.npag-acoes { display: flex; gap: 10px; flex-wrap: wrap; padding-block-end: 8px; }
 
 .nota-secao { padding-block-start: 28px; border-block-start: 1px solid var(--border); }
 .nota-secao h2 { margin: 0 0 8px; font-size: 20px; line-height: 28px; color: var(--foreground); }
@@ -55,7 +55,7 @@
 .nota-aviso { margin: 0 0 16px; max-inline-size: 60ch; font-size: 16px; line-height: 24px; color: var(--muted-foreground); text-wrap: pretty; }
 .nota-aviso a { color: var(--foreground); }
 
-.nota-erro {
+.npag-erro {
   margin: 0;
   padding: 16px 0 16px 24px;
   border-inline-start: 1px solid var(--destructive, var(--foreground));
