@@ -19,6 +19,8 @@ import { AindaNao } from "./jornadas/AindaNao.jsx";
 import { Conta } from "./jornadas/Conta.jsx";
 import { Entrar } from "./jornadas/Entrar.jsx";
 import { Privacidade } from "./jornadas/Privacidade.jsx";
+import { Canvas } from "./jornadas/Canvas.jsx";
+import { usarCanvas } from "./estado/usarCanvas.js";
 import { ContaKindle } from "./jornadas/ContaKindle.jsx";
 import { LUGARES } from "./lugares.js";
 import { useJornada } from "./estado/useJornada.js";
@@ -26,7 +28,7 @@ import { usePessoa } from "./estado/usePessoa.js";
 import { abrirLivro, irParaCapitulo } from "./leitor/abrir.js";
 import { gravarProgresso, lerProgresso } from "../../contrato/api.js";
 import { usarNotas } from "./leitor/usarNotas.js";
-import { analisar, chaveDe, importarClippings } from "../../contrato/api.js";
+import { analisar, chaveDe, importarClippings, lerTodasAsNotas } from "../../contrato/api.js";
 import { EXEMPLO_FILA, EXEMPLO_ESTANTE, EXEMPLO_LEITURA } from "./exemplos.js";
 
 /* O exemplo entra SÓ quando a URL pede — `?exemplo`. Nunca no caminho normal,
@@ -229,6 +231,34 @@ function SoParaQuemEntrou({ acesso, children }) {
   return children;
 }
 
+function PaginaCanvas() {
+  const { nos, ligacoes, erro, trazer, mover, tirar, ligar, desligar } = usarCanvas();
+  const [notas, setNotas] = useState([]);
+
+  /* TODAS as notas, para a folha de "trazer" saber o que existe. O Canvas
+   * mostra só as que estão na superfície; escolher entre as outras exige
+   * conhecê-las. */
+  useEffect(() => {
+    let vivo = true;
+    lerTodasAsNotas().then((n) => vivo && setNotas(n)).catch(() => {});
+    return () => { vivo = false; };
+  }, [nos.length]);
+
+  return (
+    <Canvas
+      nos={nos}
+      ligacoes={ligacoes}
+      notas={notas}
+      erro={erro}
+      aoTrazer={trazer}
+      aoMover={mover}
+      aoTirar={tirar}
+      aoLigar={ligar}
+      aoDesligar={desligar}
+    />
+  );
+}
+
 export function App() {
   const acesso = usePessoa();
   return (
@@ -240,7 +270,8 @@ export function App() {
             e listar tudo seria mostrar a estante de todo mundo. */}
         <Route path="/estante" element={<SoParaQuemEntrou acesso={acesso}><PaginaEstante /></SoParaQuemEntrou>} />
         <Route path="/leitura/:id" element={<PaginaLeitura />} />
-        {LUGARES.filter((l) => !l.pronto).map((l) => (
+        <Route path="/canvas" element={<SoParaQuemEntrou acesso={acesso}><PaginaCanvas /></SoParaQuemEntrou>} />
+        {LUGARES.filter((l) => !l.pronto && l.rota !== "/canvas").map((l) => (
           <Route key={l.id} path={l.rota} element={<AindaNao lugar={l} />} />
         ))}
         {/* Conta tem quatro páginas; só Preferências existe. As outras usam a

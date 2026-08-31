@@ -43,9 +43,25 @@ export default defineConfig({
      * backend — que respondia com o frontend legado. E so acontecia aqui: a
      * borda de producao ja separava as duas formas, entao a tela abria no
      * servidor e nao abria na maquina de quem a escreveu. */
-    proxy: Object.fromEntries([
-      ...COM_SUBCAMINHO.map((r) => [`^${r}/`, alvo()]),
-      ...EXATAS.map((r) => [`^${r}$`, alvo()]),
-    ]),
+    /* UM PADRAO POR CAMINHO, e nao um por lista.
+     *
+     * `/notas` responde no caminho exato (GET, todas as notas) e abaixo dele
+     * (POST /notas/importar) — entao aparecia nas DUAS listas, e virava duas
+     * entradas de proxy para o mesmo caminho. O Vite servia o SPA para
+     * `/notas`, sempre: o codigo recebia `<!doctype html>` onde esperava JSON.
+     *
+     * `/eu`, que so existe como exata, funcionava. Foi a comparacao entre os
+     * dois que mostrou o padrao.
+     *
+     * Agora cada caminho vira um padrao so: `$` quando ele e apenas exato, `/`
+     * quando so tem sub-caminho, e `($|/)` quando e as duas coisas. */
+    proxy: Object.fromEntries(
+      [...new Set([...COM_SUBCAMINHO, ...EXATAS])].map((r) => {
+        const exata = EXATAS.includes(r);
+        const abaixo = COM_SUBCAMINHO.includes(r);
+        const forma = exata && abaixo ? "($|/)" : exata ? "$" : "/";
+        return [`^${r}${forma}`, alvo()];
+      }),
+    ),
   },
 });

@@ -23,6 +23,7 @@ export const COM_SUBCAMINHO = [
   "/aparelhos",
   "/app-config",
   "/batch",
+  "/canvas",
   "/config",
   "/entrar",
   "/jobs",

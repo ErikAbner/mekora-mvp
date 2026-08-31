@@ -334,6 +334,50 @@ export function apagarNota(jobId, notaId) {
  * ninguem confere.
  */
 
+/* ─── O Canvas ──────────────────────────────────────────────────────────────
+ *
+ * "Canvas organiza. Conexoes descobre." (DEC-0030). As entidades sao as MESMAS
+ * do resto do Mekora: o Canvas nao cria "nota de Canvas" nem relacao propria.
+ */
+
+export function lerCanvas() {
+  return pede("/canvas/superficie");
+}
+
+/** Traz uma nota que ja existe (nota_id) ou cria uma solta (texto). */
+export function porNoCanvas(o) {
+  return pede("/canvas/nos", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(o),
+  });
+}
+
+export function moverNoCanvas(id, x, y) {
+  return pede(`/canvas/nos/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ x, y }),
+  });
+}
+
+/** Tira da superficie SEM apagar a nota — o item 5 do contrato. */
+export function tirarDoCanvas(id) {
+  return pede(`/canvas/nos/${id}`, { method: "DELETE" });
+}
+
+export function ligarNotas(de_id, para_id) {
+  return pede("/canvas/ligacoes", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ de_id, para_id }),
+  });
+}
+
+export function desligarNotas(id) {
+  return pede(`/canvas/ligacoes/${id}`, { method: "DELETE" });
+}
+
 export function lerPrivacidade() {
   return pede("/privacidade");
 }

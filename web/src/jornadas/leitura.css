@@ -263,9 +263,10 @@
 .caderno blockquote {
   margin: 0 0 12px;
   padding: 8px 12px;
-  /* A tinta é sempre a escura: os quatro pastéis foram medidos para carregar
-     #151515 com folga, de 7,37 a 17,15. */
-  color: #151515;
+  /* A TINTA SEGUE O TEMA. A medida "os pastéis carregam #151515 de 7,37 a
+     17,15" é do conjunto CLARO; no escuro eles são outros e escuros, e a tinta
+     escura sobre eles cai para 3,4 — abaixo dos 4,5 de AA. */
+  color: var(--foreground);
   font-size: 14px;
   line-height: 20px;
   text-wrap: pretty;

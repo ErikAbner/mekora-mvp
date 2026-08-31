@@ -35,6 +35,7 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.models.aparelho import Aparelho
+from app.models.canvas import Ligacao, NoCanvas
 from app.models.nota import Nota
 from app.models.pessoa import Chave, Pessoa, Sessao
 from app.models.preferencia import Preferencia
@@ -62,6 +63,8 @@ O_QUE_GUARDAMOS = [
     ("leituras", Progresso, "Onde você parou em cada livro."),
     ("aparelhos", Aparelho, "Os endereços de Kindle que você ligou à conta."),
     ("preferencias", Preferencia, "As escolhas que você fez em Preferências."),
+    ("no_canvas", NoCanvas, "As notas que você pôs no Canvas, e onde cada uma está."),
+    ("ligacoes", Ligacao, "As ligações que você fez entre notas."),
     ("sessoes", Sessao, "Os navegadores em que você entrou."),
     ("links", Chave, "Links de entrada pedidos e ainda não vencidos. Guardados como resumo, nunca em texto."),
 ]
@@ -142,6 +145,14 @@ def levar(
         "aparelhos": [
             {"nome": a.nome, "endereco": a.endereco, "principal": a.principal}
             for a in db.query(Aparelho).filter(Aparelho.pessoa_id == pessoa.id).all()
+        ],
+        "canvas": [
+            {"nota": n.nota_id, "x": n.x, "y": n.y}
+            for n in db.query(NoCanvas).filter(NoCanvas.pessoa_id == pessoa.id).all()
+        ],
+        "ligacoes": [
+            {"de": l.de_id, "para": l.para_id, "como": l.como}
+            for l in db.query(Ligacao).filter(Ligacao.pessoa_id == pessoa.id).all()
         ],
         "preferencias": {
             p.chave: p.valor

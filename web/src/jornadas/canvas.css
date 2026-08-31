@@ -1,0 +1,203 @@
+/* O Canvas. Superfície de organização deliberada: nada se move sozinho. */
+.canvas {
+  padding: 32px 40px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.canvas-topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.canvas h1 {
+  margin: 0 0 6px;
+  font-size: 32px;
+  line-height: 40px;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+
+.canvas-sobre {
+  margin: 0;
+  max-inline-size: 46ch;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+.canvas-acoes { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.canvas-instrucao,
+.canvas-erro {
+  margin: 0;
+  padding: 12px 0 12px 20px;
+  border-inline-start: 1px solid var(--foreground);
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--muted-foreground);
+}
+
+.canvas-erro { border-inline-start-color: var(--destructive, var(--foreground)); }
+
+/* O CHÃO. Altura fixa e rolagem própria: a superfície é maior que a janela por
+   natureza, e deixar a página inteira rolar misturaria mover uma nota com rolar
+   a tela. */
+.canvas-chao {
+  position: relative;
+  min-block-size: 560px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  background: var(--card, var(--background));
+}
+
+.canvas-vazio {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 40%;
+  margin: 0 auto;
+  max-inline-size: 44ch;
+  padding: 0 24px;
+  text-align: center;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+/* Os traços cobrem a superfície inteira e ficam ATRÁS das notas. */
+.canvas-tracos {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: none;
+}
+
+.traco { stroke: var(--foreground); stroke-width: 1; opacity: 0.45; }
+
+/* A NOTA. Largura fixa de 220 para o traço saber onde é o centro dela — o SVG
+   soma 110 e 50 para chegar ao meio. */
+.nota-canvas {
+  position: absolute;
+  inline-size: 220px;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--foreground) 25%, transparent);
+  /* A TINTA SEGUE O TEMA, e não é cravada.
+     Eu tinha escrito `#151515` citando a medida "os pastéis carregam #151515 de
+     7,37 a 17,15" — e essa medida é do conjunto CLARO. No tema escuro os
+     pastéis são outros (#746c2f, #406f9e), escuros, e a tinta escura sobre eles
+     media 3,42 e 3,47 a 14px: abaixo dos 4,5 que AA pede.
+
+     `--foreground` acompanha: escuro sobre pastel claro, claro sobre pastel
+     escuro. Citar uma medida verdadeira para o caso que ela não governa é o
+     mesmo engano que já custou uma rodada com o raio dos chips. */
+  color: var(--foreground);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.nota-canvas.movendo { cursor: grabbing; box-shadow: 0 6px 20px rgb(0 0 0 / 18%); }
+/* A escolhida para ligar ganha ESPESSURA, não cor: sobre quatro fundos pastéis
+   diferentes, mudar a cor da borda não se vê igual em todos. */
+.nota-canvas.escolhida { border-width: 3px; border-color: var(--foreground); }
+.nota-canvas:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+
+.nota-texto {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  text-wrap: pretty;
+}
+
+.nota-comentario {
+  margin: 8px 0 0;
+  padding-block-start: 8px;
+  border-block-start: 1px solid color-mix(in srgb, var(--foreground) 20%, transparent);
+  font-size: 14px;
+  line-height: 20px;
+  font-style: italic;
+}
+
+.nota-canvas footer {
+  margin-block-start: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.nota-origem {
+  flex: 1 0 100%;
+  color: color-mix(in srgb, var(--foreground) 65%, transparent);
+}
+
+.nota-abrir, .nota-canvas footer button {
+  padding: 2px 8px;
+  border: 1px solid color-mix(in srgb, var(--foreground) 30%, transparent);
+  background: transparent;
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.nota-abrir:hover, .nota-canvas footer button:hover { border-color: var(--foreground); }
+
+/* A lista de ligações, fora da superfície: desfazer um traço clicando nele
+   exigiria acertar uma linha de um pixel. */
+.canvas-ligacoes { padding-block-start: 20px; border-block-start: 1px solid var(--border); }
+.canvas-ligacoes h2 { margin: 0 0 12px; font-size: 20px; line-height: 28px; color: var(--foreground); }
+.canvas-ligacoes ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+
+.canvas-ligacoes li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--muted-foreground);
+}
+
+.canvas-ligacoes button {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.trazer-lista { margin: 16px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+
+.trazer-lista button {
+  inline-size: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--foreground);
+  font-family: inherit;
+  text-align: start;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  gap: 4px 10px;
+}
+
+.trazer-lista button:hover { border-color: var(--foreground); }
+.trazer-lista button:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+.trazer-marca { grid-row: span 2; inline-size: 14px; block-size: 14px; margin-block-start: 3px; }
+.trazer-texto { font-size: 14px; line-height: 20px; }
+.trazer-origem { font-size: 14px; line-height: 20px; color: var(--muted-foreground); }

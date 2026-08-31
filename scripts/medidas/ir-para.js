@@ -1,14 +1,74 @@
-/* Entra e navega até a tela em MEKORA_TELA antes de medir.
+/* Entra, SEMEIA o que a tela mostra, navega até ela e espera o conteúdo.
  *
- * O portão mede num Chrome sem sessão, e as telas de conta e estante são
- * protegidas: sem isto ele mede `/entrar` e dá verde para uma tela que nem
- * abriu. Genérico porque cada tela protegida não precisa do próprio arquivo.
+ * O DEFEITO QUE ISTO CONSERTA, E ELE ERA DO MÉTODO
+ * ================================================
+ * O portão precisa de sessão para alcançar tela protegida, e o link do e-mail
+ * serve uma vez — então cada medida pedia um link para uma pessoa NOVA. E
+ * pessoa nova tem estante vazia, Canvas vazio, nenhuma nota.
+ *
+ * Resultado: as telas com conteúdo vinham sendo medidas VAZIAS, e passavam. O
+ * Canvas deu verde com contraste 3,42 — abaixo dos 4,5 de AA — porque não havia
+ * nota nenhuma na tela quando o portão olhou. Ele mediu 19 nós; a tela cheia
+ * tem 32.
+ *
+ * Verde por omissão pela quarta vez neste repositório, e desta vez no
+ * instrumento: o portão respondeu com honestidade sobre o que viu, e o que ele
+ * viu era metade da tela.
+ *
+ * A saída é o setup CRIAR o que vai ser medido, pela API, com a sessão que
+ * acabou de abrir. Assim a medida não depende do estado do banco nem de qual
+ * pessoa entrou.
  */
 (async () => {
-  await new Promise((r) => setTimeout(r, 2500));
   const tela = window.__MEKORA_TELA__ || "/conta/privacidade";
+  await new Promise((r) => setTimeout(r, 1200));
+
+  const post = (u, corpo) =>
+    fetch(u, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(corpo),
+    }).then((r) => (r.ok ? r.json() : null));
+
+  /* As quatro cores, para o portão ver os quatro pastéis: medir só o amarelo
+   * deixaria os outros três passarem sem serem olhados. */
+  const CORES = ["amarelo", "verde", "rosa", "azul"];
+  const notas = [];
+  for (let i = 0; i < CORES.length; i++) {
+    const n = await post("/canvas/nos", {
+      texto: `Nota de medida ${i + 1}, com texto suficiente para o portão ter o que ler.`,
+      cor: CORES[i],
+      x: 40 + i * 240,
+      y: 40 + (i % 2) * 160,
+    });
+    if (n) notas.push(n);
+  }
+  if (notas.length >= 2) {
+    await post("/canvas/ligacoes", { de_id: notas[0].nota_id, para_id: notas[1].nota_id });
+  }
+
+  /* Um aparelho e um livro, para as telas de conta e estante não ficarem vazias
+   * quando forem o alvo. Falha em silêncio se já existirem. */
+  await post("/aparelhos", { endereco: "medida@kindle.com", nome: "Medida" });
+
   history.pushState({}, "", tela);
   window.dispatchEvent(new PopStateEvent("popstate"));
-  await new Promise((r) => setTimeout(r, 3000));
-  return { onde: location.pathname };
+
+  /* Espera por CONTEÚDO, e não por relógio: o número de elementos com texto
+   * para de crescer, e só aí a medida acontece. */
+  const conta = () =>
+    [...document.querySelectorAll("body *")].filter((el) =>
+      [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()),
+    ).length;
+
+  let anterior = -1;
+  let estavel = 0;
+  for (let i = 0; i < 40 && estavel < 3; i++) {
+    await new Promise((r) => setTimeout(r, 250));
+    const agora = conta();
+    estavel = agora === anterior ? estavel + 1 : 0;
+    anterior = agora;
+  }
+
+  return { onde: location.pathname, nos_com_texto: anterior, semeadas: notas.length };
 })()

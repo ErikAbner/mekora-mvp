@@ -23,6 +23,7 @@ from app.db.database import DATABASE_URL, Base  # noqa: E402
 from app.models.pessoa import Chave, Pessoa, Sessao  # noqa: E402,F401
 from app.models.processing_job import ProcessingJob  # noqa: E402,F401
 from app.models.aparelho import Aparelho  # noqa: E402,F401
+from app.models.canvas import Ligacao, NoCanvas  # noqa: E402,F401
 from app.models.nota import Nota  # noqa: E402,F401
 from app.models.preferencia import Preferencia  # noqa: E402,F401
 from app.models.progresso import Progresso  # noqa: E402,F401
