@@ -266,8 +266,8 @@
   /* A tinta é sempre a escura: os quatro pastéis foram medidos para carregar
      #151515 com folga, de 7,37 a 17,15. */
   color: #151515;
-  font-size: 15px;
-  line-height: 22px;
+  font-size: 14px;
+  line-height: 20px;
   text-wrap: pretty;
 }
 
@@ -279,8 +279,8 @@
   background: transparent;
   color: var(--foreground);
   font-family: inherit;
-  font-size: 15px;
-  line-height: 22px;
+  font-size: 14px;
+  line-height: 20px;
   resize: vertical;
 }
 
@@ -300,6 +300,6 @@
   background: var(--card, var(--background));
   border: 1px solid var(--destructive, var(--foreground));
   color: var(--foreground);
-  font-size: 15px;
-  line-height: 22px;
+  font-size: 14px;
+  line-height: 20px;
 }

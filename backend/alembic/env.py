@@ -22,6 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from app.db.database import DATABASE_URL, Base  # noqa: E402
 from app.models.pessoa import Chave, Pessoa, Sessao  # noqa: E402,F401
 from app.models.processing_job import ProcessingJob  # noqa: E402,F401
+from app.models.aparelho import Aparelho  # noqa: E402,F401
 from app.models.nota import Nota  # noqa: E402,F401
 from app.models.progresso import Progresso  # noqa: E402,F401
 from app.models.stage_metric import StageMetric  # noqa: E402,F401

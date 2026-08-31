@@ -295,3 +295,35 @@ export function editarNota(jobId, notaId, troca) {
 export function apagarNota(jobId, notaId) {
   return pede(`/jobs/${jobId}/notas/${notaId}`, { method: "DELETE" });
 }
+
+/* ─── Os Kindles da pessoa ──────────────────────────────────────────────────
+ *
+ * O destino de um envio era `KINDLE_EMAIL`, uma variável do servidor — portanto
+ * UM endereço para a instalação inteira. Na máquina de quem desenvolve isso
+ * funciona, porque a instalação e a pessoa são a mesma; servido na internet,
+ * todo envio de todo mundo iria para o mesmo aparelho.
+ */
+
+export function lerAparelhos() {
+  return pede("/aparelhos");
+}
+
+export function ligarAparelho({ endereco, nome = "" }) {
+  return pede("/aparelhos", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ endereco, nome }),
+  });
+}
+
+export function mudarAparelho(id, troca) {
+  return pede(`/aparelhos/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(troca),
+  });
+}
+
+export function desligarAparelho(id) {
+  return pede(`/aparelhos/${id}`, { method: "DELETE" });
+}

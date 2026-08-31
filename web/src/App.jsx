@@ -41,12 +41,6 @@ function comoChamar(pessoa) {
 
 /* Aparelhos de exemplo, com os nomes do desenho. Enquanto o backend não os
  * serve, eles ficam aqui e não dentro da tela. */
-const APARELHOS = [
-  { id: "paperwhite", nome: "Kindle de Erik", detalhe: "Paperwhite · 1236 × 1680",
-    endereco: "erik@kindle.com", ultimoEnvio: "hoje, 09:12", principal: true },
-  { id: "scribe", nome: "Scribe do escritório", detalhe: "erik_scribe@kindle.com",
-    endereco: "erik_scribe@kindle.com", ultimoEnvio: "6 de agosto", principal: false },
-];
 
 function usaExemplo() {
   return new URLSearchParams(location.search).has("exemplo");
@@ -223,8 +217,8 @@ export function App() {
         {/* Conta tem quatro páginas; só Preferências existe. As outras usam a
             mesma tela de "ainda não", que nomeia o lugar em vez de dar 404. */}
         <Route path="/conta/preferencias" element={<SoParaQuemEntrou acesso={acesso}><Conta pessoa={comoChamar(acesso.pessoa)} aoSair={acesso.sair} /></SoParaQuemEntrou>} />
-        <Route path="/conta" element={<SoParaQuemEntrou acesso={acesso}><ContaKindle pessoa={comoChamar(acesso.pessoa)} aparelhos={APARELHOS} aoSair={acesso.sair} /></SoParaQuemEntrou>} />
-        <Route path="/conta/kindle" element={<SoParaQuemEntrou acesso={acesso}><ContaKindle pessoa={comoChamar(acesso.pessoa)} aparelhos={APARELHOS} aoSair={acesso.sair} /></SoParaQuemEntrou>} />
+        <Route path="/conta" element={<SoParaQuemEntrou acesso={acesso}><ContaKindle pessoa={comoChamar(acesso.pessoa)} aoSair={acesso.sair} /></SoParaQuemEntrou>} />
+        <Route path="/conta/kindle" element={<SoParaQuemEntrou acesso={acesso}><ContaKindle pessoa={comoChamar(acesso.pessoa)} aoSair={acesso.sair} /></SoParaQuemEntrou>} />
         <Route path="/conta/privacidade" element={<AindaNao lugar={{ rotulo: "Privacidade", oQueE: "O que fica guardado, onde, e por quanto tempo." }} />} />
         <Route path="*" element={<NaoEncontrada />} />
       </Routes>

@@ -153,3 +153,24 @@ def validate_limits(current: Optional[Limits] = None) -> Limits:
             "Limites de processamento inválidos: " + "; ".join(bad)
         )
     return L
+
+# ─── A proteção do Pillow, aplicada onde ela pertence ─────────────────────────
+#
+# `MAX_IMAGE_PIXELS` é a defesa do Pillow contra "bomba de descompressão": uma
+# imagem pequena no disco que vira gigabytes na memória ao ser aberta.
+#
+# Ela vinha sendo ajustada dentro de `comic_translation_service`, no nível do
+# módulo — o que significa que o limite só valia SE alguém importasse quadrinhos.
+# Abrir uma imagem por qualquer outro caminho — OCR de PDF, capa, miniatura —
+# usava o padrão do Pillow, e o limite central não protegia nada ali.
+#
+# Aqui ele vale a partir do momento em que os limites são lidos, e eles são
+# lidos por todo mundo. O teste que cobre isso estava vermelho havia tempo, e
+# teste vermelho permanente é pior que teste nenhum: quem lê a saída uma vez
+# para de ler.
+try:
+    from PIL import Image as _PILImage
+
+    _PILImage.MAX_IMAGE_PIXELS = limits.image_max_pixels
+except ImportError:  # pragma: no cover — Pillow é dependência, mas o módulo não depende dele
+    pass

@@ -10,6 +10,7 @@
  * muda é um rótulo decorativo.
  */
 import { useState } from "react";
+import { usarAparelhos } from "../estado/usarAparelhos.js";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { TrilhaConta } from "../componentes/TrilhaConta.jsx";
 import { Botao } from "../componentes/Botao.jsx";
@@ -17,25 +18,35 @@ import { Campo } from "../componentes/Campo.jsx";
 import { Folha } from "../componentes/Folha.jsx";
 import "./conta-kindle.css";
 
-export function ContaKindle({ pessoa, aparelhos: iniciais = [] , aoSair }) {
-  const [aparelhos, setAparelhos] = useState(iniciais);
+export function ContaKindle({ pessoa, aoSair }) {
+  /* OS APARELHOS VÊM DO SERVIDOR agora.
+   *
+   * Eles viviam em `useState`, semeados por uma lista escrita à mão em
+   * `App.jsx` — dois Kindles de mentira que sumiam ao recarregar a página. A
+   * tela parecia inteira e não guardava nada, e o envio ia para o
+   * `KINDLE_EMAIL` do servidor de qualquer jeito. */
+  const { aparelhos, erro: erroDoServidor, carregando, ligar, mudar, desligar } = usarAparelhos();
+
   const [conectando, setConectando] = useState(false);
   const [endereco, setEndereco] = useState("");
   const [erro, setErro] = useState(null);
 
-  const conectar = () => {
+  const conectar = async () => {
     /* A validação diz o que fazer, não que está inválido. O endereço do Kindle
-     * tem forma conhecida, e apontar a forma é o que resolve. */
+     * tem forma conhecida, e apontar a forma é o que resolve.
+     *
+     * Ela existe aqui E no servidor: aqui para responder na hora, lá porque
+     * validação que só vive na tela não é validação — é sugestão. */
     if (!/@kindle\.com$/i.test(endereco.trim())) {
       setErro("O endereço precisa terminar em @kindle.com. Ele aparece em Configurações › Sua conta, no próprio aparelho.");
       return;
     }
-    setAparelhos((a) => [...a, { id: endereco, nome: endereco.split("@")[0], endereco, principal: a.length === 0 }]);
-    setEndereco(""); setErro(null); setConectando(false);
+    if (await ligar(endereco.trim())) {
+      setEndereco(""); setErro(null); setConectando(false);
+    }
   };
 
-  const tornarPrincipal = (id) =>
-    setAparelhos((a) => a.map((x) => ({ ...x, principal: x.id === id })));
+  const tornarPrincipal = (id) => mudar(id, { principal: true });
 
   return (
     <div className="mesa">
@@ -46,6 +57,39 @@ export function ContaKindle({ pessoa, aparelhos: iniciais = [] , aoSair }) {
         <main className="conta-painel">
           <section className="conta-secao">
             <h2>Dispositivos Kindle</h2>
+            {/* A CONDIÇÃO QUE O PRODUTO NÃO CONTROLA, dita antes de qualquer
+                aparelho aparecer. A Amazon só aceita um documento vindo de um
+                endereço que a própria pessoa cadastrou na lista de remetentes
+                aprovados dela — e o Mekora não tem como fazer isso por ninguém.
+
+                Sem esta explicação, o primeiro envio falha com uma mensagem da
+                Amazon que não menciona o Mekora, e não há como ligar uma coisa
+                à outra. */}
+            <div className="conta-condicao">
+              <h3>Antes do primeiro envio</h3>
+              <p>
+                A Amazon só entrega documentos enviados de um endereço que você
+                autorizou. Entre em <strong>amazon.com.br › Conteúdo e dispositivos ›
+                Preferências › Configurações de documentos</strong> e adicione o
+                endereço de quem envia à lista de e-mails aprovados.
+              </p>
+              <p className="conta-nota">
+                Sem isso o Mekora envia, a Amazon recusa em silêncio, e o arquivo
+                não aparece no aparelho.
+              </p>
+            </div>
+
+            {erroDoServidor && <p className="conta-erro" role="alert">{erroDoServidor}</p>}
+
+            {carregando && <p className="conta-nota">Carregando seus aparelhos…</p>}
+
+            {!carregando && !aparelhos.length && (
+              <p className="conta-nota">
+                Nenhum Kindle ligado ainda. Sem um aparelho, o botão de enviar
+                não tem para onde apontar.
+              </p>
+            )}
+
             <div className="aparelhos">
               {aparelhos.map((ap) => (
                 <article key={ap.id} className={`aparelho${ap.principal ? " principal" : ""}`}>
@@ -61,7 +105,14 @@ export function ContaKindle({ pessoa, aparelhos: iniciais = [] , aoSair }) {
                         Tornar principal
                       </Botao>
                     )}
-                    <Botao tom="secundaria">Editar</Botao>
+                    {/* `secundaria`, e não `perigo`: desligar um aparelho é
+                        reversível — basta ligar de novo, e nenhum arquivo se
+                        perde. Alarme para ação reversível gasta o alarme que a
+                        exclusão de conta vai precisar. É a mesma regra que vale
+                        para o botão de sair. */}
+                    <Botao tom="secundaria" onClick={() => desligar(ap.id)}>
+                      Desligar
+                    </Botao>
                   </div>
                 </article>
               ))}

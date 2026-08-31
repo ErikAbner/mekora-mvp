@@ -90,6 +90,35 @@ def _sem_buracos(data: dict) -> dict:
     return data
 
 
+def _destino_de(db: Session, job: ProcessingJob) -> str | None:
+    """Para qual Kindle este trabalho vai.
+
+    O aparelho PRINCIPAL de quem é dono. Sem dono — trabalho anônimo, que a
+    DEC-0018 permite — ou sem aparelho ligado, devolve `None`, e o envio cai no
+    `KINDLE_EMAIL` do `.env`. Isso mantém a instalação de uma pessoa só
+    funcionando como sempre funcionou, sem cadastrar nada.
+
+    Também marca o último envio no aparelho: é o que permite a tela dizer
+    "último envio ontem" sem que alguém mantenha esse campo à mão — e campo de
+    estado mantido à mão é a primeira coisa que fica desatualizada.
+    """
+    from app.models.aparelho import Aparelho
+
+    if not job.dono_id:
+        return None
+    a = (
+        db.query(Aparelho)
+        .filter(Aparelho.pessoa_id == job.dono_id, Aparelho.principal.is_(True))
+        .first()
+    )
+    if a is None:
+        return None
+    from app.models.pessoa import agora as _agora
+
+    a.ultimo_envio = _agora()
+    return a.endereco
+
+
 def _leitura_url(record: ProcessingJob) -> str | None:
     """O endereço para ABRIR o livro, montado aqui e não na tela.
 
@@ -1342,7 +1371,7 @@ def send_job(job_id: int, db: Session = Depends(get_db)) -> dict:
     send_pending_detail: str | None = None
 
     try:
-        send_epub_to_kindle(path_to_send, job.final_title or "")
+        send_epub_to_kindle(path_to_send, job.final_title or "", destino=_destino_de(db, job))
         job.send_status = "sent"
         job.kindle_sent = True
         job.status = "done"
@@ -1514,7 +1543,7 @@ def retry_pending_send(job_id: int, db: Session = Depends(get_db)) -> dict:
     send_pending_detail: str | None = None
 
     try:
-        send_epub_to_kindle(path_to_send, job.final_title or "")
+        send_epub_to_kindle(path_to_send, job.final_title or "", destino=_destino_de(db, job))
         job.send_status = "sent"
         job.kindle_sent = True
         job.status = "done"

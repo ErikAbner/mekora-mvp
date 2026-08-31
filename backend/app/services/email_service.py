@@ -52,13 +52,24 @@ def is_smtp_reachable(timeout: float = 3.0) -> bool:
         return False
 
 
-def send_epub_to_kindle(epub_path: Path, title: str) -> None:
+def send_epub_to_kindle(epub_path: Path, title: str, destino: str | None = None) -> None:
     """
-    Envia *epub_path* ao endereço configurado em KINDLE_EMAIL via SMTP + STARTTLS.
+    Envia *epub_path* a um endereço de Kindle via SMTP + STARTTLS.
+
+    O DESTINO VEM DE QUEM CHAMA, e `KINDLE_EMAIL` é só o que sobra quando
+    ninguém disse. Era o contrário: o endereço vinha sempre do `.env`, portanto
+    UM para a instalação inteira. Na máquina de quem desenvolve isso funciona,
+    porque a instalação e a pessoa são a mesma; servido na internet, todo envio
+    de todo mundo iria para o mesmo aparelho.
+
+    O padrão continua existindo porque a instalação de uma pessoa só — que é
+    como o Mekora nasceu e como ele roda hoje — não deveria precisar cadastrar
+    aparelho para funcionar como funcionava.
 
     Args:
         epub_path: Caminho local do arquivo EPUB a enviar.
         title:     Título do livro (não usado no subject — Amazon processa pelo MIME).
+        destino:   Endereço @kindle.com. Sem ele, cai no KINDLE_EMAIL do .env.
 
     Raises:
         SendFailedError: Se a configuração estiver incompleta, o arquivo for muito
@@ -67,13 +78,15 @@ def send_epub_to_kindle(epub_path: Path, title: str) -> None:
     # Importação local para evitar circular import durante testes de módulo
     from app.core.config import settings
 
+    para = (destino or settings.kindle_email or "").strip()
+
     # --- Validar configuração SMTP ---
     missing = [
         k for k, v in {
             "SMTP_HOST": settings.smtp_host,
             "SMTP_USER": settings.smtp_user,
             "SMTP_PASS": settings.smtp_pass,
-            "KINDLE_EMAIL": settings.kindle_email,
+            "KINDLE_EMAIL": para,
         }.items()
         if not v
     ]
@@ -93,7 +106,7 @@ def send_epub_to_kindle(epub_path: Path, title: str) -> None:
     # --- Montar mensagem ---
     msg = EmailMessage()
     msg["From"] = settings.smtp_user
-    msg["To"] = settings.kindle_email
+    msg["To"] = para
     msg["Subject"] = ""  # Subject vazio: Amazon identifica o livro pelo nome do anexo
     msg.add_attachment(
         epub_path.read_bytes(),

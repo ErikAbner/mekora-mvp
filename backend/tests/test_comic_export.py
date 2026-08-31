@@ -513,7 +513,7 @@ def test_send_comic_quick_path_allowed(client, test_engine, tmp_storage, monkeyp
     monkeypatch.setattr(jobs_mod, "is_smtp_reachable", lambda: True)
     monkeypatch.setattr(
         jobs_mod, "send_epub_to_kindle",
-        lambda path, title: sent.update(path=str(path)),
+        lambda path, title, destino=None: sent.update(path=str(path), destino=destino),
     )
     r = client.post(f"/jobs/{job_id}/send")
     assert r.status_code == 200
@@ -547,7 +547,7 @@ def test_send_translated_comic_uses_export_epub(client, test_engine, tmp_storage
     monkeypatch.setattr(jobs_mod, "is_smtp_reachable", lambda: True)
     monkeypatch.setattr(
         jobs_mod, "send_epub_to_kindle",
-        lambda path, title: sent.update(path=str(path)),
+        lambda path, title, destino=None: sent.update(path=str(path), destino=destino),
     )
     r = client.post(f"/jobs/{job_id}/send")
     assert r.status_code == 200

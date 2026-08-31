@@ -20,6 +20,7 @@
  */
 export const COM_SUBCAMINHO = [
   "/analyze",
+  "/aparelhos",
   "/app-config",
   "/batch",
   "/config",
@@ -34,6 +35,7 @@ export const COM_SUBCAMINHO = [
 ];
 
 export const EXATAS = [
+  "/aparelhos",
   "/app-config",
   "/config",
   "/eu",
