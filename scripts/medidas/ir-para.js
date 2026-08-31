@@ -20,7 +20,7 @@
  * pessoa entrou.
  */
 (async () => {
-  const tela = window.__MEKORA_TELA__ || "/conta/privacidade";
+  const tela = window.__MEKORA_TELA__ || "/canvas";
   await new Promise((r) => setTimeout(r, 1200));
 
   const post = (u, corpo) =>
@@ -50,6 +50,16 @@
   /* Um aparelho e um livro, para as telas de conta e estante não ficarem vazias
    * quando forem o alvo. Falha em silêncio se já existirem. */
   await post("/aparelhos", { endereco: "medida@kindle.com", nome: "Medida" });
+
+  /* Um estudo com nota dentro, para a tela de Estudos não ser medida vazia —
+   * que foi exatamente o defeito que este arquivo existe para não repetir. */
+  const estudo = await post("/estudos/novo", {
+    nome: "Estudo de medida",
+    sobre: "Uma pergunta no centro, para o portão ter o que ler.",
+  });
+  if (estudo && notas.length) {
+    await post(`/estudos/${estudo.id}/notas`, { nota_id: notas[0].nota_id });
+  }
 
   history.pushState({}, "", tela);
   window.dispatchEvent(new PopStateEvent("popstate"));

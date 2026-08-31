@@ -71,6 +71,7 @@ def test_engine(tmp_path):
     from app.models.pessoa import Chave, Pessoa, Sessao  # noqa: F401 — registra modelos de acesso
     from app.models.aparelho import Aparelho  # noqa: F401 — registra os Kindles
     from app.models.canvas import Ligacao, NoCanvas  # noqa: F401 — registra o Canvas
+    from app.models.estudo import Estudo, EstudoNota  # noqa: F401 — registra os Estudos
     from app.models.nota import Nota  # noqa: F401 — registra as notas
     from app.models.preferencia import Preferencia  # noqa: F401 — registra as preferências
     from app.models.progresso import Progresso  # noqa: F401 — registra onde a pessoa parou

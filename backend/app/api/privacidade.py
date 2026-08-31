@@ -36,6 +36,7 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.models.aparelho import Aparelho
 from app.models.canvas import Ligacao, NoCanvas
+from app.models.estudo import Estudo, EstudoNota
 from app.models.nota import Nota
 from app.models.pessoa import Chave, Pessoa, Sessao
 from app.models.preferencia import Preferencia
@@ -63,6 +64,7 @@ O_QUE_GUARDAMOS = [
     ("leituras", Progresso, "Onde você parou em cada livro."),
     ("aparelhos", Aparelho, "Os endereços de Kindle que você ligou à conta."),
     ("preferencias", Preferencia, "As escolhas que você fez em Preferências."),
+    ("estudos", Estudo, "Os estudos que você montou, com a pergunta de cada um."),
     ("no_canvas", NoCanvas, "As notas que você pôs no Canvas, e onde cada uma está."),
     ("ligacoes", Ligacao, "As ligações que você fez entre notas."),
     ("sessoes", Sessao, "Os navegadores em que você entrou."),
@@ -145,6 +147,16 @@ def levar(
         "aparelhos": [
             {"nome": a.nome, "endereco": a.endereco, "principal": a.principal}
             for a in db.query(Aparelho).filter(Aparelho.pessoa_id == pessoa.id).all()
+        ],
+        "estudos": [
+            {
+                "nome": e.nome, "sobre": e.sobre, "fechado": e.fechado,
+                "notas": [
+                    en.nota_id
+                    for en in db.query(EstudoNota).filter(EstudoNota.estudo_id == e.id).all()
+                ],
+            }
+            for e in db.query(Estudo).filter(Estudo.pessoa_id == pessoa.id).all()
         ],
         "canvas": [
             {"nota": n.nota_id, "x": n.x, "y": n.y}

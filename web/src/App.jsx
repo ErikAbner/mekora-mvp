@@ -21,6 +21,8 @@ import { Entrar } from "./jornadas/Entrar.jsx";
 import { Privacidade } from "./jornadas/Privacidade.jsx";
 import { Canvas } from "./jornadas/Canvas.jsx";
 import { usarCanvas } from "./estado/usarCanvas.js";
+import { Estudos } from "./jornadas/Estudos.jsx";
+import { usarEstudos } from "./estado/usarEstudos.js";
 import { ContaKindle } from "./jornadas/ContaKindle.jsx";
 import { LUGARES } from "./lugares.js";
 import { useJornada } from "./estado/useJornada.js";
@@ -259,6 +261,30 @@ function PaginaCanvas() {
   );
 }
 
+function PaginaEstudos() {
+  const { estudos, erro, criar, mudar, apagar, reunir, tirar } = usarEstudos();
+  const [notas, setNotas] = useState([]);
+
+  useEffect(() => {
+    let vivo = true;
+    lerTodasAsNotas().then((n) => vivo && setNotas(n)).catch(() => {});
+    return () => { vivo = false; };
+  }, [estudos.length]);
+
+  return (
+    <Estudos
+      estudos={estudos}
+      notas={notas}
+      erro={erro}
+      aoCriar={criar}
+      aoMudar={mudar}
+      aoApagar={apagar}
+      aoReunir={reunir}
+      aoTirar={tirar}
+    />
+  );
+}
+
 export function App() {
   const acesso = usePessoa();
   return (
@@ -271,7 +297,8 @@ export function App() {
         <Route path="/estante" element={<SoParaQuemEntrou acesso={acesso}><PaginaEstante /></SoParaQuemEntrou>} />
         <Route path="/leitura/:id" element={<PaginaLeitura />} />
         <Route path="/canvas" element={<SoParaQuemEntrou acesso={acesso}><PaginaCanvas /></SoParaQuemEntrou>} />
-        {LUGARES.filter((l) => !l.pronto && l.rota !== "/canvas").map((l) => (
+        <Route path="/estudos" element={<SoParaQuemEntrou acesso={acesso}><PaginaEstudos /></SoParaQuemEntrou>} />
+        {LUGARES.filter((l) => !l.pronto && !["/canvas", "/estudos"].includes(l.rota)).map((l) => (
           <Route key={l.id} path={l.rota} element={<AindaNao lugar={l} />} />
         ))}
         {/* Conta tem quatro páginas; só Preferências existe. As outras usam a

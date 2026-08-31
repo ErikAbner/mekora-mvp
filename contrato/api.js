@@ -340,6 +340,48 @@ export function apagarNota(jobId, notaId) {
  * do resto do Mekora: o Canvas nao cria "nota de Canvas" nem relacao propria.
  */
 
+/* ─── Os Estudos ────────────────────────────────────────────────────────────
+ *
+ * Um estudo e uma pergunta — ou uma afirmacao — com o que voce reuniu em volta
+ * dela. Os livros nao sao campo: saem das notas.
+ */
+
+export function lerEstudos() {
+  return pede("/estudos/meus");
+}
+
+export function criarEstudo({ nome, sobre = "" }) {
+  return pede("/estudos/novo", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nome, sobre }),
+  });
+}
+
+export function mudarEstudo(id, troca) {
+  return pede(`/estudos/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(troca),
+  });
+}
+
+export function apagarEstudo(id) {
+  return pede(`/estudos/${id}`, { method: "DELETE" });
+}
+
+export function reunirNoEstudo(id, nota_id) {
+  return pede(`/estudos/${id}/notas`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nota_id }),
+  });
+}
+
+export function tirarDoEstudo(id, nota_id) {
+  return pede(`/estudos/${id}/notas/${nota_id}`, { method: "DELETE" });
+}
+
 export function lerCanvas() {
   return pede("/canvas/superficie");
 }
