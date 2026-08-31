@@ -8,6 +8,7 @@ from fastapi import APIRouter, Cookie, BackgroundTasks, Depends, File, HTTPExcep
 from sqlalchemy.orm import Session
 
 from app.core.config import STORAGE_INPUT, STORAGE_OUTPUT, STORAGE_TEMP
+from app.api.vazao import limitar_envios
 from app.db.database import get_db
 from app.models.processing_job import ProcessingJob
 from app.schemas.jobs import (
@@ -716,7 +717,15 @@ def _bg_comic_translate(job_id: int, operation_id: str | None = None) -> None:
 # POST /upload — recebe o arquivo e cria o registro inicial
 # ---------------------------------------------------------------------------
 
-@router.post("/upload", response_model=UploadResponse, status_code=201)
+@router.post(
+    "/upload",
+    response_model=UploadResponse,
+    status_code=201,
+    # Converter sem conta é garantido pela DEC-0018, e por isso esta rota fica
+    # aberta. Aberta e sem teto de QUANTIDADE, ela era o caminho para encher o
+    # disco da máquina — 600 MB por vez, quantas vezes quisessem.
+    dependencies=[Depends(limitar_envios)],
+)
 async def upload_file(
     file: UploadFile = File(...),
     mekora_sessao: Optional[str] = Cookie(default=None),

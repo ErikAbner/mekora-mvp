@@ -47,11 +47,17 @@ def test_entrar_cria_sessao_e_reconhece_a_pessoa(client, correio):
     assert r.json()["email"] == "erik@exemplo.com"
 
 
-def test_sem_sessao_a_resposta_e_normal_e_nao_erro(client):
+# ESTES QUATRO USAM `client_cru`, e a razão é o assunto deles.
+#
+# O `client` comum entra numa conta sozinho — foi assim que 116 testes voltaram
+# a passar quando as rotas de instalação foram fechadas. Mas um teste que
+# verifica o comportamento SEM sessão não pode usar um cliente que sempre tem
+# uma: ele passaria a provar o contrário do que o nome dele diz.
+def test_sem_sessao_a_resposta_e_normal_e_nao_erro(client_cru):
     """Não estar logado é estado previsto, não falha: a DEC-0018 garante que
     converter acontece sem conta. Um 401 aqui faria toda abertura de página
     registrar um erro que não é erro."""
-    r = client.get("/eu")
+    r = client_cru.get("/eu")
     assert r.status_code == 200
     assert r.json() == {"entrou": False}
 
@@ -92,11 +98,11 @@ def test_o_banco_guarda_o_resumo_e_nunca_o_link(client, correio, test_engine):
         assert len(chaves[0].resumo) == 64  # sha256 em hexadecimal
 
 
-def test_a_sessao_tambem_e_guardada_por_resumo(client, correio, test_engine):
+def test_a_sessao_tambem_e_guardada_por_resumo(client_cru, correio, test_engine):
     from sqlalchemy.orm import Session
 
-    entrar(client, correio)
-    cookie = client.cookies.get("mekora_sessao")
+    entrar(client_cru, correio)
+    cookie = client_cru.cookies.get("mekora_sessao")
 
     with Session(test_engine) as db:
         sessoes = db.query(Sessao).all()
@@ -156,21 +162,21 @@ def test_link_inventado_nao_entra(client):
 
 # ── sair ────────────────────────────────────────────────────────────────────
 
-def test_sair_encerra_no_servidor_e_nao_so_no_navegador(client, correio, test_engine):
+def test_sair_encerra_no_servidor_e_nao_so_no_navegador(client_cru, correio, test_engine):
     """Apagar só o cookie deixaria a sessão válida para quem já tivesse o valor
     — sair sem sair."""
     from sqlalchemy.orm import Session
 
-    entrar(client, correio)
-    cookie = client.cookies.get("mekora_sessao")
-    assert client.get("/eu").json()["entrou"] is True
+    entrar(client_cru, correio)
+    cookie = client_cru.cookies.get("mekora_sessao")
+    assert client_cru.get("/eu").json()["entrou"] is True
 
-    client.post("/sair")
-    assert client.get("/eu").json()["entrou"] is False
+    client_cru.post("/sair")
+    assert client_cru.get("/eu").json()["entrou"] is False
 
     # E o valor antigo não serve mais, mesmo apresentado de novo.
-    client.cookies.set("mekora_sessao", cookie)
-    assert client.get("/eu").json()["entrou"] is False
+    client_cru.cookies.set("mekora_sessao", cookie)
+    assert client_cru.get("/eu").json()["entrou"] is False
 
     with Session(test_engine) as db:
         assert db.query(Sessao).one().encerrada is True
@@ -178,12 +184,12 @@ def test_sair_encerra_no_servidor_e_nao_so_no_navegador(client, correio, test_en
 
 # ── e-mail ──────────────────────────────────────────────────────────────────
 
-def test_email_e_guardado_em_minusculas(client, correio, test_engine):
+def test_email_e_guardado_em_minusculas(client_cru, correio, test_engine):
     """Sem isto, `Erik@x.com` e `erik@x.com` viram duas contas com duas estantes,
     e a pessoa perde a dela por causa da tecla shift."""
     from sqlalchemy.orm import Session
 
-    client.post("/entrar/pedir", json={"email": "  ERIK@Exemplo.COM  "})
+    client_cru.post("/entrar/pedir", json={"email": "  ERIK@Exemplo.COM  "})
     with Session(test_engine) as db:
         assert db.query(Pessoa).one().email == "erik@exemplo.com"
 

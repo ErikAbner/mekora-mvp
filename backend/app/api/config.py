@@ -20,7 +20,12 @@ async def get_config() -> dict:
     }
 
 
-@router.get("/formatos")
+# Este router NÃO leva a porta de conta: ele existe justamente para a rota que
+# precisa responder antes de alguém entrar.
+publico = APIRouter(prefix="/config", tags=["config"])
+
+
+@publico.get("/formatos")
 async def formatos() -> dict:
     """Quais arquivos o Mekora aceita.
 

@@ -87,8 +87,19 @@ class _ClienteQueProvaAcesso(TestClient):
     entrar na conta antes acrescentaria ruído a 66 arquivos e não provaria nada
     de novo.
 
-    Então este cliente busca a chave no banco e a apresenta, como o navegador
-    faz. Ele NÃO é usado nos testes de acesso: `test_acesso.py` usa `client_cru`,
+    ELE TAMBÉM ENTRA NUMA CONTA. Em 31/08 uma revisão do conjunto fechou as
+    rotas que falam da INSTALAÇÃO — `/config`, `/app-config`, `/presets`,
+    `/metrics` —, que estavam abertas a qualquer visitante e devolviam, entre
+    outras coisas, o endereço de Kindle real de alguém.
+
+    Isso quebrou 116 testes de uma vez, todos com `assert 401 == 200`. Nenhum
+    deles estava errado: eles descreviam o produto de antes das contas. A saída
+    fácil seria desligar a porta durante os testes, e ela é a pior possível —
+    testes que rodam com a proteção desligada não percebem quando ela some.
+
+    Então o cliente entra numa conta de teste, como uma pessoa entra.
+
+    Ele NÃO é usado nos testes de acesso: `test_acesso.py` usa `client_cru`,
     porque um cliente que se autoriza sozinho não pode ser o que prova que a
     autorização existe.
     """
@@ -96,6 +107,41 @@ class _ClienteQueProvaAcesso(TestClient):
     def __init__(self, app, engine):
         super().__init__(app)
         self._engine = engine
+        self.cookies.set("mekora_sessao", self._abrir_sessao())
+
+    def _abrir_sessao(self):
+        """Cria uma pessoa e uma sessão direto no banco de teste.
+
+        Pelo fluxo de verdade seria pedir um link e abri-lo — e isso exigiria um
+        servidor de e-mail em cada um dos 66 arquivos de teste. O caminho do
+        link é provado em `test_acesso.py`, uma vez, onde ele é o assunto.
+        """
+        from datetime import timedelta
+
+        from sqlalchemy.orm import sessionmaker
+
+        from app.models.pessoa import Pessoa, Sessao, agora
+        from app.services.acesso_service import resumir
+
+        Sessao_ = sessionmaker(bind=self._engine)
+        db = Sessao_()
+        try:
+            pessoa = db.query(Pessoa).filter(Pessoa.email == "teste@mekora.local").first()
+            if pessoa is None:
+                pessoa = Pessoa(email="teste@mekora.local")
+                db.add(pessoa)
+                db.flush()
+            token = "sessao-de-teste"
+            if not db.query(Sessao).filter(Sessao.resumo == resumir(token)).first():
+                db.add(Sessao(
+                    pessoa_id=pessoa.id,
+                    resumo=resumir(token),
+                    expira_em=agora() + timedelta(days=1),
+                ))
+            db.commit()
+            return token
+        finally:
+            db.close()
 
     def request(self, method, url, *args, **kwargs):
         chave = self._chave_do_caminho(str(url))
@@ -146,6 +192,11 @@ def client(test_engine, tmp_storage, monkeypatch):
     from app.db.database import get_db
 
     app.dependency_overrides[get_db] = override_get_db
+
+    # A janela de envios é um dicionário de módulo: sem limpar, um teste que
+    # sobe muitos arquivos faz o próximo receber 429 sem ter feito nada.
+    from app.api import vazao
+    vazao._envios.clear()
 
     with _ClienteQueProvaAcesso(app, test_engine) as c:
         yield c

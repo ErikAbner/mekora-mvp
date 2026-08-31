@@ -141,12 +141,42 @@ python3 scripts/rotas.py --conferir
 
 ---
 
-## O que este documento NÃO cobre, e precisa ser resolvido antes de abrir ao público
+---
 
-**Os arquivos não têm dono.** O `id` de um trabalho é um número em sequência —
-1, 2, 3 — e `/storage/output/7/livro.epub` responde para qualquer um que peça.
-Enquanto não existir conta, subir com endereço público significa que qualquer
-visitante lê os documentos de todos, só contando.
+## O acesso, e o que ele cobre
 
-Enquanto isso não for resolvido, o lugar do Mekora é atrás de algo que limite
-quem chega — Cloudflare Access, ou uma senha na borda.
+Isto está resolvido, e fica escrito porque é o que decide se o Mekora pode ficar
+num endereço público.
+
+**Cada arquivo tem um endereço próprio.** O número do trabalho continua existindo
+por dentro; para fora vai um token aleatório. Antes era `/storage/output/7/...`,
+e qualquer um lia os documentos de todos só contando.
+
+**Duas portas cobrem as rotas.** `exigir_acesso` protege tudo que tem o número de
+um trabalho no caminho — 41 rotas —, aceitando a sessão do dono ou a chave do
+trabalho. `exigir_conta` protege o que fala da instalação: configuração,
+presets, métricas.
+
+**Cinco rotas ficam públicas, e cada uma tem razão:**
+
+| Rota | Por quê |
+|---|---|
+| `/health` | a verificação do container bate aqui, sem credencial |
+| `/config/formatos` | a tela de entrada precisa saber o que o Mekora aceita antes de haver conta |
+| `/entrar/pedir` | pedir um link é o começo de tudo; tem limite de 5 por 10 minutos |
+| `/entrar/{token}` | o token no caminho **é** a credencial |
+| `/storage/{rest}` | o apanhador que responde 404 a tudo que não é artefato permitido |
+
+**Enviar sem conta tem teto**: dez arquivos por hora por origem de rede, sessenta
+com conta. Converter sem cadastro é garantido pela `DEC-0018`, e sem teto de
+quantidade essa garantia era o caminho para encher o disco da máquina.
+
+`tests/test_superficie.py` verifica tudo isto. Ele existe porque proteção sem
+teste é proteção que some no próximo refactor — e ele foi provado removendo uma
+das portas, para confirmar que reprova.
+
+### O que ainda não existe
+
+**Não há papel de administrador.** Quem tem conta alcança `/config`,
+`/app-config` e `/presets`, que falam da instalação inteira. Numa instalação
+pessoal isso é correto; com várias pessoas, a primeira coisa a acrescentar.

@@ -32,6 +32,7 @@ navegador nem nos registros de acesso do servidor.
 
 from __future__ import annotations
 
+import secrets
 from typing import Optional
 
 from fastapi import Cookie, Depends, Header, HTTPException, Request
@@ -73,7 +74,13 @@ def exigir_acesso(
         # decidir sobre coisas que não são dela.
         return
 
-    if x_mekora_chave and trabalho.token_publico and x_mekora_chave == trabalho.token_publico:
+    if x_mekora_chave and trabalho.token_publico and secrets.compare_digest(
+        x_mekora_chave, trabalho.token_publico
+    ):
+        # `compare_digest` e nao `==`: a comparacao normal para no primeiro byte
+        # diferente, e o tempo que ela leva conta quantos bateram. E defesa
+        # barata contra um ataque que, pela rede, e dificil — mas custa uma
+        # linha, e a versao insegura nao tem nenhuma vantagem.
         return
 
     if trabalho.dono_id is not None:
@@ -84,3 +91,42 @@ def exigir_acesso(
             return
 
     raise HTTPException(status_code=404, detail="Não encontrado.")
+
+
+def exigir_conta(
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> None:
+    """A segunda porta: exige uma conta, sem falar de trabalho nenhum.
+
+    `exigir_acesso` cobre tudo que tem `job_id` no caminho — e por isso mesmo
+    não cobre o que NÃO tem. Uma revisão do conjunto em 31/08 encontrou o que
+    ficou de fora, e a lista é do tipo que só aparece olhando o todo:
+
+    `/config` devolvia o `kindle_email` e o `smtp_user` REAIS a qualquer
+    visitante — dado pessoal, e o endereço para onde os documentos de alguém
+    vão.
+
+    `/app-config` PATCH deixava qualquer um mudar a configuração da instalação,
+    e `/app-config/cleanup` deixava qualquer um disparar limpeza de arquivos.
+
+    `/config/test-email` deixava qualquer um fazer o servidor abrir conexão SMTP
+    autenticada, quantas vezes quisesse.
+
+    `/metrics/*` contava quantos trabalhos existem e em que formatos — de todo
+    mundo, somados.
+
+    `/presets` era CRUD aberto.
+
+    Nenhuma dessas rotas era um descuido isolado: TODAS são corretas num produto
+    de uma pessoa só rodando na própria máquina, que é como o Mekora nasceu. O
+    que mudou foi ele passar a ter contas, e o que era "o dono do computador"
+    virou "qualquer um na internet".
+
+    Responde 401, e não 404 como a outra porta: aqui não há nada cuja existência
+    precise ser escondida — a rota existe, é pública que ela não é.
+    """
+    from app.services import acesso_service
+
+    if acesso_service.quem_e(db, mekora_sessao) is None:
+        raise HTTPException(status_code=401, detail="Entre para continuar.")

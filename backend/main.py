@@ -26,13 +26,13 @@ from fastapi.staticfiles import StaticFiles
 from app.core.config import PROJECT_ROOT
 from app.db.database import init_db
 from app.api.acesso import router as acesso_router
-from app.api.porta import exigir_acesso
+from app.api.porta import exigir_acesso, exigir_conta
 from app.api.health import router as health_router
 from app.api.aparelhos import router as aparelhos_router
 from app.api.notas import router as notas_router
 from app.api.preferencias import router as preferencias_router
 from app.api.progresso import router as progresso_router
-from app.api.config import router as config_router
+from app.api.config import publico as config_publico, router as config_router
 from app.api.jobs import router as jobs_router
 from app.api.app_config import router as app_config_router
 from app.api.translation import router as translation_router
@@ -67,6 +67,26 @@ _cors_origins = (
     if _raw_origins
     else ["http://localhost:5173", "http://127.0.0.1:5173"]
 )
+
+# `*` COM CREDENCIAIS É A COMBINAÇÃO QUE ENTREGA A CONTA.
+#
+# O middleware manda `allow-credentials: true`, o que significa que o navegador
+# ANEXA O COOKIE DE SESSÃO em pedidos de outra origem. Com uma lista fechada
+# isso é o que se quer — é o próprio produto chamando a própria API. Com `*`,
+# passaria a ser qualquer site do mundo lendo a estante de quem estivesse
+# logado.
+#
+# O Starlette recusa essa combinação por conta própria, e mesmo assim a
+# verificação fica: ela transforma uma recusa silenciosa lá dentro num erro que
+# diz o que está errado, na hora de subir, e não numa tela que não carrega.
+#
+# Em produção a lista fica VAZIA de propósito: interface e API ficam no mesmo
+# domínio, atrás do mesmo Caddy, e mesma origem não usa CORS nenhum.
+if "*" in _cors_origins:
+    raise RuntimeError(
+        "ALLOWED_ORIGINS=* com credenciais entregaria a sessão a qualquer site. "
+        "Liste as origens, ou deixe vazio se a interface e a API ficam no mesmo domínio."
+    )
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,
@@ -90,19 +110,33 @@ app.include_router(notas_router, dependencies=[Depends(exigir_acesso)])
 # única credencial possível — não há chave de trabalho que dê acesso a elas.
 app.include_router(aparelhos_router)
 app.include_router(preferencias_router)
-app.include_router(config_router)
+
+# `config` e `app-config` falam da INSTALAÇÃO, não de um trabalho — então a
+# porta de trabalho não os cobria, e eles ficaram abertos. `/config` devolvia o
+# `kindle_email` e o `smtp_user` reais a qualquer visitante.
+#
+# `/config/formatos` é a exceção declarada: a tela de entrada precisa saber o
+# que o Mekora aceita ANTES de alguém ter conta, porque converter sem conta é
+# garantido pela DEC-0018. Ela não conta nada sobre ninguém — é uma lista de
+# extensões.
+app.include_router(config_publico)
+app.include_router(config_router, dependencies=[Depends(exigir_conta)])
 app.include_router(jobs_router, dependencies=[Depends(exigir_acesso)])
-app.include_router(app_config_router)
-app.include_router(translation_router, dependencies=[Depends(exigir_acesso)])
+app.include_router(app_config_router, dependencies=[Depends(exigir_conta)])
+app.include_router(translation_router, dependencies=[Depends(exigir_acesso), Depends(exigir_conta)])
 app.include_router(comic_review_router, dependencies=[Depends(exigir_acesso)])
 app.include_router(comic_overlay_router, dependencies=[Depends(exigir_acesso)])
 app.include_router(comic_render_router, dependencies=[Depends(exigir_acesso)])
 app.include_router(comic_inpaint_router, dependencies=[Depends(exigir_acesso)])
 app.include_router(comic_finalize_router, dependencies=[Depends(exigir_acesso)])
 app.include_router(comic_suggestions_router, dependencies=[Depends(exigir_acesso)])
-app.include_router(presets_router)
-app.include_router(batch_router, dependencies=[Depends(exigir_acesso)])
-app.include_router(metrics_router, dependencies=[Depends(exigir_acesso)])
+app.include_router(presets_router, dependencies=[Depends(exigir_conta)])
+app.include_router(batch_router, dependencies=[Depends(exigir_acesso), Depends(exigir_conta)])
+# As DUAS portas: `exigir_acesso` cobre `/metrics/jobs/{job_id}`, e
+# `exigir_conta` cobre `/metrics/summary` e `/metrics/usage`, que não têm
+# `job_id` e por isso passavam direto — contando quantos trabalhos existem e em
+# que formatos, de todo mundo somados.
+app.include_router(metrics_router, dependencies=[Depends(exigir_acesso), Depends(exigir_conta)])
 app.include_router(comic_finish_router, dependencies=[Depends(exigir_acesso)])
 app.include_router(comic_consistency_router, dependencies=[Depends(exigir_acesso)])
 app.include_router(comic_preset_recommendation_router, dependencies=[Depends(exigir_acesso)])
