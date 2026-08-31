@@ -1678,6 +1678,14 @@ td.n{color:var(--ink);font-weight:600}
 .reanc{font-family:var(--mono);font-size:10px;letter-spacing:.07em;color:var(--ink-3);
   margin:var(--s2) 0 0;line-height:1.6;display:block}
 .cit .reanc{margin-top:4px}
+/* dentro de .trechoN o estado da ancora perdia por especificidade: .trechoN p
+   e (0,2,1) contra (0,1,0) de .reanc, e o aviso saia em 15px serifa italica,
+   com o mesmo peso da citacao. Informacao de sistema com o corpo do conteudo
+   nao informa em silencio — ela compete. Medido em 31/08: 15px onde a regra
+   dizia 10px. */
+.trechoN p.reanc,.trechoN.-perdida p.reanc{font-family:var(--mono);font-size:10px;
+  font-style:normal;letter-spacing:.07em;line-height:1.6;color:var(--ink-3);
+  margin:var(--s3) 0 0;max-width:52ch}
 .trechoN.-perdida{border-left:2px solid var(--warn)}
 .trechoN.-perdida p:first-child{font-family:var(--ui);font-size:13px;color:var(--ink-2)}
 .volta.-perdida{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--ink-3);
@@ -3374,6 +3382,12 @@ const pc = x => Math.round(x * 100);
 const conf = r => r ? 'confere ' + pc(r.score) + ' de 100' : '';
 /* decomposto, porque um número que não diz do que é feito não pode ser
    discordado — só acreditado. */
+/* QUAL dos dois numeros recusou. Dizer "abaixo do limiar" quando quem
+   recusou foi o piso da citacao e um numero plausivel e errado — a mesma
+   classe de defeito que o instrumento de massa visual pagou. */
+const porQue = q => !q ? '' : (q.pC < PISO_CITA
+  ? 'a citação em si bate ' + pc(q.pC) + ', abaixo dos ' + pc(PISO_CITA) + ' exigidos'
+  : 'confere ' + pc(q.score) + ' de 100, abaixo dos ' + pc(LIMIAR) + ' exigidos');
 const confLongo = r => !r ? '' :
   'Confere ' + pc(r.score) + ' de 100: a citação bate ' + pc(r.pC) +
   ', o texto em volta ' + pc((r.pA + r.pD) / 2) + '.';
@@ -5188,7 +5202,7 @@ function linhaNota(d){
       esc(tr.slice(0,72))+(tr.length>72?"…":"")+'</button>'
       :(perdida(d)?'<span class="volta -perdida">↩ o trecho não existe mais neste texto</span>':''))+
     (an&&COMO[an.como]?'<span class="reanc">reencontrado \u00b7 '+conf(an)+'</span>':'')+
-    (qs?'<span class="reanc">o mais parecido '+conf(qs)+', abaixo dos '+pc(LIMIAR)+' exigidos</span>':'')+
+    (qs?'<span class="reanc">o mais parecido: '+porQue(qs)+'</span>':'')+
     '<cite>'+rot.join(" · ")+'</cite>'+
     ((d.tags||[]).length?'<span class="tgL">'+d.tags.map(t=>
       '<button data-a="tag-ver" data-v="'+esc(t)+'">#'+esc(t)+'</button>').join("")+'</span>':'')+
