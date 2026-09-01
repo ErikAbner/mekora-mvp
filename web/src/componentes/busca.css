@@ -1,0 +1,109 @@
+/* A busca do cabeçalho — nó 941:23107.
+ *
+ * A caixa é `relative` para o painel pendurar nela, e não no cabeçalho: o
+ * cabeçalho é `flex` com `justify-content: space-between`, e um filho absoluto
+ * dele ancoraria na barra inteira em vez do campo. */
+.busca-caixa { position: relative; flex: 1 0 0; min-width: 0; }
+
+/* A `.busca` é a moldura desenhada. Ela morava no `cabecalho.css` enquanto era
+ * um botão desligado; veio para cá com o campo, porque `scripts/classes.mjs`
+ * recusa a mesma classe com dois donos — e dois donos é como uma medida muda de
+ * um lado e não do outro. */
+.busca {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 17px 24px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--muted-foreground);
+  font-size: 16px;
+  line-height: 24px;
+  text-align: left;
+}
+
+.busca-campo {
+  flex: 1 0 0; min-width: 0;
+  border: 0; background: transparent; padding: 0;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 16px; line-height: 24px;   /* Label/Medium */
+}
+.busca-campo::placeholder { color: var(--muted-foreground); opacity: 1; }
+.busca-campo:focus { outline: none; }
+/* O foco é da MOLDURA e não do campo: o anel em volta de um input sem borda
+ * dentro de uma caixa com borda desenha dois retângulos concêntricos. */
+.busca-caixa:focus-within .busca {
+  outline: 1px solid var(--foreground);
+  outline-offset: 2px;
+}
+/* O X nativo do `type=search` no WebKit não segue a tinta do sistema. */
+.busca-campo::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+
+/* O painel: 10px abaixo da barra e 12px de respiro interno, como o desenho. */
+.busca-painel {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: calc(100% + 10px);
+  z-index: 40;
+  padding: 12px;
+  max-block-size: 456px;
+  overflow-y: auto;
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+
+.busca-recado {
+  margin: 0;
+  padding: 12px;
+  color: var(--muted-foreground);
+  font-size: 14px; line-height: 22px;   /* Label/Small */
+  text-wrap: pretty;
+}
+
+.busca-lista { list-style: none; margin: 0; padding: 0; }
+/* O fio ENTRE as linhas, e não em volta de cada uma: o desenho tem quatro
+ * linhas e três fios. */
+.busca-lista li + li { border-block-start: 1px solid var(--border); }
+
+.busca-item {
+  display: flex; align-items: center; gap: 24px;
+  inline-size: 100%;
+  padding: 24px;
+  border: 0; background: transparent;
+  text-align: start;
+  cursor: pointer;
+}
+/* Marcado por SUPERFÍCIE, como o lugar ativo do cabeçalho. Teclado e mouse
+ * marcam do mesmo jeito: são a mesma seleção. */
+.busca-item.marcado { background: var(--muted); }
+.busca-item:focus-visible { outline: 1px solid var(--foreground); outline-offset: -1px; }
+
+.busca-capa {
+  flex: 0 0 auto;
+  inline-size: 47px; block-size: 60px;
+  background: var(--muted);
+  overflow: hidden;
+}
+.busca-capa img { inline-size: 100%; block-size: 100%; object-fit: cover; display: block; }
+
+.busca-texto { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+
+.busca-titulo {
+  color: var(--card-foreground);
+  font-size: 16px; line-height: 24px;   /* Label/Medium */
+  /* Trecho de nota é longo. Duas linhas e corta — o resto está na nota. */
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.busca-abaixo {
+  color: var(--muted-foreground);
+  font-size: 14px; line-height: 22px;   /* Label/Small */
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+  .busca { padding: 13px 16px; }
+  .busca-item { padding: 16px; gap: 16px; }
+  .busca-painel { max-block-size: 60vh; }
+}

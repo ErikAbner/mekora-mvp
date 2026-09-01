@@ -12,12 +12,12 @@
  */
 // Assets do Figma, servidos de `publico/`. Caminho e nao import: o import ES
 // so vale para asset dentro de src/, que o Vite processa e versiona.
-const iconeBuscar = "/icones/icone-buscar.svg";
 const iconeAtalho = "/icones/icone-atalho.svg";
 const iconeConta = "/icones/icone-conta.svg";
 
 import { NavLink, useLocation } from "react-router-dom";
 import { Icone } from "./Icone.jsx";
+import { Busca } from "./Busca.jsx";
 
 import "./cabecalho.css";
 
@@ -49,14 +49,10 @@ export function Cabecalho() {
       </nav>
 
       <div className="cabecalho-acoes">
-        {/* A BUSCA AINDA NÃO EXISTE, e o botão diz isso em vez de responder ao
-            clique com nada. Não há rota de busca no backend, e uma busca que só
-            olha o que a tela já carregou encontraria menos do que a pessoa tem —
-            o que é pior que não buscar, porque parece que não achou. */}
-        <button type="button" className="busca" disabled title="A busca ainda não existe.">
-          <Icone src={iconeBuscar} />
-          <span>Buscar em Mekora</span>
-        </button>
+        {/* A BUSCA EXISTE AGORA. O botão desligado ficou aqui por meses com o
+            motivo escrito — "não há rota de busca no backend" —, e a rota é o
+            `busca.py`. O nó 941:23107 é o painel que ela abre. */}
+        <Busca />
         <NavLink to="/notas" className="acao" aria-label="Notas">
           <Icone src={iconeAtalho} />
         </NavLink>

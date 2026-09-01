@@ -54,12 +54,22 @@ export default defineConfig({
      * dois que mostrou o padrao.
      *
      * Agora cada caminho vira um padrao so: `$` quando ele e apenas exato, `/`
-     * quando so tem sub-caminho, e `($|/)` quando e as duas coisas. */
+     * quando so tem sub-caminho, e `($|/)` quando e as duas coisas.
+     *
+     * A INTERROGACAO ENTRA NO FIM, e ela custou uma tela.
+     *
+     * O Vite casa o padrao contra `req.url`, que inclui a QUERY STRING. Entao
+     * `^/buscar$` nao casava `/buscar?q=campo`: o pedido caia no SPA, voltava
+     * `<!doctype html>`, e a busca mostrava `Unexpected token '<'` dentro do
+     * painel de resultados.
+     *
+     * Ninguem tinha visto porque nenhuma rota exata usava query ate agora —
+     * `/eu`, `/health`, `/upload` sao chamadas secas. A busca e a primeira. */
     proxy: Object.fromEntries(
       [...new Set([...COM_SUBCAMINHO, ...EXATAS])].map((r) => {
         const exata = EXATAS.includes(r);
         const abaixo = COM_SUBCAMINHO.includes(r);
-        const forma = exata && abaixo ? "($|/)" : exata ? "$" : "/";
+        const forma = exata && abaixo ? "($|[/?])" : exata ? "($|\\?)" : "/";
         return [`^${r}${forma}`, alvo()];
       }),
     ),

@@ -17,7 +17,7 @@
 	handle /analyze/* /aparelhos/* /app-config/* /batch/* /canvas/* /config/* /entrar/* /estudos/* /jobs/* /metrics/* /notas/* /pending-send/* /presets/* /privacidade/* /sessoes/* /storage/* /tools/* /translation/* {
 		reverse_proxy backend:8000
 	}
-	handle /aparelhos /app-config /config /eu /health /history /preferencias /presets /privacidade /sair /sessoes /upload {
+	handle /aparelhos /app-config /buscar /config /eu /health /history /preferencias /presets /privacidade /sair /sessoes /upload {
 		reverse_proxy backend:8000
 	}
 	# ── fim das rotas geradas ──

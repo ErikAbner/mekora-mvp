@@ -523,3 +523,41 @@ export function mudarAparelho(id, troca) {
 export function desligarAparelho(id) {
   return pede(`/aparelhos/${id}`, { method: "DELETE" });
 }
+
+/* ---------------------------------------------------------------------------
+ * A busca do cabeçalho — nó 941:23107.
+ * ------------------------------------------------------------------------- */
+
+/** GET /buscar — busca.py. Livros, notas e estudos, em grupos separados. */
+export function buscarNoMekora(termo) {
+  return pede(`/buscar?q=${encodeURIComponent(termo)}`);
+}
+
+/* ---------------------------------------------------------------------------
+ * Configurações de arquivo — nó 941:23118.
+ * ------------------------------------------------------------------------- */
+
+/** POST /jobs/{id}/metadata — jobs.py. "Renomear": só o nome do arquivo final. */
+export function renomearArquivo(jobId, final_filename) {
+  return pede(`/jobs/${jobId}/metadata`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ final_filename }),
+  });
+}
+
+/** POST /jobs/{id}/duplicate — jobs.py. "Refazer a preparação": mesmo arquivo,
+ *  do começo. `metadata_only` é o único modo que existe, e é o que o desenho
+ *  descreve — "Nada é enviado de novo". */
+export function refazerPreparo(jobId) {
+  return pede(`/jobs/${jobId}/duplicate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mode: "metadata_only" }),
+  });
+}
+
+/** DELETE /jobs/{id} — jobs.py. "Remover da estante". Não dá para desfazer. */
+export function removerDaEstante(jobId) {
+  return pede(`/jobs/${jobId}`, { method: "DELETE" });
+}

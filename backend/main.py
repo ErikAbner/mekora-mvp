@@ -33,6 +33,7 @@ from app.api.notas import router as notas_router
 from app.api.preferencias import router as preferencias_router
 from app.api.canvas import router as canvas_router
 from app.api.estudos import router as estudos_router
+from app.api.busca import router as busca_router
 from app.api.privacidade import router as privacidade_router
 from app.api.progresso import router as progresso_router
 from app.api.config import publico as config_publico, router as config_router
@@ -116,6 +117,9 @@ app.include_router(preferencias_router)
 app.include_router(privacidade_router)
 app.include_router(canvas_router)
 app.include_router(estudos_router)
+# A busca só olha o que é da pessoa, e por isso exige conta em vez da chave de
+# trabalho: a chave prova UM trabalho, e a busca fala de todos.
+app.include_router(busca_router, dependencies=[Depends(exigir_conta)])
 
 # `config` e `app-config` falam da INSTALAÇÃO, não de um trabalho — então a
 # porta de trabalho não os cobria, e eles ficaram abertos. `/config` devolvia o
