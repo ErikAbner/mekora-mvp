@@ -104,7 +104,15 @@ def o_que_existe(
             "e daí para a Amazon. É o único lugar fora do Mekora para onde algo seu é enviado.",
             "Os livros são lidos no seu próprio navegador — o texto não passa por servidor nenhum "
             "depois de convertido.",
-            "Não há rastreamento, análise de uso nem terceiros.",
+            "Quando você põe um link no Canvas, o Mekora busca o título e a "
+            "imagem da página para montar a prévia — e essa busca sai daqui para "
+            "o endereço que você colou. O site visitado vê o pedido, como veria "
+            "se você abrisse o link. Nada além do endereço é enviado, e a prévia "
+            "só acontece quando você cola um link.",
+            "Não há rastreamento, análise de uso nem publicidade. Os únicos "
+            "lugares fora do Mekora para onde algo seu vai são os dois acima: a "
+            "Amazon, quando você manda ao Kindle, e o site do link que você "
+            "colou.",
         ],
     }
 

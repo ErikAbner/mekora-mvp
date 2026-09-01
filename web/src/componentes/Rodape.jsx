@@ -36,6 +36,9 @@ export function Rodape() {
             <li><Link to="/apresentacao">O que é o Mekora</Link></li>
             <li><Link to="/ajuda">Ajuda</Link></li>
             <li><Link to="/atualizacoes">Atualizações</Link></li>
+            {/* O documento fica no rodape, que e onde se procura por ele. */}
+            <li><Link to="/politica-de-privacidade">Política de privacidade</Link></li>
+            <li><Link to="/termos-de-uso">Termos de uso</Link></li>
           </ul>
         </nav>
 

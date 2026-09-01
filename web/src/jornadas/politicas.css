@@ -1,0 +1,52 @@
+/* Politica de privacidade e termos. Coluna unica de texto corrido — a mesma
+ * medida da Ajuda, porque sao a mesma coisa: documento para ler.
+ */
+.politicas {
+  display: flex; flex-direction: column; gap: 48px;
+  inline-size: 100%; max-inline-size: 680px;
+  margin-inline: auto;
+  padding: 96px 32px 128px;
+}
+.politicas header { display: flex; flex-direction: column; gap: 16px; }
+.politicas h1 {
+  margin: 0;
+  font-size: 48px; line-height: 56px; font-weight: 540;   /* Heading/XL */
+  letter-spacing: -2%;
+  color: var(--foreground);
+}
+/* A data importa mais que o titulo num documento destes: ela diz se o que esta
+ * escrito ainda vale. */
+.politicas-desde {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 14px; line-height: 22px;   /* Label/Small */
+  text-transform: uppercase;
+}
+.politicas-abre {
+  margin: 8px 0 0;
+  padding-inline-start: 32px;
+  border-inline-start: 1px solid var(--foreground);
+  color: var(--muted-foreground);
+  font-size: 20px; line-height: 30px;
+  text-wrap: pretty;
+}
+.politicas section { display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
+.politicas h2 {
+  margin: 0;
+  font-size: 28px; line-height: 36px; font-weight: 540;   /* Heading/SM */
+  color: var(--foreground);
+}
+.politicas p {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 18px; line-height: 27px;
+  text-wrap: pretty;
+}
+.politicas a { color: var(--foreground); font-size: 18px; line-height: 27px; }
+.politicas-fim { padding-block-start: 24px; border-block-start: 1px solid var(--separator); }
+
+@media (max-width: 767px) {
+  .politicas { gap: 40px; padding: 40px 16px 80px; }
+  .politicas h1 { font-size: 32px; line-height: 40px; }
+  .politicas h2 { font-size: 24px; line-height: 32px; }
+}

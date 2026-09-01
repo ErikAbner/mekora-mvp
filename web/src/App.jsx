@@ -17,6 +17,7 @@ import { ContaVisao } from "./jornadas/ContaVisao.jsx";
 import { ContaSeguranca } from "./jornadas/ContaSeguranca.jsx";
 import { Ajuda } from "./jornadas/Ajuda.jsx";
 import { Atualizacoes } from "./jornadas/Atualizacoes.jsx";
+import { Politicas } from "./jornadas/Politicas.jsx";
 import { EstudoPagina } from "./jornadas/EstudoPagina.jsx";
 import { MesaCheia } from "./jornadas/MesaCheia.jsx";
 import { Estante } from "./jornadas/Estante.jsx";
@@ -526,6 +527,16 @@ export function App() {
             tem direito de saber o que mudou. */}
         <Route path="/ajuda" element={<Ajuda />} />
         <Route path="/atualizacoes" element={<Atualizacoes />} />
+        {/* O DOCUMENTO, e nao a tela de Privacidade da conta. Aquela mostra o
+            que A SUA conta tem, com contagem; estas duas dizem o que vale para
+            qualquer pessoa. Publicas, e sem exigir conta: quem esta decidindo se
+            cria uma precisa poder ler antes.
+
+            O NOME LONGO NAO E ENFEITE: `/privacidade` COLIDE com a rota de API
+            de mesmo nome, e o scripts/rotas.py recusou — "a borda nao tem como
+            servir as duas". E e como as pessoas citam esses documentos. */}
+        <Route path="/politica-de-privacidade" element={<Politicas />} />
+        <Route path="/termos-de-uso" element={<Politicas />} />
         <Route path="/mesa" element={<Mesa />} />
         {/* A estante É a conta (DEC-0018). Sem entrar não há o que listar —
             e listar tudo seria mostrar a estante de todo mundo. */}
