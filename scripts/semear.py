@@ -25,9 +25,18 @@ if not BANCO.exists():
     print(f"  banco não encontrado em {BANCO}", file=sys.stderr)
     raise SystemExit(1)
 
+# O PRIMEIRO LIVRO TEM EPUB DE VERDADE.
+#
+# Os outros são mentira confessa e bastam para a estante, que só precisa de
+# título, capa e contagem. A LEITURA não: ela abre o arquivo no navegador, lê a
+# espinha e o sumário. Sem EPUB em disco, `/leitura/:id` cai no texto de
+# exemplo, e o índice, as notas e a barra de seleção — que são o que há para ver
+# ali — nunca aparecem.
+COM_EPUB = 0
+
 LIVROS = [
     # titulo, autor, paginas, capa, notas, fracao lida
-    ("Malha Urbana", "Ana Duarte", 248, "/capas/exemplo-1.png", 24, 0.80),
+    ("Memórias Póstumas de Brás Cubas", "Machado de Assis", 248, "/capas/exemplo-1.png", 24, 0.80),
     ("Apresentação Institucional", "Ana Duarte", 96, "/capas/exemplo-2.png", 8, 0.35),
     ("Sequência Noturna", "Ana Duarte", 412, "/capas/exemplo-3.png", 12, 0.12),
     ("Estudo de Viabilidade", "Ana Duarte", 640, "/capas/exemplo-4.png", 5, None),
@@ -138,6 +147,18 @@ for i, (titulo, autor, paginas, capa, quantas_notas, fracao) in enumerate(LIVROS
             destino.mkdir(parents=True, exist_ok=True)
             (destino / "page_0.png").write_bytes(origem.read_bytes())
 
+    # O EPUB, para este livro abrir de verdade na leitura.
+    if i == COM_EPUB:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from livro_de_prova import escrever
+
+        arquivo = RAIZ / "storage" / "output" / str(job) / "memorias-postumas.epub"
+        escrever(arquivo)
+        c.execute(
+            "UPDATE processing_jobs SET epub_path = ? WHERE id = ?",
+            (str(arquivo), job),
+        )
+
     if fracao is not None:
         inserir("progressos", {"pessoa_id": pessoa, "job_id": job, "capitulo": 1,
                                "deslocamento": 120, "capitulos": 8, "fracao": fracao,
@@ -162,6 +183,42 @@ if not c.execute("SELECT 1 FROM aparelhos WHERE pessoa_id = ?", (pessoa,)).fetch
                           "endereco": "erik_mekora@kindle.com", "email": "erik_mekora@kindle.com",
                           "principal": True, "criado_em": agora, "mexido_em": agora})
 
+# O CANVAS COM ALGUMA COISA DENTRO.
+#
+# Ele abria vazio, e um Canvas vazio não mostra nem o traço da ligação, nem o
+# grupo, nem a prévia de link — que é tudo o que há para ver ali. Três notas
+# soltas: duas ligadas entre si, e uma com um endereço dentro, que vira cartão
+# de prévia.
+if not c.execute("SELECT 1 FROM canvas_nos WHERE pessoa_id = ?", (pessoa,)).fetchone():
+    SOLTAS = [
+        ("A expedição partiu de manhã, com o material dividido em três caixas.", "amarelo", 160, 120),
+        ("Uma foto é observação, não diagnóstico — e é por isso que ela precisa de data.", "azul", 560, 300),
+        ("Vale reler isto sobre método: https://example.com/", "verde", 200, 460),
+    ]
+    postas = []
+    for texto, cor, x, y in SOLTAS:
+        nota = inserir("notas", {
+            "pessoa_id": pessoa, "job_id": None, "trecho": texto, "cor": cor,
+            "comentario": "", "capitulo": 0, "de": 0, "ate": len(texto),
+            "origem": "", "fonte": "solta",
+            "criada_em": agora, "atualizada_em": agora,
+        })
+        inserir("canvas_nos", {"pessoa_id": pessoa, "nota_id": nota, "x": x, "y": y,
+                               "movido_em": agora})
+        postas.append(nota)
+
+    # A ligação guarda sempre o menor id primeiro — é o que a API faz, e o que a
+    # restrição de unicidade espera.
+    a, b = sorted(postas[:2])
+    inserir("ligacoes", {"pessoa_id": pessoa, "de_id": a, "para_id": b,
+                         "como": "mao", "criada_em": agora})
+
+    inserir("canvas_grupos", {
+        "pessoa_id": pessoa, "nome": "Design & Tecnologia",
+        "x": 100, "y": 60, "largura": 620, "altura": 420,
+        "criado_em": agora, "movido_em": agora,
+    })
+
 # Um estudo, com notas reunidas.
 if not c.execute("SELECT 1 FROM estudos WHERE pessoa_id = ?", (pessoa,)).fetchone():
     estudo = inserir("estudos", {
@@ -175,4 +232,5 @@ if not c.execute("SELECT 1 FROM estudos WHERE pessoa_id = ?", (pessoa,)).fetchon
 c.commit()
 n = c.execute("SELECT COUNT(*) FROM processing_jobs WHERE dono_id = ?", (pessoa,)).fetchone()[0]
 m = c.execute("SELECT COUNT(*) FROM notas WHERE pessoa_id = ?", (pessoa,)).fetchone()[0]
-print(f"  semeado: {n} livros, {m} notas, 1 aparelho, 1 estudo")
+g = c.execute("SELECT COUNT(*) FROM canvas_nos WHERE pessoa_id = ?", (pessoa,)).fetchone()[0]
+print(f"  semeado: {n} livros (1 com EPUB de verdade), {m} notas, {g} no Canvas, 1 aparelho, 1 estudo")

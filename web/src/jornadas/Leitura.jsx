@@ -25,7 +25,10 @@ import "./leitura.css";
 
 const iconeMenu = "/icones/icone-menu.svg";
 const iconeCaderno = "/icones/icone-caderno.svg";
-const iconeIndice = "/icones/icone-estante.svg";
+/* O ícone do índice é uma LISTA, e não o da estante: aquele é o lugar onde os
+ * livros ficam, e usá-lo aqui fazia o botão do sumário parecer um atalho para
+ * fora do livro. */
+const iconeIndice = "/icones/icone-indice.svg";
 const iconeNotaNova = "/icones/icone-nota-nova.svg";
 const iconeCopiar = "/icones/icone-copiar.svg";
 const iconeMarcador = "/icones/icone-marcador.svg";

@@ -20,6 +20,12 @@ RAIZ="${MEKORA_PROVA:-$PWD/.ver}"
 LOG="$RAIZ/servidor.log"
 EMAIL="${MEKORA_EMAIL:-erik@mekora.local}"
 
+# O PYTHON DO PROJETO QUANDO ELE EXISTE. O `python3` do sistema, no macOS, falha
+# com "You have not agreed to the Xcode license agreements" de forma
+# intermitente — e com `|| true` por perto a falha vira acervo vazio em silêncio.
+PY_="$(cd "$(dirname "$0")/.." && pwd)/.venv/bin/python"
+[ -x "$PY_" ] || PY_="$(command -v python3)"
+
 if [ "${1:-}" != "--link" ]; then
   echo "▸ subindo o backend e o web…"
   MEKORA_PROVA="$RAIZ" bash scripts/prova.sh >/dev/null 2>&1 &
@@ -32,18 +38,40 @@ if [ "${1:-}" != "--link" ]; then
 fi
 
 # A conta. O mesmo e-mail sempre, para o acervo semeado continuar sendo dele.
+#
+# A MARCA DO LOG É LIDA ANTES DO PEDIDO, e a busca começa depois dela.
+#
+# Sem isso, quando o limite derruba o pedido o `grep` acha a chave ANTERIOR — já
+# consumida — e o script entrega um link morto com cara de novo. Medido: da
+# quarta chamada em diante, sete seguidas devolveram o mesmo token gasto.
+ANTES=$(wc -l < "$LOG" 2>/dev/null || echo 0)
 curl -s -X POST -H "Content-Type: application/json" -d "{\"email\":\"$EMAIL\"}" -o /dev/null "$API/entrar/pedir"
 CHAVE=""
 for _ in $(seq 24); do
   sleep 0.5
-  CHAVE=$(grep -A3 "$EMAIL" "$LOG" 2>/dev/null | grep -oE "/entrar/[A-Za-z0-9_-]{20,}" | tail -1 | sed 's|/entrar/||' || true)
+  CHAVE=$(tail -n "+$((ANTES + 1))" "$LOG" 2>/dev/null \
+    | grep -A3 "$EMAIL" \
+    | grep -oE "/entrar/[A-Za-z0-9_-]{20,}" | tail -1 | sed 's|/entrar/||' || true)
   [ -n "$CHAVE" ] && break
 done
-[ -n "$CHAVE" ] || { echo "não saiu link para $EMAIL. O limite é de 5 pedidos a cada 10 minutos." >&2; exit 1; }
+# SEM LINK PELA ROTA, GRAVA UM NO BANCO.
+#
+# O limite de cinco pedidos a cada dez minutos existe para o campo aberto na
+# internet não virar máquina de incomodar, e está certo — mas em
+# desenvolvimento ele vira uma parede: na sexta olhada em dez minutos não há
+# mais como entrar, e o produto fica inalcançável para quem quer vê-lo.
+#
+# O `chave-local.py` escreve a chave direto, sem passar pela rota. O limite
+# continua valendo para quem chega pela internet.
+if [ -z "$CHAVE" ]; then
+  echo "  (o limite da rota foi atingido — gravando uma chave direto no banco)"
+  CHAVE=$(MEKORA_PROVA="$RAIZ" MEKORA_EMAIL="$EMAIL" "$PY_" scripts/chave-local.py 2>/dev/null || true)
+fi
+[ -n "$CHAVE" ] || { echo "não consegui gerar link para $EMAIL — veja $LOG" >&2; exit 1; }
 
 if [ "${1:-}" != "--link" ]; then
   echo "▸ semeando o acervo…"
-  MEKORA_PROVA="$RAIZ" MEKORA_EMAIL="$EMAIL" python3 scripts/semear.py || true
+  MEKORA_PROVA="$RAIZ" MEKORA_EMAIL="$EMAIL" "$PY_" scripts/semear.py || true
 fi
 
 cat <<FIM
