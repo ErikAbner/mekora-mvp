@@ -1069,3 +1069,70 @@ respirar.
 
 Sem ele, quem tem o telefone em automático perde isso ao tocar uma vez aqui, e
 não tem como voltar.
+
+---
+
+# Os cinco símbolos: busca, configurações de arquivo, aviso, criar conta
+
+Nós `941:23107`, `941:23118`, `941:23109`, `941:23106` e `941:23108`.
+
+## A busca existia no desenho e estava desligada há meses
+
+O botão *"Buscar em Mekora"* do cabeçalho nasceu `disabled`, com o motivo
+escrito no próprio código: *"não há rota de busca no backend, e uma busca que só
+olha o que a tela já carregou encontraria menos do que a pessoa tem"*. A razão
+era boa e continuava valendo — o que faltava era a rota. Ela é o `busca.py`.
+
+**Três grupos, e não uma lista misturada.** Um livro e uma nota não se comparam
+por relevância; quem compara é quem procurou. O que ela **não** faz está no
+A-25.
+
+**O `%` é escapado.** No `LIKE` ele é curinga. Escrito por uma pessoa, é um por
+cento — e sem escapar, procurar "100%" devolveria a estante inteira. Há teste.
+
+## O que o "Remover da estante" apaga, e o que o desenho não diz
+
+O botão diz *"O arquivo preparado e o original saem. Não dá para desfazer."* Diz
+a verdade e conta menos da metade: as notas do livro saem por cascata do banco.
+A confirmação — que o desenho não tem — nomeia isso com o número: *"3 notas
+deste livro saem junto."* Uma ação irreversível a um clique de distância era a
+única coisa cara nessa folha.
+
+## O aviso de preferência recebe o botão em vez de trazer o seu
+
+No `941:23109` o *"Preparar arquivos"* está dentro da caixa. A tela de preparo já
+tem a ação dela, e duas primárias com o mesmo destino — uma dentro e outra fora
+da moldura — é a pessoa escolhendo entre dois botões idênticos. A caixa envolve
+a ação de quem a usa. Quando não há desvio, não há caixa: *"0 preferências fora
+do padrão"* é ruído.
+
+## `Criar conta` substituiu um empurrão mudo
+
+Quem não tinha entrado e clicava em Estante caía num campo de e-mail sem uma
+palavra, com o voltar do navegador inutilizado por um `<Navigate replace>`. Os
+três itens do desenho são exatamente os três lugares que empurram. A tela ganhou
+uma linha que o desenho não tem — *"Você pediu a Estante. É um dos três."* —
+porque sem ela a folha explica o geral e cala sobre o clique que a abriu.
+
+O rótulo do primário está no A-22.
+
+## O que a medição achou por causa disto
+
+Três defeitos que já existiam e ninguém via:
+
+1. **O proxy de desenvolvimento ignorava query string.** `^/buscar$` não casava
+   `/buscar?q=campo`: o pedido caía no SPA e voltava `<!doctype html>`. Nenhuma
+   rota exata usava query até agora.
+2. **A auditoria media telas privadas numa conta vazia** — de novo. O
+   `entrar-como-dono.sh` só semeava quando NENHUM id vinha, e a auditoria passa
+   um id em toda rota privada. `/estudos` foi de 30 para 86 nós ao ser semeada,
+   e reprovou: o título de um estudo é link, e link sem tinta declarada sai no
+   `#0000ee` do navegador. Enquanto a tela era medida sem estudo nenhum, não
+   havia título para pintar de azul.
+3. **`/jobs/{id}/status` derrubava com 500 diante de uma coluna nula.**
+   `_sem_buracos` existe para isso e estava em dois lugares; este era o
+   terceiro. A tela de preparo dizia *"O Mekora não está respondendo agora"*
+   para um trabalho que o `/analyze` devolvia sem reclamar.
+
+A folha também ganhou teto de altura: sem ele o `<dialog>` crescia além da tela
+e a rolagem movia a folha inteira, tirando o título do viewport.

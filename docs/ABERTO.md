@@ -286,3 +286,36 @@ Ajuda, Apresentação, Estante e Mesa. Faltam: `M · Estante — busca`, `M · C
 `M · Preparo` (duas), `M · Livro — o que ficou`, `M · Atualizações`. Elas passam
 no portão e no transbordo a 390 — mas passar na medida não é ter sido comparada,
 e a Apresentação provou isso.
+
+**A-21 · "Baixar" promete o original, e o produto não pode entregá-lo.** O nó
+`941:23118` diz *"O EPUB preparado, ou o PDF original do jeito que chegou"*. O
+segundo não existe: `files.py` fecha `/storage/{rest}` com 404 de propósito, e
+`input/` está do lado de dentro dessa porta — servir o arquivo enviado é abrir
+uma rota nova para o que a pessoa mandou, e isso é decisão de segurança, não
+detalhe de tela. A linha implementada oferece o EPUB e diz isso. **Decisão do
+Erik:** servir o original também, ou reescrever a frase do desenho.
+
+**A-22 · O símbolo "Criar conta" não tem botão que crie conta.** No nó
+`941:23106` os dois botões são *"Agora não"* e *"Preparar arquivos"* — os dois
+levam para longe da conta, numa folha cujo título é *"Criar conta no Mekora"* e
+cujo corpo lista três razões para ter uma. Implementei o primário como
+**"Criar conta" → `/entrar`**, que é onde a conta nasce, e mantive o secundário
+do desenho. **Decisão do Erik:** o rótulo do primário.
+
+**A-23 · Os vãos de ícone do `941:23118` estão vazios no Figma.** Cada uma das
+cinco linhas tem um quadrado de 40px com borda e nada dentro. Ficaram vazios na
+implementação — desenhar cinco ícones à mão produziria ícones que não passaram
+pelo efeito handmade e não seriam do sistema. Faltam: renomear, páginas, baixar,
+refazer, remover, no Solar 480.
+
+**A-24 · "Conectar nota" é folha no desenho e seção na tela.** O nó `941:23108`
+mostra *"Ligar esta nota a qual?"* como diálogo por cima, com busca, lista de
+candidatas e "Cancelar". Na tela ela é uma seção da página da nota, com a mesma
+busca e a mesma lista. O conteúdo é o mesmo; o recipiente não. **Decisão do
+Erik:** vale a pena virar folha.
+
+**A-25 · A busca não entra no texto dos livros.** *"Buscar em Mekora"*
+(`941:23107`) procura título, autor, nome do arquivo, o texto das notas e o
+assunto dos estudos — tudo que o banco sabe. O texto do livro está dentro do
+EPUB, não no banco, e indexá-lo é trabalho de outra ordem. A tela diz isso
+quando não acha nada.
