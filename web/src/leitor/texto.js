@@ -49,7 +49,14 @@ function resolverCaminho(src, doCapitulo) {
 let caminhoDoCapitulo = "";
 
 export function lerCapitulo(html, { caminho = "" } = {}) {
-  const doc = new DOMParser().parseFromString(html, "application/xhtml+xml");
+  /* `epub:type` VIRA `data-epub-type` ANTES DE ANALISAR, e o motivo não é
+   * conveniência: em XML, um prefixo sem `xmlns:epub` declarado não é atributo
+   * desconhecido, é ERRO — e o analisador descarta o DOCUMENTO INTEIRO, não o
+   * atributo. Um capítulo que esqueceu a declaração viraria um capítulo em
+   * branco, sem erro em lugar nenhum.
+   *
+   * O `epub.js` faz a mesma troca pelo mesmo motivo, na leitura do sumário. */
+  const doc = new DOMParser().parseFromString(html.replace(/epub:type/g, "data-epub-type"), "application/xhtml+xml");
   const corpo = doc.querySelector("body") ?? doc.documentElement;
 
   /* Estilo e script do editor saem antes de qualquer leitura. Deixá-los para
@@ -120,7 +127,19 @@ function percorrer(no, saida) {
         continue;
       }
 
-      saida.push({ tipo, ...lerBloco(filho) });
+      /* A EPÍGRAFE, e ela é DECLARADA pelo livro — não adivinhada.
+       *
+       * O nó 895:10472 tem um bloco escuro sangrando até as bordas, em caixa
+       * alta, com a frase de abertura do capítulo. É uma epígrafe, e ela existe
+       * no EPUB 3 como `epub:type="epigraph"`.
+       *
+       * A alternativa seria uma regra de forma — "a primeira citação curta do
+       * capítulo" —, e ela erra em qualquer livro que abra citando uma fonte.
+       * Livro que não declara não ganha o bloco escuro, e ganha a citação com
+       * filete, que é o que ele pediu. */
+      const papel = filho.getAttribute?.("data-epub-type") || "";
+      const qual = tipo === "citacao" && /\bepigraph\b/.test(papel) ? "epigrafe" : tipo;
+      saida.push({ tipo: qual, ...lerBloco(filho) });
       // Não desce: um <p> dentro de <blockquote> já foi lido, e descer
       // duplicaria o parágrafo.
       continue;

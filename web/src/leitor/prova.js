@@ -38,6 +38,26 @@
     ["titulo", "paragrafo", "citacao"],
   );
 
+  // A EPÍGRAFE É DECLARADA, e não adivinhada. O nó 895:10472 tem um bloco escuro
+  // sangrando até as bordas, e ele é uma epígrafe — `epub:type="epigraph"` no
+  // EPUB 3. Uma regra de forma ("a primeira citação curta") erraria em qualquer
+  // livro que abra citando uma fonte.
+  caso(
+    "citacao com epub:type=epigraph vira epigrafe",
+    lerCapitulo(xhtml('<blockquote epub:type="epigraph">Somos influenciados.</blockquote>')).blocos.map((b) => b.tipo),
+    ["epigrafe"],
+  );
+  caso(
+    "citacao sem o papel continua citacao",
+    lerCapitulo(xhtml("<blockquote>Uma citação qualquer.</blockquote>")).blocos.map((b) => b.tipo),
+    ["citacao"],
+  );
+  caso(
+    "epub:type com mais de um papel ainda pega",
+    lerCapitulo(xhtml('<blockquote epub:type="bodymatter epigraph">Duas.</blockquote>')).blocos.map((b) => b.tipo),
+    ["epigrafe"],
+  );
+
   // A ênfase vira DESLOCAMENTO, no mesmo sistema de coordenadas do destaque do
   // usuário — os dois passam a viver juntos.
   const enf = lerCapitulo(xhtml("<p>Um <em>Jeep Willys</em> azul.</p>")).blocos[0];

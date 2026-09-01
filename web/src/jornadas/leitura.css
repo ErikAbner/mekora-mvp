@@ -122,6 +122,12 @@
   /* Sem raio: destaque e marca sobre o texto, nao etiqueta. */
   border-radius: 0;
 }
+/* DENTRO DA EPIGRAFE, `inherit` E A TINTA CLARA — e o destaque fica texto claro
+ * sobre amarelo, ilegivel. O bloco escuro e o unico lugar da leitura onde o
+ * fundo inverte, e a marca do leitor traz o proprio fundo: ela precisa da tinta
+ * normal por cima, e nao da tinta do bloco. Visto na tela assim que a epigrafe
+ * passou a existir. */
+.prosa .epigrafe mark { color: var(--foreground); }
 
 @media (max-width: 1023px) {
   .abertura { padding: 40px 16px; gap: 24px; }
@@ -170,6 +176,28 @@
 .prosa .titulo { margin: 24px 0 0; font-size: 32px; line-height: 40px; font-weight: 540; text-indent: 0; color: var(--foreground); }
 .prosa .subtitulo { margin: 16px 0 0; font-size: 24px; line-height: 32px; font-weight: 540; text-indent: 0; color: var(--foreground); }
 .prosa .citacao { margin: 0; padding: 16px 0 16px 32px; text-indent: 0; border-inline-start: 1px solid var(--foreground); color: var(--muted-foreground); }
+
+/* A EPIGRAFE — o bloco escuro do no 895:10472. Sangra ate as bordas da tela,
+ * tinta cheia invertida, caixa alta, texto curto e centrado a esquerda da
+ * coluna. E o unico lugar da leitura onde o fundo inverte, e ele existe porque
+ * a epigrafe NAO E leitura corrida: e a frase que abre o capitulo.
+ *
+ * A sangria usa a coluna `sangra` do grid da prosa, a mesma que a ilustracao
+ * cheia usa — nao uma margem negativa medida a mao, que erraria em toda largura
+ * que nao fosse aquela em que foi medida. */
+.prosa .epigrafe {
+  grid-column: cheia-inicio / cheia-fim;
+  margin: 40px 0;
+  padding: 64px var(--borda, 32px);
+  text-indent: 0;
+  border: 0;
+  background: var(--foreground);
+  color: var(--background);
+  font-size: 22px; line-height: 32px; font-weight: 540;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  text-wrap: pretty;
+}
 .prosa .item { text-indent: 0; }
 .prosa .legenda { text-indent: 0; font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
 

@@ -79,8 +79,19 @@ CAPITULOS = [
     ]),
 ]
 
+# A EPÍGRAFE DO PRIMEIRO CAPÍTULO, e ela existe por um motivo de prova.
+#
+# O nó 895:10472 abre a leitura com um bloco escuro sangrando até as bordas, e
+# esse bloco é uma epígrafe declarada — `epub:type="epigraph"` do EPUB 3. Sem um
+# livro que a declare, o tratamento existe no código e não aparece em tela
+# nenhuma: seria construído no escuro, e "está pronto" sem ninguém ter visto.
+#
+# O texto é do próprio Brás Cubas, dedicatória do livro, e portanto de domínio
+# público como o resto.
+EPIGRAFE = "Ao verme que primeiro roeu as frias carnes do meu cadáver dedico como saudosa lembrança estas memórias póstumas."
+
 _XHTML = """<?xml version="1.0" encoding="utf-8"?>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="pt-BR">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="pt-BR">
 <head><title>{titulo}</title></head>
 <body><h1>{titulo}</h1>{corpo}</body></html>"""
 
@@ -169,6 +180,8 @@ def escrever(destino: Path, titulo: str | None = None, autor: str | None = None)
         z.writestr("OEBPS/toc.ncx", _ncx())
         for i, (titulo, paragrafos) in enumerate(CAPITULOS):
             corpo = "".join(f"<p>{p}</p>" for p in paragrafos)
+            if i == 0:
+                corpo = f'<blockquote epub:type="epigraph">{EPIGRAFE}</blockquote>' + corpo
             z.writestr(f"OEBPS/texto/cap{i}.xhtml", _XHTML.format(titulo=titulo, corpo=corpo))
     return destino
 

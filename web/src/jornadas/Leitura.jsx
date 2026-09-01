@@ -52,7 +52,7 @@ export const DESTAQUES = {
  * ênfase do livro virou deslocamento em vez de HTML aninhado — o destaque do
  * usuário e a ênfase do autor vivem no mesmo sistema de coordenadas, e a tela
  * não precisa saber de onde cada um veio. */
-const TAG = { titulo: "h2", subtitulo: "h3", citacao: "blockquote", item: "li", legenda: "figcaption" };
+const TAG = { titulo: "h2", subtitulo: "h3", citacao: "blockquote", epigrafe: "blockquote", item: "li", legenda: "figcaption" };
 
 /* QUAL LARGURA CADA IMAGEM RECEBE — e o EPUB não diz.
  *
