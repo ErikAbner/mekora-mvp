@@ -11,6 +11,7 @@ import "./trilha-conta.css";
 const PAGINAS = [
   { id: "conta", rotulo: "Conta", rota: "/conta" },
   { id: "kindle", rotulo: "Dispositivos Kindle", rota: "/conta/kindle" },
+  { id: "seguranca", rotulo: "Segurança", rota: "/conta/seguranca" },
   { id: "preferencias", rotulo: "Preferências", rota: "/conta/preferencias" },
   { id: "privacidade", rotulo: "Privacidade", rota: "/conta/privacidade" },
 ];

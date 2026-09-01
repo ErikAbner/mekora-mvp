@@ -201,6 +201,84 @@ def sair(db: Session, token: str | None) -> None:
         db.commit()
 
 
+def sessoes_de(db: Session, token: str | None) -> list[dict]:
+    """Os navegadores em que esta pessoa entrou, e qual deles é este.
+
+    A LINHA NÃO CARREGA O TOKEN, e não pode. O que existe no banco é o resumo
+    sha256, e devolvê-lo daria a quem lesse a resposta a metade que falta para
+    reconhecer uma sessão. O `este` é calculado aqui, comparando resumo com
+    resumo, e o que sai é um booleano.
+    """
+    pessoa = quem_e(db, token)
+    if pessoa is None:
+        return []
+    daqui = resumir(token) if token else None
+    linhas = (
+        db.query(Sessao)
+        .filter(Sessao.pessoa_id == pessoa.id, Sessao.encerrada.is_(False))
+        .order_by(Sessao.ultimo_uso.desc().nullslast(), Sessao.criada_em.desc())
+        .all()
+    )
+    return [
+        {
+            "id": s.id,
+            "este": s.resumo == daqui,
+            "criada_em": s.criada_em,
+            "ultimo_uso": s.ultimo_uso,
+            "expira_em": s.expira_em,
+        }
+        for s in linhas
+        if s.vale
+    ]
+
+
+def encerrar_sessao(db: Session, token: str | None, sessao_id: int) -> bool:
+    """Encerra UMA sessão desta pessoa. Devolve se encerrou.
+
+    O filtro por `pessoa_id` não é zelo: sem ele, um id em sequência deixaria
+    qualquer pessoa logada derrubar a sessão de qualquer outra.
+    """
+    pessoa = quem_e(db, token)
+    if pessoa is None:
+        return False
+    sessao = (
+        db.query(Sessao)
+        .filter(Sessao.id == sessao_id, Sessao.pessoa_id == pessoa.id)
+        .first()
+    )
+    if sessao is None:
+        return False
+    sessao.encerrada = True
+    db.commit()
+    return True
+
+
+def encerrar_as_outras(db: Session, token: str | None) -> int:
+    """Sai de todos os outros navegadores, e mantém este.
+
+    É a ação que a pessoa quer quando desconfia de alguma coisa, e ela precisa
+    NÃO derrubar quem a está executando — senão o remédio pede o link de novo,
+    e a pessoa fica de fora junto com quem ela queria tirar.
+    """
+    pessoa = quem_e(db, token)
+    if pessoa is None:
+        return 0
+    daqui = resumir(token) if token else None
+    outras = (
+        db.query(Sessao)
+        .filter(
+            Sessao.pessoa_id == pessoa.id,
+            Sessao.encerrada.is_(False),
+            Sessao.resumo != daqui,
+        )
+        .all()
+    )
+    for s in outras:
+        s.encerrada = True
+    db.commit()
+    return len(outras)
+
+
 def limpar_vencidas(db: Session) -> int:
     """Apaga chaves usadas ou vencidas. Elas não servem para nada e crescem para
     sempre — e uma tabela que só cresce é um problema que chega calado."""

@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.models.pessoa import VALIDADE_DA_SESSAO
+from app.api.porta import exigir_conta
 from app.services import acesso_service
 
 router = APIRouter()
@@ -142,3 +143,46 @@ def sair(
     r = Response(status_code=204)
     r.delete_cookie(COOKIE, path="/")
     return r
+
+
+@router.get("/sessoes")
+def sessoes(
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Os navegadores em que esta pessoa entrou.
+
+    Sem conta a resposta é uma lista vazia, e não 401: a mesma razão do `/eu` —
+    não estar logado é estado previsto, e não erro.
+    """
+    return {"sessoes": acesso_service.sessoes_de(db, mekora_sessao)}
+
+
+@router.post("/sessoes/{sessao_id}/encerrar", status_code=204)
+def encerrar_uma(
+    sessao_id: int,
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> Response:
+    """Derruba UM navegador.
+
+    404 quando não encerrou, e não 403: dizer "existe, mas não é sua" confirma
+    a existência de sessão alheia para quem estiver testando ids em sequência.
+    """
+    if not acesso_service.encerrar_sessao(db, mekora_sessao, sessao_id):
+        raise HTTPException(status_code=404, detail="Sessão não encontrada.")
+    return Response(status_code=204)
+
+
+@router.post("/sessoes/encerrar-outras")
+def encerrar_outras(
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Sai de todos os outros navegadores, e mantém este.
+
+    Devolve quantos caíram, porque "pronto" sem número não deixa a pessoa saber
+    se havia alguma coisa lá.
+    """
+    exigir_conta(mekora_sessao, db)
+    return {"encerradas": acesso_service.encerrar_as_outras(db, mekora_sessao)}

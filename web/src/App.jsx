@@ -13,6 +13,8 @@ import { useCallback, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams, useLocation } from "react-router-dom";
 import { MesaVazia } from "./jornadas/MesaVazia.jsx";
 import { Apresentacao } from "./jornadas/Apresentacao.jsx";
+import { ContaVisao } from "./jornadas/ContaVisao.jsx";
+import { ContaSeguranca } from "./jornadas/ContaSeguranca.jsx";
 import { MesaCheia } from "./jornadas/MesaCheia.jsx";
 import { Estante } from "./jornadas/Estante.jsx";
 import { Leitura } from "./jornadas/Leitura.jsx";
@@ -362,7 +364,11 @@ export function App() {
         {/* Conta tem quatro páginas; só Preferências existe. As outras usam a
             mesma tela de "ainda não", que nomeia o lugar em vez de dar 404. */}
         <Route path="/conta/preferencias" element={<SoParaQuemEntrou acesso={acesso}><Conta pessoa={comoChamar(acesso.pessoa)} aoSair={acesso.sair} /></SoParaQuemEntrou>} />
-        <Route path="/conta" element={<SoParaQuemEntrou acesso={acesso}><ContaKindle pessoa={comoChamar(acesso.pessoa)} aoSair={acesso.sair} /></SoParaQuemEntrou>} />
+        {/* A visao geral, que ate 01/09 nao existia: `/conta` renderizava a
+            tela de Dispositivos Kindle, e a trilha da conta prometia quatro
+            destinos com dois abrindo a mesma coisa. */}
+        <Route path="/conta" element={<SoParaQuemEntrou acesso={acesso}><ContaVisao pessoa={comoChamar(acesso.pessoa)} aoSair={acesso.sair} /></SoParaQuemEntrou>} />
+        <Route path="/conta/seguranca" element={<SoParaQuemEntrou acesso={acesso}><ContaSeguranca pessoa={comoChamar(acesso.pessoa)} aoSair={acesso.sair} /></SoParaQuemEntrou>} />
         <Route path="/conta/kindle" element={<SoParaQuemEntrou acesso={acesso}><ContaKindle pessoa={comoChamar(acesso.pessoa)} aoSair={acesso.sair} /></SoParaQuemEntrou>} />
         <Route
           path="/conta/privacidade"

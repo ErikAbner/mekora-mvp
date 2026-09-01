@@ -33,6 +33,7 @@ export const COM_SUBCAMINHO = [
   "/pending-send",
   "/presets",
   "/privacidade",
+  "/sessoes",
   "/storage",
   "/tools",
   "/translation",
@@ -49,6 +50,7 @@ export const EXATAS = [
   "/presets",
   "/privacidade",
   "/sair",
+  "/sessoes",
   "/upload",
 ];
 

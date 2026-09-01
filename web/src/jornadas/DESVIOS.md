@@ -319,3 +319,78 @@ Saiu para `componentes/Soltar.jsx`, e os chips para `componentes/Formatos.jsx`,
 porque a Apresentação os mostra também fora da área de soltar.
 
 Medido depois: a Mesa continua passando no portão, com os mesmos 33 nós.
+
+---
+
+# Conta — visão geral e segurança
+
+**As duas foram construídas SEM O DESENHO.** O `figma-local` é o único conector
+que alcança o arquivo do Mekora, e ele exige o Dev Mode ligado no app — a aba
+estava em `mode=design`. O conector remoto está autenticado na conta da empresa e
+responde *"you don't have edit access"* nesse arquivo, que é da conta pessoal.
+
+Então elas são **candidatas para o pente fino**, e não telas conferidas. O que
+está abaixo é o raciocínio de cada decisão, para a conversa ser sobre escolhas e
+não sobre adivinhação.
+
+## Por que a visão geral existe
+
+`/conta` renderizava a tela de **Dispositivos Kindle**. A trilha da conta promete
+quatro destinos e dois abriam a mesma coisa, com o primeiro mentindo sobre o que
+é. Um item de menu que leva a outro lugar é pior que um item a menos: ele ensina
+que o menu não é confiável.
+
+## Nenhum número dela é escrito à mão
+
+O e-mail e a data vêm do `/eu`; as contagens vêm do `/privacidade`, que é a mesma
+fonte que a tela de Privacidade lê. Copiar os números daria dois lugares
+contando, e dois lugares contando divergem — é só questão de quando.
+
+A tela só mostra a linha cuja contagem **veio como número**. Uma contagem ausente
+virando `0` afirmaria que está vazio, e ausência não é vazio.
+
+## Segurança: o que faltava era o backend
+
+O modelo `Sessao` guarda criação, último uso e vencimento **desde que existe**, e
+não havia nada que os mostrasse. O `/sair` encerra só este navegador: não havia
+como responder *"onde mais estou logado?"*, nem derrubar um computador
+emprestado ou um celular perdido.
+
+Entraram `GET /sessoes`, `POST /sessoes/{id}/encerrar` e
+`POST /sessoes/encerrar-outras`.
+
+**A linha nunca carrega o token.** O que o banco guarda é o resumo `sha256`, e
+devolvê-lo daria a quem lesse a resposta a metade que falta para reconhecer uma
+sessão. Qual delas é este navegador é decidido no servidor, comparando resumo com
+resumo, e o que chega à tela é um booleano.
+
+**404 e não 403** quando a sessão é de outra pessoa: dizer *"existe, mas não é
+sua"* confirma a existência de sessão alheia para quem testar ids em sequência.
+
+Provado com duas contas: o intruso recebe 404, a vítima continua logada, e o
+intruso só enxerga a própria sessão. Sem conta, `encerrar-outras` responde 401.
+
+## O que a tela NÃO diz, e por quê
+
+Não há *"Chrome no Mac"*, nem cidade, nem "última vez em São Paulo". O Mekora
+**não guarda user-agent nem IP** — e inventar um nome de aparelho a partir de
+nada daria à pessoa uma certeza falsa justamente na tela onde ela decide se uma
+sessão é dela. O que aparece é o que o servidor sabe: quando foi usada por
+último, e quando vence.
+
+"Há 3 dias" em vez da data: ninguém lembra em que dia entrou, mas todo mundo sabe
+se usou o Mekora ontem.
+
+## `encerrar-outras` mantém este navegador
+
+É a ação de quem desconfia de alguma coisa, e ela precisa não derrubar quem a
+está executando — senão o remédio pede o link de novo, e a pessoa fica de fora
+junto com quem queria tirar. A resposta devolve **quantos caíram**, porque
+"pronto" sem número não deixa saber se havia alguma coisa lá, que é exatamente o
+que ela quer saber.
+
+## O cabeçalho fica fora do `.conta`
+
+`.conta` é a linha de trilha mais painel. Com o cabeçalho dentro ele vira uma
+terceira coluna e empurra o painel para fora da tela — foi o que a primeira
+captura mostrou, com o painel cortado pela direita.

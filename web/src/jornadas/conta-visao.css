@@ -1,0 +1,80 @@
+/* Conta — visao geral. Reusa `.conta` e `.conta-painel` do conta.css, que sao a
+ * moldura das quatro paginas da trilha. So o que e desta tela mora aqui.
+ */
+.visao-quem,
+.visao-resumo,
+.visao-ir {
+  display: flex; flex-direction: column; gap: 24px;
+  padding: 32px 40px;
+  border: 1px solid var(--border);
+  background: var(--background);
+}
+.visao-quem h2,
+.visao-resumo h2,
+.visao-ir h2 {
+  margin: 0;
+  font-size: 28px; line-height: 36px; font-weight: 540;   /* Heading/SM */
+  color: var(--card-foreground);
+}
+
+.visao-dados { display: flex; flex-wrap: wrap; gap: 40px; margin: 0; }
+.visao-dados dt {
+  margin: 0 0 4px;
+  font-size: 14px; line-height: 22px;   /* Label/Small */
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+}
+.visao-dados dd {
+  margin: 0;
+  font-size: 20px; line-height: 30px;   /* Body/Medium */
+  color: var(--foreground);
+}
+
+/* O filete marca a fala do produto sobre si mesmo — a mesma regra da explicacao
+ * de estado na Mesa. */
+.visao-nota {
+  margin: 0;
+  padding: 16px 0 16px 32px;
+  border-left: 1px solid var(--foreground);
+  font-size: 18px; line-height: 27px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+.visao-resumo ul,
+.visao-ir ul { display: flex; margin: 0; padding: 0; list-style: none; }
+.visao-resumo ul { flex-wrap: wrap; gap: 16px; }
+.visao-resumo a {
+  display: flex; flex-direction: column; gap: 4px;
+  min-inline-size: 140px; padding: 20px 24px;
+  background: var(--card);
+  color: var(--foreground);
+  text-decoration: none;
+}
+.visao-resumo a:hover { background: var(--surface-hover); }
+.visao-numero { font-size: 40px; line-height: 48px; font-weight: 540; }  /* Heading/LG */
+.visao-rotulo { font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
+
+.visao-ir ul { flex-direction: column; }
+.visao-ir li + li { border-top: 1px solid var(--separator); }
+.visao-ir a {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 20px 0;
+  color: var(--foreground);
+  text-decoration: none;
+}
+.visao-ir li:first-child a { padding-top: 0; }
+.visao-ir a:hover .visao-ir-titulo { text-decoration: underline; }
+.visao-ir-titulo { font-size: 20px; line-height: 30px; }
+.visao-ir-oquee { font-size: 16px; line-height: 24px; color: var(--muted-foreground); text-wrap: pretty; }
+
+:where(.visao-resumo, .visao-ir) a:focus-visible {
+  outline: 1px solid var(--foreground); outline-offset: 2px;
+}
+
+@media (max-width: 767px) {
+  .visao-quem, .visao-resumo, .visao-ir { padding: 24px 20px; }
+  .visao-dados { gap: 24px; }
+  .visao-resumo a { min-inline-size: 0; flex: 1 1 40%; padding: 16px 20px; }
+  .visao-numero { font-size: 32px; line-height: 40px; }
+}

@@ -425,6 +425,26 @@ export function desligarNotas(id) {
   return pede(`/canvas/ligacoes/${id}`, { method: "DELETE" });
 }
 
+/** GET /sessoes — os navegadores em que voce entrou.
+ *
+ * Sem conta devolve lista vazia, e nao erro: o mesmo criterio do `/eu`. */
+export function lerSessoes() {
+  return pede("/sessoes");
+}
+
+/** POST /sessoes/{id}/encerrar — derruba UM navegador. */
+export function encerrarSessao(id) {
+  return pede(`/sessoes/${id}/encerrar`, { method: "POST" });
+}
+
+/** POST /sessoes/encerrar-outras — sai de todos os outros, e mantem este.
+ *
+ * Devolve quantos cairam: "pronto" sem numero nao deixa a pessoa saber se havia
+ * alguma coisa la. */
+export function encerrarOutrasSessoes() {
+  return pede("/sessoes/encerrar-outras", { method: "POST" });
+}
+
 export function lerPrivacidade() {
   return pede("/privacidade");
 }
