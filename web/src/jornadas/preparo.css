@@ -77,3 +77,63 @@
 }
 
 .preparo-pagina-pagina-acoes { display: flex; gap: 12px; flex-wrap: wrap; padding-block-start: 12px; border-block-start: 1px solid var(--border); }
+
+/* ---- Preparo em andamento, e Preparo pronto ------------------------------
+ *
+ * Os dois estados nao existiam: `converter` era chamado e a tela navegava para
+ * a Mesa no mesmo instante. Um PDF digitalizado de trezentas paginas leva
+ * minutos com OCR, e a pessoa ficava na Mesa sem saber se algo acontecia.
+ */
+.preparo-andando,
+.preparo-fim {
+  display: flex; flex-direction: column; gap: 24px;
+  inline-size: 100%; max-inline-size: 680px;
+  margin-block: 64px;
+}
+.preparo-andando h1,
+.preparo-fim h1 {
+  margin: 0;
+  font-size: 40px; line-height: 48px; font-weight: 540;   /* Heading/LG */
+  color: var(--foreground);
+  text-wrap: pretty;
+}
+.preparo-andando-etapa {
+  margin: 0;
+  font-size: 24px; line-height: 32px;   /* Body/Large */
+  color: var(--muted-foreground);
+}
+.preparo-andando-nota,
+.preparo-fim-diz {
+  margin: 0;
+  font-size: 18px; line-height: 27px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+/* A barra e um DEGRAU de superficie sobre outro, como todo estado do sistema.
+ * Ela so aparece quando o servidor manda porcentagem: barra que anda sozinha
+ * sem dado por tras e a mentira mais comum desta tela em qualquer produto. */
+.preparo-barra {
+  block-size: 8px;
+  background: var(--background-tertiary);
+}
+.preparo-barra > span {
+  display: block; block-size: 100%;
+  background: var(--foreground);
+  transition: inline-size var(--d1, 160ms) cubic-bezier(.16, 1, .3, 1);
+}
+
+.preparo-fim-marca {
+  margin: 0;
+  font-size: 14px; line-height: 22px;   /* Label/Small */
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+}
+.preparo-fim-acoes { display: flex; flex-wrap: wrap; gap: 16px; }
+
+@media (max-width: 767px) {
+  .preparo-andando, .preparo-fim { margin-block: 40px; }
+  .preparo-andando h1, .preparo-fim h1 { font-size: 32px; line-height: 40px; }
+  .preparo-andando-etapa { font-size: 20px; line-height: 30px; }
+  .preparo-fim-acoes { flex-direction: column; align-items: stretch; }
+}

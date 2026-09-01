@@ -117,7 +117,17 @@ export function estadoDe(j) {
   if (andando) {
     return {
       estado: "trabalhando",
-      etapa: j.phase || andando[0],
+      /* O ROTULO EM PORTUGUES, e nao o `phase`.
+       *
+       * `derive_phase` no backend devolve o VOCABULARIO CANONICO DE MAQUINA —
+       * pending, running, completed, failed, blocked — e esta linha o punha na
+       * frente do rotulo humano. A tela de Preparo mostrava "Running..." para
+       * quem esperava a conversao, num produto inteiro em portugues.
+       *
+       * `phase` serve para decidir, nao para mostrar. Quem mostra e a lista
+       * acima, que ja nomeia cada etapa na lingua do produto. */
+      etapa: andando[0],
+      fase: j.phase || null,
       progresso: leProgresso(j.progress),
       digitalizado: j.ocr_status === "needed" || j.ocr_status === "done",
     };

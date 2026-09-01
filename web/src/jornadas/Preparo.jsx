@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
-import { analisar, converter, esperarAnalise } from "../../../contrato/api.js";
+import { acompanhar, analisar, converter, esperarAnalise } from "../../../contrato/api.js";
 import "./preparo.css";
 
 /* O preparo-pagina: o que o Mekora encontrou, e o que vai fazer.
@@ -40,10 +40,16 @@ function achados(job) {
     });
   }
 
+  /* O NUMERO DE PAGINAS, E NAO UM VEREDITO SOBRE ELAS.
+   *
+   * Aqui dizia "Nenhuma página corrompida — N de N abriram sem erro", e o
+   * backend NAO SABE ISSO: nao ha campo de pagina corrompida no
+   * `ProcessingJob`. A frase era verdadeira por acaso e apareceria igual num
+   * arquivo com metade das paginas quebradas. */
   if (paginas) {
     fora.push({
-      titulo: "Nenhuma página corrompida",
-      diz: `${paginas} de ${paginas} abriram sem erro.`,
+      titulo: `${paginas} ${paginas === 1 ? "página" : "páginas"}`,
+      diz: "Contadas na análise do arquivo.",
     });
   }
 
@@ -90,10 +96,29 @@ function planos(job) {
     });
   }
 
-  fora.push({
-    titulo: "Capa gerada",
-    diz: "Montar uma com o título, o autor e o formato — o arquivo não tinha nenhuma.",
-  });
+  /* O QUE VAI SER FEITO, sem afirmar de onde a capa veio.
+   *
+   * A frase dizia "Montar uma com o titulo, o autor e o formato — o arquivo nao
+   * tinha nenhuma", e o backend NAO SABE se o arquivo tinha: `cover_path` so e
+   * preenchido quando a pessoa escolhe uma miniatura, e as miniaturas sao
+   * paginas renderizadas do documento, nao uma capa propria. Minha primeira
+   * correcao trocou a afirmacao falsa por outra — "o arquivo ja traz uma" —
+   * baseada nessas mesmas miniaturas.
+   *
+   * O que da para dizer com apoio: se a pessoa escolheu uma pagina, ela vira a
+   * capa; se nao escolheu, o Mekora monta uma. */
+  const escolhida = job.selected_cover_page;
+  fora.push(
+    typeof escolhida === "number"
+      ? {
+          titulo: `Usar a página ${escolhida + 1} como capa`,
+          diz: "Foi a que você escolheu.",
+        }
+      : {
+          titulo: "Capa gerada",
+          diz: "Montar uma com o título, o autor e o formato, na linguagem da estante.",
+        },
+  );
 
   return fora;
 }
@@ -104,6 +129,12 @@ export function Preparo() {
   const [job, setJob] = useState(null);
   const [erro, setErro] = useState(null);
   const [preparando, setPreparando] = useState(false);
+  /* O ANDAMENTO DA CONVERSAO, que ate 01/09 nao tinha onde aparecer: `converter`
+   * era chamado e a tela navegava para a Mesa no mesmo instante. Um PDF
+   * digitalizado de trezentas paginas leva minutos com OCR, e a pessoa ficava na
+   * Mesa sem saber se algo estava acontecendo. */
+  const [andamento, setAndamento] = useState(null);
+  const [feito, setFeito] = useState(false);
   const [titulo, setTitulo] = useState("");
   const [autor, setAutor] = useState("");
   const [ajustando, setAjustando] = useState(false);
@@ -135,6 +166,81 @@ export function Preparo() {
       <div className="mesa">
         <Cabecalho lugar="mesa" />
         <main className="preparo-pagina"><p className="preparo-pagina-erro" role="alert">{erro}</p></main>
+      </div>
+    );
+  }
+
+  /* PREPARO — PRONTO. O fim da jornada tem tela, e nao um empurrao de volta
+   * para a Mesa: quem esperou a conversao quer saber que ela terminou, e
+   * escolher o que fazer com o resultado. */
+  if (feito) {
+    return (
+      <div className="mesa">
+        <Cabecalho lugar="mesa" />
+        <main className="preparo-pagina">
+          <section className="preparo-fim">
+            <p className="preparo-fim-marca">Pronto</p>
+            <h1>{titulo} está na estante.</h1>
+            <p className="preparo-fim-diz">
+              O arquivo virou EPUB e entrou no seu acervo. O que você marcar
+              lendo fica junto do livro, no trecho onde marcou.
+            </p>
+            <div className="preparo-fim-acoes">
+              <Botao tom="primaria" onClick={() => navegar(`/leitura/${id}`)}>
+                Ler agora
+              </Botao>
+              <Botao tom="secundaria" onClick={() => navegar("/estante")}>
+                Ver na estante
+              </Botao>
+              <Botao tom="secundaria" onClick={() => navegar("/")}>
+                Preparar outro
+              </Botao>
+            </div>
+          </section>
+        </main>
+      </div>
+    );
+  }
+
+  /* PREPARO — EM ANDAMENTO. Diz a etapa e a porcentagem quando o servidor as
+   * manda, e diz que nao sabe quando nao manda — em vez de uma barra inventada
+   * que anda sozinha, que e a mentira mais comum desta tela em qualquer
+   * produto. */
+  if (preparando) {
+    const pct = andamento?.progresso?.porcento;
+    return (
+      <div className="mesa">
+        <Cabecalho lugar="mesa" />
+        <main className="preparo-pagina">
+          <section className="preparo-andando">
+            <h1>Preparando {titulo}</h1>
+            <p className="preparo-andando-etapa" role="status">
+              {andamento?.etapa
+                ? `${andamento.etapa[0].toUpperCase()}${andamento.etapa.slice(1)}…`
+                : "Começando…"}
+            </p>
+            {typeof pct === "number" ? (
+              <div
+                className="preparo-barra"
+                role="progressbar"
+                aria-valuenow={Math.round(pct)}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label="Preparação do arquivo"
+              >
+                <span style={{ inlineSize: `${Math.max(0, Math.min(100, pct))}%` }} />
+              </div>
+            ) : (
+              <p className="preparo-andando-nota">
+                O servidor não informa quanto falta nesta etapa.
+              </p>
+            )}
+            <p className="preparo-andando-nota">
+              Dá para fechar esta aba: a preparação continua no servidor, e o
+              livro aparece na estante quando terminar.
+            </p>
+          </section>
+        </main>
       </div>
     );
   }
@@ -178,10 +284,18 @@ export function Preparo() {
 
         {/* O VEREDITO PRIMEIRO. Quem abre esta tela quer saber uma coisa: dá
             para seguir? O detalhe vem depois, para quem quiser. */}
+        {/* O VEREDITO PRIMEIRO — mas o que ele afirma precisa ser verdade.
+            Aqui dizia "N páginas, todas abriram", e nada no backend responde se
+            alguma não abriu. Agora ele diz o que a análise fez, e o que ela
+            achou fica na seção de baixo, item a item. */}
         <p className="preparo-pagina-veredito">
           <strong>Analisado. Nada aqui impede a preparação.</strong>
           <span>
-            {job.page_count ? `${job.page_count} páginas, todas abriram. ` : ""}
+            {job.page_count
+              ? job.page_count === 1
+                ? "1 página lida. "
+                : `${job.page_count} páginas lidas. `
+              : ""}
             O que precisa da sua atenção está abaixo.
           </span>
         </p>
@@ -243,10 +357,20 @@ export function Preparo() {
               setErro(null);
               try {
                 await converter(id);
-                navegar("/");
+                /* FICA NA TELA E ACOMPANHA. `acompanhar` para sozinho em tres
+                   casos — pronto, erro, ou o teto —, e o teto e relatado. */
+                const fim = await acompanhar(id, setAndamento);
+                if (fim.estado === "erro") {
+                  setErro(fim.motivo || "A preparação não terminou.");
+                  setPreparando(false);
+                  setAndamento(null);
+                  return;
+                }
+                setFeito(true);
               } catch (e) {
                 setErro(e.message);
                 setPreparando(false);
+                setAndamento(null);
               }
             }}
           >

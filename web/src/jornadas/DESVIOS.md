@@ -394,3 +394,61 @@ que ela quer saber.
 `.conta` é a linha de trilha mais painel. Com o cabeçalho dentro ele vira uma
 terceira coluna e empurra o painel para fora da tela — foi o que a primeira
 captura mostrou, com o painel cortado pela direita.
+
+---
+
+# Preparo — o veredito cravado, e os dois estados que faltavam
+
+## Três coisas que a tela afirmava sem o servidor saber
+
+**"Nenhuma página corrompida — N de N abriram sem erro."** Não existe campo de
+página corrompida no `ProcessingJob`. A frase era verdadeira por acaso, e
+apareceria igual num arquivo com metade das páginas quebradas. Virou o fato que
+existe: `N páginas · Contadas na análise do arquivo`.
+
+**"N páginas, todas abriram"** no veredito, pela mesma razão. Virou `N páginas
+lidas`.
+
+**"Capa gerada — o arquivo não tinha nenhuma."** Aparecia sempre, inclusive sobre
+arquivo com capa. **Minha primeira correção trocou a afirmação falsa por outra:**
+li `cover_path` e as `thumbnails` como prova de que o arquivo trazia capa, e
+disse *"o arquivo já traz uma"* — mas `cover_path` só é preenchido quando a
+pessoa **escolhe** uma miniatura (`jobs.py:996`), e as miniaturas são páginas
+renderizadas do documento, não uma capa própria.
+
+O backend **não sabe** se o arquivo tem capa. Então a tela diz o que vai fazer, e
+não de onde a capa veio: escolheu uma página, ela vira a capa; não escolheu, o
+Mekora monta uma.
+
+## "Running…" na cara de quem esperava
+
+O contrato fazia `etapa: j.phase || andando[0]`, e `derive_phase` no backend
+devolve o **vocabulário canônico de máquina** — `pending | running | completed |
+failed | blocked`. A tela de Preparo mostrava **"Running…"** num produto inteiro
+em português.
+
+`phase` serve para decidir, não para mostrar. O rótulo humano é a lista que o
+próprio `estado.js` já mantém em português — *convertendo*, *traduzindo*,
+*enviando ao Kindle*. O `phase` continua disponível como `fase`, num campo
+próprio.
+
+## Os dois estados
+
+`converter()` era chamado e a tela navegava para a Mesa **no mesmo instante**. Um
+PDF digitalizado de trezentas páginas leva minutos com OCR, e a pessoa ficava na
+Mesa sem saber se algo estava acontecendo.
+
+**Em andamento** usa o `acompanhar()` que já existia no contrato e nunca tinha
+sido usado aqui. Ele para sozinho em três casos — pronto, erro, ou o teto — e o
+teto é relatado.
+
+**A barra só aparece quando o servidor manda porcentagem.** Quando não manda, a
+tela diz *"O servidor não informa quanto falta nesta etapa"*. Uma barra que anda
+sozinha sem dado por trás é a mentira mais comum desta tela em qualquer produto.
+
+**Pronto** é uma tela, e não um empurrão de volta para a Mesa: quem esperou a
+conversão quer saber que terminou, e escolher o que fazer — ler, ver na estante,
+ou preparar outro.
+
+Medido com conversão real de ponta a ponta: o clique dispara, a tela mostra
+*"Convertendo…"*, e termina em *"Medida está na estante."*
