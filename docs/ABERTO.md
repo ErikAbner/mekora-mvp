@@ -231,3 +231,40 @@ princípio; a A10 é a metade que o princípio não alcança.
 opinião: com a V1 observável, transições como `Estante → Notas`, `Reader → Notas` e
 `Conexões → Canvas` viram medida. A ordem deixa de ser preferência de quem desenha e passa a ter
 evidência — e é por isso que ficou deliberadamente aberta.
+
+---
+
+## Levantado na noite de 01/09, na auditoria contra o Figma
+
+**A-11 · A vista 3D pode estar na orientação errada.** Implementei os livros **em
+pé, lado a lado**, com a lombada de frente. O nó `895:7506` (`D · Livro — ficha`)
+mostra os livros **deitados e empilhados**, vistos de lado, com um índice de
+títulos à esquerda. As duas leituras cabem no nome do nó, e refazer com base na
+leitura incerta custaria mais que perguntar. **Decisão do Erik.**
+
+**A-12 · O degrau de 56px não existe na escala.** O desenho mobile pede `56px`
+para o título de abertura da leitura, e a escala é
+`[14,16,18,20,22,24,28,32,40,48,64]`. Ficou 48, o degrau mais perto. Acrescentar
+56 mexe no sistema inteiro por causa de uma tela. **Decisão do Erik.**
+
+**A-13 · 34 caracteres por linha na leitura mobile.** Seguindo o desenho — corpo
+de 20px numa coluna de 358 —, a Zodiak dá cerca de 34 caracteres por linha,
+abaixo da faixa confortável de 45 a 75. É a medida de livro de bolso, e funciona;
+mas é escolha, não consequência.
+
+**A-14 · O rodapé do Figma é placeholder.** `"Link link link"` quatro vezes, em
+`#d5d5d5` e 28px — nenhum dos três existe no sistema. A implementação usa o
+`Rodape` real do produto. O conteúdo das colunas continua sem definição no
+desenho.
+
+**A-15 · Três seções repetidas na Apresentação.** A seção "PDF não é um livro"
+aparece duas vezes (`895:7172` e `941:22531`, idênticas), e a legenda das capas
+três vezes (`895:7195`, `895:7285`, `895:7306`). Implementei uma de cada.
+
+**A-16 · Erros de digitação no desenho, corrigidos na implementação:**
+"photografia" → fotografia; "letra , há" → "letra, há"; "capitulos" → capítulos;
+"todos sem sumário você vai marcar" sem ponto.
+
+**A-17 · Duas cores fora do sistema no desenho:** `#666668` (nó `895:7232`) e
+`#727274` (chip `.cbr`, nó `895:7275`). Os vizinhos usam `text/secondary`
+`#6A6A6A`. Implementado com o token.
