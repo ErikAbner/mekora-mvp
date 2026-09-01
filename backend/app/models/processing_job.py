@@ -52,6 +52,14 @@ class ProcessingJob(Base):
     input_bytes = Column(Integer)
     processed_pdf_path = Column(String)   # storage/temp/ após OCR
     epub_path = Column(String)            # storage/output/
+    # O TAMANHO DO EPUB GERADO, em bytes. O nó `895:8164` escreve
+    # "Diário 02.epub · 8,4 MB" na faixa de "pronto" — o tamanho é metade da
+    # frase, e ele não existia em lugar nenhum.
+    #
+    # Gravado ao fim da conversão pela mesma razão do `input_bytes`: a limpeza
+    # por idade apaga a pasta de saída, e depois disso o disco não sabe mais
+    # responder.
+    epub_bytes = Column(Integer)
     # O EPUB com as imagens em WebP, para ler no navegador. Separado porque o
     # `epub_path` e o que vai para o Kindle, e o Kindle nao le WebP de forma
     # confiavel. Nulo quando o livro nao tem imagem que valha converter.

@@ -161,36 +161,51 @@ aberto. O rodapé usava a mesma imagem e tinha o mesmo corte.
 
 ## Computador — `D ·`
 
-Os ids que estão escritos no repositório. Faltam os outros, e valem as mesmas
-instruções acima.
+Os vinte e dois ids vieram do Erik em 01/09, junto da observação de que "muitas
+telas você criou muito errado". A comparação está em curso.
 
-| id | tela |
-|---|---|
-| `895:7315` | D · Estante — grade |
-| `895:7506` | D · Livro — ficha / estante em 3D |
-| `895:6938` | D · Canvas |
-| `895:10286` | D · Mesa — vazia |
-| `895:10715` | D · Conta — preferências |
-| `895:8164` | D · Preparo — pronto |
+| id | tela | rota do produto | estado |
+|---|---|---|---|
+| `895:7063` | D · Apresentação | `/` | por comparar |
+| `895:7315` | D · Estante — grade | `/estante` | comparada · corrigida |
+| `895:7506` | D · Livro — ficha / estante 3D | `/estante` (vista 3D) | comparada · corrigida |
+| `895:6938` | D · Canvas | `/canvas` | comparada · grupos e prévia construídos |
+| `895:10599` | D · Conta — visão geral | `/conta` | por comparar |
+| `895:10715` | D · Conta — preferências | `/conta/preferencias` | por comparar |
+| `895:10909` | D · Conta — dados | `/conta/privacidade` | por comparar |
+| `895:11060` | D · Atualizações | `/atualizacoes` | por comparar |
+| `895:11193` | D · Ajuda — início | `/ajuda` | por comparar |
+| `895:9348` | D · Mesa — cheia | `/mesa` | por comparar |
+| `895:9981` | D · Mesa — variação | `/mesa` | por comparar |
+| `895:10286` | D · Mesa — vazia | `/mesa` | por comparar |
+| `895:9736` | D · Mesa — primeira vez | `/mesa` | por comparar |
+| `895:7631` | D · Livro — o que ficou | `/estante/:id` | por comparar |
+| `895:10472` | D · Leitura | `/leitura/:id` | por comparar |
+| `895:8260` | D · Estudo — página | `/estudo/:id` | por comparar |
+| `895:8545` | D · Conexões — sugestões | `/nota/:id` | por comparar |
+| `895:8849` | D · Estudos — lista | `/estudos` | por comparar |
+| `900:56142` | D · Estudos — lista (variação) | `/estudos` | por comparar |
+| `895:7856` | D · Preparo — o que encontrei | `/preparo/:id` | por comparar |
+| `895:8029` | D · Preparo — em andamento | `/preparo/:id` | por comparar |
+| `895:8164` | D · Preparo — pronto | `/preparo/:id` | por comparar |
 
+E um trecho solto, que o Erik mandou quando eu disse que não conseguia ler:
 
-## A conta: o que é decisão sua e o que era regra minha
+| `895:7839` | "Escrever sobre o livro" — trecho do `895:7631` | `/estante/:id` | **construído** |
 
-O nó `966:25321` tem **retrato**, **Nome** e **Senha**. Eu disse que os três
-contrariavam uma decisão sua, e estava certo sobre um só.
+## Como ler uma tela alta
 
-**A senha é decisão sua.** A `DEC-0039`, de 30/08, aceita por você: *"Entrar é
-por link no e-mail. Sem senha, sem provedor externo."* Ela fecha a `AUTH-001` e
-diz por quê — o backend já manda e-mail, e sem senha não há hash, força mínima,
-troca nem vazamento. A consequência 1 é literal: *"a tela de entrar é uma caixa
-de e-mail e um botão"*.
+A captura tem teto de cerca de 1024 no lado MAIOR. Numa tela de 1920 × 4700 isso
+dá 418 de largura — dá para ver a estrutura e não dá para ler o texto. Numa
+mobile de 390 × 4673, dá 85.
 
-**O nome e o retrato não foram decididos por ninguém.** A `DEC-0039` não os
-menciona. Quem escreveu a regra fui eu, num comentário do `App.jsx` — *"a
-DEC-0039 §1 não pede nome, e pedir um dado que o produto não usa é coletar por
-hábito"* — e daí ela virou a frase da tela de Privacidade: *"não há nome,
-telefone nem foto"*. É um argumento razoável, e não é uma decisão sua.
+Duas saídas, e as duas funcionam:
 
-**Fica em aberto, então:** guardar nome e retrato na conta? Custa uma coluna e um
-campo, e a tela de Privacidade passa a declará-los. A senha continua fora, por
-DEC-0039.
+1. **O nó de dentro.** Pedir o trecho em vez da tela inteira devolve a captura em
+   tamanho legível — foi assim com o `895:7839`.
+2. **`get_design_context`.** Ele devolve o conteúdo como CÓDIGO, com todo o texto
+   e todas as medidas, sem teto de resolução. É mais caro em leitura e é o
+   caminho certo quando o que importa é o texto exato.
+
+O que eu não conseguia era **achar** os ids: o `get_metadata` da página vem
+truncado e não devolve as telas. Isso o Erik resolveu mandando a lista.

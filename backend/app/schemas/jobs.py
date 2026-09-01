@@ -33,6 +33,8 @@ class JobResponse(BaseModel):
     # O tamanho do arquivo que chegou, em bytes. `None` para trabalho anterior à
     # coluna — e a tela cala, em vez de mostrar zero.
     input_bytes: Optional[int] = None
+    # E o do EPUB gerado — a segunda metade de "Diário 02.epub · 8,4 MB".
+    epub_bytes: Optional[int] = None
 
     # O que a ficha da estante mostra sobre a LEITURA. Tudo derivado — antes
     # estes quatro vinham de um exemplo escrito à mão, iguais em todo livro.

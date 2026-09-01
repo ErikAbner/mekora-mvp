@@ -344,3 +344,21 @@ def test_fonte_desconhecida_e_recusada(client, tmp_storage, sample_pdf):
         "capitulo": 0, "de": 0, "ate": 5, "cor": "amarelo", "trecho": "x", "fonte": "inventada",
     })
     assert r.status_code == 422
+
+
+def test_o_tamanho_do_epub_gerado_e_gravado(client, tmp_storage, sample_pdf, monkeypatch):
+    """"Diário 02.epub · 8,4 MB" — o nome já saía do `epub_path`, e o tamanho
+    não existia em lugar nenhum.
+
+    Um comentário no `Preparo.jsx` dizia isso com todas as letras: o backend não
+    o expunha, e inventar um número numa faixa que serve para dar certeza seria
+    o oposto do que ela faz.
+    """
+    from pathlib import Path
+
+    from app.api import jobs as rotas
+
+    assert rotas._bytes_de(sample_pdf) == sample_pdf.stat().st_size
+    # Arquivo que não está lá devolve `None`, e não zero: zero seria o produto
+    # afirmando que o EPUB é vazio.
+    assert rotas._bytes_de(Path(tmp_storage) / "nao-existe.epub") is None

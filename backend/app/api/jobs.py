@@ -216,6 +216,18 @@ def _leitura_url(record: ProcessingJob) -> str | None:
     return f"/storage/output/{record.token_publico}/{Path(arquivo).name}"
 
 
+def _bytes_de(caminho) -> int | None:
+    """O tamanho de um arquivo, ou `None` se ele não estiver lá.
+
+    `None` e não zero: zero seria o produto afirmando que o EPUB é vazio, e a
+    tela mostraria "0 B" ao lado do nome de um arquivo que existe.
+    """
+    try:
+        return Path(caminho).stat().st_size
+    except OSError:
+        return None
+
+
 def _epub_url(record: ProcessingJob) -> str | None:
     """O endereço para BAIXAR o EPUB — e é outro arquivo que o de ler.
 
@@ -425,6 +437,7 @@ def _bg_convert(job_id: int, operation_id: str | None = None) -> None:
                 cover=cover,
             )
             job.epub_path = str(output_epub)
+            job.epub_bytes = _bytes_de(output_epub)
             job.epub_web_path = _versao_web(output_epub)
             job.status = "converted"
             job.conversion_status = "done"
@@ -606,6 +619,7 @@ def _bg_comic_convert(job_id: int, operation_id: str | None = None) -> None:
         )
 
         job.epub_path = str(epub_out)
+        job.epub_bytes = _bytes_de(epub_out)
         # QUADRINHO NAO GANHA VERSAO WEB. Ele ja e imagem de ponta a ponta, e o
         # KCC escolheu formato e tamanho para o aparelho: reconverter aqui
         # desfaria a decisao dele, e o ganho viria as custas da propria coisa

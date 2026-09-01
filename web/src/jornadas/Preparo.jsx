@@ -206,13 +206,19 @@ export function Preparo() {
             <p className="preparo-fim-marca">Pronto</p>
             <h1>{titulo} está na estante.</h1>
 
-            {/* O ARQUIVO GERADO, PELO NOME. O desenho traz também o tamanho —
-                "8,4 MB" —, e o backend não o expõe em lugar nenhum: nem o
-                `status` nem o job completo têm bytes. Inventar um número numa
-                faixa que existe para dar certeza seria o oposto do que ela faz.
-                Fica o nome, que é verdade. */}
+            {/* O ARQUIVO GERADO, PELO NOME E PELO TAMANHO — "Diário 02.epub ·
+                8,4 MB", como o nó 895:8164 escreve.
+                
+                O tamanho não existia: um comentário aqui dizia que o backend
+                não o expunha, e que inventar um número numa faixa que serve
+                para dar certeza seria o oposto do que ela faz. Agora ele é
+                gravado ao fim da conversão. Quando falta — trabalho convertido
+                antes da coluna — sobra o nome, que continua sendo verdade. */}
             {arquivoPronto && (
-              <p className="preparo-fim-arquivo">{arquivoPronto}</p>
+              <p className="preparo-fim-arquivo">
+                {arquivoPronto}
+                {tamanhoLegivel(j?.epub_bytes) && <> · {tamanhoLegivel(j.epub_bytes)}</>}
+              </p>
             )}
 
             <p className="preparo-fim-diz">
@@ -364,9 +370,13 @@ export function Preparo() {
          * escolha de COMO ler esta tela vem antes de lê-la. Marcado por
          * superfície, como todo alternador do sistema. */}
         <nav className="preparo-pagina-modo" aria-label="Modo de preparo">
+          {/* PERSONALIZADO PRIMEIRO, como no 895:8164 e no 966:31504 — e o
+              Guiado marcado. A ordem do desenho não é arbitrária: o padrão fica
+              à direita, onde o polegar chega, e o modo que exige decisão fica à
+              esquerda. */}
           {[
-            ["guiado", "Guiado", false],
             ["personalizado", "Personalizado", true],
+            ["guiado", "Guiado", false],
           ].map(([id, rotulo, manual]) => (
             <button
               key={id}
