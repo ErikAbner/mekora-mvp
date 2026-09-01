@@ -320,29 +320,9 @@
   padding: 40px 0 64px;
 }
 
-/* O indice de perfil, a esquerda. Cada traco acompanha a espessura do livro —
- * e a pilha em duas dimensoes, para dar de relance o que a perspectiva esconde:
- * quantos sao e qual e o mais grosso. */
-.pilha-indice {
-  flex: 0 0 200px;
-  display: flex; flex-direction: column; gap: 2px;
-  margin: 0; padding: 0; list-style: none;
-  position: sticky; inset-block-start: 32px;
-}
-.pilha-indice button {
-  display: flex; align-items: center; gap: 12px;
-  inline-size: 100%; padding: 6px 0;
-  border: 0; background: none; cursor: pointer;
-  color: var(--muted-foreground);
-  font-size: 14px; line-height: 22px;   /* Label/Small */
-  text-align: start;
-}
-.indice-traco { flex: none; block-size: 1px; background: var(--border-strong); }
-.indice-titulo { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pilha-indice li.aqui button { color: var(--foreground); }
-.pilha-indice li.aqui .indice-traco { background: var(--foreground); block-size: 2px; }
-.pilha-indice button:hover { color: var(--foreground); }
-.pilha-indice button:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+/* A trilha de linhas ocupa a coluna da esquerda. O resto do comportamento vem
+ * de `componentes/trilha-linhas.css` — aqui so o lugar dela na pagina. */
+.pilha-indice { flex: 0 0 260px; position: sticky; inset-block-start: 32px; }
 
 .pilha {
   flex: 1 1 0; min-inline-size: 0;

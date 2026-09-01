@@ -17,6 +17,7 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { espessuraMm, espessuraPx } from "../../../contrato/lombada.js";
+import { TrilhaLinhas } from "../componentes/TrilhaLinhas.jsx";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Rodape } from "../componentes/Rodape.jsx";
 import { Botao } from "../componentes/Botao.jsx";
@@ -82,23 +83,18 @@ const ALTURA_LOMBADA = 297;   // a "capa" de referência, para a escala da espes
 function Estante3D({ livros, selecionado, aoEscolher }) {
   return (
     <div className="pilha-caixa">
-      {/* O ÍNDICE À ESQUERDA, do desenho. Cada linha é um livro, e o
-          comprimento dela acompanha a espessura — é a pilha vista de perfil, em
-          duas dimensões, para dar de relance o que a pilha em perspectiva
-          esconde: quantos são e qual é o maior. */}
-      <ol className="pilha-indice" aria-label="Os livros da pilha">
-        {livros.map((l) => {
-          const px = espessuraPx(l.paginas, ALTURA_LOMBADA);
-          return (
-            <li key={l.chave} className={l.chave === selecionado?.chave ? "aqui" : undefined}>
-              <button type="button" onClick={() => aoEscolher?.(l)}>
-                <span className="indice-traco" style={{ inlineSize: `${Math.min(64, 12 + (px ?? 2))}px` }} />
-                <span className="indice-titulo">{l.titulo}</span>
-              </button>
-            </li>
-          );
-        })}
-      </ol>
+      {/* O ÍNDICE À ESQUERDA É O `LineSidebar`, e não uma lista à mão.
+          O Erik trouxe o componente e disse onde ele vive: é a navegação da
+          estante em 3D e da maior parte das navegações do projeto. O que eu
+          tinha escrito aqui era uma aproximação dele — traços de comprimento
+          fixo e nenhuma resposta ao cursor. */}
+      <TrilhaLinhas
+        rotulo="Os livros da pilha"
+        itens={livros.map((l) => l.titulo)}
+        ativo={livros.findIndex((l) => l.chave === selecionado?.chave)}
+        aoEscolher={(i) => aoEscolher?.(livros[i])}
+        className="pilha-indice"
+      />
 
       <ul className="pilha">
         {livros.map((l, ordem) => {

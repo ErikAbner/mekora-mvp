@@ -1,0 +1,88 @@
+/* A navegacao por linhas. Do LineSidebar do React Bits, com a cor do sistema.
+ *
+ * `--efeito` vai de 0 a 1 e e escrito por um laco de rAF em JS. Todas as
+ * propriedades abaixo leem o MESMO valor, e por isso cor, deslocamento e escala
+ * andam juntos — com transicao de CSS por propriedade elas chegariam em tempos
+ * diferentes e o conjunto descasaria. A razao e do autor do componente, e ela e
+ * boa.
+ */
+.trilha-linhas {
+  --risco: 60px;
+  --vao: 0px;
+  --escala-risco: 0.5;
+  --desloca: 24px;
+  --entre: 20px;
+
+  position: relative;
+  display: flex; justify-content: flex-start;
+  padding-inline-start: calc(var(--risco) + var(--vao));
+}
+
+.trilha-linhas ul {
+  list-style: none; margin: 0; padding: 16px 0;
+  display: flex; flex-direction: column; gap: var(--entre);
+  inline-size: 100%;
+}
+
+.trilha-linhas li { position: relative; }
+
+.trilha-linhas button {
+  display: block; inline-size: 100%;
+  padding: 0; border: 0; background: none; cursor: pointer;
+  text-align: start;
+}
+/* A area de toque passa da caixa do texto: o item responde um pouco antes de o
+ * cursor chegar nele, que e o que faz o efeito parecer antecipacao e nao atraso. */
+.trilha-linhas button::before { content: ""; position: absolute; inset: -6px -24px; }
+.trilha-linhas button:focus-visible { outline: 1px solid var(--foreground); outline-offset: 4px; }
+
+/* A COR SAI DO SISTEMA, e nao do roxo padrao do componente: cor e objetivo, e
+ * nao ha matiz em elemento de interface. O realce e o mesmo par ativo/inativo do
+ * resto do produto. */
+.trilha-linhas .rotulo {
+  position: relative;
+  display: inline-flex; align-items: baseline; gap: 10px;
+  font-size: 16px; line-height: 24px;   /* Label/Medium */
+  color: color-mix(in srgb, var(--foreground) calc(var(--efeito, 0) * 100%), var(--muted-foreground));
+  transform: translateX(calc(var(--efeito, 0) * var(--desloca)));
+}
+.trilha-linhas .texto { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.trilha-linhas .indice {
+  font-family: var(--font-mono, ui-monospace, Menlo, monospace);
+  font-size: 14px; line-height: 22px;
+  opacity: calc(0.55 + var(--efeito, 0) * 0.45);
+}
+
+/* O RISCO E O MARCADOR. Ele cresce com a proximidade — e o unico elemento que
+ * diz, sem texto, qual item o cursor esta prestes a alcancar. */
+.trilha-linhas .risco {
+  position: absolute; inset-block-start: 50%;
+  inset-inline-start: calc(-1 * var(--risco) - var(--vao));
+  block-size: 1px; inline-size: var(--risco);
+  background-color: color-mix(in srgb, var(--foreground) calc(var(--efeito, 0) * 100%), var(--border-strong));
+  transform-origin: left center;
+  transform: translateY(-50%) scaleX(calc(0.7 + var(--efeito, 0) * 0.5));
+}
+
+/* O tracinho entre dois itens. Ele nao pertence a nenhum dos dois: marca o vao,
+ * e e o que faz a coluna de riscos se ler como uma regua e nao como uma lista de
+ * tracos soltos. */
+.trilha-linhas li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  inset-block-start: calc(100% + var(--entre) / 2);
+  inset-inline-start: calc(-1 * var(--risco) - var(--vao));
+  block-size: 1px; inline-size: calc(var(--risco) * var(--escala-risco));
+  background-color: var(--border-strong);
+  opacity: 0.5;
+  transform-origin: left center;
+  transform: translateY(-50%) scaleX(calc(0.7 + var(--efeito, 0) * 0.6));
+}
+
+/* Quem pediu menos movimento nao recebe o efeito: o laco nem roda, e sem ele o
+ * `--efeito` fica no valor do item ativo. A marcacao continua — pela cor. */
+@media (prefers-reduced-motion: reduce) {
+  .trilha-linhas .rotulo { transform: none; }
+  .trilha-linhas .risco,
+  .trilha-linhas li:not(:last-child)::after { transform: translateY(-50%); }
+}
