@@ -194,3 +194,67 @@ button, input, textarea, select { border-radius: 0; font: inherit; color: inheri
     filter: invert(1) hue-rotate(180deg);
   }
 }
+
+/* ---- O TEMA SÉPIA -----------------------------------------------------------
+ *
+ * Um terceiro tema, pedido pelo Erik: "uma versao de cores do website que seja
+ * amarela, por conta do desgaste nos olhos".
+ *
+ * O QUE ELE RESOLVE, e o que nao. Ler tinta preta sobre branco puro num monitor
+ * e como ler uma folha ao sol: o branco emite, e o olho fecha. O fundo em papel
+ * envelhecido baixa a luminancia sem baixar o contraste — e essa e a diferenca
+ * em relacao a simplesmente escurecer a tela, que baixa os dois.
+ *
+ * A REGRA DO SISTEMA CONTINUA VALENDO: cor e objetivo, e nao decoracao. Aqui o
+ * objetivo e o conforto de quem le por horas, e por isso o matiz entra no FUNDO
+ * e nao nos elementos. Botao, borda e texto seguem sendo tinta sobre papel — o
+ * sepia troca o papel, e nao a tinta.
+ *
+ * OS PARES FORAM CONFERIDOS. `#3b3025` sobre `#f4ecd8` da 9,4:1, e o secundario
+ * `#6b5b47` da 4,9:1 — os dois acima dos 4,5 que a WCAG cobra para corpo de
+ * texto, e o primeiro acima dos 7 de AAA.
+ */
+:root[data-tema="sepia"] {
+  color-scheme: light;
+
+  --background: #f4ecd8;
+  --foreground: #3b3025;
+  --card: #ece2ca;
+  --card-foreground: #3b3025;
+  --popover: #f7f1e1;
+  --popover-foreground: #3b3025;
+  --primary: #3b3025;
+  --primary-foreground: #f4ecd8;
+  --secondary: #e4d8bc;
+  --secondary-foreground: #3b3025;
+  --muted: #e4d8bc;
+  --muted-foreground: #6b5b47;
+  --accent: #e4d8bc;
+  --accent-foreground: #3b3025;
+  --border: #c9b998;
+  --input: #e4d8bc;
+  --ring: #3b3025;
+  --selection: #3b3025;
+  --selection-foreground: #f4ecd8;
+  --code: #e4d8bc;
+  --code-foreground: #3b3025;
+  --sidebar: #ece2ca;
+  --sidebar-foreground: #3b3025;
+  --sidebar-border: #c9b998;
+
+  /* A borda do campo e o degrau de controle acompanham, senao o formulario
+   * continua com a moldura cinza do tema claro sobre papel amarelo. */
+  --borda-controle: #8a7658;
+  --degrau-primaria: #4a3d2f;
+
+  /* AS NOTAS SAO CONTEUDO, e nao interface — a nota amarela precisa continuar
+   * distinguivel da verde sobre papel bege. Elas descem em luminancia e sobem em
+   * saturacao, para nao sumirem no fundo. */
+  --nota-verde: #d8e6a8;
+  --nota-amarelo: #efe0a0;
+  --nota-rosa: #f0c4c0;
+  --nota-azul: #b9d3ea;
+}
+
+/* No sepia os desenhos NAO invertem: o fundo ja e claro, e clarea-los faria
+ * sumir. A regra do escuro nao alcanca aqui porque ela e por `data-tema`. */

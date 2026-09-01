@@ -19,7 +19,7 @@ const CHAVE = "mekora-tema";
 /** Põe o tema no documento. `sistema` tira o atributo e devolve ao sistema. */
 export function aplicarTema(tema) {
   const raiz = document.documentElement;
-  if (tema === "claro" || tema === "escuro") {
+  if (tema === "claro" || tema === "escuro" || tema === "sepia") {
     raiz.setAttribute("data-tema", tema);
   } else {
     raiz.removeAttribute("data-tema");

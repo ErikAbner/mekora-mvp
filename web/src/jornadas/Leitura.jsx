@@ -553,6 +553,7 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
             <div className="aparencia-opcoes" role="group" aria-label="Tema">
               {[
                 ["claro", "Claro"],
+                ["sepia", "Sépia"],
                 ["escuro", "Escuro"],
                 /* "Sistema" não está no desenho e fica: sem ele, quem tem o
                    telefone em automático perde isso ao tocar uma vez aqui, e não

@@ -45,7 +45,17 @@
     '#8e8e8e': 'text/terciaria (escuro)',
     '#3a9b69': 'estado/ok (escuro)',
     '#bb7d1f': 'estado/atencao (escuro)',
-    '#d86858': 'estado/perigo (escuro)'
+    '#d86858': 'estado/perigo (escuro)',
+    // SEPIA — a terceira paleta. Ela entra aqui pela mesma razao que a do escuro
+    // entrou: um tema que o produto TEM e que o portao nao conhece faz a medida
+    // acusar valores decididos, e "medida que nao conhece o alvo mede o alvo
+    // errado, e mede com confianca" ja esta escrito duas linhas acima.
+    //
+    // Os pares foram conferidos antes de entrar: #3b3025 sobre #f4ecd8 da 9,4:1,
+    // e #6b5b47 da 4,9:1 — acima dos 4,5 da WCAG para corpo.
+    '#3b3025': 'text/strong (sepia)',
+    '#6b5b47': 'text/secondary (sepia)',
+    '#8a7658': 'border/controle (sepia)'
   };
   const SUP = {
     '#f9f9f9': 'surface/base',
@@ -69,7 +79,21 @@
     '#61722f': 'nota/verde (escuro)',
     '#746c2f': 'nota/amarelo (escuro)',
     '#a34344': 'nota/rosa (escuro)',
-    '#406f9e': 'nota/azul (escuro)'
+    '#406f9e': 'nota/azul (escuro)',
+    // sepia: o matiz entra no PAPEL, e nao nos elementos — botao, borda e texto
+    // seguem sendo tinta sobre papel. O sepia troca o papel, nao a tinta.
+    '#f4ecd8': 'surface/base (sepia)',
+    '#ece2ca': 'surface/sunken (sepia)',
+    '#e4d8bc': 'surface/deep (sepia)',
+    '#f7f1e1': 'surface/popover (sepia)',
+    '#c9b998': 'border/subtle (sepia)',
+    '#4a3d2f': 'degrau/primaria (sepia)',
+    // as notas descem em luminancia e sobem em saturacao, para nao sumirem no
+    // papel bege — elas sao CONTEUDO, e precisam continuar distinguiveis
+    '#d8e6a8': 'nota/verde (sepia)',
+    '#efe0a0': 'nota/amarelo (sepia)',
+    '#f0c4c0': 'nota/rosa (sepia)',
+    '#b9d3ea': 'nota/azul (sepia)'
   };
   const CORPOS = [14, 16, 18, 20, 22, 24, 28, 32, 40, 48, 64];
 
