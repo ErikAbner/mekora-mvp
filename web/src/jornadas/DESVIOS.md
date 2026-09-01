@@ -901,3 +901,42 @@ limite é por e-mail, então nunca é atingido.
 Estado que a tela já tinha, declarado onde um instrumento alcança. Sem eles, *"a
 janela cresceu?"* só se responde contando `<section>`, e *"parou por quê?"* não
 se responde de jeito nenhum.
+
+## A leitura conferida contra a tela mobile
+
+O nó `966:29395` existia e eu nunca o tinha aberto — mesma lição da Apresentação:
+ler a estrutura não é ver a tela. Quatro divergências, todas medidas:
+
+| | eu tinha | o desenho | ficou |
+|---|---|---|---|
+| respiro lateral | 32px | 16px | **16px** |
+| coluna de texto | 326px | 358px | **358px** |
+| corpo do texto | 18px | 20px | **20px** |
+| título de abertura | 40px | 56px | **48px** |
+
+**O corpo não cai no telefone.** O `base.css` desce de 20 para 18 no produto
+inteiro, e a razão escrita lá é sobre a **entrelinha** acompanhar em razão — não
+sobre o corpo. O desenho mantém `body-medium-prosa`, e ele está certo: numa tela
+de leitura o texto é o produto, e apertar o único conteúdo da tela para caber
+mais dele é o troco errado.
+
+Fica registrado o custo: a 20px numa coluna de 358, a Zodiak dá cerca de **34
+caracteres por linha** — abaixo da faixa confortável de 45 a 75. É a medida de
+livro de bolso, e o pente fino decide se vale.
+
+## O portão recusou o título do desenho
+
+`56px` **não existe na escala** `[14,16,18,20,22,24,28,32,40,48,64]`, e o portão
+disse exatamente isso: *"corpo 56, degrau mais perto 48"*. A escala é uma
+progressão, e entre 48 e 64 não há degrau.
+
+Ficou **48**. Acrescentar 56 à escala mexeria no sistema inteiro por causa de uma
+tela — decisão do Erik, não minha.
+
+## O respiro saiu assimétrico, e a medida pegou
+
+Baixei o respiro para 32px totais e as colunas de borda do grid continuaram
+pedindo `minmax(32px, 1fr)`. Com só 32px de folga, uma borda ficou com 32 e a
+outra com **zero**: o texto encostava na direita.
+
+`--borda` cai junto com `--respiro`, e a medida confirma **16 · 358 · 16**.

@@ -68,16 +68,16 @@
 .prosa {
   display: grid;
   grid-template-columns:
-    [cheia-inicio] minmax(32px, 1fr)
+    [cheia-inicio] minmax(var(--borda, 32px), 1fr)
     [larga-inicio] minmax(0, 430px)
     /* `100% - 64px` e nao `100%`: com `100%` a coluna do meio come as laterais
        inteiras numa tela estreita, o `minmax(32px, ...)` cede, e o texto encosta
        na borda. Foi o que aconteceu a 390 — a coluna mediu 390 numa tela de 390
        — e o padding lateral que o CSS antigo tinha era justamente o que eu
        apaguei ao trocar a coluna pela grade. */
-    [texto-inicio] min(680px, 100% - 64px) [texto-fim]
+    [texto-inicio] min(680px, 100% - var(--respiro, 64px)) [texto-fim]
     minmax(0, 430px) [larga-fim]
-    minmax(32px, 1fr) [cheia-fim];
+    minmax(var(--borda, 32px), 1fr) [cheia-fim];
   inline-size: 100%;
   padding: 64px 0 128px;
   row-gap: 32px;
@@ -119,13 +119,41 @@
 }
 
 @media (max-width: 1023px) {
-  .abertura { padding: 40px 24px; gap: 24px; }
-  .abertura h1 { font-size: 40px; line-height: 48px; }   /* Display/Large no mobile */
+  .abertura { padding: 40px 16px; gap: 24px; }
+  /* 48, E NAO 40 NEM 56. O no M-Leitura (966:29657) traz `text-[56px]`, e eu
+   * usava 40 — dois degraus abaixo onde o desenho desce um.
+   *
+   * MAS 56 NAO EXISTE NA ESCALA do sistema, que e
+   * [14,16,18,20,22,24,28,32,40,48,64], e o portao recusou: "corpo 56, degrau
+   * mais perto 48". A escala e uma progressao, e 56 nao pertence a ela — entre
+   * 48 e 64 nao ha degrau.
+   *
+   * 48 e o degrau mais perto, e a diferenca de 8px num titulo de abertura nao
+   * muda o que ele faz. Acrescentar 56 a escala mexeria no sistema inteiro por
+   * causa de uma tela, e essa e uma decisao do Erik — fica para o pente fino. */
+  .abertura h1 { font-size: 48px; line-height: 56px; }
   .autoria { font-size: 18px; line-height: 27px; }
-  .prosa { padding: 40px 0 80px; row-gap: 24px; }
+  /* 16 DE RESPIRO, e nao 32. O desenho mobile usa `px-[16px]` em todas as
+   * faixas, o que da uma coluna de 358px num telefone de 390 — a minha media
+   * 326. Trinta e dois pixels de cada lado numa tela de 390 e desenho de
+   * desktop encolhido. */
+  /* A BORDA MINIMA CAI JUNTO COM O RESPIRO, senao o grid nao consegue honrar as
+   * duas coisas: com `minmax(32px, 1fr)` de cada lado e so 32px de folga total,
+   * uma borda fica com 32 e a outra com ZERO — medido, o texto encostava na
+   * direita e sobrava respiro so a esquerda. */
+  .prosa { padding: 40px 0 80px; row-gap: 24px; --respiro: 32px; --borda: 16px; }
   .prosa .ilustracao.larga { margin: 32px 0; }
-  .prosa .ilustracao.cheia { margin: 40px 0; padding: 0 24px; }
-  .prosa p { font-size: 18px; line-height: 27px; }       /* a excecao como RAZAO */
+  .prosa .ilustracao.cheia { margin: 40px 0; padding: 0 16px; }
+  /* O CORPO DA LEITURA NAO CAI NO TELEFONE. O `base.css` desce de 20 para 18 no
+   * produto inteiro, e a razao escrita la e sobre a ENTRELINHA acompanhar em
+   * razao — nao sobre o corpo. O no M-Leitura mantem `body-medium-prosa`, que e
+   * 20/30, e ele esta certo: numa tela de leitura o texto e o produto, e apertar
+   * o unico conteudo da tela para caber mais dele e o troco errado.
+   *
+   * Fica registrado o custo: a 20px numa coluna de 358, a Zodiak da cerca de 34
+   * caracteres por linha — abaixo da faixa confortavel de 45 a 75. E a medida de
+   * livro de bolso, e o pente fino decide se vale. */
+  .prosa p { font-size: 20px; line-height: 30px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
