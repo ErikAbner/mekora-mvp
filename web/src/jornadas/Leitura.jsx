@@ -14,6 +14,7 @@
  * endereços onde a cor é permitida.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { Icone } from "../componentes/Icone.jsx";
 import { comDeslocamentos, irPara, ondeEstouNoLivro } from "../leitor/onde-parei.js";
 import { GRUPOS, aplicarAparencia, gravarAparencia, lerAparencia } from "../leitor/aparencia.js";
@@ -23,6 +24,7 @@ import "./leitura.css";
 
 const iconeMenu = "/icones/icone-menu.svg";
 const iconeCaderno = "/icones/icone-caderno.svg";
+const iconeIndice = "/icones/icone-estante.svg";
 const iconeMarcador = "/icones/icone-marcador.svg";
 const iconeBuscar = "/icones/icone-buscar.svg";
 const iconeConta = "/icones/icone-conta.svg";
@@ -182,6 +184,67 @@ function Paragrafo({ texto, destaques = [] }) {
   return <p>{partes}</p>;
 }
 
+/* O ÍNDICE: o sumário do próprio livro.
+ *
+ * Ele vem do EPUB — do `nav` de EPUB 3 ou do `toc.ncx` de EPUB 2 —, e não de
+ * uma contagem. "Capítulo 1, Capítulo 2, Capítulo 3" seria uma lista com cara
+ * de sumário e sem nenhuma das informações de um: o livro tem nomes para as
+ * suas partes, e são eles que dizem onde a pessoa quer chegar.
+ *
+ * Quando o livro NÃO traz sumário, o painel diz isso. Um EPUB pode legitimamente
+ * não ter índice, e inventar um seria a tela afirmando uma estrutura que
+ * ninguém escreveu.
+ */
+function Indice({ livro, aqui, aoIr, aoFechar }) {
+  const [itens, setItens] = useState(null);
+  const [erro, setErro] = useState(null);
+
+  useEffect(() => {
+    let vivo = true;
+    /* Lido AQUI, e não ao abrir o livro: é mais um arquivo do zip, e quem só lê
+       não deve pagar por um painel que não abriu. */
+    Promise.resolve(livro?.sumario?.() ?? [])
+      .then((l) => vivo && setItens(l))
+      .catch((e) => vivo && setErro(e.message));
+    return () => { vivo = false; };
+  }, [livro]);
+
+  return (
+    <aside className="indice" aria-label="Índice do livro">
+      <header>
+        <h2>Índice</h2>
+        <button type="button" onClick={aoFechar} aria-label="Fechar o índice">Fechar</button>
+      </header>
+
+      {erro && <p className="indice-aviso" role="alert">O sumário deste livro não pôde ser lido: {erro}</p>}
+      {!erro && itens === null && <p className="indice-aviso">Lendo o sumário…</p>}
+      {!erro && itens?.length === 0 && (
+        <p className="indice-aviso">
+          Este livro não traz sumário. Ele existe inteiro — o que falta é a lista
+          de partes, que quem montou o arquivo não escreveu.
+        </p>
+      )}
+
+      {!!itens?.length && (
+        <ol className="indice-lista">
+          {itens.map((i, n) => (
+            <li key={`${i.capitulo}-${n}`} style={{ "--nivel": i.nivel }}>
+              <button
+                type="button"
+                className={i.capitulo === aqui ? "aqui" : undefined}
+                aria-current={i.capitulo === aqui ? "true" : undefined}
+                onClick={() => { aoIr?.(i.capitulo); aoFechar?.(); }}
+              >
+                {i.titulo}
+              </button>
+            </li>
+          ))}
+        </ol>
+      )}
+    </aside>
+  );
+}
+
 /* O caderno: as notas do livro, fora do texto.
  *
  * Ele lista TODAS, e não só as do capítulo aberto — é o lugar de rever o que se
@@ -252,7 +315,7 @@ function Caderno({ notas, capitulo, aoComentar, aoTrocarCor, aoApagar, aoIr, aoF
   );
 }
 
-export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirAntes, temMais = false, temAntes = false, progresso, aoMarcar, notas = [], aoAnotar, aoComentar, aoTrocarCor, aoApagarNota, erroDeNota }) {
+export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirAntes, temMais = false, temAntes = false, progresso, aoMarcar, notas = [], aoAnotar, aoComentar, aoTrocarCor, aoApagarNota, erroDeNota, aoIrParaCapitulo }) {
   const [cromoVisivel, setCromo] = useState(true);
   const [paleta, setPaleta] = useState(null);
   const [caderno, setCaderno] = useState(false);
@@ -337,6 +400,7 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
    * na raiz — nenhum bloco precisa saber que a preferência existe. */
   const [aparencia, setAparencia] = useState(() => lerAparencia());
   const [painel, setPainel] = useState(false);
+  const [indice, setIndice] = useState(false);
   useEffect(() => { aplicarAparencia(aparencia); gravarAparencia(aparencia); }, [aparencia]);
 
   /* O TEMA FICA NO PAINEL TAMBÉM, como o desenho põe — e continua sendo o mesmo
@@ -419,6 +483,19 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
           <button type="button" aria-label="Menu" onClick={() => setCromo((v) => !v)}>
             <Icone src={iconeMenu} />
           </button>
+          {/* O ÍNDICE. Ele não existia — nem botão, nem painel —, e é a única
+              forma de ir a um capítulo pelo nome dele numa leitura que rola sem
+              costura. Só aparece quando o livro sabe dar um sumário. */}
+          {aoIrParaCapitulo && (
+            <button
+              type="button"
+              aria-label="Índice do livro"
+              aria-pressed={indice ? "true" : "false"}
+              onClick={() => setIndice((v) => !v)}
+            >
+              <Icone src={iconeIndice} />
+            </button>
+          )}
           <button
             type="button"
             aria-label={`Notas (${notas.length})`}
@@ -427,7 +504,9 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
           >
             <Icone src={iconeCaderno} />
           </button>
-          <button type="button" aria-label="Marcadores"><Icone src={iconeMarcador} /></button>
+          <button type="button" aria-label="Marcadores" disabled title="Os marcadores ainda não existem.">
+            <Icone src={iconeMarcador} />
+          </button>
           {/* APARÊNCIA. O nó 973:32215 põe este painel na leitura, e é ele que
               torna editável o que o desenho fixa — corpo, fonte, entrelinha,
               coluna e destaques. */}
@@ -441,8 +520,15 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
           </button>
         </nav>
         <nav className="cromo-caixa" aria-label="Ferramentas">
-          <button type="button" aria-label="Buscar no livro"><Icone src={iconeBuscar} /></button>
-          <button type="button" aria-label="Conta"><Icone src={iconeConta} /></button>
+          {/* AINDA NÃO RESPONDEM. Os dois estão no desenho e não têm para onde
+              ir: buscar dentro do livro e marcadores são features próprias, e
+              nenhuma existe. Ficam `disabled` com o motivo no título, em vez de
+              aceitar o clique e não fazer nada — botão que não responde ensina
+              a não clicar. */}
+          <button type="button" aria-label="Buscar no livro" disabled title="A busca dentro do livro ainda não existe.">
+            <Icone src={iconeBuscar} />
+          </button>
+          <Link to="/conta" className="cromo-link" aria-label="Conta"><Icone src={iconeConta} /></Link>
         </nav>
       </div>
 
@@ -540,6 +626,15 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
             />
           ))}
         </div>
+      )}
+
+      {indice && (
+        <Indice
+          livro={livro}
+          aqui={capitulos[0]?.indice ?? livro.capitulo ?? 0}
+          aoIr={aoIrParaCapitulo}
+          aoFechar={() => setIndice(false)}
+        />
       )}
 
       {painel && (

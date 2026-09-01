@@ -39,7 +39,7 @@ import { ContaKindle } from "./jornadas/ContaKindle.jsx";
 import { LUGARES } from "./lugares.js";
 import { useJornada } from "./estado/useJornada.js";
 import { usePessoa } from "./estado/usePessoa.js";
-import { abrirLivro, blocosDoCapitulo, irParaCapitulo } from "./leitor/abrir.js";
+import { abrirLivro, blocosDoCapitulo } from "./leitor/abrir.js";
 import { gravarProgresso, lerProgresso } from "../../contrato/api.js";
 import { fracaoLida } from "../../contrato/progresso.js";
 import { usarNotas } from "./leitor/usarNotas.js";
@@ -327,6 +327,34 @@ function PaginaLeitura() {
     return f === null ? undefined : f;
   };
 
+  /* SALTAR PARA UM CAPÍTULO, a partir do índice do livro.
+   *
+   * A janela é REPLANTADA no capítulo pedido, e não estendida até ele: quem
+   * está no capítulo 2 e clica no 30 não quer os vinte e oito do meio
+   * carregados — seriam megabytes e uma página de rolagem que ninguém pediu.
+   *
+   * A rolagem sobe para o topo porque a página inteira trocou de conteúdo:
+   * ficar na mesma altura mostraria o meio de um capítulo que a pessoa acabou
+   * de escolher pelo começo. */
+  const saltarPara = useCallback(async (indice) => {
+    if (!livro || indice < 0 || indice >= livro.capitulos) return;
+    if (bordas.current.primeiro === indice && bordas.current.ultimo === indice) return;
+    carregando.current = true;
+    try {
+      const blocos = await blocosDoCapitulo(livro, indice);
+      if (!blocos) return;
+      semear(indice, blocos);
+      window.scrollTo({ top: 0, behavior: "auto" });
+      gravarProgresso(id, {
+        capitulo: indice,
+        deslocamento: 0,
+        fracao: fracaoLida({ capitulo: indice, deslocamento: 0, extensao: livro.extensao }) ?? undefined,
+      }).catch(() => {});
+    } finally {
+      carregando.current = false;
+    }
+  }, [livro, id, semear]);
+
   /* Sem o livro, o exemplo — e o produto DIZ que é exemplo, em vez de deixar
    * parecer que aquele é o teu texto. */
   if (erro || !livro) {
@@ -341,6 +369,7 @@ function PaginaLeitura() {
       aoPedirAntes={pedirAntes}
       temMais={janela.length > 0 && janela[janela.length - 1].indice < livro.capitulos - 1}
       temAntes={janela.length > 0 && janela[0].indice > 0}
+      aoIrParaCapitulo={saltarPara}
       progresso={progresso}
       notas={notas}
       erroDeNota={erroDeNota}

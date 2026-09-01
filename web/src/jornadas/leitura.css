@@ -529,3 +529,80 @@
 .amostra-tema.amostra-escuro { background: #151515; }
 .amostra-tema.amostra-sistema { background: linear-gradient(135deg, #f9f9f9 50%, #151515 50%); }
 .amostra-tema.amostra-sepia { background: #f4ecd8; }
+
+/* ---- O índice do livro -----------------------------------------------------
+ *
+ * Mesma gaveta da Aparência, do lado ESQUERDO: os dois são painéis da leitura, e
+ * abrir os dois no mesmo lado faria um cobrir o outro sem dizer. Esquerda também
+ * é onde o sumário mora num livro — antes do texto.
+ */
+.indice {
+  position: fixed; inset-block: 0; inset-inline-start: 0;
+  inline-size: min(384px, 100%);
+  z-index: 40;
+  display: flex; flex-direction: column; gap: 24px;
+  padding: 24px;
+  overflow-y: auto;
+  background: var(--background-secondary);
+  border-inline-end: 1px solid var(--border);
+}
+.indice header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.indice h2 {
+  margin: 0;
+  font-size: 28px; line-height: 36px; font-weight: 540;   /* Heading/SM */
+  color: var(--foreground);
+}
+.indice header button {
+  padding: 10px 16px;
+  border: 1px solid var(--border); background: var(--background);
+  color: var(--muted-foreground);
+  font: inherit; font-size: 16px; line-height: 24px; cursor: pointer;
+}
+.indice header button:hover { background: var(--muted); }
+
+.indice-aviso {
+  margin: 0;
+  padding-inline-start: 16px;
+  border-inline-start: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-size: 16px; line-height: 24px;
+  text-wrap: pretty;
+}
+
+.indice-lista { list-style: none; margin: 0; padding: 0; }
+/* O recuo diz a HIERARQUIA do sumário — uma seção dentro de um capítulo. Vem do
+ * próprio livro, e não de uma numeração inventada por nós. */
+.indice-lista li { padding-inline-start: calc(var(--nivel, 0) * 16px); }
+.indice-lista button {
+  inline-size: 100%;
+  padding: 12px 16px;
+  border: 0; background: transparent;
+  color: var(--muted-foreground);
+  font: inherit; font-size: 16px; line-height: 24px;
+  text-align: start; cursor: pointer;
+}
+.indice-lista button:hover { background: var(--muted); }
+/* Onde a pessoa está, marcado por SUPERFÍCIE — a regra do sistema. */
+.indice-lista button.aqui { background: var(--foreground); color: var(--primary-foreground); }
+.indice-lista button:focus-visible { outline: 1px solid var(--foreground); outline-offset: -1px; }
+
+@media (max-width: 767px) {
+  .indice { inline-size: 100%; border-inline-end: 0; }
+}
+
+/* O ícone de conta virou LINK: ele era um botão sem `onClick`, e três desses
+ * conviviam no cromo. Link precisa dos mesmos limites que o botão tinha. */
+.cromo-link {
+  display: inline-flex; align-items: center; justify-content: center;
+  inline-size: 44px; block-size: 44px;
+  color: var(--muted-foreground);
+  text-decoration: none;
+}
+.cromo-link:hover { background: var(--muted); }
+.cromo-link:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+
+/* Botão do cromo que ainda não tem para onde ir: cinza e sem cursor de clique.
+ * Um botão que parece ativo e não responde é lido como produto quebrado; um
+ * desligado é lido como recurso que ainda não existe. */
+.cromo-caixa button:disabled { opacity: 0.45; cursor: default; }
+.cromo-caixa button:disabled:hover { background: transparent; }

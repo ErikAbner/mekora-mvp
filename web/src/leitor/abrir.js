@@ -55,6 +55,12 @@ export async function abrirLivro(url, { capitulo = 0 } = {}) {
     autor: epub.autor,
     capitulos: epub.capitulos,
     capitulo: indice,
+    /* O SUMÁRIO É UMA PROMESSA, e não uma lista.
+     *
+     * Ele fica como função porque ler o `nav` ou o `toc.ncx` é mais um arquivo
+     * do zip, e a abertura não precisa dele para mostrar a primeira linha. Quem
+     * abrir o índice paga; quem só lê, não. */
+    sumario: epub.sumario,
     /* A EXTENSÃO DO LIVRO, em bytes por capítulo, vinda do índice do zip. É o
      * que transforma "capítulo 2 de 3" em porcentagem — e ela não custa I/O: o
      * índice já foi lido inteiro ao abrir o arquivo. */

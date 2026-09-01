@@ -10,6 +10,7 @@
 (async () => {
   const { lerCapitulo } = await import("/src/leitor/texto.js");
   const { abrirZip } = await import("/src/leitor/zip.js");
+  const { abrirEpub } = await import("/src/leitor/epub.js");
 
   const falhas = [];
   const caso = (nome, real, esperado) => {
@@ -169,5 +170,101 @@
     [],
   );
 
-  return { total: 19, falhas: falhas.length, detalhe: falhas };
+  /* ---- O SUMÁRIO DO LIVRO ------------------------------------------------
+   *
+   * Um EPUB de verdade, montado aqui: container, OPF com espinha, dois
+   * capítulos, e o índice nos DOIS formatos que existem no mundo — o `nav` de
+   * EPUB 3 e o `toc.ncx` de EPUB 2. Ler só um deixaria metade dos livros sem
+   * índice, e a metade que ficaria de fora é a dos arquivos antigos.
+   *
+   * O zip é montado sem compressão, como o de cima: o que está sob teste é o
+   * sumário, e não o `inflate`.
+   */
+  const zipar = (arquivos) => {
+    const cod = new TextEncoder();
+    const u32 = (v) => [v & 255, (v >> 8) & 255, (v >> 16) & 255, (v >>> 24) & 255];
+    const u16 = (v) => [v & 255, (v >> 8) & 255];
+    const p = [], indice = [];
+    for (const [nome, texto] of Object.entries(arquivos)) {
+      const n = cod.encode(nome), c = cod.encode(texto), onde = p.length;
+      p.push(...u32(0x04034b50), ...u16(20), ...u16(0), ...u16(0), ...u16(0), ...u16(0),
+             ...u32(0), ...u32(c.length), ...u32(c.length), ...u16(n.length), ...u16(0), ...n, ...c);
+      indice.push([n, c.length, onde]);
+    }
+    const inicio = p.length;
+    for (const [n, tam, onde] of indice) {
+      p.push(...u32(0x02014b50), ...u16(20), ...u16(20), ...u16(0), ...u16(0), ...u16(0), ...u16(0),
+             ...u32(0), ...u32(tam), ...u32(tam),
+             ...u16(n.length), ...u16(0), ...u16(0), ...u16(0), ...u16(0), ...u32(0), ...u32(onde), ...n);
+    }
+    p.push(...u32(0x06054b50), ...u16(0), ...u16(0), ...u16(indice.length), ...u16(indice.length),
+           ...u32(p.length - inicio), ...u32(inicio), ...u16(0));
+    return new Uint8Array(p).buffer;
+  };
+
+  const CONTAINER = `<?xml version="1.0"?><container xmlns="urn:oasis:names:tc:opendocument:xmlns:container:1.0"><rootfiles><rootfile full-path="OEBPS/livro.opf" media-type="application/oebps-package+xml"/></rootfiles></container>`;
+  const CAP = (t) => `<?xml version="1.0"?><html xmlns="http://www.w3.org/1999/xhtml"><body><p>${t}</p></body></html>`;
+
+  const opf = (manifestoExtra, espinhaAttr = "") => `<?xml version="1.0"?>
+    <package xmlns="http://www.idpf.org/2007/opf" version="3.0">
+      <metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>Livro de prova</dc:title></metadata>
+      <manifest>
+        <item id="c1" href="texto/um.xhtml" media-type="application/xhtml+xml"/>
+        <item id="c2" href="texto/dois.xhtml" media-type="application/xhtml+xml"/>
+        ${manifestoExtra}
+      </manifest>
+      <spine ${espinhaAttr}><itemref idref="c1"/><itemref idref="c2"/></spine>
+    </package>`;
+
+  // EPUB 3: o `nav`, com um item aninhado para provar o nível.
+  const comNav = await abrirEpub(zipar({
+    "META-INF/container.xml": CONTAINER,
+    "OEBPS/livro.opf": opf('<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>'),
+    "OEBPS/nav.xhtml": `<?xml version="1.0"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><body>
+      <nav epub:type="toc"><ol>
+        <li><a href="texto/um.xhtml">A partida</a>
+          <ol><li><a href="texto/um.xhtml#meio">O porto</a></li></ol>
+        </li>
+        <li><a href="texto/dois.xhtml">O regresso</a></li>
+        <li><a href="fora-da-espinha.xhtml">Página que não é capítulo</a></li>
+      </ol></nav></body></html>`,
+    "OEBPS/texto/um.xhtml": CAP("Um."),
+    "OEBPS/texto/dois.xhtml": CAP("Dois."),
+  }));
+
+  caso("sumario: nav de EPUB 3", await comNav.sumario(), [
+    { titulo: "A partida", capitulo: 0, nivel: 0 },
+    { titulo: "O porto", capitulo: 0, nivel: 1 },
+    { titulo: "O regresso", capitulo: 1, nivel: 0 },
+  ]);
+
+  // EPUB 2: o `toc.ncx`, com href RELATIVO ao arquivo que o escreveu — que é
+  // onde o caminho ingênuo erra.
+  const comNcx = await abrirEpub(zipar({
+    "META-INF/container.xml": CONTAINER,
+    "OEBPS/livro.opf": opf('<item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>', 'toc="ncx"'),
+    "OEBPS/toc.ncx": `<?xml version="1.0"?><ncx xmlns="http://www.daisy.org/z3986/2005/ncx/"><navMap>
+      <navPoint><navLabel><text>A partida</text></navLabel><content src="texto/um.xhtml"/></navPoint>
+      <navPoint><navLabel><text>O regresso</text></navLabel><content src="./texto/dois.xhtml"/></navPoint>
+    </navMap></ncx>`,
+    "OEBPS/texto/um.xhtml": CAP("Um."),
+    "OEBPS/texto/dois.xhtml": CAP("Dois."),
+  }));
+
+  caso("sumario: toc.ncx de EPUB 2", await comNcx.sumario(), [
+    { titulo: "A partida", capitulo: 0, nivel: 0 },
+    { titulo: "O regresso", capitulo: 1, nivel: 0 },
+  ]);
+
+  // Sem sumário nenhum: lista vazia, e NÃO um erro. Um EPUB pode legitimamente
+  // não trazer índice, e a tela diz isso em vez de inventar uma lista.
+  const semNada = await abrirEpub(zipar({
+    "META-INF/container.xml": CONTAINER,
+    "OEBPS/livro.opf": opf(""),
+    "OEBPS/texto/um.xhtml": CAP("Um."),
+    "OEBPS/texto/dois.xhtml": CAP("Dois."),
+  }));
+  caso("sumario: livro sem indice devolve lista vazia", await semNada.sumario(), []);
+
+  return { total: 22, falhas: falhas.length, detalhe: falhas };
 })()

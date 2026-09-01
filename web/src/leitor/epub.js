@@ -67,11 +67,114 @@ export async function abrirEpub(dados) {
   const meta = (nome) =>
     opf.querySelector(`metadata > ${nome}, metadata > dc\\:${nome}`)?.textContent?.trim() ?? "";
 
+  /* Onde cada arquivo da espinha está, para o sumário poder dizer "este título
+   * é o capítulo 4". Sem este mapa o índice teria nome e nenhum destino. */
+  const posicaoNaEspinha = new Map(espinha.map((i, n) => [i.caminho, n]));
+
+  /* Resolve um href RELATIVO AO ARQUIVO QUE O ESCREVEU, e não à raiz do zip.
+   *
+   * O `toc.ncx` costuma morar em `OEBPS/` e apontar `text/cap1.xhtml`; o nav de
+   * EPUB 3 às vezes mora em `OEBPS/text/` e aponta `../cap1.xhtml`. Juntar as
+   * duas metades com concatenação acerta um caso e erra o outro, e o erro é
+   * silencioso: o item some do índice sem dizer por quê. */
+  function resolver(href, deOndeVeio) {
+    if (!href) return null;
+    const semAncora = href.split("#")[0];
+    if (!semAncora) return null;
+    const pasta = deOndeVeio.includes("/") ? deOndeVeio.replace(/\/[^/]*$/, "/") : "";
+    const partes = [];
+    for (const p of (pasta + semAncora).split("/")) {
+      if (p === "." || p === "") continue;
+      if (p === "..") partes.pop();
+      else partes.push(p);
+    }
+    return partes.join("/");
+  }
+
+  /* O SUMÁRIO DO LIVRO, quando o livro traz um.
+   *
+   * Dois formatos, e os dois existem em arquivos reais: o `nav` de EPUB 3 (um
+   * XHTML com `<nav epub:type="toc">`) e o `toc.ncx` de EPUB 2. Um EPUB moderno
+   * costuma trazer os dois por compatibilidade; um antigo, só o segundo. Ler só
+   * um deixaria metade dos livros sem índice.
+   *
+   * É `async` e lido sob demanda: são mais um ou dois arquivos do zip, e a
+   * abertura do livro não precisa deles para mostrar a primeira linha.
+   *
+   * Devolve `[]` quando não há sumário — e `[]` não é erro. Um EPUB pode
+   * legitimamente não ter índice, e quem chama diz isso na tela em vez de
+   * inventar uma lista de "Capítulo 1, Capítulo 2", que pareceria o sumário do
+   * livro sem ser.
+   */
+  async function sumario() {
+    const nav = [...manifesto.values()].find((i) => /\bnav\b/.test(i.propriedades ?? ""));
+    if (nav) {
+      const itens = deNav(await zip.texto(nav.caminho), nav.caminho);
+      if (itens.length) return itens;
+    }
+
+    const idNcx = opf.querySelector("spine")?.getAttribute("toc");
+    const ncx = idNcx ? manifesto.get(idNcx) : [...manifesto.values()].find((i) => /ncx/.test(i.tipo ?? ""));
+    if (ncx) {
+      try { return deNcx(await zip.texto(ncx.caminho), ncx.caminho); }
+      catch { return []; }
+    }
+    return [];
+  }
+
+  function entrada(titulo, href, deOnde, nivel) {
+    const alvo = resolver(href, deOnde);
+    const capitulo = alvo === null ? undefined : posicaoNaEspinha.get(alvo);
+    /* Item que não aponta para nenhum arquivo da espinha fica de fora: ele
+     * apareceria na lista e não levaria a lugar nenhum. */
+    if (capitulo === undefined || !titulo) return null;
+    return { titulo, capitulo, nivel };
+  }
+
+  function deNav(html, caminho) {
+    const doc = xml(html.replace(/epub:type/g, "data-epub-type"));
+    const listas = [...doc.querySelectorAll('nav[data-epub-type~="toc"] ol, nav ol')];
+    const raiz = listas[0];
+    if (!raiz) return [];
+
+    const fora = [];
+    const andar = (ol, nivel) => {
+      for (const li of [...ol.children].filter((e) => e.tagName?.toLowerCase() === "li")) {
+        const a = [...li.children].find((e) => /^(a|span)$/i.test(e.tagName ?? ""));
+        const item = entrada(a?.textContent?.trim(), a?.getAttribute?.("href"), caminho, nivel);
+        if (item) fora.push(item);
+        const dentro = [...li.children].find((e) => e.tagName?.toLowerCase() === "ol");
+        if (dentro) andar(dentro, nivel + 1);
+      }
+    };
+    andar(raiz, 0);
+    return fora;
+  }
+
+  function deNcx(texto, caminho) {
+    const doc = xml(texto);
+    const fora = [];
+    const andar = (pai, nivel) => {
+      for (const ponto of [...pai.children].filter((e) => /navPoint/i.test(e.tagName ?? ""))) {
+        const titulo = ponto.querySelector("navLabel > text")?.textContent?.trim();
+        const href = ponto.querySelector("content")?.getAttribute("src");
+        const item = entrada(titulo, href, caminho, nivel);
+        if (item) fora.push(item);
+        andar(ponto, nivel + 1);
+      }
+    };
+    const mapa = doc.querySelector("navMap");
+    if (mapa) andar(mapa, 0);
+    return fora;
+  }
+
   return {
     titulo: meta("title") || "Sem título",
     autor: meta("creator") || "",
     idioma: meta("language") || "",
     capitulos: espinha.length,
+    /* O sumário do próprio livro. Lido sob demanda — ver `sumario` acima. */
+    sumario,
     /* A EXTENSÃO DE CADA CAPÍTULO, EM BYTES, e o total.
      *
      * É o que faltava para o progresso ser porcentagem em vez de "capítulo 2 de
