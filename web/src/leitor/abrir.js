@@ -107,3 +107,22 @@ export async function irParaCapitulo(livro, indice) {
 
   return { ...livro, capitulo: i, blocos: novos };
 }
+
+
+/* UM CAPÍTULO, sem trocar o livro.
+ *
+ * `irParaCapitulo` substitui os blocos e revoga as imagens do anterior — é o que
+ * a leitura de um capítulo por vez precisava. A rolagem contínua precisa do
+ * contrário: acrescentar sem tirar, porque os capítulos anteriores continuam na
+ * tela, acima.
+ *
+ * Devolve `null` para índice fora do livro, e quem chama trata isso como "não há
+ * mais" — que é a condição de parada da janela.
+ */
+export async function blocosDoCapitulo(livro, indice) {
+  if (!livro?.epub) return null;
+  if (indice < 0 || indice >= livro.capitulos) return null;
+  const cap = await livro.epub.capitulo(indice);
+  const { blocos } = lerCapitulo(cap.html, { caminho: cap.caminho });
+  return comImagens(livro.epub, blocos);
+}

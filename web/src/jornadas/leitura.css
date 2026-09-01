@@ -83,8 +83,18 @@
   row-gap: 32px;
 }
 /* Todo filho mora na coluna de texto, menos quem pede outra. Sem esta linha o
- * grid espalharia cada bloco por uma coluna diferente. */
-.prosa > * { grid-column: texto-inicio / texto-fim; }
+ * grid espalharia cada bloco por uma coluna diferente.
+ *
+ * O SEGUNDO SELETOR NÃO É REDUNDÂNCIA. Com a rolagem contínua, cada capítulo é
+ * uma `<section>` com `display: contents` — os blocos viram filhos do grid, mas
+ * no DOM continuam sendo NETOS, e `.prosa > *` não os alcança.
+ *
+ * Sem ele o grid coloca cada bloco onde couber: parágrafos em colunas
+ * diferentes, a imagem larga na coluna de texto, e a sentinela do carregamento
+ * numa linha do meio em vez do fim — foi assim que a janela parou de crescer
+ * aos seis capítulos, com a sentinela medida a 5.888px do fim da página. */
+.prosa > *,
+.prosa > .capitulo > * { grid-column: texto-inicio / texto-fim; }
 
 .prosa p {
   margin: 0;
@@ -362,4 +372,26 @@
   color: var(--foreground);
   font-size: 14px;
   line-height: 20px;
+}
+
+/* ---- rolagem continua ------------------------------------------------------
+ *
+ * Os capitulos vem um atras do outro, sem botao entre eles. O respiro entre um
+ * e o proximo e o que diz que houve uma virada — e ele e o unico sinal, porque
+ * o desenho (895:10472) nao tem separador nem numero de capitulo no corpo.
+ */
+.prosa .capitulo { display: contents; }
+/* `display: contents` faz a secao sumir da caixa e os blocos herdarem a grade
+ * de tres larguras diretamente. Sem isso a secao vira um filho da grade e todos
+ * os capitulos caem na coluna de texto — inclusive as imagens largas. */
+
+/* O respiro entre capitulos. Aplicado ao PRIMEIRO bloco de cada um, e nao a
+ * secao, porque a secao nao ocupa caixa nenhuma. */
+.prosa .capitulo + .capitulo > *:first-child { margin-block-start: 96px; }
+
+/* A sentinela nao ocupa espaco nem aparece: ela existe para cruzar a borda. */
+.sentinela { block-size: 1px; }
+
+@media (max-width: 767px) {
+  .prosa .capitulo + .capitulo > *:first-child { margin-block-start: 64px; }
 }

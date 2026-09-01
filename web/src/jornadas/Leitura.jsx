@@ -15,7 +15,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Icone } from "../componentes/Icone.jsx";
-import { comDeslocamentos, irPara, ondeEstou } from "../leitor/onde-parei.js";
+import { comDeslocamentos, irPara, ondeEstouNoLivro } from "../leitor/onde-parei.js";
 import { lerSelecao, notasDoBloco } from "../leitor/selecao.js";
 import "./leitura.css";
 
@@ -250,16 +250,29 @@ function Caderno({ notas, capitulo, aoComentar, aoTrocarCor, aoApagar, aoIr, aoF
   );
 }
 
-export function Leitura({ livro, aviso, aoTrocarCapitulo, progresso, aoMarcar, notas = [], aoAnotar, aoComentar, aoTrocarCor, aoApagarNota, erroDeNota }) {
+export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirAntes, temMais = false, temAntes = false, progresso, aoMarcar, notas = [], aoAnotar, aoComentar, aoTrocarCor, aoApagarNota, erroDeNota }) {
   const [cromoVisivel, setCromo] = useState(true);
   const [paleta, setPaleta] = useState(null);
   const [caderno, setCaderno] = useState(false);
   const prosa = useRef(null);
   const restaurado = useRef(null);
 
+  /* A JANELA, ou o livro sozinho. O texto de exemplo e a prova não passam
+   * janela nenhuma, e continuar funcionando com um capítulo só é o que mantém
+   * essa tela testável sem um EPUB inteiro atrás. */
+  const capitulos = useMemo(
+    () =>
+      janela?.length
+        ? janela
+        : [{ indice: livro?.capitulo ?? 0, blocos: livro?.blocos ?? livro?.paragrafos ?? [] }],
+    [janela, livro?.blocos, livro?.paragrafos, livro?.capitulo],
+  );
+
+  /* Os blocos do PRIMEIRO capítulo da janela, para a restauração da marca. Os
+   * outros têm a própria contagem, dentro da própria `<section>`. */
   const blocos = useMemo(
-    () => comDeslocamentos(livro?.blocos ?? livro?.paragrafos ?? []),
-    [livro?.blocos, livro?.paragrafos],
+    () => comDeslocamentos(capitulos[0]?.blocos ?? []),
+    [capitulos],
   );
 
   /* Só as notas deste capítulo. As outras continuam carregadas — virar o
@@ -304,6 +317,46 @@ export function Leitura({ livro, aviso, aoTrocarCapitulo, progresso, aoMarcar, n
     }
   }, [blocos, livro?.capitulo, progresso]);
 
+  /* A SENTINELA PEDE O PRÓXIMO CAPÍTULO quando entra em cena.
+   *
+   * `IntersectionObserver`, e não o evento de rolagem: o evento dispara dezenas
+   * de vezes por segundo e obrigaria a medir a posição em cada uma. O
+   * observador avisa uma vez, quando o elemento cruza a borda.
+   *
+   * `rootMargin` de 800px faz o pedido acontecer ANTES de a sentinela aparecer —
+   * é a diferença entre o capítulo seguinte já estar lá quando a pessoa chega e
+   * ela ver um pulo. É o "carrega mais quando ele está na oitava" do Erik: a
+   * margem é o que define o quão antes.
+   *
+   * A função vive num ref pela mesma razão do gravador de rolagem: ela chega
+   * como arrow de quem usa a tela, e pô-la nas dependências remontaria o
+   * observador a cada render. */
+  const sentinela = useRef(null);
+  const sentinelaAcima = useRef(null);
+  const pedirAgora = useRef(aoPedirMais);
+  const pedirAntesAgora = useRef(aoPedirAntes);
+  pedirAgora.current = aoPedirMais;
+  pedirAntesAgora.current = aoPedirAntes;
+
+  useEffect(() => {
+    const abaixo = temMais ? sentinela.current : null;
+    const acima = temAntes ? sentinelaAcima.current : null;
+    if (!abaixo && !acima) return;
+    const obs = new IntersectionObserver(
+      (entradas) => {
+        for (const e of entradas) {
+          if (!e.isIntersecting) continue;
+          if (e.target === abaixo) pedirAgora.current?.();
+          if (e.target === acima) pedirAntesAgora.current?.();
+        }
+      },
+      { rootMargin: "800px 0px" },
+    );
+    if (abaixo) obs.observe(abaixo);
+    if (acima) obs.observe(acima);
+    return () => obs.disconnect();
+  }, [temMais, temAntes, capitulos.length]);
+
   /* A função mais recente fica num ref, e o efeito NÃO depende dela.
    *
    * `aoMarcar` chega como arrow function de quem usa a tela — o normal em
@@ -332,7 +385,9 @@ export function Leitura({ livro, aviso, aoTrocarCapitulo, progresso, aoMarcar, n
     let relogio;
     const aoRolar = () => {
       clearTimeout(relogio);
-      relogio = setTimeout(() => marcarAgora.current?.(ondeEstou(prosa.current)), 900);
+      /* Os dois saem juntos: com vários capítulos na tela, o número do
+                 capítulo e o deslocamento precisam vir do MESMO ponto. */
+              relogio = setTimeout(() => marcarAgora.current?.(ondeEstouNoLivro(prosa.current)), 900);
     };
     window.addEventListener("scroll", aoRolar, { passive: true });
     return () => { clearTimeout(relogio); window.removeEventListener("scroll", aoRolar); };
@@ -377,14 +432,54 @@ export function Leitura({ livro, aviso, aoTrocarCapitulo, progresso, aoMarcar, n
           conteúdo do usuário, que é a pior confusão possível numa tela de leitura. */}
       {aviso && <p className="leitura-aviso" role="status">{aviso}</p>}
 
-      <article className="prosa" ref={prosa}>
-        {blocos.map((b, i) => (
-          <Bloco
-            key={i}
-            {...b}
-            destaques={notasDoBloco(daqui, b.de, (b.texto ?? "").length)}
-          />
+      {/* A ROLAGEM E CONTINUA: os capítulos carregados vêm um atrás do outro,
+          sem botão entre eles. Cada um é uma `<section>` com o próprio índice,
+          e é isso que permite saber em qual a pessoa está — sem esse marcador,
+          o progresso e a nota não teriam a que se prender.
+
+          Os deslocamentos são POR CAPÍTULO. Emendar tudo numa contagem só
+          quebraria toda nota já gravada: elas guardam a posição dentro do
+          capítulo, e a âncora por citação as reancora, mas o número mudaria de
+          significado no meio do caminho. */}
+      {/* `data-capitulos` e `data-carregados` existem para a MEDIDA: sem eles,
+          "a janela cresceu?" só se responde contando `<section>`, e "cresceu até
+          onde deveria?" não se responde de jeito nenhum. É estado que a tela já
+          tem, declarado onde um instrumento alcança. */}
+      <article
+        className="prosa"
+        ref={prosa}
+        data-capitulos={livro.capitulos ?? 1}
+        data-carregados={capitulos.length}
+        data-tem-mais={temMais ? "sim" : "nao"}
+        data-ultimo={capitulos[capitulos.length - 1]?.indice ?? -1}
+      >
+        {/* A SENTINELA DE CIMA. Quem abre no capítulo 8 precisa poder subir, e
+            sem ela os sete anteriores ficariam inalcançáveis — a rolagem
+            contínua tirou os botões de virar e, com eles, a única forma de
+            voltar que existia. */}
+        {temAntes && <div ref={sentinelaAcima} className="sentinela" aria-hidden="true" />}
+        {capitulos.map(({ indice, blocos: b }) => (
+          <section key={indice} className="capitulo" data-capitulo={indice}>
+            {comDeslocamentos(b).map((bloco, i) => (
+              <Bloco
+                key={i}
+                {...bloco}
+                destaques={notasDoBloco(
+                  notas.filter((n) => n.capitulo === indice),
+                  bloco.de,
+                  (bloco.texto ?? "").length,
+                )}
+              />
+            ))}
+          </section>
         ))}
+        {/* A SENTINELA. Quando ela entra em cena, o capítulo seguinte é pedido —
+            é o "chegou na oitava, carrega mais dez" aplicado a capítulo.
+
+            Ela fica DEPOIS do último bloco e não no fim de cada capítulo: o que
+            dispara o carregamento é a pessoa se aproximar do fim do que existe,
+            e não passar por uma fronteira interna. */}
+        {temMais && <div ref={sentinela} className="sentinela" aria-hidden="true" />}
       </article>
 
       {/* VIRAR O CAPÍTULO. Sem isto o leitor mostrava um capítulo e acabava —
@@ -430,32 +525,22 @@ export function Leitura({ livro, aviso, aoTrocarCapitulo, progresso, aoMarcar, n
           aoComentar={aoComentar}
           aoTrocarCor={aoTrocarCor}
           aoApagar={aoApagarNota}
-          aoIr={aoTrocarCapitulo}
+          /* IR A UMA NOTA DE OUTRO CAPÍTULO agora é rolar até ela, e não trocar
+             de capítulo — ela pode já estar na tela, alguns capítulos acima. */
+          aoIr={(cap) => {
+            const alvo = prosa.current?.querySelector(`[data-capitulo="${cap}"]`);
+            if (alvo) alvo.scrollIntoView({ behavior: "smooth", block: "start" });
+          }}
           aoFechar={() => setCaderno(false)}
         />
       )}
 
-      {livro.capitulos > 1 && aoTrocarCapitulo && (
-        <nav className="virar" aria-label="Capítulos">
-          <button
-            type="button"
-            onClick={() => aoTrocarCapitulo(livro.capitulo - 1)}
-            disabled={livro.capitulo <= 0}
-          >
-            Capítulo anterior
-          </button>
-          <p className="virar-conta" aria-live="polite">
-            {livro.capitulo + 1} de {livro.capitulos}
-          </p>
-          <button
-            type="button"
-            onClick={() => aoTrocarCapitulo(livro.capitulo + 1)}
-            disabled={livro.capitulo >= livro.capitulos - 1}
-          >
-            Próximo capítulo
-          </button>
-        </nav>
-      )}
+      {/* OS BOTÕES DE VIRAR CAPÍTULO SAÍRAM. O desenho (895:10472) não os tem:
+          a leitura é uma rolagem só, do título ao fim. Eles existiam porque o
+          leitor mostrava um capítulo por vez, e agora a janela emenda os
+          capítulos conforme a pessoa desce.
+
+          O que ficou no lugar não é um controle: é a ausência dele. */}
     </div>
   );
 }

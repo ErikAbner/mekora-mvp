@@ -838,3 +838,66 @@ chegava.
 Ele aparece com a lombada mínima e o `aria-label` diz *"espessura
 desconhecida"* — em vez de inventar um número que a pessoa leria como
 informação.
+
+---
+
+# Leitura em rolagem contínua
+
+O desenho (`895:10472`) não tem *"Capítulo anterior / Próximo capítulo"* — a
+leitura é uma rolagem só. Eu tinha levantado que trocar significaria carregar o
+livro inteiro na abertura, o que trava a aba num livro de oitocentas páginas.
+
+**A saída foi do Erik:** carregar em janela, como jogo faz com terreno. Alguns
+capítulos por vez, e mais quando a pessoa se aproxima do fim do que existe.
+
+## Para cima também, e isso não era opcional
+
+A janela abre **onde a pessoa parou**. Quem parou no capítulo 6 abre o livro ali
+— e sem carregar para cima, os seis anteriores ficariam inalcançáveis: a rolagem
+contínua tinha acabado de tirar os botões de virar, que eram a única forma de
+voltar.
+
+Ao inserir um capítulo **acima** do que está na tela, a rolagem é compensada pela
+diferença de altura. Sem isso o texto salta sob os olhos de quem lê — o defeito
+clássico de lista infinita bidirecional.
+
+## Três defeitos, e nenhum apareceu olhando
+
+**1 · O grid não alcançava os blocos.** Cada capítulo é uma `<section>` com
+`display: contents`, e isso faz os blocos participarem do grid — mas no DOM eles
+continuam sendo **netos**, e `.prosa > *` não os pega. Sem `grid-column`, o grid
+colocou cada bloco onde coube.
+
+O sintoma não foi um layout torto visível: foi a **janela parar de crescer aos
+seis capítulos**, porque a sentinela do carregamento foi parar numa linha do meio
+em vez do fim. Medida a 5.888px do fim da página, com `temMais` ainda verdadeiro
+e a sentinela ainda no DOM.
+
+**2 · Corrida entre o callback e o estado.** `pedirMais` lia `janela` do closure.
+Com a rolagem rápida, duas chamadas entram, a segunda carrega o callback de um
+render anterior, e pede um índice que já existe — o `setJanela` deduplica, nada
+muda na tela, e o `IntersectionObserver` não vê mudança de interseção. Nunca mais
+dispara.
+
+As bordas passaram para um `ref`, avançado **antes** da busca. Medido antes:
+a janela pulava de 4 para 6, sinal de duas chamadas pedindo ao mesmo tempo.
+
+**3 · O medidor media o texto de exemplo.** Duas rodadas inteiras de medição
+foram feitas contra o livro errado: a sessão do navegador não era a dona do
+trabalho, `analisar()` respondia "Não encontrado", e a tela caía no exemplo — que
+tem **um** capítulo.
+
+A tela estava certa e dizia isso em letra visível: *"Este é um texto de exemplo.
+O livro não pôde ser aberto."* Quem não leu o aviso fui eu.
+
+A causa raiz é o limite de cinco links por dez minutos, que existe por uma boa
+razão: quando ele estoura, o backend responde 204 **sem emitir link**, e o
+`grep` seguinte no log pega a chave anterior, já consumida.
+`scripts/entrar-como-dono.sh` resolve criando uma conta nova a cada medida — o
+limite é por e-mail, então nunca é atingido.
+
+## `data-capitulos`, `data-carregados`, `data-tem-mais`
+
+Estado que a tela já tinha, declarado onde um instrumento alcança. Sem eles, *"a
+janela cresceu?"* só se responde contando `<section>`, e *"parou por quê?"* não
+se responde de jeito nenhum.

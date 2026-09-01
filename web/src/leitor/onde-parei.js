@@ -38,6 +38,42 @@ export function ondeEstou(raiz) {
   return atual;
 }
 
+/* EM QUE CAPÍTULO A PESSOA ESTÁ, com vários na tela.
+ *
+ * Com a rolagem contínua, a tela tem uma pilha de capítulos e "o capítulo
+ * atual" deixou de ser um dado da aplicação: ele passou a ser uma pergunta
+ * sobre o que está na frente dos olhos.
+ *
+ * O critério é o mesmo do deslocamento — o último que começa acima da linha de
+ * leitura —, e ele precisa ser o mesmo: se o deslocamento vier de um capítulo e
+ * o número do capítulo de outro, o progresso grava uma posição que não existe,
+ * e reabrir o livro leva para o lugar errado.
+ *
+ * Devolve `{ capitulo, deslocamento }` do MESMO ponto, e por isso os dois saem
+ * juntos daqui em vez de serem calculados em lugares diferentes.
+ */
+export function ondeEstouNoLivro(raiz) {
+  if (!raiz) return { capitulo: 0, deslocamento: 0 };
+  const linha = window.innerHeight * 0.2;
+
+  let secao = null;
+  for (const s of raiz.querySelectorAll("[data-capitulo]")) {
+    if (s.getBoundingClientRect().top > linha) break;
+    secao = s;
+  }
+  /* Nenhuma seção começou acima da linha: a pessoa está no topo do primeiro
+   * capítulo, antes de ele cruzar a linha. O primeiro é a resposta. */
+  if (!secao) secao = raiz.querySelector("[data-capitulo]");
+  if (!secao) return { capitulo: 0, deslocamento: ondeEstou(raiz) };
+
+  return {
+    capitulo: Number(secao.dataset.capitulo) || 0,
+    /* O deslocamento é lido DENTRO da seção, e não na raiz: as contagens são por
+     * capítulo, e medir na raiz devolveria a do último capítulo carregado. */
+    deslocamento: ondeEstou(secao),
+  };
+}
+
 /* Levar a tela até um deslocamento.
  *
  * Vai para o bloco que CONTÉM o deslocamento, e não para o que começa nele:

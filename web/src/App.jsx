@@ -9,7 +9,7 @@
  * Depois que o agente sair, ferramenta conhecida vale mais que ferramenta
  * enxuta — resposta para `react-router` existe em qualquer lugar.
  */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams, useLocation } from "react-router-dom";
 import { MesaVazia } from "./jornadas/MesaVazia.jsx";
 import { Apresentacao } from "./jornadas/Apresentacao.jsx";
@@ -37,7 +37,7 @@ import { ContaKindle } from "./jornadas/ContaKindle.jsx";
 import { LUGARES } from "./lugares.js";
 import { useJornada } from "./estado/useJornada.js";
 import { usePessoa } from "./estado/usePessoa.js";
-import { abrirLivro, irParaCapitulo } from "./leitor/abrir.js";
+import { abrirLivro, blocosDoCapitulo, irParaCapitulo } from "./leitor/abrir.js";
 import { gravarProgresso, lerProgresso } from "../../contrato/api.js";
 import { fracaoLida } from "../../contrato/progresso.js";
 import { usarNotas } from "./leitor/usarNotas.js";
@@ -180,6 +180,10 @@ function PaginaLeitura() {
         const l = await abrirLivro(url, { capitulo: marca?.capitulo ?? 0 });
         if (!vivo) return;
         setLivro(l);
+        /* A janela começa no capítulo em que a pessoa parou, e não no primeiro:
+           abrir no capítulo 12 e carregar do 1 ao 3 mostraria o começo do livro
+           a quem estava no meio. */
+        semear(l.capitulo, l.blocos);
         /* Quantos capítulos o livro tem só se descobre ABRINDO: a espinha do
          * EPUB é lida aqui, no navegador. Sem gravar isso, a estante não teria
          * como dizer onde a leitura está — e a alternativa era a porcentagem
@@ -203,6 +207,101 @@ function PaginaLeitura() {
     return () => { vivo = false; };
   }, [id]);
 
+  /* A JANELA DE CAPÍTULOS CARREGADOS.
+   *
+   * A leitura é rolagem contínua — o desenho (895:10472) não tem botão de virar
+   * capítulo —, e a objeção contra isso era carregar o livro inteiro na
+   * abertura, que trava a aba num livro de oitocentas páginas.
+   *
+   * A saída, definida pelo Erik, é carregar em janela, como jogo faz com
+   * terreno: alguns capítulos por vez, e mais quando a pessoa se aproxima do
+   * fim do que já está carregado.
+   *
+   * TRÊS, E NÃO DEZ. O número dele era sobre imagens, e a unidade aqui é
+   * capítulo — um capítulo pode ter cinquenta páginas. Três é o que mantém a
+   * rolagem sem costura: o de cima que a pessoa acabou de deixar, o que ela lê,
+   * e o de baixo já pronto quando ela chegar. */
+  const [janela, setJanela] = useState([]);   // [{ indice, blocos }], em ordem
+
+  /* AS BORDAS DA JANELA FICAM NUM REF, e não são lidas do estado.
+   *
+   * A primeira versão lia `janela` do closure, e travava: com a rolagem rápida,
+   * duas chamadas entram, a segunda carrega o callback de um render anterior, e
+   * ela pede um índice que já existe. O `setJanela` deduplica, nada muda na
+   * tela, o `IntersectionObserver` não vê mudança de interseção e NUNCA
+   * dispara de novo.
+   *
+   * Medido: a janela crescia 2, 3, 4, 6 e parava — com a sentinela ainda no DOM
+   * e `temMais` ainda verdadeiro. Nenhum erro em lugar nenhum; a leitura
+   * simplesmente acabava no meio do livro.
+   *
+   * O ref é atualizado no mesmo lugar em que a janela muda, então ele nunca
+   * discorda dela — e não depende de render para valer. */
+  const bordas = useRef({ primeiro: 0, ultimo: -1 });
+  const carregando = useRef(false);
+
+  const semear = useCallback((indice, blocos) => {
+    bordas.current = { primeiro: indice, ultimo: indice };
+    setJanela([{ indice, blocos }]);
+  }, []);
+
+  /* O capítulo seguinte ao fim da janela. */
+  const pedirMais = useCallback(async () => {
+    if (carregando.current || !livro) return;
+    const proximo = bordas.current.ultimo + 1;
+    if (proximo >= livro.capitulos) return;
+    carregando.current = true;
+    /* A borda avança ANTES da busca. Se ela só avançasse depois, duas chamadas
+     * no mesmo instante pediriam o mesmo capítulo — e foi exatamente assim que
+     * a janela pulou de 4 para 6 numa medida. */
+    bordas.current = { ...bordas.current, ultimo: proximo };
+    try {
+      const blocos = await blocosDoCapitulo(livro, proximo);
+      if (blocos) setJanela((j) => (j.some((c) => c.indice === proximo) ? j : [...j, { indice: proximo, blocos }]));
+      else bordas.current = { ...bordas.current, ultimo: proximo - 1 };
+    } catch {
+      /* Um capítulo que não abre devolve a borda: sem isso ele viraria um buraco
+       * permanente, e o resto do livro ficaria inalcançável. */
+      bordas.current = { ...bordas.current, ultimo: proximo - 1 };
+    } finally { carregando.current = false; }
+  }, [livro]);
+
+  /* O CAPÍTULO ANTERIOR AO COMEÇO DA JANELA — e ele é tão necessário quanto o
+   * seguinte.
+   *
+   * A janela abre onde a pessoa parou, e quem parou no capítulo 8 abre o livro
+   * ali. Sem carregar para cima, os sete capítulos anteriores ficam
+   * inalcançáveis: a rolagem contínua teria tirado os botões de virar e, com
+   * eles, a única forma de voltar.
+   *
+   * Preservar a posição é obrigatório. Inserir conteúdo ACIMA do que está na
+   * tela empurra tudo para baixo, e sem compensar a rolagem a pessoa é jogada
+   * para trás no meio da leitura — o defeito clássico de lista infinita
+   * bidirecional. */
+  const pedirAntes = useCallback(async () => {
+    if (carregando.current || !livro) return;
+    const anterior = bordas.current.primeiro - 1;
+    if (anterior < 0) return;
+    carregando.current = true;
+    bordas.current = { ...bordas.current, primeiro: anterior };
+    const alturaAntes = document.documentElement.scrollHeight;
+    const ondeEstava = window.scrollY;
+    try {
+      const blocos = await blocosDoCapitulo(livro, anterior);
+      if (blocos) {
+        setJanela((j) => (j.some((c) => c.indice === anterior) ? j : [{ indice: anterior, blocos }, ...j]));
+        /* Espera o navegador desenhar, e devolve a diferença de altura à
+         * rolagem. Sem isto o texto salta sob os olhos de quem lê. */
+        requestAnimationFrame(() => {
+          const cresceu = document.documentElement.scrollHeight - alturaAntes;
+          if (cresceu > 0) window.scrollTo({ top: ondeEstava + cresceu, behavior: "instant" });
+        });
+      } else bordas.current = { ...bordas.current, primeiro: anterior + 1 };
+    } catch {
+      bordas.current = { ...bordas.current, primeiro: anterior + 1 };
+    } finally { carregando.current = false; }
+  }, [livro]);
+
   /* QUANTO DO LIVRO JÁ FOI LIDO, de 0 a 1.
    *
    * `deslocamento` é posição de CARACTERE dentro do capítulo, então virar
@@ -215,7 +314,12 @@ function PaginaLeitura() {
    * manda o campo — em vez de gravar zero, que afirmaria "no começo". */
   const quanto = (cap, desl) => {
     if (!livro?.extensao?.length) return undefined;
-    const total = (livro.blocos ?? []).reduce((n, b) => n + (b.texto?.length ?? 0), 0);
+    /* Os caracteres do capítulo QUE ESTÁ SENDO LIDO, e não os do primeiro da
+     * janela: com vários na tela, dividir o deslocamento de um pelo tamanho de
+     * outro dá uma fração que não quer dizer nada. */
+    const daJanela = janela.find((c) => c.indice === cap);
+    const fonte = daJanela?.blocos ?? livro.blocos ?? [];
+    const total = fonte.reduce((n, b) => n + (b.texto?.length ?? 0), 0);
     const dentro = total > 0 ? Math.min(1, (desl ?? 0) / total) : 0;
     const f = fracaoLida({ capitulo: cap, deslocamento: dentro, extensao: livro.extensao });
     return f === null ? undefined : f;
@@ -230,6 +334,11 @@ function PaginaLeitura() {
   return (
     <Leitura
       livro={livro}
+      capitulos={janela}
+      aoPedirMais={pedirMais}
+      aoPedirAntes={pedirAntes}
+      temMais={janela.length > 0 && janela[janela.length - 1].indice < livro.capitulos - 1}
+      temAntes={janela.length > 0 && janela[0].indice > 0}
       progresso={progresso}
       notas={notas}
       erroDeNota={erroDeNota}
@@ -240,27 +349,19 @@ function PaginaLeitura() {
       aoComentar={comentar}
       aoTrocarCor={trocarCor}
       aoApagarNota={remover}
-      aoTrocarCapitulo={async (i) => {
-        const novo = await irParaCapitulo(livro, i);
-        setLivro(novo);
-        /* Virar o capítulo é ler o começo dele. Gravar aqui, e não esperar a
-         * rolagem, garante que fechar a aba logo depois de virar não perca a
-         * virada — que é o caso mais comum de parar de ler. */
+      aoMarcar={({ capitulo, deslocamento }) => {
+        /* O CAPÍTULO VEM DA TELA, e não do estado. Com a rolagem contínua há
+           vários na página, e `livro.capitulo` é só o que foi aberto primeiro —
+           usá-lo faria toda a leitura ser gravada como se fosse no capítulo de
+           entrada, e reabrir o livro voltaria para lá.
+
+           Falha em silêncio: isto roda enquanto a pessoa lê, e um erro visível a
+           cada rolagem de quem não entrou faria o produto parecer quebrado
+           quando o que acontece é o previsto — sem conta não há onde guardar. */
         gravarProgresso(id, {
-          capitulo: novo.capitulo,
-          deslocamento: 0,
-          fracao: fracaoLida({ capitulo: novo.capitulo, deslocamento: 0, extensao: novo.extensao }) ?? undefined,
-        }).catch(() => {});
-        window.scrollTo({ top: 0, behavior: "auto" });
-      }}
-      aoMarcar={(deslocamento) => {
-        /* Falha em silêncio: isto roda enquanto a pessoa lê, e um erro visível
-         * a cada rolagem de quem não entrou faria o produto parecer quebrado
-         * quando o que acontece é o previsto — sem conta não há onde guardar. */
-        gravarProgresso(id, {
-          capitulo: livro.capitulo ?? 0,
+          capitulo,
           deslocamento,
-          fracao: quanto(livro.capitulo ?? 0, deslocamento),
+          fracao: quanto(capitulo, deslocamento),
         }).catch(() => {});
       }}
     />
