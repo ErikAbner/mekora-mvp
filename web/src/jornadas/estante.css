@@ -467,3 +467,28 @@
   .pilha li + li { margin-block-start: -40px; }
   .pilha { perspective: 1100px; }
 }
+
+/* ---- Os dados do arquivo, na ficha da direita ------------------------------
+ *
+ * Classe própria e não a `.ficha-arquivo` da tela do livro: a mesma classe em
+ * dois arquivos é o que `scripts/classes.mjs` recusa, e com razão — uma medida
+ * mudaria de um lado e não do outro. A tela do livro tem espaço para duas
+ * colunas; aqui a coluna é uma só, com 476px.
+ */
+.ficha-dados { margin: 0; display: flex; flex-direction: column; }
+
+.ficha-dados-linha {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 24px;
+  padding-block: 14px;
+  border-block-end: 1px solid var(--border);
+}
+.ficha-dados-linha:last-child { border-block-end: 0; }
+
+.ficha-dados dt { flex: 0 0 auto; font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
+.ficha-dados dd {
+  margin: 0;
+  text-align: end;
+  font-size: 16px; line-height: 24px;
+  color: var(--card-foreground);
+  text-wrap: pretty;
+}

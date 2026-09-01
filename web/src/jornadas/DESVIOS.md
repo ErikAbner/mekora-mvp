@@ -1136,3 +1136,64 @@ Três defeitos que já existiam e ninguém via:
 
 A folha também ganhou teto de altura: sem ele o `<dialog>` crescia além da tela
 e a rolagem movia a folha inteira, tirando o título do viewport.
+
+---
+
+# Os painéis da leitura: índice, notas, seleção
+
+Nós `941:23110` (aparência, já construído), `941:23111`, `941:23112` e
+`941:23120`.
+
+## O índice mostra POR CENTO onde o desenho mostra página
+
+A coluna da direita do `941:23112` traz "20", "30", "40" ao lado dos capítulos.
+São números de página, e o produto não tem páginas — o EPUB não tem. A medida de
+posição que ele conhece de verdade é a extensão em bytes, que já sustenta a
+porcentagem da estante, e é ela que vai ali. Quando não dá para saber, a linha
+não mostra número: zero afirmaria "no começo".
+
+O desenho escreve **"Vc esta aqui"**, abreviado e sem acento. Na tela é "Você
+está aqui" — o portão recusa texto sem acento, e com razão.
+
+## O filete da nota tem a cor da nota
+
+No `941:23111` o filete à esquerda de cada item é cinza em todos. Com quatro
+cores de destaque, isso faz o painel não distinguir uma nota verde de uma rosa —
+e a cor é o único dado que as separa. Aqui ela vai para o filete, que continua
+sendo forma. O trecho citado ficou na superfície recuada do desenho, e não
+pintado da cor: repeti-la atrás do texto era o que obrigava a medir contraste de
+tinta sobre pastel em dois temas.
+
+**O campo de busca do desenho diz "Buscar em Mekora"** — é o componente da busca
+global reaproveitado no painel. Aqui ele procura nas notas DESTE livro, e o
+rótulo diz isso: prometer o Mekora inteiro e devolver as notas de um livro é a
+tela afirmando o que não faz.
+
+**O que o desenho não tem e ficou:** trocar a cor, apagar, escrever o comentário.
+Tirá-los para casar com um desenho estático seria trocar função por semelhança.
+
+## A barra de seleção tinha só as cores
+
+O `941:23120` tem quatro cores, **Adicionar nota**, **Copiar** e **Cancelar**. A
+implementação tinha as cores e mais nada — marcar de uma cor é metade do que se
+faz com um trecho.
+
+"Adicionar nota" marca e abre o caderno no mesmo gesto: nota é destaque com
+comentário, e sem o caderno aberto não há onde escrever o comentário. "Copiar"
+diz quando o navegador recusa — permissão negada, documento sem foco — em vez de
+fingir que copiou.
+
+Os dois ícones (`document-add-outline` e `solar:copy-line-duotone`) não entraram:
+eles passam pelo efeito handmade do Figma, e desenhá-los à mão produziria ícones
+que não são do sistema. Mesmo caso do A-23.
+
+## A ficha da estante mostra os dados do arquivo
+
+Clicar num livro **seleciona**, e a seleção existe para a ficha da direita dizer
+o que aquele arquivo é. Ela dizia só o que a leitura sabe — progresso, notas,
+última nota —, e páginas, digitalizado, traduzido, quadrinho, Kindle e data de
+chegada ficavam a um clique de distância, na tela do livro. Cada linha só
+aparece quando há o que dizer.
+
+O botão **"Notas"** da ficha não fazia nada: `<Botao>` sem `onClick`. Virou link
+para a ficha inteira, que é onde cabem todas.

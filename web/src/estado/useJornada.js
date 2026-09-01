@@ -152,10 +152,6 @@ export function useJornada() {
         notas: e.notas ?? 0,
         capitulo: e.capitulo,
         capitulos: e.capitulos,
-        /* O NUMERO DE PAGINAS, que a vista de pé usa para derivar a espessura da
-         * lombada. Sem ele o livro aparece com a lombada minima, e a tela diz
-         * que a espessura e desconhecida — em vez de inventar. */
-        paginas: e.page_count ?? null,
         /* QUANTO DO LIVRO JA FOI LIDO, de 0 a 1. Sem esta linha o campo chega do
          * servidor, morre no mapeamento e a ficha volta ao "capitulo N de M" —
          * o que aconteceu na primeira medida, com o /history ja devolvendo
@@ -168,6 +164,29 @@ export function useJornada() {
          * caminho aqui faria a tela conhecer o layout do storage do servidor,
          * que é exatamente o acoplamento que o contrato existe para evitar. */
         capa: e.cover_url ?? null,
+        /* O NUMERO DE PAGINAS serve a dois lugares: a vista de pé deriva dele a
+         * espessura da lombada, e a ficha o mostra como dado do arquivo. Sem
+         * ele o livro aparece com a lombada minima, e a tela diz que a
+         * espessura e desconhecida — em vez de inventar.
+         *
+         * OS DADOS DO ARQUIVO, que a ficha da direita passou a mostrar.
+         *
+         * A ficha dizia só o que a LEITURA sabe — progresso, notas, última nota.
+         * Clicar num livro seleciona, e a seleção existe para mostrar "os dados
+         * daquele arquivo": o que ele é, o que a conversão fez com ele, e
+         * quando ele chegou. Isso já estava na tela do livro; o que faltava era
+         * chegar até aqui.
+         *
+         * `is_scanned` é OPCIONAL de propósito e a comparação é estrita:
+         * "não sei" é resposta legítima, e diferente de "não é". */
+        paginas: e.page_count ?? null,
+        digitalizado: e.is_scanned === true ? true : e.is_scanned === false ? false : null,
+        ocr: !!e.ocr_used,
+        traduzido: e.translation_enabled
+          ? { de: e.source_language || null, para: e.target_language || null }
+          : null,
+        mangaRtl: !!e.manga_rtl,
+        chegouEm: e.created_at ?? null,
       })),
     );
   }, []);

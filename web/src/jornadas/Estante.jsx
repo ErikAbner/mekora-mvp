@@ -372,6 +372,54 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnvia
                 )}
               </div>
 
+              {/* OS DADOS DO ARQUIVO. Selecionar existe para isto: ver o que
+                  aquele arquivo é, e o que a conversão fez com ele. A ficha
+                  dizia só o que a leitura sabe — progresso, notas, citação —, e
+                  o que o arquivo é ficava a um clique de distância, na tela do
+                  livro.
+
+                  Cada linha só aparece quando há o que dizer. Uma lista com
+                  seis "—" descreve a ausência de informação com a mesma ênfase
+                  da informação. */}
+              {(() => {
+                const linhas = [
+                  ["Páginas", selecionado.paginas ? String(selecionado.paginas) : null],
+                  ["Digitalizado",
+                    selecionado.digitalizado === true
+                      ? (selecionado.ocr ? "Sim — texto reconhecido por OCR" : "Sim")
+                      : selecionado.digitalizado === false
+                        ? "Não — o texto já estava no arquivo"
+                        : null],
+                  ["Traduzido",
+                    selecionado.traduzido
+                      ? `De ${selecionado.traduzido.de || "?"} para ${selecionado.traduzido.para || "?"}`
+                      : null],
+                  ["Quadrinho",
+                    selecionado.quadrinho
+                      ? (selecionado.mangaRtl ? "Sim, lido da direita para a esquerda" : "Sim")
+                      : null],
+                  ["No Kindle", selecionado.noKindle ? "Enviado" : "Ainda não enviado"],
+                  ["Chegou em",
+                    selecionado.chegouEm
+                      ? new Date(selecionado.chegouEm).toLocaleDateString("pt-BR", {
+                          day: "numeric", month: "long", year: "numeric",
+                        })
+                      : null],
+                ].filter(([, v]) => v);
+
+                if (!linhas.length) return null;
+                return (
+                  <dl className="ficha-dados">
+                    {linhas.map(([rotulo, valor]) => (
+                      <div key={rotulo} className="ficha-dados-linha">
+                        <dt>{rotulo}</dt>
+                        <dd>{valor}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                );
+              })()}
+
               <div className="ficha-acoes">
                 {/* SEM ARQUIVO NÃO HÁ O QUE ABRIR, e o botão diz isso em vez de
                     ficar clicável e não fazer nada. Um botão que não responde é
@@ -384,7 +432,11 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnvia
                 >
                   Continuar
                 </Botao>
-                <Botao tom="secundaria">Notas</Botao>
+                {/* ELE NÃO FAZIA NADA: `<Botao>` sem `onClick`. As notas do
+                    livro moram na ficha inteira, que é onde cabem todas. */}
+                <Link className="botao secundaria" to={`/estante/${selecionado.chave}#notas`}>
+                  Notas
+                </Link>
               </div>
 
               {/* ENVIAR AO KINDLE. É a promessa que dá nome ao produto, e até

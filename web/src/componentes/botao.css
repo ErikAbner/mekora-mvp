@@ -74,3 +74,10 @@
 :root[data-tema="escuro"] .botao.secundaria:hover { background: var(--muted); }
 
 @media (prefers-reduced-motion: reduce) { .botao { transition: none; } }
+
+/* LINK VESTIDO DE BOTÃO. Alguns destinos são navegação de verdade — "Notas"
+ * leva à ficha do livro, "Baixar" entrega um arquivo — e `<a>` é o elemento
+ * certo: ele abre em nova aba, tem menu de contexto e "salvar como". O que ele
+ * traz de errado é o sublinhado do navegador, que dentro de uma moldura de
+ * botão vira duas marcações de clicável na mesma coisa. */
+a.botao { text-decoration: none; }
