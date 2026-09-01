@@ -37,14 +37,25 @@
 
 .livro { display: flex; flex-direction: column; gap: 24px; }
 
-.capa-caixa { position: relative; display: flex; flex-direction: column; }
+/* `align-items: flex-end` alinha o marcador a direita, como o `items-end` do
+ * no 895:7385. */
+.capa-caixa { position: relative; display: flex; flex-direction: column; align-items: flex-end; }
 
-/* A capa e MIDIA RECORTADA: 2px de raio, o unico lugar onde ele existe, para o
- * canto nao brigar com a borda. */
+/* A CAPA NAO TEM BORDA EM REPOUSO.
+ *
+ * Ela tinha `border: 2px solid var(--foreground)` em todas, e o desenho poe a
+ * borda em UMA capa por linha — a primeira. A leitura errada foi minha: aquilo
+ * nao e o estado padrao, e o estado ATIVO, do livro que a ficha da direita esta
+ * mostrando. Tinta cheia em volta de toda capa gastava o recurso mais alto da
+ * paleta no repouso, e nao sobrava nada para marcar a escolha.
+ *
+ * 2px de raio e o unico lugar onde ele existe: a capa e MIDIA RECORTADA. */
 .capa {
+  position: relative;
+  z-index: 1;
   inline-size: 100%; aspect-ratio: 420 / 594;
   object-fit: cover; display: block;
-  border: 2px solid var(--foreground);
+  border: 2px solid transparent;
   border-radius: 2px;
 }
 
@@ -62,8 +73,12 @@
  * mascara no proprio elemento, o fundo do numero E o balao — na tela e na
  * arvore. */
 .marcador {
-  position: absolute; inset-block-start: -12px; inset-inline-end: 12px;
-  z-index: 1; inline-size: 36px; block-size: 50px;
+  /* No fluxo e com recuo negativo: a capa, que vem depois, e pintada por cima
+   * dos 13px de baixo. Do marcador sobra a ponta saindo do livro. */
+  position: relative; z-index: 0;
+  /* Encostado na borda direita da capa, como o `items-end` do 895:7385. */
+  margin-block-end: -13px;
+  inline-size: 36px; block-size: 50px;
   display: flex; justify-content: center; padding-block-start: 12px;
   background: var(--foreground);
   mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat;
@@ -71,10 +86,10 @@
 }
 .marcador-numero {
   color: var(--primary-foreground);
-  font-size: 14px; line-height: 22px;   /* Dado/Medida */
+  font-size: 16px; line-height: 20px;   /* como o no 895:7388 */
 }
 
-.livro-texto { display: flex; flex-direction: column; gap: 16px; }
+.livro-texto { display: flex; flex-direction: column; gap: 16px; padding: 12px; margin: -12px; }
 .livro-texto h3 {
   margin: 0;
   font-size: 24px; line-height: 32px;   /* Body/Large */
@@ -236,9 +251,22 @@
   cursor: pointer;
 }
 
-/* O escolhido é marcado por DEGRAU DE SUPERFÍCIE, não por matiz — a regra que a
-   DEC-0037 §6 fixou quando o acento saiu do sistema. */
-.livro-alvo.escolhido { background: color-mix(in srgb, var(--foreground) 8%, transparent); }
+/* O ESCOLHIDO É A CAPA COM BORDA E SOMBRA — o tratamento do desenho, agora no
+   lugar dele.
+   
+   O véu de 8% sobre a imagem saiu: ele apagava a capa para marcar a escolha,
+   que é gastar justamente o que se está tentando mostrar. A borda de tinta
+   cheia é o degrau mais alto da paleta, e escolher é o gesto raro que o
+   justifica.
+
+   O DEGRAU DE SUPERFÍCIE CONTINUA, mas na FICHA inteira e não sobre a imagem:
+   o cartão escolhido também é o que a ficha da direita está mostrando, e marcar
+   só a capa deixaria o título e o autor de fora da mesma seleção. */
+.livro.escolhido .capa {
+  border-color: var(--foreground);
+  box-shadow: 0 16px 16px rgb(0 0 0 / 0.03), 0 4px 9px rgb(0 0 0 / 0.04);
+}
+.livro.escolhido .livro-texto { background: color-mix(in srgb, var(--foreground) 6%, transparent); }
 .livro-alvo:hover { background: color-mix(in srgb, var(--foreground) 4%, transparent); }
 .livro-alvo:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
 

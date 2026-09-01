@@ -140,7 +140,7 @@ function Estante3D({ livros, selecionado, aoEscolher }) {
 
 function Livro({ titulo, autor, notas, capa, aoEscolher, escolhido }) {
   return (
-    <li className="livro">
+    <li className={`livro${escolhido ? " escolhido" : ""}`}>
       {/* O livro inteiro é o alvo do clique, e é um `button` de verdade: o
           teclado chega nele, o leitor de tela o anuncia como ação, e o Enter
           funciona. Um `div` com `onClick` pareceria igual e não seria. */}
@@ -153,8 +153,11 @@ function Livro({ titulo, autor, notas, capa, aoEscolher, escolhido }) {
         <span className="visualmente-oculto">{titulo}{autor ? `, de ${autor}` : ""}</span>
       </button>
       <div className="capa-caixa">
-        {/* Livro sem capa não vira buraco: a caixa fica, com o título dentro.
-            Uma grade com lacunas parece defeito de carregamento. */}
+        {/* O MARCADOR VEM ANTES DA CAPA, e é isso que o põe ATRÁS dela.
+            O nó 895:7386 é um irmão do 895:7389 com `mb: -13px` — o livro é
+            pintado por cima, e do marcador só sobra a ponta acima da capa.
+            A versão anterior o punha absoluto com `z-index: 1`, na frente: a
+            etiqueta pousava sobre a capa em vez de sair de dentro do livro. */}
         {notas > 0 && (
           <span
             className="marcador"
@@ -163,6 +166,8 @@ function Livro({ titulo, autor, notas, capa, aoEscolher, escolhido }) {
             <span className="marcador-numero dado">{notas}</span>
           </span>
         )}
+        {/* Livro sem capa não vira buraco: a caixa fica, com o título dentro.
+            Uma grade com lacunas parece defeito de carregamento. */}
         {capa ? (
           <img src={capa} alt={`Capa de ${titulo}`} className="capa" />
         ) : (
