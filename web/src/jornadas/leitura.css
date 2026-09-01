@@ -276,21 +276,46 @@
    Aparece junto do trecho marcado. `fixed` porque as coordenadas vêm de
    `getBoundingClientRect`, que é relativo à janela — com `absolute` ela erraria
    o lugar em qualquer página rolada. */
+/* A barra de seleção — nó 941:23120. Quatro cores em cima, e embaixo o que mais
+   se faz com um trecho: virar nota, copiar, ou desistir. */
 .paleta {
   position: fixed;
   z-index: 20;
   transform: translate(-50%, calc(-100% - 12px));
-  display: flex;
-  gap: 6px;
-  padding: 8px;
+  display: flex; flex-direction: column; gap: 24px;
+  inline-size: min(560px, calc(100vw - 32px));
+  padding: 24px;
   background: var(--card, var(--background));
   border: 1px solid var(--border);
-  box-shadow: 0 2px 12px rgb(0 0 0 / 12%);
+  box-shadow: 0 21px 10px rgb(0 0 0 / 0.03), 0 5px 6px rgb(0 0 0 / 0.04);
+}
+
+.paleta-cores { display: flex; gap: 16px; }
+
+.paleta-acoes { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.paleta-acoes-fazer { display: flex; gap: 16px; }
+
+.paleta-botao {
+  padding: 14px 24px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted-foreground);
+  font: inherit; font-size: 16px; line-height: 24px;
+  cursor: pointer;
+}
+.paleta-botao:hover { background: var(--muted); }
+.paleta-botao:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+.paleta-cancelar { background: var(--background-secondary, var(--muted)); }
+
+.paleta-recado {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 14px; line-height: 22px;
 }
 
 .paleta-cor {
-  inline-size: 28px;
-  block-size: 28px;
+  flex: 1 0 0;
+  block-size: 48px;
   padding: 0;
   border: 1px solid var(--borda-controle, var(--border));
   cursor: pointer;
@@ -327,8 +352,22 @@
   border-block-end: 1px solid var(--border);
 }
 
-.caderno h2 { margin: 0; font-size: 20px; line-height: 28px; color: var(--foreground); }
-.caderno h2 .dado { color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+.caderno h2 { margin: 0; font-size: 24px; line-height: 32px; font-weight: 500; color: var(--foreground); }   /* Body/Large */
+
+/* A busca DENTRO das notas do livro. O 941:23111 põe o campo entre o título e a
+   lista, e sem ele um livro com quarenta notas vira rolagem. */
+.caderno-procura {
+  inline-size: 100%;
+  margin-block-end: 24px;
+  padding: 17px 24px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit; font-size: 16px; line-height: 24px;
+}
+.caderno-procura::placeholder { color: var(--muted-foreground); opacity: 1; }
+.caderno-procura:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+.caderno-procura::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
 
 .caderno header button, .nota-ir, .nota-apagar {
   padding: 6px 12px;
@@ -353,24 +392,50 @@
   text-wrap: pretty;
 }
 
-.caderno ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 24px; }
+.caderno ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 40px; }
 
-.caderno li { padding-block-end: 24px; border-block-end: 1px solid var(--border); }
-.caderno li:last-child { border-block-end: 0; }
+/* O FILETE À ESQUERDA, com a cor da nota. No 941:23111 ele é cinza em todos os
+   itens, e assim o painel não distingue uma nota verde de uma rosa — a cor é o
+   único dado que as separa. Continua sendo forma, e não decoração. */
+.caderno li {
+  display: flex; flex-direction: column; gap: 16px;
+  padding-inline-start: 34px;
+  border-inline-start: 2px solid var(--cor-da-nota, var(--border));
+}
 
 /* A nota do capítulo aberto é marcada por DEGRAU DE SUPERFÍCIE — a regra que
    valeu quando o acento saiu do sistema (DEC-0037 §6). */
-.caderno li.aqui { margin-inline: -12px; padding-inline: 12px; background: var(--muted, color-mix(in srgb, var(--foreground) 5%, transparent)); }
+.caderno li.aqui { background: var(--muted, color-mix(in srgb, var(--foreground) 5%, transparent)); padding-inline-end: 12px; }
 
+/* O comentário vira o TÍTULO do item: é o que a pessoa escreveu, e é por ele
+   que ela reconhece a nota numa lista de quarenta. */
+.nota-titulo {
+  margin: 0;
+  color: var(--card-foreground);
+  font-size: 24px; line-height: 32px; font-weight: 500;   /* Body/Large */
+  text-wrap: pretty;
+}
+.nota-onde {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 16px; line-height: 24px;                     /* Body/Small */
+}
+.nota-quando { flex: 0 0 auto; }
+
+/* O trecho citado, na superfície recuada do desenho — e não pintado da cor da
+   nota. A cor já está no filete; repeti-la atrás do texto era o que obrigava a
+   medir contraste de tinta sobre pastel em dois temas. */
 .caderno blockquote {
-  margin: 0 0 12px;
-  padding: 8px 12px;
+  margin: 0;
+  padding: 24px;
+  background: var(--background-secondary, var(--muted));
   /* A TINTA SEGUE O TEMA. A medida "os pastéis carregam #151515 de 7,37 a
      17,15" é do conjunto CLARO; no escuro eles são outros e escuros, e a tinta
      escura sobre eles cai para 3,4 — abaixo dos 4,5 de AA. */
   color: var(--foreground);
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 20px;
+  line-height: 30px;                                      /* Body/Medium */
   text-wrap: pretty;
 }
 
@@ -389,7 +454,10 @@
 
 .nota-acoes { margin-block-start: 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .nota-cores { display: flex; gap: 4px; }
-.nota-cores .paleta-cor { inline-size: 22px; block-size: 22px; }
+/* Dentro do caderno as cores são um controle pequeno, e não a barra de
+   seleção: `flex: 0 0 auto` desfaz o `flex: 1 0 0` que faz a barra ocupar a
+   largura toda. */
+.nota-cores .paleta-cor { flex: 0 0 auto; inline-size: 28px; block-size: 28px; }
 
 .nota-erro {
   position: fixed;
@@ -530,7 +598,7 @@
 .amostra-tema.amostra-sistema { background: linear-gradient(135deg, #f9f9f9 50%, #151515 50%); }
 .amostra-tema.amostra-sepia { background: #f4ecd8; }
 
-/* ---- O índice do livro -----------------------------------------------------
+/* ---- O índice do livro — nó 941:23112 --------------------------------------
  *
  * Mesma gaveta da Aparência, do lado ESQUERDO: os dois são painéis da leitura, e
  * abrir os dois no mesmo lado faria um cobrir o outro sem dizer. Esquerda também
@@ -538,18 +606,22 @@
  */
 .indice {
   position: fixed; inset-block: 0; inset-inline-start: 0;
-  inline-size: min(384px, 100%);
+  inline-size: min(464px, 100%);
   z-index: 40;
-  display: flex; flex-direction: column; gap: 24px;
-  padding: 24px;
+  display: flex; flex-direction: column; gap: 32px;
+  padding: 32px;
   overflow-y: auto;
   background: var(--background-secondary);
   border-inline-end: 1px solid var(--border);
 }
-.indice header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.indice header {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding-block-end: 32px;
+  border-block-end: 1px solid var(--border);
+}
 .indice h2 {
   margin: 0;
-  font-size: 28px; line-height: 36px; font-weight: 540;   /* Heading/SM */
+  font-size: 24px; line-height: 32px; font-weight: 500;   /* Body/Large */
   color: var(--foreground);
 }
 .indice header button {
@@ -559,6 +631,7 @@
   font: inherit; font-size: 16px; line-height: 24px; cursor: pointer;
 }
 .indice header button:hover { background: var(--muted); }
+.indice header button:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
 
 .indice-aviso {
   margin: 0;
@@ -570,24 +643,46 @@
 }
 
 .indice-lista { list-style: none; margin: 0; padding: 0; }
-/* O recuo diz a HIERARQUIA do sumário — uma seção dentro de um capítulo. Vem do
- * próprio livro, e não de uma numeração inventada por nós. */
-.indice-lista li { padding-inline-start: calc(var(--nivel, 0) * 16px); }
+/* Fio ENTRE as linhas e um no fim, como o desenho. */
+.indice-lista li { border-block-end: 1px solid var(--border); }
+
 .indice-lista button {
+  display: flex; align-items: center; justify-content: space-between; gap: 32px;
   inline-size: 100%;
-  padding: 12px 16px;
+  /* O recuo diz a HIERARQUIA do sumário — uma seção dentro de um capítulo. Vem
+     do próprio livro, e não de uma numeração inventada por nós. */
+  padding: 32px 32px 32px calc(32px + var(--nivel, 0) * 20px);
   border: 0; background: transparent;
-  color: var(--muted-foreground);
-  font: inherit; font-size: 16px; line-height: 24px;
   text-align: start; cursor: pointer;
 }
 .indice-lista button:hover { background: var(--muted); }
-/* Onde a pessoa está, marcado por SUPERFÍCIE — a regra do sistema. */
-.indice-lista button.aqui { background: var(--foreground); color: var(--primary-foreground); }
 .indice-lista button:focus-visible { outline: 1px solid var(--foreground); outline-offset: -1px; }
 
+.indice-titulo {
+  color: var(--muted-foreground);
+  font-size: 24px; line-height: 32px; font-weight: 500;   /* Body/Large */
+  text-wrap: pretty;
+}
+.indice-onde {
+  flex: 0 0 auto;
+  color: var(--muted-foreground);
+  font-size: 20px; line-height: 30px;                     /* Body/Medium */
+  font-variant-numeric: tabular-nums;
+}
+.indice-aqui {
+  flex: 0 0 auto;
+  color: var(--muted-foreground);
+  font-size: 20px; line-height: 28px;
+  text-decoration: underline;
+}
+/* Onde a pessoa está: o filete à esquerda do desenho. */
+.indice-lista li.aqui { border-inline-start: 4px solid var(--foreground); }
+
 @media (max-width: 767px) {
-  .indice { inline-size: 100%; border-inline-end: 0; }
+  .indice { inline-size: 100%; padding: 24px; border-inline-end: 0; }
+  .indice-lista button { padding: 24px 16px; gap: 16px; }
+  .indice-titulo { font-size: 20px; line-height: 30px; }
+  .indice-onde, .indice-aqui { font-size: 16px; line-height: 24px; }
 }
 
 /* O ícone de conta virou LINK: ele era um botão sem `onClick`, e três desses
@@ -606,3 +701,14 @@
  * desligado é lido como recurso que ainda não existe. */
 .cromo-caixa button:disabled { opacity: 0.45; cursor: default; }
 .cromo-caixa button:disabled:hover { background: transparent; }
+
+@media (max-width: 767px) {
+  .paleta { inline-size: calc(100vw - 24px); padding: 16px; gap: 16px; }
+  .paleta-acoes { flex-direction: column; align-items: stretch; }
+  .paleta-acoes-fazer { flex-direction: column; }
+  .paleta-botao { inline-size: 100%; }
+  .paleta-cor { block-size: 40px; }
+  .caderno li { padding-inline-start: 20px; }
+  .nota-titulo { font-size: 20px; line-height: 30px; }
+  .caderno blockquote { padding: 16px; font-size: 16px; line-height: 24px; }
+}

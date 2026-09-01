@@ -20,6 +20,7 @@ import { comDeslocamentos, irPara, ondeEstouNoLivro } from "../leitor/onde-parei
 import { GRUPOS, aplicarAparencia, gravarAparencia, lerAparencia } from "../leitor/aparencia.js";
 import { aplicarTema, temaEspelhado } from "../estado/tema.js";
 import { lerSelecao, notasDoBloco } from "../leitor/selecao.js";
+import { ondeComeca, tituloDoCapitulo, usarSumario } from "../leitor/sumario.js";
 import "./leitura.css";
 
 const iconeMenu = "/icones/icone-menu.svg";
@@ -184,30 +185,28 @@ function Paragrafo({ texto, destaques = [] }) {
   return <p>{partes}</p>;
 }
 
-/* O ÍNDICE: o sumário do próprio livro.
+/* O ÍNDICE — nó 941:23112.
  *
  * Ele vem do EPUB — do `nav` de EPUB 3 ou do `toc.ncx` de EPUB 2 —, e não de
  * uma contagem. "Capítulo 1, Capítulo 2, Capítulo 3" seria uma lista com cara
  * de sumário e sem nenhuma das informações de um: o livro tem nomes para as
  * suas partes, e são eles que dizem onde a pessoa quer chegar.
  *
+ * A COLUNA DA DIREITA é onde o capítulo começa, em por cento. O desenho mostra
+ * "20", "30", "40" — números de página, que o produto não tem porque o EPUB não
+ * tem. A porcentagem é a mesma medida que sustenta a ficha da estante, e é a
+ * única posição que ele conhece de verdade.
+ *
+ * A linha onde a pessoa está troca o número por "Você está aqui" e ganha o
+ * filete à esquerda, como no desenho — que escreve "Vc esta aqui", abreviado e
+ * sem acento.
+ *
  * Quando o livro NÃO traz sumário, o painel diz isso. Um EPUB pode legitimamente
  * não ter índice, e inventar um seria a tela afirmando uma estrutura que
  * ninguém escreveu.
  */
 function Indice({ livro, aqui, aoIr, aoFechar }) {
-  const [itens, setItens] = useState(null);
-  const [erro, setErro] = useState(null);
-
-  useEffect(() => {
-    let vivo = true;
-    /* Lido AQUI, e não ao abrir o livro: é mais um arquivo do zip, e quem só lê
-       não deve pagar por um painel que não abriu. */
-    Promise.resolve(livro?.sumario?.() ?? [])
-      .then((l) => vivo && setItens(l))
-      .catch((e) => vivo && setErro(e.message));
-    return () => { vivo = false; };
-  }, [livro]);
+  const { itens, erro } = usarSumario(livro);
 
   return (
     <aside className="indice" aria-label="Índice do livro">
@@ -227,37 +226,96 @@ function Indice({ livro, aqui, aoIr, aoFechar }) {
 
       {!!itens?.length && (
         <ol className="indice-lista">
-          {itens.map((i, n) => (
-            <li key={`${i.capitulo}-${n}`} style={{ "--nivel": i.nivel }}>
-              <button
-                type="button"
-                className={i.capitulo === aqui ? "aqui" : undefined}
-                aria-current={i.capitulo === aqui ? "true" : undefined}
-                onClick={() => { aoIr?.(i.capitulo); aoFechar?.(); }}
-              >
-                {i.titulo}
-              </button>
-            </li>
-          ))}
+          {itens.map((i, n) => {
+            const nele = i.capitulo === aqui;
+            const onde = ondeComeca(livro?.extensao, i.capitulo);
+            return (
+              <li key={`${i.capitulo}-${n}`} className={nele ? "aqui" : undefined} style={{ "--nivel": i.nivel }}>
+                <button
+                  type="button"
+                  aria-current={nele ? "true" : undefined}
+                  onClick={() => { aoIr?.(i.capitulo); aoFechar?.(); }}
+                >
+                  <span className="indice-titulo">{i.titulo}</span>
+                  {nele ? (
+                    <span className="indice-aqui">Você está aqui</span>
+                  ) : (
+                    onde !== null && <span className="indice-onde dado">{onde}%</span>
+                  )}
+                </button>
+              </li>
+            );
+          })}
         </ol>
       )}
     </aside>
   );
 }
 
-/* O caderno: as notas do livro, fora do texto.
+
+/* NOTAS E DESTAQUES — nó 941:23111.
  *
- * Ele lista TODAS, e não só as do capítulo aberto — é o lugar de rever o que se
- * marcou no livro inteiro, e limitar ao capítulo transformaria isso num resumo
- * da página. As de outro capítulo levam até lá.
+ * Lista TODAS as notas do livro, e não só as do capítulo aberto: é o lugar de
+ * rever o que se marcou no livro inteiro, e limitar ao capítulo transformaria
+ * isso num resumo da página. As de outro capítulo levam até lá.
+ *
+ * Cada item tem o filete à esquerda, o comentário em cima, "Capítulo N — título"
+ * e a data de um lado ao outro, e o trecho citado embaixo. O TÍTULO DO CAPÍTULO
+ * vem do sumário do próprio livro; quando o livro não dá um, sobra o número.
+ *
+ * O FILETE TEM A COR DA NOTA. No desenho ele é cinza em todos, e aí o painel não
+ * consegue dizer uma nota verde de uma rosa — a cor é o único dado que as
+ * separa, e no Mekora cor é objetivo. Continua sendo forma, não decoração.
+ *
+ * O QUE O DESENHO NÃO TEM e ficou: trocar a cor, apagar e escrever o comentário.
+ * Tirá-los para casar com um desenho estático seria trocar função por semelhança.
  */
-function Caderno({ notas, capitulo, aoComentar, aoTrocarCor, aoApagar, aoIr, aoFechar }) {
+function quando(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(+d)) return "";
+  /* Hoje e ontem por NOME, e o resto por data. "há 3 dias" obriga a contar de
+   * cabeça para saber quando foi. */
+  const dia = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate());
+  const passados = Math.round((dia(new Date()) - dia(d)) / 86400000);
+  if (passados === 0) return "Hoje";
+  if (passados === 1) return "Ontem";
+  return d.toLocaleDateString("pt-BR", { day: "numeric", month: "long" });
+}
+
+function Caderno({ livro, notas, capitulo, aoComentar, aoTrocarCor, aoApagar, aoIr, aoFechar }) {
+  const { itens } = usarSumario(livro);
+  const [procura, setProcura] = useState("");
+
+  const achadas = useMemo(() => {
+    const t = procura.trim().toLowerCase();
+    if (!t) return notas;
+    return notas.filter(
+      (n) => n.trecho?.toLowerCase().includes(t) || n.comentario?.toLowerCase().includes(t),
+    );
+  }, [notas, procura]);
+
   return (
-    <aside className="caderno" aria-label="Notas do livro">
+    <aside className="caderno" aria-label="Notas e destaques">
       <header>
-        <h2>Notas <span className="dado">{notas.length}</span></h2>
+        <h2>Notas e destaques</h2>
         <button type="button" onClick={aoFechar} aria-label="Fechar as notas">Fechar</button>
       </header>
+
+      {/* O campo do desenho diz "Buscar em Mekora" — é o componente da busca
+          global reaproveitado. Aqui ele procura NAS NOTAS DESTE LIVRO, e o
+          rótulo diz isso: um campo que promete o Mekora inteiro e devolve só as
+          notas de um livro é a tela afirmando o que não faz. */}
+      {notas.length > 0 && (
+        <input
+          type="search"
+          className="caderno-procura"
+          placeholder="Buscar nas notas deste livro"
+          aria-label="Buscar nas notas deste livro"
+          value={procura}
+          onChange={(e) => setProcura(e.target.value)}
+        />
+      )}
 
       {!notas.length && (
         <p className="caderno-vazio">
@@ -265,59 +323,93 @@ function Caderno({ notas, capitulo, aoComentar, aoTrocarCor, aoApagar, aoIr, aoF
           opcional.
         </p>
       )}
+      {!!notas.length && !achadas.length && (
+        <p className="caderno-vazio">Nenhuma nota com esse texto.</p>
+      )}
 
       <ul>
-        {notas.map((n) => (
-          <li key={n.id} className={n.capitulo === capitulo ? "aqui" : ""}>
-            {/* O trecho marcado, na cor escolhida. É por ele que se reconhece a
-                nota — a data e o número do capítulo não dizem nada sobre o que
-                foi marcado. */}
-            <blockquote style={{ background: DESTAQUES[n.cor] }}>{n.trecho}</blockquote>
+        {achadas.map((n) => {
+          const nome = tituloDoCapitulo(itens, n.capitulo);
+          return (
+            <li
+              key={n.id}
+              className={n.capitulo === capitulo ? "aqui" : ""}
+              style={{ "--cor-da-nota": DESTAQUES[n.cor] }}
+            >
+              {n.comentario && <p className="nota-titulo">{n.comentario}</p>}
 
-            <textarea
-              defaultValue={n.comentario}
-              placeholder="Escrever ao lado…"
-              aria-label="Comentário desta nota"
-              /* Grava ao SAIR do campo, e não a cada tecla: um pedido por
-                 caractere digitado é ruído, e o que interessa é o que ficou. */
-              onBlur={(e) => {
-                if (e.target.value !== n.comentario) aoComentar?.(n.id, e.target.value);
-              }}
-            />
+              <p className="nota-onde">
+                <span>
+                  Capítulo {n.capitulo + 1}
+                  {nome ? ` — ${nome}` : ""}
+                  {n.fonte === "kindle" ? " · trazida do Kindle" : ""}
+                </span>
+                <span className="nota-quando">{quando(n.criada_em)}</span>
+              </p>
 
-            <div className="nota-acoes">
-              <div className="nota-cores" role="group" aria-label="Trocar a cor">
-                {Object.keys(DESTAQUES).map((cor) => (
-                  <button
-                    key={cor}
-                    type="button"
-                    className={`paleta-cor${cor === n.cor ? " escolhida" : ""}`}
-                    style={{ background: DESTAQUES[cor] }}
-                    aria-label={`Trocar para ${cor}`}
-                    aria-pressed={cor === n.cor ? "true" : "false"}
-                    onClick={() => aoTrocarCor?.(n.id, cor)}
-                  />
-                ))}
-              </div>
-              {n.capitulo !== capitulo && (
-                <button type="button" className="nota-ir" onClick={() => aoIr?.(n.capitulo)}>
-                  Ir ao capítulo {n.capitulo + 1}
+              {/* O trecho marcado. É por ele que se reconhece a nota — a data e o
+                  número do capítulo não dizem nada sobre o que foi marcado. */}
+              <blockquote>{n.trecho}</blockquote>
+
+              <textarea
+                defaultValue={n.comentario}
+                placeholder="Escrever ao lado…"
+                aria-label="Comentário desta nota"
+                /* Grava ao SAIR do campo, e não a cada tecla: um pedido por
+                   caractere digitado é ruído, e o que interessa é o que ficou. */
+                onBlur={(e) => {
+                  if (e.target.value !== n.comentario) aoComentar?.(n.id, e.target.value);
+                }}
+              />
+
+              <div className="nota-acoes">
+                <div className="nota-cores" role="group" aria-label="Trocar a cor">
+                  {Object.keys(DESTAQUES).map((cor) => (
+                    <button
+                      key={cor}
+                      type="button"
+                      className={`paleta-cor${cor === n.cor ? " escolhida" : ""}`}
+                      style={{ background: DESTAQUES[cor] }}
+                      aria-label={`Trocar para ${cor}`}
+                      aria-pressed={cor === n.cor ? "true" : "false"}
+                      onClick={() => aoTrocarCor?.(n.id, cor)}
+                    />
+                  ))}
+                </div>
+                {n.capitulo !== capitulo && (
+                  <button type="button" className="nota-ir" onClick={() => aoIr?.(n.capitulo)}>
+                    Ir ao capítulo {n.capitulo + 1}
+                  </button>
+                )}
+                <button type="button" className="nota-apagar" onClick={() => aoApagar?.(n.id)}>
+                  Apagar
                 </button>
-              )}
-              <button type="button" className="nota-apagar" onClick={() => aoApagar?.(n.id)}>
-                Apagar
-              </button>
-            </div>
-          </li>
-        ))}
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </aside>
   );
 }
 
+
 export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirAntes, temMais = false, temAntes = false, progresso, aoMarcar, notas = [], aoAnotar, aoComentar, aoTrocarCor, aoApagarNota, erroDeNota, aoIrParaCapitulo }) {
   const [cromoVisivel, setCromo] = useState(true);
   const [paleta, setPaleta] = useState(null);
+
+  /* MARCAR O TRECHO. Sai do JSX porque as duas ações do 941:23120 fazem a mesma
+   * coisa com um passo a mais: "Adicionar nota" marca e abre o caderno, para a
+   * pessoa poder escrever ao lado do que acabou de marcar. */
+  const marcar = async (cor, { abrirCaderno = false } = {}) => {
+    if (!paleta) return;
+    await aoAnotar?.({ de: paleta.de, ate: paleta.ate, cor, trecho: paleta.trecho });
+    setPaleta(null);
+    /* Limpa a seleção: deixá-la azul por cima do destaque recém-feito esconde
+       exatamente o que a pessoa acabou de marcar. */
+    window.getSelection?.()?.removeAllRanges();
+    if (abrirCaderno) setCaderno(true);
+  };
   const [caderno, setCaderno] = useState(false);
   const prosa = useRef(null);
   const restaurado = useRef(null);
@@ -401,6 +493,7 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
   const [aparencia, setAparencia] = useState(() => lerAparencia());
   const [painel, setPainel] = useState(false);
   const [indice, setIndice] = useState(false);
+  const [copiado, setCopiado] = useState(null);
   useEffect(() => { aplicarAparencia(aparencia); gravarAparencia(aparencia); }, [aparencia]);
 
   /* O TEMA FICA NO PAINEL TAMBÉM, como o desenho põe — e continua sendo o mesmo
@@ -607,24 +700,63 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
           className="paleta"
           style={{ left: paleta.onde.x, top: paleta.onde.y }}
           role="group"
-          aria-label="Marcar o trecho"
+          aria-label="O que fazer com o trecho"
         >
-          {Object.keys(DESTAQUES).map((cor) => (
+          <div className="paleta-cores">
+            {Object.keys(DESTAQUES).map((cor) => (
+              <button
+                key={cor}
+                type="button"
+                className="paleta-cor"
+                style={{ background: DESTAQUES[cor] }}
+                aria-label={`Marcar de ${cor}`}
+                onClick={() => marcar(cor)}
+              />
+            ))}
+          </div>
+
+          {/* AS TRÊS AÇÕES do nó 941:23120. Marcar de uma cor é só metade do
+              que se faz com um trecho selecionado — o desenho tem também
+              "Adicionar nota", "Copiar" e "Cancelar", e nenhuma existia. */}
+          <div className="paleta-acoes">
+            <div className="paleta-acoes-fazer">
+              {/* "Adicionar nota" MARCA E ABRE O CADERNO no mesmo gesto: nota é
+                  destaque com comentário, e sem o caderno aberto não há onde
+                  escrever o comentário. A cor é a primeira da paleta — a pessoa
+                  troca depois, e obrigá-la a escolher a cor antes de escrever
+                  poria uma decisão de forma na frente de uma de conteúdo. */}
+              <button type="button" className="paleta-botao" onClick={() => marcar("amarelo", { abrirCaderno: true })}>
+                Adicionar nota
+              </button>
+              <button
+                type="button"
+                className="paleta-botao"
+                onClick={async () => {
+                  /* `clipboard.write` pode ser recusado — permissão negada,
+                     documento sem foco, navegador antigo. O produto diz quando
+                     não conseguiu, em vez de fingir que copiou. */
+                  try {
+                    await navigator.clipboard.writeText(paleta.trecho);
+                    setCopiado("Trecho copiado.");
+                  } catch {
+                    setCopiado("O navegador não deixou copiar. Use Ctrl+C.");
+                  }
+                  setTimeout(() => setCopiado(null), 2500);
+                }}
+              >
+                Copiar
+              </button>
+            </div>
             <button
-              key={cor}
               type="button"
-              className="paleta-cor"
-              style={{ background: DESTAQUES[cor] }}
-              aria-label={`Marcar de ${cor}`}
-              onClick={async () => {
-                await aoAnotar?.({ de: paleta.de, ate: paleta.ate, cor, trecho: paleta.trecho });
-                setPaleta(null);
-                /* Limpa a seleção: deixá-la azul por cima do destaque recém
-                   feito esconde exatamente o que a pessoa acabou de marcar. */
-                window.getSelection?.()?.removeAllRanges();
-              }}
-            />
-          ))}
+              className="paleta-botao paleta-cancelar"
+              onClick={() => { setPaleta(null); window.getSelection?.()?.removeAllRanges(); }}
+            >
+              Cancelar
+            </button>
+          </div>
+
+          {copiado && <p className="paleta-recado" role="status">{copiado}</p>}
         </div>
       )}
 
@@ -706,6 +838,7 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
 
       {caderno && (
         <Caderno
+          livro={livro}
           notas={notas}
           capitulo={livro.capitulo ?? 0}
           aoComentar={aoComentar}
