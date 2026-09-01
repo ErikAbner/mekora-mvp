@@ -23,6 +23,7 @@ from app.schemas.jobs import (
     MetadataUpdate,
     UploadResponse,
 )
+from app.services.cleanup_service import apagar_arquivos_do_trabalho
 from app.services.convert_service import ConversionFailedError, convert_to_epub
 from app.services.epub_web_service import gerar_epub_web
 
@@ -53,6 +54,7 @@ def _to_job(record: ProcessingJob) -> dict:
     data["upload_id"] = data.pop("id")
     data["endereco"] = record.token_publico
     data["leitura_url"] = _leitura_url(record)
+    data["epub_url"] = _epub_url(record)
     data["thumbnails"] = get_thumbnail_urls(record.token_publico or "", data.get("page_count") or 0)
     _sem_buracos(data)
     return data
@@ -212,6 +214,24 @@ def _leitura_url(record: ProcessingJob) -> str | None:
     # DESTINO, e nao por preferencia. O Kindle nao le WebP de forma confiavel.
     arquivo = record.epub_web_path or record.epub_path
     return f"/storage/output/{record.token_publico}/{Path(arquivo).name}"
+
+
+def _epub_url(record: ProcessingJob) -> str | None:
+    """O endereço para BAIXAR o EPUB — e é outro arquivo que o de ler.
+
+    `_leitura_url` devolve a versão web quando ela existe, com as imagens em
+    WebP: ela é 59% menor e abre mais rápido no navegador, e o Kindle não lê
+    WebP de forma confiável. Quem baixa está levando o arquivo para um aparelho,
+    então baixa o `epub_path` — o mesmo que vai por e-mail.
+
+    Ter uma função só, e a tela escolhendo, faria a escolha por DESTINO virar
+    escolha da tela — e a tela não sabe para onde o arquivo vai.
+    """
+    from pathlib import Path
+
+    if not record.epub_path or not record.token_publico:
+        return None
+    return f"/storage/output/{record.token_publico}/{Path(record.epub_path).name}"
 
 
 def _to_history(record: ProcessingJob) -> dict:
@@ -1089,6 +1109,15 @@ def get_job_status(job_id: int, db: Session = Depends(get_db)) -> dict:
 
     data = {c.name: getattr(job, c.name) for c in job.__table__.columns}
     data["upload_id"] = data.pop("id")
+    # A TERCEIRA VEZ QUE ESTA DEFESA FALTA NUM LUGAR.
+    #
+    # `_sem_buracos` existe porque um NULL numa coluna que o esquema declara
+    # não-nula derruba a resposta INTEIRA com 500 — e o NULL chega por um
+    # caminho banal, um registro criado antes de a coluna existir. O `/analyze`
+    # já a chamava; o `/status` não, e por isso a tela de preparo respondia "O
+    # Mekora não está respondendo agora" para um trabalho que o `/analyze`
+    # devolvia sem reclamar.
+    _sem_buracos(data)
     data["phase"] = derive_phase(data)
     data["progress"] = get_status_progress(job.active_operation, _out / str(job_id))
     return data
@@ -1127,6 +1156,29 @@ def cancel_operation(job_id: int, operation_id: str, db: Session = Depends(get_d
 def get_job(job_id: int, db: Session = Depends(get_db)) -> dict:
     """Retorna todos os dados de um job sem re-executar a análise."""
     return _to_job(_get_or_404(db, job_id))
+
+
+# ---------------------------------------------------------------------------
+# DELETE /jobs/{job_id} — "Remover da estante" (nó 941:23118)
+# ---------------------------------------------------------------------------
+
+@router.delete("/jobs/{job_id}", status_code=204)
+def remover_da_estante(job_id: int, db: Session = Depends(get_db)) -> None:
+    """Apaga o trabalho e os arquivos dele. Não dá para desfazer.
+
+    O desenho diz "O arquivo preparado e o original saem", e é literalmente o
+    que acontece: a pasta de saída, a de temporários e o arquivo enviado. A
+    linha do banco sai junto, porque um trabalho sem arquivo nenhum na estante é
+    uma ficha que abre e não mostra nada.
+
+    AS NOTAS SAEM JUNTO, por cascata. Isso não está escrito no botão do desenho,
+    e por isso está escrito na confirmação da tela: o produto diz o que faz. A
+    contagem vai no cabeçalho da resposta para a tela poder dizer antes.
+    """
+    job = _get_or_404(db, job_id)
+    apagar_arquivos_do_trabalho(job)
+    db.delete(job)
+    db.commit()
 
 
 # ---------------------------------------------------------------------------

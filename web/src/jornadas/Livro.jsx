@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
+import { ConfiguracoesArquivo } from "../componentes/ConfiguracoesArquivo.jsx";
 import { DESTAQUES } from "./Leitura.jsx";
 import { analisar, lerNotas, lerProgresso } from "../../../contrato/api.js";
 import "./livro.css";
@@ -36,6 +37,13 @@ export function Livro() {
   const [notas, setNotas] = useState([]);
   const [onde, setOnde] = useState(null);
   const [erro, setErro] = useState(null);
+  const [ajustando, setAjustando] = useState(false);
+
+  /* `rodada` sobe quando algo muda de fora — renomear, por exemplo — e faz a
+   * ficha buscar de novo. Sem isto o nome novo só apareceria ao recarregar a
+   * página, e a tela ficaria mostrando o nome antigo depois de confirmar a
+   * troca. */
+  const [rodada, setRodada] = useState(0);
 
   useEffect(() => {
     let vivo = true;
@@ -52,7 +60,7 @@ export function Livro() {
       })
       .catch((e) => vivo && setErro(e.message));
     return () => { vivo = false; };
-  }, [id]);
+  }, [id, rodada]);
 
   if (erro) {
     return (
@@ -114,6 +122,13 @@ export function Livro() {
                 }
               >
                 {onde?.capitulos > 0 ? "Continuar lendo" : "Começar a ler"}
+              </Botao>
+              {/* Renomear, ver as páginas, baixar, refazer e remover — nó
+                  941:23118. Ficam atrás de um botão porque são cinco decisões
+                  raras, e cinco botões ao lado de "Começar a ler" fariam a ação
+                  frequente competir com elas. */}
+              <Botao tom="secundaria" onClick={() => setAjustando(true)}>
+                Configurações de arquivo
               </Botao>
               {!livro.leitura_url && (
                 <p className="livro-pagina-nota">Ainda em preparo. O texto abre quando a conversão terminar.</p>
@@ -192,6 +207,14 @@ export function Livro() {
           </dl>
         </section>
       </main>
+
+      <ConfiguracoesArquivo
+        aberta={ajustando}
+        aoFechar={() => setAjustando(false)}
+        livro={livro}
+        notas={notas.length}
+        aoMudar={() => setRodada((n) => n + 1)}
+      />
     </div>
   );
 }

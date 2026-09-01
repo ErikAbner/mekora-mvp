@@ -69,3 +69,22 @@ def cleanup_old_jobs(retention_days: int) -> dict:
 
     finally:
         db.close()
+
+
+def apagar_arquivos_do_trabalho(job) -> None:
+    """Apaga os arquivos de UM trabalho, agora, a pedido de quem é dono dele.
+
+    A `cleanup_old_jobs` faz o mesmo por idade e para muitos. Esta faz por
+    ordem, e para um só — e o corpo é o mesmo de propósito: se um dia aparecer
+    uma quarta pasta por trabalho, esquecê-la aqui deixaria lixo que ninguém
+    procura. Chamar a de cima com um filtro não serve: ela decide sozinha QUAIS
+    trabalhos morrem, e este já foi decidido.
+    """
+    from app.core.config import STORAGE_OUTPUT, STORAGE_TEMP
+
+    for pasta in (STORAGE_TEMP / str(job.id), STORAGE_OUTPUT / str(job.id)):
+        if pasta.exists():
+            shutil.rmtree(pasta, ignore_errors=True)
+
+    if job.input_path:
+        Path(job.input_path).unlink(missing_ok=True)

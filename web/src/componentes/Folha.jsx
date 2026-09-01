@@ -19,7 +19,7 @@ import { useEffect, useRef } from "react";
 import { Botao } from "./Botao.jsx";
 import "./folha.css";
 
-export function Folha({ aberta, titulo, aoFechar, children, acoes }) {
+export function Folha({ aberta, titulo, aoFechar, children, acoes, ampla = false }) {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -40,10 +40,22 @@ export function Folha({ aberta, titulo, aoFechar, children, acoes }) {
   }, [aoFechar]);
 
   return (
-    <dialog ref={ref} className="folha" aria-label={titulo}>
+    <dialog ref={ref} className={`folha${ampla ? " ampla" : ""}`} aria-label={titulo}>
       <div className="folha-caixa">
         <header className="folha-topo">
           <h2>{titulo}</h2>
+          {/* O X do canto vem do desenho — 941:23118 e 941:23108 o têm os dois.
+              Ele NÃO substitui o "Fechar" do rodapé: são gestos diferentes.
+              O X é sair sem fazer nada e fica onde a mão já está; o rodapé é o
+              fim da leitura, e quem chegou lá rolando não volta ao topo. */}
+          <button
+            type="button"
+            className="folha-x"
+            aria-label="Fechar"
+            onClick={() => ref.current?.close()}
+          >
+            <span aria-hidden="true">×</span>
+          </button>
         </header>
         <div className="folha-conteudo">{children}</div>
         <footer className="folha-acoes">
