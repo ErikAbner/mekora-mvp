@@ -120,3 +120,60 @@ def test_os_nomes_da_tela_nao_sao_chaves_de_codigo():
         assert "_" not in nome, f"'{nome}' é chave de código, não nome de tela"
     nomes = {n for _, n, _, _ in O_QUE_GUARDAMOS}
     assert "preferências" in nomes and "ligações" in nomes and "sessões" in nomes
+
+
+# ---------------------------------------------------------------------------
+# O nome do arquivo não entra em evento de uso
+# ---------------------------------------------------------------------------
+
+def test_metrica_nao_guarda_caminho_nem_nome_de_arquivo():
+    """A tela de privacidade promete que o nome dos arquivos nunca é medido.
+
+    A promessa era falsa por um caminho banal: `error_message` recebe
+    `str(exc)[:500]` de exceções arbitrárias, e as exceções desta pipeline citam
+    caminho — o ocrmypdf, o Calibre e o `Path` do Python põem o arquivo na
+    mensagem. O nome do documento de alguém entrava na tabela de métricas toda
+    vez que uma conversão falhava.
+    """
+    from app.services.metrics_service import sem_caminhos
+
+    casos = [
+        "OCR falhou: /Users/alguem/storage/input/12_Diário Pessoal.pdf não abriu",
+        r"C:\Users\erik\Documentos\Tese Final.docx não existe",
+        "não consegui abrir Cartas ao Meu Pai.epub",
+        "~/Downloads/relatório 2026.pdf está corrompido",
+    ]
+    for bruto in casos:
+        limpo = sem_caminhos(bruto)
+        assert "‹arquivo›" in limpo, bruto
+        for pedaco in ("Diário", "Tese", "Cartas", "relatório", "Users", "Downloads"):
+            assert pedaco not in limpo, (bruto, limpo)
+
+    # O QUE NÃO É CAMINHO CONTINUA INTEIRO: uma métrica sem a razão da falha não
+    # serve para nada, e apagar demais é tão ruim quanto apagar de menos.
+    assert sem_caminhos("ebook-convert falhou (código 1)") == "ebook-convert falhou (código 1)"
+    assert sem_caminhos("timeout depois de 300s") == "timeout depois de 300s"
+    assert sem_caminhos(None) is None
+    assert sem_caminhos("") == ""
+
+
+def test_privacidade_conta_o_ciclo_dos_arquivos_e_o_que_e_medido(client):
+    """As duas seções do nó 895:10909 — e o prazo sai da configuração, não da mão."""
+    r = client.get("/privacidade")
+    assert r.status_code == 200
+    corpo = r.json()
+
+    titulos = [a["titulo"] for a in corpo["arquivos"]]
+    assert titulos == ["O original", "O resultado", "Conteúdo"]
+    # O prazo é do `retention_days`, e o padrão é 30.
+    assert "30 dias" in corpo["arquivos"][0]["prazo"]
+
+    medido = {u["titulo"]: u for u in corpo["uso"]}
+    assert set(medido) == {"O que é medido", "O que nunca é medido"}
+    assert medido["O que nunca é medido"]["marca"] == "Regra fixa"
+
+    # A FRASE QUE ERA FALSA. Ela dizia "não há rastreamento, análise de uso nem
+    # publicidade", e `stage_metrics` mede o preparo etapa por etapa.
+    junto = " ".join(corpo["para_onde_vai"])
+    assert "análise de uso" not in junto
+    assert "medição fica neste servidor" in junto

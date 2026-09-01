@@ -96,6 +96,52 @@ export function Privacidade({ pessoa, aoSair, aoApagarConta }) {
             )}
           </section>
 
+          {/* SEUS ARQUIVOS e DADOS DE USO — as duas seções do nó 895:10909 que
+              não existiam nesta tela. A de cima contava o que está guardado; o
+              que faltava era o que ACONTECE com isso: por quanto tempo o
+              original fica, e o que o produto mede enquanto trabalha.
+
+              O texto vem do servidor porque é fato do código — o prazo sai da
+              configuração de limpeza, e a lista do que é medido é o esquema da
+              tabela de métricas. Escrito à mão aqui, envelheceria na primeira
+              coluna nova, que é o defeito que esta tela inteira existe para
+              não ter. */}
+          {dados?.arquivos && (
+            <section className="conta-secao">
+              <h2>Seus arquivos</h2>
+              <ul className="guardado">
+                {dados.arquivos.map((a) => (
+                  <li key={a.titulo}>
+                    <p className="guardado-conta">{a.titulo}</p>
+                    <p className="guardado-explicacao">{a.explicacao}</p>
+                    {a.prazo && <p className="guardado-prazo">{a.prazo}</p>}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {dados?.uso && (
+            <section className="conta-secao">
+              <h2>Dados de uso</h2>
+              <ul className="guardado">
+                {dados.uso.map((u) => (
+                  <li key={u.titulo}>
+                    <p className="guardado-conta">
+                      {u.titulo}
+                      {/* A marca à direita é do desenho — "Regra fixa" ao lado
+                          do que nunca muda. Onde ele põe um interruptor
+                          desligado, aqui está o que é verdade: não existe
+                          interruptor, e fingir um seria pior que não ter. */}
+                      {u.marca && <span className="marca-arquivo">{u.marca}</span>}
+                    </p>
+                    <p className="guardado-explicacao">{u.explicacao}</p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
           <section className="conta-secao">
             <h2>Levar seus dados</h2>
             <p className="conta-nota">

@@ -30,3 +30,22 @@
   color: var(--muted-foreground);
   text-wrap: pretty;
 }
+
+/* O PRAZO, e a marca ao lado do titulo — no 895:10909.
+ *
+ * O prazo e uma terceira linha, abaixo da explicacao: ele nao e o que a coisa E,
+ * e sim ate quando ela dura, e misturar os dois na mesma frase e o que faz uma
+ * politica de privacidade virar paragrafo que ninguem le. */
+.guardado-prazo {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--foreground);
+  text-wrap: pretty;
+}
+
+/* O titulo com a marca na ponta: o texto ocupa a coluna, a marca fica na borda
+ * de fim, como no desenho. */
+.guardado-conta:has(> .marca-arquivo) {
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+}

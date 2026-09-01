@@ -6,8 +6,46 @@ As funções get_* recebem uma sessão de banco aberta pelo chamador.
 """
 from __future__ import annotations
 
+import re
 from datetime import datetime
 from typing import Any
+
+
+# ---------------------------------------------------------------------------
+# O nome do arquivo não entra em evento de uso
+# ---------------------------------------------------------------------------
+
+# A tela de privacidade (nó 895:10909) promete: "o conteúdo dos seus arquivos —
+# nem o texto que sai do reconhecimento, nem o NOME DOS ARQUIVOS em evento de
+# uso". A promessa era falsa por um caminho banal.
+#
+# `error_message` recebe `str(exc)[:500]` de exceções arbitrárias, e as exceções
+# desta pipeline citam caminho: o ocrmypdf, o Calibre e o `Path` do próprio
+# Python põem o arquivo na mensagem. Ou seja, o nome do documento de alguém
+# entrava na tabela de métricas por acidente, toda vez que uma conversão falhava.
+#
+# Aqui o caminho vira `‹caminho›` antes de ser gravado. A mensagem continua útil
+# — o que falhou e por quê é o que importa numa métrica —, e o que ela perde é
+# exatamente o que não deveria estar lá.
+# Os formatos que o produto aceita, e os que ele gera. É a lista fechada que
+# deixa o corte ser preciso: um nome de arquivo termina num destes.
+_EXTENSOES = "pdf|epub|docx|odt|rtf|txt|html?|cbz|cbr|cb7|cbc|mobi|azw3?|jpe?g|png"
+
+# Caminho, com espaços permitidos ATÉ a extensão — "/Users/x/Diário 02.pdf" é um
+# caminho só, e um `\S+` pararia no espaço e deixaria "02.pdf" para trás.
+_CAMINHO = re.compile(rf"(?:/|~/|[A-Za-z]:\\)[^\n]*?\.(?:{_EXTENSOES})\b", re.IGNORECASE)
+
+# Nome solto, sem caminho. Até seis palavras antes da extensão: o exagero é de
+# propósito, porque aqui errar para mais custa uma palavra genérica na métrica e
+# errar para menos deixa o nome do documento de alguém no banco.
+_ARQUIVO = re.compile(rf"[^\s/\\]+(?: [^\s/\\]+){{0,5}}\.(?:{_EXTENSOES})\b", re.IGNORECASE)
+
+
+def sem_caminhos(mensagem: str | None) -> str | None:
+    """Troca caminho e nome de arquivo por um marcador. `None` continua `None`."""
+    if not mensagem:
+        return mensagem
+    return _ARQUIVO.sub("‹arquivo›", _CAMINHO.sub("‹arquivo›", mensagem))
 
 
 # ---------------------------------------------------------------------------
@@ -46,7 +84,7 @@ def record_stage(
                 input_format=input_format,
                 translator_engine=translator_engine,
                 error_type=error_type,
-                error_message=(error_message or "")[:500] if error_message else None,
+                error_message=sem_caminhos(error_message or "")[:500] if error_message else None,
                 created_at=datetime.utcnow(),
             )
             db.add(row)

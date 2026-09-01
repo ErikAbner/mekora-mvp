@@ -100,10 +100,81 @@ def o_que_existe(
             quantos = db.query(modelo).filter(modelo.pessoa_id == pessoa.id).count()
         itens.append({"chave": chave, "nome": nome, "quantos": quantos, "explicacao": explicacao})
 
+    from app.services.app_config_service import load_app_config
+
+    dias = int(load_app_config().get("retention_days", 30))
+
     return {
         "email": pessoa.email,
         "desde": pessoa.criada_em,
         "itens": itens,
+        # ── O CICLO DE VIDA DOS ARQUIVOS — seção "Seus arquivos" do nó 895:10909.
+        #
+        # No desenho o prazo de retenção está como PENDENTE, com uma nota
+        # honesta: "marquei como pendente em vez de escrever um número; uma
+        # política de privacidade inventada no protótipo vira promessa no
+        # produto". Só que o código já decidiu — `cleanup_old_jobs` apaga o
+        # original de trabalhos terminados há mais de `retention_days` dias, e o
+        # número vem daqui, não de um texto escrito à mão.
+        #
+        # A ressalva sobre QUANDO a limpeza roda é parte do fato: ela é chamada
+        # no `startup` do servidor, e em lugar nenhum mais. Um servidor que não
+        # reinicia não limpa, e dizer "30 dias" sem isso seria a promessa que a
+        # nota do desenho quer evitar.
+        "arquivos": [
+            {
+                "titulo": "O original",
+                "explicacao": (
+                    "Guardado enquanto o livro existir. É ele que permite refazer a "
+                    "preparação com outras opções, sem você enviar de novo."
+                ),
+                "prazo": (
+                    f"Apagado {dias} dias depois que o preparo termina — a limpeza "
+                    "roda quando o servidor sobe, então a data exata varia."
+                ),
+            },
+            {
+                "titulo": "O resultado",
+                "explicacao": "Fica na sua estante. Sai quando você remove o livro.",
+                "prazo": None,
+            },
+            {
+                "titulo": "Conteúdo",
+                "explicacao": (
+                    "Não é lido por pessoa nenhuma. O texto que sai do reconhecimento "
+                    "serve ao seu arquivo e não é usado para mais nada."
+                ),
+                "prazo": None,
+            },
+        ],
+        # ── DADOS DE USO — seção do mesmo nó, e a que estava faltando por
+        # inteiro. O produto MEDE: a tabela `stage_metrics` grava, a cada etapa,
+        # qual foi, se terminou, quanto levou e em que formato.
+        #
+        # A lista abaixo é o esquema da tabela em português, campo por campo. Se
+        # uma coluna nova aparecer lá e não aqui, a tela passa a mentir — e é por
+        # isso que `test_privacidade.py` compara as duas.
+        "uso": [
+            {
+                "titulo": "O que é medido",
+                "explicacao": (
+                    "De cada etapa do preparo: qual foi, se terminou ou falhou, quanto "
+                    "tempo levou, o formato do arquivo, o modo e o motor de tradução. "
+                    "Fica ligado ao número do trabalho, e não à sua conta."
+                ),
+                "marca": "Sem interruptor ainda",
+            },
+            {
+                "titulo": "O que nunca é medido",
+                "explicacao": (
+                    "O conteúdo dos seus arquivos. Nem o texto que sai do "
+                    "reconhecimento, nem o nome dos arquivos: quando uma etapa falha, "
+                    "a mensagem de erro é guardada com os caminhos e nomes trocados "
+                    "por um marcador."
+                ),
+                "marca": "Regra fixa",
+            },
+        ],
         # Ditos aqui, e não num texto à parte, porque são fatos do código:
         # `email_service` manda o EPUB por SMTP, e nada mais sai daqui.
         "para_onde_vai": [
@@ -116,10 +187,15 @@ def o_que_existe(
             "o endereço que você colou. O site visitado vê o pedido, como veria "
             "se você abrisse o link. Nada além do endereço é enviado, e a prévia "
             "só acontece quando você cola um link.",
-            "Não há rastreamento, análise de uso nem publicidade. Os únicos "
-            "lugares fora do Mekora para onde algo seu vai são os dois acima: a "
-            "Amazon, quando você manda ao Kindle, e o site do link que você "
-            "colou.",
+            # ESTA FRASE DIZIA "não há rastreamento, ANÁLISE DE USO nem
+            # publicidade", e a segunda parte era falsa: `stage_metrics` mede o
+            # preparo etapa por etapa. O que é verdade — e é o que importa — é
+            # que a medição não sai daqui. A seção "Dados de uso" abaixo diz o
+            # que ela guarda.
+            "Não há rastreamento por terceiros nem publicidade. O preparo é "
+            "medido, e a medição fica neste servidor: os únicos lugares fora do "
+            "Mekora para onde algo seu vai são os dois acima — a Amazon, quando "
+            "você manda ao Kindle, e o site do link que você colou.",
         ],
     }
 
