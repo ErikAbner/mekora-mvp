@@ -269,11 +269,13 @@ export function Apresentacao({ aoReceberArquivos, backend }) {
             <div className="vitrine-ficha">
               <p className="vitrine-ficha-titulo">Malha Urbana</p>
               <p className="vitrine-ficha-linha">Ana Duarte · EPUB</p>
-              {/* O DESENHO DIZ "80% lido" COM BARRA, e o produto não sabe a
-                  porcentagem: ele guarda capítulo e deslocamento, não páginas
-                  lidas. A vitrine mostra o que a ficha real mostra — senão a
-                  landing promete um número que a Estante não tem. */}
-              <p className="vitrine-ficha-linha">capítulo 2 de 3</p>
+              {/* A PORCENTAGEM DO DESENHO, que agora existe. Ela ficou de fora
+                  na primeira versão desta seção porque eu tinha concluído que o
+                  produto não podia sabê-la; ele podia — a extensão está no
+                  índice do zip do EPUB. A vitrine mostra o que a ficha real
+                  mostra, e é por isso que ela pode mostrar isto. */}
+              <p className="vitrine-ficha-linha">80% lido</p>
+              <span className="vitrine-barra" aria-hidden="true"><span /></span>
               <p className="vitrine-ficha-notas">24 notas</p>
               <p className="vitrine-ficha-citacao">
                 “…a última nota destacada aparece aqui como amostra do pensamento…”

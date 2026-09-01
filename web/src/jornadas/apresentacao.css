@@ -436,3 +436,11 @@
   .vitrine-corpo { padding: 16px; gap: 24px; }
   .vitrine-grade { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* A barra da ficha na vitrine. Estatica, como o resto da secao: e ilustracao do
+ * que a Estante faz, e o numero ao lado e o mesmo do desenho. */
+.vitrine-barra {
+  display: block; inline-size: 100%; block-size: 6px;
+  background: var(--background-tertiary);
+}
+.vitrine-barra > span { display: block; inline-size: 80%; block-size: 100%; background: var(--foreground); }
