@@ -326,3 +326,30 @@ estão no cromo da leitura desde o começo. Os quatro painéis que existem no Fi
 `941:23120` seleção — foram construídos, e nenhum deles é um destes dois. Eles
 ficam `disabled` com o motivo no título. **Decisão do Erik:** desenhar os dois,
 ou tirá-los do cromo.
+
+**A-27 · As telas `M ·` não têm id que eu consiga descobrir.** O `get_metadata`
+da página do Figma vem truncado e devolve só os símbolos de exploração; as telas
+`D ·` e `M ·` não aparecem nele. Consegui abrir duas, porque os ids estavam
+escritos no repositório: `964:24606` (`M · Estante — grade`) e `966:29395`
+(`M · Leitura`). As outras doze continuam por comparar. **Preciso do Erik:** os
+ids, ou selecionar cada tela no Figma — a ferramenta lê a seleção atual.
+
+**A-28 · Três divergências no `M · Estante — grade` (964:24606).** A grade virou
+duas colunas e o alternador Capas/3D subiu para antes dela, como no desenho. O
+que não foi feito, e por quê:
+
+- **O hambúrguer.** O desenho troca os dois botões de ação do topo (notas,
+  conta) por um `☰`. O menu que ele abre não está desenhado em lugar nenhum, e
+  inventá-lo seria inventar navegação.
+- **O funil.** Os recortes (Tudo / Com nota / No Kindle / Quadrinhos) ficam
+  atrás de um botão de funil no desenho; na tela eles são um bloco de quatro
+  chips. O painel do funil também não está desenhado.
+- **O dock sem rótulos.** O desenho mostra quatro ícones e nenhuma palavra. Na
+  tela eles têm rótulo, e a razão está no `cabecalho.css`: ícone sozinho obriga
+  a adivinhar. É divergência deliberada.
+
+**A-29 · Um símbolo que apareceu e não foi construído: `941:23113`
+"Nota · cartão".** Um cartão com o trecho citado, um campo "Escreva aqui..." e um
+botão "Salvar". Ele estava selecionado no Figma quando a ferramenta leu a
+seleção. Parece ser a edição de uma nota — sobreposto ao texto, provavelmente.
+**Decisão do Erik:** onde ele abre.

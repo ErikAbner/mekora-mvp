@@ -713,3 +713,22 @@
   .nota-titulo { font-size: 20px; line-height: 30px; }
   .caderno blockquote { padding: 16px; font-size: 16px; line-height: 24px; }
 }
+
+/* ---- O cromo no telefone — nó 966:29395 ------------------------------------
+ *
+ * SEIS BOTÕES DE 56px NÃO CABEM EM 390. As duas caixas somavam mais que a
+ * largura da tela, e a segunda — busca e conta — ficava CORTADA fora do
+ * viewport, sem rolagem que a alcançasse. Ninguém tinha medido: `/leitura/:id`
+ * não estava na auditoria, e é a única tela do produto que ficou de fora dela.
+ *
+ * O desenho mostra os seis numa fileira só, em botões menores. É o que se faz
+ * aqui: uma caixa, alvos de 44px — o mínimo de toque —, e o vão entre as duas
+ * caixas some.
+ */
+@media (max-width: 767px) {
+  .cromo { gap: 8px; padding: 8px 12px; }
+  .cromo-caixa { flex: 1 1 auto; justify-content: space-around; gap: 0; padding: 6px; }
+  .cromo-caixa button, .cromo-link { padding: 10px; inline-size: 44px; block-size: 44px; }
+  .abertura { padding: 40px 24px; gap: 24px; }
+  .abertura h1 { font-size: 40px; line-height: 48px; }
+}

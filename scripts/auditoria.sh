@@ -81,7 +81,12 @@ for larg in "1440 1000 " "390 844 " "1440 1000 --escuro"; do
   for r in $SEM_CONTA; do printf "  %-22s " "$r (sem conta)"; medida "$r" "$1" "$2" "${3:-}" nao | resumo; done
   for r in $PRIVADAS; do printf "  %-22s " "$r"; medida "$r" "$1" "$2" "${3:-}" sim | resumo; done
   if [ -n "${LIVRO:-}" ]; then
-    for r in "/estante/$LIVRO" "/preparo/$LIVRO"; do
+    # A LEITURA ENTRA NA MEDIDA. Ela era a unica tela do produto fora da
+    # auditoria, e por isso o cromo passou meses transbordando 390 sem que nada
+    # apontasse: seis botoes de 56px nao cabem, e a segunda caixa ficava cortada
+    # fora do viewport. `?exemplo` porque o livro semeado nao tem EPUB de
+    # verdade — e a tela do exemplo tem o mesmo cromo e a mesma prosa.
+    for r in "/estante/$LIVRO" "/preparo/$LIVRO" "/leitura/$LIVRO?exemplo"; do
       printf "  %-22s " "$r"; medida "$r" "$1" "$2" "${3:-}" sim | resumo
     done
   fi

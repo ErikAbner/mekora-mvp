@@ -1197,3 +1197,60 @@ aparece quando há o que dizer.
 
 O botão **"Notas"** da ficha não fazia nada: `<Botao>` sem `onClick`. Virou link
 para a ficha inteira, que é onde cabem todas.
+
+---
+
+# O Canvas inteiro, e o que a medida achou nas telas de telefone
+
+## O SVG das ligações funcionava por sorte
+
+Ele era `inset: 0` com 100% de largura e altura, dentro de um plano que é uma
+superfície SEM FIM — "100%" não quer dizer nada ali. Media **0×0**, e as linhas
+só apareciam porque o navegador não as recortava. Qualquer `overflow` num
+ancestral teria apagado todas as ligações de uma vez, sem erro nenhum.
+
+Agora a caixa é o retângulo que contém as pontas, e o `viewBox` põe o sistema de
+coordenadas do SVG em cima do sistema do plano. Medido depois: 416×276.
+
+**O chão pontilhado passou a andar com a câmera.** Ele ficava parado, e arrastar
+o chão de um Canvas vazio não mudava nada na tela — a superfície infinita
+parecia uma caixa presa.
+
+## O grupo não guarda quais notas estão dentro
+
+Guardar a lista criaria duas verdades — a nota dentro do retângulo na tela e
+fora dele na tabela — e a cada arrasto alguém teria de reconciliar as duas. Quem
+está dentro é quem está por cima, e a geometria responde. Por isso desfazer o
+grupo não leva nota nenhuma junto.
+
+**O portão da privacidade pegou a tabela nova** antes de qualquer tela: uma
+tabela que guarda dado de uma pessoa e não aparece em Privacidade reprova o
+conjunto. Aparece nas duas — na lista e no "levar meus dados".
+
+## A prévia de link obrigou a escrever as defesas antes da feature
+
+Uma rota que busca um endereço escolhido por quem chama é a definição de SSRF.
+As defesas estão em `previa_service.py` com uma prova cada, e a que mais importa
+é a de que **o IP é conferido a cada salto de redirecionamento**: um endereço
+público que responde 302 para `169.254.169.254` é o caminho mais curto para as
+credenciais da máquina.
+
+**O agente perdeu o acento**, e é a única linha do repositório em que isso é
+certo: cabeçalho HTTP é latin-1, e "prévia" derrubava o pedido inteiro com
+`UnicodeEncodeError` antes de sair da máquina. Os testes não pegaram porque
+substituem o cliente HTTP.
+
+## A leitura estava fora da auditoria, e transbordava
+
+Seis botões de 56px não cabem em 390: a segunda caixa do cromo — busca e conta —
+ficava **cortada fora do viewport**, sem rolagem que a alcançasse. Ninguém tinha
+medido, porque `/leitura/:id` era a única tela do produto que não estava na
+auditoria. Entrou, e o cromo virou uma fileira de alvos de 44px no telefone.
+
+## Os ícones vieram do conjunto, e o portão pegou a tinta deles
+
+Os sete vãos vazios (cinco no `941:23118`, dois no `941:23120`) ganharam ícones
+do Solar 480 com o efeito handmade — achados por folha de contato entre 182
+assets de nome-hash. Cinco traziam `#878787` cozido dentro do SVG, uma cor que
+não existe no sistema, e o portão reprovou. Passam a herdar `currentColor`, como
+todos os outros; os caminhos ficam intactos.
