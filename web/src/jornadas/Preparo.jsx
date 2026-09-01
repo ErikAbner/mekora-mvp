@@ -347,6 +347,40 @@ export function Preparo() {
           </div>
         </header>
 
+        {/* O ALTERNADOR GUIADO / PERSONALIZADO, no topo — nó 966:31504.
+         *
+         * Ele existia só como um botão no fim da página, "Ajustar manualmente",
+         * depois de tudo o que o Mekora decidiu. Quem quer decidir por conta
+         * própria tinha de rolar a tela inteira lendo as decisões que ia
+         * descartar.
+         *
+         * No desenho é um alternador de dois estados, antes do conteúdo — a
+         * escolha de COMO ler esta tela vem antes de lê-la. Marcado por
+         * superfície, como todo alternador do sistema. */}
+        <nav className="preparo-pagina-modo" aria-label="Modo de preparo">
+          {[
+            ["guiado", "Guiado", false],
+            ["personalizado", "Personalizado", true],
+          ].map(([id, rotulo, manual]) => (
+            <button
+              key={id}
+              type="button"
+              aria-pressed={ajustando === manual ? "true" : "false"}
+              onClick={() => setAjustando(manual)}
+            >
+              {rotulo}
+            </button>
+          ))}
+        </nav>
+
+        {/* O que cada modo faz, dito uma vez. O rótulo sozinho não diz se
+            "Personalizado" abre controles ou muda o resultado. */}
+        <p className="preparo-pagina-nota">
+          {ajustando
+            ? "Os controles ficam à vista, já preenchidos com o que o Guiado faria."
+            : "O Mekora decide, mostra a decisão em texto e pede confirmação uma vez."}
+        </p>
+
         {/* O VEREDITO PRIMEIRO. Quem abre esta tela quer saber uma coisa: dá
             para seguir? O detalhe vem depois, para quem quiser. */}
         {/* O VEREDITO PRIMEIRO — mas o que ele afirma precisa ser verdade.
@@ -448,9 +482,9 @@ export function Preparo() {
           >
             {preparando ? "Preparando…" : "Preparar com recomendações"}
           </Botao>
-          <Botao tom="secundaria" onClick={() => setAjustando((v) => !v)}>
-            {ajustando ? "Voltar às recomendações" : "Ajustar manualmente"}
-          </Botao>
+          {/* O botão do fim saiu: o alternador do topo faz a mesma coisa, e
+              dois controles para uma escolha em pontas opostas da página é a
+              pessoa procurando qual dos dois vale. */}
         </div>
         </AvisoPreferencias>
       </main>

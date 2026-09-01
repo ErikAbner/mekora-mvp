@@ -221,3 +221,37 @@ componentes — isso ainda não foi tentado.
 pré-existente: ela espera `foundation.brand` num artefato de build que o pipeline
 atual não emite. Não é da nossa marca. A documentação de cor está melhor em
 `docs/DESIGN-SYSTEM.md`.
+
+## O portão não vê botão morto — o `botoes.mjs` vê
+
+É a classe de defeito que mais apareceu neste produto, e sempre do mesmo jeito:
+um `<button>` desenhado, montado, medido e **verde** — sem `onClick`. Ele parece
+ativo, aceita o clique e não responde, e quem usa aprende a não clicar.
+
+O portão não pega: um botão morto tem a mesma cor, o mesmo corpo e o mesmo
+contraste de um botão vivo. Os que foram achados na mão, um a um, ao longo de
+semanas:
+
+- os quatro recortes da estante (Tudo / Com nota / No Kindle / Quadrinhos)
+- o alternador Capas / Estante em 3D
+- "Notas" na ficha da estante
+- "Marcadores", "Buscar no livro" e "Conta" no cromo da leitura
+
+Cada um ficou meses na tela.
+
+```bash
+node scripts/botoes.mjs
+```
+
+Conta como vivo: `onClick`, `onPointerDown`, `type="submit"`, `{...resto}`, ou
+`disabled` — o desligado é honesto, e a regra pede que ele diga por quê no
+`title`.
+
+**Ele ignora comentários.** A primeira versão acusou três, dois deles
+descrevendo defeitos já corrigidos: este repositório explica os defeitos no
+próprio código, e as explicações citam o que estava errado. Consertar o texto
+para o instrumento seria o avesso; o instrumento é que aprende a não ler
+comentário.
+
+Roda dentro de `scripts/auditoria.sh`, junto do `classes.mjs`, antes de o
+navegador subir.

@@ -28,6 +28,21 @@ SEM_CONTA="/estante"
 
 PRIVADAS="/mesa /estante /canvas /estudos /notas /conta /conta/kindle /conta/seguranca /conta/preferencias /conta/privacidade"
 
+# AS CONFERÊNCIAS ESTÁTICAS VÊM ANTES DO NAVEGADOR.
+#
+# Elas custam um segundo e pegam o que a medida não pega: classe CSS com dois
+# donos (a última carregada apaga a outra em silêncio) e botão sem gesto — a
+# classe de defeito que mais apareceu aqui, e que passa verde no portão porque
+# um botão morto tem a mesma cor e o mesmo contraste de um vivo.
+#
+# Elas NÃO derrubam a auditoria: o que elas acusam aparece no topo, e a medida
+# das telas continua — saber que três telas transbordam vale mesmo com uma
+# classe duplicada em aberto.
+echo "── conferências estáticas ──"
+node scripts/classes.mjs || true
+node scripts/botoes.mjs || true
+echo
+
 medida() {   # $1 rota  $2 largura  $3 altura  $4 tema  $5 privada?
   local url="$WEB$1"
   if [ "$5" = "sim" ]; then
