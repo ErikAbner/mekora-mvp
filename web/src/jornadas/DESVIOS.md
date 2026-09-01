@@ -480,6 +480,28 @@ lugar nenhum obriga a pessoa a procurar de novo, agora com a resposta na cabeça
 sem saber onde aplicá-la. E é o que mantém a página honesta: se uma capacidade
 mudar, a tela citada desmente o texto, e a pessoa descobre antes de nós.
 
+## O desenho apareceu depois, e a metade que faltava era a segunda
+
+O `figma-local` voltou no fim da sessão, e o nó `895:11060` mostrou o que a minha
+versão tinha perdido: o subtítulo é **"O que mudou e, principalmente, o que ainda
+não é confiável"**, cada item traz uma etiqueta vertical — *novo*, *melhorado*,
+*corrigido* — e existe uma seção final chamada **"O que ainda não está de pé"**.
+
+Isso não é detalhe de layout. É o produto dizendo o que não faz na página que
+existe para se gabar: uma tela de atualizações só com acertos é release note; com
+a segunda metade, é um lugar onde dá para confiar no que a primeira diz. Eu tinha
+feito só a primeira.
+
+**Um item do desenho saiu**, e a razão importa. Ele lista *"Entrar e sair da conta
+— decisão pendente: o método de acesso ainda não foi escolhido, então não existe
+tela de senha, de provedor nem de sessões"*. A decisão foi tomada — é link por
+e-mail, sem senha — e a tela de sessões que ele dizia não existir agora existe.
+Uma pendência resolvida que continua listada é pior que nenhuma lista: ela ensina
+que a lista não é atualizada.
+
+**O portão pegou um link azul.** `#9e9eff`, o padrão do navegador no tema escuro,
+num bloco novo que esqueceu a cor.
+
 ## Atualizações não é o `git log`
 
 Derivar do histórico seria fácil e errado: o commit fala de arquivo, e quem usa

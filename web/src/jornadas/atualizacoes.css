@@ -55,3 +55,64 @@
   .atualizacoes-topo h1 { font-size: 32px; line-height: 40px; }
   .atualizacoes-lote h3 { font-size: 20px; line-height: 30px; }
 }
+
+/* A etiqueta do tipo. Vertical no desenho, e ela nao e decoracao: "corrigido"
+ * diz que algo estava errado, que e informacao diferente de "novo". */
+.atualizacoes-lote li { flex-direction: row; gap: 24px; align-items: flex-start; }
+.atualizacoes-texto { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; min-inline-size: 0; }
+.atualizacoes-tipo {
+  flex: none;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  padding: 12px 6px;
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-size: 14px; line-height: 22px;   /* Label/Small */
+  text-transform: uppercase;
+}
+/* Degrau de superficie para o que foi corrigido, nunca matiz: um vermelho aqui
+ * gastaria o alarme que o erro de verdade vai precisar. */
+.atualizacoes-tipo.corrigido { background: var(--card); color: var(--foreground); }
+
+/* O que nao esta de pe. Fundo em degrau, para se ler como bloco a parte sem
+ * precisar de cor de aviso. */
+.atualizacoes-pendente {
+  display: flex; flex-direction: column; gap: 24px;
+  padding: 32px 40px;
+  background: var(--card);
+}
+.atualizacoes-pendente h2 {
+  margin: 0;
+  font-size: 28px; line-height: 36px; font-weight: 540;   /* Heading/SM */
+  color: var(--foreground);
+  text-transform: none;
+}
+.atualizacoes-pendente ul { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.atualizacoes-pendente li {
+  display: flex; flex-direction: column; gap: 12px; align-items: flex-start;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--separator);
+}
+.atualizacoes-pendente li:first-child { padding-block-start: 0; }
+.atualizacoes-pendente li:last-child { border-bottom: 0; padding-block-end: 0; }
+.atualizacoes-pendente h3 {
+  margin: 0;
+  font-size: 20px; line-height: 30px; font-weight: 540;
+  color: var(--foreground);
+  text-wrap: pretty;
+}
+.atualizacoes-pendente p {
+  margin: 0;
+  font-size: 18px; line-height: 27px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+/* SEM ISTO O LINK NASCE AZUL. O portao pegou `#9e9eff`, que e o padrao do
+ * navegador no tema escuro e nao existe na paleta — o mesmo descuido apareceria
+ * em qualquer bloco novo que esquecesse a cor. */
+.atualizacoes-pendente a { color: var(--foreground); font-size: 18px; line-height: 27px; }
+
+@media (max-width: 767px) {
+  .atualizacoes-lote li { gap: 16px; }
+  .atualizacoes-pendente { padding: 24px 20px; }
+}
