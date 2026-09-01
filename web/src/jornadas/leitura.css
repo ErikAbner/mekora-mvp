@@ -75,7 +75,7 @@
        na borda. Foi o que aconteceu a 390 — a coluna mediu 390 numa tela de 390
        — e o padding lateral que o CSS antigo tinha era justamente o que eu
        apaguei ao trocar a coluna pela grade. */
-    [texto-inicio] min(680px, 100% - var(--respiro, 64px)) [texto-fim]
+    [texto-inicio] min(var(--leitura-coluna, 680px), 100% - var(--respiro, 64px)) [texto-fim]
     minmax(0, 430px) [larga-fim]
     minmax(var(--borda, 32px), 1fr) [cheia-fim];
   inline-size: 100%;
@@ -99,7 +99,12 @@
 .prosa p {
   margin: 0;
   text-indent: 32px;
-  font-size: 20px; line-height: 30px;   /* Body/Medium/Prosa, a excecao de razao 1,5 */
+  /* O CORPO E A ENTRELINHA VEM DO PAINEL DE APARENCIA, com o valor do desenho
+   * como padrao. A entrelinha e RAZAO e nao numero: mudar o corpo sem mudar a
+   * entrelinha aperta o texto justamente quando alguem pediu para ele respirar. */
+  font-family: var(--leitura-fonte, var(--font-sans));
+  font-size: var(--leitura-corpo, 20px);
+  line-height: calc(var(--leitura-corpo, 20px) * var(--leitura-razao, 1.5));
   /* TINTA CHEIA, e nao a secundaria do desenho. O texto do livro e o conteudo
    * pelo qual o produto existe; poe-lo na tinta mais fraca do sistema e inverter
    * a hierarquia. E com destaque atras, a secundaria REPROVA no rosa (3,47) e no
@@ -423,3 +428,103 @@
 @media (max-width: 767px) {
   .prosa .capitulo + .capitulo > *:first-child { margin-block-start: 64px; }
 }
+
+
+/* ---- o painel de aparencia -------------------------------------------------
+ *
+ * Do no 973:32215. E o que torna EDITAVEL o que o desenho fixa — e foi a
+ * condicao do Erik para aceitar a medida de coluna: "desde que seja editavel, ta
+ * tudo bem".
+ */
+.aparencia {
+  position: fixed; inset-block: 0; inset-inline-end: 0;
+  inline-size: min(384px, 100%);
+  z-index: 40;
+  display: flex; flex-direction: column; gap: 32px;
+  padding: 24px;
+  overflow-y: auto;
+  background: var(--background-secondary);
+  border-inline-start: 1px solid var(--border);
+}
+.aparencia header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.aparencia h2 {
+  margin: 0;
+  font-size: 28px; line-height: 36px; font-weight: 540;   /* Heading/SM */
+  color: var(--foreground);
+}
+.aparencia header button {
+  inline-size: 44px; block-size: 44px;
+  border: 1px solid var(--border); background: var(--background);
+  color: var(--foreground); font-size: 20px; line-height: 30px; cursor: pointer;
+}
+.aparencia section { display: flex; flex-direction: column; gap: 16px; }
+.aparencia h3 {
+  margin: 0;
+  font-size: 16px; line-height: 24px; font-weight: 400;   /* Label/Medium */
+  color: var(--muted-foreground);
+}
+.aparencia-opcoes { display: flex; gap: 12px; }
+.aparencia-opcoes button {
+  flex: 1 1 0; min-inline-size: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 16px 8px;
+  border: 1px solid var(--border); background: var(--background);
+  cursor: pointer;
+  color: var(--muted-foreground);
+}
+/* Escolhido por SUPERFICIE, como em todo lugar do sistema. */
+.aparencia-opcoes button[aria-pressed="true"] {
+  background: var(--card); border-color: var(--foreground); color: var(--foreground);
+}
+.aparencia-opcoes button:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+.amostra-rotulo { font-size: 14px; line-height: 22px; text-align: center; }
+
+/* A AMOSTRA MOSTRA O QUE A ESCOLHA FAZ. "Solta" nao diz nada ate se ver a
+ * entrelinha solta — o rotulo sozinho pede que a pessoa imagine o resultado. */
+.amostra { color: var(--foreground); font-weight: 540; }
+.amostra-corpo.amostra-menor { font-size: 18px; }
+.amostra-corpo.amostra-medio { font-size: 24px; }
+.amostra-corpo.amostra-maior { font-size: 32px; }
+.amostra-fonte { font-size: 24px; }
+.amostra-fonte.amostra-sem-serifa { font-family: system-ui, -apple-system, sans-serif; }
+.amostra-destaques { font-size: 24px; padding: 0 4px; }
+.amostra-destaques.amostra-mostrar { background: var(--nota-amarelo); color: #151515; }
+
+/* Entrelinha e coluna se mostram com tracos, e nao com letra: o que muda nelas e
+ * o espaco entre linhas e a largura da linha, e nenhum dos dois cabe em "Ab". */
+.amostra-entrelinha, .amostra-coluna { display: flex; flex-direction: column; inline-size: 100%; }
+.amostra-entrelinha i, .amostra-coluna i {
+  display: block; block-size: 3px; background: var(--border-strong);
+}
+.amostra-entrelinha.amostra-justa { gap: 2px; }
+.amostra-entrelinha.amostra-media { gap: 5px; }
+.amostra-entrelinha.amostra-solta { gap: 9px; }
+.amostra-coluna { gap: 5px; align-items: center; }
+.amostra-coluna.amostra-estreita i { inline-size: 55%; }
+.amostra-coluna.amostra-media i { inline-size: 75%; }
+.amostra-coluna.amostra-larga i { inline-size: 100%; }
+
+.aparencia-nota {
+  margin: 0;
+  padding-inline-start: 16px;
+  border-inline-start: 1px solid var(--foreground);
+  color: var(--muted-foreground);
+  font-size: 16px; line-height: 24px;
+  text-wrap: pretty;
+}
+
+.cromo-aa { font-size: 16px; line-height: 24px; font-weight: 540; }
+
+/* OCULTAR OS DESTAQUES nao apaga a nota: ela continua la, e volta quando a
+ * pessoa quiser. Ler sem as proprias marcas e um modo de reler. */
+.prosa mark { background-color: var(--cor-nota, transparent); }
+:root { --leitura-destaque: 1; }
+.prosa mark[data-destaque] { opacity: var(--leitura-destaque, 1); }
+
+/* A amostra do tema e um retangulo da cor do fundo daquele tema — e o que o
+ * desenho mostra, e e a unica amostra que nao precisa de letra: o que muda no
+ * tema e o fundo. */
+.amostra-tema { display: block; inline-size: 100%; block-size: 40px; border: 1px solid var(--border); }
+.amostra-tema.amostra-claro { background: #f9f9f9; }
+.amostra-tema.amostra-escuro { background: #151515; }
+.amostra-tema.amostra-sistema { background: linear-gradient(135deg, #f9f9f9 50%, #151515 50%); }

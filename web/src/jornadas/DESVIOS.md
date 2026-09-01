@@ -1025,3 +1025,47 @@ dava 404 — o arquivo existia, no lugar errado.
 **Imagem que não abre agora some**, em vez de virar ícone quebrado. Vale além do
 acervo semeado: livro em preparo e arquivo removido caem no mesmo caso, e um
 ícone de imagem faltando parece defeito do produto.
+
+---
+
+# O painel de Aparência da leitura
+
+Do nó `973:32215`, e ele é o que torna **editável** o que o desenho fixa — a
+condição do Erik para aceitar a medida de coluna: *"desde que seja editável, tá
+tudo bem."*
+
+Seis grupos: **Tema**, **Tamanho**, **Tipografia**, **Entrelinha**, **Coluna** e
+**Seus destaques**.
+
+**"Coluna — Larga" é a resposta ao A-13.** A medida do desenho dá cerca de 34
+caracteres por linha no telefone, abaixo da faixa confortável. "Larga" recupera
+isso para quem quiser, sem tirar de quem prefere a medida desenhada.
+
+## Mora no navegador, e não na conta
+
+Ler com letra maior é preferência **do aparelho**: o mesmo leitor quer corpo
+grande no telefone e a medida cheia no monitor. Amarrar isso à conta faria uma
+escolha atravessar o outro aparelho sem ser pedida.
+
+O **tema** é a exceção — ele continua sendo o mesmo das Preferências da conta,
+lido e escrito pelo mesmo módulo. Dois lugares para a mesma escolha é
+conveniência; duas escolhas diferentes com o mesmo nome seria defeito.
+
+## A amostra mostra o que a escolha faz
+
+"Solta" não diz nada até se ver a entrelinha solta, e "Larga" não diz nada até se
+ver a linha larga. Entrelinha e coluna se mostram com traços, e não com "Ab": o
+que muda nelas é o espaço entre linhas e a largura da linha, e nenhum dos dois
+cabe numa letra.
+
+## Os degraus saem da escala
+
+18/20/24 para o corpo, e não multiplicadores. "1,2× de 20" dá 24, que existe;
+"1,15×" daria 23, que não. A entrelinha é **razão** e não número: mudar o corpo
+sem mudar a entrelinha aperta o texto justamente quando alguém pediu para ele
+respirar.
+
+## "Do sistema" não está no desenho, e fica
+
+Sem ele, quem tem o telefone em automático perde isso ao tocar uma vez aqui, e
+não tem como voltar.

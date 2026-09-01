@@ -16,6 +16,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Icone } from "../componentes/Icone.jsx";
 import { comDeslocamentos, irPara, ondeEstouNoLivro } from "../leitor/onde-parei.js";
+import { GRUPOS, aplicarAparencia, gravarAparencia, lerAparencia } from "../leitor/aparencia.js";
+import { aplicarTema, temaEspelhado } from "../estado/tema.js";
 import { lerSelecao, notasDoBloco } from "../leitor/selecao.js";
 import "./leitura.css";
 
@@ -331,6 +333,19 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
    * A função vive num ref pela mesma razão do gravador de rolagem: ela chega
    * como arrow de quem usa a tela, e pô-la nas dependências remontaria o
    * observador a cada render. */
+  /* A APARÊNCIA DA LEITURA. Ela é lida uma vez e aplicada como variáveis de CSS
+   * na raiz — nenhum bloco precisa saber que a preferência existe. */
+  const [aparencia, setAparencia] = useState(() => lerAparencia());
+  const [painel, setPainel] = useState(false);
+  useEffect(() => { aplicarAparencia(aparencia); gravarAparencia(aparencia); }, [aparencia]);
+
+  /* O TEMA FICA NO PAINEL TAMBÉM, como o desenho põe — e continua sendo o mesmo
+   * tema das Preferências da conta, lido e escrito pelo mesmo módulo. Dois
+   * lugares para a mesma escolha é conveniência; duas escolhas diferentes com o
+   * mesmo nome seria defeito. */
+  const [tema, setTema] = useState(() => temaEspelhado() ?? "sistema");
+  const trocarTema = (t) => { setTema(t); aplicarTema(t); };
+
   const sentinela = useRef(null);
   const sentinelaAcima = useRef(null);
   const pedirAgora = useRef(aoPedirMais);
@@ -413,6 +428,17 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
             <Icone src={iconeCaderno} />
           </button>
           <button type="button" aria-label="Marcadores"><Icone src={iconeMarcador} /></button>
+          {/* APARÊNCIA. O nó 973:32215 põe este painel na leitura, e é ele que
+              torna editável o que o desenho fixa — corpo, fonte, entrelinha,
+              coluna e destaques. */}
+          <button
+            type="button"
+            aria-label="Aparência da leitura"
+            aria-pressed={painel ? "true" : "false"}
+            onClick={() => setPainel((v) => !v)}
+          >
+            <span className="cromo-aa" aria-hidden="true">Aa</span>
+          </button>
         </nav>
         <nav className="cromo-caixa" aria-label="Ferramentas">
           <button type="button" aria-label="Buscar no livro"><Icone src={iconeBuscar} /></button>
@@ -514,6 +540,70 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
             />
           ))}
         </div>
+      )}
+
+      {painel && (
+        <aside className="aparencia" aria-label="Aparência da leitura">
+          <header>
+            <h2>Aparência</h2>
+            <button type="button" aria-label="Fechar" onClick={() => setPainel(false)}>×</button>
+          </header>
+          <section>
+            <h3>Tema</h3>
+            <div className="aparencia-opcoes" role="group" aria-label="Tema">
+              {[
+                ["claro", "Claro"],
+                ["escuro", "Escuro"],
+                /* "Sistema" não está no desenho e fica: sem ele, quem tem o
+                   telefone em automático perde isso ao tocar uma vez aqui, e não
+                   tem como voltar. */
+                ["sistema", "Do sistema"],
+              ].map(([id, rotulo]) => (
+                <button
+                  key={id}
+                  type="button"
+                  aria-pressed={tema === id ? "true" : "false"}
+                  onClick={() => trocarTema(id)}
+                >
+                  <span className={`amostra amostra-tema amostra-${id}`} aria-hidden="true" />
+                  <span className="amostra-rotulo">{rotulo}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {GRUPOS.map((g) => (
+            <section key={g.id}>
+              <h3>{g.rotulo}</h3>
+              <div className="aparencia-opcoes" role="group" aria-label={g.rotulo}>
+                {g.opcoes.map((o) => (
+                  <button
+                    key={o.id}
+                    type="button"
+                    aria-pressed={aparencia[g.id] === o.id ? "true" : "false"}
+                    onClick={() => setAparencia((a) => ({ ...a, [g.id]: o.id }))}
+                  >
+                    {/* A AMOSTRA MOSTRA O QUE A ESCOLHA FAZ, e não um rótulo só:
+                        "Solta" não diz nada até se ver a entrelinha solta. */}
+                    <span className={`amostra amostra-${g.id} amostra-${o.id}`} aria-hidden="true">
+                      {g.id === "entrelinha" || g.id === "coluna" ? (
+                        <><i /><i /><i /></>
+                      ) : (
+                        "Ab"
+                      )}
+                    </span>
+                    <span className="amostra-rotulo">{o.rotulo}</span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          ))}
+          <p className="aparencia-nota">
+            Vale neste aparelho. Ler com letra maior é preferência de onde se lê,
+            e não da conta — o mesmo leitor quer corpo grande no telefone e a
+            medida cheia no monitor.
+          </p>
+        </aside>
       )}
 
       {erroDeNota && <p className="nota-erro" role="alert">{erroDeNota}</p>}
