@@ -1,11 +1,21 @@
 /* A trilha lateral da Conta: quem é você, e onde dentro da conta.
  *
- * O item ativo é marcado por SUPERFÍCIE, como em todo lugar do sistema, e não
- * por matiz. É `<nav>` com `aria-current`, e não uma lista de `<div>` clicáveis:
- * a diferença aparece para quem navega por teclado ou leitor de tela.
+ * A NAVEGAÇÃO É A `TrilhaLinhas` — o `LineSidebar` que o Erik trouxe e disse
+ * ser "a maior parte das navegações do projeto". Ela nasceu na estante em 3D e
+ * esta é a segunda: cinco lugares numa coluna, que é exatamente a forma para a
+ * qual o componente existe.
+ *
+ * O item ativo continua marcado por SUPERFÍCIE e por `aria-current`, e cada
+ * item continua sendo um `<button>` de verdade — a diferença aparece para quem
+ * navega por teclado ou leitor de tela.
+ *
+ * O ROTEAMENTO FICA AQUI, e não dentro do componente: `TrilhaLinhas` avisa qual
+ * item foi escolhido e não conhece rota nenhuma. Um componente de navegação que
+ * importasse o roteador só serviria a projetos com aquele roteador.
  */
-import { NavLink } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Botao } from "./Botao.jsx";
+import { TrilhaLinhas } from "./TrilhaLinhas.jsx";
 import "./trilha-conta.css";
 
 const PAGINAS = [
@@ -17,6 +27,19 @@ const PAGINAS = [
 ];
 
 export function TrilhaConta({ pessoa, aoSair }) {
+  const navegar = useNavigate();
+  const { pathname } = useLocation();
+
+  /* O MAIS LONGO QUE CASA, e não o primeiro: `/conta` é prefixo de todos os
+   * outros, e a busca ingênua marcaria "Conta" estando em `/conta/kindle`. */
+  const onde = PAGINAS.reduce(
+    (melhor, p, i) =>
+      pathname === p.rota || pathname.startsWith(`${p.rota}/`)
+        ? (melhor === null || p.rota.length > PAGINAS[melhor].rota.length ? i : melhor)
+        : melhor,
+    null,
+  );
+
   return (
     <aside className="trilha">
       <div className="pessoa">
@@ -32,13 +55,12 @@ export function TrilhaConta({ pessoa, aoSair }) {
         </div>
       </div>
 
-      <nav aria-label="Conta">
-        {PAGINAS.map((p) => (
-          <NavLink key={p.id} to={p.rota} end className="trilha-item">
-            {p.rotulo}
-          </NavLink>
-        ))}
-      </nav>
+      <TrilhaLinhas
+        rotulo="Conta"
+        itens={PAGINAS.map((p) => p.rotulo)}
+        ativo={onde}
+        aoEscolher={(i) => navegar(PAGINAS[i].rota)}
+      />
 
       {/* Sair fica no fim da trilha, separado por filete e longe da navegação.
           Junto dos itens ele viraria mais um lugar para onde ir — e é o
