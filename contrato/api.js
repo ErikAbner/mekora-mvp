@@ -561,3 +561,38 @@ export function refazerPreparo(jobId) {
 export function removerDaEstante(jobId) {
   return pede(`/jobs/${jobId}`, { method: "DELETE" });
 }
+
+/* ---------------------------------------------------------------------------
+ * Os grupos do Canvas — nó 895:6938.
+ * ------------------------------------------------------------------------- */
+
+/** POST /canvas/grupos — canvas.py. Uma área nomeada na superfície. */
+export function criarGrupo(g) {
+  return pede("/canvas/grupos", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(g),
+  });
+}
+
+/** PATCH /canvas/grupos/{id} — mover, renomear e redimensionar são o mesmo
+ *  pedido porque são o mesmo objeto. */
+export function mudarGrupo(id, troca) {
+  return pede(`/canvas/grupos/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(troca),
+  });
+}
+
+/** DELETE /canvas/grupos/{id} — some o retângulo; as notas em cima dele ficam. */
+export function apagarGrupo(id) {
+  return pede(`/canvas/grupos/${id}`, { method: "DELETE" });
+}
+
+/** GET /canvas/previa — canvas.py. O título, a descrição e a imagem de um
+ *  endereço posto no Canvas. Devolve `{ recusada }` quando não dá para montar a
+ *  prévia — e isso não é erro: a nota continua válida com o link dentro. */
+export function previaDoLink(url) {
+  return pede(`/canvas/previa?url=${encodeURIComponent(url)}`);
+}

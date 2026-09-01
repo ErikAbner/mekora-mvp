@@ -180,3 +180,52 @@ def test_status_sobrevive_a_coluna_nula(client_cru, db, correio):
     r = client_cru.get(f"/jobs/{j.id}/status")
     assert r.status_code == 200, r.text
     assert r.json()["conversion_status"] == ""
+
+
+# ── os grupos do Canvas — nó 895:6938 ───────────────────────────────────────
+
+def test_grupo_nasce_com_o_tamanho_pedido_e_aparece_na_superficie(client_cru, db, correio):
+    entrar(client_cru, db, correio, "erik@exemplo.com")
+    r = client_cru.post("/canvas/grupos", json={"nome": "Design & Tecnologia", "x": 40, "y": 60})
+    assert r.status_code == 201
+    g = r.json()
+    assert g["nome"] == "Design & Tecnologia"
+    assert (g["largura"], g["altura"]) == (480, 320)
+
+    superficie = client_cru.get("/canvas/superficie").json()
+    assert [x["id"] for x in superficie["grupos"]] == [g["id"]]
+
+
+def test_grupo_nao_encolhe_abaixo_do_minimo(client_cru, db, correio):
+    """Um retângulo de um pixel some da tela sem deixar como pegá-lo de volta."""
+    entrar(client_cru, db, correio, "erik@exemplo.com")
+    g = client_cru.post("/canvas/grupos", json={}).json()
+    r = client_cru.patch(f"/canvas/grupos/{g['id']}", json={"largura": 2, "altura": 2})
+    assert r.status_code == 200
+    assert (r.json()["largura"], r.json()["altura"]) == (120, 120)
+
+
+def test_desfazer_o_grupo_nao_leva_as_notas_junto(client_cru, db, correio):
+    """O grupo é um pedaço de chão com nome, e não um recipiente."""
+    eu = entrar(client_cru, db, correio, "erik@exemplo.com")
+    db.add(Nota(pessoa_id=eu, trecho="uma linha", fonte="solta"))
+    db.commit()
+    nota = db.query(Nota).filter(Nota.pessoa_id == eu).one()
+    assert client_cru.post("/canvas/nos", json={"nota_id": nota.id, "x": 10, "y": 10}).status_code == 201
+
+    g = client_cru.post("/canvas/grupos", json={"nome": "Método"}).json()
+    assert client_cru.delete(f"/canvas/grupos/{g['id']}").status_code == 204
+
+    superficie = client_cru.get("/canvas/superficie").json()
+    assert superficie["grupos"] == []
+    assert len(superficie["nos"]) == 1
+
+
+def test_grupo_de_outra_pessoa_responde_404(client_cru, db, correio):
+    entrar(client_cru, db, correio, "outra@exemplo.com")
+    g = client_cru.post("/canvas/grupos", json={"nome": "Não é seu"}).json()
+    client_cru.post("/sair")
+
+    entrar(client_cru, db, correio, "erik@exemplo.com")
+    assert client_cru.patch(f"/canvas/grupos/{g['id']}", json={"nome": "meu agora"}).status_code == 404
+    assert client_cru.delete(f"/canvas/grupos/{g['id']}").status_code == 404

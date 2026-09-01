@@ -430,7 +430,7 @@ function SoParaQuemEntrou({ acesso, lugar, children }) {
 }
 
 function PaginaCanvas() {
-  const { nos, ligacoes, erro, trazer, mover, tirar, ligar, desligar } = usarCanvas();
+  const { nos, ligacoes, grupos, erro, trazer, mover, tirar, ligar, desligar, agrupar, mudarArea, desagrupar } = usarCanvas();
   const [notas, setNotas] = useState([]);
 
   /* TODAS as notas, para a folha de "trazer" saber o que existe. O Canvas
@@ -446,6 +446,7 @@ function PaginaCanvas() {
     <Canvas
       nos={nos}
       ligacoes={ligacoes}
+      grupos={grupos}
       notas={notas}
       erro={erro}
       aoTrazer={trazer}
@@ -453,6 +454,9 @@ function PaginaCanvas() {
       aoTirar={tirar}
       aoLigar={ligar}
       aoDesligar={desligar}
+      aoAgrupar={agrupar}
+      aoMudarArea={mudarArea}
+      aoDesagrupar={desagrupar}
     />
   );
 }

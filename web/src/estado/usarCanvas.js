@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-  desligarNotas, lerCanvas, ligarNotas, moverNoCanvas, porNoCanvas, tirarDoCanvas,
+  apagarGrupo, criarGrupo, desligarNotas, lerCanvas, ligarNotas, moverNoCanvas,
+  mudarGrupo, porNoCanvas, tirarDoCanvas,
 } from "../../../contrato/api.js";
 
 /* A superfície do Canvas.
@@ -15,6 +16,7 @@ import {
 export function usarCanvas() {
   const [nos, setNos] = useState([]);
   const [ligacoes, setLigacoes] = useState([]);
+  const [grupos, setGrupos] = useState([]);
   const [erro, setErro] = useState(null);
   const [carregando, setCarregando] = useState(true);
 
@@ -23,9 +25,11 @@ export function usarCanvas() {
       const d = await lerCanvas();
       setNos(d.nos ?? []);
       setLigacoes(d.ligacoes ?? []);
+      setGrupos(d.grupos ?? []);
     } catch {
       setNos([]);
       setLigacoes([]);
+      setGrupos([]);
     } finally {
       setCarregando(false);
     }
@@ -92,5 +96,47 @@ export function usarCanvas() {
     }
   }, [recarregar]);
 
-  return { nos, ligacoes, erro, carregando, trazer, mover, tirar, ligar, desligar, recarregar };
+  /* OS GRUPOS. Mover e redimensionar seguem a mesma regra do nó: a tela move o
+   * retângulo enquanto o dedo está apertado, e só o que foi SOLTO chega aqui.
+   * Gravar durante o arrasto mandaria centenas de pedidos para registrar
+   * lugares por onde a área só passou. */
+  const agrupar = useCallback(async (g) => {
+    setErro(null);
+    try {
+      const novo = await criarGrupo(g);
+      setGrupos((atual) => [...atual, novo]);
+      return novo;
+    } catch (e) {
+      setErro(e.message);
+      return null;
+    }
+  }, []);
+
+  const mudarArea = useCallback(async (id, troca) => {
+    const antes = grupos;
+    setGrupos((atual) => atual.map((g) => (g.id === id ? { ...g, ...troca } : g)));
+    try {
+      await mudarGrupo(id, troca);
+    } catch (e) {
+      setGrupos(antes);
+      setErro(e.message);
+    }
+  }, [grupos]);
+
+  const desagrupar = useCallback(async (id) => {
+    const antes = grupos;
+    setGrupos((atual) => atual.filter((g) => g.id !== id));
+    try {
+      await apagarGrupo(id);
+    } catch (e) {
+      setGrupos(antes);
+      setErro(e.message);
+    }
+  }, [grupos]);
+
+  return {
+    nos, ligacoes, grupos, erro, carregando,
+    trazer, mover, tirar, ligar, desligar, recarregar,
+    agrupar, mudarArea, desagrupar,
+  };
 }

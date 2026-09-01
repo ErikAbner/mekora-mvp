@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-from app.models.canvas import Ligacao, NoCanvas
+from app.models.canvas import GrupoCanvas, Ligacao, NoCanvas
 from app.models.nota import CORES, Nota
 from app.models.pessoa import Pessoa
 from app.services import acesso_service
@@ -40,6 +40,24 @@ class Movimento(BaseModel):
 class LigacaoNova(BaseModel):
     de_id: int
     para_id: int
+
+
+class GrupoNovo(BaseModel):
+    """Uma área nomeada na superfície — nó 895:6938."""
+
+    nome: str = ""
+    x: float = 0
+    y: float = 0
+    largura: float = 480
+    altura: float = 320
+
+
+class GrupoMudado(BaseModel):
+    nome: Optional[str] = None
+    x: Optional[float] = None
+    y: Optional[float] = None
+    largura: Optional[float] = None
+    altura: Optional[float] = None
 
 
 def _quem(db: Session, biscoito: Optional[str]) -> Pessoa:
@@ -79,7 +97,7 @@ def superficie(
     """
     pessoa = acesso_service.quem_e(db, mekora_sessao)
     if pessoa is None:
-        return {"nos": [], "ligacoes": []}
+        return {"nos": [], "ligacoes": [], "grupos": []}
 
     nos = (
         db.query(NoCanvas, Nota)
@@ -104,6 +122,17 @@ def superficie(
         "ligacoes": [
             {"id": l.id, "de_id": l.de_id, "para_id": l.para_id, "como": l.como}
             for l in db.query(Ligacao).filter(Ligacao.pessoa_id == pessoa.id).all()
+        ],
+        # Os grupos vêm no MESMO pedido que os nós: eles são o chão em que os
+        # nós estão, e chegar depois faria as notas aparecerem soltas e o
+        # retângulo pousar em cima delas um instante depois.
+        "grupos": [
+            {"id": g.id, "nome": g.nome, "x": g.x, "y": g.y,
+             "largura": g.largura, "altura": g.altura}
+            for g in db.query(GrupoCanvas)
+            .filter(GrupoCanvas.pessoa_id == pessoa.id)
+            .order_by(GrupoCanvas.criado_em)
+            .all()
         ],
     }
 
@@ -241,3 +270,154 @@ def desligar(
     db.delete(l)
     db.commit()
     return None
+
+
+# ---------------------------------------------------------------------------
+# Os grupos — nó 895:6938
+# ---------------------------------------------------------------------------
+
+# Um teto para o nome, e um para o tamanho. Não é sobre validar a escolha: é
+# para que um pedido malformado não vire uma linha de banco de tamanho
+# arbitrário, nem um retângulo de um milhão de pixels que trava a tela ao
+# desenhar.
+NOME_MAXIMO = 120
+LADO_MINIMO = 120
+LADO_MAXIMO = 8000
+
+
+def _meu_grupo(db: Session, pessoa: Pessoa, grupo_id: int) -> GrupoCanvas:
+    g = (
+        db.query(GrupoCanvas)
+        .filter(GrupoCanvas.id == grupo_id, GrupoCanvas.pessoa_id == pessoa.id)
+        .first()
+    )
+    if g is None:
+        raise HTTPException(status_code=404, detail="Esse grupo não existe.")
+    return g
+
+
+def _lado(valor: float) -> float:
+    return max(LADO_MINIMO, min(LADO_MAXIMO, float(valor)))
+
+
+def _fora(g: GrupoCanvas) -> dict:
+    return {"id": g.id, "nome": g.nome, "x": g.x, "y": g.y, "largura": g.largura, "altura": g.altura}
+
+
+@router.post("/canvas/grupos", status_code=201)
+def criar_grupo(
+    novo: GrupoNovo,
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> dict:
+    pessoa = _quem(db, mekora_sessao)
+    g = GrupoCanvas(
+        pessoa_id=pessoa.id,
+        nome=(novo.nome or "")[:NOME_MAXIMO],
+        x=novo.x, y=novo.y,
+        largura=_lado(novo.largura), altura=_lado(novo.altura),
+    )
+    db.add(g)
+    db.commit()
+    db.refresh(g)
+    return _fora(g)
+
+
+@router.patch("/canvas/grupos/{grupo_id}")
+def mudar_grupo(
+    grupo_id: int,
+    troca: GrupoMudado,
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Grava só o que veio.
+
+    Mover, renomear e redimensionar são o mesmo pedido porque são o mesmo
+    objeto, e três rotas fariam a tela escolher entre elas antes de saber qual
+    canto do retângulo a pessoa pegou.
+    """
+    pessoa = _quem(db, mekora_sessao)
+    g = _meu_grupo(db, pessoa, grupo_id)
+
+    if troca.nome is not None:
+        g.nome = troca.nome[:NOME_MAXIMO]
+    if troca.x is not None:
+        g.x = troca.x
+    if troca.y is not None:
+        g.y = troca.y
+    if troca.largura is not None:
+        g.largura = _lado(troca.largura)
+    if troca.altura is not None:
+        g.altura = _lado(troca.altura)
+
+    db.commit()
+    db.refresh(g)
+    return _fora(g)
+
+
+@router.delete("/canvas/grupos/{grupo_id}", status_code=204)
+def apagar_grupo(
+    grupo_id: int,
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> None:
+    """Some o retângulo; as notas que estavam em cima dele ficam.
+
+    O grupo é um pedaço de chão com nome, e não um recipiente — apagar o nome do
+    chão não leva junto o que estava sobre ele. É a mesma razão de "Tirar" não
+    apagar a nota.
+    """
+    pessoa = _quem(db, mekora_sessao)
+    db.delete(_meu_grupo(db, pessoa, grupo_id))
+    db.commit()
+
+
+# ---------------------------------------------------------------------------
+# A prévia de um link — nó 895:6938
+# ---------------------------------------------------------------------------
+
+# Uma prévia buscada fica guardada em memória por meia hora. Não é otimização: é
+# para o site do outro não receber um pedido a cada vez que a tela do Canvas
+# abre. Em memória e não em banco porque é cache — perder no reinício não custa
+# nada, e guardar no disco criaria uma cópia de conteúdo de terceiro que a tela
+# de Privacidade teria de declarar.
+_PREVIAS: dict = {}
+VALIDADE_DA_PREVIA = 30 * 60
+TETO_DO_CACHE = 200
+
+
+@router.get("/canvas/previa")
+def previa(
+    url: str,
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> dict:
+    """O título, a descrição e a imagem de um endereço posto no Canvas.
+
+    EXIGE CONTA. Sem isso a rota é um buscador de páginas aberto na internet,
+    que qualquer um usa para esconder a própria origem atrás do servidor do
+    Mekora.
+    """
+    from time import monotonic
+
+    from app.services.previa_service import PreviaRecusada, buscar
+
+    _quem(db, mekora_sessao)
+
+    agora_ = monotonic()
+    guardada = _PREVIAS.get(url)
+    if guardada and agora_ - guardada[0] < VALIDADE_DA_PREVIA:
+        return guardada[1]
+
+    try:
+        fora = buscar(url)
+    except PreviaRecusada as e:
+        # 200 com `recusada`, e não 4xx: não conseguir montar a prévia não é
+        # erro do pedido. A nota continua válida com o link dentro, e a tela diz
+        # por que não há cartão em vez de piscar um alarme.
+        return {"endereco": url, "recusada": str(e)}
+
+    if len(_PREVIAS) >= TETO_DO_CACHE:
+        _PREVIAS.clear()
+    _PREVIAS[url] = (agora_, fora)
+    return fora

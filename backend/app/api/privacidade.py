@@ -35,7 +35,7 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.models.aparelho import Aparelho
-from app.models.canvas import Ligacao, NoCanvas
+from app.models.canvas import GrupoCanvas, Ligacao, NoCanvas
 from app.models.estudo import Estudo, EstudoNota
 from app.models.nota import Nota
 from app.models.pessoa import Chave, Pessoa, Sessao
@@ -66,6 +66,7 @@ O_QUE_GUARDAMOS = [
     ("preferencias", Preferencia, "As escolhas que você fez em Preferências."),
     ("estudos", Estudo, "Os estudos que você montou, com a pergunta de cada um."),
     ("no_canvas", NoCanvas, "As notas que você pôs no Canvas, e onde cada uma está."),
+    ("grupos_do_canvas", GrupoCanvas, "As áreas que você nomeou no Canvas, e o tamanho de cada uma."),
     ("ligacoes", Ligacao, "As ligações que você fez entre notas."),
     ("sessoes", Sessao, "Os navegadores em que você entrou."),
     ("links", Chave, "Links de entrada pedidos e ainda não vencidos. Guardados como resumo, nunca em texto."),
@@ -173,6 +174,13 @@ def levar(
         "ligacoes": [
             {"de": l.de_id, "para": l.para_id, "como": l.como}
             for l in db.query(Ligacao).filter(Ligacao.pessoa_id == pessoa.id).all()
+        ],
+        # O NOME DO GRUPO É COISA ESCRITA PELA PESSOA, como o comentário da
+        # nota — e leva junto o retângulo, porque sem ele o nome não diz sobre o
+        # que era. Levar o nome sem a geometria seria levar metade.
+        "grupos_do_canvas": [
+            {"nome": g.nome, "x": g.x, "y": g.y, "largura": g.largura, "altura": g.altura}
+            for g in db.query(GrupoCanvas).filter(GrupoCanvas.pessoa_id == pessoa.id).all()
         ],
         "preferencias": {
             p.chave: p.valor

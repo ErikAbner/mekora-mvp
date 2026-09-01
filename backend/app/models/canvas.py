@@ -78,3 +78,36 @@ class Ligacao(Base):
     como = Column(String, nullable=False, default="mao")
 
     criada_em = Column(DateTime, default=agora, nullable=False)
+
+
+class GrupoCanvas(Base):
+    """Uma área nomeada na superfície — o nó `895:6938`.
+
+    O desenho mostra cartões dentro de um retângulo tracejado com título:
+    *"Design & Tecnologia"*. É um agrupamento ESPACIAL, e é isso que o distingue
+    de um Estudo: o Estudo é uma lista de notas reunidas por assunto, e existe
+    fora do Canvas; o grupo é um pedaço de chão com nome, e uma nota pertence a
+    ele por estar em cima dele.
+
+    POR ISSO O GRUPO NÃO GUARDA QUAIS NOTAS ESTÃO DENTRO. Guardar a lista criaria
+    duas verdades: a nota estaria dentro do retângulo na tela e fora dele na
+    tabela, ou o contrário, e a cada arrasto alguém teria de reconciliar as
+    duas. Quem está dentro é quem está por cima — a geometria responde.
+    """
+
+    __tablename__ = "canvas_grupos"
+
+    id = Column(Integer, primary_key=True, index=True)
+    pessoa_id = Column(Integer, ForeignKey("pessoas.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    nome = Column(String, nullable=False, default="")
+
+    # Ponto flutuante pelo mesmo motivo do nó: o arrasto produz frações, e
+    # arredondar a cada movimento faz a área andar aos saltos.
+    x = Column(Float, nullable=False, default=0)
+    y = Column(Float, nullable=False, default=0)
+    largura = Column(Float, nullable=False, default=480)
+    altura = Column(Float, nullable=False, default=320)
+
+    criado_em = Column(DateTime, default=agora, nullable=False)
+    movido_em = Column(DateTime, default=agora, onupdate=agora, nullable=False)
