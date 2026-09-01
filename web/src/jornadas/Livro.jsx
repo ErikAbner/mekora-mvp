@@ -4,6 +4,7 @@ import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { ConfiguracoesArquivo } from "../componentes/ConfiguracoesArquivo.jsx";
 import { Campo } from "../componentes/Campo.jsx";
+import { achatar } from "../../../contrato/texto.js";
 import { DESTAQUES } from "./Leitura.jsx";
 import { analisar, apagarNota, criarNota, enviarAoKindle, lerNotas, lerProgresso } from "../../../contrato/api.js";
 import { tamanhoLegivel } from "../../../contrato/tamanho.js";
@@ -32,11 +33,6 @@ import "./livro.css";
 const ehSobreOLivro = (n) => !n.trecho;
 const ehMarcador = (n) => Boolean(n.trecho) && !n.comentario;
 const ehAnotacao = (n) => Boolean(n.trecho) && Boolean(n.comentario);
-
-/* Sem acento e sem caixa, para "capitulo" achar "Capítulo". */
-function achatar(t) {
-  return String(t ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-}
 
 /* Cada linha só aparece quando há o que dizer. Uma ficha-arquivo com seis "—" descreve
  * a ausência de informação com a mesma ênfase da informação. */

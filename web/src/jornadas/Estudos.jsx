@@ -4,6 +4,7 @@ import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Rodape } from "../componentes/Rodape.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
+import { achatar } from "../../../contrato/texto.js";
 import { Folha } from "../componentes/Folha.jsx";
 import { DESTAQUES } from "./Leitura.jsx";
 import "./estudos.css";
@@ -18,7 +19,16 @@ import "./estudos.css";
 /* EXPORTADO para a pagina de um estudo so. Reusar o mesmo componente e o que
  * impede as duas telas de divergirem: uma acao acrescentada aqui aparece nas
  * duas, e nao em uma delas ate alguem notar. */
-export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, aoTirar, semLink = false }) {
+/* `resumido` é a lista; o inteiro é a página do estudo.
+ *
+ * Nos nós 900:56142 e 895:8849 o estudo na LISTA é um cartão: rótulo, pergunta,
+ * "N livros · N notas" e a fileira de capas. As notas não estão lá — elas são o
+ * conteúdo do estudo, e a lista é o índice dele.
+ *
+ * A tela mostrava tudo, e três estudos de vinte notas viravam uma rolagem onde
+ * nenhum deles se lia. O changelog já dizia que isso tinha sido resolvido pelo
+ * título virar link, e não tinha: o link foi acrescentado e as notas ficaram. */
+export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, aoTirar, semLink = false, resumido = false }) {
   const [reunindo, setReunindo] = useState(false);
   const dentro = new Set(estudo.notas.map((n) => n.id));
   const deFora = notasDisponiveis.filter((n) => !dentro.has(n.id));
@@ -82,7 +92,7 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, 
         </div>
       )}
 
-      {estudo.notas.length > 0 && (
+      {!resumido && estudo.notas.length > 0 && (
         <ul className="estudo-notas">
           {estudo.notas.map((n) => (
             <li key={n.id}>
@@ -110,13 +120,17 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, 
         </ul>
       )}
 
-      {!estudo.notas.length && (
+      {!resumido && !estudo.notas.length && (
         <p className="estudo-vazio">
           Nenhuma nota reunida ainda. Um estudo é a pergunta mais o que você
           juntou em volta dela.
         </p>
       )}
 
+      {/* Na lista o cartão termina nas capas: as ações são do estudo aberto, e
+          três fileiras de botões numa lista de dez estudos é ruído sobre o que a
+          lista existe para mostrar. */}
+      {!resumido && (
       <footer className="estudo-acoes">
         <Botao tom="secundaria" onClick={() => setReunindo(true)} disabled={!deFora.length}>
           Reunir nota {deFora.length > 0 && <span className="dado">{deFora.length}</span>}
@@ -129,6 +143,7 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, 
         </Botao>
         <Botao tom="secundaria" onClick={() => aoApagar(estudo.id)}>Apagar o estudo</Botao>
       </footer>
+      )}
 
       <Folha
         aberta={reunindo}
@@ -163,6 +178,24 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, 
   );
 }
 
+/* AS TRÊS COLUNAS DA VISTA "LEITURA" — nó 895:8849: A ler, Lendo, Lido.
+ *
+ * O estado sai da FRAÇÃO LIDA, que é o que o servidor guarda. Nulo não é zero:
+ * livro sem progresso nenhum é livro que ninguém abriu, e é isso que "A ler"
+ * quer dizer — não "está em 0%".
+ *
+ * O CORTE DE "LIDO" É 0,98 E NÃO 1. A fração vem da rolagem do navegador, e a
+ * última tela de um EPUB quase nunca fecha em 1,0 exato: sobra o rodapé do
+ * arquivo, a margem final, o bloco que não chega ao fim do visor. Exigir 1
+ * deixaria livro terminado eternamente em "Lendo", e é o tipo de erro que a
+ * pessoa não tem como corrigir.
+ */
+const COLUNAS = [
+  { id: "aler", rotulo: "A ler", cabe: (l) => typeof l.fracao !== "number" || l.fracao <= 0 },
+  { id: "lendo", rotulo: "Lendo", cabe: (l) => typeof l.fracao === "number" && l.fracao > 0 && l.fracao < 0.98 },
+  { id: "lido", rotulo: "Lido", cabe: (l) => typeof l.fracao === "number" && l.fracao >= 0.98 },
+];
+
 /* OS RECORTES DOS ESTUDOS — o nó 966:31095 os tem, e a tela não tinha.
  *
  * "Fechado" não quer dizer apagado: fechar um estudo é dizer que a pergunta foi
@@ -178,11 +211,21 @@ const RECORTES = [
   { id: "tudo", rotulo: "Tudo", cabe: () => true },
 ];
 
-export function Estudos({ estudos = [], notas = [], erro, aoCriar, aoMudar, aoApagar, aoReunir, aoTirar }) {
+export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, aoMudar, aoApagar, aoReunir, aoTirar }) {
   const [criando, setCriando] = useState(false);
   const [nome, setNome] = useState("");
   const [sobre, setSobre] = useState("");
   const [recorte, setRecorte] = useState("abertos");
+  /* A BUSCA DO TOPO — nós 900:56142 e 895:8849, logo abaixo do subtítulo. Ela
+     procura no nome do estudo, na pergunta e no TEXTO DAS NOTAS reunidas: o
+     desenho escreve "Buscar em livros, notas e contextos", e é isso que torna a
+     busca útil aqui — quem procura raramente lembra em qual gaveta pôs. */
+  const [procura, setProcura] = useState("");
+  /* AS DUAS VISTAS DO NÓ — "Lista" e "Leitura". A primeira são os estudos; a
+     segunda é o acervo repartido por onde a leitura está. As duas respondem
+     perguntas diferentes sobre o mesmo material, e por isso não são duas telas:
+     "o que eu estou juntando" e "o que eu estou lendo". */
+  const [vista, setVista] = useState("lista");
 
   /* AS NOTAS QUE NÃO ESTÃO EM ESTUDO NENHUM — a seção "Fora de estudo" do
    * 966:31095, e a que fecha o gesto: sem ela não há de onde puxar. Um estudo
@@ -195,7 +238,23 @@ export function Estudos({ estudos = [], notas = [], erro, aoCriar, aoMudar, aoAp
   const reunidas = new Set(estudos.flatMap((e) => (e.notas ?? []).map((n) => n.id)));
   const soltas = notas.filter((n) => !reunidas.has(n.id));
 
-  const visiveis = estudos.filter(RECORTES.find((r) => r.id === recorte)?.cabe ?? (() => true));
+  /* AS ANOTAÇÕES ESCRITAS E NÃO LEVADAS — o cartão cinza do desenho, "4
+     anotações escritas e ainda não levadas". É um subconjunto do "Fora de
+     estudo": as que têm COMENTÁRIO, ou seja, aquelas em que a pessoa parou para
+     escrever alguma coisa e mesmo assim não as levou para lugar nenhum. Marcar
+     um trecho é barato; escrever sobre ele não é. */
+  const escritasESoltas = soltas.filter((n) => n.comentario);
+
+  const alvo = achatar(procura.trim());
+  const visiveis = estudos
+    .filter(RECORTES.find((r) => r.id === recorte)?.cabe ?? (() => true))
+    .filter((e) =>
+      !alvo ||
+      achatar(
+        [e.nome, e.sobre, ...(e.notas ?? []).map((n) => `${n.trecho ?? ""} ${n.comentario ?? ""}`),
+         ...(e.livros ?? []).map((l) => l.titulo)].join(" "),
+      ).includes(alvo),
+    );
 
   return (
     <div className="mesa">
@@ -205,9 +264,13 @@ export function Estudos({ estudos = [], notas = [], erro, aoCriar, aoMudar, aoAp
         <header className="estudos-topo">
           <div>
             <h1>Estudos</h1>
+            {/* A FRASE É A DO DESENHO (900:56142). A que estava aqui explicava a
+                mecânica — "cada um tem uma pergunta no centro" —, e a do desenho
+                diz por que a área existe: uma nota pode ficar de fora, e isso
+                não é um defeito da arrumação. */}
             <p className="estudos-sobre">
-              Os recortes que você monta a partir do que leu. Cada um tem uma
-              pergunta no centro, e as notas que você juntou em volta dela.
+              Livros e notas reunidos em volta de uma mesma coisa. Uma nota pode
+              ficar de fora — nem toda ideia entra numa gaveta.
             </p>
           </div>
           <Botao tom="primaria" onClick={() => { setNome(""); setSobre(""); setCriando(true); }}>
@@ -216,6 +279,37 @@ export function Estudos({ estudos = [], notas = [], erro, aoCriar, aoMudar, aoAp
         </header>
 
         {erro && <p className="estudos-erro" role="alert">{erro}</p>}
+
+        {estudos.length > 0 && (
+          <Campo
+            tipo="search"
+            rotulo="Buscar nos estudos"
+            rotuloOculto
+            placeholder="Buscar em livros, notas e contextos"
+            value={procura}
+            onChange={(e) => setProcura(e.target.value)}
+          />
+        )}
+
+        {/* O QUE FICOU PELA METADE — o cartão cinza do desenho. Ele não é um
+            aviso: é o lembrete de que escrever e arquivar são gestos
+            diferentes, e que o segundo é sempre da pessoa. */}
+        {escritasESoltas.length > 0 && (
+          <aside className="estudos-metade">
+            <p className="estudos-metade-marca">
+              O que ficou pela metade <span className="dado">{escritasESoltas.length}</span>
+            </p>
+            <h2>
+              {escritasESoltas.length === 1
+                ? "1 anotação escrita e ainda não levada"
+                : `${escritasESoltas.length} anotações escritas e ainda não levadas`}
+            </h2>
+            <p>
+              Elas estão no livro. Levar é um gesto seu, e é o que faz esta área
+              valer.
+            </p>
+          </aside>
+        )}
 
         {/* A contagem ao lado de cada recorte vem da MESMA lista que ele filtra:
             um recorte vazio se anuncia antes de ser clicado, em vez de levar a
@@ -252,7 +346,69 @@ export function Estudos({ estudos = [], notas = [], erro, aoCriar, aoMudar, aoAp
           </p>
         )}
 
-        <div className="estudos-lista">
+        {/* O ALTERNADOR LISTA / LEITURA — nós 900:56142 e 895:8849. Mesma forma
+            dos outros alternadores do sistema: uma caixa, dois botões, o ativo
+            em tinta cheia. */}
+        {livros.length > 0 && (
+          <nav className="estudos-vistas" aria-label="Como ver os estudos">
+            {[["lista", "Lista"], ["leitura", "Leitura"]].map(([id, rotulo]) => (
+              <button
+                key={id}
+                type="button"
+                aria-pressed={id === vista ? "true" : "false"}
+                onClick={() => setVista(id)}
+              >
+                {rotulo}
+              </button>
+            ))}
+          </nav>
+        )}
+
+        {vista === "leitura" && (
+          <div className="estudos-quadro">
+            {COLUNAS.map(({ id, rotulo, cabe }) => {
+              const dela = livros.filter(cabe);
+              return (
+                <section key={id} className="estudos-coluna">
+                  <h2>
+                    {rotulo} <span className="dado">{dela.length}</span>
+                  </h2>
+                  {!dela.length && <p className="estudos-vazio">Nenhum aqui.</p>}
+                  <ul>
+                    {dela.map((l) => (
+                      <li key={l.chave}>
+                        <Link to={`/estante/${l.chave}`}>
+                          {l.capa
+                            ? <img src={l.capa} alt="" aria-hidden="true" loading="lazy" />
+                            : <span className="estudos-livro-vazio">{l.titulo}</span>}
+                          <span className="estudos-livro-texto">
+                            <span className="estudos-livro-nome">{l.titulo}</span>
+                            {l.autor && <span className="estudos-livro-autor">{l.autor}</span>}
+                            {/* A porcentagem e a barra só existem em quem está
+                                sendo lido: no "A ler" elas seriam zero em toda
+                                linha, e zero repetido não informa. */}
+                            {id === "lendo" && (
+                              <>
+                                <span className="estudos-livro-onde">
+                                  <span className="dado">{Math.round(l.fracao * 100)}%</span> lido
+                                </span>
+                                <span className="estudos-livro-barra">
+                                  <span style={{ inlineSize: `${Math.round(l.fracao * 100)}%` }} />
+                                </span>
+                              </>
+                            )}
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="estudos-lista" hidden={vista !== "lista"}>
           {visiveis.map((e) => (
             <Estudo
               key={e.id}
@@ -262,6 +418,7 @@ export function Estudos({ estudos = [], notas = [], erro, aoCriar, aoMudar, aoAp
               aoApagar={aoApagar}
               aoReunir={aoReunir}
               aoTirar={aoTirar}
+              resumido
             />
           ))}
         </div>

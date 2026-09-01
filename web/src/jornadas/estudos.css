@@ -258,3 +258,85 @@
 }
 /* A caixa vazia já mostra o nome; repeti-lo embaixo diria duas vezes. */
 .estudo-livro-vazio + .estudo-livro-nome { display: none; }
+
+/* ─── O que os nos 900:56142 e 895:8849 trazem e a tela nao tinha ───────────*/
+
+/* O cartao "O que ficou pela metade". Nao e aviso: e o lembrete de que escrever
+ * e arquivar sao gestos diferentes, e o segundo e sempre da pessoa. */
+.estudos-metade {
+  padding: 32px;
+  background: var(--background-secondary);
+}
+.estudos-metade-marca {
+  margin: 0 0 12px;
+  font-size: 14px; line-height: 20px;
+  color: var(--muted-foreground);
+}
+.estudos-metade h2 {
+  margin: 0 0 8px;
+  font-size: 28px; line-height: 36px; font-weight: 540;   /* Heading/SM */
+  color: var(--foreground);
+  text-wrap: pretty;
+}
+.estudos-metade p {
+  margin: 0;
+  font-size: 16px; line-height: 24px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+/* O alternador Lista / Leitura. Mesma forma dos outros do sistema: uma caixa,
+ * dois botoes, o ativo em tinta cheia. */
+.estudos-vistas {
+  display: flex; align-self: flex-start; inline-size: fit-content;
+  padding: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+.estudos-vistas button {
+  padding: 14px 24px; border: 0;
+  background: transparent; color: var(--muted-foreground);
+  font: inherit; font-size: 16px; line-height: 24px; cursor: pointer;
+}
+.estudos-vistas button[aria-pressed="true"] {
+  background: var(--foreground); color: var(--background);
+}
+.estudos-vistas button:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+
+/* As tres colunas por estado de leitura. */
+.estudos-quadro { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+.estudos-coluna h2 {
+  margin: 0 0 24px; padding-block-end: 12px;
+  border-block-end: 1px solid var(--border);
+  font-size: 20px; line-height: 30px; font-weight: 540;
+  color: var(--foreground);
+}
+.estudos-coluna ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 16px; }
+.estudos-coluna a {
+  display: flex; gap: 16px; align-items: flex-start;
+  padding: 16px;
+  border: 1px solid var(--border); background: var(--background);
+  color: inherit; text-decoration: none;
+}
+.estudos-coluna a:hover { background: var(--background-secondary); }
+.estudos-coluna img,
+.estudos-livro-vazio {
+  flex: 0 0 auto; inline-size: 56px; aspect-ratio: 420 / 594;
+  object-fit: cover;
+  border: 1px solid var(--border); background: var(--card);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; line-height: 14px; color: var(--muted-foreground);
+  text-align: center; overflow: hidden; padding: 4px;
+}
+.estudos-livro-texto { display: flex; flex-direction: column; gap: 4px; min-inline-size: 0; }
+.estudos-livro-nome { font-size: 16px; line-height: 24px; color: var(--foreground); }
+.estudos-livro-autor,
+.estudos-livro-onde { font-size: 14px; line-height: 20px; color: var(--muted-foreground); }
+.estudos-livro-barra { display: block; block-size: 6px; background: var(--background-tertiary); margin-block-start: 4px; }
+.estudos-livro-barra > span { display: block; block-size: 100%; background: var(--foreground); }
+
+@media (max-width: 1023px) {
+  .estudos-quadro { grid-template-columns: 1fr; gap: 40px; }
+  .estudos-metade { padding: 24px; }
+  .estudos-metade h2 { font-size: 22px; line-height: 32px; }
+}

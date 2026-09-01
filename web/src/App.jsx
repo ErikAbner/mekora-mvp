@@ -469,6 +469,9 @@ function PaginaCanvas() {
 function PaginaEstudos() {
   const { estudos, erro, criar, mudar, apagar, reunir, tirar } = usarEstudos();
   const [notas, setNotas] = useState([]);
+  /* A VISTA "LEITURA" DOS ESTUDOS precisa dos livros: ela é um quadro dos
+     livros por estado de leitura, e nada disso sai dos estudos. */
+  const { livros, carregarEstante } = useJornada();
 
   useEffect(() => {
     let vivo = true;
@@ -476,10 +479,13 @@ function PaginaEstudos() {
     return () => { vivo = false; };
   }, [estudos.length]);
 
+  useEffect(() => { carregarEstante().catch(() => {}); }, [carregarEstante]);
+
   return (
     <Estudos
       estudos={estudos}
       notas={notas}
+      livros={livros}
       erro={erro}
       aoCriar={criar}
       aoMudar={mudar}

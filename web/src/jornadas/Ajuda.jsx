@@ -19,6 +19,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Campo } from "../componentes/Campo.jsx";
+import { achatar } from "../../../contrato/texto.js";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Rodape } from "../componentes/Rodape.jsx";
 import "./ajuda.css";
@@ -94,11 +95,6 @@ const CATEGORIAS = [
     ],
   },
 ];
-
-/* Sem acento e sem caixa, para "página" achar "Paginas" e "OCR" achar "ocr". */
-function achatar(t) {
-  return t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-}
 
 export function Ajuda() {
   /* A BUSCA DA AJUDA — o campo do nó 895:11193, logo abaixo do título.
