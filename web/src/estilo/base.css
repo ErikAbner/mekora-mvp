@@ -163,3 +163,34 @@ button, input, textarea, select { border-radius: 0; font: inherit; color: inheri
 :root[data-tema="escuro"] .ilustracao-limpa {
   filter: invert(1) hue-rotate(180deg);
 }
+
+/* ---- OS DESENHOS NO TEMA ESCURO -------------------------------------------
+ *
+ * As ilustracoes sao SVG com tinta `#262B09` — um verde quase preto. No tema
+ * claro elas se leem; no escuro somem contra o fundo, e e o "tom completamente
+ * apagado" que o Erik apontou.
+ *
+ * `invert(1) hue-rotate(180deg)` clareia SEM trocar o matiz: o invert sozinho
+ * mandaria o verde para o roxo complementar, e a rotacao de meia volta o traz de
+ * volta. O desenho fica claro e continua sendo o mesmo desenho.
+ *
+ * NAO SE APLICA A CAPA NEM A IMAGEM DE LIVRO. Elas sao conteudo — a capa de um
+ * livro no escuro continua sendo a capa daquele livro, e inverte-la seria
+ * mostrar outra coisa. So o que e ILUSTRACAO DO PRODUTO clareia.
+ *
+ * Os tres estados, como em todo lugar: escolha explicita, sistema escuro sem
+ * escolha, e a excecao de quem escolheu claro dentro de um sistema escuro.
+ */
+:root[data-tema="escuro"] .ilustracao-soltar,
+:root[data-tema="escuro"] .ilustracao-limpa,
+:root[data-tema="escuro"] .desenho {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) .ilustracao-soltar,
+  :root:not([data-tema="claro"]) .ilustracao-limpa,
+  :root:not([data-tema="claro"]) .desenho {
+    filter: invert(1) hue-rotate(180deg);
+  }
+}
