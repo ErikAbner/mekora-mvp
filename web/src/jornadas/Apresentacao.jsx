@@ -22,9 +22,34 @@ const marca = "/icones/marca-mekora.svg";
  * exatamente de capa montada pelo Mekora — mostrar capa de verdade é o que a
  * seção afirma. */
 const CAPAS = [
-  { arquivo: "/capas/exemplo-1.png", titulo: "Primeira capa da estante" },
-  { arquivo: "/capas/exemplo-2.png", titulo: "Segunda capa da estante" },
-  { arquivo: "/capas/exemplo-3.png", titulo: "Terceira capa da estante" },
+  { arquivo: "/capas/exemplo-1.png", titulo: "Malha Urbana", autor: "Ana Duarte" },
+  { arquivo: "/capas/exemplo-2.png", titulo: "Apresentação Institucional", autor: "Ana Duarte" },
+  { arquivo: "/capas/exemplo-3.png", titulo: "Sequência Noturna", autor: "Ana Duarte" },
+];
+
+/* A VITRINE DA ESTANTE — a seção que eu tinha omitido.
+ *
+ * Omiti porque o desenho traz um retângulo de 1540×858 e o MCP do Figma recusava
+ * exportar o asset. Ao VER a tela, o retângulo não era imagem: era a própria
+ * Estante do Mekora, com o cabeçalho, os recortes, a grade de capas e a ficha ao
+ * lado.
+ *
+ * Então ela é construída, e não fotografada. Uma captura envelheceria na
+ * primeira mudança da Estante, e a landing passaria a mostrar um produto que não
+ * existe mais — que é exatamente o que uma página de apresentação não pode
+ * fazer.
+ *
+ * É VITRINE, E NÃO A ESTANTE: nada aqui clica, e o `inert` garante isso para
+ * teclado e leitor de tela também. Uma cópia interativa da Estante numa landing
+ * seria uma segunda Estante para manter.
+ */
+const VITRINE_RECORTES = ["Tudo", "Com nota", "No Kindle", "Quadrinhos"];
+
+const VITRINE_LIVROS = [
+  { capa: "/capas/exemplo-1.png", titulo: "Malha Urbana", autor: "Ana Duarte", notas: 24 },
+  { capa: "/capas/exemplo-2.png", titulo: "Apresentação Institucional", autor: "Ana Duarte", notas: 8 },
+  { capa: "/capas/exemplo-3.png", titulo: "Sequência Noturna", autor: "Ana Duarte", notas: 12 },
+  { capa: "/capas/exemplo-4.png", titulo: "Estudo de Viabilidade", autor: "Ana Duarte", notas: 5 },
 ];
 
 const PASSOS = [
@@ -119,10 +144,15 @@ export function Apresentacao({ aoReceberArquivos, backend }) {
         <ul className="capas-fila">
           {CAPAS.map((c) => (
             <li key={c.arquivo}>
-              {/* A lombada ao lado da capa, como na estante. É ornamento, então
-                  sai da árvore de acessibilidade. */}
-              <span className="capa-lombada" aria-hidden="true" />
-              <img src={c.arquivo} alt={c.titulo} />
+              {/* A LOMBADA TRAZ O TÍTULO NA VERTICAL, como no desenho — e não é
+                  ornamento, ao contrário do que eu tinha feito: um retângulo
+                  cinza vazio não diz que aquilo é um livro de pé, diz que falta
+                  alguma coisa ali.
+
+                  `aria-hidden` porque o mesmo título já está no `alt` da capa ao
+                  lado, e sem isso o leitor de tela anuncia duas vezes. */}
+              <span className="capa-lombada" aria-hidden="true">{c.titulo}</span>
+              <img src={c.arquivo} alt={`Capa de ${c.titulo}, de ${c.autor}`} />
             </li>
           ))}
         </ul>
@@ -196,6 +226,67 @@ export function Apresentacao({ aoReceberArquivos, backend }) {
             não.
           </p>
         </div>
+      </section>
+
+      {/* A ESTANTE, mostrada. O desenho põe esta seção depois de "o livro não
+          termina", e ela é o que aquela seção descreve — o item com capa, ficha
+          e origem. */}
+      <section className="apresentacao-vitrine">
+        {/* `inert` tira o bloco inteiro do foco e da árvore de acessibilidade:
+            é uma ilustração da Estante, e um leitor de tela que a percorresse
+            anunciaria uma navegação falsa. */}
+        <div className="vitrine" inert="">
+          <div className="vitrine-topo">
+            <span className="vitrine-lugares">
+              {["Mesa", "Estante", "Canvas", "Estudos"].map((l) => (
+                <span key={l} className={l === "Estante" ? "aqui" : undefined}>{l}</span>
+              ))}
+            </span>
+            <span className="vitrine-busca">Buscar em Mekora</span>
+          </div>
+
+          <div className="vitrine-corpo">
+            <div className="vitrine-esquerda">
+              <span className="vitrine-recortes">
+                {VITRINE_RECORTES.map((r) => (
+                  <span key={r} className={r === "Tudo" ? "aqui" : undefined}>{r}</span>
+                ))}
+              </span>
+              <ul className="vitrine-grade">
+                {VITRINE_LIVROS.map((l) => (
+                  <li key={l.titulo}>
+                    <span className="vitrine-capa">
+                      <img src={l.capa} alt="" />
+                      <span className="vitrine-selo">{l.notas}</span>
+                    </span>
+                    <span className="vitrine-titulo">{l.titulo}</span>
+                    <span className="vitrine-autor">{l.autor}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="vitrine-ficha">
+              <p className="vitrine-ficha-titulo">Malha Urbana</p>
+              <p className="vitrine-ficha-linha">Ana Duarte · EPUB</p>
+              {/* O DESENHO DIZ "80% lido" COM BARRA, e o produto não sabe a
+                  porcentagem: ele guarda capítulo e deslocamento, não páginas
+                  lidas. A vitrine mostra o que a ficha real mostra — senão a
+                  landing promete um número que a Estante não tem. */}
+              <p className="vitrine-ficha-linha">capítulo 2 de 3</p>
+              <p className="vitrine-ficha-notas">24 notas</p>
+              <p className="vitrine-ficha-citacao">
+                “…a última nota destacada aparece aqui como amostra do pensamento…”
+              </p>
+              <span className="vitrine-acao">Continuar</span>
+              <span className="vitrine-acao secundaria">Notas</span>
+            </div>
+          </div>
+        </div>
+        <p className="capas-legenda">
+          A estante é a conta: o que você preparou fica aqui, com capa, ficha e o
+          que você marcou lendo — no trecho onde marcou.
+        </p>
       </section>
 
       <section className="apresentacao-chamada">

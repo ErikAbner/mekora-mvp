@@ -124,9 +124,26 @@
 /* A lombada. E o mesmo par do desenho: uma faixa estreita ao lado da capa, que
  * faz a imagem se ler como livro de pe e nao como cartaz. Em proporcao, e nao
  * em pixel: 72 de 614 e o que o desenho pede, e assim ela encolhe junto. */
+/* A lombada carrega o titulo de pe, como no desenho. `writing-mode` com
+ * `rotate(180deg)` poe o texto lendo de baixo para cima, que e como titulo de
+ * lombada e impresso — e como o olho procura numa estante real. */
 .capa-lombada {
   flex: 0 0 11.7%;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px 0;
   background: var(--background-tertiary);
+  color: var(--foreground);
+  font-size: 14px; line-height: 22px;   /* Label/Small */
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  /* O titulo que nao cabe na altura da capa e cortado com reticencia, e nao
+   * empurra a lombada: a largura dela e proporcao da capa, e crescer quebraria
+   * a fila. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .capas-fila img {
   flex: 1 1 0; min-width: 0; width: 100%;
@@ -300,4 +317,122 @@
   .depois-lista li { padding: 24px 8px; }
   .depois-lista h3 { font-size: 24px; line-height: 32px; }
   .chamada-botoes { flex-direction: column; gap: 16px; }
+}
+
+/* ---- a vitrine da Estante -------------------------------------------------
+ *
+ * A secao que eu tinha omitido por falta de asset. Ao ver o desenho, o retangulo
+ * de 1540x858 nao era imagem: era a propria Estante. Entao ela e CONSTRUIDA, e
+ * nao fotografada — uma captura envelheceria na primeira mudanca da Estante, e a
+ * landing passaria a mostrar um produto que nao existe mais.
+ *
+ * Os tamanhos aqui sao menores que os da Estante de verdade de proposito: e uma
+ * miniatura vista de longe, e reproduzir o corpo real faria a secao ocupar tres
+ * telas.
+ */
+.apresentacao-vitrine {
+  display: flex; flex-direction: column; align-items: center; gap: 48px;
+  padding: 64px 32px 128px;
+}
+
+.vitrine {
+  inline-size: 100%; max-inline-size: 1540px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  overflow: hidden;
+}
+
+.vitrine-topo {
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--separator);
+}
+.vitrine-lugares, .vitrine-recortes { display: flex; gap: 4px; }
+.vitrine-lugares span, .vitrine-recortes span {
+  padding: 8px 14px;
+  color: var(--muted-foreground);
+  font-size: 14px; line-height: 22px;   /* Label/Small */
+}
+/* Ativo em degrau de superficie, como em toda parte do sistema. */
+.vitrine-lugares span.aqui, .vitrine-recortes span.aqui {
+  background: var(--foreground); color: var(--primary-foreground);
+}
+.vitrine-busca {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-size: 14px; line-height: 22px;
+}
+
+.vitrine-corpo { display: flex; gap: 32px; align-items: flex-start; padding: 24px; }
+.vitrine-esquerda { display: flex; flex-direction: column; gap: 24px; flex: 1 1 0; min-inline-size: 0; }
+
+.vitrine-grade {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px 16px;
+  margin: 0; padding: 0; list-style: none;
+}
+.vitrine-grade li { display: flex; flex-direction: column; gap: 6px; min-inline-size: 0; }
+.vitrine-capa { position: relative; display: block; }
+.vitrine-capa img {
+  inline-size: 100%; aspect-ratio: 420 / 594; object-fit: cover;
+  background: var(--card);
+}
+/* O selo com a contagem de notas, no canto — e o mesmo que a Estante usa. */
+.vitrine-selo {
+  position: absolute; inset-block-start: 0; inset-inline-end: 0;
+  padding: 4px 8px;
+  background: var(--foreground); color: var(--primary-foreground);
+  font-size: 14px; line-height: 22px;
+}
+.vitrine-titulo {
+  color: var(--foreground);
+  font-size: 16px; line-height: 24px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.vitrine-autor { color: var(--muted-foreground); font-size: 14px; line-height: 22px; }
+
+.vitrine-ficha {
+  display: flex; flex-direction: column; gap: 12px; align-items: flex-start;
+  flex: 0 0 300px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+.vitrine-ficha p { margin: 0; }
+.vitrine-ficha-titulo { color: var(--foreground); font-size: 24px; line-height: 32px; font-weight: 540; }
+.vitrine-ficha-linha, .vitrine-ficha-notas {
+  color: var(--muted-foreground); font-size: 14px; line-height: 22px;
+}
+.vitrine-ficha-citacao {
+  padding-inline-start: 16px;
+  border-inline-start: 1px solid var(--foreground);
+  color: var(--muted-foreground);
+  font-size: 14px; line-height: 22px;
+  text-wrap: pretty;
+}
+.vitrine-acao {
+  inline-size: 100%;
+  padding: 12px 16px;
+  background: var(--foreground); color: var(--primary-foreground);
+  font-size: 14px; line-height: 22px;
+  text-align: center;
+}
+.vitrine-acao.secundaria {
+  background: var(--background); color: var(--foreground);
+  border: 1px solid var(--border);
+}
+
+@media (max-width: 1023px) {
+  /* A ficha desce: 300px fixos ao lado de uma grade estreita esmagam as capas. */
+  .vitrine-corpo { flex-direction: column; }
+  .vitrine-ficha { flex: 1 1 auto; inline-size: 100%; }
+  .vitrine-grade { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 767px) {
+  .apresentacao-vitrine { gap: 32px; padding: 40px 24px 80px; }
+  .vitrine-topo { flex-direction: column; align-items: stretch; gap: 12px; }
+  .vitrine-lugares, .vitrine-recortes { flex-wrap: wrap; }
+  .vitrine-corpo { padding: 16px; gap: 24px; }
+  .vitrine-grade { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

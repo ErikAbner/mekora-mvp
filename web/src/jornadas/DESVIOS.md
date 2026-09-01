@@ -263,16 +263,36 @@ lista o que existe. Um link morto é pior que um link a menos.
 de `publico/capas/`. A legenda ao lado fala exatamente de capa montada pelo
 Mekora — mostrar capa de verdade é o que a seção afirma.
 
-**A do mockup grande (`895:7279`) ficou de fora.** É um retângulo de 1540×858 sem
-conteúdo no desenho, e o MCP do Figma recusa exportar asset enquanto o diretório
-de escrita não estiver liberado em *Dev Mode > MCP > Allowed directories*:
+**A do mockup grande (`895:7279`) ficou de fora — e depois entrou.**
 
-> Cannot write to this directory. The user must add this directory to their
-> allowed directories list in Figma Dev Mode settings.
+Omiti porque o MCP recusava exportar o asset, e um retângulo cinza seria o
+placeholder que esta rodada existe para eliminar. **O erro foi anterior a isso:
+eu tinha lido a estrutura da tela nó por nó e nunca a VI.** Quando o Erik
+perguntou se eu estava enxergando a tela e eu peguei a captura, o retângulo de
+1540×858 não era imagem — era **a própria Estante do Mekora**, com cabeçalho,
+recortes, grade de capas e ficha ao lado.
 
-Um retângulo cinza no lugar seria o placeholder que esta rodada existe para
-eliminar. A legenda dela era a terceira cópia da legenda das capas, então nada de
-texto se perdeu.
+Então ela é **construída, e não fotografada**. Uma captura envelheceria na
+primeira mudança da Estante, e a landing passaria a mostrar um produto que não
+existe mais — que é exatamente o que uma página de apresentação não pode fazer.
+
+É vitrine, e não a Estante: nada clica, e `inert` garante isso para teclado e
+leitor de tela. Uma cópia interativa da Estante numa landing seria uma segunda
+Estante para manter.
+
+**Duas coisas do desenho não entraram, e as duas são capacidades que a Estante
+ainda não tem:** o alternador *"Capas / Estante em 3D"*, e o *"80% lido"* com
+barra. O produto guarda capítulo e deslocamento, não páginas lidas — a vitrine
+mostra `capítulo 2 de 3`, que é o que a ficha real mostra. Uma landing que promete
+um número que a Estante não tem mente duas vezes.
+
+## A lombada estava vazia
+
+No desenho ela carrega o **título na vertical**, lendo de baixo para cima, como
+título de lombada é impresso. A minha era um retângulo cinza: não diz que aquilo
+é um livro de pé, diz que falta alguma coisa ali.
+
+Outra que só apareceu ao ver a tela, e não ao ler a estrutura.
 
 ## Os chips mostram a lista do servidor, e não os seis do desenho
 
