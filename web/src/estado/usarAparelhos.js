@@ -49,8 +49,13 @@ export function usarAparelhos() {
        * itens — o novo ganha, o antigo perde —, e remendar só o clicado deixaria
        * dois principais na tela até a próxima visita. */
       await recarregar();
+      return true;
     } catch (e) {
       setErro(e.message);
+      /* Devolve `false` para quem chamou saber que NÃO deu. A folha de editar
+       * fecharia sozinha em cima de um erro, e a pessoa veria o valor antigo de
+       * volta sem entender por quê. */
+      return false;
     }
   }, [recarregar]);
 

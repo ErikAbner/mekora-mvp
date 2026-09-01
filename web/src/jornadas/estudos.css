@@ -199,3 +199,14 @@
   .estudos-recortes { align-self: stretch; }
   .estudos-recortes button { flex: 1 1 auto; padding: 12px 16px; }
 }
+
+/* A capa ao lado do trecho — nó 966:31095. */
+.estudo-nota-corpo { display: flex; align-items: flex-start; gap: 16px; }
+.estudo-nota-corpo blockquote { flex: 1 1 auto; min-width: 0; }
+.estudo-nota-capa {
+  flex: 0 0 auto;
+  inline-size: 47px; block-size: 60px;
+  object-fit: cover;
+  display: block;
+  border: 1px solid var(--border);
+}

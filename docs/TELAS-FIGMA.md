@@ -82,8 +82,10 @@ desenho: o Figma mostra seis, o backend aceita oito.
 
 1. ~~**Recortes**~~ — construídos: Abertos / Respondidos / Tudo, com a contagem
    de cada um, e o recorte vazio não é clicável.
-2. **A capa do livro** ao lado de cada nota reunida continua faltando; hoje há o
-   bloco de cor e o nome do livro em texto.
+2. ~~**A capa do livro** ao lado de cada nota reunida.~~ Construída. Numa lista
+   de trinta trechos de quatro livros, a capa é o que separa um do outro de
+   relance; o nome em texto cinza obriga a ler. Um pedido só para todos os
+   livros do estudo, e não um por nota.
 3. ~~**"Fora de estudo — N"**~~ — construída. É a que fecha o gesto: um estudo
    se monta a partir do que sobrou solto, e a tela mostrava o que já foi reunido
    e escondia o material. Vinte por vez, e o teto é DITO.
@@ -93,8 +95,12 @@ produto não tem nenhum dos três: a conta é um e-mail e mais nada, sem senha, 
 DEC-0039. O desenho é anterior a essa decisão. **Decisão do Erik:** o desenho
 muda, ou a decisão muda.
 
-**Dispositivos Kindle (`966:25554`)** — cada cartão tem **"Editar"**, e o produto
-só tem "Desligar". A rota existe (`PATCH /aparelhos/{id}`); falta a folha.
+~~**Dispositivos Kindle (`966:25554`)** — cada cartão tem **"Editar"**.~~
+Construído. E a rota NÃO servia: ela aceitava nome, principal e autorizado, e
+não o endereço — dava para renomear e eleger o principal, e não dava para
+corrigir um endereço digitado errado. A única saída era apagar o aparelho e
+ligar de novo, perdendo nome e histórico. O endereço passa pela mesma validação
+de forma do cadastro, e dois aparelhos com o mesmo endereço são recusados.
 
 **Livro (`966:29052`)** — o desenho tem um **menu ⋮** ao lado do título e chips
 de formato/estado; e cada nota tem **"Editar"** e **"Copiar para estudo"**.
@@ -152,3 +158,25 @@ instruções acima.
 | `895:10286` | D · Mesa — vazia |
 | `895:10715` | D · Conta — preferências |
 | `895:8164` | D · Preparo — pronto |
+
+
+## A conta: o que é decisão sua e o que era regra minha
+
+O nó `966:25321` tem **retrato**, **Nome** e **Senha**. Eu disse que os três
+contrariavam uma decisão sua, e estava certo sobre um só.
+
+**A senha é decisão sua.** A `DEC-0039`, de 30/08, aceita por você: *"Entrar é
+por link no e-mail. Sem senha, sem provedor externo."* Ela fecha a `AUTH-001` e
+diz por quê — o backend já manda e-mail, e sem senha não há hash, força mínima,
+troca nem vazamento. A consequência 1 é literal: *"a tela de entrar é uma caixa
+de e-mail e um botão"*.
+
+**O nome e o retrato não foram decididos por ninguém.** A `DEC-0039` não os
+menciona. Quem escreveu a regra fui eu, num comentário do `App.jsx` — *"a
+DEC-0039 §1 não pede nome, e pedir um dado que o produto não usa é coletar por
+hábito"* — e daí ela virou a frase da tela de Privacidade: *"não há nome,
+telefone nem foto"*. É um argumento razoável, e não é uma decisão sua.
+
+**Fica em aberto, então:** guardar nome e retrato na conta? Custa uma coluna e um
+campo, e a tela de Privacidade passa a declará-los. A senha continua fora, por
+DEC-0039.

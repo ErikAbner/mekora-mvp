@@ -54,6 +54,40 @@ export function ContaKindle({ pessoa, aoSair }) {
 
   const tornarPrincipal = (id) => mudar(id, { principal: true });
 
+  /* EDITAR UM APARELHO — o botão que o 966:25554 tem em cada cartão e a tela
+   * não tinha. A rota já existia (`PATCH /aparelhos/{id}`) e ninguém a usava
+   * para nome nem endereço: dava para tornar principal e desligar, e não dava
+   * para corrigir um endereço digitado errado — só apagar e refazer.
+   *
+   * O `editando` guarda o APARELHO INTEIRO, e não o id: a folha precisa dos
+   * valores para preencher os campos, e buscá-los pela lista a cada render faria
+   * a folha piscar quando a lista recarregasse. */
+  const [editando, setEditando] = useState(null);
+  const [nomeNovo, setNomeNovo] = useState("");
+  const [enderecoNovo, setEnderecoNovo] = useState("");
+  const [erroEditar, setErroEditar] = useState(null);
+
+  const abrirEdicao = (ap) => {
+    setEditando(ap);
+    setNomeNovo(ap.nome ?? "");
+    setEnderecoNovo(ap.endereco ?? "");
+    setErroEditar(null);
+  };
+
+  const guardarEdicao = async () => {
+    const endereco = enderecoNovo.trim();
+    if (!endereco.includes("@")) {
+      setErroEditar("Um endereço de Kindle tem @ — é um e-mail.");
+      return;
+    }
+    const deu = await mudar(editando.id, { nome: nomeNovo.trim(), endereco });
+    /* A MENSAGEM DO SERVIDOR, e não uma minha. Ele sabe dizer "já tem um
+     * aparelho com esse endereço" e "precisa terminar em @kindle.com"; trocar
+     * isso por "não deu para guardar" apagaria a única informação útil. */
+    if (deu === false) { setErroEditar(erroDoServidor ?? "Não deu para guardar agora."); return; }
+    setEditando(null);
+  };
+
   return (
     <div className="mesa">
       <Cabecalho />
@@ -92,6 +126,9 @@ export function ContaKindle({ pessoa, aoSair }) {
                     {ap.ultimoEnvio && <p className="aparelho-envio">Último envio {ap.ultimoEnvio}</p>}
                   </div>
                   <div className="aparelho-acoes">
+                    <Botao tom="secundaria" onClick={() => abrirEdicao(ap)}>
+                      Editar
+                    </Botao>
                     {!ap.principal && (
                       <Botao tom="secundaria" onClick={() => tornarPrincipal(ap.id)}>
                         Tornar principal
@@ -182,6 +219,34 @@ export function ContaKindle({ pessoa, aoSair }) {
           value={endereco}
           onChange={(e) => { setEndereco(e.target.value); setErro(null); }}
           erro={erro}
+        />
+      </Folha>
+
+      <Folha
+        aberta={!!editando}
+        titulo="Editar o aparelho"
+        aoFechar={() => setEditando(null)}
+        acoes={<Botao tom="primaria" onClick={guardarEdicao}>Guardar</Botao>}
+      >
+        <p>
+          O nome é só para você reconhecer o aparelho na lista. O endereço é para
+          onde o Mekora manda — trocá-lo passa a valer no próximo envio.
+        </p>
+        <Campo
+          rotulo="Nome"
+          ajuda="Como você chama este Kindle."
+          placeholder="Kindle da sala"
+          value={nomeNovo}
+          onChange={(e) => { setNomeNovo(e.target.value); setErroEditar(null); }}
+        />
+        <Campo
+          rotulo="Endereço do aparelho"
+          ajuda="Aparece no próprio Kindle, em Configurações › Sua conta."
+          tipo="email"
+          placeholder="nome@kindle.com"
+          value={enderecoNovo}
+          onChange={(e) => { setEnderecoNovo(e.target.value); setErroEditar(null); }}
+          erro={erroEditar}
         />
       </Folha>
 

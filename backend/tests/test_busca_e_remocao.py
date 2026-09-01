@@ -229,3 +229,43 @@ def test_grupo_de_outra_pessoa_responde_404(client_cru, db, correio):
     entrar(client_cru, db, correio, "erik@exemplo.com")
     assert client_cru.patch(f"/canvas/grupos/{g['id']}", json={"nome": "meu agora"}).status_code == 404
     assert client_cru.delete(f"/canvas/grupos/{g['id']}").status_code == 404
+
+
+# ── editar um aparelho — nó 966:25554 ───────────────────────────────────────
+
+def test_editar_o_endereco_do_aparelho(client_cru, db, correio):
+    """A rota aceitava nome, principal e autorizado — e NÃO o endereço.
+
+    Dava para renomear e para eleger o principal; não dava para corrigir um
+    endereço digitado errado. A única saída era apagar e ligar de novo, perdendo
+    o nome. O botão "Editar" do desenho pede as duas coisas.
+    """
+    entrar(client_cru, db, correio, "erik@exemplo.com")
+    novo = client_cru.post("/aparelhos", json={"endereco": "erik@kindle.com", "nome": "Sala"})
+    assert novo.status_code == 201
+    ap = novo.json()
+
+    r = client_cru.patch(f"/aparelhos/{ap['id']}", json={"endereco": "escritorio@kindle.com"})
+    assert r.status_code == 200
+    assert r.json()["endereco"] == "escritorio@kindle.com"
+
+
+def test_endereco_editado_passa_pela_mesma_forma(client_cru, db, correio):
+    """Um endereço que não termina em @kindle.com faz o envio sair, ninguém
+    receber, e não haver erro nenhum para investigar."""
+    entrar(client_cru, db, correio, "erik@exemplo.com")
+    ap = client_cru.post("/aparelhos", json={"endereco": "erik@kindle.com"}).json()
+
+    r = client_cru.patch(f"/aparelhos/{ap['id']}", json={"endereco": "erik@gmail.com"})
+    assert r.status_code == 422
+
+
+def test_editar_para_um_endereco_que_ja_existe_e_recusado(client_cru, db, correio):
+    """Dois cartões mandando para o mesmo lugar, e "tornar principal" num deles
+    sem mudar nada."""
+    entrar(client_cru, db, correio, "erik@exemplo.com")
+    a = client_cru.post("/aparelhos", json={"endereco": "um@kindle.com"}).json()
+    client_cru.post("/aparelhos", json={"endereco": "dois@kindle.com"})
+
+    r = client_cru.patch(f"/aparelhos/{a['id']}", json={"endereco": "dois@kindle.com"})
+    assert r.status_code == 409

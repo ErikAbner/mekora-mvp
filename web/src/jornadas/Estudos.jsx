@@ -52,7 +52,17 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, 
         <ul className="estudo-notas">
           {estudo.notas.map((n) => (
             <li key={n.id}>
-              <blockquote style={{ background: DESTAQUES[n.cor] }}>{n.trecho}</blockquote>
+              {/* A CAPA DO LIVRO ao lado do trecho — o nó 966:31095 a tem.
+                  Numa lista de trinta trechos de quatro livros, a capa é o que
+                  separa um do outro de relance; o nome em texto cinza obriga a
+                  ler. Nota escrita solta não tem livro, e aí não tem capa: a
+                  linha simplesmente não a mostra. */}
+              <div className="estudo-nota-corpo">
+                {n.capa && (
+                  <img className="estudo-nota-capa" src={n.capa} alt="" aria-hidden="true" loading="lazy" />
+                )}
+                <blockquote style={{ background: DESTAQUES[n.cor] }}>{n.trecho}</blockquote>
+              </div>
               {n.comentario && <p className="estudo-comentario">{n.comentario}</p>}
               <div className="estudo-nota-acoes">
                 <span className="estudo-origem">

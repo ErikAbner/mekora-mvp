@@ -46,6 +46,37 @@ def _meu(db: Session, pessoa: Pessoa, estudo_id: int) -> Estudo:
     return e
 
 
+def _capas(db: Session, notas) -> dict:
+    """O endereço da capa de cada livro de onde as notas vieram.
+
+    O nó `966:31095` põe a CAPA ao lado de cada nota reunida: numa lista de
+    trinta trechos de quatro livros, a capa é o que separa um do outro de
+    relance — o nome do livro em texto cinza obriga a ler.
+
+    Um pedido só para todos os `job_id` do estudo, e não um por nota: um estudo
+    com trinta notas de quatro livros faria trinta consultas para quatro
+    respostas.
+
+    O ENDEREÇO USA O TOKEN, e não o número — a mesma regra do `/history`: pelo
+    número a capa só abriria para quem provasse ser dono, e o `files.py` traduz
+    o token em id do lado de dentro.
+    """
+    from app.models.processing_job import ProcessingJob
+
+    ids = {n.job_id for n in notas if n.job_id}
+    if not ids:
+        return {}
+
+    fora = {}
+    for j in db.query(ProcessingJob).filter(ProcessingJob.id.in_(ids)).all():
+        pagina = j.selected_cover_page
+        if pagina is None and (j.page_count or 0) > 0:
+            pagina = 0
+        if pagina is not None and j.token_publico:
+            fora[j.id] = f"/storage/temp/{j.token_publico}/page_{pagina}.png"
+    return fora
+
+
 def _fora(db: Session, e: Estudo) -> dict:
     notas = (
         db.query(Nota)
@@ -54,6 +85,7 @@ def _fora(db: Session, e: Estudo) -> dict:
         .order_by(EstudoNota.reunida_em)
         .all()
     )
+    capas = _capas(db, notas)
     return {
         "id": e.id, "nome": e.nome, "sobre": e.sobre, "fechado": e.fechado,
         "criado_em": e.criado_em,
@@ -61,6 +93,7 @@ def _fora(db: Session, e: Estudo) -> dict:
             {
                 "id": n.id, "trecho": n.trecho, "comentario": n.comentario, "cor": n.cor,
                 "origem": n.origem, "fonte": n.fonte, "job_id": n.job_id,
+                "capa": capas.get(n.job_id),
             }
             for n in notas
         ],
