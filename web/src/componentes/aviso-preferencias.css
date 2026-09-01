@@ -1,0 +1,32 @@
+/* Aviso · preferência fora do padrão — nó 941:23109. */
+.aviso-pref {
+  display: flex; flex-direction: column; gap: 40px;
+  align-items: flex-start; justify-content: center;
+  padding: 32px 40px;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+
+.aviso-pref-texto { display: flex; flex-direction: column; gap: 24px; align-items: flex-start; }
+
+.aviso-pref-conta {
+  margin: 0;
+  color: var(--card-foreground);
+  font-size: 24px; line-height: 32px; font-weight: 540;   /* Heading/XS */
+}
+
+.aviso-pref-quais {
+  color: var(--muted-foreground);
+  font-size: 16px; line-height: 24px;                      /* Label/Medium */
+  text-decoration: underline;
+}
+.aviso-pref-quais:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+
+/* A ação recebida ocupa a largura do desenho e não a da caixa: 357 de 875. */
+.aviso-pref > .botao { inline-size: min(357px, 100%); justify-content: center; }
+
+@media (max-width: 767px) {
+  .aviso-pref { padding: 24px; gap: 24px; align-items: stretch; }
+  .aviso-pref-conta { font-size: 20px; line-height: 30px; }
+  .aviso-pref > .botao { inline-size: 100%; }
+}

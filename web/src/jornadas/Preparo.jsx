@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
+import { AvisoPreferencias } from "../componentes/AvisoPreferencias.jsx";
 import { Campo } from "../componentes/Campo.jsx";
 import { acompanhar, analisar, converter, enviarAoKindle, esperarAnalise } from "../../../contrato/api.js";
 import "./preparo.css";
@@ -412,6 +413,10 @@ export function Preparo() {
           )}
         </section>
 
+        {/* O aviso do 941:23109 envolve a ação quando há preferência fora do
+            padrão, e some quando não há. Preparar é o momento em que a escolha
+            deixa de ser abstrata — é aqui que ela vira o arquivo. */}
+        <AvisoPreferencias>
         <div className="preparo-pagina-pagina-acoes">
           <Botao
             tom="primaria"
@@ -447,6 +452,7 @@ export function Preparo() {
             {ajustando ? "Voltar às recomendações" : "Ajustar manualmente"}
           </Botao>
         </div>
+        </AvisoPreferencias>
       </main>
     </div>
   );
