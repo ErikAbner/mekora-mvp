@@ -93,8 +93,16 @@ import sqlite3, sys
 c = sqlite3.connect(sys.argv[1])
 r = c.execute("SELECT id FROM pessoas WHERE email=?", (sys.argv[2],)).fetchone()
 if r:
+    # O LIVRO COM EPUB VEM PRIMEIRO.
+    #
+    # `ORDER BY id DESC` devolvia o ULTIMO semeado — e o unico com EPUB de
+    # verdade e o PRIMEIRO. A auditoria media entao a leitura de um livro sem
+    # arquivo, que cai no texto de exemplo: sete nos, verde, e nada do leitor
+    # de verdade sob medida. Verde por omissao outra vez.
     livro = c.execute(
-        "SELECT id FROM processing_jobs WHERE dono_id=? ORDER BY id DESC LIMIT 1", (r[0],)
+        "SELECT id FROM processing_jobs WHERE dono_id=? "
+        "ORDER BY (epub_path IS NULL OR epub_path = ''), id LIMIT 1",
+        (r[0],),
     ).fetchone()
     if livro:
         print(livro[0])
