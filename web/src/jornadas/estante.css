@@ -492,3 +492,47 @@
   color: var(--card-foreground);
   text-wrap: pretty;
 }
+
+/* ---- Os detalhes do arquivo, dobrados -------------------------------------
+ *
+ * Seis linhas de dados empurravam o "Continuar" para fora da tela — e continuar
+ * lendo é o que se faz sempre; conferir o arquivo é o que se faz de vez em
+ * quando.
+ *
+ * `<details>` nativo e não um estado meu: ele já vem com teclado, com o anúncio
+ * de "expandido/recolhido" no leitor de tela, e com a busca do navegador
+ * abrindo o conteúdo escondido para achar o que está lá dentro.
+ */
+.ficha-detalhes { border-block-start: 1px solid var(--border); }
+
+.ficha-detalhes summary {
+  /* `display: flex` E `::marker` vazio: o `list-style: none` sozinho não tira o
+     triângulo nativo no Chrome, e o triângulo apareceria ao lado da seta
+     desenhada — duas marcações da mesma coisa. */
+  display: flex; align-items: center; gap: 8px;
+  padding-block: 16px;
+  color: var(--muted-foreground);
+  font-size: 16px; line-height: 24px;
+  cursor: pointer;
+}
+.ficha-detalhes summary::marker { content: ""; }
+.ficha-detalhes summary::-webkit-details-marker { display: none; }
+
+/* A seta é desenhada com o mesmo `currentColor` do rótulo, e gira ao abrir. */
+.ficha-detalhes summary::after {
+  content: "";
+  margin-inline-start: auto;
+  inline-size: 8px; block-size: 8px;
+  border-inline-end: 1px solid currentColor;
+  border-block-end: 1px solid currentColor;
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform var(--d1, 160ms) ease;
+}
+.ficha-detalhes[open] summary::after { transform: rotate(-135deg) translate(-2px, -2px); }
+@media (prefers-reduced-motion: reduce) { .ficha-detalhes summary::after { transition: none; } }
+
+.ficha-detalhes summary:hover { color: var(--foreground); }
+.ficha-detalhes summary:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+.ficha-detalhes summary .dado { font-variant-numeric: tabular-nums; }
+
+.ficha-detalhes .ficha-dados { padding-block-end: 8px; }

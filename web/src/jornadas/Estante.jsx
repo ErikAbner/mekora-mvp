@@ -408,15 +408,30 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnvia
                 ].filter(([, v]) => v);
 
                 if (!linhas.length) return null;
+                /* DOBRADO, e aberto por quem quiser. Seis linhas de dados
+                   empurravam "Continuar" para fora da tela — e o que a pessoa
+                   faz sempre é continuar lendo; o que ela faz de vez em quando
+                   é conferir o arquivo.
+
+                   `<details>` nativo e não um estado meu: ele já vem com
+                   teclado, com o anúncio de "expandido/recolhido" no leitor de
+                   tela, e com a busca do navegador (Ctrl+F) abrindo o conteúdo
+                   escondido para achar o que está lá dentro. */
                 return (
-                  <dl className="ficha-dados">
-                    {linhas.map(([rotulo, valor]) => (
-                      <div key={rotulo} className="ficha-dados-linha">
-                        <dt>{rotulo}</dt>
-                        <dd>{valor}</dd>
-                      </div>
-                    ))}
-                  </dl>
+                  <details className="ficha-detalhes">
+                    <summary>
+                      Ver detalhes do arquivo
+                      <span className="dado">{linhas.length}</span>
+                    </summary>
+                    <dl className="ficha-dados">
+                      {linhas.map(([rotulo, valor]) => (
+                        <div key={rotulo} className="ficha-dados-linha">
+                          <dt>{rotulo}</dt>
+                          <dd>{valor}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </details>
                 );
               })()}
 
