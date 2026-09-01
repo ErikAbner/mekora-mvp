@@ -26,6 +26,8 @@ import "./leitura.css";
 const iconeMenu = "/icones/icone-menu.svg";
 const iconeCaderno = "/icones/icone-caderno.svg";
 const iconeIndice = "/icones/icone-estante.svg";
+const iconeNotaNova = "/icones/icone-nota-nova.svg";
+const iconeCopiar = "/icones/icone-copiar.svg";
 const iconeMarcador = "/icones/icone-marcador.svg";
 const iconeBuscar = "/icones/icone-buscar.svg";
 const iconeConta = "/icones/icone-conta.svg";
@@ -732,6 +734,7 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
                   troca depois, e obrigá-la a escolher a cor antes de escrever
                   poria uma decisão de forma na frente de uma de conteúdo. */}
               <button type="button" className="paleta-botao" onClick={() => marcar("amarelo", { abrirCaderno: true })}>
+                <Icone src={iconeNotaNova} />
                 Adicionar nota
               </button>
               <button
@@ -750,6 +753,7 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
                   setTimeout(() => setCopiado(null), 2500);
                 }}
               >
+                <Icone src={iconeCopiar} />
                 Copiar
               </button>
             </div>

@@ -296,6 +296,7 @@
 .paleta-acoes-fazer { display: flex; gap: 16px; }
 
 .paleta-botao {
+  display: inline-flex; align-items: center; gap: 16px;
   padding: 14px 24px;
   border: 1px solid var(--border);
   background: transparent;

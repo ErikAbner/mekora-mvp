@@ -21,14 +21,31 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Folha } from "./Folha.jsx";
 import { Botao } from "./Botao.jsx";
+import { Icone } from "./Icone.jsx";
 import { refazerPreparo, removerDaEstante, renomearArquivo } from "../../../contrato/api.js";
 import "./configuracoes-arquivo.css";
 
-function Linha({ titulo, sobre, acao, children }) {
+/* Os ícones do Solar 480, com o efeito handmade do Figma. Eles não estavam
+ * DENTRO do 941:23118 — os cinco vãos de 40px estão vazios lá —, mas estão no
+ * mesmo arquivo, no conjunto que o resto do produto já usa. Desenhá-los à mão
+ * produziria ícones que não passaram pelo efeito e não seriam do sistema;
+ * pegá-los do conjunto é o que o Erik pediu: "vc já tem o DS e o grupo de
+ * ícones usado é o solar - 480". */
+const ICONES = {
+  renomear: "/icones/icone-renomear.svg",
+  paginas: "/icones/icone-paginas.svg",
+  baixar: "/icones/icone-baixar.svg",
+  refazer: "/icones/icone-refazer.svg",
+  remover: "/icones/icone-remover.svg",
+};
+
+function Linha({ icone, titulo, sobre, acao, children }) {
   return (
     <div className="arquivo-linha">
       <div className="arquivo-linha-corpo">
-        <span className="arquivo-linha-vao" aria-hidden="true" />
+        <span className="arquivo-linha-vao">
+          <Icone src={icone} />
+        </span>
         <div className="arquivo-linha-texto">
           <p className="arquivo-linha-titulo">{titulo}</p>
           <p className="arquivo-linha-sobre">{sobre}</p>
@@ -80,6 +97,7 @@ export function ConfiguracoesArquivo({ aberta, aoFechar, livro, notas = 0, aoMud
 
       <div className="arquivo-linhas">
         <Linha
+          icone={ICONES.renomear}
           titulo="Renomear"
           sobre="Muda só o nome do arquivo final. O original guarda o nome que tinha."
           acao={
@@ -119,6 +137,7 @@ export function ConfiguracoesArquivo({ aberta, aoFechar, livro, notas = 0, aoMud
             quando `page_count` é nulo seria a tela afirmando uma contagem que
             ninguém fez. */}
         <Linha
+          icone={ICONES.paginas}
           titulo={paginas ? `Ver todas as ${paginas} páginas` : "Ver todas as páginas"}
           sobre="Conferir o reconhecimento, escolher capa, deixar página de fora."
           acao={
@@ -129,6 +148,7 @@ export function ConfiguracoesArquivo({ aberta, aoFechar, livro, notas = 0, aoMud
         />
 
         <Linha
+          icone={ICONES.baixar}
           titulo="Baixar"
           sobre={
             baixavel
@@ -145,6 +165,7 @@ export function ConfiguracoesArquivo({ aberta, aoFechar, livro, notas = 0, aoMud
         />
 
         <Linha
+          icone={ICONES.refazer}
           titulo="Refazer a preparação"
           sobre="Volta ao começo com o mesmo arquivo. Nada é enviado de novo."
           acao={
@@ -163,6 +184,7 @@ export function ConfiguracoesArquivo({ aberta, aoFechar, livro, notas = 0, aoMud
         />
 
         <Linha
+          icone={ICONES.remover}
           titulo="Remover da estante"
           sobre="O arquivo preparado e o original saem. Não dá para desfazer."
           acao={

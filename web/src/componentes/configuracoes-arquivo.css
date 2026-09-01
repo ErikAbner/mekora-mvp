@@ -14,11 +14,14 @@
 
 .arquivo-linha-corpo { display: flex; align-items: center; gap: 40px; flex: 1 1 auto; min-width: 0; }
 
-/* O vão do ícone: 40px com borda e vazio, como no Figma. */
+/* O vão do ícone: 40px com borda, como no Figma — e com o ícone dentro, que o
+ * Figma deixou vazio. */
 .arquivo-linha-vao {
   flex: 0 0 auto;
+  display: flex; align-items: center; justify-content: center;
   inline-size: 40px; block-size: 40px;
   border: 1px solid var(--borda-controle);
+  color: var(--muted-foreground);
 }
 
 .arquivo-linha-texto { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
