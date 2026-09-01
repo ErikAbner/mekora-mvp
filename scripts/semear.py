@@ -117,6 +117,10 @@ for i, (titulo, autor, paginas, capa, quantas_notas, fracao) in enumerate(LIVROS
         "created_at": agora - timedelta(days=len(LIVROS) - i),
         "updated_at": agora - timedelta(days=len(LIVROS) - i),
         "token_publico": f"semeado-{i}-{int(agora.timestamp())}",
+        # O tamanho do arquivo — o selo do nó 966:31504. Semeado como o resto:
+        # não há arquivo de entrada em disco, e o número aqui é confessadamente
+        # inventado, na ordem de grandeza de um PDF do tamanho declarado.
+        "input_bytes": paginas * 118_000,
         "kindle_sent": i == 0,
     }
     job = inserir("processing_jobs", campos)

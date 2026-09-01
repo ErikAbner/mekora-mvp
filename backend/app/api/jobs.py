@@ -877,6 +877,13 @@ async def upload_file(
         )
 
     job.input_path = str(dest)
+    # O TAMANHO É LIDO AGORA, que é o único momento em que o arquivo existe com
+    # certeza: a limpeza por idade apaga o input e deixa o EPUB, e a partir daí
+    # o disco não sabe mais responder.
+    try:
+        job.input_bytes = dest.stat().st_size
+    except OSError:
+        job.input_bytes = None
     job.updated_at = datetime.utcnow()
     db.commit()
 

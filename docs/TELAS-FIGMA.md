@@ -116,9 +116,9 @@ ferramenta devolve tem 38 pixels de largura: não dá para ler os rótulos, e
 construir a partir disso seria inventar com cara de fidelidade. **Preciso de um
 recorte dessa parte, ou de você selecionando o trecho no Figma.**
 
-**Preparo (`966:31504`)** — o desenho tem um alternador **Personalizado /
-Guiado** no topo (no produto ele é o botão "Ajustar manualmente", embaixo) e
-chips de **tamanho do arquivo** e **idioma**. O tamanho não existe no backend.
+~~**Preparo (`966:31504`)**~~ — fechada. O alternador **Guiado / Personalizado**
+subiu para o topo, e o botão do fim saiu. O **tamanho do arquivo** passou a
+existir: era o único selo do desenho sem dado por trás.
 
 **Estudo (`966:29743`)** — os nomes que eu tinha posto nesta lista estavam
 errados em quatro linhas, e a ferramenta os deu certos quando perguntei um a um.

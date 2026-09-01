@@ -39,6 +39,17 @@ class ProcessingJob(Base):
     # Arquivo original e caminhos gerados
     original_filename = Column(String, nullable=False)
     input_path = Column(String)           # storage/input/
+    # O TAMANHO DO ARQUIVO QUE CHEGOU, em bytes.
+    #
+    # O nó `966:31504` põe "11.5 MB" como selo, ao lado do formato e das
+    # páginas. Ele existia só no disco, e ler o disco a cada abertura de tela
+    # faria a ficha depender de um arquivo que a limpeza pode ter apagado —
+    # `cleanup_old_jobs` remove o input e deixa o EPUB.
+    #
+    # Guardado no momento em que o arquivo chega, que é o único em que ele
+    # existe com certeza. Nulo para trabalho anterior a esta coluna: nulo é "não
+    # sei", e a tela cala em vez de mostrar zero.
+    input_bytes = Column(Integer)
     processed_pdf_path = Column(String)   # storage/temp/ após OCR
     epub_path = Column(String)            # storage/output/
     # O EPUB com as imagens em WebP, para ler no navegador. Separado porque o

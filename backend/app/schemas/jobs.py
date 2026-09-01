@@ -30,6 +30,9 @@ class JobResponse(BaseModel):
     # O endereço para BAIXAR — o EPUB que vai para o aparelho, e não a versão
     # web que `leitura_url` aponta. Ver `_epub_url` em jobs.py.
     epub_url: Optional[str] = None
+    # O tamanho do arquivo que chegou, em bytes. `None` para trabalho anterior à
+    # coluna — e a tela cala, em vez de mostrar zero.
+    input_bytes: Optional[int] = None
 
     # O que a ficha da estante mostra sobre a LEITURA. Tudo derivado — antes
     # estes quatro vinham de um exemplo escrito à mão, iguais em todo livro.
@@ -149,6 +152,8 @@ class HistoryEntry(BaseModel):
     # arquivo é derivado do título, e a tela não tem como adivinhá-lo.
     # `None` enquanto a conversão não terminou.
     leitura_url: Optional[str] = None
+    # O tamanho do arquivo que chegou, em bytes — o selo "11.5 MB" do desenho.
+    input_bytes: Optional[int] = None
 
     # O que a ficha da estante mostra sobre a LEITURA. Tudo derivado — antes
     # estes quatro vinham de um exemplo escrito à mão, iguais em todo livro.

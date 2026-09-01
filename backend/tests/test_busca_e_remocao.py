@@ -269,3 +269,32 @@ def test_editar_para_um_endereco_que_ja_existe_e_recusado(client_cru, db, correi
 
     r = client_cru.patch(f"/aparelhos/{a['id']}", json={"endereco": "dois@kindle.com"})
     assert r.status_code == 409
+
+
+# ── o tamanho do arquivo — o selo do nó 966:31504 ───────────────────────────
+
+def test_o_tamanho_do_arquivo_e_gravado_no_envio(client, tmp_storage, sample_pdf):
+    """Ele existia só no disco, e o disco esquece.
+
+    `cleanup_old_jobs` apaga o input e deixa o EPUB: a partir daí não há mais a
+    quem perguntar o tamanho. Por isso ele é lido no único momento em que o
+    arquivo existe com certeza — quando chega.
+    """
+    with open(sample_pdf, "rb") as f:
+        r = client.post("/upload", files={"file": ("prova.pdf", f, "application/pdf")})
+    assert r.status_code == 201
+
+    ficha = client.get(f"/analyze/{r.json()['upload_id']}").json()
+    assert ficha["input_bytes"] == sample_pdf.stat().st_size
+    assert ficha["input_bytes"] > 0
+
+
+def test_trabalho_antigo_nao_mente_o_tamanho(client_cru, db, correio):
+    """Nulo é "não sei", e a tela cala. Zero seria o produto afirmando que o
+    arquivo é vazio — falso para todos os trabalhos anteriores à coluna."""
+    eu = entrar(client_cru, db, correio, "erik@exemplo.com")
+    j = livro(db, eu, "Antigo")
+    assert j.input_bytes is None
+
+    ficha = client_cru.get(f"/analyze/{j.id}").json()
+    assert ficha["input_bytes"] is None

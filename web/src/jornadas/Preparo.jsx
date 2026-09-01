@@ -5,6 +5,7 @@ import { Botao } from "../componentes/Botao.jsx";
 import { AvisoPreferencias } from "../componentes/AvisoPreferencias.jsx";
 import { Campo } from "../componentes/Campo.jsx";
 import { acompanhar, analisar, converter, enviarAoKindle, esperarAnalise } from "../../../contrato/api.js";
+import { tamanhoLegivel } from "../../../contrato/tamanho.js";
 import "./preparo.css";
 
 /* O preparo-pagina: o que o Mekora encontrou, e o que vai fazer.
@@ -324,6 +325,11 @@ export function Preparo() {
   const capa = (job.thumbnails ?? [])[0];
   const marcas = [
     job.input_format && job.input_format.toUpperCase(),
+    /* O TAMANHO DO ARQUIVO — o selo "11.5 MB" do nó 966:31504. Ele não existia
+       em lugar nenhum do produto: estava só no disco, e o disco esquece quando
+       a limpeza por idade apaga o input. Agora vem do banco, gravado na hora em
+       que o arquivo chegou. */
+    tamanhoLegivel(job.input_bytes),
     job.page_count && `${job.page_count} páginas`,
     job.detected_language,
   ].filter(Boolean);

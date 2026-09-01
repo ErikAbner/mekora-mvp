@@ -5,6 +5,7 @@ import { Botao } from "../componentes/Botao.jsx";
 import { ConfiguracoesArquivo } from "../componentes/ConfiguracoesArquivo.jsx";
 import { DESTAQUES } from "./Leitura.jsx";
 import { analisar, lerNotas, lerProgresso } from "../../../contrato/api.js";
+import { tamanhoLegivel } from "../../../contrato/tamanho.js";
 import "./livro.css";
 
 /* A ficha de um livro, inteira.
@@ -128,6 +129,7 @@ export function Livro() {
             {(() => {
               const selos = [
                 livro.input_format && livro.input_format.toUpperCase(),
+                tamanhoLegivel(livro.input_bytes),
                 livro.page_count && `${livro.page_count} páginas`,
                 livro.leitura_url ? "Preparado" : "Em preparo",
                 livro.kindle_sent ? "No Kindle" : null,

@@ -41,6 +41,8 @@ PRIVADAS="/mesa /estante /canvas /estudos /notas /conta /conta/kindle /conta/seg
 echo "── conferências estáticas ──"
 node scripts/classes.mjs || true
 node scripts/botoes.mjs || true
+# Os testes do contrato: funcoes puras, sem navegador, um arquivo por peca.
+for t in contrato/*.teste.mjs; do node "$t" >/dev/null 2>&1 || echo "FALHOU  $t"; done
 echo
 
 medida() {   # $1 rota  $2 largura  $3 altura  $4 tema  $5 privada?
