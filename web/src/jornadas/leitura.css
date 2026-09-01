@@ -484,7 +484,7 @@
 .amostra { color: var(--foreground); font-weight: 540; }
 .amostra-corpo.amostra-menor { font-size: 18px; }
 .amostra-corpo.amostra-medio { font-size: 24px; }
-.amostra-corpo.amostra-maior { font-size: 32px; }
+.amostra-corpo.amostra-maior { font-size: 32px; }   /* o mesmo do h1 da prosa */
 .amostra-fonte { font-size: 24px; }
 .amostra-fonte.amostra-sem-serifa { font-family: system-ui, -apple-system, sans-serif; }
 .amostra-destaques { font-size: 24px; padding: 0 4px; }

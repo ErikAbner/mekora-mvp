@@ -15,17 +15,26 @@
 
 const CHAVE = "mekora:aparencia";
 
-/* Os degraus saem da escala do sistema — [14,16,18,20,22,24,…] —, e não de
- * multiplicadores: "1,2x de 20" dá 24, que existe; "1,15x" daria 23, que não. */
+/* Os degraus saem da escala do sistema — [14,16,18,20,22,24,28,32,…] —, e não
+ * de multiplicadores: "1,2x de 20" dá 24, que existe; "1,15x" daria 23, que não.
+ *
+ * "MAIOR" USA O TAMANHO DO `h1` DA PROSA, que é 32px — o maior corpo que a
+ * ferramenta já usa em texto corrido. A primeira versão parou em 24 e criava um
+ * degrau intermediário só para esta tela; o Erik pediu o contrário: reusar o que
+ * existe em vez de inventar mais um. */
 export const GRUPOS = [
   {
     id: "corpo",
     rotulo: "Tamanho",
     padrao: "medio",
     opcoes: [
-      { id: "menor", rotulo: "Menor", css: { "--leitura-corpo": "18px", "--leitura-entre": "27px" } },
-      { id: "medio", rotulo: "Padrão", css: { "--leitura-corpo": "20px", "--leitura-entre": "30px" } },
-      { id: "maior", rotulo: "Maior", css: { "--leitura-corpo": "24px", "--leitura-entre": "36px" } },
+      { id: "menor", rotulo: "Menor", css: { "--leitura-corpo": "18px" } },
+      { id: "medio", rotulo: "Padrão", css: { "--leitura-corpo": "20px" } },
+      /* 32px é o `font-size` de `.prosa .titulo`. Amarrar os dois por variável
+         seria mais bonito e pior: o título precisa continuar MAIOR que o corpo,
+         e igualá-los apagaria a hierarquia da página inteira. O valor é o mesmo
+         de propósito, e o comentário é o vínculo. */
+      { id: "maior", rotulo: "Maior", css: { "--leitura-corpo": "32px" } },
     ],
   },
   {
