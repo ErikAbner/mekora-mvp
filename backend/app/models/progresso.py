@@ -22,7 +22,7 @@ Sem conta não há progresso salvo, e isso é coerente com a DEC-0018: a estante
 conta. Quem lê sem entrar continua lendo; só não encontra a marca depois.
 """
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, UniqueConstraint
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, UniqueConstraint
 
 from app.db.database import Base
 from app.models.pessoa import agora
@@ -57,5 +57,15 @@ class Progresso(Base):
     # Zero significa "ninguém abriu ainda", e a tela trata isso como não
     # começado em vez de como zero por cento.
     capitulos = Column(Integer, nullable=False, default=0)
+    # QUANTO DO LIVRO JA FOI LIDO, de 0 a 1.
+    #
+    # Calculada NO CLIENTE, e nao aqui, porque so ele conhece a extensao: o EPUB
+    # e aberto no navegador, e o servidor nunca ve o tamanho de cada capitulo. O
+    # servidor guarda e devolve — nao deriva.
+    #
+    # Nulo quando o livro foi aberto por uma versao que ainda nao calculava, e a
+    # ficha entao cai no "capitulo N de M" de antes. Nulo NAO e zero: zero
+    # afirma que a leitura esta no comeco.
+    fracao = Column(Float)
 
     atualizado_em = Column(DateTime, default=agora, onupdate=agora, nullable=False)

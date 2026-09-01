@@ -39,6 +39,7 @@ import { useJornada } from "./estado/useJornada.js";
 import { usePessoa } from "./estado/usePessoa.js";
 import { abrirLivro, irParaCapitulo } from "./leitor/abrir.js";
 import { gravarProgresso, lerProgresso } from "../../contrato/api.js";
+import { fracaoLida } from "../../contrato/progresso.js";
 import { usarNotas } from "./leitor/usarNotas.js";
 import { analisar, apagarNota, chaveDe, importarClippings, lerTodasAsNotas } from "../../contrato/api.js";
 import { EXEMPLO_FILA, EXEMPLO_ESTANTE, EXEMPLO_LEITURA } from "./exemplos.js";
@@ -187,12 +188,38 @@ function PaginaLeitura() {
           capitulo: l.capitulo,
           deslocamento: marca?.deslocamento ?? 0,
           capitulos: l.capitulos,
+          /* A extensão só existe depois de abrir, então esta é a primeira
+             chance de gravar a fração — e é o que faz um livro aberto uma vez
+             já aparecer com porcentagem na estante. */
+          fracao: fracaoLida({
+            capitulo: l.capitulo,
+            deslocamento: 0,
+            extensao: l.extensao,
+          }) ?? undefined,
         }).catch(() => {});
       })
       .catch((e) => vivo && setErro(e.message));
 
     return () => { vivo = false; };
   }, [id]);
+
+  /* QUANTO DO LIVRO JÁ FOI LIDO, de 0 a 1.
+   *
+   * `deslocamento` é posição de CARACTERE dentro do capítulo, então virar
+   * fração exige os caracteres do capítulo aberto — que só existem aqui, com os
+   * blocos em mãos. A extensão dos outros capítulos vem em bytes do índice do
+   * zip; as duas medidas são diferentes, e é por isso que a de dentro é
+   * normalizada para 0–1 antes de entrar na conta.
+   *
+   * Devolve `undefined` quando não dá para saber, e `gravarProgresso` então não
+   * manda o campo — em vez de gravar zero, que afirmaria "no começo". */
+  const quanto = (cap, desl) => {
+    if (!livro?.extensao?.length) return undefined;
+    const total = (livro.blocos ?? []).reduce((n, b) => n + (b.texto?.length ?? 0), 0);
+    const dentro = total > 0 ? Math.min(1, (desl ?? 0) / total) : 0;
+    const f = fracaoLida({ capitulo: cap, deslocamento: dentro, extensao: livro.extensao });
+    return f === null ? undefined : f;
+  };
 
   /* Sem o livro, o exemplo — e o produto DIZ que é exemplo, em vez de deixar
    * parecer que aquele é o teu texto. */
@@ -219,14 +246,22 @@ function PaginaLeitura() {
         /* Virar o capítulo é ler o começo dele. Gravar aqui, e não esperar a
          * rolagem, garante que fechar a aba logo depois de virar não perca a
          * virada — que é o caso mais comum de parar de ler. */
-        gravarProgresso(id, { capitulo: novo.capitulo, deslocamento: 0 }).catch(() => {});
+        gravarProgresso(id, {
+          capitulo: novo.capitulo,
+          deslocamento: 0,
+          fracao: fracaoLida({ capitulo: novo.capitulo, deslocamento: 0, extensao: novo.extensao }) ?? undefined,
+        }).catch(() => {});
         window.scrollTo({ top: 0, behavior: "auto" });
       }}
       aoMarcar={(deslocamento) => {
         /* Falha em silêncio: isto roda enquanto a pessoa lê, e um erro visível
          * a cada rolagem de quem não entrou faria o produto parecer quebrado
          * quando o que acontece é o previsto — sem conta não há onde guardar. */
-        gravarProgresso(id, { capitulo: livro.capitulo ?? 0, deslocamento }).catch(() => {});
+        gravarProgresso(id, {
+          capitulo: livro.capitulo ?? 0,
+          deslocamento,
+          fracao: quanto(livro.capitulo ?? 0, deslocamento),
+        }).catch(() => {});
       }}
     />
   );

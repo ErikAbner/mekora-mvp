@@ -72,6 +72,24 @@ export async function abrirEpub(dados) {
     autor: meta("creator") || "",
     idioma: meta("language") || "",
     capitulos: espinha.length,
+    /* A EXTENSÃO DE CADA CAPÍTULO, EM BYTES, e o total.
+     *
+     * É o que faltava para o progresso ser porcentagem em vez de "capítulo 2 de
+     * 3" — e a ficha da estante mostrava esse "2 de 3" porque o produto não
+     * sabia mais que isso. A colheita de 31/08 registrou a peça como coisa a
+     * escrever, e recomendou o `epubcfi.js` para âncora; a porcentagem, porém,
+     * não precisa de CFI. Precisa de extensão, e a extensão já estava aqui.
+     *
+     * BYTES DO XHTML, e não caracteres de texto. Contar caracteres exigiria
+     * abrir e parsear todos os capítulos na abertura, que é justamente o que o
+     * leitor evita para não travar a aba num livro de oitocentas páginas. O byte
+     * do XHTML carrega marcação junto, então a medida é aproximada — e ela é
+     * honesta porque a marcação se distribui de forma parecida ao longo de um
+     * livro. Um capítulo com uma tabela enorme distorce; um livro inteiro, não.
+     *
+     * O índice do zip já traz esse número, então isto não lê nem descomprime
+     * nada: é soma sobre um `Map` que já existe. */
+    extensao: espinha.map((i) => zip.tamanho(i.caminho)),
     /* O capítulo é lido sob demanda. Ler o livro inteiro na abertura é como um
      * livro de 800 páginas trava a aba antes de mostrar a primeira linha. */
     capitulo: async (i) => {

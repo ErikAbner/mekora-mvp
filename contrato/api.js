@@ -253,13 +253,22 @@ export function lerProgresso(jobId) {
 }
 
 /** PUT /jobs/{id}/progresso — sem conta, o servidor ignora em silencio. */
-export function gravarProgresso(jobId, { capitulo, deslocamento, capitulos }) {
+export function gravarProgresso(jobId, { capitulo, deslocamento, capitulos, fracao }) {
   return pede(`/jobs/${jobId}/progresso`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     /* `capitulos` so vai quando quem chama sabe. O gravador de rolagem nao
-     * sabe, e mandar `null` apagaria o total que o abridor do livro registrou. */
-    body: JSON.stringify({ capitulo, deslocamento, ...(capitulos ? { capitulos } : {}) }),
+     * sabe, e mandar `null` apagaria o total que o abridor do livro registrou.
+     *
+     * `fracao` segue a mesma regra, e ela e o numero que a ficha da estante
+     * mostra: o servidor nao consegue derivar porcentagem porque nao conhece a
+     * extensao do livro — o EPUB e aberto aqui. Quem sabe, manda. */
+    body: JSON.stringify({
+      capitulo,
+      deslocamento,
+      ...(capitulos ? { capitulos } : {}),
+      ...(typeof fracao === "number" ? { fracao } : {}),
+    }),
   });
 }
 

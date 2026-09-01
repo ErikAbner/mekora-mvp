@@ -152,6 +152,11 @@ export function useJornada() {
         notas: e.notas ?? 0,
         capitulo: e.capitulo,
         capitulos: e.capitulos,
+        /* QUANTO DO LIVRO JA FOI LIDO, de 0 a 1. Sem esta linha o campo chega do
+         * servidor, morre no mapeamento e a ficha volta ao "capitulo N de M" —
+         * o que aconteceu na primeira medida, com o /history ja devolvendo
+         * 0,8963 e a tela mostrando "no ultimo capitulo". */
+        fracao: typeof e.fracao === "number" ? e.fracao : null,
         ultima_nota: e.ultima_nota ?? null,
         quadrinho: !!e.comic_mode,
         /* A capa vem PRONTA do backend, como URL. A versão anterior devolvia

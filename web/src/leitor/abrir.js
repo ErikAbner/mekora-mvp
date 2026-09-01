@@ -55,6 +55,10 @@ export async function abrirLivro(url, { capitulo = 0 } = {}) {
     autor: epub.autor,
     capitulos: epub.capitulos,
     capitulo: indice,
+    /* A EXTENSÃO DO LIVRO, em bytes por capítulo, vinda do índice do zip. É o
+     * que transforma "capítulo 2 de 3" em porcentagem — e ela não custa I/O: o
+     * índice já foi lido inteiro ao abrir o arquivo. */
+    extensao: epub.extensao,
     blocos: await comImagens(epub, blocos),
     /* O objeto do EPUB fica disponível para os próximos capítulos, sem baixar o
      * arquivo de novo. */

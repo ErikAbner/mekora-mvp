@@ -109,15 +109,18 @@ def _leitura_de(db: Session, job: ProcessingJob) -> dict:
     modelo, não da mão. Dois números escritos à mão ao lado de um derivado fazem
     da tela uma coisa meio honesta, que é pior."
 
-    NÃO HÁ PORCENTAGEM AQUI, e a ausência é deliberada: o servidor não conhece o
-    tamanho do texto — o EPUB é lido no navegador. O que ele sabe é em que
-    capítulo a pessoa está e quantos existem, e "capítulo 2 de 3" é exato onde
-    uma porcentagem seria chute.
+    A PORCENTAGEM PASSOU A EXISTIR, e o comentário anterior aqui dizia que ela
+    não podia: *"o servidor não conhece o tamanho do texto — o EPUB é lido no
+    navegador"*. A primeira metade continua verdadeira, e a conclusão não: o
+    cliente conhece, e agora ele grava. O servidor guarda e devolve, sem derivar.
+
+    Vem nula para leitura registrada antes disso, e a ficha então cai no
+    "capítulo N de M". Nulo não é zero.
     """
     from app.models.nota import Nota
     from app.models.progresso import Progresso
 
-    fora = {"notas": 0, "capitulo": None, "capitulos": None, "ultima_nota": None}
+    fora = {"notas": 0, "capitulo": None, "capitulos": None, "fracao": None, "ultima_nota": None}
     if not job.dono_id:
         return fora
 
@@ -147,6 +150,10 @@ def _leitura_de(db: Session, job: ProcessingJob) -> dict:
     if p is not None and p.capitulos:
         fora["capitulo"] = p.capitulo
         fora["capitulos"] = p.capitulos
+    # A fração sai mesmo sem `capitulos`: ela é o número mais preciso dos dois, e
+    # amarrá-la à condição do outro esconderia o melhor dado por causa do pior.
+    if p is not None:
+        fora["fracao"] = p.fracao
 
     return fora
 

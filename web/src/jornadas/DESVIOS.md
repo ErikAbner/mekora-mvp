@@ -699,3 +699,75 @@ O desenho não tem **"Capítulo anterior / Próximo capítulo"** — a leitura d
 rolagem contínua. O produto tem os dois botões, e trocá-los por rolagem significa
 carregar todos os capítulos de uma vez, o que muda memória, progresso e âncora de
 nota. Está no resumo, para você decidir.
+
+
+---
+
+# A porcentagem lida — o que eu tinha chamado de impossível
+
+Escrevi, na vitrine da Apresentação e em dois comentários do código, que **o
+produto não sabe a porcentagem**: *"o servidor não conhece o tamanho do texto —
+o EPUB é lido no navegador"*.
+
+A primeira metade é verdadeira. A conclusão não era.
+
+**O cliente conhece.** E não porque alguém tenha de abrir o livro inteiro para
+contar: o índice do zip do EPUB guarda o **tamanho descomprimido de cada
+entrada**, e esse índice já é lido por completo na abertura. A extensão de um
+livro de oitocentas páginas custa uma consulta a um `Map` que já existe.
+
+Eu tinha tratado como limitação de natureza o que era pendência com caminho — e
+o caminho estava escrito. A colheita no GitHub de 31/08 já dizia, sobre a peça
+irmã: *"As duas metades do requisito existem em contextos incompatíveis. **Esta
+peça se escreve.**"*
+
+## "capítulo 2 de 3" não é 66%
+
+É o caso que derruba a medida antiga, e ele está no teste: um livro com prefácio
+de vinte páginas e dois capítulos de quinhentas. Terminar o prefácio marcava **um
+terço lido**; o número real é **dois por cento**.
+
+## Bytes de XHTML, e a honestidade da aproximação
+
+A extensão é medida em **bytes do arquivo**, não em caracteres de texto. Contar
+caracteres exigiria abrir e parsear todos os capítulos na abertura — que é
+exatamente o que o leitor evita para não travar a aba.
+
+O byte carrega marcação junto, então a medida é aproximada. Ela é honesta porque
+a marcação se distribui de forma parecida ao longo de um livro: um capítulo com
+uma tabela enorme distorce, um livro inteiro não.
+
+Dentro do capítulo aberto, aí sim é caractere — o `deslocamento` já era isso — e
+a fração é normalizada para 0–1 antes de entrar na conta, porque as duas medidas
+são de naturezas diferentes.
+
+## Onde a conta mora, e por quê
+
+No **cliente**. O servidor guarda e devolve `fracao`, e não deriva nada: ele
+nunca vê o tamanho dos capítulos. A coluna é nula para leitura registrada antes
+disso, e a ficha então cai no "capítulo N de M" — **nulo não é zero**, e zero
+afirmaria que a leitura está no começo.
+
+## O campo morreu no mapeamento, e a tela não reclamou
+
+Na primeira medida, o `/history` já devolvia `fracao: 0.8963` e a ficha mostrava
+*"no último capítulo"* com a barra em 100%. O `useJornada` montava o livro campo
+a campo e `fracao` não estava na lista.
+
+Nenhum erro em lugar nenhum: o dado chegava, era descartado, e a tela caía no
+plano B sem nada indicar que existia um plano A.
+
+## Provado com livro real
+
+Aberto no Chrome, virado o capítulo e rolado até 60%: o servidor guardou
+`{capitulo: 1, deslocamento: 246, capitulos: 2, fracao: 0.8963}`, e a ficha da
+estante mostra **`Ana Duarte · EPUB · 89% lido`** com a barra em 89,63% e o
+`aria-label` dizendo *"89 por cento lido"*.
+
+## O que continua fora, e agora com o motivo certo
+
+A **Estante em 3D** do desenho. Não é falta de projeto — a colheita leu os que
+existem e registrou o veredito: *"quem faz 3D de verdade usa Three.js; quem faz
+CSS faz retângulo decorativo com espessura constante e texto de 7px"*, e a única
+linha aproveitável é `Math.max(4, Math.min(22, Math.round(pages / 35)))`. A peça
+se escreve, e ela não estava no escopo desta rodada.

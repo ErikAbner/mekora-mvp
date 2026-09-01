@@ -69,6 +69,11 @@ export async function abrirZip(dados) {
   return {
     nomes: () => [...entradas.keys()],
     tem: (n) => entradas.has(n),
+    /* O TAMANHO DESCOMPRIMIDO, direto do índice — sem abrir nem descomprimir
+     * nada. O índice já foi lido inteiro na abertura, então isto é consulta a um
+     * `Map`, e é o que permite saber a extensão de um livro de oitocentas
+     * páginas sem carregar uma linha dele. */
+    tamanho: (n) => entradas.get(n)?.cru ?? 0,
     bytes,
     texto: async (n) => new TextDecoder().decode(await bytes(n)),
   };

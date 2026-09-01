@@ -34,6 +34,9 @@ class JobResponse(BaseModel):
     notas: int = 0
     capitulo: Optional[int] = None
     capitulos: Optional[int] = None
+    # Quanto do livro ja foi lido, de 0 a 1. Calculada no cliente, que e quem
+    # conhece a extensao; nula para leitura registrada antes disso.
+    fracao: Optional[float] = None
     ultima_nota: Optional[dict] = None
 
     original_filename: str
@@ -150,6 +153,9 @@ class HistoryEntry(BaseModel):
     notas: int = 0
     capitulo: Optional[int] = None
     capitulos: Optional[int] = None
+    # Quanto do livro ja foi lido, de 0 a 1. Calculada no cliente, que e quem
+    # conhece a extensao; nula para leitura registrada antes disso.
+    fracao: Optional[float] = None
     ultima_nota: Optional[dict] = None
 
     original_filename: str

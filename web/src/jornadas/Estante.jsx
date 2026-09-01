@@ -33,10 +33,27 @@ const RECORTES = [
 
 /* Onde a leitura está, em palavras que o produto pode sustentar.
  *
- * Não devolve porcentagem: o servidor não conhece o tamanho do texto. Devolve
- * `null` quando ninguém abriu o livro, e a linha simplesmente não mostra nada —
- * em vez de "0% lido", que afirma algo sobre uma leitura que não começou. */
+ * A PORCENTAGEM PASSOU A EXISTIR. Este comentário dizia "não devolve
+ * porcentagem: o servidor não conhece o tamanho do texto" — e a primeira metade
+ * continua verdadeira. A conclusão é que estava errada: o CLIENTE conhece, o
+ * EPUB é aberto nele, e a extensão de cada capítulo vem do índice do zip sem
+ * custo nenhum. Agora ele calcula e grava, e aqui é só mostrar.
+ *
+ * O "capítulo N de M" continua como plano B, para livro cuja leitura foi
+ * registrada antes disso. E ele não é equivalente: num livro com prefácio de
+ * vinte páginas e dois capítulos de quinhentas, terminar o prefácio marcava um
+ * terço lido, e o número real é dois por cento.
+ *
+ * `null` quando ninguém abriu, e a linha não mostra nada — em vez de "0% lido",
+ * que afirma algo sobre uma leitura que não começou. */
 function onde(l) {
+  if (typeof l.fracao === "number") {
+    if (l.fracao >= 1) return "lido";
+    const pct = Math.floor(l.fracao * 100);
+    /* Arredonda para BAIXO, e nunca diz "lido" antes do fim: 99,6% virando
+     * "100%" faz quem abre o livro encontrar um capítulo inteiro pela frente. */
+    return pct <= 0 ? "começou" : `${pct}% lido`;
+  }
   if (!l.capitulos) return null;
   if (l.capitulo + 1 >= l.capitulos) return "no último capítulo";
   return `capítulo ${l.capitulo + 1} de ${l.capitulos}`;
@@ -202,21 +219,32 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnvia
 
                   Sem ninguém ter aberto o livro, não há barra: uma barra vazia
                   diz "0% lido", que é diferente de "ainda não sei". */}
-              {selecionado.capitulos > 0 && (
-                <div
-                  className="progresso"
-                  role="progressbar"
-                  aria-valuenow={selecionado.capitulo + 1}
-                  aria-valuemin={1}
-                  aria-valuemax={selecionado.capitulos}
-                  aria-label={`${selecionado.titulo}: capítulo ${selecionado.capitulo + 1} de ${selecionado.capitulos}`}
-                >
+              {/* A BARRA MEDE O QUE O RÓTULO DIZ. Quando há fração, ela é a
+                  fração real do texto; quando não há, ela volta a medir
+                  capítulos, e o rótulo ao lado continua dizendo "capítulo N de
+                  M". As duas nunca aparecem juntas dizendo coisas diferentes. */}
+              {(typeof selecionado.fracao === "number" || selecionado.capitulos > 0) && (() => {
+                const porFracao = typeof selecionado.fracao === "number";
+                const pct = porFracao
+                  ? Math.max(0, Math.min(100, selecionado.fracao * 100))
+                  : ((selecionado.capitulo + 1) / selecionado.capitulos) * 100;
+                return (
                   <div
-                    className="progresso-feito"
-                    style={{ inlineSize: `${((selecionado.capitulo + 1) / selecionado.capitulos) * 100}%` }}
-                  />
-                </div>
-              )}
+                    className="progresso"
+                    role="progressbar"
+                    aria-valuenow={Math.floor(pct)}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={
+                      porFracao
+                        ? `${selecionado.titulo}: ${Math.floor(pct)} por cento lido`
+                        : `${selecionado.titulo}: capítulo ${selecionado.capitulo + 1} de ${selecionado.capitulos}`
+                    }
+                  >
+                    <div className="progresso-feito" style={{ inlineSize: `${pct}%` }} />
+                  </div>
+                );
+              })()}
 
               <div className="ficha-notas">
                 <h3>

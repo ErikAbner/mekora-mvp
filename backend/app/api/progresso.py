@@ -22,6 +22,7 @@ class Marca(BaseModel):
     # Opcional porque quem grava ao rolar não precisa repetir o total a cada
     # vez; quem abre o livro manda uma vez e ele fica.
     capitulos: Optional[int] = Field(default=None, ge=0)
+    fracao: Optional[float] = None
 
 
 @router.get("/jobs/{job_id}/progresso")
@@ -39,7 +40,7 @@ def ler(
     """
     pessoa = acesso_service.quem_e(db, mekora_sessao)
     if pessoa is None:
-        return {"capitulo": 0, "deslocamento": 0, "capitulos": 0, "guardado": False}
+        return {"capitulo": 0, "deslocamento": 0, "capitulos": 0, "fracao": None, "guardado": False}
 
     p = (
         db.query(Progresso)
@@ -47,10 +48,10 @@ def ler(
         .first()
     )
     if p is None:
-        return {"capitulo": 0, "deslocamento": 0, "capitulos": 0, "guardado": False}
+        return {"capitulo": 0, "deslocamento": 0, "capitulos": 0, "fracao": None, "guardado": False}
     return {
         "capitulo": p.capitulo, "deslocamento": p.deslocamento,
-        "capitulos": p.capitulos, "guardado": True,
+        "capitulos": p.capitulos, "fracao": p.fracao, "guardado": True,
     }
 
 
@@ -87,6 +88,11 @@ def gravar(
     # apagar o total que o abridor do livro já registrou.
     if marca.capitulos:
         p.capitulos = marca.capitulos
+    # A FRACAO VEM PRONTA DO CLIENTE, porque so ele conhece a extensao do livro:
+    # o EPUB e aberto no navegador, e o servidor nunca ve o tamanho de cada
+    # capitulo. Aqui e guardar e devolver, nao derivar.
+    if marca.fracao is not None:
+        p.fracao = max(0.0, min(1.0, marca.fracao))
     p.atualizado_em = agora()
     db.commit()
     return None
