@@ -23,6 +23,16 @@ BANCO="${2:-$MEKORA_PROVA/storage/kindle_tool.db}"
 LOG="${3:-$MEKORA_PROVA/servidor.log}"
 API="${MEKORA_API:-http://localhost:8199}"
 
+# O PYTHON DO PROJETO QUANDO ELE EXISTE.
+#
+# O `python3` do sistema, no macOS, e um atalho para as Command Line Tools — e
+# ele falha com "You have not agreed to the Xcode license agreements" de forma
+# intermitente, sem aviso e no meio de uma medida. Com `2>/dev/null` por perto,
+# a falha vira uma linha vazia e a medida vira um numero errado.
+PY_="$(cd "$(dirname "$0")/.." && pwd)/.venv/bin/python"
+[ -x "$PY_" ] || PY_="$(command -v python3)"
+
+
 EMAIL="medida-$(date +%s)-$RANDOM@teste.local"
 curl -s -X POST -H "Content-Type: application/json" -d "{\"email\":\"$EMAIL\"}" -o /dev/null "$API/entrar/pedir"
 
@@ -36,7 +46,7 @@ for _ in $(seq 20); do
 done
 [ -n "$CHAVE" ] || { echo "não saiu link para $EMAIL — o servidor está no ar?" >&2; exit 1; }
 
-python3 - "$BANCO" "$EMAIL" "$JOB" <<'PY'
+"$PY_" - "$BANCO" "$EMAIL" "$JOB" <<'PY'
 import sqlite3, sys
 banco, email, job = sys.argv[1], sys.argv[2], sys.argv[3]
 c = sqlite3.connect(banco)
@@ -57,8 +67,13 @@ PY
 #
 # Aconteceu: 41 de 41 telas "passaram" numa rodada inteira antes de alguem
 # reparar que a estante media estava vazia. Entao a conta nasce com acervo.
-if [ -z "$JOB" ]; then
-  MEKORA_PROVA="$(dirname "$BANCO")/.." MEKORA_EMAIL="$EMAIL" python3 scripts/semear.py >/dev/null 2>&1 || true
-fi
+#
+# E SEMEIA MESMO COM UM JOB DADO. A versao anterior so semeava quando nenhum id
+# vinha — e a auditoria passa um id em TODA rota privada. Resultado: cada tela
+# privada foi medida numa conta que tinha exatamente um livro e mais nada, com
+# estudos, notas e canvas vazios. O mesmo erro de antes, com uma condicao a
+# mais. Passar um id diz de QUAL livro a conta e dona; nao diz que ela deva ser
+# pobre.
+MEKORA_PROVA="$(dirname "$BANCO")/.." MEKORA_EMAIL="$EMAIL" "$PY_" scripts/semear.py >/dev/null 2>&1 || true
 
 echo "$CHAVE"

@@ -46,6 +46,13 @@
 
 .estudo header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .estudo h2 { margin: 0; font-size: 22px; line-height: 28px; color: var(--foreground); }
+/* O TÍTULO É UM LINK, e link sem tinta declarada sai no `#0000ee` do
+ * navegador. O defeito estava aqui desde que o título virou link, e nenhuma
+ * medição o via: a auditoria media a tela numa conta sem estudo nenhum, então
+ * não havia título para pintar de azul. */
+.estudo h2 a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.estudo h2 a:hover { text-decoration-thickness: 2px; }
+.estudo h2 a:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
 
 .estudo-sobre {
   margin: 8px 0 0;

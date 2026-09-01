@@ -1,0 +1,182 @@
+"""A busca do cabeçalho e o "Remover da estante" — nós 941:23107 e 941:23118.
+
+O que estes testes protegem não é a feliz: é a linha que separa o que é meu do
+que é de outra pessoa. Uma busca é, por construção, uma rota que devolve uma
+lista de coisas a partir de um texto — e uma lista que não filtra por dono é
+como se descobre o acervo dos outros uma palavra por vez.
+"""
+
+from __future__ import annotations
+
+import pytest
+
+from sqlalchemy.orm import Session
+
+from app.models.nota import Nota
+from app.models.pessoa import Pessoa
+from app.models.processing_job import ProcessingJob
+from app.services import acesso_service
+
+
+@pytest.fixture
+def db(test_engine):
+    """Uma sessão contra o mesmo banco do cliente, para montar o cenário.
+
+    Os trabalhos aqui não passam pela conversão: o que está sob teste é quem
+    acha e quem apaga, não como o EPUB nasce. Montar pelo banco é o que permite
+    ter dois donos em três linhas.
+    """
+    with Session(test_engine) as s:
+        yield s
+
+
+@pytest.fixture
+def correio(monkeypatch):
+    caixa = []
+    monkeypatch.setattr(
+        acesso_service, "enviar_link",
+        lambda email, token, base_url: caixa.append({"email": email, "token": token}),
+    )
+    return caixa
+
+
+def entrar(client_cru, db, correio, email):
+    """Entra, e devolve o id da pessoa.
+
+    `/eu` não devolve o id de propósito — ele não serve para nada na tela e é
+    mais uma coisa que sai pela rede. Aqui ele vem do banco, porque montar um
+    trabalho de alguém exige dizer de quem.
+    """
+    assert client_cru.post("/entrar/pedir", json={"email": email}).status_code == 204
+    token = correio[-1]["token"]
+    assert client_cru.get(f"/entrar/{token}", follow_redirects=False).status_code == 303
+    return db.query(Pessoa).filter(Pessoa.email == email).one().id
+
+
+def livro(db, dono_id, titulo, autor="", nome="a.pdf"):
+    j = ProcessingJob(
+        dono_id=dono_id, original_filename=nome, final_title=titulo,
+        final_author=autor, input_format="pdf", status="done",
+    )
+    db.add(j); db.commit(); db.refresh(j)
+    return j
+
+
+# ── a busca ─────────────────────────────────────────────────────────────────
+
+def test_busca_sem_conta_pede_conta(client_cru):
+    assert client_cru.get("/buscar?q=viabilidade").status_code == 401
+
+
+def test_busca_acha_por_titulo_autor_e_nome_do_arquivo(client_cru, db, correio):
+    eu = entrar(client_cru, db, correio, "erik@exemplo.com")
+    livro(db, eu, "Estudo da viabilidade", "Ana Duarte", "viab.pdf")
+
+    for termo in ("viabilidade", "Ana Duarte", "viab.pdf"):
+        achados = client_cru.get(f"/buscar?q={termo}").json()["livros"]
+        assert len(achados) == 1, termo
+        assert achados[0]["titulo"] == "Estudo da viabilidade"
+        assert achados[0]["autor"] == "Ana Duarte"
+        assert achados[0]["formato"] == "PDF"
+
+
+def test_busca_nao_atravessa_para_o_acervo_de_outra_pessoa(client_cru, db, correio):
+    outra = entrar(client_cru, db, correio, "outra@exemplo.com")
+    livro(db, outra, "Diário de campo")
+    client_cru.post("/sair")
+
+    entrar(client_cru, db, correio, "erik@exemplo.com")
+    assert client_cru.get("/buscar?q=Diário").json()["livros"] == []
+
+
+def test_busca_curta_nao_e_erro(client_cru, db, correio):
+    entrar(client_cru, db, correio, "erik@exemplo.com")
+    r = client_cru.get("/buscar?q=a")
+    assert r.status_code == 200
+    assert r.json()["curto"] is True
+
+
+def test_por_cento_nao_e_curinga(client_cru, db, correio):
+    """`%` no `LIKE` casa com qualquer coisa. Escrito por uma pessoa, é um por
+    cento — e sem escapar, procurar "100%" devolveria a estante inteira."""
+    eu = entrar(client_cru, db, correio, "erik@exemplo.com")
+    livro(db, eu, "Cem por cento de cobertura")
+    livro(db, eu, "Outro livro qualquer")
+    assert client_cru.get("/buscar?q=100%").json()["livros"] == []
+
+
+def test_busca_acha_nota_e_estudo(client_cru, db, correio):
+    eu = entrar(client_cru, db, correio, "erik@exemplo.com")
+    db.add(Nota(pessoa_id=eu, trecho="a expedição partiu ao amanhecer", fonte="solta"))
+    db.commit()
+    assert client_cru.post("/estudos/novo", json={"nome": "Expedições", "sobre": ""}).status_code == 201
+
+    r = client_cru.get("/buscar?q=expedi").json()
+    assert len(r["notas"]) == 1
+    assert len(r["estudos"]) == 1
+
+
+# ── remover da estante ──────────────────────────────────────────────────────
+
+def test_remover_apaga_o_trabalho_e_os_arquivos(client_cru, db, correio, tmp_storage):
+    eu = entrar(client_cru, db, correio, "erik@exemplo.com")
+    j = livro(db, eu, "Some daqui")
+
+    entrada = tmp_storage / "input" / "some.pdf"
+    entrada.write_bytes(b"%PDF-1.4")
+    j.input_path = str(entrada)
+    db.commit()
+
+    saida = tmp_storage / "output" / str(j.id)
+    saida.mkdir(parents=True)
+    (saida / "some.epub").write_bytes(b"PK")
+
+    assert client_cru.delete(f"/jobs/{j.id}").status_code == 204
+    assert not entrada.exists()
+    assert not saida.exists()
+    assert db.query(ProcessingJob).filter(ProcessingJob.id == j.id).first() is None
+
+
+def test_remover_leva_as_notas_do_livro_junto(client_cru, db, correio):
+    """A cascata é do banco. Se o PRAGMA de chave estrangeira se perder, ela
+    deixa de acontecer em silêncio — e a nota fica apontando um livro que não
+    existe mais."""
+    eu = entrar(client_cru, db, correio, "erik@exemplo.com")
+    j = livro(db, eu, "Some daqui")
+    db.add(Nota(pessoa_id=eu, job_id=j.id, trecho="uma linha", fonte="leitura"))
+    db.commit()
+
+    assert client_cru.delete(f"/jobs/{j.id}").status_code == 204
+    assert db.query(Nota).filter(Nota.job_id == j.id).count() == 0
+
+
+def test_remover_o_livro_de_outra_pessoa_responde_404(client_cru, db, correio):
+    outra = entrar(client_cru, db, correio, "outra@exemplo.com")
+    j = livro(db, outra, "Não é seu")
+    client_cru.post("/sair")
+
+    entrar(client_cru, db, correio, "erik@exemplo.com")
+    assert client_cru.delete(f"/jobs/{j.id}").status_code == 404
+    assert db.query(ProcessingJob).filter(ProcessingJob.id == j.id).first() is not None
+
+
+# ── o buraco que derrubava o /status ────────────────────────────────────────
+
+def test_status_sobrevive_a_coluna_nula(client_cru, db, correio):
+    """Um NULL numa coluna que o esquema declara não-nula derrubava a resposta
+    inteira com 500 — e a tela de preparo dizia "O Mekora não está respondendo
+    agora" para um trabalho que o `/analyze` devolvia sem reclamar.
+
+    O NULL chega por um caminho banal: um registro criado antes de a coluna
+    existir. `_sem_buracos` já cobria o `/analyze`; faltava aqui.
+    """
+    eu = entrar(client_cru, db, correio, "erik@exemplo.com")
+    j = livro(db, eu, "Com buraco")
+    for coluna in ("ocr_status", "conversion_status", "send_status",
+                   "translation_status", "comic_translation_status"):
+        setattr(j, coluna, None)
+    db.commit()
+
+    r = client_cru.get(f"/jobs/{j.id}/status")
+    assert r.status_code == 200, r.text
+    assert r.json()["conversion_status"] == ""
