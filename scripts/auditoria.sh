@@ -28,32 +28,23 @@ SEM_CONTA="/estante"
 
 PRIVADAS="/mesa /estante /canvas /estudos /notas /conta /conta/kindle /conta/seguranca /conta/preferencias /conta/privacidade"
 
-# A ficha de um livro e o preparo dele levam numero no caminho, e o numero muda
-# a cada semeadura. Descobre-se o primeiro da estante em vez de fixar um id que
-# some na proxima vez que o banco for refeito.
-descobrir_livro() {
-  local k
-  k=$(MEKORA_PROVA="$RAIZ" scripts/entrar-como-dono.sh 2>/dev/null) || return 1
-  # `--input-type=module` porque o corpo usa `await` no topo. Sem ele o node
-  # falha, o `2>/dev/null` engole, e a variavel volta vazia — que aqui nao e
-  # "nao ha livro", e sim "nao perguntei".
-  node --input-type=module -e "
-    const chave = process.argv[1];
-    const r = await fetch('$WEB/entrar/' + chave, { redirect: 'manual' });
-    const biscoito = (r.headers.getSetCookie?.() ?? []).join('; ');
-    const h = await (await fetch('$WEB/history', { headers: { cookie: biscoito } })).json();
-    if (h.length) process.stdout.write(String(h[0].upload_id ?? h[0].id));
-  " "$k" 2>/dev/null
-}
-
 medida() {   # $1 rota  $2 largura  $3 altura  $4 tema  $5 privada?
   local url="$WEB$1"
   if [ "$5" = "sim" ]; then
-    local k
-    # O id do livro vem de `$LIVRO`, e nao fixo em 1: com o `1` escrito aqui, a
-    # conta de medida virava dona de um trabalho antigo qualquer, e a ficha e o
-    # preparo mediam um livro que a sessao do navegador nao possuia.
-    k=$(MEKORA_PROVA="$RAIZ" scripts/entrar-como-dono.sh "${LIVRO:-}" 2>/dev/null) || { echo "sem sessao"; return; }
+    # DUAS LINHAS: a chave, e o primeiro livro DA CONTA que acabou de nascer.
+    #
+    # A versao anterior descobria o id do livro numa conta e o passava de volta
+    # ao helper para medir com OUTRA — e passar um id ali TRANSFERE o trabalho.
+    # Cada rodada da auditoria roubava um livro do acervo do Erik, e depois de
+    # algumas a leitura dele abria no texto de exemplo, porque o livro com EPUB
+    # tinha mudado de dono. Ninguem transfere nada agora.
+    local saida k livro
+    saida=$(MEKORA_PROVA="$RAIZ" scripts/entrar-como-dono.sh 2>/dev/null) || { echo "sem sessao"; return; }
+    k=$(printf '%s\n' "$saida" | sed -n 1p)
+    livro=$(printf '%s\n' "$saida" | sed -n 2p)
+    [ -n "$k" ] || { echo "sem sessao"; return; }
+    [ -n "$livro" ] || livro=0
+    url="$WEB${1//\{LIVRO\}/$livro}"
     node scripts/medir.mjs "$WEB/entrar/$k" "$2" "$3" scripts/portao.js $4 --depois="$url" 2>/dev/null
   else
     node scripts/medir.mjs "$url" "$2" "$3" scripts/portao.js $4 2>/dev/null
@@ -71,23 +62,18 @@ print(('passou' if d['passou'] else 'FALHOU') + f\"  {d['nos_com_texto']:>3} nos
 "
 }
 
-LIVRO="$(descobrir_livro)"
-[ -n "$LIVRO" ] && echo "livro de prova: $LIVRO" || echo "sem livro na estante — a ficha e o preparo ficam de fora"
-
 for larg in "1440 1000 " "390 844 " "1440 1000 --escuro"; do
   set -- $larg
   echo "═══ ${1}x${2} ${3:-claro} ═══"
   for r in $PUBLICAS; do printf "  %-22s " "$r"; medida "$r" "$1" "$2" "${3:-}" nao | resumo; done
   for r in $SEM_CONTA; do printf "  %-22s " "$r (sem conta)"; medida "$r" "$1" "$2" "${3:-}" nao | resumo; done
   for r in $PRIVADAS; do printf "  %-22s " "$r"; medida "$r" "$1" "$2" "${3:-}" sim | resumo; done
-  if [ -n "${LIVRO:-}" ]; then
-    # A LEITURA ENTRA NA MEDIDA. Ela era a unica tela do produto fora da
-    # auditoria, e por isso o cromo passou meses transbordando 390 sem que nada
-    # apontasse: seis botoes de 56px nao cabem, e a segunda caixa ficava cortada
-    # fora do viewport. `?exemplo` porque o livro semeado nao tem EPUB de
-    # verdade — e a tela do exemplo tem o mesmo cromo e a mesma prosa.
-    for r in "/estante/$LIVRO" "/preparo/$LIVRO" "/leitura/$LIVRO?exemplo"; do
-      printf "  %-22s " "$r"; medida "$r" "$1" "$2" "${3:-}" sim | resumo
-    done
-  fi
+  # A LEITURA ENTRA NA MEDIDA. Ela era a unica tela do produto fora da
+  # auditoria, e por isso o cromo passou meses transbordando 390 sem que nada
+  # apontasse: seis botoes de 56px nao cabem, e a segunda caixa ficava cortada
+  # fora do viewport. Agora o livro semeado tem EPUB de verdade, entao ela abre
+  # o texto do livro e nao o de exemplo.
+  for r in "/estante/{LIVRO}" "/preparo/{LIVRO}" "/leitura/{LIVRO}"; do
+    printf "  %-22s " "$r"; medida "$r" "$1" "$2" "${3:-}" sim | resumo
+  done
 done

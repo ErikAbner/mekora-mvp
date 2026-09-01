@@ -16,6 +16,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Icone } from "../componentes/Icone.jsx";
+import { Botao } from "../componentes/Botao.jsx";
 import { comDeslocamentos, irPara, ondeEstouNoLivro } from "../leitor/onde-parei.js";
 import { GRUPOS, aplicarAparencia, gravarAparencia, lerAparencia } from "../leitor/aparencia.js";
 import { aplicarTema, temaEspelhado } from "../estado/tema.js";
@@ -258,6 +259,74 @@ function Indice({ livro, aqui, aoIr, aoFechar }) {
 }
 
 
+/* NOTA · CARTÃO — nó 941:23113.
+ *
+ * O popup onde se escreve a nota. Ele abre logo depois de marcar um trecho pelo
+ * "Adicionar nota" da barra de seleção: nota é destaque COM comentário, e sem
+ * um lugar para escrever o comentário o botão só mudava a cor do texto.
+ *
+ * A versão anterior abria o caderno inteiro — a coluna com todas as notas do
+ * livro — para escrever uma linha sobre a que acabou de ser feita. Era abrir um
+ * arquivo para anotar um papel.
+ *
+ * O cabeçalho traz a HORA, como o desenho. Ele escreve "12:46 pm"; aqui é
+ * "12:46", porque em português não se usa am/pm — e a hora sozinha basta:
+ * a nota acabou de nascer, e o dia é hoje.
+ */
+function CartaoDeNota({ nota, aoSalvar, aoFechar }) {
+  const [texto, setTexto] = useState(nota?.comentario ?? "");
+  const campo = useRef(null);
+
+  /* O foco vai para o campo ao abrir. Quem clicou em "Adicionar nota" quer
+   * escrever — pedir um segundo clique para começar é o produto cobrando um
+   * gesto que ele já sabe qual é. */
+  useEffect(() => { campo.current?.focus(); }, []);
+
+  if (!nota) return null;
+
+  const hora = nota.criada_em
+    ? new Date(nota.criada_em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+    : "";
+
+  return (
+    <div className="cartao-nota-fundo" onPointerDown={(e) => { if (e.target === e.currentTarget) aoFechar?.(); }}>
+      <section className="cartao-nota" role="dialog" aria-label="Nota">
+        <header>
+          <h2>Nota</h2>
+          {hora && <span className="cartao-nota-hora">{hora}</span>}
+          <button type="button" className="cartao-nota-x" aria-label="Fechar" onClick={aoFechar}>
+            <span aria-hidden="true">×</span>
+          </button>
+        </header>
+
+        {/* O trecho marcado, com o filete na cor da nota. É o que a nota é
+            sobre, e sem ele o campo de escrita não tem assunto. */}
+        <blockquote style={{ "--cor-da-nota": DESTAQUES[nota.cor] }}>
+          {`\u201c${nota.trecho}\u201d`}
+        </blockquote>
+
+        <textarea
+          ref={campo}
+          value={texto}
+          placeholder="Escreva aqui..."
+          aria-label="O que você quer dizer sobre este trecho"
+          onChange={(e) => setTexto(e.target.value)}
+          /* `Esc` fecha sem salvar, e `Ctrl/Cmd+Enter` salva. São os dois atalhos
+             que um campo de texto dentro de um diálogo deve ter. */
+          onKeyDown={(e) => {
+            if (e.key === "Escape") aoFechar?.();
+            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) aoSalvar?.(texto);
+          }}
+        />
+
+        <footer>
+          <Botao tom="primaria" onClick={() => aoSalvar?.(texto)}>Salvar</Botao>
+        </footer>
+      </section>
+    </div>
+  );
+}
+
 /* NOTAS E DESTAQUES — nó 941:23111.
  *
  * Lista TODAS as notas do livro, e não só as do capítulo aberto: é o lugar de
@@ -406,14 +475,17 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
   /* MARCAR O TRECHO. Sai do JSX porque as duas ações do 941:23120 fazem a mesma
    * coisa com um passo a mais: "Adicionar nota" marca e abre o caderno, para a
    * pessoa poder escrever ao lado do que acabou de marcar. */
-  const marcar = async (cor, { abrirCaderno = false } = {}) => {
+  const marcar = async (cor, { escrever = false } = {}) => {
     if (!paleta) return;
-    await aoAnotar?.({ de: paleta.de, ate: paleta.ate, cor, trecho: paleta.trecho });
+    const nova = await aoAnotar?.({ de: paleta.de, ate: paleta.ate, cor, trecho: paleta.trecho });
     setPaleta(null);
     /* Limpa a seleção: deixá-la azul por cima do destaque recém-feito esconde
        exatamente o que a pessoa acabou de marcar. */
     window.getSelection?.()?.removeAllRanges();
-    if (abrirCaderno) setCaderno(true);
+    /* "Adicionar nota" abre O CARTÃO, e não o caderno inteiro.
+       Abrir a coluna com todas as notas do livro para escrever uma linha sobre
+       a que acabou de nascer era abrir um arquivo para anotar um papel. */
+    if (escrever && nova) setCartao(nova);
   };
   const [caderno, setCaderno] = useState(false);
   const prosa = useRef(null);
@@ -499,6 +571,8 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
   const [painel, setPainel] = useState(false);
   const [indice, setIndice] = useState(false);
   const [copiado, setCopiado] = useState(null);
+  /* A nota que o cartão do 941:23113 está mostrando. `null` é "não há cartão". */
+  const [cartao, setCartao] = useState(null);
   useEffect(() => { aplicarAparencia(aparencia); gravarAparencia(aparencia); }, [aparencia]);
 
   /* O TEMA FICA NO PAINEL TAMBÉM, como o desenho põe — e continua sendo o mesmo
@@ -736,7 +810,7 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
                   escrever o comentário. A cor é a primeira da paleta — a pessoa
                   troca depois, e obrigá-la a escolher a cor antes de escrever
                   poria uma decisão de forma na frente de uma de conteúdo. */}
-              <button type="button" className="paleta-botao" onClick={() => marcar("amarelo", { abrirCaderno: true })}>
+              <button type="button" className="paleta-botao" onClick={() => marcar("amarelo", { escrever: true })}>
                 <Icone src={iconeNotaNova} />
                 Adicionar nota
               </button>
@@ -771,6 +845,17 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
 
           {copiado && <p className="paleta-recado" role="status">{copiado}</p>}
         </div>
+      )}
+
+      {cartao && (
+        <CartaoDeNota
+          nota={cartao}
+          aoFechar={() => setCartao(null)}
+          aoSalvar={async (texto) => {
+            if (texto !== cartao.comentario) await aoComentar?.(cartao.id, texto);
+            setCartao(null);
+          }}
+        />
       )}
 
       {indice && (

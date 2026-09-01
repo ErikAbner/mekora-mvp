@@ -77,3 +77,25 @@ PY
 MEKORA_PROVA="$(dirname "$BANCO")/.." MEKORA_EMAIL="$EMAIL" "$PY_" scripts/semear.py >/dev/null 2>&1 || true
 
 echo "$CHAVE"
+
+# E O PRIMEIRO LIVRO DESTA CONTA, na segunda linha.
+#
+# A auditoria precisava do numero de um livro para medir a ficha, o preparo e a
+# leitura — e o pegava de OUTRA conta, passando esse id de volta aqui para que o
+# trabalho fosse TRANSFERIDO. Ou seja: cada rodada da auditoria roubava um livro
+# do acervo do Erik, e depois de algumas ele abria a leitura e via o texto de
+# exemplo, porque o livro com EPUB tinha mudado de dono.
+#
+# Agora a conta de medida diz qual e o livro DELA. Ninguem precisa transferir
+# nada, e o `$JOB` fica so para quem quiser medir um trabalho especifico.
+"$PY_" - "$BANCO" "$EMAIL" <<'PY'
+import sqlite3, sys
+c = sqlite3.connect(sys.argv[1])
+r = c.execute("SELECT id FROM pessoas WHERE email=?", (sys.argv[2],)).fetchone()
+if r:
+    livro = c.execute(
+        "SELECT id FROM processing_jobs WHERE dono_id=? ORDER BY id DESC LIMIT 1", (r[0],)
+    ).fetchone()
+    if livro:
+        print(livro[0])
+PY
