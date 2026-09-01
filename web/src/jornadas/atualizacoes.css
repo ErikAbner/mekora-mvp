@@ -51,7 +51,7 @@
 .atualizacoes-lote a { color: var(--foreground); font-size: 18px; line-height: 27px; }
 
 @media (max-width: 767px) {
-  .atualizacoes { gap: 40px; padding: 40px 24px 80px; }
+  .atualizacoes { gap: 40px; padding: 40px 16px 80px; }
   .atualizacoes-topo h1 { font-size: 32px; line-height: 40px; }
   .atualizacoes-lote h3 { font-size: 20px; line-height: 30px; }
 }

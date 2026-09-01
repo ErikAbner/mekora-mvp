@@ -430,7 +430,21 @@
 }
 
 @media (max-width: 767px) {
-  .apresentacao-vitrine { gap: 32px; padding: 40px 24px 80px; }
+  /* O RESPIRO LATERAL CAI PARA 16 EM TODA A PAGINA, e nao so na vitrine.
+   *
+   * As secoes da LP tinham 32px de cada lado — medida de desktop encolhida —, e
+   * o desenho mobile do arquivo usa `px-[16px]` em todas as faixas. Trinta e
+   * dois de cada lado numa tela de 390 tira 64px de uma coluna que ja e a
+   * estreita da pagina. */
+  .apresentacao-cabecalho,
+  .apresentacao-abertura,
+  .apresentacao-problema,
+  .apresentacao-capas,
+  .apresentacao-passos,
+  .apresentacao-depois,
+  .apresentacao-chamada,
+  .apresentacao-fim { padding-inline: 16px; }
+  .apresentacao-vitrine { gap: 32px; padding: 40px 16px 80px; }
   .vitrine-topo { flex-direction: column; align-items: stretch; gap: 12px; }
   .vitrine-lugares, .vitrine-recortes { flex-wrap: wrap; }
   .vitrine-corpo { padding: 16px; gap: 24px; }

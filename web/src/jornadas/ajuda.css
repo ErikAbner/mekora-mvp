@@ -119,7 +119,7 @@
 }
 
 @media (max-width: 767px) {
-  .ajuda { gap: 40px; padding: 40px 24px 80px; }
+  .ajuda { gap: 40px; padding: 40px 16px 80px; }
   .ajuda-topo h1 { font-size: 32px; line-height: 40px; text-align: start; }
   .ajuda-tarefas { grid-template-columns: minmax(0, 1fr); gap: 16px; }
   .ajuda-tarefas li { padding: 24px 20px; }
