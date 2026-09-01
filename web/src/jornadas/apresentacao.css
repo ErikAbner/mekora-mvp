@@ -1,0 +1,303 @@
+/* D · Apresentacao — a landing publica.
+ *
+ * A pagina inteira e uma coluna centrada de 680px, que e a medida do desenho
+ * para texto corrido, com duas excecoes que o proprio desenho abre: a abertura
+ * (1096px, porque a area de soltar mora nela) e a fila de capas, que ocupa a
+ * largura toda.
+ */
+.apresentacao {
+  display: flex; flex-direction: column;
+  background: var(--background);
+}
+
+/* ---- cabecalho ---------------------------------------------------------- */
+
+.apresentacao-cabecalho {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 32px;
+}
+.apresentacao-marca { display: inline-flex; }
+.apresentacao-marca img { height: 32px; width: auto; }
+.apresentacao-cabecalho nav { display: flex; align-items: center; gap: 16px; }
+.apresentacao-cabecalho a {
+  padding: 16px 24px;
+  color: var(--muted-foreground);
+  font-size: 16px; line-height: 24px;   /* Label/Medium */
+  text-decoration: none;
+}
+.apresentacao-cabecalho a:hover { color: var(--foreground); }
+/* O unico destino do cabecalho que muda o estado da pessoa ganha o peso. */
+.apresentacao-entrar { color: var(--foreground); }
+
+/* ---- abertura ----------------------------------------------------------- */
+
+.apresentacao-abertura {
+  display: flex; flex-direction: column; align-items: center; gap: 96px;
+  padding: 64px 32px 128px;
+}
+.abertura-dizer {
+  display: flex; flex-direction: column; gap: 56px;
+  width: 100%; max-width: 1096px;
+}
+.abertura-dizer h1 {
+  margin: 0;
+  font-size: 64px;            /* Display/Large */
+  line-height: 72px;
+  font-weight: 540;           /* o Bold da Zodiak esta em 540,8, nao em 700 */
+  letter-spacing: -2.5%;      /* tracking relativo, nunca absoluto */
+  color: var(--foreground);
+}
+/* O subtexto vai para a direita, embaixo do titulo. E o desenho: a diagonal que
+ * sobra entre o fim do titulo e o comeco do paragrafo e o que faz a abertura
+ * respirar sem precisar de uma imagem. */
+.abertura-explica {
+  align-self: flex-end;
+  margin: 0;
+  max-width: 472px;
+  font-size: 20px; line-height: 30px;   /* Body/Medium */
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+/* ---- o problema --------------------------------------------------------- */
+
+.apresentacao-problema {
+  display: flex; flex-direction: column; align-items: center; gap: 32px;
+  padding: 128px 32px;
+}
+.apresentacao-problema h2,
+.apresentacao-passos h2,
+.apresentacao-depois h2,
+.apresentacao-chamada h2 {
+  margin: 0;
+  max-width: 680px;
+  font-size: 40px;            /* Heading/LG */
+  line-height: 48px;
+  font-weight: 540;
+  letter-spacing: -1.5%;
+  color: var(--info);
+  text-align: center;
+  text-wrap: pretty;
+}
+/* O filete marca a citacao. Mesma regra da explicacao do estado na Mesa. */
+.apresentacao-problema blockquote,
+.apresentacao-depois blockquote {
+  margin: 0;
+  max-width: 680px;
+  padding: 0 0 0 32px;
+  border-left: 2px solid var(--muted-foreground);
+  font-size: 24px; line-height: 32px;   /* Body/Large */
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+.apresentacao-depois blockquote p { margin: 0; }
+.apresentacao-depois blockquote p + p { margin-top: 8px; }
+
+.problema-texto {
+  display: flex; flex-direction: column; gap: 32px;
+  max-width: 675px;
+  margin-top: 8px;
+}
+.problema-texto p {
+  margin: 0;
+  font-size: 20px; line-height: 30px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+/* ---- as capas ----------------------------------------------------------- */
+
+.apresentacao-capas {
+  display: flex; flex-direction: column; align-items: center; gap: 64px;
+  padding: 64px 32px 128px;
+}
+.capas-fila {
+  display: flex; gap: 32px; justify-content: center;
+  margin: 0; padding: 0; list-style: none;
+  width: 100%;
+}
+/* `min-width: 0` NAO E DETALHE: sem ele o item flex nao encolhe abaixo do
+ * conteudo, e tres capas de 420px mais as lombadas passavam de 1588px numa
+ * janela de 1440 — a terceira saia pela direita. A medida do desenho (614px por
+ * par) vale para os 1920 dele, e precisa encolher junto com a janela. */
+.capas-fila li { display: flex; gap: 16px; flex: 1 1 0; min-width: 0; max-width: 614px; }
+/* A lombada. E o mesmo par do desenho: uma faixa estreita ao lado da capa, que
+ * faz a imagem se ler como livro de pe e nao como cartaz. Em proporcao, e nao
+ * em pixel: 72 de 614 e o que o desenho pede, e assim ela encolhe junto. */
+.capa-lombada {
+  flex: 0 0 11.7%;
+  background: var(--background-tertiary);
+}
+.capas-fila img {
+  flex: 1 1 0; min-width: 0; width: 100%;
+  aspect-ratio: 525 / 743;
+  object-fit: cover;
+  background: var(--card);
+}
+.capas-legenda {
+  margin: 0;
+  max-width: 582px;
+  font-size: 16px; line-height: 24px;   /* Body/Small */
+  color: var(--muted-foreground);
+  text-align: center;
+  text-wrap: pretty;
+}
+
+/* ---- os quatro passos --------------------------------------------------- */
+
+.apresentacao-passos {
+  display: flex; flex-direction: column; align-items: center; gap: 48px;
+  padding: 128px 32px;
+  scroll-margin-top: 32px;
+}
+.passos-lista {
+  display: flex; flex-direction: column;
+  margin: 0; padding: 0; list-style: none;
+  width: 100%; max-width: 680px;
+}
+/* Gap 48, e nao 64: com 64 sobravam 472px para o texto e o terceiro passo
+ * quebrava em duas linhas — "Mostra o que encontrou e o que vai / fazer". O
+ * desenho pede 489px de largura para essa linha, e 48 os devolve. */
+.passos-lista li {
+  display: flex; align-items: center; gap: 48px;
+  padding: 40px;
+  border-bottom: 1px solid var(--separator);
+}
+.passos-lista li:first-child { border-top: 1px solid var(--separator); }
+/* O numero e capitular: italico e no corpo do display. E o unico italico da
+ * pagina, e e o que separa a contagem do conteudo sem precisar de cor.
+ *
+ * LARGURA FIXA porque os quatro digitos nao tem a mesma largura: sem ela, os
+ * titulos dos passos 1 e 4 comecavam 17px a esquerda dos passos 2 e 3, e uma
+ * lista de quatro itens com quatro margens diferentes le como erro. O desenho
+ * compensa isso com gap diferente no primeiro item, o que resolve para "1" e
+ * quebra de novo em qualquer outro numero. */
+.passo-numero {
+  flex: none;
+  width: 64px;
+  font-size: 64px; line-height: 72px;
+  font-style: italic;
+  letter-spacing: -2.5%;
+  color: var(--info);
+  text-align: center;
+}
+.passo-dizer { display: flex; flex-direction: column; gap: 16px; }
+.passo-dizer h3 {
+  margin: 0;
+  font-size: 24px; line-height: 32px;   /* Body/Large */
+  font-weight: 400;
+  color: var(--info);
+}
+.passo-dizer p {
+  margin: 0;
+  font-size: 20px; line-height: 30px;
+  color: var(--muted-foreground);
+}
+
+/* ---- o que fica depois -------------------------------------------------- */
+
+.apresentacao-depois {
+  display: flex; flex-direction: column; align-items: center; gap: 48px;
+  padding: 64px 32px 128px;
+}
+.depois-lista {
+  display: flex; flex-direction: column;
+  margin: 0; padding: 0; list-style: none;
+  width: 100%; max-width: 680px;
+}
+.depois-lista li {
+  display: flex; flex-direction: column; gap: 24px;
+  padding: 40px 32px;
+  border-bottom: 1px solid var(--separator);
+}
+.depois-lista h3 {
+  margin: 0;
+  font-size: 28px; line-height: 36px;   /* Heading/SM */
+  font-weight: 540;
+  color: var(--muted-foreground);
+}
+.depois-lista p,
+.depois-fecho p {
+  margin: 0;
+  font-size: 20px; line-height: 30px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+.depois-fecho {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 40px;
+  width: 100%; max-width: 680px;
+}
+/* Os chips centram dentro da area de soltar, e aqui eles seguem o texto — que e
+ * alinhado a esquerda. `justify-content` vem do `formatos.css` e precisa ceder. */
+.depois-fecho .formatos { justify-content: flex-start; }
+
+/* ---- a chamada ---------------------------------------------------------- */
+
+.apresentacao-chamada {
+  display: flex; flex-direction: column; align-items: center; gap: 56px;
+  padding: 128px 32px;
+}
+.chamada-texto {
+  display: flex; flex-direction: column; gap: 32px;
+  max-width: 680px;
+}
+.chamada-texto p {
+  margin: 0;
+  font-size: 20px; line-height: 30px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+.chamada-botoes {
+  display: flex; gap: 32px;
+  width: 100%; max-width: 680px;
+}
+/* Os dois sao ancoras com cara de botao: um rola, o outro navega. O `.botao` do
+ * componente ja pinta os dois tons; o que falta e o que so o <button> tinha. */
+.chamada-botoes .botao { flex: 1 1 0; text-decoration: none; }
+
+.apresentacao-fim {
+  display: flex; justify-content: center;
+  padding: 0 32px 128px;
+  scroll-margin-top: 32px;
+}
+
+@media (max-width: 1023px) {
+  /* Marca mais os dois atalhos passavam de 517px numa tela de 390, e a pagina
+     ganhava rolagem horizontal logo no cabecalho. A marca encolhe, os atalhos
+     perdem o respiro lateral, e o `wrap` garante que nenhuma largura de tela
+     futura volte a empurrar. */
+  .apresentacao-cabecalho { flex-wrap: wrap; gap: 8px; padding: 8px 16px; }
+  .apresentacao-marca img { height: 24px; }
+  .apresentacao-cabecalho nav { gap: 4px; }
+  .apresentacao-cabecalho a { padding: 12px 8px; font-size: 14px; line-height: 22px; }
+  .apresentacao-abertura { gap: 56px; padding: 40px 24px 80px; }
+  .abertura-dizer { gap: 32px; }
+  .abertura-dizer h1 { font-size: 40px; line-height: 48px; }   /* Heading/LG no mobile */
+  .abertura-explica { align-self: flex-start; }
+
+  .apresentacao-problema,
+  .apresentacao-passos,
+  .apresentacao-chamada { padding: 80px 24px; }
+  .apresentacao-capas,
+  .apresentacao-depois { padding: 40px 24px 80px; }
+  .apresentacao-fim { padding: 0 24px 80px; }
+
+  .apresentacao-problema h2,
+  .apresentacao-passos h2,
+  .apresentacao-depois h2,
+  .apresentacao-chamada h2 { font-size: 32px; line-height: 40px; }
+  .apresentacao-problema blockquote,
+  .apresentacao-depois blockquote { font-size: 20px; line-height: 30px; }
+
+  /* Tres capas lado a lado viram tres tiras. Uma so, inteira, diz o que a secao
+     precisa dizer — e as outras duas continuam roláveis. */
+  .capas-fila { overflow-x: auto; }
+  .capas-fila li { flex: 0 0 78%; }
+
+  .passos-lista li { gap: 24px; padding: 24px 8px; }
+  .passo-numero { width: 40px; font-size: 40px; line-height: 48px; }
+  .passo-dizer h3 { font-size: 20px; line-height: 30px; }
+  .depois-lista li { padding: 24px 8px; }
+  .depois-lista h3 { font-size: 24px; line-height: 32px; }
+  .chamada-botoes { flex-direction: column; gap: 16px; }
+}

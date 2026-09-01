@@ -12,6 +12,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams, useLocation } from "react-router-dom";
 import { MesaVazia } from "./jornadas/MesaVazia.jsx";
+import { Apresentacao } from "./jornadas/Apresentacao.jsx";
 import { MesaCheia } from "./jornadas/MesaCheia.jsx";
 import { Estante } from "./jornadas/Estante.jsx";
 import { Leitura } from "./jornadas/Leitura.jsx";
@@ -62,6 +63,20 @@ function Mesa() {
 
   if (!lista.length) return <MesaVazia aoReceberArquivos={receber} backend={backend} />;
   return <MesaCheia arquivos={lista} aoVerEstante={() => navegar("/estante")} aoReceberArquivos={receber} />;
+}
+
+function PaginaApresentacao() {
+  const { backend, receber } = useJornada();
+  const navegar = useNavigate();
+  /* Soltar um arquivo aqui faz o mesmo que na Mesa, e leva para la: a fila do
+     preparo mora na Mesa, e mostra-la embaixo da landing seria uma segunda
+     mesa, que depois divergiria da primeira. */
+  return (
+    <Apresentacao
+      backend={backend}
+      aoReceberArquivos={(arquivos) => { receber(arquivos); navegar("/"); }}
+    />
+  );
 }
 
 function PaginaEstante() {
@@ -324,6 +339,10 @@ export function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/entrar" element={<Entrar />} />
+        {/* A landing publica. Ela nao mora em "/" porque "/" e a Mesa, que e
+            onde quem ja usa o produto quer cair — mandar o usuario de volta a
+            apresentacao a cada visita e cobrar um clique por sessao. */}
+        <Route path="/apresentacao" element={<PaginaApresentacao />} />
         <Route path="/" element={<Mesa />} />
         {/* A estante É a conta (DEC-0018). Sem entrar não há o que listar —
             e listar tudo seria mostrar a estante de todo mundo. */}

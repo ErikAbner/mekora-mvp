@@ -8,51 +8,16 @@
  * decidir se aquilo é estado ou defeito. É a regra do produto dizer o que não
  * sabe, aplicada ao que ele sabe que não tem.
  */
-import { useEffect, useRef, useState } from "react";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Rodape } from "../componentes/Rodape.jsx";
+import { Soltar } from "../componentes/Soltar.jsx";
 // Assets do Figma, servidos de `publico/`. Caminho e nao import: o import ES
 // so vale para asset dentro de src/, que o Vite processa e versiona.
-const ilustracaoSoltar = "/icones/ilustracao-soltar-arquivo.svg";
 const ilustracaoLimpa = "/icones/ilustracao-mesa-limpa.svg";
-const iconeEnviar = "/icones/icone-enviar.svg";
-
-import { Icone } from "../componentes/Icone.jsx";
-import { lerFormatos } from "../../../contrato/api.js";
-import { Botao } from "../componentes/Botao.jsx";
 
 import "./mesa-vazia.css";
 
-/* Enquanto a lista de verdade não chega, estes quatro. São os mais comuns e
- * todos aceitos — o objetivo é a caixa não nascer vazia, e não descrever o que
- * o produto suporta. Quem descreve isso é o servidor. */
-const ENQUANTO_CHEGA = [".pdf", ".epub", ".docx", ".cbz"];
-
 export function MesaVazia({ aoReceberArquivos, backend }) {
-  /* A LISTA VEM DE QUEM DECIDE. Escrita aqui, ela divergia do backend nos dois
-   * sentidos, e nenhuma das metades aparecia testando: oferecer a mais dá erro
-   * depois do upload, esconder de menos não dá erro nenhum — a pessoa
-   * simplesmente não tenta. */
-  const [formatos, setFormatos] = useState(ENQUANTO_CHEGA);
-  useEffect(() => {
-    let vivo = true;
-    lerFormatos()
-      .then((f) => vivo && f?.todos?.length && setFormatos(f.todos))
-      .catch(() => {});
-    return () => { vivo = false; };
-  }, []);
-
-  /* O input fica escondido e o botão o aciona: input de arquivo nativo não se
-   * estiliza, e recriar um por fora quebraria teclado e leitor de tela. */
-  const campo = useRef(null);
-  const [sobre, setSobre] = useState(false);
-
-  const soltar = (e) => {
-    e.preventDefault();
-    setSobre(false);
-    if (e.dataTransfer?.files?.length) aoReceberArquivos?.(e.dataTransfer.files);
-  };
-
   return (
     <div className="mesa">
       <Cabecalho lugar="mesa" />
@@ -66,42 +31,7 @@ export function MesaVazia({ aoReceberArquivos, backend }) {
       </section>
 
       <section className="entrada">
-        {/* Arrastar É a instrução principal da tela, então a área toda recebe o
-            arquivo — não só o botão. */}
-        <div
-          className={`soltar${sobre ? " sobre" : ""}`}
-          onDragOver={(e) => { e.preventDefault(); setSobre(true); }}
-          onDragLeave={() => setSobre(false)}
-          onDrop={soltar}
-        >
-          <img src={ilustracaoSoltar} alt="" className="ilustracao-soltar" aria-hidden="true" />
-          <h2>Arraste arquivos ou clique para selecionar</h2>
-
-          <ul className="formatos">
-            {formatos.map((f) => (
-              <li key={f}>{f}</li>
-            ))}
-          </ul>
-
-          <input
-            ref={campo}
-            type="file"
-            multiple
-            hidden
-            onChange={(e) => e.target.files?.length && aoReceberArquivos?.(e.target.files)}
-          />
-          <Botao tom="primaria" icone={iconeEnviar} onClick={() => campo.current?.click()}>
-            Selecionar arquivos
-          </Botao>
-
-          <p className="sem-conta">
-            {/* O produto diz o que não sabe. Uma área de soltar que não funciona
-                porque o servidor caiu é pior que uma que avisa. */}
-            {backend === "fora do ar"
-              ? "O conversor não está respondendo. Os arquivos não seriam preparados agora."
-              : "Não é preciso criar conta para converter."}
-          </p>
-        </div>
+        <Soltar aoReceberArquivos={aoReceberArquivos} backend={backend} />
       </section>
 
       {/* O estado vazio explicado, e não uma area em branco. */}

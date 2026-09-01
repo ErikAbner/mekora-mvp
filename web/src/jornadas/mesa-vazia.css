@@ -16,51 +16,11 @@
 
 .entrada { display: flex; justify-content: center; padding: 0 64px 64px; }
 
-/* A superficie que recebe o arquivo e um DEGRAU de fundo, nao uma borda
- * tracejada. As camadas vem do fundo — e e o que permite tirar borda de quase
- * tudo sem a area deixar de se ler como area. */
-.soltar {
-  display: flex; flex-direction: column; align-items: center; gap: 32px;
-  width: 100%; max-width: 1096px; padding: 40px 32px;
-  background: var(--card);
-}
-.ilustracao-soltar { width: 289px; height: 264px; }
-.soltar h2 {
-  margin: 0;
-  font-size: 32px;            /* Heading/MD */
-  line-height: 40px;
-  font-weight: 540;
-  color: var(--foreground);
-  text-align: center;
-  text-wrap: pretty;
-}
-
-.formatos {
-  display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
-  margin: 0; padding: 0; list-style: none;
-}
-/* Pilula, e nao raio zero. O chip carrega DADO — formato de arquivo — e a regra
- * de geometria e explicita: r1 zero e para acao e estrutura (botao, campo, card,
- * lista, folha); tag, chip, trilho e interruptor sao pilula. Eu os tinha zerado
- * citando "raio zero e REGRA", que e verdade e nao cobre este caso. */
-.formatos li {
-  padding: 9px 13px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--background);
-  color: var(--muted-foreground);
-  font-size: 14px;            /* Label/Small */
-  line-height: 22px;
-  text-transform: uppercase;
-}
-
-
-
-.sem-conta {
-  margin: 0;
-  font-size: 16px; line-height: 24px;
-  color: var(--muted-foreground);
-}
+/* O `.soltar`, os `.formatos` e o `.sem-conta` mudaram para
+ * `componentes/soltar.css`: a area de receber arquivo agora e um componente,
+ * porque a Apresentacao usa a mesma — duas vezes. Deixar o CSS aqui faria a
+ * landing depender do arquivo da Mesa para se pintar.
+ */
 
 .vazio {
   display: flex; align-items: center; justify-content: center; gap: 48px;
@@ -91,12 +51,7 @@
   .promessa { min-height: 0; padding: 40px 24px; }
   .promessa h1 { font-size: 32px; line-height: 40px; }   /* Heading/XL no mobile */
   .entrada { padding: 0 24px 40px; }
-  .soltar h2 { font-size: 24px; line-height: 32px; }     /* Heading/MD no mobile */
   .vazio { flex-direction: column; gap: 32px; padding: 40px 24px 80px; }
   .vazio-texto h2 { font-size: 24px; line-height: 32px; }
   .vazio-texto p { font-size: 18px; line-height: 27px; } /* a excecao como RAZAO */
 }
-
-/* A area inteira recebe o arquivo, entao ela precisa dizer quando esta pronta
- * para receber. Degrau de superficie, nao matiz — a mesma regra da selecao. */
-.soltar.sobre { background: var(--muted); outline: 1px solid var(--foreground); outline-offset: -1px; }

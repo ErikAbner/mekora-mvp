@@ -1,0 +1,35 @@
+/* A superficie que recebe o arquivo e um DEGRAU de fundo, nao uma borda
+ * tracejada. As camadas vem do fundo — e e o que permite tirar borda de quase
+ * tudo sem a area deixar de se ler como area. */
+.soltar {
+  display: flex; flex-direction: column; align-items: center; gap: 32px;
+  width: 100%; max-width: 1096px; padding: 40px 32px;
+  background: var(--card);
+}
+.ilustracao-soltar { width: 289px; height: 264px; }
+.soltar h2 {
+  margin: 0;
+  font-size: 32px;            /* Heading/MD */
+  line-height: 40px;
+  font-weight: 540;
+  color: var(--foreground);
+  text-align: center;
+  text-wrap: pretty;
+}
+
+/* Os chips mudaram para `formatos.css`: a Apresentacao os mostra fora da area
+ * de soltar, e o CSS precisava seguir o componente. */
+
+.sem-conta {
+  margin: 0;
+  font-size: 16px; line-height: 24px;
+  color: var(--muted-foreground);
+}
+
+/* A area inteira recebe o arquivo, entao ela precisa dizer quando esta pronta
+ * para receber. Degrau de superficie, nao matiz — a mesma regra da selecao. */
+.soltar.sobre { background: var(--muted); outline: 1px solid var(--foreground); outline-offset: -1px; }
+
+@media (max-width: 1023px) {
+  .soltar h2 { font-size: 24px; line-height: 32px; }     /* Heading/MD no mobile */
+}

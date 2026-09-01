@@ -215,3 +215,107 @@ título do grupo antes de cada opção. Um `<p>` solto acima das opções fica �
 
 Conferido na página servida: **6 grupos, 13 rádios, agrupamento por `name`
 funcionando**, seleção trocando dentro do grupo certo.
+
+---
+
+# D · Apresentação (Figma 895:7063)
+
+## Quatro erros de escrita no desenho, corrigidos
+
+O desenho traz `photografia`, `capitulos` sem acento, `letra , há` com espaço
+antes da vírgula, e `todos sem sumário você vai marcar` sem a pontuação que
+separa as duas orações. Foram para `fotografia`, `capítulos`, `letra, há` e
+`todos sem sumário. Você vai marcar`.
+
+Copiar erro de digitação é a leitura mais literal possível do desenho e a menos
+fiel à intenção dele. Se algum for deliberado, é só dizer e eu volto.
+
+## Três cores fora do sistema, trocadas pelo token
+
+| onde | no desenho | virou |
+|---|---|---|
+| citação de "O livro não termina" (`895:7232`) | `#666668` | `text/secondary` |
+| chip `.cbr` (`895:7275`) | `#727274` | `text/secondary` |
+| links do rodapé (`895:7308`) | `#d5d5d5` em 28px | o `Rodape` do produto |
+
+As três são vizinhas do token e nenhuma delas existe na paleta. As duas primeiras
+são erros isolados: os outros cinco chips da mesma fileira usam o token certo.
+
+## O que estava repetido no desenho, e entrou uma vez
+
+- A seção "PDF não é um livro" aparece **duas vezes** dentro do mesmo bloco
+  (`895:7173` e `941:22531`), com texto idêntico ao caractere.
+- A legenda "Um relatório de pesquisa sem capa…" aparece **três vezes**
+  (`895:7195`, `895:7285`, `895:7306`).
+
+Repetir o mesmo parágrafo três vezes numa página só ensina a pessoa a pular. Cada
+um entrou uma vez, na primeira posição em que aparece.
+
+## O rodapé: os lugares que existem, e não "Link link link"
+
+O desenho traz quatro colunas de `Link link link` — marcador de posição, porque o
+rodapé do site ainda não foi decidido. A tela usa o `Rodape` do produto, que
+lista o que existe. Um link morto é pior que um link a menos.
+
+## As duas seções de imagem: uma virou capa de verdade, a outra não entrou
+
+**A das três capas (`895:7183`) entrou** com as capas do próprio produto, servidas
+de `publico/capas/`. A legenda ao lado fala exatamente de capa montada pelo
+Mekora — mostrar capa de verdade é o que a seção afirma.
+
+**A do mockup grande (`895:7279`) ficou de fora.** É um retângulo de 1540×858 sem
+conteúdo no desenho, e o MCP do Figma recusa exportar asset enquanto o diretório
+de escrita não estiver liberado em *Dev Mode > MCP > Allowed directories*:
+
+> Cannot write to this directory. The user must add this directory to their
+> allowed directories list in Figma Dev Mode settings.
+
+Um retângulo cinza no lugar seria o placeholder que esta rodada existe para
+eliminar. A legenda dela era a terceira cópia da legenda das capas, então nada de
+texto se perdeu.
+
+## Os chips mostram a lista do servidor, e não os seis do desenho
+
+O desenho fixa `.pdf .epub .docx .cbz .cbr .zip`. A tela mostra o que
+`/formatos` responde — hoje onze. **A lista vem de quem decide:** escrita à mão
+ela divergia do backend nos dois sentidos, e nenhuma das metades aparece
+testando. Oferecer a mais dá erro depois do upload; esconder de menos não dá erro
+nenhum, a pessoa simplesmente não tenta.
+
+## O cabeçalho não é o das jornadas
+
+O `Cabecalho` lista os quatro lugares do produto. Esta é a única tela escrita para
+quem ainda não entrou, e oferecer Canvas e Estudos a quem nunca soltou um arquivo
+é oferecer porta que não abre. O daqui tem dois destinos, e os dois levam a algum
+lugar: uma âncora para "Como funciona", nesta mesma página, e `/entrar`.
+
+## Três medidas que o desenho não fecha em 1440
+
+O desenho é de 1920. Em 1440:
+
+1. **As três capas** somavam 1588px e a terceira saía pela direita. Os itens
+   ganharam `min-width: 0` — sem ele o item flex não encolhe abaixo do conteúdo —
+   e a lombada virou proporção (11,7%, que é 72 de 614) em vez de 72px fixos.
+2. **Os números dos passos** têm larguras diferentes, e os títulos de 1 e 4
+   começavam 17px à esquerda dos de 2 e 3. Ganharam largura fixa de 64px. O
+   desenho compensa isso com um gap maior só no primeiro item, o que resolve para
+   `1` e quebra em qualquer outro dígito.
+3. **O gap dos passos** caiu de 64 para 48: com 64 sobravam 472px de texto e
+   "Mostra o que encontrou e o que vai fazer" quebrava em duas linhas. O desenho
+   pede 489px para essa linha, e 48 os devolve.
+
+E uma que o desenho não tem: em 390px o cabeçalho somava 517px e a página ganhava
+rolagem horizontal. A marca encolhe para 24px, os atalhos perdem respiro lateral
+e o cabeçalho quebra linha se precisar.
+
+## A área de soltar virou componente
+
+Ela nasceu na `MesaVazia` e a Apresentação precisa dela duas vezes — topo e fim.
+Três cópias de sessenta linhas, cada uma com seu próprio `fetch` da lista de
+formatos, seriam três chances de uma delas parar de buscar sem ninguém ver: as
+três continuariam mostrando a lista de espera.
+
+Saiu para `componentes/Soltar.jsx`, e os chips para `componentes/Formatos.jsx`,
+porque a Apresentação os mostra também fora da área de soltar.
+
+Medido depois: a Mesa continua passando no portão, com os mesmos 33 nós.
