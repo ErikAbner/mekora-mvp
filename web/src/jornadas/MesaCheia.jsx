@@ -27,9 +27,16 @@ const iconeEnviar = "/icones/icone-enviar.svg";
 import { useRef, useState } from "react";
 import { ESTADOS as DO_CONTRATO } from "../../../contrato/estado.js";
 
+/* OS RÓTULOS SÃO OS DO DESENHO — nó 895:9736: Enviando, Na fila, Pronto, Com
+ * erro. O de `trabalhando` dizia "Em preparo", que é também o nome da SEÇÃO, e
+ * a tela se contradizia: "Em preparo" no topo e "0 Em preparo" logo abaixo.
+ *
+ * Eu tinha resolvido trocando o nome da seção para "A mesa" — o que consertou a
+ * contradição e afastou a tela do desenho. O desenho não tem esse problema:
+ * lá a seção é "Em preparo" e o estado é "Enviando". */
 const ESTADOS = {
   fila: { rotulo: "Na fila", classe: "fila" },
-  trabalhando: { rotulo: "Em preparo", classe: "enviando" },
+  trabalhando: { rotulo: "Enviando", classe: "enviando" },
   pronto: { rotulo: "Pronto", classe: "pronto" },
   erro: { rotulo: "Com erro", classe: "erro" },
 };
@@ -113,7 +120,10 @@ function Arquivo({ nome, estado, feito, total, progresso, detalhe, etapa, motivo
 }
 
 export function MesaCheia({ arquivos = [], aoVerEstante, aoReceberArquivos }) {
+  const [recorte, setRecorte] = useState("tudo");
   const c = contar(arquivos);
+  /* A lista filtrada pelo recorte. `tudo` é o padrão, e é o que o desenho marca. */
+  const visiveis = recorte === "tudo" ? arquivos : arquivos.filter((a) => a.estado === recorte);
   const campo = useRef(null);
   const [sobre, setSobre] = useState(false);
 
@@ -147,20 +157,19 @@ export function MesaCheia({ arquivos = [], aoVerEstante, aoReceberArquivos }) {
       <section className="preparo">
         <div className="preparo-caixa">
           <header className="preparo-topo">
-            {/* O título era "Em preparo", que é também o nome de um ESTADO —
-                e a tela se contradizia sozinha: "Em preparo" no topo, "0 Em
-                preparo" logo abaixo. O nome do lugar não pode ser o nome de um
-                dos estados que ele mostra. */}
-            <h2>A mesa</h2>
+            <h2>Em preparo</h2>
             {/* O RESUMO É QUEM ANUNCIA. Ele já é a contagem derivada da lista,
                 então muda exatamente quando algo muda de estado — e é uma frase
                 curta, contra a lista inteira relida a cada transição.
 
-                Sem isto, um arquivo ia de "Em preparo" a "Pronto" ou a "Com
-                erro" em silêncio total para quem usa leitor de tela, numa tela
-                cujo propósito inteiro é mostrar progresso. */}
-            <p className="resumo" role="status" aria-live="polite">
-              {/* Cada número sai do mesmo lugar: a lista. */}
+                Sem isto, um arquivo ia de "Enviando" a "Pronto" ou a "Com erro"
+                em silêncio total para quem usa leitor de tela, numa tela cujo
+                propósito inteiro é mostrar progresso.
+
+                Ele fica invisível: quem enxerga tem os recortes logo abaixo,
+                com os mesmos números. Dois textos idênticos lado a lado seriam
+                lidos duas vezes por quem usa leitor de tela. */}
+            <p className="resumo visualmente-oculto" role="status" aria-live="polite">
               {Object.entries(c).map(([k, n]) => (
                 <span key={k} className="contagem">
                   <span className="dado">{n}</span> {ESTADOS[k].rotulo}
@@ -169,16 +178,41 @@ export function MesaCheia({ arquivos = [], aoVerEstante, aoReceberArquivos }) {
             </p>
           </header>
 
-          <p className="adicionados">
-            <span className="dado">{arquivos.length}</span>{" "}
-            {arquivos.length === 1 ? "arquivo adicionado" : "arquivos adicionados"}
-          </p>
+          {/* OS RECORTES DA MESA — nó 895:9736. As contagens eram uma frase, e
+              o desenho as põe como recortes clicáveis, com "N arquivos
+              adicionados" marcado por padrão. É a mesma forma da estante e dos
+              estudos, e ela vale aqui pelo mesmo motivo: numa fila de trinta,
+              "só os que deram erro" é a pergunta que se faz.
+
+              Recorte vazio não é clicável: levar alguém a uma lista em branco é
+              pior que dizer antes que não há nada nela. */}
+          <nav className="recortes" aria-label="Recortes da mesa">
+            {[["tudo", `${arquivos.length} ${arquivos.length === 1 ? "arquivo adicionado" : "arquivos adicionados"}`, arquivos.length],
+              ...Object.entries(c).map(([k, n]) => [k, ESTADOS[k].rotulo, n])
+            ].map(([id, rotulo, quantos]) => (
+              <button
+                key={id}
+                type="button"
+                aria-pressed={id === recorte ? "true" : "false"}
+                disabled={quantos === 0 && id !== recorte}
+                onClick={() => setRecorte(id)}
+              >
+                {id === "tudo" ? rotulo : <>{rotulo} <span className="dado">{quantos}</span></>}
+              </button>
+            ))}
+          </nav>
 
           <ul className="lista">
-            {arquivos.map((a) => (
+            {visiveis.map((a) => (
               <Arquivo key={a.nome} {...a} />
             ))}
           </ul>
+
+          {!visiveis.length && (
+            <p className="arquivo-detalhe">
+              Nenhum arquivo neste recorte. Os outros continuam na fila.
+            </p>
+          )}
 
           <div className="preparo-acoes">
             <Botao tom="primaria" icone={iconeEnviar} onClick={aoVerEstante}>

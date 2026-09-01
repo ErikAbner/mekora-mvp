@@ -13,6 +13,13 @@
   color: var(--foreground);
 }
 
+/* O resumo virou ANÚNCIO, e não texto: os recortes logo abaixo mostram os mesmos
+   números, e dois textos idênticos lado a lado seriam lidos duas vezes por quem
+   usa leitor de tela. A classe fica porque o `aria-live` vive nela.
+
+   Os recortes usam `.recortes`, definida em `estante.css`: é o mesmo componente,
+   com a mesma forma, e uma segunda definição aqui é exatamente o que o
+   `scripts/classes.mjs` recusa. */
 .resumo { display: flex; flex-wrap: wrap; gap: 24px; margin: 0; }
 .contagem { font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
 
@@ -24,7 +31,6 @@
   color: var(--foreground);
 }
 
-.adicionados { margin: 0; font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
 
 .lista { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
 

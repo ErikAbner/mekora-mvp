@@ -170,7 +170,7 @@ telas você criou muito errado". A comparação está em curso.
 | `895:7315` | D · Estante — grade | `/estante` | comparada · corrigida |
 | `895:7506` | D · Livro — ficha / estante 3D | `/estante` (vista 3D) | comparada · corrigida |
 | `895:6938` | D · Canvas | `/canvas` | comparada · grupos e prévia construídos |
-| `895:10599` | D · Conta — visão geral | `/conta` | por comparar |
+| `895:10599` | D · Conta — visão geral | `/conta` | **comparada · ver nota abaixo** |
 | `895:10715` | D · Conta — preferências | `/conta/preferencias` | por comparar |
 | `895:10909` | D · Conta — dados | `/conta/privacidade` | por comparar |
 | `895:11060` | D · Atualizações | `/atualizacoes` | por comparar |
@@ -178,7 +178,7 @@ telas você criou muito errado". A comparação está em curso.
 | `895:9348` | D · Mesa — cheia | `/mesa` | por comparar |
 | `895:9981` | D · Mesa — variação | `/mesa` | por comparar |
 | `895:10286` | D · Mesa — vazia | `/mesa` | por comparar |
-| `895:9736` | D · Mesa — primeira vez | `/mesa` | por comparar |
+| `895:9736` | D · Mesa — primeira vez | `/mesa` | **comparada · corrigida** |
 | `895:7631` | D · Livro — o que ficou | `/estante/:id` | por comparar |
 | `895:10472` | D · Leitura | `/leitura/:id` | por comparar |
 | `895:8260` | D · Estudo — página | `/estudo/:id` | por comparar |
@@ -187,7 +187,7 @@ telas você criou muito errado". A comparação está em curso.
 | `900:56142` | D · Estudos — lista (variação) | `/estudos` | por comparar |
 | `895:7856` | D · Preparo — o que encontrei | `/preparo/:id` | por comparar |
 | `895:8029` | D · Preparo — em andamento | `/preparo/:id` | por comparar |
-| `895:8164` | D · Preparo — pronto | `/preparo/:id` | por comparar |
+| `895:8164` | D · Preparo — pronto | `/preparo/:id` | **comparada · corrigida** |
 
 E um trecho solto, que o Erik mandou quando eu disse que não conseguia ler:
 
@@ -209,3 +209,53 @@ Duas saídas, e as duas funcionam:
 
 O que eu não conseguia era **achar** os ids: o `get_metadata` da página vem
 truncado e não devolve as telas. Isso o Erik resolveu mandando a lista.
+
+
+## O que a comparação do desktop achou
+
+### `895:8164` — Preparo, pronto
+
+O desenho escreve **"Diário 02.epub · 8,4 MB"**, e os selos de cima trazem
+"PDF · 12,8 MB · 96 páginas · Português". As duas coisas confirmam a vírgula — o
+`tamanhoLegivel` já a usava, e agora há de onde tirar a prova.
+
+O tamanho do EPUB não existia no backend; passou a existir.
+
+E a **ordem do alternador estava trocada**: o desenho põe Personalizado à
+esquerda e Guiado à direita, marcado.
+
+### `895:10599` — Conta, visão geral
+
+O painel desta tela mostra os **dispositivos Kindle**, com a navegação marcando
+"Conta". No desenho de telefone (`966:25321`) a mesma navegação marca "Conta" e o
+painel mostra Nome, E-mail e Senha; e os dispositivos têm tela própria
+(`966:25554`).
+
+Os dois desenhos discordam entre si, e no desktop não existe um
+`D · Conta — Kindle`. O mais provável é que este seja um mock cujo conteúdo não
+foi trocado. **Pergunta para o Erik**, junto da de nome e retrato.
+
+O que ele confirma, e que já está construído: navegação de **quatro itens com
+ícone**, ativo em tinta cheia; cartões de aparelho com "Editar" e "Tornar
+principal"; "Conectar outro kindle" e o rodapé sobre o principal.
+
+O que ele tem e o produto não: o **modelo e a resolução** do aparelho
+("Paperwhite · 1236 x 1680") e a **data do último envio**. O Mekora guarda nome e
+endereço, e mais nada — a Amazon não conta o resto.
+
+### `895:9736` — Mesa, primeira vez
+
+As contagens por estado eram uma **frase**; o desenho as põe como **recortes
+clicáveis**, com "N arquivos adicionados" marcado por padrão. É a mesma forma da
+estante e dos estudos, e vale aqui pelo mesmo motivo: numa fila de trinta, "só os
+que deram erro" é a pergunta que se faz.
+
+E o rótulo do estado `trabalhando` dizia **"Em preparo"**, que é também o nome da
+seção — a tela se contradizia: "Em preparo" no topo e "0 Em preparo" logo
+abaixo. Eu tinha resolvido trocando o nome da seção para "A mesa", o que
+consertou a contradição e afastou a tela do desenho. **O desenho não tem esse
+problema:** lá a seção é "Em preparo" e o estado é "Enviando". Agora aqui também.
+
+**O que ficou:** o desenho tem a área de soltar no TOPO, com o título "Comece
+soltando um arquivo", antes da fila — na tela ela é o "Adicionar mais" do fim. E
+cada cartão da fila tem ações próprias (pausar, repetir, remover, ⋮).
