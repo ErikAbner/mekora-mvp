@@ -25,6 +25,7 @@ import { Leitura } from "./jornadas/Leitura.jsx";
 import { AindaNao } from "./jornadas/AindaNao.jsx";
 import { Conta } from "./jornadas/Conta.jsx";
 import { Entrar } from "./jornadas/Entrar.jsx";
+import { CriarConta } from "./jornadas/CriarConta.jsx";
 import { Privacidade } from "./jornadas/Privacidade.jsx";
 import { Canvas } from "./jornadas/Canvas.jsx";
 import { usarCanvas } from "./estado/usarCanvas.js";
@@ -387,10 +388,15 @@ function NaoEncontrada() {
  *
  * Enquanto NÃO SE SABE, não decide nada: mandar para /entrar durante a
  * verificação faria quem já está logado ser expulso a cada abertura de página,
- * e voltar sozinho um instante depois. */
-function SoParaQuemEntrou({ acesso, children }) {
+ * e voltar sozinho um instante depois.
+ *
+ * SEM CONTA, EXPLICA ANTES DE EMPURRAR. Era um `<Navigate to="/entrar" replace>`
+ * — a pessoa clicava em Estante e chegava num campo de e-mail, sem uma palavra
+ * sobre o que aconteceu, e com o voltar do navegador inútil porque `replace`
+ * apaga de onde ela veio. O nó 941:23106 é essa palavra. */
+function SoParaQuemEntrou({ acesso, lugar, children }) {
   if (acesso.carregando) return <main className="carregando" aria-busy="true" />;
-  if (!acesso.pessoa) return <Navigate to="/entrar" replace />;
+  if (!acesso.pessoa) return <CriarConta lugar={lugar} />;
   return children;
 }
 
@@ -540,14 +546,14 @@ export function App() {
         <Route path="/mesa" element={<Mesa />} />
         {/* A estante É a conta (DEC-0018). Sem entrar não há o que listar —
             e listar tudo seria mostrar a estante de todo mundo. */}
-        <Route path="/estante" element={<SoParaQuemEntrou acesso={acesso}><PaginaEstante /></SoParaQuemEntrou>} />
+        <Route path="/estante" element={<SoParaQuemEntrou acesso={acesso} lugar="a Estante"><PaginaEstante /></SoParaQuemEntrou>} />
         <Route path="/leitura/:id" element={<PaginaLeitura />} />
-        <Route path="/canvas" element={<SoParaQuemEntrou acesso={acesso}><PaginaCanvas /></SoParaQuemEntrou>} />
-        <Route path="/estudos" element={<SoParaQuemEntrou acesso={acesso}><PaginaEstudos /></SoParaQuemEntrou>} />
-        <Route path="/estudo/:id" element={<SoParaQuemEntrou acesso={acesso}><PaginaEstudo /></SoParaQuemEntrou>} />
-        <Route path="/notas" element={<SoParaQuemEntrou acesso={acesso}><PaginaNotas /></SoParaQuemEntrou>} />
-        <Route path="/estante/:id" element={<SoParaQuemEntrou acesso={acesso}><Livro /></SoParaQuemEntrou>} />
-        <Route path="/nota/:id" element={<SoParaQuemEntrou acesso={acesso}><Nota /></SoParaQuemEntrou>} />
+        <Route path="/canvas" element={<SoParaQuemEntrou acesso={acesso} lugar="o Canvas"><PaginaCanvas /></SoParaQuemEntrou>} />
+        <Route path="/estudos" element={<SoParaQuemEntrou acesso={acesso} lugar="os Estudos"><PaginaEstudos /></SoParaQuemEntrou>} />
+        <Route path="/estudo/:id" element={<SoParaQuemEntrou acesso={acesso} lugar="um Estudo"><PaginaEstudo /></SoParaQuemEntrou>} />
+        <Route path="/notas" element={<SoParaQuemEntrou acesso={acesso} lugar="as suas notas"><PaginaNotas /></SoParaQuemEntrou>} />
+        <Route path="/estante/:id" element={<SoParaQuemEntrou acesso={acesso} lugar="um livro da Estante"><Livro /></SoParaQuemEntrou>} />
+        <Route path="/nota/:id" element={<SoParaQuemEntrou acesso={acesso} lugar="uma nota sua"><Nota /></SoParaQuemEntrou>} />
         {/* O preparo NÃO exige conta: converter sem cadastro é garantido pela
             DEC-0018, e esta é a tela que decide a conversão. */}
         <Route path="/preparo/:id" element={<Preparo />} />

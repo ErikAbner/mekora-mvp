@@ -1,0 +1,94 @@
+/* Criar conta — nó 941:23106. */
+.criar-conta {
+  display: flex; flex-direction: column;
+  gap: 32px;
+  inline-size: min(754px, 100%);
+  margin-inline: auto;
+  padding: 40px;
+}
+
+.criar-conta-etiqueta {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 18px; line-height: 26px;                       /* Label/Large */
+}
+
+.criar-conta h1 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 40px; line-height: 48px; font-weight: 600;     /* Heading/LG */
+  letter-spacing: -0.6px;
+  text-wrap: balance;
+}
+
+.criar-conta-abre {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 24px; line-height: 32px; font-weight: 500;     /* Body/Large */
+  text-wrap: pretty;
+}
+
+/* O filete marca a fala do produto sobre si mesmo — é o mesmo gesto do
+ * `.aviso` na tela do lugar que ainda não existe. */
+.criar-conta-porque {
+  margin: 0;
+  padding-inline-start: 16px;
+  border-inline-start: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-size: 16px; line-height: 24px;
+}
+
+.criar-conta-razoes { list-style: none; margin: 0; padding: 0; }
+.criar-conta-razoes li {
+  display: flex; align-items: center; gap: 40px;
+  padding: 32px;
+}
+/* Fio ENTRE as razões, como o desenho: três itens, dois fios. */
+.criar-conta-razoes li + li { border-block-start: 1px solid var(--border); }
+
+.criar-conta-numero {
+  flex: 0 0 auto;
+  min-inline-size: 56px;
+  color: var(--foreground);
+  font-size: 64px; line-height: 72px;                       /* Display/Large */
+  font-style: italic; font-weight: 400;
+  letter-spacing: -1.6px;
+}
+
+.criar-conta-razao { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.criar-conta-razao-titulo {
+  color: var(--card-foreground);
+  font-size: 24px; line-height: 32px; font-weight: 500;     /* Body/Large */
+  text-wrap: pretty;
+}
+.criar-conta-razao-sobre {
+  color: var(--muted-foreground);
+  font-size: 20px; line-height: 30px;                       /* Body/Medium */
+  text-wrap: pretty;
+}
+
+.criar-conta-acoes { display: flex; gap: 40px; }
+.criar-conta-acoes .botao { flex: 1 0 0; justify-content: center; }
+
+.criar-conta-rodape {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 16px; line-height: 24px;
+  text-wrap: pretty;
+}
+/* O link herda a tinta. Sem esta linha ele saía no `#0000ee` do navegador — a
+ * primeira medição desta tela reprovou exatamente por isso, e o azul não é uma
+ * cor do sistema. */
+.criar-conta-rodape a { color: inherit; text-decoration: underline; }
+.criar-conta-rodape a:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+
+@media (max-width: 767px) {
+  .criar-conta { padding: 24px; gap: 24px; }
+  .criar-conta h1 { font-size: 32px; line-height: 40px; }
+  .criar-conta-abre { font-size: 20px; line-height: 30px; }
+  .criar-conta-razoes li { gap: 24px; padding: 24px 0; }
+  .criar-conta-numero { min-inline-size: 40px; font-size: 40px; line-height: 48px; }
+  .criar-conta-razao-titulo { font-size: 20px; line-height: 30px; }
+  .criar-conta-razao-sobre { font-size: 16px; line-height: 24px; }
+  .criar-conta-acoes { flex-direction: column; gap: 16px; }
+}
