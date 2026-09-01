@@ -53,6 +53,14 @@
 .barra { block-size: 4px; background: var(--muted); }
 .barra-feita { block-size: 100%; background: var(--foreground); }
 .erro .barra-feita { background: var(--destructive); }
+/* VERDE SO NO FIM, como o desenho (895:9736) mostra. A barra que enche em preto
+ * diz "andando"; a que fecha em verde diz "acabou bem", e a diferenca importa
+ * justamente no instante em que a pessoa para de olhar.
+ *
+ * As duas cores de estado vem do sistema — `--success` e `--destructive` —, e
+ * nao ha uma terceira: o produto so tem tres desfechos aqui, e inventar matiz
+ * para "na fila" gastaria o alarme que o erro precisa. */
+.pronto .barra-feita { background: var(--success); }
 
 .arquivo-detalhe {
   display: flex; flex-wrap: wrap; gap: 8px; margin: 0;
