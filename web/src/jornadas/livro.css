@@ -162,3 +162,47 @@
 }
 .livro-pagina-escrever::placeholder { color: var(--muted-foreground); opacity: 1; }
 .livro-pagina-escrever:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+
+/* ─── O que o no 895:7631 tem e a ficha nao tinha ───────────────────────────*/
+
+/* De onde este livro veio. O nome do arquivo enviado sumia assim que o titulo
+ * era detectado, e e ele que responde "qual dos meus PDFs virou este livro". */
+.livro-pagina-origem {
+  margin: 0;
+  font-size: 14px; line-height: 20px;
+  color: var(--muted-foreground);
+}
+.livro-pagina-origem-nome { color: var(--foreground); }
+
+.livro-pagina-leitura { display: flex; flex-direction: column; gap: 8px; }
+/* A barra e um degrau de superficie sobre outro, como todo estado do sistema. */
+.livro-pagina-barra { block-size: 8px; background: var(--background-tertiary); }
+.livro-pagina-barra > span { display: block; block-size: 100%; background: var(--foreground); }
+
+/* A ultima coisa marcada, com filete. E o que faz a ficha lembrar do livro em
+ * vez de so descreve-lo. */
+.livro-pagina-ultima {
+  margin: 0;
+  padding: 16px 0 16px 24px;
+  border-inline-start: 1px solid var(--foreground);
+  font-size: 16px; line-height: 24px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+/* "Ver o preparo" e texto com sublinhado, e nao botao: e a terceira acao, e a
+ * terceira acao com peso de botao empata com as duas que importam. */
+.livro-pagina-preparo {
+  align-self: center;
+  color: var(--muted-foreground);
+  font-size: 16px; line-height: 24px;
+}
+
+.livro-pagina-filtro { display: flex; flex-direction: column; gap: 16px; margin-block-end: 24px; }
+.livro-pagina-filtro .campo { inline-size: 100%; max-inline-size: 520px; }
+
+.livro-pagina-acoes-nota { display: flex; flex-wrap: wrap; gap: 12px; margin-block-start: 12px; }
+
+@media (max-width: 767px) {
+  .livro-pagina-acoes-nota .botao { flex: 1 1 auto; justify-content: center; }
+}

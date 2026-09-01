@@ -3,8 +3,9 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { ConfiguracoesArquivo } from "../componentes/ConfiguracoesArquivo.jsx";
+import { Campo } from "../componentes/Campo.jsx";
 import { DESTAQUES } from "./Leitura.jsx";
-import { analisar, criarNota, lerNotas, lerProgresso } from "../../../contrato/api.js";
+import { analisar, apagarNota, criarNota, enviarAoKindle, lerNotas, lerProgresso } from "../../../contrato/api.js";
 import { tamanhoLegivel } from "../../../contrato/tamanho.js";
 import "./livro.css";
 
@@ -18,6 +19,24 @@ import "./livro.css";
  * às vezes traduz. Ela precisa poder saber o que aconteceu com o documento
  * dela, e a única forma de saber é o produto contar.
  */
+
+/* O QUE UMA NOTA É, pelo que ela tem.
+ *
+ * O nó 895:7631 recorta "O que ficou" em marcadores, anotações e rascunho, e o
+ * modelo não guarda um TIPO: guarda trecho, comentário e fonte. Os dois
+ * primeiros recortes saem daí sem inventar campo — trecho sozinho é marca,
+ * trecho com comentário é anotação, e sem trecho é o que se escreveu sobre o
+ * livro. "Rascunho" não sai: não há estado de nota no modelo, e um recorte que
+ * devolve sempre zero não é filtro, é promessa.
+ */
+const ehSobreOLivro = (n) => !n.trecho;
+const ehMarcador = (n) => Boolean(n.trecho) && !n.comentario;
+const ehAnotacao = (n) => Boolean(n.trecho) && Boolean(n.comentario);
+
+/* Sem acento e sem caixa, para "capitulo" achar "Capítulo". */
+function achatar(t) {
+  return String(t ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
 
 /* Cada linha só aparece quando há o que dizer. Uma ficha-arquivo com seis "—" descreve
  * a ausência de informação com a mesma ênfase da informação. */
@@ -49,6 +68,14 @@ export function Livro() {
    * página, e a tela ficaria mostrando o nome antigo depois de confirmar a
    * troca. */
   const [rodada, setRodada] = useState(0);
+  /* O RECORTE E A BUSCA DE "O QUE FICOU" — nó 895:7631. A lista de notas de um
+     livro lido chega a dezenas, e o desenho põe as duas coisas acima dela: os
+     recortes por tipo e um campo de busca. Sem eles, achar uma nota é rolar. */
+  const [recorte, setRecorte] = useState("tudo");
+  const [procura, setProcura] = useState("");
+  const [enviando, setEnviando] = useState(false);
+  const [enviado, setEnviado] = useState(false);
+  const [copiada, setCopiada] = useState(null);
 
   useEffect(() => {
     let vivo = true;
@@ -87,6 +114,19 @@ export function Livro() {
 
   const titulo = livro.final_title || livro.detected_title || livro.original_filename;
   const autor = livro.final_author || livro.detected_author || "";
+
+  /* A lista que a tela mostra: o recorte primeiro, a busca depois. As duas
+     coisas são o mesmo filtro em cascata, e derivadas — não há uma segunda
+     lista guardada para discordar da primeira. */
+  const alvo = achatar(procura.trim());
+  const visiveis = notas
+    .filter((n) =>
+      recorte === "marcadores" ? ehMarcador(n)
+      : recorte === "anotacoes" ? ehAnotacao(n)
+      : recorte === "sobre" ? ehSobreOLivro(n)
+      : true,
+    )
+    .filter((n) => !alvo || achatar(`${n.trecho ?? ""} ${n.comentario ?? ""}`).includes(alvo));
   const capa = (livro.thumbnails ?? [])[0];
 
   return (
@@ -145,11 +185,55 @@ export function Livro() {
               );
             })()}
 
-            {onde?.capitulos > 0 && (
+            {/* DE ONDE ESTE LIVRO VEIO — "Origem · Relatório de pesquisa,
+                expedição 02.pdf", no nó 895:7631. O nome do arquivo enviado
+                desaparecia assim que o título era detectado, e é ele que
+                responde "qual dos meus PDFs virou este livro". */}
+            {livro.original_filename && livro.original_filename !== titulo && (
+              <p className="livro-pagina-origem">
+                Origem · <span className="livro-pagina-origem-nome">{livro.original_filename}</span>
+              </p>
+            )}
+
+            {/* A BARRA DE LEITURA — o desenho mostra "Epub · 80% lido" com uma
+                barra cheia abaixo do autor. A tela dizia só "capítulo 2 de 6",
+                que é o número mais pobre dos dois: capítulos têm tamanhos
+                diferentes, e o segundo de seis pode ser 12% ou 40% do livro.
+
+                A fração continua podendo faltar — leitura registrada antes de
+                ela existir —, e aí a frase do capítulo é o que sobra. Nulo não
+                é zero. */}
+            {typeof onde?.fracao === "number" ? (
+              <div className="livro-pagina-leitura">
+                <p className="livro-pagina-onde">
+                  {(livro.leitura_url ? "EPUB" : livro.input_format?.toUpperCase()) || "Arquivo"} ·{" "}
+                  <span className="dado">{Math.round(onde.fracao * 100)}%</span> lido
+                </p>
+                <div
+                  className="livro-pagina-barra"
+                  role="progressbar"
+                  aria-valuenow={Math.round(onde.fracao * 100)}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label="Quanto do livro já foi lido"
+                >
+                  <span style={{ inlineSize: `${Math.round(onde.fracao * 100)}%` }} />
+                </div>
+              </div>
+            ) : onde?.capitulos > 0 ? (
               <p className="livro-pagina-onde">
                 Você está no capítulo <span className="dado">{onde.capitulo + 1}</span> de{" "}
                 <span className="dado">{onde.capitulos}</span>
               </p>
+            ) : null}
+
+            {/* A ÚLTIMA COISA MARCADA, logo abaixo — a citação com filete do
+                desenho. É o que faz a ficha lembrar do livro em vez de só
+                descrevê-lo. */}
+            {notas.find((n) => n.trecho)?.trecho && (
+              <blockquote className="livro-pagina-ultima">
+                {notas.find((n) => n.trecho).trecho}
+              </blockquote>
             )}
 
             <div className="livro-pagina-acoes">
@@ -160,8 +244,33 @@ export function Livro() {
                   navegar(`/leitura/${id}`, { state: { url: livro.leitura_url, titulo } })
                 }
               >
-                {onde?.capitulos > 0 ? "Continuar lendo" : "Começar a ler"}
+                {onde?.capitulos > 0 ? "Continuar lendo" : "Ler"}
               </Botao>
+
+              {/* ENVIAR AO KINDLE e VER O PREPARO, os outros dois botões do
+                  desenho. O envio existia só na estante, e "ver o preparo" em
+                  lugar nenhum — a tela que conta o que foi feito com o arquivo
+                  não tinha como levar até ela. */}
+              <Botao
+                tom="secundaria"
+                disabled={!livro.leitura_url || enviando || enviado}
+                onClick={async () => {
+                  setEnviando(true);
+                  try {
+                    await enviarAoKindle(id);
+                    setEnviado(true);
+                  } catch (e) {
+                    setErro(e.message);
+                  } finally {
+                    setEnviando(false);
+                  }
+                }}
+              >
+                {enviando ? "Enviando…" : enviado || livro.kindle_sent ? "No Kindle" : "Enviar ao Kindle"}
+              </Botao>
+
+              <Link to={`/preparo/${id}`} className="livro-pagina-preparo">Ver o preparo</Link>
+
               {!livro.leitura_url && (
                 <p className="livro-pagina-nota">Ainda em preparo. O texto abre quando a conversão terminar.</p>
               )}
@@ -179,8 +288,56 @@ export function Livro() {
               leitura para guardar aqui.
             </p>
           )}
+
+          {/* OS RECORTES E A BUSCA — nó 895:7631. Um livro lido chega a dezenas
+              de notas, e achar uma delas era rolar a lista inteira.
+
+              Os três recortes do desenho são "marcadores", "anotações" e
+              "rascunho". Os dois primeiros existem aqui e são distinguíveis pelo
+              que a nota TEM: trecho sem comentário é marcador, com comentário é
+              anotação, e sem trecho é o que foi escrito sobre o livro. Rascunho
+              não existe no modelo — não há campo de estado na nota —, e por isso
+              não está aqui: um recorte que devolve sempre zero não é filtro, é
+              promessa. */}
+          {notas.length > 1 && (
+            <div className="livro-pagina-filtro">
+              <nav className="recortes" aria-label="Recortes das notas">
+                {[
+                  ["tudo", "Tudo", notas.length],
+                  ["marcadores", "Marcadores", notas.filter(ehMarcador).length],
+                  ["anotacoes", "Anotações", notas.filter(ehAnotacao).length],
+                  ["sobre", "Sobre o livro", notas.filter(ehSobreOLivro).length],
+                ].map(([chave, rotulo, quantos]) => (
+                  <button
+                    key={chave}
+                    type="button"
+                    aria-pressed={chave === recorte ? "true" : "false"}
+                    disabled={quantos === 0 && chave !== recorte}
+                    onClick={() => setRecorte(chave)}
+                  >
+                    <span className="dado">{quantos}</span> {rotulo}
+                  </button>
+                ))}
+              </nav>
+              <Campo
+                tipo="search"
+                rotulo="Buscar nas notas deste livro"
+                rotuloOculto
+                placeholder="Buscar no trecho e no comentário"
+                value={procura}
+                onChange={(e) => setProcura(e.target.value)}
+              />
+            </div>
+          )}
+
+          {notas.length > 0 && !visiveis.length && (
+            <p className="livro-pagina-nota" role="status">
+              Nenhuma nota deste livro combina com o que você procurou.
+            </p>
+          )}
+
           <ul className="livro-pagina-notas">
-            {notas.map((n) => (
+            {visiveis.map((n) => (
               <li key={n.id}>
                 {/* NOTA SEM TRECHO NÃO VIRA CAIXA VAZIA COLORIDA. A nota escrita
                     sobre o livro não aponta para frase nenhuma, e um bloco de cor
@@ -195,6 +352,56 @@ export function Livro() {
                   {n.fonte === "livro" ? "Sobre o livro" : `Capítulo ${(n.capitulo ?? 0) + 1}`}
                   {n.fonte === "kindle" && " · trazida do Kindle"}
                 </p>
+
+                {/* AS AÇÕES DE CADA NOTA — o desenho põe "Copiar com origem" e
+                    a lixeira em toda linha. "Copiar com origem" é o que separa
+                    uma nota de um recorte solto: o que vai para a área de
+                    transferência traz o livro e o capítulo junto, e é por isso
+                    que ela pode ser colada em qualquer lugar sem virar frase
+                    órfã. */}
+                <div className="livro-pagina-acoes-nota">
+                  <Botao
+                    tom="secundaria"
+                    onClick={async () => {
+                      const onde_ =
+                        n.fonte === "livro"
+                          ? titulo
+                          : `${titulo}, capítulo ${(n.capitulo ?? 0) + 1}`;
+                      const texto = [n.trecho && `“${n.trecho}”`, n.comentario, `— ${onde_}`]
+                        .filter(Boolean)
+                        .join("\n");
+                      try {
+                        await navigator.clipboard.writeText(texto);
+                        setCopiada(n.id);
+                      } catch {
+                        /* Sem permissão de área de transferência a cópia não
+                           acontece, e a tela não pode dizer que aconteceu. */
+                        setCopiada(null);
+                        setRecado("O navegador não deixou copiar. Selecione o texto e copie na mão.");
+                      }
+                    }}
+                  >
+                    {copiada === n.id ? "Copiado" : "Copiar com origem"}
+                  </Botao>
+                  <Botao
+                    tom="secundaria"
+                    onClick={async () => {
+                      /* Apagar nota não tem volta, e o que se perde é o que a
+                         pessoa escreveu — a única coisa nesta tela que ela não
+                         conseguiria refazer. */
+                      const frase = n.trecho || n.comentario || "esta nota";
+                      if (!window.confirm(`Apagar “${frase.slice(0, 60)}”? Não dá para desfazer.`)) return;
+                      try {
+                        await apagarNota(id, n.id);
+                        setNotas((tudo) => tudo.filter((x) => x.id !== n.id));
+                      } catch (e) {
+                        setRecado(e.message);
+                      }
+                    }}
+                  >
+                    Apagar
+                  </Botao>
+                </div>
               </li>
             ))}
           </ul>
