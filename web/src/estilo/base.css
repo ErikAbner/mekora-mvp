@@ -183,6 +183,7 @@ button, input, textarea, select { border-radius: 0; font: inherit; color: inheri
  */
 :root[data-tema="escuro"] .ilustracao-soltar,
 :root[data-tema="escuro"] .ilustracao-limpa,
+:root[data-tema="escuro"] .conta-desenho,
 :root[data-tema="escuro"] .desenho {
   filter: invert(1) hue-rotate(180deg);
 }
@@ -190,6 +191,7 @@ button, input, textarea, select { border-radius: 0; font: inherit; color: inheri
 @media (prefers-color-scheme: dark) {
   :root:not([data-tema="claro"]) .ilustracao-soltar,
   :root:not([data-tema="claro"]) .ilustracao-limpa,
+  :root:not([data-tema="claro"]) .conta-desenho,
   :root:not([data-tema="claro"]) .desenho {
     filter: invert(1) hue-rotate(180deg);
   }

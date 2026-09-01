@@ -56,6 +56,7 @@ export function Privacidade({ pessoa, aoSair, aoApagarConta }) {
         <TrilhaConta pessoa={pessoa} aoSair={aoSair} />
 
         <main className="conta-painel">
+        <img className="conta-desenho" src="/icones/ilustracao-privacidade.svg" alt="" aria-hidden="true" />
           <section className="conta-secao">
             <h2>O que o Mekora guarda</h2>
 

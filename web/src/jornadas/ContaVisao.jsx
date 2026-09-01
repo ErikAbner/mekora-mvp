@@ -86,6 +86,11 @@ export function ContaVisao({ pessoa, aoSair }) {
         <TrilhaConta pessoa={pessoa} aoSair={aoSair} />
 
         <main className="conta-painel">
+        {/* A ILUSTRAÇÃO DO DESENHO, que faltava. O nó traz uma acima do painel
+            em cada tela de conta, e ela é ornamento — `aria-hidden`, porque um
+            leitor de tela anunciando "imagem" antes do conteúdo da conta só
+            atrasa quem veio resolver alguma coisa. */}
+        <img className="conta-desenho" src="/icones/ilustracao-conta.svg" alt="" aria-hidden="true" />
         {erro && <p className="conta-erro" role="alert">{erro}</p>}
 
         <section className="visao-quem">
