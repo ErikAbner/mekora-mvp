@@ -452,3 +452,49 @@ ou preparar outro.
 
 Medido com conversão real de ponta a ponta: o clique dispara, a tela mostra
 *"Convertendo…"*, e termina em *"Medida está na estante."*
+
+---
+
+# Ajuda e Atualizações
+
+**As duas foram construídas sem o desenho**, pela mesma razão das telas de Conta:
+o `figma-local` exige o Dev Mode ligado. São candidatas para o pente fino.
+
+## O acordeão não acordeava nada
+
+`display: flex` num filho de `<details>` **anula o esconder nativo**: o navegador
+esconde os filhos de um `details` fechado por um `display: none` implícito, e
+qualquer `display` declarado no filho ganha dele.
+
+Medido: com os dez fechados, `.ajuda-resposta` tinha altura maior que zero — as
+dez respostas apareciam de uma vez, e o `+` não fazia nada. Só apareceu porque a
+medida perguntou pela altura, e não pelo `open`.
+
+## A Ajuda não tem busca, categorias nem "isto foi útil?"
+
+São nove perguntas. Uma estrutura de central de ajuda em cima de nove perguntas é
+mais navegação que conteúdo.
+
+**Cada resposta leva ao lugar onde ela pode ser conferida.** Ajuda que não leva a
+lugar nenhum obriga a pessoa a procurar de novo, agora com a resposta na cabeça e
+sem saber onde aplicá-la. E é o que mantém a página honesta: se uma capacidade
+mudar, a tela citada desmente o texto, e a pessoa descobre antes de nós.
+
+## Atualizações não é o `git log`
+
+Derivar do histórico seria fácil e errado: o commit fala de arquivo, e quem usa
+quer saber o que passou a funcionar. Refatoração não é notícia, e três commits
+podem virar uma linha.
+
+**A curadoria é do Erik.** O que está lá foi escrito a partir do que efetivamente
+entrou nesta sessão, e ele decide o que merece aparecer — inclusive se a tela
+deve existir antes de haver público.
+
+A data fica em ISO no dado e é formatada na tela: escrita "1 de setembro" ela não
+ordena, e ordenar à mão é como a lista sai de ordem sem ninguém ver.
+
+## As duas são públicas, e o rodapé ganhou uma coluna
+
+Quem ainda não entrou tem dúvida, e quem nunca vai entrar tem direito de saber o
+que mudou. Elas não ficam na coluna da conta no rodapé, que exige sessão — ficam
+numa coluna "O produto", junto com a Apresentação.

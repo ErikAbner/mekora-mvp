@@ -15,6 +15,8 @@ import { MesaVazia } from "./jornadas/MesaVazia.jsx";
 import { Apresentacao } from "./jornadas/Apresentacao.jsx";
 import { ContaVisao } from "./jornadas/ContaVisao.jsx";
 import { ContaSeguranca } from "./jornadas/ContaSeguranca.jsx";
+import { Ajuda } from "./jornadas/Ajuda.jsx";
+import { Atualizacoes } from "./jornadas/Atualizacoes.jsx";
 import { MesaCheia } from "./jornadas/MesaCheia.jsx";
 import { Estante } from "./jornadas/Estante.jsx";
 import { Leitura } from "./jornadas/Leitura.jsx";
@@ -345,6 +347,10 @@ export function App() {
             onde quem ja usa o produto quer cair — mandar o usuario de volta a
             apresentacao a cada visita e cobrar um clique por sessao. */}
         <Route path="/apresentacao" element={<PaginaApresentacao />} />
+        {/* Publicas: quem ainda nao entrou tem duvida, e quem nunca vai entrar
+            tem direito de saber o que mudou. */}
+        <Route path="/ajuda" element={<Ajuda />} />
+        <Route path="/atualizacoes" element={<Atualizacoes />} />
         <Route path="/" element={<Mesa />} />
         {/* A estante É a conta (DEC-0018). Sem entrar não há o que listar —
             e listar tudo seria mostrar a estante de todo mundo. */}

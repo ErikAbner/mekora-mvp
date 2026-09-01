@@ -28,6 +28,17 @@ export function Rodape() {
           </ul>
         </nav>
 
+        {/* Ajuda e Atualizacoes sao publicas, entao ficam fora da coluna da
+            conta: quem nao entrou tambem precisa delas. */}
+        <nav aria-label="O produto">
+          <h2>O produto</h2>
+          <ul>
+            <li><Link to="/apresentacao">O que é o Mekora</Link></li>
+            <li><Link to="/ajuda">Ajuda</Link></li>
+            <li><Link to="/atualizacoes">Atualizações</Link></li>
+          </ul>
+        </nav>
+
         <nav aria-label="Sua conta">
           <h2>Sua conta</h2>
           <ul>

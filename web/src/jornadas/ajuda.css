@@ -1,0 +1,87 @@
+/* Ajuda. Coluna unica de 680px, que e a medida de texto corrido do sistema.
+ */
+.ajuda {
+  display: flex; flex-direction: column; gap: 56px;
+  inline-size: 100%; max-inline-size: 680px;
+  margin-inline: auto;
+  padding: 96px 32px 128px;
+}
+
+.ajuda-topo { display: flex; flex-direction: column; gap: 24px; }
+.ajuda-topo h1 {
+  margin: 0;
+  font-size: 48px; line-height: 56px; font-weight: 540;   /* Heading/XL */
+  letter-spacing: -2%;
+  color: var(--foreground);
+}
+.ajuda-topo p,
+.ajuda-resto p {
+  margin: 0;
+  font-size: 20px; line-height: 30px;   /* Body/Medium */
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+.ajuda-secao { display: flex; flex-direction: column; gap: 16px; }
+.ajuda-secao h2 {
+  margin: 0;
+  font-size: 28px; line-height: 36px; font-weight: 540;   /* Heading/SM */
+  color: var(--foreground);
+}
+.ajuda-secao ul { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.ajuda-secao li { border-bottom: 1px solid var(--separator); }
+
+/* O `<details>` nativo. A seta padrao sai e entra uma marca do sistema, porque
+ * a nativa varia entre navegadores e nao segue a cor do texto. */
+.ajuda-secao summary {
+  display: flex; align-items: baseline; gap: 12px;
+  padding: 20px 0;
+  font-size: 20px; line-height: 30px;
+  color: var(--foreground);
+  cursor: pointer;
+  list-style: none;
+  text-wrap: pretty;
+}
+.ajuda-secao summary::-webkit-details-marker { display: none; }
+.ajuda-secao summary::before {
+  content: "+";
+  flex: none;
+  inline-size: 16px;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.ajuda-secao details[open] summary::before { content: "\2212"; }   /* menos */
+.ajuda-secao summary:hover { background: var(--surface-hover); }
+.ajuda-secao summary:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+
+/* `display: flex` NUM FILHO DE `<details>` ANULA O ESCONDER NATIVO.
+ *
+ * O navegador esconde os filhos de um `details` fechado por um `display: none`
+ * implicito, e qualquer `display` declarado no filho ganha dele. Medido: com os
+ * dez fechados, a resposta tinha altura maior que zero — as respostas apareciam
+ * todas, e o acordeao nao acordeava nada.
+ *
+ * Duas linhas, e nao uma: a primeira devolve o esconder, a segunda mantem o
+ * flex quando esta aberto. */
+.ajuda-secao details:not([open]) .ajuda-resposta { display: none; }
+.ajuda-resposta {
+  display: flex; flex-direction: column; gap: 16px; align-items: flex-start;
+  padding: 0 0 24px 28px;
+}
+.ajuda-resposta p {
+  margin: 0;
+  font-size: 18px; line-height: 27px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+.ajuda-resposta a { color: var(--foreground); font-size: 18px; line-height: 27px; }
+
+.ajuda-resto { gap: 24px; }
+
+@media (max-width: 767px) {
+  .ajuda { gap: 40px; padding: 40px 24px 80px; }
+  .ajuda-topo h1 { font-size: 32px; line-height: 40px; }
+  .ajuda-secao h2 { font-size: 24px; line-height: 32px; }
+  .ajuda-secao summary { font-size: 18px; line-height: 27px; }
+  .ajuda-resposta { padding-inline-start: 28px; }
+}

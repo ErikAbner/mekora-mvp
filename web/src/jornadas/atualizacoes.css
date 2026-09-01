@@ -1,0 +1,57 @@
+/* Atualizacoes. Mesma coluna da Ajuda: as duas sao texto corrido.
+ */
+.atualizacoes {
+  display: flex; flex-direction: column; gap: 56px;
+  inline-size: 100%; max-inline-size: 680px;
+  margin-inline: auto;
+  padding: 96px 32px 128px;
+}
+
+.atualizacoes-topo { display: flex; flex-direction: column; gap: 24px; }
+.atualizacoes-topo h1 {
+  margin: 0;
+  font-size: 48px; line-height: 56px; font-weight: 540;   /* Heading/XL */
+  letter-spacing: -2%;
+  color: var(--foreground);
+}
+.atualizacoes-topo p {
+  margin: 0;
+  font-size: 20px; line-height: 30px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+.atualizacoes-lote { display: flex; flex-direction: column; gap: 24px; }
+.atualizacoes-lote h2 {
+  margin: 0;
+  font-size: 14px; line-height: 22px;   /* Label/Small */
+  font-weight: 400;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+}
+.atualizacoes-lote ul { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.atualizacoes-lote li {
+  display: flex; flex-direction: column; gap: 12px; align-items: flex-start;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--separator);
+}
+.atualizacoes-lote li:first-child { padding-block-start: 0; }
+.atualizacoes-lote h3 {
+  margin: 0;
+  font-size: 24px; line-height: 32px; font-weight: 540;   /* Body/Large */
+  color: var(--foreground);
+  text-wrap: pretty;
+}
+.atualizacoes-lote p {
+  margin: 0;
+  font-size: 18px; line-height: 27px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+.atualizacoes-lote a { color: var(--foreground); font-size: 18px; line-height: 27px; }
+
+@media (max-width: 767px) {
+  .atualizacoes { gap: 40px; padding: 40px 24px 80px; }
+  .atualizacoes-topo h1 { font-size: 32px; line-height: 40px; }
+  .atualizacoes-lote h3 { font-size: 20px; line-height: 30px; }
+}
