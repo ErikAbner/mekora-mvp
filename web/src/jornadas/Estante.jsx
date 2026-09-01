@@ -16,6 +16,7 @@
  */
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { espessuraMm, espessuraPx } from "../../../contrato/lombada.js";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Rodape } from "../componentes/Rodape.jsx";
 import { Botao } from "../componentes/Botao.jsx";
@@ -57,6 +58,65 @@ function onde(l) {
   if (!l.capitulos) return null;
   if (l.capitulo + 1 >= l.capitulos) return "no último capítulo";
   return `capítulo ${l.capitulo + 1} de ${l.capitulos}`;
+}
+
+/* A ESTANTE DE PÉ — os livros vistos de lado, como numa prateleira.
+ *
+ * A colheita no GitHub de 31/08 procurou isto pronto e fechou com número: "13
+ * arquivos, 10 deles o mesmo componente copiado entre repositórios — o
+ * ecossistema não tem dez soluções, tem uma, replicada, e ela não atende".
+ * O que falta em todas é a mesma coisa: a espessura é constante, e o título da
+ * lombada é ilegível a 7px sem rotação.
+ *
+ * AS DUAS METADES ESTÃO AQUI. A espessura vem de `contrato/lombada.js`, derivada
+ * do número de páginas em milímetros de papel; o título é `writing-mode`
+ * vertical no corpo do sistema, e não um texto miniaturizado.
+ *
+ * NÃO HÁ Three.js, e não é economia: o desenho pede uma estante de capas vista
+ * de lado, não uma cena. Uma tela de canvas aqui traria uma árvore que leitor de
+ * tela não percorre e teclado não alcança, para desenhar retângulos que o CSS
+ * desenha com `rotateY`.
+ *
+ * LIVRO SEM CONTAGEM DE PÁGINAS NÃO GANHA ESPESSURA DE CHUTE. Ele aparece com a
+ * lombada mínima e o `title` diz que a espessura é desconhecida — em vez de
+ * inventar um número que a pessoa leria como informação.
+ */
+const ALTURA_LOMBADA = 297;   // a capa da vista de pé, em pixels
+
+function Estante3D({ livros, selecionado, aoEscolher }) {
+  return (
+    <ul className="prateleira">
+      {livros.map((l) => {
+        const px = espessuraPx(l.paginas, ALTURA_LOMBADA);
+        const mm = espessuraMm(l.paginas);
+        return (
+          <li key={l.chave}>
+            <button
+              type="button"
+              className={`livro-de-pe${l.chave === selecionado?.chave ? " escolhido" : ""}`}
+              onClick={() => aoEscolher?.(l)}
+              /* A espessura vira variável de CSS: a lombada e a capa a leem, e
+                 as duas ficam coerentes sem repetir a conta. */
+              style={{ "--espessura": `${px ?? 2}px` }}
+              aria-label={
+                mm === null
+                  ? `${l.titulo}, de ${l.autor || "autor desconhecido"} — espessura desconhecida`
+                  : `${l.titulo}, de ${l.autor || "autor desconhecido"} — ${Math.round(mm)} milímetros`
+              }
+              title={mm === null ? "O arquivo não trouxe contagem de páginas" : undefined}
+            >
+              <span className="lombada">
+                <span className="lombada-texto">{l.titulo}</span>
+              </span>
+              <span className="frente">
+                {l.capa ? <img src={l.capa} alt="" /> : <span className="frente-titulo">{l.titulo}</span>}
+              </span>
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+  );
 }
 
 function Livro({ titulo, autor, notas, capa, aoEscolher, escolhido }) {
@@ -116,6 +176,10 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnvia
    * recorte vazio se anuncia antes de ser clicado, em vez de levar a uma estante
    * em branco sem explicação. */
   const [recorte, setRecorte] = useState("tudo");
+  /* A vista começa em "capas", e não em 3D: quem abre a estante quer achar o
+   * livro, e a capa de frente é o que se reconhece de longe. A estante de pé é
+   * para olhar o acervo, que é outra coisa e vem por escolha. */
+  const [vista, setVista] = useState("capas");
   const regra = RECORTES.find((r) => r.id === recorte) ?? RECORTES[0];
   const mostrados = livros.filter(regra.cabe);
   return (
@@ -169,6 +233,12 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnvia
               </p>
               <Link to="/" className="estante-comecar">Preparar um documento</Link>
             </div>
+          ) : vista === "3d" ? (
+            <Estante3D
+              livros={mostrados}
+              selecionado={selecionado}
+              aoEscolher={aoEscolher}
+            />
           ) : (
             <ul className="grade">
               {mostrados.map((l) => (
@@ -184,9 +254,20 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnvia
         </div>
 
         <aside className="ficha" aria-label="Livro selecionado">
+          {/* O ALTERNADOR EXISTIA E NÃO FAZIA NADA: dois botões com
+              `aria-pressed` cravado e sem `onClick`. A vista 3D era o desenho
+              prometendo o que o produto não tinha. */}
           <nav className="recortes vista" aria-label="Modo de vista">
-            <button type="button" aria-pressed={true}>Capas</button>
-            <button type="button" aria-pressed={false}>Estante em 3D</button>
+            {["capas", "3d"].map((v) => (
+              <button
+                key={v}
+                type="button"
+                aria-pressed={vista === v ? "true" : "false"}
+                onClick={() => setVista(v)}
+              >
+                {v === "capas" ? "Capas" : "Estante em 3D"}
+              </button>
+            ))}
           </nav>
 
           {selecionado && (

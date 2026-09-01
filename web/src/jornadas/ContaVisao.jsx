@@ -5,6 +5,15 @@
  * mentindo sobre o que é. Um item de menu que leva a outro lugar é pior que um
  * item a menos, porque a pessoa aprende que o menu não é confiável.
  *
+ * ELA NAO REPETE A TRILHA. A primeira versao tinha uma seção "Onde ir" com os
+ * quatro destinos da conta, cada um com uma frase — e eles já estão na trilha,
+ * a trinta pixels de distância. Um índice que lista os mesmos links do menu ao
+ * lado não é uma página, é um menu; e dois menus para os mesmos quatro lugares
+ * é onde a pessoa começa a duvidar de qual está certo.
+ *
+ * O que sobra é o que só esta tela responde: quem é você, desde quando, e o que
+ * a conta guarda em número.
+ *
  * O QUE ELA MOSTRA VEM TODO DO SERVIDOR. Não há bloco escrito à mão: o e-mail e
  * a data vêm do `/eu`, e as contagens do `/privacidade`, que é a mesma lista
  * que a tela de Privacidade usa. Assim os dois números não podem divergir — e
@@ -30,12 +39,6 @@ const RESUMO = [
   { chave: "aparelhos", rotulo: "aparelhos Kindle", um: "aparelho Kindle", onde: "/conta/kindle" },
 ];
 
-const ONDE_IR = [
-  { rota: "/conta/kindle", titulo: "Dispositivos Kindle", oQueE: "Os endereços para onde o Mekora envia. Cada aparelho tem o seu." },
-  { rota: "/conta/seguranca", titulo: "Segurança", oQueE: "Os navegadores em que você entrou, e como sair deles à distância." },
-  { rota: "/conta/preferencias", titulo: "Preferências", oQueE: "Como o Mekora se comporta ao abrir um arquivo, e o tema." },
-  { rota: "/conta/privacidade", titulo: "Privacidade", oQueE: "Tudo o que está guardado, como levar embora e como apagar." },
-];
 
 const data = (iso) => {
   if (!iso) return null;
@@ -127,19 +130,6 @@ export function ContaVisao({ pessoa, aoSair }) {
           </section>
         )}
 
-        <section className="visao-ir">
-          <h2>Onde ir</h2>
-          <ul>
-            {ONDE_IR.map((d) => (
-              <li key={d.rota}>
-                <Link to={d.rota}>
-                  <span className="visao-ir-titulo">{d.titulo}</span>
-                  <span className="visao-ir-oquee">{d.oQueE}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
         </main>
       </div>
     </div>

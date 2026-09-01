@@ -771,3 +771,70 @@ existem e registrou o veredito: *"quem faz 3D de verdade usa Three.js; quem faz
 CSS faz retângulo decorativo com espessura constante e texto de 7px"*, e a única
 linha aproveitável é `Math.max(4, Math.min(22, Math.round(pages / 35)))`. A peça
 se escreve, e ela não estava no escopo desta rodada.
+
+---
+
+# Estante em 3D — a peça que a colheita disse que se escreve
+
+O alternador **"Capas / Estante em 3D"** já existia na ficha: dois botões com
+`aria-pressed` cravado e **sem `onClick`**. Era o desenho prometendo o que o
+produto não tinha.
+
+## Por que não havia de onde copiar
+
+A colheita no GitHub de 31/08 procurou e fechou com número: *"13 arquivos, 10
+deles o mesmo componente copiado entre repositórios — o ecossistema não tem dez
+soluções, tem uma, replicada, e ela não atende."*
+
+E o diagnóstico de por que não atende: *"quem faz 3D de verdade usa Three.js;
+quem faz CSS faz retângulo decorativo com espessura constante e texto de 7px;
+quem calcula espessura de lombada a sério está fazendo capa de impressão, em
+LaTeX ou InDesign, em 2D. **As duas metades do requisito — espessura derivada e
+tipografia legível em superfície rotacionada — existem em contextos
+incompatíveis. Esta peça se escreve.**"*
+
+## A espessura tem unidade
+
+A única linha aproveitável era a do `hubcrm`,
+`Math.max(4, Math.min(22, Math.round(pages / 35)))`, e o próprio documento já
+dizia que ela seria trocada. Ela é um número por outro: 35 páginas por pixel não
+sai de lugar nenhum, e o resultado não tem unidade — **dá o mesmo pixel numa
+estante grande e numa miniatura**.
+
+A conta em `contrato/lombada.js` é a da gráfica: duas páginas por folha, 0,1 mm
+por folha de papel comum, 2 mm de capas. E o milímetro vira pixel pela **escala
+da capa** — a proporção 420×594 é √2, o formato A, e um A5 tem 210 mm de altura.
+
+O teste prova contra a régua: 200 páginas dão 12 mm, 300 dão 17, 600 dão 32. E
+prova o defeito da linha antiga: **ela empata 800, 1000 e 2000 páginas em 22px**,
+enquanto a conta daqui os separa em 59, 74 e 85.
+
+## Sem Three.js, e não por economia
+
+O desenho pede uma estante de capas vista de lado, não uma cena. Um canvas aqui
+traria uma árvore que leitor de tela não percorre e teclado não alcança, para
+desenhar retângulos que o CSS desenha com `rotateY`.
+
+`rounded-r-[4px]` e `shadow-book` — os dois valores que a colheita marcou como "a
+zerar" no componente replicado — ficaram zerados, o que a regra do sistema já
+exigia.
+
+## Dois defeitos que a medição pegou, e o olho não
+
+**A capa cobria os vizinhos.** Ela começava em `inset-inline-start: 100%`, e 100%
+é a largura do *elemento* — que cresce 84px quando o livro é puxado, para abrir
+espaço. A capa nascia 84px adiante do lugar certo. Medido: a capa do livro de 900
+páginas ia até 261px, e os outros dois moravam em 182 e 206 — cobertos inteiros.
+O certo é `var(--espessura)`, o fim da lombada, que **não muda** quando o livro é
+puxado.
+
+**O `page_count` morria no schema.** Ele existe no modelo e no `JobResponse`
+desde sempre, e faltava no `HistoryEntry` — então toda lombada da estante saía
+com "espessura desconhecida". A tela estava certa ao dizer isso; o dado é que não
+chegava.
+
+## Livro sem contagem de páginas não ganha espessura de chute
+
+Ele aparece com a lombada mínima e o `aria-label` diz *"espessura
+desconhecida"* — em vez de inventar um número que a pessoa leria como
+informação.

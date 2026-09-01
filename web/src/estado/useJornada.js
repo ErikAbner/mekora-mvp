@@ -152,6 +152,10 @@ export function useJornada() {
         notas: e.notas ?? 0,
         capitulo: e.capitulo,
         capitulos: e.capitulos,
+        /* O NUMERO DE PAGINAS, que a vista de pé usa para derivar a espessura da
+         * lombada. Sem ele o livro aparece com a lombada minima, e a tela diz
+         * que a espessura e desconhecida — em vez de inventar. */
+        paginas: e.page_count ?? null,
         /* QUANTO DO LIVRO JA FOI LIDO, de 0 a 1. Sem esta linha o campo chega do
          * servidor, morre no mapeamento e a ficha volta ao "capitulo N de M" —
          * o que aconteceu na primeira medida, com o /history ja devolvendo
