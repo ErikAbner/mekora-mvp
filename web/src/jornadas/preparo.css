@@ -5,6 +5,7 @@
 .preparo-pagina-volta:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
 
 .preparo-pagina-pagina-topo { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
+.preparo-pagina-pagina-topo > div:last-child { flex: 1 1 320px; min-inline-size: 0; }
 
 .preparo-pagina-capa {
   flex: 0 0 auto;
@@ -59,7 +60,21 @@
 
 .preparo-pagina-lista { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
 
-.preparo-pagina-lista li { background: var(--background); padding: 16px 20px; }
+/* A LINHA COM ACAO A DIREITA — nos 895:7856 e 895:8164, onde cada item traz um
+ * botao secundario na ponta ("Por que", "Ver", "Alterar"). O texto ocupa a
+ * coluna, o botao fica alinhado ao topo dela: com duas linhas de texto, um botao
+ * centrado verticalmente flutua no meio do nada. */
+.preparo-pagina-lista li {
+  background: var(--background); padding: 16px 20px;
+  display: grid; grid-template-columns: 1fr auto; align-items: start;
+  column-gap: 16px;
+}
+/* O TEXTO EMPILHA NA PRIMEIRA COLUNA. Sem dizer isto, a colocacao automatica
+ * poe o `h3` em (1,1) e o `p` em (1,2) — titulo e explicacao lado a lado, cada
+ * um espremido em meia coluna. */
+.preparo-pagina-lista li > h3,
+.preparo-pagina-lista li > p { grid-column: 1; }
+.preparo-pagina-lista li > .botao { grid-column: 2; grid-row: 1 / -1; align-self: center; }
 .preparo-pagina-lista h3 { margin: 0 0 4px; font-size: 16px; line-height: 24px; font-weight: 540; color: var(--foreground); }
 .preparo-pagina-lista p { margin: 0; font-size: 14px; line-height: 20px; color: var(--muted-foreground); text-wrap: pretty; }
 
@@ -84,23 +99,63 @@
  * a Mesa no mesmo instante. Um PDF digitalizado de trezentas paginas leva
  * minutos com OCR, e a pessoa ficava na Mesa sem saber se algo acontecia.
  */
-.preparo-andando,
 .preparo-fim {
   display: flex; flex-direction: column; gap: 24px;
   inline-size: 100%; max-inline-size: 680px;
   margin-block: 64px;
 }
-.preparo-andando h1,
+/* A SECAO EM ANDAMENTO NAO E MAIS A PAGINA INTEIRA.
+ *
+ * Ela era uma coluna solta no meio do branco, porque o estado trocava a tela
+ * toda. No no 895:8029 o topo continua — capa, titulo, selos, alternador — e
+ * isto aqui e um bloco DENTRO da pagina, com a mesma largura das outras secoes. */
+.preparo-andando {
+  display: flex; flex-direction: column; gap: 16px;
+  margin-block: 40px 32px;
+}
 .preparo-fim h1 {
   margin: 0;
   font-size: 40px; line-height: 48px; font-weight: 540;   /* Heading/LG */
   color: var(--foreground);
   text-wrap: pretty;
 }
-.preparo-andando-etapa {
+/* O CARD COM REGRA A ESQUERDA — o bloco cinza do no 895:8029. A regra e a mesma
+ * marca de citacao do resto do sistema: uma barra de tinta cheia na borda de
+ * inicio, e nenhuma cor nova. */
+.preparo-andando-card {
+  padding: 24px 24px 24px 32px;
+  background: var(--background-secondary);
+  border-inline-start: 4px solid var(--foreground);
+}
+.preparo-andando-card h2 {
+  margin: 0 0 8px;
+  font-size: 24px; line-height: 32px; font-weight: 540;   /* Body/Large */
+  color: var(--foreground);
+  text-wrap: pretty;
+}
+.preparo-andando-card p {
   margin: 0;
-  font-size: 24px; line-height: 32px;   /* Body/Large */
+  font-size: 15px; line-height: 24px;
   color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+.preparo-andando-recado { margin-block-start: 8px !important; }
+
+/* A LINHA DE MEDIDA: contagem a esquerda, relogio a direita — como no desenho. */
+.preparo-andando-medida {
+  display: flex; justify-content: space-between; gap: 16px;
+  margin: 0;
+  font-size: 15px; line-height: 24px;
+  color: var(--muted-foreground);
+}
+.preparo-andando-medida > span:last-child { font-variant-numeric: tabular-nums; }
+
+/* A ETAPA EM CURSO, na lista de "O que vou fazer". Marcada por SUPERFICIE, que
+ * e como todo estado ativo do sistema se marca — nao por cor de aviso. */
+.preparo-andando-passos > li[aria-current="step"] {
+  background: var(--background-secondary);
+  padding: 16px;
+  margin-inline: -16px;
 }
 .preparo-andando-nota,
 .preparo-fim-diz {
@@ -132,9 +187,10 @@
 .preparo-fim-acoes { display: flex; flex-wrap: wrap; gap: 16px; }
 
 @media (max-width: 767px) {
-  .preparo-andando, .preparo-fim { margin-block: 40px; }
-  .preparo-andando h1, .preparo-fim h1 { font-size: 32px; line-height: 40px; }
-  .preparo-andando-etapa { font-size: 20px; line-height: 30px; }
+  .preparo-fim { margin-block: 40px; }
+  .preparo-fim h1 { font-size: 32px; line-height: 40px; }
+  .preparo-andando-card { padding: 16px 16px 16px 20px; }
+  .preparo-andando-card h2 { font-size: 20px; line-height: 30px; }
   .preparo-fim-acoes { flex-direction: column; align-items: stretch; }
 }
 
@@ -174,11 +230,17 @@
   .preparo-pagina-pagina-acoes .botao { inline-size: 100%; justify-content: center; }
 }
 
-/* O alternador Guiado / Personalizado, no topo — nó 966:31504. Mesma forma dos
-   recortes da estante: uma caixa, dois botões, o ativo em tinta cheia. */
+/* O alternador Guiado / Personalizado — nós 966:31504, 895:7856 e 895:8029.
+   Mesma forma dos recortes da estante: uma caixa, dois botões, o ativo em tinta
+   cheia.
+
+   ELE MORA NA COLUNA DO TÍTULO, logo abaixo dos selos, e não solto sob o
+   cabeçalho inteiro. Nos três nós ele começa onde o título começa — ao lado da
+   capa, não debaixo dela. Solto, ele parecia governar a página; ali, governa o
+   arquivo que está nomeado acima dele. */
 .preparo-pagina-modo {
-  display: flex; align-self: flex-start;
-  margin-block-start: 32px;
+  display: flex; align-self: flex-start; inline-size: fit-content;
+  margin-block-start: 20px;
   padding: 12px;
   border: 1px solid var(--border);
   background: var(--card);

@@ -68,3 +68,41 @@ else console.log(`  ok   ${Object.values(VALORES).flat().length} valores, nenhum
 
 console.log(falhas ? `\n${falhas} falha(s)\n` : "\ntudo passou\n");
 process.exit(falhas ? 1 : 0);
+
+/* ─── O progresso, que agora carrega mais que a porcentagem ─────────────────
+ *
+ * `leProgresso` devolvia `null` sempre que a etapa nao contava passos, e junto
+ * com o numero levava embora o `operation_id` — que e o unico jeito de cancelar
+ * a operacao. O botao "Cancelar" do no 895:8029 nao tinha como existir.
+ */
+{
+  const andando = (progress) =>
+    estadoDe({ status: "converting", conversion_status: "in_progress", progress });
+
+  const contavel = andando({
+    operation_id: "op-1", stage: "ocr", current: 42, total: 96,
+    message: "Reconhecendo", started_at: "2026-09-01T10:00:00Z",
+  }).progresso;
+  iguais(contavel.porcento, 44, "porcentagem arredondada");
+  iguais(contavel.feito, 42, "paginas feitas");
+  iguais(contavel.total, 96, "paginas ao todo");
+  iguais(contavel.operacao, "op-1", "identificador da operacao");
+  iguais(contavel.passo, "ocr", "nome da etapa do servidor");
+  iguais(contavel.recado, "Reconhecendo", "recado do servidor");
+
+  /* O CASO QUE FALTAVA: o Calibre e processo externo e reporta `total: None`.
+     A operacao existe, tem nome e da para cancelar — so nao da para contar. */
+  const solto = andando({
+    operation_id: "op-2", stage: "convert", current: 0, total: null,
+    message: "Convertendo via Calibre (sem estimativa)",
+  }).progresso;
+  iguais(solto === null, false, "etapa sem total ainda devolve objeto");
+  iguais(solto.porcento, null, "sem total, sem porcentagem");
+  iguais(solto.total, null, "sem total");
+  iguais(solto.operacao, "op-2", "da para cancelar mesmo sem contagem");
+  iguais(solto.passo, "convert", "a etapa continua nomeada");
+
+  /* `null` passa a significar UMA coisa so: nao ha operacao. */
+  iguais(andando(null).progresso, null, "sem progresso, sem objeto");
+  iguais(andando("nao e objeto").progresso, null, "progresso invalido vira null");
+}

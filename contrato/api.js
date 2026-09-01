@@ -572,6 +572,24 @@ export function refazerPreparo(jobId) {
   });
 }
 
+/**
+ * POST /jobs/{id}/operations/{op}/cancel — jobs.py. O "Cancelar" do 895:8029.
+ *
+ * É COOPERATIVO, e a tela precisa dizer isso. O backend grava um pedido de
+ * cancelamento e a etapa o lê entre um passo e outro; processos externos —
+ * Calibre, ocrmypdf, o tradutor — não são interrompidos no meio. Quem clica
+ * espera o fim do passo corrente, não um corte imediato.
+ *
+ * O `op` vem do próprio progresso (`operation_id`), e não de um estado guardado
+ * na tela: se a operação trocar entre uma pergunta e outra, cancelar a antiga
+ * responderia 409 — "Esta operação não está mais ativa para o job."
+ */
+export function cancelarOperacao(jobId, operacao) {
+  return pede(`/jobs/${jobId}/operations/${encodeURIComponent(operacao)}/cancel`, {
+    method: "POST",
+  });
+}
+
 /** DELETE /jobs/{id} — jobs.py. "Remover da estante". Não dá para desfazer. */
 export function removerDaEstante(jobId) {
   return pede(`/jobs/${jobId}`, { method: "DELETE" });

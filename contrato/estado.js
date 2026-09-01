@@ -150,13 +150,39 @@ export function estadoDe(j) {
 }
 
 /* O backend devolve `progress` como dicionário livre. Ler campo por campo aqui,
- * com padrão, é o que evita `undefined%` na tela quando a forma mudar. */
+ * com padrão, é o que evita `undefined%` na tela quando a forma mudar.
+ *
+ * DUAS COISAS DIFERENTES MORAVAM NUM `NULL` SÓ.
+ *
+ * A versão anterior devolvia `null` quando não havia total — e com isso a tela
+ * perdia também o NOME DA ETAPA, o RECADO do servidor, a HORA DE INÍCIO e o
+ * IDENTIFICADOR DA OPERAÇÃO. Só que "não dá para contar" e "não há operação
+ * nenhuma" são estados distintos: a conversão por Calibre é um processo externo
+ * que anda sem contar páginas, e continua sendo uma operação viva, com nome,
+ * relógio e botão de cancelar.
+ *
+ * Perder o identificador é o que doía: `POST /jobs/{id}/operations/{op}/cancel`
+ * exige o `op`, e sem ele a tela de preparo não tinha como oferecer "Cancelar" —
+ * que é um dos dois botões que o nó 895:8029 desenha.
+ *
+ * Agora `null` significa só uma coisa: não há operação. O resto vem preenchido,
+ * e o que não dá para contar vem como `null` no campo do número — não no objeto
+ * inteiro. */
 function leProgresso(p) {
   if (!p || typeof p !== "object") return null;
   const feito = Number(p.done ?? p.current ?? p.completed);
   const total = Number(p.total ?? p.of ?? p.count);
-  if (!Number.isFinite(feito) || !Number.isFinite(total) || total <= 0) return null;
-  return { feito, total, porcento: Math.round((feito / total) * 100) };
+  const contavel = Number.isFinite(feito) && Number.isFinite(total) && total > 0;
+  const texto = (v) => (typeof v === "string" && v ? v : null);
+  return {
+    operacao: texto(p.operation_id),
+    passo: texto(p.stage),
+    recado: texto(p.message),
+    comeco: texto(p.started_at),
+    feito: contavel ? feito : null,
+    total: contavel ? total : null,
+    porcento: contavel ? Math.round((feito / total) * 100) : null,
+  };
 }
 
 /**

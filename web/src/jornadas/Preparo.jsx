@@ -4,7 +4,7 @@ import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { AvisoPreferencias } from "../componentes/AvisoPreferencias.jsx";
 import { Campo } from "../componentes/Campo.jsx";
-import { acompanhar, analisar, converter, enviarAoKindle, esperarAnalise } from "../../../contrato/api.js";
+import { acompanhar, analisar, cancelarOperacao, converter, enviarAoKindle, esperarAnalise } from "../../../contrato/api.js";
 import { tamanhoLegivel } from "../../../contrato/tamanho.js";
 import "./preparo.css";
 
@@ -42,25 +42,20 @@ function achados(job) {
     });
   }
 
-  /* O NUMERO DE PAGINAS, E NAO UM VEREDITO SOBRE ELAS.
+  /* DUAS LINHAS SAÍRAM DAQUI, e cada uma por um motivo diferente.
    *
-   * Aqui dizia "Nenhuma página corrompida — N de N abriram sem erro", e o
-   * backend NAO SABE ISSO: nao ha campo de pagina corrompida no
-   * `ProcessingJob`. A frase era verdadeira por acaso e apareceria igual num
-   * arquivo com metade das paginas quebradas. */
-  if (paginas) {
-    fora.push({
-      titulo: `${paginas} ${paginas === 1 ? "página" : "páginas"}`,
-      diz: "Contadas na análise do arquivo.",
-    });
-  }
-
-  if (job.detected_language) {
-    fora.push({
-      titulo: `Idioma: ${job.detected_language}`,
-      diz: "Declarado no próprio arquivo.",
-    });
-  }
+   * "Nenhuma página corrompida — N de N abriram sem erro" é do nó 895:7856, e o
+   * backend NÃO SABE ISSO: não há campo de página corrompida no
+   * `ProcessingJob`. A frase era verdadeira por acaso, e apareceria igual num
+   * arquivo com metade das páginas quebradas. Fica de fora até haver de onde
+   * tirá-la.
+   *
+   * "N páginas" e "Idioma: X" saíram por repetição: o veredito acima já conta
+   * as páginas, e "O que vou fazer" já traz o idioma com o que importa junto —
+   * que nada será traduzido. No desenho, "O que encontrei" é a lista do que
+   * PEDE ATENÇÃO, e não o inventário do arquivo; o inventário são os selos do
+   * topo.
+   */
 
   /* SE NADA FOI ENCONTRADO, A TELA DIZ ISSO — e não some. Uma seção vazia
    * sugere que a análise não rodou; uma frase dizendo que não achou nada
@@ -81,18 +76,44 @@ function planos(job) {
 
   if (job.is_scanned === true) {
     fora.push({
+      /* `passo` é o nome que o servidor usa para a etapa — o mesmo `stage` do
+         `report_progress`. É o que deixa a lista de "O que vou fazer" marcar
+         qual linha está acontecendo agora, em vez de a tela adivinhar pela
+         ordem em que as escreveu. */
+      passo: "ocr",
       titulo: `Reconhecer o texto${job.detected_language ? ` em ${job.detected_language}` : ""}`,
       diz: "Depois disso o Kindle acha palavras e você pode mudar o corpo da letra.",
     });
   }
 
   fora.push({
+    passo: "convert",
     titulo: "Converter para EPUB",
     diz: "No EPUB o texto reflui: você muda o corpo da letra e o conteúdo se ajusta. Em PDF, não.",
   });
 
+  /* O SUMÁRIO NAVEGÁVEL — linha do nó 895:7856, que não existia aqui.
+   *
+   * O desenho escreve "A partir dos 14 títulos de capítulo que encontrei", e o
+   * número não dá para dizer AINDA: a análise devolve título, autor, idioma,
+   * páginas e se é digitalização — nada sobre capítulos. Quem lê o sumário é o
+   * `epub.js`, e ele só tem o que ler DEPOIS da conversão.
+   *
+   * Então a linha entra sem o número, dizendo o que é verdade: o sumário sai
+   * dos títulos que o conversor achar. Prometer catorze antes de olhar seria a
+   * mesma invenção que esta tela existe para não fazer. */
+  fora.push({
+    titulo: "Gerar um sumário navegável",
+    diz: "A partir dos títulos de capítulo que o conversor encontrar. É ele que vira o índice do livro na leitura.",
+  });
+
   if (!job.final_title && !job.detected_title) {
     fora.push({
+      /* `sozinho` marca a decisão que o Mekora tomou sem perguntar. O veredito
+         do nó 895:7856 as nomeia — "Uma coisa eu resolvi sozinho e vale você
+         conferir: o arquivo não tem capa" —, e é a diferença entre um relatório
+         e um pedido de conferência. */
+      sozinho: "o arquivo não traz título",
       titulo: "Usar o nome do arquivo como título",
       diz: "O arquivo não traz título próprio. Dá para trocar abaixo.",
     });
@@ -117,12 +138,127 @@ function planos(job) {
           diz: "Foi a que você escolheu.",
         }
       : {
+          sozinho: "o arquivo não tem capa",
           titulo: "Capa gerada",
           diz: "Montar uma com o título, o autor e o formato, na linguagem da estante.",
         },
   );
 
+  /* O IDIOMA, E O QUE NÃO VAI ACONTECER COM ELE — linha do nó 895:7856.
+   *
+   * "Nada é traduzido a não ser que você peça" é a única linha desta lista que
+   * promete uma AUSÊNCIA, e é por isso que ela importa: um produto que converte
+   * arquivo tem toda a cara de quem mexe no texto sem avisar.
+   *
+   * O desenho põe um botão "Traduzir" ao lado. Ele não está aqui: a tradução
+   * existe no backend (`POST /jobs/{id}/translate`) e não existe em tela nenhuma
+   * do produto — nem escolha de idioma de destino, nem motor, nem o que fazer
+   * quando falha. Um botão que abre um caminho sem tela é pior que um botão a
+   * menos. */
+  if (job.detected_language) {
+    fora.push({
+      titulo: `Idioma: ${job.detected_language}, como no original`,
+      diz: "Nada é traduzido a não ser que você peça.",
+    });
+  }
+
   return fora;
+}
+
+/* O QUE AS DUAS TELAS DE PREPARO TÊM EM COMUM.
+ *
+ * Nos nós 895:8164 (pronto) e 895:8029 (em andamento) o topo é o MESMO da tela
+ * de análise: a capa à esquerda, o título, os selos do arquivo e o alternador.
+ * A tela não se esvazia quando a conversão começa — quem está esperando
+ * continua vendo qual arquivo é.
+ *
+ * Aqui isso só era verdade na análise: o "em andamento" trocava a página
+ * inteira por uma linha de texto, e a pessoa perdia de vista o que preparava.
+ *
+ * `inerte` é a conversão em curso: os dois botões continuam à vista, marcando a
+ * escolha que foi feita, e não aceitam clique — trocar de modo com o Calibre
+ * rodando não muda o arquivo que já está sendo escrito.
+ */
+function Topo({ job, titulo, ajustando, aoTrocar, inerte = false }) {
+  const capa = (job.thumbnails ?? [])[0];
+  const marcas = [
+    job.input_format && job.input_format.toUpperCase(),
+    /* O TAMANHO DO ARQUIVO — o selo "11.5 MB" do nó 966:31504. Ele não existia
+       em lugar nenhum do produto: estava só no disco, e o disco esquece quando
+       a limpeza por idade apaga o input. Agora vem do banco, gravado na hora em
+       que o arquivo chegou. */
+    tamanhoLegivel(job.input_bytes),
+    job.page_count && `${job.page_count} páginas`,
+    job.detected_language,
+  ].filter(Boolean);
+
+  return (
+    <>
+      <header className="preparo-pagina-pagina-topo">
+        <div className="preparo-pagina-capa">
+          {capa ? <img src={capa} alt="" /> : <span>{titulo}</span>}
+        </div>
+        <div>
+          <h1>{titulo}</h1>
+          <p className="preparo-pagina-marcas">
+            {marcas.map((m) => <span key={m} className="marca-arquivo">{m}</span>)}
+          </p>
+
+          {/* O ALTERNADOR GUIADO / PERSONALIZADO, no topo — nó 966:31504.
+           *
+           * Ele existia só como um botão no fim da página, "Ajustar manualmente",
+           * depois de tudo o que o Mekora decidiu. Quem quer decidir por conta
+           * própria tinha de rolar a tela inteira lendo as decisões que ia
+           * descartar.
+           *
+           * No desenho é um alternador de dois estados, antes do conteúdo — a
+           * escolha de COMO ler esta tela vem antes de lê-la. Marcado por
+           * superfície, como todo alternador do sistema. */}
+          <nav className="preparo-pagina-modo" aria-label="Modo de preparo">
+            {/* PERSONALIZADO PRIMEIRO, como no 895:8164 e no 966:31504 — e o
+                Guiado marcado. A ordem do desenho não é arbitrária: o padrão fica
+                à direita, onde o polegar chega, e o modo que exige decisão fica à
+                esquerda. */}
+            {[
+              ["personalizado", "Personalizado", true],
+              ["guiado", "Guiado", false],
+            ].map(([id, rotulo, manual]) => (
+              <button
+                key={id}
+                type="button"
+                aria-pressed={ajustando === manual ? "true" : "false"}
+                disabled={inerte}
+                onClick={() => aoTrocar(manual)}
+              >
+                {rotulo}
+              </button>
+            ))}
+          </nav>
+        </div>
+      </header>
+    </>
+  );
+}
+
+/* O QUE A ETAPA ESTÁ FAZENDO, EM PORTUGUÊS DE FRASE.
+ *
+ * `estadoDe` já devolve o rótulo humano da etapa — "convertendo", "analisando".
+ * Serve para uma coluna de lista; não serve para o título do nó 895:8029, que é
+ * "Preparando, reconhecendo o texto". "Preparando, convertendo" não é frase.
+ */
+const EM_CURSO = {
+  analisando: "lendo o arquivo",
+  convertendo: "convertendo para EPUB",
+  traduzindo: "traduzindo o texto",
+  exportando: "exportando o resultado",
+  "enviando ao Kindle": "enviando ao Kindle",
+};
+
+/* mm:ss decorridos. O relógio é do navegador porque o começo é o clique — não
+ * há acerto de fuso nem de relógio de servidor para dar errado no meio. */
+function relogio(ms) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
 
 export function Preparo() {
@@ -146,6 +282,20 @@ export function Preparo() {
   const [titulo, setTitulo] = useState("");
   const [autor, setAutor] = useState("");
   const [ajustando, setAjustando] = useState(false);
+  /* O RELÓGIO DA ESPERA — o "Min 11,30" do canto direito do nó 895:8029.
+   *
+   * No desenho o número está ao lado de "42 de 96 páginas reconhecidas", e é a
+   * única coisa que sobra quando a etapa não conta páginas: o card do próprio
+   * desenho diz isso com todas as letras — "as seguintes não avançam de forma
+   * linear, então mostro a etapa e o tempo, não uma barra".
+   *
+   * É TEMPO DECORRIDO, e não tempo restante. Restante seria previsão, e não há
+   * de onde tirá-la: o Calibre não estima, o ocrmypdf não estima, e um número
+   * inventado numa faixa que existe para dar certeza é o contrário dela.
+   * Decorrido eu sei ao certo — começou no clique. */
+  const [inicio, setInicio] = useState(null);
+  const [agora, setAgora] = useState(0);
+  const [cancelando, setCancelando] = useState(false);
 
   const buscar = useCallback(async () => {
     try {
@@ -168,6 +318,12 @@ export function Preparo() {
   }, [id]);
 
   useEffect(() => { buscar(); }, [buscar]);
+
+  useEffect(() => {
+    if (!preparando || inicio == null) return undefined;
+    const t = setInterval(() => setAgora(Date.now() - inicio), 1000);
+    return () => clearInterval(t);
+  }, [preparando, inicio]);
 
   if (erro) {
     return (
@@ -274,24 +430,62 @@ export function Preparo() {
     );
   }
 
-  /* PREPARO — EM ANDAMENTO. Diz a etapa e a porcentagem quando o servidor as
-   * manda, e diz que nao sabe quando nao manda — em vez de uma barra inventada
-   * que anda sozinha, que e a mentira mais comum desta tela em qualquer
-   * produto. */
+  /* PREPARO — EM ANDAMENTO, o nó 895:8029.
+   *
+   * O desenho mantém o topo da tela — capa, título, selos, alternador —, põe um
+   * card com regra à esquerda explicando POR QUE a barra existe nesta etapa e
+   * não nas seguintes, mostra "42 de 96 páginas reconhecidas" à esquerda com o
+   * relógio à direita, repete "O que vou fazer" com a etapa em curso marcada, e
+   * termina em dois botões: Cancelar e Continuar navegando.
+   *
+   * O que havia aqui era um título, uma linha de etapa e uma barra. A parte que
+   * mais importa do desenho — a frase que separa "sei contar" de "não sei" —
+   * não existia, e é ela a razão de esta tela não ter a barra falsa que todo
+   * outro produto põe aqui.
+   *
+   * DUAS COISAS DO DESENHO NÃO ESTÃO AQUI, e nenhuma por esquecimento:
+   *
+   * — "42 de 96 páginas reconhecidas" é o OCR contando página a página, e
+   *   `apply_ocr` chama o `ocrmypdf` como processo externo, de dentro da
+   *   análise, sem `operation_id` e sem retorno por página. Quando houver, a
+   *   barra aparece sozinha: o código abaixo já a desenha assim que `feito` e
+   *   `total` chegarem.
+   *
+   * — os tempos por passo ("01:10", "00:40") são previsões, e previsão é
+   *   exatamente o que esta tela se recusa a inventar.
+   */
   if (preparando) {
-    const pct = andamento?.progresso?.porcento;
+    const p = andamento?.progresso;
+    const pct = p?.porcento;
+    const rotulo = andamento?.etapa ? EM_CURSO[andamento.etapa] || andamento.etapa : null;
+    /* A lista é a MESMA de "O que vou fazer" da análise — não uma segunda lista
+       de passos escrita à parte, que discordaria da primeira no dia em que uma
+       das duas mudasse. */
+    const passos = job ? planos(job) : [];
+
     return (
       <div className="mesa">
         <Cabecalho lugar="mesa" />
         <main className="preparo-pagina">
+          {job && (
+            <Topo job={job} titulo={titulo} ajustando={ajustando} aoTrocar={setAjustando} inerte />
+          )}
+
           <section className="preparo-andando">
-            <h1>Preparando {titulo}</h1>
-            <p className="preparo-andando-etapa" role="status">
-              {andamento?.etapa
-                ? `${andamento.etapa[0].toUpperCase()}${andamento.etapa.slice(1)}…`
-                : "Começando…"}
-            </p>
-            {typeof pct === "number" ? (
+            <div className="preparo-andando-card">
+              <h2 role="status">Preparando{rotulo ? `, ${rotulo}` : "…"}</h2>
+              {/* A FRASE É DO DESENHO, e ela se parte em duas porque descreve
+                  dois casos. Contável: a barra vale. Não contável: etapa e
+                  tempo, e barra nenhuma. */}
+              <p>
+                {typeof pct === "number"
+                  ? "Esta etapa eu sei contar, porque é página a página. As seguintes não avançam de forma linear — nelas mostro a etapa e o tempo, não uma barra."
+                  : "Esta etapa não avança de forma linear, então mostro a etapa e o tempo, e não uma barra. Uma barra aqui andaria sozinha, sem nada por baixo."}
+              </p>
+              {p?.recado && <p className="preparo-andando-recado">{p.recado}</p>}
+            </div>
+
+            {typeof pct === "number" && (
               <div
                 className="preparo-barra"
                 role="progressbar"
@@ -302,16 +496,64 @@ export function Preparo() {
               >
                 <span style={{ inlineSize: `${Math.max(0, Math.min(100, pct))}%` }} />
               </div>
-            ) : (
-              <p className="preparo-andando-nota">
-                O servidor não informa quanto falta nesta etapa.
-              </p>
             )}
-            <p className="preparo-andando-nota">
-              Dá para fechar esta aba: a preparação continua no servidor, e o
-              livro aparece na estante quando terminar.
+
+            <p className="preparo-andando-medida">
+              <span>
+                {p?.total
+                  ? `${p.feito} de ${p.total} páginas reconhecidas`
+                  : "Sem contagem nesta etapa"}
+              </span>
+              <span>{relogio(agora)}</span>
             </p>
           </section>
+
+          <section className="preparo-pagina-secao">
+            <h2>O que vou fazer</h2>
+            <ul className="preparo-pagina-lista preparo-andando-passos">
+              {passos.map((x) => {
+                const correndo = Boolean(x.passo) && p?.passo === x.passo;
+                return (
+                  <li key={x.titulo} aria-current={correndo ? "step" : undefined}>
+                    <h3>{x.titulo}</h3>
+                    <p>{correndo ? "Em andamento" : x.diz}</p>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+
+          <div className="preparo-pagina-pagina-acoes">
+            {/* CANCELAR É COOPERATIVO, e o botão não pode fingir o contrário: o
+                backend anota o pedido e a etapa o lê entre um passo e outro. Sem
+                `operation_id` não há o que cancelar, e aí o botão não existe —
+                melhor faltar do que responder 409. */}
+            {p?.operacao && (
+              <Botao
+                tom="primaria"
+                disabled={cancelando}
+                onClick={async () => {
+                  setCancelando(true);
+                  try {
+                    await cancelarOperacao(id, p.operacao);
+                  } catch (e) {
+                    setErro(e.message);
+                  }
+                }}
+              >
+                {cancelando ? "Cancelando…" : "Cancelar"}
+              </Botao>
+            )}
+            <Botao tom="secundaria" onClick={() => navegar("/mesa")}>
+              Continuar navegando
+            </Botao>
+          </div>
+
+          <p className="preparo-andando-nota">
+            {cancelando
+              ? "Pedido de cancelamento anotado. A etapa para no fim do passo em que está — programas de fora, como o conversor, não são interrompidos no meio."
+              : "Dá para fechar esta aba: a preparação continua no servidor, e o livro aparece na estante quando terminar."}
+          </p>
         </main>
       </div>
     );
@@ -328,17 +570,8 @@ export function Preparo() {
     );
   }
 
-  const capa = (job.thumbnails ?? [])[0];
-  const marcas = [
-    job.input_format && job.input_format.toUpperCase(),
-    /* O TAMANHO DO ARQUIVO — o selo "11.5 MB" do nó 966:31504. Ele não existia
-       em lugar nenhum do produto: estava só no disco, e o disco esquece quando
-       a limpeza por idade apaga o input. Agora vem do banco, gravado na hora em
-       que o arquivo chegou. */
-    tamanhoLegivel(job.input_bytes),
-    job.page_count && `${job.page_count} páginas`,
-    job.detected_language,
-  ].filter(Boolean);
+  const oQueVouFazer = planos(job);
+  const sozinhas = oQueVouFazer.map((x) => x.sozinho).filter(Boolean);
 
   return (
     <div className="mesa">
@@ -347,47 +580,7 @@ export function Preparo() {
       <main className="preparo-pagina">
         <Link to="/mesa" className="preparo-pagina-volta">← Mesa</Link>
 
-        <header className="preparo-pagina-pagina-topo">
-          <div className="preparo-pagina-capa">
-            {capa ? <img src={capa} alt="" /> : <span>{titulo}</span>}
-          </div>
-          <div>
-            <h1>{titulo}</h1>
-            <p className="preparo-pagina-marcas">
-              {marcas.map((m) => <span key={m} className="marca-arquivo">{m}</span>)}
-            </p>
-          </div>
-        </header>
-
-        {/* O ALTERNADOR GUIADO / PERSONALIZADO, no topo — nó 966:31504.
-         *
-         * Ele existia só como um botão no fim da página, "Ajustar manualmente",
-         * depois de tudo o que o Mekora decidiu. Quem quer decidir por conta
-         * própria tinha de rolar a tela inteira lendo as decisões que ia
-         * descartar.
-         *
-         * No desenho é um alternador de dois estados, antes do conteúdo — a
-         * escolha de COMO ler esta tela vem antes de lê-la. Marcado por
-         * superfície, como todo alternador do sistema. */}
-        <nav className="preparo-pagina-modo" aria-label="Modo de preparo">
-          {/* PERSONALIZADO PRIMEIRO, como no 895:8164 e no 966:31504 — e o
-              Guiado marcado. A ordem do desenho não é arbitrária: o padrão fica
-              à direita, onde o polegar chega, e o modo que exige decisão fica à
-              esquerda. */}
-          {[
-            ["personalizado", "Personalizado", true],
-            ["guiado", "Guiado", false],
-          ].map(([id, rotulo, manual]) => (
-            <button
-              key={id}
-              type="button"
-              aria-pressed={ajustando === manual ? "true" : "false"}
-              onClick={() => setAjustando(manual)}
-            >
-              {rotulo}
-            </button>
-          ))}
-        </nav>
+        <Topo job={job} titulo={titulo} ajustando={ajustando} aoTrocar={setAjustando} />
 
         {/* O que cada modo faz, dito uma vez. O rótulo sozinho não diz se
             "Personalizado" abre controles ou muda o resultado. */}
@@ -398,11 +591,16 @@ export function Preparo() {
         </p>
 
         {/* O VEREDITO PRIMEIRO. Quem abre esta tela quer saber uma coisa: dá
-            para seguir? O detalhe vem depois, para quem quiser. */}
-        {/* O VEREDITO PRIMEIRO — mas o que ele afirma precisa ser verdade.
-            Aqui dizia "N páginas, todas abriram", e nada no backend responde se
-            alguma não abriu. Agora ele diz o que a análise fez, e o que ela
-            achou fica na seção de baixo, item a item. */}
+            para seguir? O detalhe vem depois, para quem quiser.
+
+            O que ele afirma precisa ser verdade. Aqui dizia "N páginas, todas
+            abriram", e nada no backend responde se alguma não abriu.
+
+            A SEGUNDA FRASE É A DO NÓ 895:7856 — "Uma coisa eu resolvi sozinho e
+            vale você conferir: o arquivo não tem capa". Ela não estava aqui, e é
+            a que muda a tela de relatório para pedido de conferência: nomeia o
+            que foi decidido sem perguntar, em vez de deixar a decisão espalhada
+            no meio da lista de baixo. */}
         <p className="preparo-pagina-veredito">
           <strong>Analisado. Nada aqui impede a preparação.</strong>
           <span>
@@ -411,7 +609,11 @@ export function Preparo() {
                 ? "1 página lida. "
                 : `${job.page_count} páginas lidas. `
               : ""}
-            O que precisa da sua atenção está abaixo.
+            {sozinhas.length === 0
+              ? "O que precisa da sua atenção está abaixo."
+              : sozinhas.length === 1
+                ? `Uma coisa eu resolvi sozinho e vale você conferir: ${sozinhas[0]}.`
+                : `${sozinhas.length} coisas eu resolvi sozinho e vale você conferir: ${sozinhas.join(", ")}.`}
           </span>
         </p>
 
@@ -430,7 +632,7 @@ export function Preparo() {
         <section className="preparo-pagina-secao">
           <h2>O que vou fazer</h2>
           <ul className="preparo-pagina-lista">
-            {planos(job).map((p) => (
+            {oQueVouFazer.map((p) => (
               <li key={p.titulo}>
                 <h3>{p.titulo}</h3>
                 <p>{p.diz}</p>
@@ -450,14 +652,21 @@ export function Preparo() {
               </p>
             </div>
           ) : (
+            /* O "ALTERAR" POR LINHA — nó 895:7856. As duas linhas mostravam o
+               que ia para a estante e não tinham como ser mudadas dali: era
+               preciso achar o alternador lá no topo e entender que
+               "Personalizado" abria campos. O botão está na linha do dado que
+               ele muda. */
             <ul className="preparo-pagina-lista">
               <li>
                 <h3>Título: {titulo}</h3>
                 <p>{job.detected_title ? "Lido das propriedades do arquivo." : "Vem do nome do arquivo."}</p>
+                <Botao tom="secundaria" onClick={() => setAjustando(true)}>Alterar</Botao>
               </li>
               <li>
                 <h3>Autor: {autor || "não informado"}</h3>
                 <p>{job.detected_author ? "Lido das propriedades do arquivo." : "O arquivo não traz autor."}</p>
+                <Botao tom="secundaria" onClick={() => setAjustando(true)}>Alterar</Botao>
               </li>
             </ul>
           )}
@@ -473,6 +682,8 @@ export function Preparo() {
             disabled={preparando}
             onClick={async () => {
               setPreparando(true);
+              setInicio(Date.now());
+              setAgora(0);
               setErro(null);
               try {
                 await converter(id);
@@ -498,9 +709,17 @@ export function Preparo() {
           >
             {preparando ? "Preparando…" : "Preparar com recomendações"}
           </Botao>
-          {/* O botão do fim saiu: o alternador do topo faz a mesma coisa, e
-              dois controles para uma escolha em pontas opostas da página é a
-              pessoa procurando qual dos dois vale. */}
+          {/* "AJUSTAR MANUALMENTE" VOLTOU, porque o nó 895:7856 tem os dois.
+              Eu o tinha tirado argumentando que o alternador do topo faz a mesma
+              coisa — e faz. Mas os dois não estão no mesmo papel: o de cima
+              escolhe COMO LER a página, antes de lê-la; este é a decisão do
+              fim, ao lado da outra decisão do fim, para quem leu tudo e
+              discordou. Quem chegou até aqui não deveria ter de subir. */}
+          {!ajustando && (
+            <Botao tom="secundaria" onClick={() => setAjustando(true)}>
+              Ajustar manualmente
+            </Botao>
+          )}
         </div>
         </AvisoPreferencias>
       </main>
