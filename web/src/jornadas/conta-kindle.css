@@ -81,3 +81,21 @@
   line-height: 20px;
   color: var(--foreground);
 }
+
+/* O caminho guiado, antes do aviso. A condicao que a Amazon impoe continua dita,
+ * mas quem chega aqui pela primeira vez precisa de um CAMINHO e nao de uma
+ * advertencia. */
+.conta-guiado {
+  display: flex; flex-direction: column; gap: 16px; align-items: flex-start;
+  padding: 24px 40px;
+  border-block-end: 1px solid var(--separator);
+}
+.conta-guiado p {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 18px; line-height: 27px;
+  text-wrap: pretty;
+}
+@media (max-width: 767px) {
+  .conta-guiado { padding: 20px 16px; }
+}

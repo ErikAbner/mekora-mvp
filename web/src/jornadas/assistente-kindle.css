@@ -1,0 +1,146 @@
+/* O assistente de conectar o Kindle. Dos nos 941:23115 a 941:23104.
+ *
+ * E uma FOLHA sobre a tela, e nao uma pagina: a tarefa comeca no Mekora, passa
+ * pela Amazon e volta — tirar a pessoa da tela dos aparelhos faria ela perder o
+ * lugar de onde saiu.
+ */
+.ak-fundo {
+  position: fixed; inset: 0; z-index: 50;
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 40px 16px;
+  overflow-y: auto;
+  /* O fundo escurece o que esta atras sem esconder: a pessoa continua vendo
+   * onde estava, e isso e o que faz a folha se ler como camada e nao como outra
+   * pagina. */
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.ak {
+  inline-size: 100%; max-inline-size: 754px;   /* a largura do no */
+  display: flex; flex-direction: column; gap: 40px;
+  padding: 40px;
+  background: var(--background);
+  border: 1px solid var(--border);
+}
+
+.ak-topo { display: flex; flex-direction: column; gap: 24px; }
+.ak-topo-linha { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.ak-marca { margin: 0; color: var(--muted-foreground); font-size: 18px; line-height: 26px; }
+.ak-fechar {
+  inline-size: 56px; block-size: 56px;
+  border: 1px solid var(--border); background: var(--background);
+  color: var(--foreground); font-size: 24px; line-height: 32px; cursor: pointer;
+}
+.ak-fechar:hover { background: var(--surface-hover); }
+.ak-conta { margin: 0; color: var(--muted-foreground); font-size: 20px; line-height: 30px; }
+
+/* A BARRA E DE QUATRO BLOCOS, e nao uma faixa continua: o que importa aqui nao
+ * e a fracao, e QUANTAS telas ainda vem. Uma faixa lisa em 25% nao responde
+ * isso. */
+.ak-barra { display: flex; gap: 6px; padding: 6px; border: 1px solid var(--border); }
+.ak-barra > span { flex: 1 1 0; block-size: 24px; background: var(--background-tertiary); }
+.ak-barra > span.feito { background: var(--foreground); }
+
+.ak h2 {
+  margin: 0;
+  font-size: 40px; line-height: 48px; font-weight: 540;   /* Heading/LG */
+  letter-spacing: -1.5%;
+  color: var(--foreground);
+  text-wrap: pretty;
+  padding-block-start: 24px;
+  border-block-start: 1px solid var(--separator);
+}
+
+/* O filete marca a fala do produto — a mesma regra do resto do sistema. */
+.ak-fala {
+  margin: 0;
+  padding-inline-start: 32px;
+  border-inline-start: 2px solid var(--muted-foreground);
+  color: var(--muted-foreground);
+  font-size: 24px; line-height: 32px;   /* Body/Large */
+  text-wrap: pretty;
+}
+.ak-nota {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 20px; line-height: 30px;
+  text-wrap: pretty;
+}
+.ak-subtitulo {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 24px; line-height: 32px;
+}
+
+/* O indice dos passos, com os que virao em tinta fraca: ele diz o TAMANHO da
+ * tarefa antes de ela comecar, e o tamanho e a primeira coisa que faz alguem
+ * desistir no meio. */
+.ak-indice { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.ak-indice li {
+  display: flex; align-items: center; gap: 24px;
+  padding: 20px 0;
+  border-block-end: 1px solid var(--separator);
+  color: var(--border-strong);
+  font-size: 24px; line-height: 32px;
+}
+.ak-indice li.agora { color: var(--foreground); }
+.ak-indice-numero {
+  font-size: 40px; line-height: 48px;   /* Heading/LG, o capitular dos passos */
+  font-style: italic;
+  min-inline-size: 40px;
+}
+
+/* O CAMINHO DENTRO DA AMAZON, em degraus. As setas entre eles nao sao enfeite:
+ * elas dizem que e um clique DEPOIS do outro, e nao quatro lugares diferentes. */
+.ak-caminho { display: flex; flex-direction: column; gap: 16px; margin: 0; padding: 0; list-style: none; }
+.ak-caminho li { display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
+.ak-caminho li span {
+  padding: 24px 32px;
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-size: 20px; line-height: 30px;
+}
+.ak-caminho li:not(:last-child)::after {
+  content: "↓";
+  color: var(--muted-foreground);
+  font-size: 20px; line-height: 30px;
+  padding-inline-start: 8px;
+}
+
+.ak-remetente {
+  display: flex; flex-direction: column; gap: 24px; align-items: stretch;
+  padding: 24px;
+  border: 1px solid var(--border);
+}
+.ak-endereco {
+  margin: 0; text-align: center;
+  color: var(--foreground);
+  font-size: 24px; line-height: 32px;
+  word-break: break-all;
+}
+
+.ak-conferido { display: flex; flex-direction: column; gap: 24px; margin: 0; padding: 0; list-style: none; }
+.ak-conferido li {
+  display: flex; align-items: flex-start; gap: 24px;
+  padding-inline-start: 24px;
+  border-inline-start: 2px solid var(--muted-foreground);
+}
+.ak-conferido li > span:last-child { display: flex; flex-direction: column; gap: 4px; min-inline-size: 0; }
+.ak-conferido strong { color: var(--foreground); font-size: 24px; line-height: 32px; font-weight: 540; }
+.ak-detalhe { color: var(--muted-foreground); font-size: 20px; line-height: 30px; word-break: break-all; }
+.ak-ponto {
+  flex: none; inline-size: 20px; block-size: 20px; margin-block-start: 8px;
+  border-radius: 999px; background: var(--muted-foreground);
+}
+
+.ak-acoes { display: flex; gap: 40px; }
+.ak-acoes > * { flex: 1 1 0; }
+.ak-largo { display: flex; align-items: center; justify-content: center; text-decoration: none; }
+
+@media (max-width: 767px) {
+  .ak-fundo { padding: 0; }
+  .ak { padding: 24px 16px; gap: 32px; max-inline-size: none; min-block-size: 100%; border: 0; }
+  .ak h2 { font-size: 32px; line-height: 40px; }
+  .ak-fala, .ak-subtitulo { font-size: 20px; line-height: 30px; }
+  .ak-acoes { flex-direction: column-reverse; gap: 16px; }
+}

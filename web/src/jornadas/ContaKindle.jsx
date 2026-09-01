@@ -13,6 +13,7 @@ import { useState } from "react";
 import { usarAparelhos } from "../estado/usarAparelhos.js";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { TrilhaConta } from "../componentes/TrilhaConta.jsx";
+import { AssistenteKindle } from "./AssistenteKindle.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
 import { Folha } from "../componentes/Folha.jsx";
@@ -26,6 +27,11 @@ export function ContaKindle({ pessoa, aoSair }) {
    * tela parecia inteira e não guardava nada, e o envio ia para o
    * `KINDLE_EMAIL` do servidor de qualquer jeito. */
   const { aparelhos, erro: erroDoServidor, carregando, ligar, mudar, desligar } = usarAparelhos();
+  /* O ASSISTENTE, que faltava inteiro. Quatro telas desenhadas e nenhuma
+   * construída — e o changelog do produto já as descrevia. Ele abre sobre esta
+   * tela em vez de virar rota própria: a tarefa começa aqui, passa pela Amazon e
+   * volta, e tirar a pessoa daqui faria ela perder o lugar de onde saiu. */
+  const [assistente, setAssistente] = useState(false);
 
   const [conectando, setConectando] = useState(false);
   const [endereco, setEndereco] = useState("");
@@ -65,6 +71,19 @@ export function ContaKindle({ pessoa, aoSair }) {
                 Sem esta explicação, o primeiro envio falha com uma mensagem da
                 Amazon que não menciona o Mekora, e não há como ligar uma coisa
                 à outra. */}
+            {/* O CAMINHO GUIADO VEM ANTES DO AVISO. A condição que a Amazon
+                impõe continua dita — ela não some —, mas quem chega aqui pela
+                primeira vez precisa de um caminho, e não de uma advertência. */}
+            <div className="conta-guiado">
+              <p>
+                Primeira vez? O passo a passo abre a Amazon no lugar certo, guarda
+                o endereço e manda um arquivo de teste no fim.
+              </p>
+              <Botao tom="primaria" onClick={() => setAssistente(true)}>
+                Conectar meu Kindle
+              </Botao>
+            </div>
+
             <div className="conta-condicao">
               <h3>Antes do primeiro envio</h3>
               <p>
@@ -155,6 +174,17 @@ export function ContaKindle({ pessoa, aoSair }) {
           erro={erro}
         />
       </Folha>
+
+      {assistente && (
+        <AssistenteKindle
+          aoFechar={() => setAssistente(false)}
+          aoLigar={async ({ endereco, nome }) => {
+            const deu = await ligar(endereco, nome);
+            if (!deu) throw new Error("Não deu para guardar o aparelho agora.");
+          }}
+          aoEnviarTeste={async () => { /* o envio de teste entra quando o backend o tiver */ }}
+        />
+      )}
     </div>
   );
 }
