@@ -60,62 +60,89 @@ function onde(l) {
   return `capítulo ${l.capitulo + 1} de ${l.capitulos}`;
 }
 
-/* A ESTANTE DE PÉ — os livros vistos de lado, como numa prateleira.
+/* A ESTANTE EM 3D — livros DEITADOS, empilhados na vertical.
  *
- * A colheita no GitHub de 31/08 procurou isto pronto e fechou com número: "13
- * arquivos, 10 deles o mesmo componente copiado entre repositórios — o
- * ecossistema não tem dez soluções, tem uma, replicada, e ela não atende".
- * O que falta em todas é a mesma coisa: a espessura é constante, e o título da
- * lombada é ilegível a 7px sem rotação.
+ * A primeira versão os pôs EM PÉ, lado a lado, como numa prateleira de livraria.
+ * O nó `895:7506` mostra o contrário: uma pilha, vista de lado e de cima, com o
+ * livro escolhido maior e à frente e os outros recuando atrás dele.
  *
- * AS DUAS METADES ESTÃO AQUI. A espessura vem de `contrato/lombada.js`, derivada
- * do número de páginas em milímetros de papel; o título é `writing-mode`
- * vertical no corpo do sistema, e não um texto miniaturizado.
+ * A diferença não é de gosto. Em pé, a espessura vira largura e uma estante de
+ * cinquenta livros não cabe na tela; deitados, a espessura vira ALTURA da fatia
+ * e a pilha cresce para baixo — que é a direção em que a página já rola.
  *
- * NÃO HÁ Three.js, e não é economia: o desenho pede uma estante de capas vista
- * de lado, não uma cena. Uma tela de canvas aqui traria uma árvore que leitor de
- * tela não percorre e teclado não alcança, para desenhar retângulos que o CSS
- * desenha com `rotateY`.
+ * A colheita no GitHub de 31/08 continua valendo aqui: a espessura sai de
+ * `contrato/lombada.js`, em milímetros de papel, e o título é legível na
+ * superfície rotacionada. O que mudou foi a orientação, não a conta.
  *
- * LIVRO SEM CONTAGEM DE PÁGINAS NÃO GANHA ESPESSURA DE CHUTE. Ele aparece com a
- * lombada mínima e o `title` diz que a espessura é desconhecida — em vez de
- * inventar um número que a pessoa leria como informação.
+ * SEM Three.js: são retângulos com `rotateX`, e um canvas traria uma árvore que
+ * leitor de tela não percorre.
  */
-const ALTURA_LOMBADA = 297;   // a capa da vista de pé, em pixels
+const ALTURA_LOMBADA = 297;   // a "capa" de referência, para a escala da espessura
 
 function Estante3D({ livros, selecionado, aoEscolher }) {
   return (
-    <ul className="prateleira">
-      {livros.map((l) => {
-        const px = espessuraPx(l.paginas, ALTURA_LOMBADA);
-        const mm = espessuraMm(l.paginas);
-        return (
-          <li key={l.chave}>
-            <button
-              type="button"
-              className={`livro-de-pe${l.chave === selecionado?.chave ? " escolhido" : ""}`}
-              onClick={() => aoEscolher?.(l)}
-              /* A espessura vira variável de CSS: a lombada e a capa a leem, e
-                 as duas ficam coerentes sem repetir a conta. */
-              style={{ "--espessura": `${px ?? 2}px` }}
-              aria-label={
-                mm === null
-                  ? `${l.titulo}, de ${l.autor || "autor desconhecido"} — espessura desconhecida`
-                  : `${l.titulo}, de ${l.autor || "autor desconhecido"} — ${Math.round(mm)} milímetros`
-              }
-              title={mm === null ? "O arquivo não trouxe contagem de páginas" : undefined}
-            >
-              <span className="lombada">
-                <span className="lombada-texto">{l.titulo}</span>
-              </span>
-              <span className="frente">
-                {l.capa ? <img src={l.capa} alt="" /> : <span className="frente-titulo">{l.titulo}</span>}
-              </span>
-            </button>
-          </li>
-        );
-      })}
-    </ul>
+    <div className="pilha-caixa">
+      {/* O ÍNDICE À ESQUERDA, do desenho. Cada linha é um livro, e o
+          comprimento dela acompanha a espessura — é a pilha vista de perfil, em
+          duas dimensões, para dar de relance o que a pilha em perspectiva
+          esconde: quantos são e qual é o maior. */}
+      <ol className="pilha-indice" aria-label="Os livros da pilha">
+        {livros.map((l) => {
+          const px = espessuraPx(l.paginas, ALTURA_LOMBADA);
+          return (
+            <li key={l.chave} className={l.chave === selecionado?.chave ? "aqui" : undefined}>
+              <button type="button" onClick={() => aoEscolher?.(l)}>
+                <span className="indice-traco" style={{ inlineSize: `${Math.min(64, 12 + (px ?? 2))}px` }} />
+                <span className="indice-titulo">{l.titulo}</span>
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+
+      <ul className="pilha">
+        {livros.map((l, ordem) => {
+          const px = espessuraPx(l.paginas, ALTURA_LOMBADA);
+          const mm = espessuraMm(l.paginas);
+          const escolhido = l.chave === selecionado?.chave;
+          return (
+            <li key={l.chave}>
+              <button
+                type="button"
+                className={`livro-deitado${escolhido ? " escolhido" : ""}`}
+                onClick={() => aoEscolher?.(l)}
+                /* A espessura vira ALTURA da fatia, e a ordem entra como
+                   variável para o recuo dos vizinhos ser calculado no CSS. */
+                style={{ "--espessura": `${px ?? 2}px`, "--ordem": ordem }}
+                aria-label={
+                  mm === null
+                    ? `${l.titulo}, de ${l.autor || "autor desconhecido"} — espessura desconhecida`
+                    : `${l.titulo}, de ${l.autor || "autor desconhecido"} — ${Math.round(mm)} milímetros`
+                }
+                title={mm === null ? "O arquivo não trouxe contagem de páginas" : undefined}
+              >
+                {/* A face de cima: é ela que se vê de um livro deitado. */}
+                {/* IMAGEM QUE NÃO ABRE SOME, e não vira ícone quebrado.
+                    A capa vem do backend como a primeira página renderizada, e
+                    ela pode não existir — livro em preparo, arquivo removido, ou
+                    o acervo semeado para ver a interface. Um ícone de imagem
+                    faltando parece defeito do produto; a face lisa do livro,
+                    não. */}
+                <span className="deitado-topo">
+                  {l.capa ? (
+                    <img src={l.capa} alt="" onError={(e) => { e.target.style.display = "none"; }} />
+                  ) : null}
+                </span>
+                {/* A lombada, na frente da pilha, com o título de pé. */}
+                <span className="deitado-lombada">
+                  <span className="deitado-titulo">{l.titulo}</span>
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }
 

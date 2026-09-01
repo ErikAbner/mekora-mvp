@@ -304,142 +304,140 @@
 .ficha-caixa h2 a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .ficha-caixa h2 a:focus-visible { outline: 2px solid var(--foreground); outline-offset: 3px; }
 
-/* ---- a estante de pé ------------------------------------------------------
+/* ---- a estante em 3D: livros deitados, empilhados ------------------------
  *
- * Os livros vistos de lado, com a espessura da lombada derivada do numero de
- * paginas — a conta esta em `contrato/lombada.js`, com unidade e prova.
+ * O no 895:7506 mostra uma PILHA vista de lado e de cima, e nao livros em pe
+ * lado a lado. A primeira versao fez em pe, e a diferenca nao e de gosto: em pe
+ * a espessura vira largura e cinquenta livros nao cabem na tela; deitados, ela
+ * vira ALTURA da fatia e a pilha cresce para baixo — a direcao em que a pagina
+ * ja rola.
  *
- * SEM Three.js. O desenho pede uma estante de capas vista de lado, e nao uma
- * cena: um canvas aqui traria uma arvore que leitor de tela nao percorre e
- * teclado nao alcanca, para desenhar retangulos que o CSS desenha com rotateY.
- *
- * A perspectiva fica no CONTAINER e nao em cada livro: `perspective` por item
- * da a cada um o proprio ponto de fuga, e a fila inteira deixa de parecer uma
- * fila — cada livro vira um desenho isolado apontando para um lugar diferente.
+ * A perspectiva fica no container: `perspective` por item daria a cada livro o
+ * proprio ponto de fuga, e a pilha deixaria de parecer uma pilha.
  */
-.prateleira {
-  display: flex; align-items: flex-end; gap: 0;
-  margin: 0; padding: 40px 0 24px; list-style: none;
-  overflow-x: auto;
-  perspective: 1800px;
-  perspective-origin: 50% 50%;
-  /* O filete embaixo e a prateleira. Sem ele os livros flutuam. */
-  border-bottom: 1px solid var(--border);
+.pilha-caixa {
+  display: flex; gap: 56px; align-items: flex-start;
+  padding: 40px 0 64px;
 }
 
-.livro-de-pe {
+/* O indice de perfil, a esquerda. Cada traco acompanha a espessura do livro —
+ * e a pilha em duas dimensoes, para dar de relance o que a perspectiva esconde:
+ * quantos sao e qual e o mais grosso. */
+.pilha-indice {
+  flex: 0 0 200px;
+  display: flex; flex-direction: column; gap: 2px;
+  margin: 0; padding: 0; list-style: none;
+  position: sticky; inset-block-start: 32px;
+}
+.pilha-indice button {
+  display: flex; align-items: center; gap: 12px;
+  inline-size: 100%; padding: 6px 0;
+  border: 0; background: none; cursor: pointer;
+  color: var(--muted-foreground);
+  font-size: 14px; line-height: 22px;   /* Label/Small */
+  text-align: start;
+}
+.indice-traco { flex: none; block-size: 1px; background: var(--border-strong); }
+.indice-titulo { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pilha-indice li.aqui button { color: var(--foreground); }
+.pilha-indice li.aqui .indice-traco { background: var(--foreground); block-size: 2px; }
+.pilha-indice button:hover { color: var(--foreground); }
+.pilha-indice button:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+
+.pilha {
+  flex: 1 1 0; min-inline-size: 0;
+  display: flex; flex-direction: column; align-items: center;
+  margin: 0; padding: 0; list-style: none;
+  perspective: 1600px;
+  perspective-origin: 50% 0%;
+}
+.pilha li { inline-size: 100%; max-inline-size: 680px; }
+
+/* Cada livro e uma fatia: a face de cima inclinada, e a lombada de frente.
+ * `--espessura` vem de contrato/lombada.js, em pixels derivados de milimetros de
+ * papel — a mesma conta da versao em pe, so que agora ela e a ALTURA. */
+.livro-deitado {
   display: block; position: relative;
-  inline-size: var(--espessura, 2px);
-  block-size: 297px;
-  padding: 0; border: 0; background: none;
-  cursor: pointer;
+  inline-size: 100%;
+  padding: 0; border: 0; background: none; cursor: pointer;
   transform-style: preserve-3d;
-  /* A largura do elemento e a ESPESSURA: e ela que empurra o vizinho, e por isso
-   * uma fila de livros grossos ocupa mais prateleira que uma de livros finos —
-   * como aconteceria de verdade. */
-  transition: inline-size var(--d2, 240ms) cubic-bezier(.16, 1, .3, 1);
+  /* O RECUO DOS VIZINHOS: cada livro fica um pouco atras do anterior, e ao
+   * passar o dedo sobre a pilha os outros recuam mais. E o gesto de puxar um
+   * livro de uma pilha, em que os de cima cedem. */
+  transform: translateZ(calc(var(--ordem, 0) * -6px));
+  transition: transform var(--d2, 240ms) cubic-bezier(.16, 1, .3, 1);
 }
 
-/* A lombada e a face que fica de frente para quem olha. */
-.lombada {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  padding: 16px 0;
+/* AS FATIAS SE ENCOSTAM, e isto exige margem negativa.
+ *
+ * A face de cima tem 96px de altura e e girada 72 graus: ela OCUPA cerca de
+ * 30px na tela, e RESERVA os 96 no fluxo. Sem compensar, sobram 66px de vazio
+ * entre um livro e o proximo — medido, a pilha tinha 105px de altura por livro
+ * onde a soma das partes visiveis dava 40.
+ *
+ * O valor sai da propria conta: 96 menos 96·cos(72°), arredondado. */
+.pilha li + li { margin-block-start: -66px; }
+
+/* A FACE DE CIMA — o que se ve de um livro deitado. Inclinada para tras, ela
+ * cria profundidade sem geometria nenhuma: um retangulo e um giro. */
+.deitado-topo {
+  display: block;
+  block-size: 96px;
   background: var(--card);
-  /* Raio zero e sombra zero: a colheita marcou `rounded-r-[4px]` e `shadow-book`
-   * como os dois valores a zerar do componente que o ecossistema replica, e a
-   * regra do sistema ja dizia o mesmo. */
   border: 1px solid var(--border);
+  transform-origin: bottom center;
+  transform: rotateX(72deg);
   overflow: hidden;
 }
-/* O TITULO LEGIVEL NA SUPERFICIE ROTACIONADA — a metade do requisito que a
- * colheita provou nao existir. Corpo do sistema, e nao 7px: `writing-mode`
- * gira o texto sem encolhe-lo, e o que nao cabe some com reticencia em vez de
- * espremer. */
-.lombada-texto {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
+.deitado-topo img { inline-size: 100%; block-size: 100%; object-fit: cover; }
+
+/* A LOMBADA, de frente. A altura dela E a espessura do livro. */
+.deitado-lombada {
+  display: flex; align-items: center;
+  block-size: var(--espessura, 2px);
+  min-block-size: 3px;
+  padding-inline: 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-block-start: 0;
+  overflow: hidden;
+}
+.deitado-titulo {
   color: var(--foreground);
   font-size: 14px; line-height: 22px;   /* Label/Small */
   letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  max-block-size: 100%;
-}
-/* Lombada fina demais para caber texto: ele some, e sobra a espessura, que ja e
- * a informacao. */
-.livro-de-pe[style*="--espessura: 2px"] .lombada-texto,
-.livro-de-pe[style*="--espessura: 3px"] .lombada-texto,
-.livro-de-pe[style*="--espessura: 4px"] .lombada-texto { display: none; }
-
-/* A CAPA, girada no eixo Y a partir da borda direita da lombada. E o que da
- * volume ao livro sem nenhuma geometria: duas faces e um giro.
- *
- * ELA COMECA FECHADA, em 90 graus — invisivel de frente — e so abre quando o
- * livro e puxado. A primeira versao a deixava aberta em 78 graus sempre, e uma
- * capa de 210px nesse angulo projeta 44px sobre o vizinho: numa fila, cada livro
- * cobria a lombada do seguinte, e o de 900 paginas escondia o de 300 inteiro.
- *
- * E e o que a estante de verdade faz: de fora se veem as lombadas, e a capa
- * aparece quando a mao puxa o livro. */
-.frente {
-  position: absolute;
-  /* A CAPA COMECA ONDE A LOMBADA ACABA, e nao onde o elemento acaba.
-   *
-   * Era `inset-inline-start: 100%`, e 100% e a largura do ELEMENTO — que cresce
-   * 84px quando o livro e puxado, para abrir espaco. A capa entao nascia 84px
-   * adiante do lugar certo e ia parar em cima dos vizinhos: medido, a capa do
-   * livro de 900 paginas ia ate 261px e os outros dois moravam em 182 e 206.
-   *
-   * `var(--espessura)` e o fim da lombada, e ele nao muda quando o livro e
-   * puxado — que e exatamente a propriedade que faz a conta fechar. */
-  inset-block: 0; inset-inline-start: var(--espessura, 2px);
-  inline-size: 210px;
-  display: flex; align-items: stretch;
-  background: var(--card);
-  border: 1px solid var(--border);
-  transform-origin: left center;
-  transform: rotateY(-90deg);
-  overflow: hidden;
-  transition: transform var(--d2, 240ms) cubic-bezier(.16, 1, .3, 1);
-}
-.livro-de-pe:hover .frente,
-.livro-de-pe:focus-visible .frente,
-.livro-de-pe.escolhido .frente { transform: rotateY(-68deg); }
-/* O livro puxado passa na frente dos vizinhos: sem isto a capa aberta some por
- * baixo do livro seguinte, que e desenhado depois. */
-.livro-de-pe:hover, .livro-de-pe:focus-visible, .livro-de-pe.escolhido { z-index: 2; }
-.frente img { inline-size: 100%; block-size: 100%; object-fit: cover; }
-.frente-titulo {
-  display: flex; align-items: center; padding: 16px;
-  color: var(--foreground); font-size: 16px; line-height: 24px;
-  text-wrap: pretty;
 }
 
-/* Escolhido e ao passar: o livro sai da fila, como quem puxa para olhar. E
- * deslocamento, e nao matiz — a mesma regra de seleção do resto do sistema.
- *
- * E ELE ABRE ESPACO, empurrando os vizinhos. A capa aberta a 68 graus projeta
- * cerca de 79px, e sem alargar o elemento ela cobria os livros seguintes: na
- * medida com tres livros, o de 900 paginas escondia os outros dois inteiros.
- *
- * Puxar um livro de uma estante cheia empurra os vizinhos — aqui e a mesma
- * coisa, e e por isso que o `inline-size` anima junto. */
-.livro-de-pe:hover, .livro-de-pe:focus-visible { transform: translateY(-12px); }
-.livro-de-pe.escolhido { transform: translateY(-20px); }
-.livro-de-pe:hover, .livro-de-pe:focus-visible, .livro-de-pe.escolhido {
-  inline-size: calc(var(--espessura, 2px) + 84px);
+/* AO PASSAR E AO ESCOLHER: o livro cresce e vem para a frente, e os outros
+ * recuam mais. */
+.pilha:hover .livro-deitado { transform: translateZ(calc(var(--ordem, 0) * -12px)); }
+.livro-deitado:hover,
+.livro-deitado:focus-visible,
+.livro-deitado.escolhido,
+.pilha:hover .livro-deitado:hover,
+.pilha:hover .livro-deitado.escolhido {
+  transform: translateZ(48px) scale(1.05);
+  z-index: 2;
 }
-.livro-de-pe.escolhido .lombada { background: var(--foreground); }
-.livro-de-pe.escolhido .lombada-texto { color: var(--primary-foreground); }
-.livro-de-pe:focus-visible { outline: 1px solid var(--foreground); outline-offset: 4px; }
+.livro-deitado.escolhido .deitado-lombada { background: var(--foreground); }
+.livro-deitado.escolhido .deitado-titulo { color: var(--primary-foreground); }
+.livro-deitado:focus-visible { outline: 1px solid var(--foreground); outline-offset: 4px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .livro-de-pe, .frente { transition: none; }
+  .livro-deitado { transition: none; }
+}
+
+@media (max-width: 1023px) {
+  /* O indice sai de lado: 200px fixos ao lado de uma pilha estreita comem a
+     pilha. */
+  .pilha-caixa { flex-direction: column; gap: 24px; }
+  .pilha-indice { position: static; flex: 1 1 auto; inline-size: 100%; }
 }
 
 @media (max-width: 767px) {
-  .prateleira { padding: 24px 0 16px; perspective: 1200px; }
-  .livro-de-pe { block-size: 210px; }
-  .frente { inline-size: 148px; }
+  .pilha-caixa { padding: 24px 0 40px; }
+  .deitado-topo { block-size: 64px; }
+  .pilha { perspective: 1100px; }
 }

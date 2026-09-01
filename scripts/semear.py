@@ -31,8 +31,11 @@ LIVROS = [
     ("Apresentação Institucional", "Ana Duarte", 96, "/capas/exemplo-2.png", 8, 0.35),
     ("Sequência Noturna", "Ana Duarte", 412, "/capas/exemplo-3.png", 12, 0.12),
     ("Estudo de Viabilidade", "Ana Duarte", 640, "/capas/exemplo-4.png", 5, None),
-    ("Relatório de pesquisa", "Marina Alves", 88, None, 0, None),
-    ("Cadernos de campo", "Marina Alves", 1020, None, 3, 0.97),
+    # TODOS COM CAPA. O backend monta `cover_url` a partir da primeira página
+    # sempre que há `page_count`, e um livro semeado sem arquivo em disco vira
+    # 404 — a estante mostrava capa quebrada nos dois que não tinham.
+    ("Relatório de pesquisa", "Marina Alves", 88, "/capas/exemplo-1.png", 0, None),
+    ("Cadernos de campo", "Marina Alves", 1020, "/capas/exemplo-3.png", 3, 0.97),
 ]
 
 NOTAS = [
@@ -107,6 +110,33 @@ for i, (titulo, autor, paginas, capa, quantas_notas, fracao) in enumerate(LIVROS
         "kindle_sent": i == 0,
     }
     job = inserir("processing_jobs", campos)
+
+    # A CAPA VAI PARA `temp/{id}`, e não `temp/{token}`.
+    #
+    # A URL é `/storage/temp/{token}/page_0.png`, e o token engana: o endpoint
+    # traduz o token em id e serve de `STORAGE_TEMP / str(job_id)`. O semeador
+    # gravava no caminho da URL, e a estante devolvia 404 em toda capa — o
+    # arquivo existia, no lugar errado.
+    if capa:
+        origem = Path(__file__).resolve().parent.parent / "web" / "publico" / capa.lstrip("/")
+        if origem.exists():
+            destino = RAIZ / "storage" / "temp" / str(job)
+            destino.mkdir(parents=True, exist_ok=True)
+            (destino / "page_0.png").write_bytes(origem.read_bytes())
+
+    # A CAPA PRECISA EXISTIR EM DISCO. O backend monta a URL como
+    # `/storage/temp/{token}/page_0.png` — a primeira página renderizada —, e
+    # para um livro semeado essa página nunca foi gerada: a estante mostrava
+    # ícone de imagem quebrada em todos os seis.
+    if capa:
+        # CAMINHO ABSOLUTO, a partir deste arquivo: o semeador e chamado tanto
+        # da raiz quanto de dentro de outro script, e um caminho relativo copia
+        # a capa numa execucao e falha em silencio na outra.
+        origem = Path(__file__).resolve().parent.parent / "web" / "publico" / capa.lstrip("/")
+        if origem.exists():
+            destino = RAIZ / "storage" / "temp" / campos["token_publico"]
+            destino.mkdir(parents=True, exist_ok=True)
+            (destino / "page_0.png").write_bytes(origem.read_bytes())
 
     if fracao is not None:
         inserir("progressos", {"pessoa_id": pessoa, "job_id": job, "capitulo": 1,

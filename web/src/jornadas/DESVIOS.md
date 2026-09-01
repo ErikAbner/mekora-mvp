@@ -987,3 +987,41 @@ sem isso, "para o que é um dia" ligaria metade do acervo.
 
 Sugerir o que a pessoa já conectou é pedir que ela faça de novo o que fez, e faz
 a lista parecer que não aprendeu nada.
+
+
+---
+
+# A vista 3D refeita: livros deitados, empilhados
+
+A primeira versão os pôs **em pé, lado a lado**. O nó `895:7506` mostra o
+contrário: uma **pilha**, vista de lado e de cima, com o escolhido maior e à
+frente e os outros recuando atrás.
+
+A diferença não é de gosto. Em pé, a espessura vira **largura** e uma estante de
+cinquenta livros não cabe na tela; deitados, ela vira **altura da fatia** e a
+pilha cresce para baixo — a direção em que a página já rola.
+
+A conta de `contrato/lombada.js` não mudou: continua milímetros de papel, só que
+agora medindo a altura. Medido com o acervo semeado: 1020 páginas dão 79px de
+lombada, 88 dão 9px.
+
+## O hover empurra os vizinhos
+
+Passar sobre a pilha faz **todos** recuarem um pouco mais, e o que está sob o
+dedo vir para a frente e crescer. É o gesto de puxar um livro de uma pilha, em
+que os de cima cedem.
+
+## Três defeitos no caminho
+
+**As fatias não se encostavam.** A face de cima tem 96px e é girada 72° — ela
+**ocupa** ~30px na tela e **reserva** 96 no fluxo. Sobravam 66px de vazio entre
+um livro e o próximo. A margem negativa sai da própria conta: `96 − 96·cos(72°)`.
+
+**A capa ia para o diretório errado.** A URL é `/storage/temp/{token}/page_0.png`
+e o token engana: o endpoint **traduz o token em id** e serve de
+`STORAGE_TEMP / str(job_id)`. O semeador gravava no caminho da URL, e toda capa
+dava 404 — o arquivo existia, no lugar errado.
+
+**Imagem que não abre agora some**, em vez de virar ícone quebrado. Vale além do
+acervo semeado: livro em preparo e arquivo removido caem no mesmo caso, e um
+ícone de imagem faltando parece defeito do produto.
