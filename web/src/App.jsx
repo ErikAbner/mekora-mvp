@@ -17,6 +17,7 @@ import { ContaVisao } from "./jornadas/ContaVisao.jsx";
 import { ContaSeguranca } from "./jornadas/ContaSeguranca.jsx";
 import { Ajuda } from "./jornadas/Ajuda.jsx";
 import { Atualizacoes } from "./jornadas/Atualizacoes.jsx";
+import { EstudoPagina } from "./jornadas/EstudoPagina.jsx";
 import { MesaCheia } from "./jornadas/MesaCheia.jsx";
 import { Estante } from "./jornadas/Estante.jsx";
 import { Leitura } from "./jornadas/Leitura.jsx";
@@ -308,6 +309,39 @@ function PaginaEstudos() {
   );
 }
 
+function PaginaEstudo() {
+  const { id } = useParams();
+  const { estudos, erro, carregando, mudar, apagar, reunir, tirar } = usarEstudos();
+  const [notas, setNotas] = useState([]);
+
+  useEffect(() => {
+    let vivo = true;
+    lerTodasAsNotas().then((n) => vivo && setNotas(n)).catch(() => {});
+    return () => { vivo = false; };
+  }, [estudos.length]);
+
+  /* `carregando` VEM DO HOOK, e nao de "a lista ainda esta vazia".
+   *
+   * Eu o derivei de `!estudos.length` primeiro, e uma conta sem nenhum estudo
+   * ficava presa em "Buscando o estudo…" PARA SEMPRE — a condicao nunca deixava
+   * de ser verdadeira. O hook ja sabe a diferenca entre "ainda nao respondeu" e
+   * "respondeu vazio", e era so perguntar a ele. */
+  const estudo = estudos.find((e) => String(e.id) === String(id)) ?? null;
+
+  return (
+    <EstudoPagina
+      estudo={estudo}
+      notas={notas}
+      erro={erro}
+      carregando={carregando}
+      aoMudar={mudar}
+      aoApagar={apagar}
+      aoReunir={reunir}
+      aoTirar={tirar}
+    />
+  );
+}
+
 function PaginaNotas() {
   const [notas, setNotas] = useState([]);
   const [carregando, setCarregando] = useState(true);
@@ -358,6 +392,7 @@ export function App() {
         <Route path="/leitura/:id" element={<PaginaLeitura />} />
         <Route path="/canvas" element={<SoParaQuemEntrou acesso={acesso}><PaginaCanvas /></SoParaQuemEntrou>} />
         <Route path="/estudos" element={<SoParaQuemEntrou acesso={acesso}><PaginaEstudos /></SoParaQuemEntrou>} />
+        <Route path="/estudo/:id" element={<SoParaQuemEntrou acesso={acesso}><PaginaEstudo /></SoParaQuemEntrou>} />
         <Route path="/notas" element={<SoParaQuemEntrou acesso={acesso}><PaginaNotas /></SoParaQuemEntrou>} />
         <Route path="/estante/:id" element={<SoParaQuemEntrou acesso={acesso}><Livro /></SoParaQuemEntrou>} />
         <Route path="/nota/:id" element={<SoParaQuemEntrou acesso={acesso}><Nota /></SoParaQuemEntrou>} />

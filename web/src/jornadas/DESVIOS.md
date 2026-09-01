@@ -498,3 +498,38 @@ ordena, e ordenar à mão é como a lista sai de ordem sem ninguém ver.
 Quem ainda não entrou tem dúvida, e quem nunca vai entrar tem direito de saber o
 que mudou. Elas não ficam na coluna da conta no rodapé, que exige sessão — ficam
 numa coluna "O produto", junto com a Apresentação.
+
+---
+
+# Estudo — página
+
+**A lista já mostrava o estudo inteiro** — pergunta, notas, trechos, ações — e era
+isso o problema: três estudos de vinte notas cada viram uma página de rolagem
+infinita onde nenhum deles se lê. A pergunta que o estudo faz some no meio das
+notas dos outros.
+
+A página **reusa o componente `Estudo` da lista**, e não uma cópia. Duas cópias
+divergem: uma ação acrescentada num lugar aparece só nele, até alguém notar meses
+depois. O que muda é o entorno.
+
+## A rota é `/estudo/:id`, no singular
+
+`/estudos/:id` **cai abaixo de `/estudos`, que é caminho do backend**, e a borda
+manda tudo abaixo dele para a API — a tela viria em branco em produção e
+funcionaria em desenvolvimento, que é o pior lugar para descobrir.
+
+`scripts/rotas.py` pegou antes de virar commit, e apontou o precedente: é o mesmo
+caso que `/notas` teve, resolvido do mesmo jeito.
+
+## "Buscando…" para sempre
+
+Derivei `carregando` de `!estudos.length && !erro`, e uma conta **sem nenhum
+estudo** ficava presa em *"Buscando o estudo…"* — a condição nunca deixava de ser
+verdadeira.
+
+O hook `usarEstudos` **já expunha `carregando`**, e ele sabe a diferença entre
+"ainda não respondeu" e "respondeu vazio". Era só perguntar a ele.
+
+Três estados, e não dois: buscando, não existe, e o estudo. Mostrar "não existe"
+enquanto ainda se busca é a maneira mais rápida de a pessoa ir embora de uma
+página que ia carregar.

@@ -1,0 +1,42 @@
+/* Um estudo sozinho. O estudo em si e pintado por `estudos.css`, que e o mesmo
+ * componente da lista — aqui so muda o entorno.
+ */
+.estudo-pagina {
+  display: flex; flex-direction: column; gap: 32px;
+  inline-size: 100%; max-inline-size: 863px;
+  margin-inline: auto;
+  padding: 64px 32px 128px;
+}
+
+.estudo-pagina-volta {
+  align-self: flex-start;
+  color: var(--muted-foreground);
+  font-size: 16px; line-height: 24px;   /* Label/Medium */
+  text-decoration: none;
+}
+.estudo-pagina-volta:hover { color: var(--foreground); text-decoration: underline; }
+
+.estudo-pagina-nota {
+  margin: 0;
+  font-size: 20px; line-height: 30px;
+  color: var(--muted-foreground);
+}
+
+.estudo-pagina-nao { display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
+.estudo-pagina-nao h1 {
+  margin: 0;
+  font-size: 32px; line-height: 40px; font-weight: 540;   /* Heading/MD */
+  color: var(--foreground);
+}
+.estudo-pagina-nao p {
+  margin: 0;
+  font-size: 18px; line-height: 27px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+.estudo-pagina-nao a { color: var(--foreground); font-size: 18px; line-height: 27px; }
+
+@media (max-width: 767px) {
+  .estudo-pagina { gap: 24px; padding: 32px 24px 80px; }
+  .estudo-pagina-nao h1 { font-size: 24px; line-height: 32px; }
+}

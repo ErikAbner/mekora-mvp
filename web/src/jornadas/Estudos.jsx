@@ -15,7 +15,10 @@ import "./estudos.css";
  * ficam desatualizados.
  */
 
-function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, aoTirar }) {
+/* EXPORTADO para a pagina de um estudo so. Reusar o mesmo componente e o que
+ * impede as duas telas de divergirem: uma acao acrescentada aqui aparece nas
+ * duas, e nao em uma delas ate alguem notar. */
+export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, aoTirar, semLink = false }) {
   const [reunindo, setReunindo] = useState(false);
   const dentro = new Set(estudo.notas.map((n) => n.id));
   const deFora = notasDisponiveis.filter((n) => !dentro.has(n.id));
@@ -24,7 +27,12 @@ function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, aoTirar
     <article className={`estudo${estudo.fechado ? " fechado" : ""}`}>
       <header>
         <div>
-          <h2>{estudo.nome}</h2>
+          <h2>
+            {/* Na lista o titulo leva ao estudo sozinho; na pagina dele, o
+                `semLink` tira o link para o titulo nao apontar para onde a
+                pessoa ja esta. */}
+            {semLink ? estudo.nome : <Link to={`/estudo/${estudo.id}`}>{estudo.nome}</Link>}
+          </h2>
           {/* O CENTRO em destaque, e não como legenda. É ele que o estudo é;
               o nome é só como se chama. */}
           {estudo.sobre && <p className="estudo-sobre">{estudo.sobre}</p>}
