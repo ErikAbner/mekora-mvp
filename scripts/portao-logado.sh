@@ -32,6 +32,13 @@ if [ -z "$TOKEN" ]; then
   exit 1
 fi
 
-# Entra pelo link e cai na tela pedida. O `--tela` diz ao medir para navegar
-# de novo depois de a sessão existir.
-node scripts/medir.mjs "$BASE/entrar/$TOKEN" 1440 1100 scripts/portao.js $TEMA
+# Entra pelo link e NAVEGA até a tela pedida.
+#
+# O `--depois=` faz a segunda navegação. Até 01/09 esta linha não passava nada: o
+# comentário aqui descrevia uma flag `--tela` que NUNCA EXISTIU no medir.mjs, e o
+# script media o destino do redirecionamento de /entrar/<token> — a Estante —
+# fosse qual fosse o argumento. Oito telas passaram meses "medidas" assim.
+#
+# LARGURA e ALTURA por ambiente, porque o C9 mede as mesmas telas a 390.
+node scripts/medir.mjs "$BASE/entrar/$TOKEN" "${LARGURA:-1440}" "${ALTURA:-1100}" \
+  scripts/portao.js $TEMA --depois="$BASE$TELA"

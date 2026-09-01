@@ -60,6 +60,20 @@ function achaChrome() {
    diferentes, e ate agora so uma delas tinha instrumento. */
 const bruto = process.argv.slice(2);
 const png = (bruto.find(x => x.startsWith('--png=')) || '').slice(6) || null;
+
+/* --depois=<url> navega DE NOVO depois do setup, e espera montar.
+ *
+ * Existe porque medir tela protegida tem duas etapas que nao cabem numa
+ * navegacao so: primeiro a sessao passa a existir, depois a tela abre. O
+ * `portao-logado.sh` ja descrevia uma flag `--tela` com esta funcao — e ela
+ * nunca foi implementada, entao o script media o destino do redirecionamento
+ * de /entrar/<token>, e nao a tela que o argumento pedia.
+ *
+ * Fazer isso pelo `history.pushState` de dentro do setup nao serve: o React
+ * Router nao reage, e a medida sai da tela errada relatando "cabe". Verde por
+ * omissao, de novo. Navegacao de verdade, e a guarda de montagem roda outra
+ * vez sobre a pagina nova. */
+const depois = (bruto.find(x => x.startsWith('--depois=')) || '').slice(9) || null;
 /* --gesto=<arquivo.js> e avaliado na pagina e deve devolver uma lista de
    pontos [{x,y},...]; o Chrome anda por eles com o botao apertado. Existe
    porque arrasto nao se mede com expressao: dispatchEvent sintetico nao gera
@@ -155,6 +169,23 @@ try {
   }
 
   if (arqSetup) { await avalia(readFileSync(arqSetup, 'utf8')); await espera(400); }
+
+  if (depois) {
+    const nav2 = await manda('Page.navigate', { url: depois });
+    if (nav2.errorText) throw new Error(`a segunda página não carregou: ${nav2.errorText} — ${depois}`);
+    await espera(2000);
+    const montou = await avalia('({p:location.pathname,n:document.body?document.body.querySelectorAll("*").length:0})');
+    if (montou.n < 5) {
+      throw new Error(`a segunda página respondeu mas não montou (${montou.n} nós) — ${depois}`);
+    }
+    /* CHEGOU ONDE PEDIU? Uma tela protegida sem sessao redireciona para
+     * /entrar, que monta bem e mede bem — e a medida sai de outra tela sem
+     * ninguem ver. */
+    const pedido = new URL(depois).pathname;
+    if (montou.p !== pedido) {
+      throw new Error(`pediu ${pedido} e parou em ${montou.p} — a sessão não valeu, ou a rota não existe`);
+    }
+  }
   if (gesto) {
     const pts = await avalia(readFileSync(gesto, 'utf8'));
     if (!Array.isArray(pts) || pts.length < 2)

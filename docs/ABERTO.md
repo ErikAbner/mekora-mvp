@@ -126,7 +126,7 @@ Podem ser decididas durante a construção. Não podem ficar sem resposta na V1.
 | **C6** | Se há consentimento para a coleta de uso, e como é pedido | DEC-0029 |
 | **C7** | Por quanto tempo os eventos coletados são mantidos | DEC-0029 |
 | **C8** | Qual ferramenta de instrumentação é usada, e se é própria | DEC-0029 |
-| **C9** | **Quando as telas passam a ser efetivamente verificadas a 390px.** Em 31/08 o portão media oito telas nos dois temas — todas a 1440. Nenhuma foi medida no telefone | DEC-0023 |
+| **C9** | ~~Quando as telas passam a ser efetivamente verificadas a 390px~~ — **medidas em 01/09.** Doze das treze cabem; a Leitura continua sem medida, e a razão está abaixo | DEC-0023 |
 | **C10** | A migração do acervo e das notas existentes para identidade estável | DEC-0021 |
 | **C11** | Que estado cada uma das 19 DECs anteriores recebe além da normalização mecânica | DEC-0027 |
 | **C12** | O `role` literal de cada repositório existente | DEC-0026 |
@@ -137,6 +137,40 @@ Podem ser decididas durante a construção. Não podem ficar sem resposta na V1.
 | **C17** | **Se o Mekora terá usuários fora do Brasil, e o que isso exige.** Jurisdição-base não é restrição de público: atender pessoa de outro país pode trazer obrigação adicional | DEC-0031 |
 | **C18** | **Em que país ficam os servidores da VPS.** A hospedagem foi escolhida em 30/08 — VPS da Hostinger com Cloudflare —, e isso responde *qual serviço*, não *onde*. A Hostinger tem data centers em vários países, e a escolha da região é feita na contratação | DEC-0031 |
 | **C19** | **O catálogo de componentes.** O `DESIGN-SYSTEM.md` cobre fundamentos e composição; não existe catálogo com estados, variantes e anatomia. Sete componentes foram construídos até 31/08 — Botao, Campo, Escolha, Folha, Icone, Cabecalho, TrilhaConta — e nenhum tem página que mostre seus estados | DEC-0033 |
+
+### C9 · o que a medida a 390px encontrou
+
+**Nove telas transbordavam, e a causa era uma.** O `Cabecalho` não tinha media
+query nenhuma: quatro lugares de 130px mais a busca de 476px somam bem além de
+390, e a página ganhava **524px de rolagem horizontal**. Como o componente está
+em toda tela de dentro, o defeito era um e aparecia nove vezes. Uma décima, a
+Estante, transbordava mais 78px pelos quatro recortes.
+
+**O instrumento estava mentindo, e foi preciso consertá-lo antes.** O
+`portao-logado.sh` documenta uma flag `--tela` que diz *"navega de novo depois de
+a sessão existir"* — e ela **nunca foi implementada** no `medir.mjs`. O script
+media o destino do redirecionamento de `/entrar/<token>`, que é a Estante, fosse
+qual fosse a tela pedida no argumento.
+
+A primeira tentativa de contornar por `history.pushState` de dentro do setup deu
+**oito telas devolvendo "cabe"** enquanto a Mesa, com o mesmo cabeçalho,
+transbordava 524px. O React Router não reagia, e as oito mediram `/entrar` — 12
+nós, sem cabeçalho. Verde por omissão de novo, e desta vez só apareceu porque o
+resultado era bom demais para ser verdade.
+
+O `--depois=<url>` agora existe, navega de verdade, e **confere onde parou**:
+pedir `/estante` e terminar em `/entrar` vira erro, não medida.
+
+**A Leitura continua sem medida, a 390 e a 1440.** Ela mostra *"O livro não pôde
+ser aberto: este livro ainda não tem texto"*, porque o `upload` não dispara
+conversão — o arquivo fica em `uploaded`, e converter exige a jornada do Preparo
+inteira. Medir a Leitura de verdade depende de semear um livro **já convertido**,
+e isso é trabalho de instrumento, não desta rodada.
+
+**Isto não responde o B13.** Como os lugares se apresentam no telefone continua
+pergunta aberta: o lugar passou a empilhar ícone sobre rótulo porque ícone
+sozinho obriga a adivinhar e 12px sairia da escala — é o mínimo para caber, não
+uma decisão de navegação móvel.
 
 ---
 
