@@ -376,20 +376,28 @@
  * onde a soma das partes visiveis dava 40.
  *
  * O valor sai da propria conta: 96 menos 96·cos(72°), arredondado. */
-.pilha li + li { margin-block-start: -66px; }
+/* 72 menos 72·cos(74°) = 52. A face reserva 72px no fluxo e ocupa cerca de 20 na
+ * tela; sem devolver a diferenca, sobra vazio entre um livro e o proximo. */
+.pilha li + li { margin-block-start: -52px; }
 
 /* A FACE DE CIMA — o que se ve de um livro deitado. Inclinada para tras, ela
  * cria profundidade sem geometria nenhuma: um retangulo e um giro. */
+/* A FACE DE CIMA E O CORTE DAS PAGINAS, e nao a capa: um livro deitado mostra o
+ * papel por cima, e a capa fica embaixo contra a mesa. As listras finas sao as
+ * folhas — e o unico detalhe que essa superficie tem de verdade. */
 .deitado-topo {
   display: block;
-  block-size: 96px;
-  background: var(--card);
+  block-size: 72px;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      var(--background) 0 2px,
+      var(--card) 2px 3px
+    );
   border: 1px solid var(--border);
   transform-origin: bottom center;
-  transform: rotateX(72deg);
-  overflow: hidden;
+  transform: rotateX(74deg);
 }
-.deitado-topo img { inline-size: 100%; block-size: 100%; object-fit: cover; }
 
 /* A LOMBADA, de frente. A altura dela E a espessura do livro. */
 .deitado-lombada {
@@ -438,6 +446,7 @@
 
 @media (max-width: 767px) {
   .pilha-caixa { padding: 24px 0 40px; }
-  .deitado-topo { block-size: 64px; }
+  .deitado-topo { block-size: 56px; }
+  .pilha li + li { margin-block-start: -40px; }
   .pilha { perspective: 1100px; }
 }

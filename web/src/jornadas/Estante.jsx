@@ -122,17 +122,13 @@ function Estante3D({ livros, selecionado, aoEscolher }) {
                 title={mm === null ? "O arquivo não trouxe contagem de páginas" : undefined}
               >
                 {/* A face de cima: é ela que se vê de um livro deitado. */}
-                {/* IMAGEM QUE NÃO ABRE SOME, e não vira ícone quebrado.
-                    A capa vem do backend como a primeira página renderizada, e
-                    ela pode não existir — livro em preparo, arquivo removido, ou
-                    o acervo semeado para ver a interface. Um ícone de imagem
-                    faltando parece defeito do produto; a face lisa do livro,
-                    não. */}
-                <span className="deitado-topo">
-                  {l.capa ? (
-                    <img src={l.capa} alt="" onError={(e) => { e.target.style.display = "none"; }} />
-                  ) : null}
-                </span>
+                {/* A FACE DE CIMA É O CORTE DAS PÁGINAS, e não a capa.
+                    Um livro deitado mostra o papel por cima; a capa fica
+                    embaixo, contra a mesa. Eu tinha posto a capa aqui, e a
+                    imagem de 420×594 espremida numa faixa girada 74° virava uma
+                    mancha listrada por cima do título do livro de baixo — está
+                    na captura que o Erik mandou. */}
+                <span className="deitado-topo" aria-hidden="true" />
                 {/* A lombada, na frente da pilha, com o título de pé. */}
                 <span className="deitado-lombada">
                   <span className="deitado-titulo">{l.titulo}</span>
