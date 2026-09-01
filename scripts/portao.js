@@ -252,9 +252,21 @@
    */
   const SEM_ACENTO = /\b(nao|voce|tambem|atencao|informacao|conversao|operacao|possivel|disponivel|ultimo|proximo|pagina|codigo|automatico|preparacao|instrucao|traducao|selecao|conexao|reuniao|versao)\b/i;
 
+  /* O TEXTO DO LIVRO NÃO É INTERFACE, e o portão não o julga.
+   *
+   * Ele reprovou a tela de leitura por "capitulo nao terminar" — palavras do
+   * ARQUIVO que a pessoa enviou, não do produto. Um livro em inglês reprovaria
+   * inteiro, e um livro com erro de digitação do autor viraria defeito nosso.
+   *
+   * A regra é de escrita do produto, e vale onde o produto escreve. `.prosa` é
+   * a coluna onde o conteúdo do usuário é renderizado; o resto da tela — botões,
+   * avisos, navegação — continua sendo medido. */
+  const CONTEUDO_DE_QUEM_USA = ".prosa, .estudo-notas, .nota-trecho, blockquote.destaque";
+
   const semAcento = [];
   for (const n of document.querySelectorAll("body *")) {
     if (n.children.length) continue;
+    if (n.closest(CONTEUDO_DE_QUEM_USA)) continue;
     const t = (n.textContent || "").trim();
     if (!t) continue;
     const m = SEM_ACENTO.exec(t);

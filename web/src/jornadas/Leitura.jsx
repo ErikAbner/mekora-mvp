@@ -42,23 +42,89 @@ export const DESTAQUES = {
  * não precisa saber de onde cada um veio. */
 const TAG = { titulo: "h2", subtitulo: "h3", citacao: "blockquote", item: "li", legenda: "figcaption" };
 
+/* QUAL LARGURA CADA IMAGEM RECEBE — e o EPUB não diz.
+ *
+ * O desenho (895:10472) usa três medidas na leitura: a coluna de texto em 680,
+ * a imagem larga em 1540, e a faixa que sangra até a borda. Nenhum livro marca
+ * "esta imagem é larga", então o critério tem de sair de algo que exista no
+ * arquivo — e o que existe é a RESOLUÇÃO NATIVA.
+ *
+ * Uma figura de 1600px de largura foi feita para ser vista grande; uma de 400px
+ * não. Esticar a pequena até 1540 não a torna maior, torna borrada — e é o que
+ * um critério por proporção sozinho faria com toda ilustração panorâmica
+ * pequena.
+ *
+ * Os dois limiares estão escritos aqui, e não escondidos, porque limiar
+ * escondido é limiar em que ninguém pode discordar:
+ *
+ *   LARGA  ≥ 900px de largura nativa  E proporção ≥ 1,4
+ *   CHEIA  ≥ 1600px de largura nativa E proporção ≥ 2,2
+ *
+ * E A IMAGEM NUNCA PASSA DO PRÓPRIO TAMANHO. Os limiares primeiro foram 1200 e
+ * 1600 — ambos MENORES que as larguras de destino, 1540 e 1792 —, e uma
+ * varredura do critério mostrou 32 casos em que uma figura de 1210px seria
+ * esticada até 1540. Subir o limiar até a largura de destino resolveria e
+ * jogaria toda imagem de 1400px de volta para a coluna de 680, que é
+ * desperdício do outro lado.
+ *
+ * A saída é a imagem levar o próprio tamanho como teto: `--natural` vira
+ * `max-inline-size`, e aí "larga" quer dizer "pode passar da coluna, até onde
+ * seus pixels alcançarem".
+ */
+const LARGA_MINIMA = 900;
+const LARGA_PROPORCAO = 1.4;
+const CHEIA_MINIMA = 1600;
+const CHEIA_PROPORCAO = 2.2;
+
+export function larguraDaImagem(w, h) {
+  if (!w || !h) return "";
+  const proporcao = w / h;
+  if (w >= CHEIA_MINIMA && proporcao >= CHEIA_PROPORCAO) return "cheia";
+  if (w >= LARGA_MINIMA && proporcao >= LARGA_PROPORCAO) return "larga";
+  return "";
+}
+
+function Ilustracao({ src, alt, de }) {
+  /* A classe só entra DEPOIS de a imagem carregar, porque antes disso não há
+   * dimensão nenhuma para medir. Começar na coluna e alargar depois é a ordem
+   * certa: o contrário faria toda imagem piscar larga antes de encolher. */
+  const [largura, setLargura] = useState("");
+  const [natural, setNatural] = useState(null);
+
+  return (
+    <figure
+      className={`bloco ilustracao${largura ? ` ${largura}` : ""}`}
+      data-de={de}
+      /* O teto em pixels da própria imagem. Sem ele, `inline-size: 100%` na
+         coluna larga amplia o que não tem pixel para isso. */
+      style={natural ? { "--natural": `${natural}px` } : undefined}
+    >
+      {/* SEM `loading="lazy"`, e a razão não é o teste que ele atrapalhou.
+          O atributo existe para economizar REDE, e aqui não há rede: a imagem
+          já é um `blob:` na memória, extraído do EPUB que o navegador baixou
+          inteiro. Adiar o desenho de algo que já está em mãos só acrescenta um
+          comportamento que pode não acontecer — e ele de fato não aconteceu,
+          deixando a figura em 0x0 sem um erro em lugar nenhum. */}
+      <img
+        src={src}
+        alt={alt}
+        onLoad={(e) => {
+          const { naturalWidth: w, naturalHeight: h } = e.target;
+          setNatural(w || null);
+          setLargura(larguraDaImagem(w, h));
+        }}
+      />
+    </figure>
+  );
+}
+
 function Bloco({ tipo = "paragrafo", texto, destaques = [], marcas = [], de = 0, src, alt = "" }) {
   /* A imagem é um bloco próprio, com legenda vazia se o EPUB não deu nenhuma.
    * O `alt` vem do arquivo COMO ESTÁ, incluindo vazio: `alt=""` num EPUB quer
    * dizer "decorativa, não anuncie", e inventar uma descrição faria o leitor de
    * tela narrar enfeite. */
   if (tipo === "imagem") {
-    return (
-      <figure className="bloco ilustracao" data-de={de}>
-        {/* SEM `loading="lazy"`, e a razão não é o teste que ele atrapalhou.
-            O atributo existe para economizar REDE, e aqui não há rede: a imagem
-            já é um `blob:` na memória, extraído do EPUB que o navegador baixou
-            inteiro. Adiar o desenho de algo que já está em mãos só acrescenta um
-            comportamento que pode não acontecer — e ele de fato não aconteceu,
-            deixando a figura em 0x0 sem um erro em lugar nenhum. */}
-        <img src={src} alt={alt} />
-      </figure>
-    );
+    return <Ilustracao src={src} alt={alt} de={de} />;
   }
 
   const Como = TAG[tipo] ?? "p";

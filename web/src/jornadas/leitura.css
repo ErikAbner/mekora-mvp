@@ -53,11 +53,38 @@
  * (0,5204 em), isso dá cerca de 65 caracteres por linha — dentro da faixa
  * confortável, e é por isso que a medida é fixa e não fluida: coluna que estica
  * com a janela vira linha de 120 caracteres num monitor grande. */
+/* GRADE DE TRES LARGURAS, e nao uma coluna so.
+ *
+ * O desenho (895:10472) usa tres medidas: a coluna de texto em 680, a imagem
+ * larga em 1540x830, e a faixa que sangra ate a borda. Com `max-inline-size:
+ * 680px` no container, nada podia ser maior que a coluna — e o CSS daqui dizia
+ * isso com todas as letras: "nao sangra para fora". Era decisao minha, e o
+ * desenho decide o contrario.
+ *
+ * As colunas nomeadas resolvem sem `margin` negativa e sem `calc(50vw)`: a
+ * lateral de 430 de cada lado soma exatamente os 1540 do desenho com os 680 do
+ * meio, e a faixa cheia usa a linha de fora. O padrao vale para qualquer filho,
+ * entao imagem, faixa e texto usam a MESMA grade em vez de tres tecnicas. */
 .prosa {
-  inline-size: 100%; max-inline-size: 680px;
-  padding: 64px 32px 128px;
-  display: flex; flex-direction: column; gap: 32px;
+  display: grid;
+  grid-template-columns:
+    [cheia-inicio] minmax(32px, 1fr)
+    [larga-inicio] minmax(0, 430px)
+    /* `100% - 64px` e nao `100%`: com `100%` a coluna do meio come as laterais
+       inteiras numa tela estreita, o `minmax(32px, ...)` cede, e o texto encosta
+       na borda. Foi o que aconteceu a 390 — a coluna mediu 390 numa tela de 390
+       — e o padding lateral que o CSS antigo tinha era justamente o que eu
+       apaguei ao trocar a coluna pela grade. */
+    [texto-inicio] min(680px, 100% - 64px) [texto-fim]
+    minmax(0, 430px) [larga-fim]
+    minmax(32px, 1fr) [cheia-fim];
+  inline-size: 100%;
+  padding: 64px 0 128px;
+  row-gap: 32px;
 }
+/* Todo filho mora na coluna de texto, menos quem pede outra. Sem esta linha o
+ * grid espalharia cada bloco por uma coluna diferente. */
+.prosa > * { grid-column: texto-inicio / texto-fim; }
 
 .prosa p {
   margin: 0;
@@ -85,7 +112,9 @@
   .abertura { padding: 40px 24px; gap: 24px; }
   .abertura h1 { font-size: 40px; line-height: 48px; }   /* Display/Large no mobile */
   .autoria { font-size: 18px; line-height: 27px; }
-  .prosa { padding: 40px 24px 80px; gap: 24px; }
+  .prosa { padding: 40px 0 80px; row-gap: 24px; }
+  .prosa .ilustracao.larga { margin: 32px 0; }
+  .prosa .ilustracao.cheia { margin: 40px 0; padding: 0 24px; }
   .prosa p { font-size: 18px; line-height: 27px; }       /* a excecao como RAZAO */
 }
 
@@ -116,21 +145,51 @@
   text-wrap: pretty;
 }
 
-/* A ilustração do livro. Ocupa a coluna do texto e não sangra para fora: numa
-   tela de leitura, imagem maior que a medida quebra o ritmo da coluna. */
+/* A ILUSTRACAO DO LIVRO, em uma das tres larguras.
+ *
+ * Qual delas nao esta no EPUB: nenhum livro marca "esta imagem e larga". Quem
+ * decide e a RESOLUCAO NATIVA, medida quando a imagem carrega — uma figura de
+ * 1600px de largura foi feita para ser grande, e uma de 400px nao. Esticar a
+ * pequena para 1540 so borra o que estava nitido.
+ *
+ * O criterio esta em `Leitura.jsx`, junto do `onLoad` que o aplica. */
 .prosa .ilustracao {
   margin: 32px 0;
   padding: 0;
   display: flex;
   justify-content: center;
 }
-
 .prosa .ilustracao img {
   max-inline-size: 100%;
   block-size: auto;
   /* Fundo claro atrás de PNG transparente: muita ilustração de livro é preta
      sobre nada, e no tema escuro ela sumiria contra o próprio fundo. */
   background: var(--branco, #ffffff);
+}
+
+/* A imagem larga: 1540 do desenho, e ela ENCOLHE em tela menor em vez de
+ * empurrar a pagina. `object-fit: cover` com a altura do desenho so vale quando
+ * ha largura para isso; abaixo disso a proporcao natural manda, porque cortar
+ * uma ilustracao de livro para caber numa altura fixa e perder conteudo. */
+.prosa .ilustracao.larga { grid-column: larga-inicio / larga-fim; margin: 48px 0; }
+/* `min(100%, var(--natural))`: ocupa a coluna larga ate onde os proprios pixels
+ * alcancam. Sem o `--natural` — imagem que ainda nao carregou — o fallback e a
+ * coluna de texto, que nunca amplia nada. */
+.prosa .ilustracao.larga img { inline-size: min(100%, var(--natural, 680px)); }
+
+/* A faixa que sangra ate a borda. E a unica que ignora o respiro lateral, e por
+ * isso ela precisa do proprio: sem ele o conteudo dela encosta na janela. */
+.prosa .ilustracao.cheia {
+  grid-column: cheia-inicio / cheia-fim;
+  margin: 64px 0;
+  padding: 0 32px;
+}
+.prosa .ilustracao.cheia img { inline-size: min(100%, var(--natural, 680px)); }
+
+@media (min-width: 1024px) {
+  /* A altura do desenho so entra quando ha os 1540: 830 de altura numa imagem
+     de 600 de largura cortaria quase tudo. */
+  .prosa .ilustracao.larga img { max-block-size: 830px; object-fit: cover; }
 }
 
 /* Virar o capítulo. Depois do texto, com respiro que separa a leitura da

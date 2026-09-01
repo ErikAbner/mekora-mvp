@@ -62,6 +62,10 @@ class JobResponse(BaseModel):
 
     # Conversão para EPUB (Fase 5)
     epub_path: Optional[str] = None
+    # O EPUB com imagens em WebP, para ler no navegador. Sem esta linha o campo
+    # existe no banco, e a resposta devolve None — o valor some no schema, nao
+    # no modelo.
+    epub_web_path: Optional[str] = None
     conversion_status: str = "not_started"
 
     # Envio ao Kindle (Fase 6)

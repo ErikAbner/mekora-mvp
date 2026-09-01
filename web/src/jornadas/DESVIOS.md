@@ -592,3 +592,90 @@ O hook `usarEstudos` **já expunha `carregando`**, e ele sabe a diferença entre
 Três estados, e não dois: buscando, não existe, e o estudo. Mostrar "não existe"
 enquanto ainda se busca é a maneira mais rápida de a pessoa ir embora de uma
 página que ia carregar.
+
+---
+
+# Leitura — o padrão de imagem do desenho, e WebP na conversão
+
+## As três larguras
+
+O nó `895:10472` usa três medidas: a coluna de texto em **680**, a imagem larga
+em **1540×830**, e uma faixa que sangra até a borda. O CSS daqui dizia o
+contrário, com todas as letras: *"Ocupa a coluna do texto e não sangra para fora:
+numa tela de leitura, imagem maior que a medida quebra o ritmo da coluna."* Era
+decisão minha, e o desenho decide diferente.
+
+680 + 430 + 430 = **1540 exato**. A grade de colunas nomeadas encaixa nas medidas
+do desenho sem `margin` negativa nem `calc(50vw)`, e o mesmo padrão serve para
+texto, imagem e faixa — em vez de três técnicas.
+
+## Qual imagem recebe qual largura, e a prova que mudou o critério
+
+Nenhum livro marca *"esta imagem é larga"*. O critério tem de sair do que existe
+no arquivo, e o que existe é a **resolução nativa**.
+
+Os limiares primeiro foram **1200** e **1600** — ambos MENORES que as larguras de
+destino, 1540 e 1792. Uma varredura do critério achou **32 casos** em que uma
+figura de 1210px seria esticada até 1540, que é exatamente o que a regra existe
+para impedir.
+
+Subir o limiar até a largura de destino resolveria e jogaria toda imagem de
+1400px de volta para a coluna de 680 — desperdício do outro lado. A saída foi a
+imagem **levar o próprio tamanho como teto**: `--natural` vira `max-inline-size`,
+e "larga" passa a querer dizer *"pode passar da coluna, até onde seus pixels
+alcançarem"*.
+
+Medido com livro real: `2000×800` virou faixa cheia em 1856px; `1200×800` virou
+larga em **1200px, e não 1540** — o próprio tamanho.
+
+## O defeito que estava escondido há mais tempo
+
+**Nenhuma imagem de livro aparecia na leitura.** O parser lia um `<p>`, não descia
+para dentro dele, e a `<img>` sumia; como o parágrafo ficava sem texto, o filtro
+de blocos vazios apagava o resto. E é assim que quase todo EPUB escreve figura:
+`<p><img/></p>`.
+
+Sem erro em lugar nenhum, porque não havia erro — havia um bloco a menos.
+
+## WebP: dois arquivos, e não um
+
+O EPUB que a leitura abre é **o mesmo que vai para o Kindle**, e o Kindle não lê
+WebP de forma confiável. Trocar as imagens no arquivo único deixaria a leitura
+mais leve e poderia quebrar o envio, que é a promessa mais visível do produto.
+
+Então são dois. `livro.epub` continua como está e é o que a Amazon recebe;
+`livro.web.epub` tem as mesmas páginas com as imagens em WebP, e é ele que
+`leitura_url` entrega ao navegador. **A escolha é por destino, não por
+preferência.**
+
+Medido de ponta a ponta: **263 KB → 91 KB**, com as imagens caindo de 308 KB para
+91 KB — **70% menor**. Em nove imagens reais do projeto, a média foi 59%: JPEG
+fotográfico cai 72–83%, PNG cai 52–64% **sem perda** (`lossless`, porque desenho
+de traço sofre com compressão com perda justamente na borda da linha).
+
+Três coisas nunca são tocadas: **SVG**, que já é vetor; **GIF animado**, que
+viraria imagem parada; e qualquer imagem que fique **maior** em WebP — gravar um
+arquivo pior porque a etapa se chama "otimizar" seria trocar o objetivo pelo nome
+dele.
+
+E a etapa **nunca derruba a conversão**: se falhar, o livro continua pronto,
+enviável e legível. Deixá-la propagar exceção transformaria uma otimização em
+causa de falha de conversão.
+
+**Quadrinho não ganha versão web.** Ele já é imagem de ponta a ponta, e o KCC
+escolheu formato e tamanho para o aparelho.
+
+## O portão parou de julgar o texto do livro
+
+Ele reprovou a leitura por *"capitulo nao terminar"* — palavras do arquivo que a
+pessoa enviou, não do produto. Um livro em inglês reprovaria inteiro, e um erro
+de digitação do autor viraria defeito nosso. A regra de escrita vale onde o
+produto escreve; `.prosa` e as citações de nota ficam de fora, e o resto da tela
+continua medido.
+
+## O que NÃO foi feito, e é decisão sua
+
+O desenho não tem **"Capítulo anterior / Próximo capítulo"** — a leitura dele é
+rolagem contínua. O produto tem os dois botões, e trocá-los por rolagem significa
+carregar todos os capítulos de uma vez, o que muda memória, progresso e âncora de
+nota. Está no resumo, para você decidir.

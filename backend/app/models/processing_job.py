@@ -41,6 +41,10 @@ class ProcessingJob(Base):
     input_path = Column(String)           # storage/input/
     processed_pdf_path = Column(String)   # storage/temp/ após OCR
     epub_path = Column(String)            # storage/output/
+    # O EPUB com as imagens em WebP, para ler no navegador. Separado porque o
+    # `epub_path` e o que vai para o Kindle, e o Kindle nao le WebP de forma
+    # confiavel. Nulo quando o livro nao tem imagem que valha converter.
+    epub_web_path = Column(String)
     cover_path = Column(String)           # caminho da capa selecionada
     selected_cover_page = Column(Integer) # índice 0–4 das miniaturas
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -23,6 +24,9 @@ from app.schemas.jobs import (
     UploadResponse,
 )
 from app.services.convert_service import ConversionFailedError, convert_to_epub
+from app.services.epub_web_service import gerar_epub_web
+
+logger = logging.getLogger(__name__)
 from app.services.email_service import (
     SendConnectivityError,
     SendFailedError,
@@ -191,7 +195,16 @@ def _leitura_url(record: ProcessingJob) -> str | None:
 
     if not record.epub_path or not record.token_publico:
         return None
-    return f"/storage/output/{record.token_publico}/{Path(record.epub_path).name}"
+
+    # A VERSAO WEB QUANDO ELA EXISTE. Ela tem as mesmas paginas com as imagens em
+    # WebP — 59% menores nas medidas feitas com imagens reais — e o navegador
+    # baixa o EPUB INTEIRO antes de mostrar a primeira linha, entao o peso das
+    # imagens e espera na abertura, e nao so trafego.
+    #
+    # O `epub_path` continua sendo o que vai para o Kindle: a escolha e por
+    # DESTINO, e nao por preferencia. O Kindle nao le WebP de forma confiavel.
+    arquivo = record.epub_web_path or record.epub_path
+    return f"/storage/output/{record.token_publico}/{Path(arquivo).name}"
 
 
 def _to_history(record: ProcessingJob) -> dict:
@@ -385,6 +398,7 @@ def _bg_convert(job_id: int, operation_id: str | None = None) -> None:
                 cover=cover,
             )
             job.epub_path = str(output_epub)
+            job.epub_web_path = _versao_web(output_epub)
             job.status = "converted"
             job.conversion_status = "done"
 
@@ -565,6 +579,10 @@ def _bg_comic_convert(job_id: int, operation_id: str | None = None) -> None:
         )
 
         job.epub_path = str(epub_out)
+        # QUADRINHO NAO GANHA VERSAO WEB. Ele ja e imagem de ponta a ponta, e o
+        # KCC escolheu formato e tamanho para o aparelho: reconverter aqui
+        # desfaria a decisao dele, e o ganho viria as custas da propria coisa
+        # que o leitor de quadrinho olha.
         job.final_filename = epub_out.stem
         job.status = "converted"
         job.conversion_status = "done"
@@ -716,6 +734,29 @@ def _bg_comic_translate(job_id: int, operation_id: str | None = None) -> None:
 # ---------------------------------------------------------------------------
 # POST /upload — recebe o arquivo e cria o registro inicial
 # ---------------------------------------------------------------------------
+
+
+def _versao_web(epub: Path) -> Optional[str]:
+    """Gera o EPUB de imagens em WebP, e NUNCA derruba a conversão por isso.
+
+    A versão web é um ganho de rede, não um requisito: se ela falhar, o livro
+    continua pronto, enviável e legível. Deixar essa etapa propagar exceção
+    transformaria uma otimização em causa de falha de conversão — que é trocar o
+    fim pelo meio.
+    """
+    try:
+        r = gerar_epub_web(epub)
+    except Exception:
+        logger.warning("versão web do EPUB não gerada", exc_info=True)
+        return None
+    if r.caminho is None:
+        return None
+    logger.info(
+        "EPUB web: %d imagens, %d convertidas, %.0f%% menor nas imagens",
+        r.imagens, r.convertidas, r.economia * 100,
+    )
+    return str(r.caminho)
+
 
 @router.post(
     "/upload",

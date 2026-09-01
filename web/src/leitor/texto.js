@@ -92,6 +92,34 @@ function percorrer(no, saida) {
 
     const tipo = BLOCOS[marca];
     if (tipo) {
+      /* IMAGEM DENTRO DE BLOCO DE TEXTO — e é assim que quase todo EPUB a
+       * escreve: `<p><img/></p>`.
+       *
+       * Aqui o bloco era lido e a descida parava, então a imagem sumia; e como
+       * o parágrafo ficava sem texto, o filtro de blocos vazios apagava o resto.
+       * Resultado: NENHUMA figura de livro aparecia na leitura, sem erro em
+       * lugar nenhum — porque não havia erro, havia um bloco a menos.
+       *
+       * As imagens saem como blocos próprios, na ordem, e o texto do bloco
+       * continua sendo um bloco só. A alternativa — descer sempre — duplicaria
+       * o parágrafo que já foi lido, que é o que o comentário antigo evitava. */
+      const dentroDele = filho.querySelectorAll?.("img, image") ?? [];
+      if (dentroDele.length) {
+        const conteudo = lerBloco(filho);
+        for (const img of dentroDele) {
+          const src =
+            img.getAttribute("src") ||
+            img.getAttribute("xlink:href") ||
+            img.getAttribute("href");
+          const dentro = resolverCaminho(src, caminhoDoCapitulo);
+          if (dentro) saida.push({ tipo: "imagem", dentro, alt: img.getAttribute("alt") ?? "" });
+        }
+        /* O texto só entra se existir. Um `<p>` que carrega apenas a figura não
+         * é um parágrafo vazio: é a figura. */
+        if ((conteudo.texto ?? "").trim()) saida.push({ tipo, ...conteudo });
+        continue;
+      }
+
       saida.push({ tipo, ...lerBloco(filho) });
       // Não desce: um <p> dentro de <blockquote> já foi lido, e descer
       // duplicaria o parágrafo.
