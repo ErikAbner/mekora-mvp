@@ -319,3 +319,10 @@ Erik:** vale a pena virar folha.
 assunto dos estudos — tudo que o banco sabe. O texto do livro está dentro do
 EPUB, não no banco, e indexá-lo é trabalho de outra ordem. A tela diz isso
 quando não acha nada.
+
+**A-26 · Buscar no livro e Marcadores não têm painel desenhado.** Os dois ícones
+estão no cromo da leitura desde o começo. Os quatro painéis que existem no Figma
+— `941:23110` aparência, `941:23111` notas e destaques, `941:23112` índice,
+`941:23120` seleção — foram construídos, e nenhum deles é um destes dois. Eles
+ficam `disabled` com o motivo no título. **Decisão do Erik:** desenhar os dois,
+ou tirá-los do cromo.

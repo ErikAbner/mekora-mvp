@@ -613,11 +613,17 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
           </button>
         </nav>
         <nav className="cromo-caixa" aria-label="Ferramentas">
-          {/* AINDA NÃO RESPONDEM. Os dois estão no desenho e não têm para onde
-              ir: buscar dentro do livro e marcadores são features próprias, e
-              nenhuma existe. Ficam `disabled` com o motivo no título, em vez de
-              aceitar o clique e não fazer nada — botão que não responde ensina
-              a não clicar. */}
+          {/* AINDA NÃO RESPONDEM, e agora se sabe por quê: os quatro painéis da
+              leitura estão desenhados — aparência (941:23110), notas e
+              destaques (941:23111), índice (941:23112) e a barra de seleção
+              (941:23120) — e nenhum deles é a busca dentro do livro nem os
+              marcadores. Os dois ícones existem no cromo e o painel de cada um
+              não existe em lugar nenhum.
+
+              Ficam `disabled` com o motivo no título, em vez de aceitar o
+              clique e não fazer nada — botão que não responde ensina a não
+              clicar. Sair do cromo seria apagar do produto duas intenções que o
+              desenho registrou. */}
           <button type="button" aria-label="Buscar no livro" disabled title="A busca dentro do livro ainda não existe.">
             <Icone src={iconeBuscar} />
           </button>
