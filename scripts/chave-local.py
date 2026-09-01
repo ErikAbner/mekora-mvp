@@ -22,7 +22,7 @@ import os
 import secrets
 import sqlite3
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from pathlib import Path
 
 RAIZ = Path(os.environ.get("MEKORA_PROVA", ".ver"))
@@ -41,7 +41,17 @@ if not BANCO.exists():
 c = sqlite3.connect(BANCO)
 c.execute("PRAGMA foreign_keys = ON")
 
-agora = datetime.now(timezone.utc)
+# SEM FUSO NA STRING, e isto derrubava a entrada com 500.
+#
+# A rota grava `2026-09-01 16:34:51.928452`; este script gravava
+# `2026-09-01 20:23:30.529482+00:00`, porque `datetime.now(timezone.utc)` traz o
+# deslocamento. O SQLite guarda texto, e o leitor de DATETIME do SQLAlchemy não
+# analisa o `+00:00` — a coluna voltava como erro e o `/entrar/{token}`
+# respondia 500 sem log nenhum.
+#
+# O modelo usa `agora()` de `app.models.pessoa`, que é ingênuo em UTC. Aqui é o
+# mesmo: `utcnow()` sem fuso.
+agora = datetime.utcnow()
 
 linha = c.execute("SELECT id FROM pessoas WHERE email = ?", (EMAIL,)).fetchone()
 if linha is None:

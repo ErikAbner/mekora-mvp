@@ -19,7 +19,7 @@ quadro e peça — o nome e o id vêm juntos.
 
 | id | tela | rota do produto | estado |
 |---|---|---|---|
-| `964:24178` | M · Apresentação | `/` | **por comparar** |
+| `964:24178` | M · Apresentação | `/` | **comparada · corrigida** |
 | `964:24606` | M · Estante — grade | `/estante` | **comparada · corrigida** |
 | `966:25321` | M · Conta | `/conta` | **comparada · corrigida** |
 | `966:25554` | M · Conta — Dispositivos Kindle | `/conta/kindle` | **comparada · corrigida** |
@@ -30,12 +30,12 @@ quadro e peça — o nome e o id vêm juntos.
 | `966:28476` | M · Mesa | `/mesa` | **comparada · confere** |
 | `966:29052` | M · Livro — o que ficou | `/estante/:id` | **comparada · corrigida** |
 | `966:29395` | M · Leitura | `/leitura/:id` | **comparada · corrigida** |
-| `966:29743` | M · Nota — página | `/nota/:id` | **por comparar** |
-| `966:30269` | M · Nota — ligar e estudos | `/nota/:id` | **por comparar** |
-| `966:30771` | M · Estudo — página | `/estudo/:id` | **por comparar** |
+| `966:29743` | M · Nota — página | `/nota/:id` | **comparada · dois buracos abaixo** |
+| `966:30269` | M · Nota — ligar e estudos | `/nota/:id` | **comparada · confere** |
+| `966:30771` | M · Estudo — página | `/estudo/:id` | **comparada · os mesmos buracos do 966:31095** |
 | `966:31095` | M · Estudos | `/estudos` | **comparada · três buracos abaixo** |
 | `966:31504` | M · Preparo — o que encontrei | `/preparo/:id` | **comparada · corrigida** |
-| `967:31833` | M · Preparo — em andamento | `/preparo/:id` | **por comparar** |
+| `967:31833` | M · Preparo — em andamento | `/preparo/:id` | **exige conversão rodando — ver abaixo** |
 | `973:32414` | M · Leitura · aparência | painel da leitura | **é o `941:23110`, já construído** |
 
 ## O que a comparação achou
@@ -99,6 +99,26 @@ de formato/estado; e cada nota tem **"Editar"** e **"Copiar para estudo"**.
 **Preparo (`966:31504`)** — o desenho tem um alternador **Personalizado /
 Guiado** no topo (no produto ele é o botão "Ajustar manualmente", embaixo) e
 chips de **tamanho do arquivo** e **idioma**. O tamanho não existe no backend.
+
+**Nota (`966:29743`)** — o desenho tem uma seção **"Livros"** com as capas dos
+livros onde aquele trecho aparece, e cada sugestão traz **"Editar"** e **"Copiar
+para estudo"**. A nossa tem a origem em texto e o botão de ligar.
+
+**Preparo em andamento (`967:31833`)** — só existe enquanto uma conversão roda,
+com os passos e o tempo de cada um. Não dá para capturá-la sem uma conversão de
+verdade em curso, e o acervo semeado não converte nada. **Fica por comparar até
+haver um arquivo real passando pela fila.**
+
+### Corrigido na Apresentação (`964:24178`)
+
+**A marca "Mekora" estava branca e cortada.** O SVG saiu do Figma com
+`fill="white"` cozido dentro — letra branca sobre papel claro, invisível no topo
+da primeira tela do produto — e com um `clipPath` de 212 de altura enquanto o
+desenho vai até 290, o que cortava a parte de baixo das letras. É o mesmo tipo
+de mis-export da "ilustração" da Privacidade.
+
+A tinta agora vem do sistema por máscara, como nos ícones, e o recorte foi
+aberto. O rodapé usava a mesma imagem e tinha o mesmo corte.
 
 ## Símbolos — trechos de fluxo
 

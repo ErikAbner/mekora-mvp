@@ -16,8 +16,17 @@
   display: flex; align-items: center; justify-content: space-between;
   padding: 16px 32px;
 }
-.apresentacao-marca { display: inline-flex; }
-.apresentacao-marca img { height: 32px; width: auto; }
+.apresentacao-marca { display: inline-flex; color: var(--foreground); }
+/* A proporção vem do desenho: 1704 × 291. */
+.marca-mekora {
+  display: block;
+  block-size: 32px;
+  inline-size: calc(32px * 1704 / 291);
+  background-color: currentColor;
+  mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat;
+  mask-size: contain; -webkit-mask-size: contain;
+  mask-position: center; -webkit-mask-position: center;
+}
 .apresentacao-cabecalho nav { display: flex; align-items: center; gap: 16px; }
 .apresentacao-cabecalho a {
   padding: 16px 24px;
@@ -284,7 +293,7 @@
      perdem o respiro lateral, e o `wrap` garante que nenhuma largura de tela
      futura volte a empurrar. */
   .apresentacao-cabecalho { flex-wrap: wrap; gap: 8px; padding: 8px 16px; }
-  .apresentacao-marca img { height: 24px; }
+  .marca-mekora { block-size: 24px; inline-size: calc(24px * 1704 / 291); }
   .apresentacao-cabecalho nav { gap: 4px; }
   .apresentacao-cabecalho a { padding: 12px 8px; font-size: 14px; line-height: 22px; }
   .apresentacao-abertura { gap: 56px; padding: 40px 24px 80px; }

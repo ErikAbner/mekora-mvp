@@ -90,7 +90,18 @@ export function Apresentacao({ aoReceberArquivos, backend }) {
     <div className="apresentacao">
       <header className="apresentacao-cabecalho">
         <Link to="/" className="apresentacao-marca" aria-label="Mekora, início">
-          <img src={marca} alt="" aria-hidden="true" />
+          {/* A MARCA É MÁSCARA, e não imagem — pelo mesmo motivo dos ícones.
+              O SVG saiu do Figma com `fill="white"` cozido dentro: no fundo
+              claro ele era letra branca sobre papel branco, invisível. E o
+              `clipPath` tinha 212 de altura enquanto o desenho vai até 290, o
+              que cortava a parte de baixo das letras. Os dois estão corrigidos
+              no arquivo; a máscara garante que a tinta venha do sistema mesmo
+              se alguém reexportar com cor cravada de novo. */}
+          <span
+            className="marca-mekora"
+            aria-hidden="true"
+            style={{ maskImage: `url(${marca})`, WebkitMaskImage: `url(${marca})` }}
+          />
         </Link>
         <nav aria-label="Atalhos">
           {/* Âncora, e não rota: a explicação está nesta mesma página, e mandar
