@@ -80,7 +80,7 @@ function PaginaApresentacao() {
   return (
     <Apresentacao
       backend={backend}
-      aoReceberArquivos={(arquivos) => { receber(arquivos); navegar("/"); }}
+      aoReceberArquivos={(arquivos) => { receber(arquivos); navegar("/mesa"); }}
     />
   );
 }
@@ -513,15 +513,20 @@ export function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/entrar" element={<Entrar />} />
-        {/* A landing publica. Ela nao mora em "/" porque "/" e a Mesa, que e
-            onde quem ja usa o produto quer cair — mandar o usuario de volta a
-            apresentacao a cada visita e cobrar um clique por sessao. */}
-        <Route path="/apresentacao" element={<PaginaApresentacao />} />
+        {/* A LP E A PRIMEIRA TELA DO PROJETO.
+            Ela morava em `/apresentacao`, e "/" era a Mesa — com um comentario
+            aqui defendendo isso. Estava invertido: quem chega no Mekora chega na
+            apresentacao, e so depois de entrar cai na Estante. A Mesa e onde o
+            arquivo e preparado, e isso nao e a porta de entrada do produto. */}
+        <Route path="/" element={<PaginaApresentacao />} />
+        {/* `/apresentacao` continua respondendo: ela foi divulgada, e link que
+            existiu e some vira 404 na cara de quem guardou. */}
+        <Route path="/apresentacao" element={<Navigate to="/" replace />} />
         {/* Publicas: quem ainda nao entrou tem duvida, e quem nunca vai entrar
             tem direito de saber o que mudou. */}
         <Route path="/ajuda" element={<Ajuda />} />
         <Route path="/atualizacoes" element={<Atualizacoes />} />
-        <Route path="/" element={<Mesa />} />
+        <Route path="/mesa" element={<Mesa />} />
         {/* A estante É a conta (DEC-0018). Sem entrar não há o que listar —
             e listar tudo seria mostrar a estante de todo mundo. */}
         <Route path="/estante" element={<SoParaQuemEntrou acesso={acesso}><PaginaEstante /></SoParaQuemEntrou>} />

@@ -9,7 +9,11 @@
  * responde ensina o usuário a não clicar.
  */
 export const LUGARES = [
-  { id: "mesa", rotulo: "Mesa", rota: "/", icone: "/icones/icone-mesa.svg", pronto: true,
+  /* A MESA NAO E A PRIMEIRA TELA. Ela morava em "/" e a Apresentacao numa rota
+   * propria, com a razao escrita de que "/" seria onde quem ja usa o produto
+   * quer cair. Estava invertido: a LP e a primeira tela do projeto, e so depois
+   * de entrar a pessoa chega na Estante. */
+  { id: "mesa", rotulo: "Mesa", rota: "/mesa", icone: "/icones/icone-mesa.svg", pronto: true,
     oQueE: "Onde o arquivo chega e é preparado." },
   { id: "estante", rotulo: "Estante", rota: "/estante", icone: "/icones/icone-estante.svg", pronto: true,
     oQueE: "Os livros prontos, com notas e leitura." },

@@ -256,7 +256,7 @@ export function Preparo() {
               <Botao tom="secundaria" onClick={() => navegar("/estante")}>
                 Abrir na estante
               </Botao>
-              <Botao tom="secundaria" onClick={() => navegar("/")}>
+              <Botao tom="secundaria" onClick={() => navegar("/mesa")}>
                 Preparar outro
               </Botao>
             </div>
@@ -332,7 +332,7 @@ export function Preparo() {
       <Cabecalho lugar="mesa" />
 
       <main className="preparo-pagina">
-        <Link to="/" className="preparo-pagina-volta">← Mesa</Link>
+        <Link to="/mesa" className="preparo-pagina-volta">← Mesa</Link>
 
         <header className="preparo-pagina-pagina-topo">
           <div className="preparo-pagina-capa">

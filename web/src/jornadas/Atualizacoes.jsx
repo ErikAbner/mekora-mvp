@@ -45,7 +45,7 @@ const MUDANCAS = [
         tipo: "novo",
         titulo: "A preparação mostra o que está fazendo",
         diz: "Antes o arquivo era enviado para converter e a tela voltava para a Mesa no mesmo instante — um PDF de trezentas páginas levava minutos sem dizer nada. Agora a tela fica, diz a etapa, e avisa quando o servidor não informa quanto falta.",
-        onde: { rota: "/", diz: "Preparar um arquivo" },
+        onde: { rota: "/mesa", diz: "Preparar um arquivo" },
       },
       {
         tipo: "novo",

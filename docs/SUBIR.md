@@ -180,3 +180,30 @@ das portas, para confirmar que reprova.
 **Não há papel de administrador.** Quem tem conta alcança `/config`,
 `/app-config` e `/presets`, que falam da instalação inteira. Numa instalação
 pessoal isso é correto; com várias pessoas, a primeira coisa a acrescentar.
+
+## Ver o produto no seu computador
+
+```bash
+bash scripts/ver.sh
+```
+
+Ele sobe o backend e o web, cria a conta `erik@mekora.local`, semeia um acervo e
+imprime um endereço que **entra na conta e leva direto para a Estante**.
+
+O link vale quinze minutos e serve uma vez. Para outro, com tudo já no ar:
+
+```bash
+bash scripts/ver.sh --link
+```
+
+**Por que isto precisou existir:** entrar exige um link por e-mail, o e-mail não
+está configurado em desenvolvimento, e o link é de uso único. "Veja no localhost"
+não era um convite — era uma tarefa de cinco passos, e por isso ficou sem ser
+feita.
+
+O acervo semeado é **mentira confessa**: seis livros que nunca foram convertidos,
+com capa de exemplo e contagem de páginas escrita no `scripts/semear.py`. Serve
+para as telas terem o que mostrar — uma estante vazia não mostra a grade, a
+ficha, o alternador de vista nem a lombada, que é justamente o que há para ver.
+
+Para parar: `bash scripts/prova.sh parar`

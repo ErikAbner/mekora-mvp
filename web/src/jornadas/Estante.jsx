@@ -231,7 +231,7 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnvia
                 Ela guarda o que você preparou: os documentos convertidos, as
                 notas que fez neles, e o que já foi para o Kindle.
               </p>
-              <Link to="/" className="estante-comecar">Preparar um documento</Link>
+              <Link to="/mesa" className="estante-comecar">Preparar um documento</Link>
             </div>
           ) : vista === "3d" ? (
             <Estante3D

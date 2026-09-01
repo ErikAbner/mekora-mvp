@@ -36,7 +36,7 @@ const TAREFAS = [
     titulo: "Preparar meu primeiro arquivo",
     diz: "Solte um PDF, veja o que o Mekora encontrou e confirme uma vez.",
     acao: "Ir para a Mesa",
-    rota: "/",
+    rota: "/mesa",
   },
   {
     n: 3,
