@@ -114,11 +114,20 @@
   font-size: 24px; line-height: 32px; font-weight: 400;
   color: var(--muted-foreground);
 }
+/* TINTA CHEIA SOBRE O DESTAQUE, e nao a secundaria.
+ *
+ * O portao pegou: #b3b3b3 sobre o verde do escuro (#61722f) da 2,53, e a WCAG
+ * cobra 4,5 para corpo. A regra ja existia na leitura, escrita por esta mesma
+ * razao — "com destaque atras, a secundaria REPROVA no rosa e no azul" —, e este
+ * bloco tinha ficado de fora dela.
+ *
+ * O padding lateral entra junto: texto colado na borda de um destaque colorido
+ * fica ilegivel antes mesmo do contraste. */
 .ficha-notas blockquote {
-  margin: 0; padding: 16px 0 16px 16px;
-  border-inline-start: 1px solid var(--muted-foreground);
+  margin: 0; padding: 16px;
+  border-inline-start: 1px solid var(--foreground);
   font-size: 20px; line-height: 30px;
-  color: var(--muted-foreground);
+  color: var(--foreground);
   text-wrap: pretty;
 }
 
