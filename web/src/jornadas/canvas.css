@@ -45,16 +45,57 @@
 
 .canvas-erro { border-inline-start-color: var(--destructive, var(--foreground)); }
 
-/* O CHÃO. Altura fixa e rolagem própria: a superfície é maior que a janela por
-   natureza, e deixar a página inteira rolar misturaria mover uma nota com rolar
-   a tela. */
-.canvas-chao {
+/* O CANVAS E INFINITO, e isto e duas camadas.
+ *
+ * A primeira versao era `.canvas-chao`: uma caixa de 560px com `overflow: auto`.
+ * Uma nota arrastada para fora do quadro sumia, e nao havia como ir atras dela.
+ * O no 895:6938 mostra o contrario — chao pontilhado que continua para todo
+ * lado, e um controle de zoom no canto.
+ *
+ * O MUNDO e a janela; o PLANO e a superficie, e ela nao tem borda. Duas camadas
+ * porque so assim o zoom e o arrasto valem para tudo o que esta dentro sem cada
+ * nota precisar saber da camera. */
+.canvas-mundo {
   position: relative;
-  min-block-size: 560px;
-  overflow: auto;
+  block-size: min(72vh, 720px);
+  overflow: hidden;
   border: 1px solid var(--border);
   background: var(--card, var(--background));
+  cursor: grab;
+  touch-action: none;
+  /* O CHAO PONTILHADO. Ele nao e enfeite: sem uma textura fixa, arrastar uma
+   * superficie vazia nao da nenhum sinal de que algo se moveu — a tela parece
+   * travada. O ponto e o que faz o movimento existir. */
+  background-image: radial-gradient(var(--border) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
+.canvas-mundo:active { cursor: grabbing; }
+
+.canvas-plano {
+  position: absolute; inset-block-start: 0; inset-inline-start: 0;
+  inline-size: 100%; block-size: 100%;
+  transform-origin: 0 0;
+  /* Sem transicao: o plano segue o dedo, e um atraso de 200ms entre o gesto e a
+   * superficie faz o arrasto parecer quebrado. */
+}
+
+/* O controle de zoom, do canto do desenho. */
+.canvas-zoom {
+  position: absolute; inset-block-end: 16px; inset-inline-end: 16px;
+  display: flex; align-items: center; gap: 4px;
+  padding: 4px;
+  background: var(--background);
+  border: 1px solid var(--border);
+}
+.canvas-zoom button {
+  min-inline-size: 36px; block-size: 36px;
+  border: 0; background: none; cursor: pointer;
+  color: var(--foreground);
+  font-size: 16px; line-height: 24px;
+}
+.canvas-zoom button:hover { background: var(--surface-hover); }
+.canvas-zoom button:focus-visible { outline: 1px solid var(--foreground); outline-offset: -2px; }
+.canvas-zoom-valor { min-inline-size: 56px; font-variant-numeric: tabular-nums; }
 
 .canvas-vazio {
   position: absolute;

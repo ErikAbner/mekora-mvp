@@ -21,7 +21,7 @@ import "./canvas.css";
  * numa nota para lê-la a arrastaria alguns pixels e o clique nunca chegaria. */
 const LIMIAR = 4;
 
-function Nota({ no, aoMover, aoTirar, aoLigar, ligando, escolhida }) {
+function Nota({ no, aoMover, aoTirar, aoLigar, ligando, escolhida, escala = 1 }) {
   const caixa = useRef(null);
   const arrasto = useRef(null);
   const [posicao, setPosicao] = useState(null);
@@ -42,9 +42,13 @@ function Nota({ no, aoMover, aoTirar, aoLigar, ligando, escolhida }) {
   const andar = (e) => {
     const a = arrasto.current;
     if (!a) return;
-    const dx = e.clientX - a.x0;
-    const dy = e.clientY - a.y0;
-    if (!a.mexeu && Math.hypot(dx, dy) < LIMIAR) return;
+    /* O DESLOCAMENTO DO DEDO É EM PIXELS DE TELA; a nota vive em coordenadas do
+     * PLANO. Com zoom em 50%, mover o dedo 100px precisa mover a nota 200 no
+     * plano — sem dividir pela escala, a nota anda mais devagar que o dedo e
+     * escapa de baixo dele. */
+    const dx = (e.clientX - a.x0) / escala;
+    const dy = (e.clientY - a.y0) / escala;
+    if (!a.mexeu && Math.hypot(e.clientX - a.x0, e.clientY - a.y0) < LIMIAR) return;
     a.mexeu = true;
     setPosicao({ dx, dy });
   };
@@ -55,7 +59,7 @@ function Nota({ no, aoMover, aoTirar, aoLigar, ligando, escolhida }) {
     caixa.current?.releasePointerCapture?.(e.pointerId);
     if (!a) return;
     if (a.mexeu) {
-      aoMover(no.id, no.x + (e.clientX - a.x0), no.y + (e.clientY - a.y0));
+      aoMover(no.id, no.x + (e.clientX - a.x0) / escala, no.y + (e.clientY - a.y0) / escala);
     }
     setPosicao(null);
   };
@@ -128,6 +132,39 @@ export function Canvas({ nos = [], ligacoes = [], notas = [], erro, aoTrazer, ao
     setLigando(false);
   };
 
+  /* A CÂMERA. O Canvas é uma superfície SEM FIM, e o que a tela mostra é um
+   * recorte dela — `deslocamento` diz onde esse recorte está, `escala` diz de
+   * quão longe se olha.
+   *
+   * A primeira versão era uma caixa de 560px com `overflow: auto`: uma nota
+   * arrastada para fora do quadro sumia, e não havia como ir atrás dela. O nó
+   * `895:6938` mostra o contrário — chão pontilhado que continua para todo lado,
+   * e um controle de zoom no canto.
+   *
+   * O PLANO É QUE SE MOVE, e não a rolagem: `transform` não mexe na árvore, roda
+   * na placa de vídeo, e é o que permite arrastar mil notas sem engasgo. */
+  const [camera, setCamera] = useState({ x: 0, y: 0, escala: 1 });
+  const arrastandoChao = useRef(null);
+
+  const ESCALA_MIN = 0.25;
+  const ESCALA_MAX = 2;
+  const aproximar = (passo) =>
+    setCamera((c) => ({ ...c, escala: Math.min(ESCALA_MAX, Math.max(ESCALA_MIN, +(c.escala + passo).toFixed(2))) }));
+
+  /* ARRASTAR O CHÃO leva a câmera junto. Só o chão: começar o arrasto sobre uma
+   * nota move a nota, e é o que a pessoa espera dos dois gestos. */
+  const chaoDesce = (e) => {
+    if (e.target.closest(".canvas-nota")) return;
+    arrastandoChao.current = { x0: e.clientX, y0: e.clientY, cx: camera.x, cy: camera.y };
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  };
+  const chaoMove = (e) => {
+    const a = arrastandoChao.current;
+    if (!a) return;
+    setCamera((c) => ({ ...c, x: a.cx + (e.clientX - a.x0), y: a.cy + (e.clientY - a.y0) }));
+  };
+  const chaoSobe = () => { arrastandoChao.current = null; };
+
   return (
     <div className="mesa">
       <Cabecalho lugar="canvas" />
@@ -170,7 +207,20 @@ export function Canvas({ nos = [], ligacoes = [], notas = [], erro, aoTrazer, ao
           </p>
         )}
 
-        <div className="canvas-chao">
+        {/* O MUNDO é a janela; o PLANO é a superfície, e ela não tem borda.
+            Duas camadas porque só assim o zoom e o arrasto valem para tudo o que
+            está dentro sem cada nota precisar saber da câmera. */}
+        <div
+          className="canvas-mundo"
+          onPointerDown={chaoDesce}
+          onPointerMove={chaoMove}
+          onPointerUp={chaoSobe}
+          onPointerCancel={chaoSobe}
+        >
+          <div
+            className="canvas-plano"
+            style={{ transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.escala})` }}
+          >
           {!nos.length && (
             <p className="canvas-vazio">
               Nada aqui ainda. Traga uma nota que você já marcou, ou escreva uma
@@ -207,8 +257,26 @@ export function Canvas({ nos = [], ligacoes = [], notas = [], erro, aoTrazer, ao
               aoLigar={escolher}
               ligando={ligando}
               escolhida={primeira === no.nota_id}
+              escala={camera.escala}
             />
           ))}
+          </div>
+
+          {/* O CONTROLE DE ZOOM, do canto do desenho. Ele mostra a porcentagem
+              porque "menos" e "mais" sem número não deixam voltar ao tamanho
+              original — e voltar é a coisa mais pedida depois de se perder. */}
+          <div className="canvas-zoom">
+            <button type="button" aria-label="Aproximar" onClick={() => aproximar(0.1)}>+</button>
+            <button
+              type="button"
+              className="canvas-zoom-valor"
+              onClick={() => setCamera({ x: 0, y: 0, escala: 1 })}
+              title="Voltar ao começo"
+            >
+              {Math.round(camera.escala * 100)}%
+            </button>
+            <button type="button" aria-label="Afastar" onClick={() => aproximar(-0.1)}>−</button>
+          </div>
         </div>
 
         {ligacoes.length > 0 && (
