@@ -63,11 +63,18 @@
   background: var(--card, var(--background));
   cursor: grab;
   touch-action: none;
-  /* O CHAO PONTILHADO. Ele nao e enfeite: sem uma textura fixa, arrastar uma
-   * superficie vazia nao da nenhum sinal de que algo se moveu — a tela parece
-   * travada. O ponto e o que faz o movimento existir. */
+  /* O CHAO PONTILHADO. Ele nao e enfeite: sem textura, arrastar uma superficie
+   * vazia nao da nenhum sinal de que algo se moveu — a tela parece travada. O
+   * ponto e o que faz o movimento existir.
+   *
+   * E ELE ANDA COM A CAMERA. Antes ficava parado: arrastar o chao de um Canvas
+   * sem notas nao mudava nada na tela, e a superficie infinita parecia uma
+   * caixa presa. A posicao e a escala vem das variaveis que o JSX escreve, e
+   * sao as mesmas da camera — um chao que anda diferente das notas seria pior
+   * que um chao parado. */
   background-image: radial-gradient(var(--border) 1px, transparent 1px);
-  background-size: 24px 24px;
+  background-size: calc(24px * var(--escala, 1)) calc(24px * var(--escala, 1));
+  background-position: calc(var(--camera-x, 0px)) calc(var(--camera-y, 0px));
 }
 .canvas-mundo:active { cursor: grabbing; }
 
@@ -111,12 +118,13 @@
   text-wrap: pretty;
 }
 
-/* Os traços cobrem a superfície inteira e ficam ATRÁS das notas. */
+/* Os traços ficam ATRÁS das notas, numa caixa medida a partir das ligações — a
+   posição e o tamanho vêm do JSX, porque só ele sabe onde as notas estão.
+   `overflow: visible` é cinto e suspensório: a caixa já contém as linhas, e
+   isto garante que uma folga mal calculada não corte um traço em silêncio. */
 .canvas-tracos {
   position: absolute;
-  inset: 0;
-  inline-size: 100%;
-  block-size: 100%;
+  overflow: visible;
   pointer-events: none;
 }
 
@@ -264,3 +272,111 @@
 .trazer-marca { grid-row: span 2; inline-size: 14px; block-size: 14px; margin-block-start: 3px; }
 .trazer-texto { font-size: 14px; line-height: 20px; }
 .trazer-origem { font-size: 14px; line-height: 20px; color: var(--muted-foreground); }
+
+/* ---- Os grupos — nó 895:6938 -----------------------------------------------
+ *
+ * Uma área nomeada na superfície. Tracejada porque a borda não é um limite: a
+ * nota não fica presa dentro dela, e uma linha cheia prometeria um recipiente
+ * que o grupo não é. Quem está dentro é quem está por cima.
+ */
+.canvas-grupo {
+  position: absolute;
+  z-index: 0;
+  border: 1px dashed var(--borda-controle, var(--border));
+  background: color-mix(in srgb, var(--foreground) 3%, transparent);
+  /* O MEIO NÃO PEGA O PONTEIRO. Arrastar dentro da área move a nota, ou o chão
+     — nunca o retângulo por baixo. O que pega é a barra do título. */
+  pointer-events: none;
+}
+
+.canvas-grupo-titulo {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 8px 12px;
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: none;
+}
+.canvas-grupo-titulo:active { cursor: grabbing; }
+
+.canvas-grupo-nome {
+  padding: 2px 4px;
+  border: 0; background: transparent;
+  color: var(--muted-foreground);
+  font: inherit; font-size: 16px; line-height: 24px;
+  cursor: text;
+}
+.canvas-grupo-nome:hover { color: var(--foreground); }
+.canvas-grupo-nome:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+
+.canvas-grupo-titulo input {
+  flex: 1 1 auto; min-inline-size: 0;
+  padding: 2px 4px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit; font-size: 16px; line-height: 24px;
+}
+
+.canvas-grupo-tirar {
+  border: 0; background: transparent; padding: 2px 4px;
+  color: var(--muted-foreground);
+  font: inherit; font-size: 14px; line-height: 22px;
+  text-decoration: underline; cursor: pointer;
+}
+.canvas-grupo-tirar:hover { color: var(--foreground); }
+.canvas-grupo-tirar:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+
+/* O canto que redimensiona: 20px, no vértice de baixo à direita. */
+.canvas-grupo-canto {
+  position: absolute;
+  inset-block-end: 0; inset-inline-end: 0;
+  inline-size: 20px; block-size: 20px;
+  pointer-events: auto;
+  cursor: nwse-resize;
+  touch-action: none;
+  background: linear-gradient(
+    135deg,
+    transparent 0 45%,
+    var(--borda-controle, var(--border)) 45% 55%,
+    transparent 55%
+  );
+}
+
+/* ---- A prévia de um link dentro da nota — nó 895:6938 ----------------------
+ *
+ * Fica DENTRO da nota, e não ao lado: o link é parte do que foi escrito ali, e
+ * um cartão solto viraria um segundo objeto na superfície que ninguém pôs.
+ */
+.nota-previa {
+  display: flex; align-items: center; gap: 10px;
+  margin-block-start: 10px;
+  padding: 8px;
+  border: 1px solid color-mix(in srgb, var(--foreground) 20%, transparent);
+  background: color-mix(in srgb, var(--background) 70%, transparent);
+  color: inherit;
+  text-decoration: none;
+}
+.nota-previa:hover { border-color: var(--foreground); }
+.nota-previa:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+
+.nota-previa img {
+  flex: 0 0 auto;
+  inline-size: 48px; block-size: 48px;
+  object-fit: cover;
+  display: block;
+}
+
+.nota-previa-texto { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+
+.nota-previa-titulo {
+  font-size: 14px; line-height: 20px;
+  /* Duas linhas e corta: o cartão vive numa nota de 220px, e um título de sete
+     linhas empurraria o rodapé da nota para fora. */
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.nota-previa-site {
+  font-size: 14px; line-height: 20px;
+  opacity: 0.75;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}

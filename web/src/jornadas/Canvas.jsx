@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Rodape } from "../componentes/Rodape.jsx";
@@ -6,6 +6,7 @@ import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
 import { Folha } from "../componentes/Folha.jsx";
 import { DESTAQUES } from "./Leitura.jsx";
+import { linkDe, usarPrevia } from "./previa.js";
 import "./canvas.css";
 
 /* O Canvas: onde as notas se ligam umas às outras.
@@ -21,10 +22,70 @@ import "./canvas.css";
  * numa nota para lê-la a arrastaria alguns pixels e o clique nunca chegaria. */
 const LIMIAR = 4;
 
+/* O TAMANHO DA NOTA, para o traço saber onde é o meio dela. A largura é fixa em
+ * CSS; a altura varia com o texto, e 100 é a altura de uma nota de duas linhas
+ * com rodapé — a ligação sai perto do centro em vez de exato, e é o suficiente
+ * para o olho ler que as duas se falam. */
+const NOTA_LARGURA = 220;
+const NOTA_ALTURA = 100;
+
+/* Folga em volta da caixa dos traços. Sem ela, uma linha na borda exata do SVG
+ * perde metade da espessura no recorte. */
+const FOLGA = 8;
+
+/* O menor lado de um grupo. O mesmo número que o backend usa — um retângulo
+ * menor que uma nota não agrupa nada, e um de um pixel some da tela sem deixar
+ * como pegá-lo de volta. */
+const LADO_MINIMO = 120;
+
+/* O cartão da prévia. Ele fica DENTRO da nota, e não ao lado: o link é parte do
+ * que foi escrito ali, e um cartão solto viraria um segundo objeto na
+ * superfície que ninguém pôs.
+ *
+ * A imagem carrega do endereço original, e não de uma cópia nossa: guardar a
+ * imagem faria o Mekora ter um arquivo de terceiro no disco, que a tela de
+ * Privacidade teria de declarar e a pessoa não pediu.
+ */
+function Previa({ link, previa }) {
+  const anfitriao = (() => {
+    try { return new URL(link).hostname.replace(/^www\./, ""); } catch { return link; }
+  })();
+
+  return (
+    <a
+      className="nota-previa"
+      href={link}
+      target="_blank"
+      rel="noreferrer noopener"
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {previa?.imagem && <img src={previa.imagem} alt="" loading="lazy" />}
+      <span className="nota-previa-texto">
+        <span className="nota-previa-titulo">{previa?.titulo || anfitriao}</span>
+        {/* O PRODUTO DIZ O QUE NÃO SABE. Sem esta linha, um endereço que recusou
+            a prévia ficaria idêntico a um que ainda está carregando. */}
+        <span className="nota-previa-site">
+          {previa === null
+            ? "Buscando a prévia…"
+            : previa.recusada
+              ? `${anfitriao} · sem prévia`
+              : previa.site || anfitriao}
+        </span>
+      </span>
+    </a>
+  );
+}
+
 function Nota({ no, aoMover, aoTirar, aoLigar, ligando, escolhida, escala = 1 }) {
   const caixa = useRef(null);
   const arrasto = useRef(null);
   const [posicao, setPosicao] = useState(null);
+
+  /* O endereço vem do TEXTO da nota. A pessoa cola um link numa nota solta, e o
+   * cartão vira a prévia daquele endereço — é o que o 895:6938 mostra. */
+  const link = linkDe(no.texto);
+  const previa = usarPrevia(link);
 
   /* O NÓ NÃO SAI DO LUGAR NO DOM DURANTE O ARRASTO.
    *
@@ -88,6 +149,12 @@ function Nota({ no, aoMover, aoTirar, aoLigar, ligando, escolhida, escala = 1 })
       <p className="nota-texto">{no.texto}</p>
       {no.comentario && <p className="nota-comentario">{no.comentario}</p>}
 
+      {/* A PRÉVIA DO LINK — nó 895:6938. Só aparece quando há um endereço no
+          texto da nota, e o Mekora precisa IR ATÉ ELE para montá-la: essa
+          informação não está aqui, está no site. A Política de privacidade diz
+          isso com todas as letras. */}
+      {link && <Previa link={link} previa={previa} />}
+
       <footer>
         {/* A ORIGEM FICA, e leva de volta. O item 6 do contrato pede "manter a
             origem da nota, e abri-la" — sem isso a nota vira texto sem
@@ -110,7 +177,125 @@ function Nota({ no, aoMover, aoTirar, aoLigar, ligando, escolhida, escala = 1 })
   );
 }
 
-export function Canvas({ nos = [], ligacoes = [], notas = [], erro, aoTrazer, aoMover, aoTirar, aoLigar, aoDesligar }) {
+
+/* UM GRUPO — nó 895:6938.
+ *
+ * O desenho mostra cartões dentro de uma área tracejada com título: *"Design &
+ * Tecnologia"*. É um agrupamento ESPACIAL, e é o que o distingue de um Estudo:
+ * o Estudo é uma lista reunida por assunto e existe fora do Canvas; o grupo é
+ * um pedaço de chão com nome, e uma nota pertence a ele por estar em cima dele.
+ *
+ * ELE FICA ATRÁS DAS NOTAS e não captura o ponteiro no meio: arrastar dentro da
+ * área move a NOTA, ou o chão, e nunca o retângulo por baixo. O que pega o
+ * retângulo é a barra do título — a mesma regra de uma janela.
+ */
+function Grupo({ grupo, aoMudar, aoApagar, escala }) {
+  const arrasto = useRef(null);
+  const [desloca, setDesloca] = useState(null);
+  const [medindo, setMedindo] = useState(null);
+  const [editando, setEditando] = useState(false);
+
+  const pegar = (e, qual) => {
+    if (e.button !== 0) return;
+    e.stopPropagation();
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    arrasto.current = { qual, x0: e.clientX, y0: e.clientY };
+  };
+
+  const andar = (e) => {
+    const a = arrasto.current;
+    if (!a) return;
+    /* Dividido pela escala pelo mesmo motivo da nota: o dedo anda em pixels de
+     * tela, e a área vive em coordenadas do plano. */
+    const dx = (e.clientX - a.x0) / escala;
+    const dy = (e.clientY - a.y0) / escala;
+    if (a.qual === "mover") setDesloca({ dx, dy });
+    else setMedindo({ dx, dy });
+  };
+
+  const soltar = (e) => {
+    const a = arrasto.current;
+    arrasto.current = null;
+    e.currentTarget.releasePointerCapture?.(e.pointerId);
+    setDesloca(null);
+    setMedindo(null);
+    if (!a) return;
+    const dx = (e.clientX - a.x0) / escala;
+    const dy = (e.clientY - a.y0) / escala;
+    if (Math.hypot(dx, dy) < LIMIAR) return;
+    if (a.qual === "mover") aoMudar(grupo.id, { x: grupo.x + dx, y: grupo.y + dy });
+    else aoMudar(grupo.id, {
+      largura: Math.max(LADO_MINIMO, grupo.largura + dx),
+      altura: Math.max(LADO_MINIMO, grupo.altura + dy),
+    });
+  };
+
+  const estilo = {
+    left: grupo.x,
+    top: grupo.y,
+    width: Math.max(LADO_MINIMO, grupo.largura + (medindo?.dx ?? 0)),
+    height: Math.max(LADO_MINIMO, grupo.altura + (medindo?.dy ?? 0)),
+    transform: desloca ? `translate(${desloca.dx}px, ${desloca.dy}px)` : undefined,
+  };
+
+  return (
+    <section className="canvas-grupo" style={estilo} aria-label={grupo.nome || "Grupo sem nome"}>
+      <header
+        className="canvas-grupo-titulo"
+        onPointerDown={(e) => pegar(e, "mover")}
+        onPointerMove={andar}
+        onPointerUp={soltar}
+        onPointerCancel={soltar}
+      >
+        {editando ? (
+          <input
+            type="text"
+            defaultValue={grupo.nome}
+            aria-label="Nome do grupo"
+            autoFocus
+            maxLength={120}
+            onPointerDown={(e) => e.stopPropagation()}
+            onBlur={(e) => { setEditando(false); if (e.target.value !== grupo.nome) aoMudar(grupo.id, { nome: e.target.value }); }}
+            onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") setEditando(false); }}
+          />
+        ) : (
+          <button
+            type="button"
+            className="canvas-grupo-nome"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => setEditando(true)}
+          >
+            {/* Grupo sem nome DIZ que não tem nome, e o rótulo é o convite para
+                dar um. Um retângulo com o título em branco parece defeito. */}
+            {grupo.nome || "Dar um nome"}
+          </button>
+        )}
+        <button
+          type="button"
+          className="canvas-grupo-tirar"
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={() => aoApagar(grupo.id)}
+        >
+          Desfazer grupo
+        </button>
+      </header>
+
+      {/* O canto que redimensiona. `aria-hidden` porque o teclado não arrasta —
+          o tamanho por teclado não existe ainda, e fingir um alvo focável que
+          não responde é pior que não oferecer. */}
+      <span
+        className="canvas-grupo-canto"
+        aria-hidden="true"
+        onPointerDown={(e) => pegar(e, "medir")}
+        onPointerMove={andar}
+        onPointerUp={soltar}
+        onPointerCancel={soltar}
+      />
+    </section>
+  );
+}
+
+export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro, aoTrazer, aoMover, aoTirar, aoLigar, aoDesligar, aoAgrupar, aoMudarArea, aoDesagrupar }) {
   const [ligando, setLigando] = useState(false);
   const [primeira, setPrimeira] = useState(null);
   const [escrevendo, setEscrevendo] = useState(false);
@@ -124,6 +309,49 @@ export function Canvas({ nos = [], ligacoes = [], notas = [], erro, aoTrazer, ao
     (notaId) => nos.find((n) => n.nota_id === notaId),
     [nos],
   );
+
+  /* A CAIXA DOS TRAÇOS: onde cada linha começa e acaba, e o retângulo que
+   * contém todas. `null` quando não há nenhuma ligação desenhável — e aí não há
+   * SVG na árvore, em vez de um elemento vazio de tamanho indefinido. */
+  const tracos = useMemo(() => {
+    const linhas = [];
+    for (const l of ligacoes) {
+      const a = nos.find((n) => n.nota_id === l.de_id);
+      const b = nos.find((n) => n.nota_id === l.para_id);
+      if (!a || !b) continue;
+      linhas.push({
+        id: l.id,
+        x1: a.x + NOTA_LARGURA / 2, y1: a.y + NOTA_ALTURA / 2,
+        x2: b.x + NOTA_LARGURA / 2, y2: b.y + NOTA_ALTURA / 2,
+      });
+    }
+    if (!linhas.length) return null;
+
+    const xs = linhas.flatMap((l) => [l.x1, l.x2]);
+    const ys = linhas.flatMap((l) => [l.y1, l.y2]);
+    const x = Math.min(...xs) - FOLGA;
+    const y = Math.min(...ys) - FOLGA;
+    return {
+      x, y,
+      largura: Math.max(...xs) - x + FOLGA,
+      altura: Math.max(...ys) - y + FOLGA,
+      linhas,
+    };
+  }, [ligacoes, nos]);
+
+  /* O CENTRO DO QUE ESTÁ SENDO VISTO, em coordenadas do plano. É onde o grupo
+   * novo nasce — a origem do plano pode estar a mil pixels daqui. */
+  const mundo = useRef(null);
+  const criarAqui = () => {
+    const caixa = mundo.current?.getBoundingClientRect();
+    const meio = caixa
+      ? {
+          x: (caixa.width / 2 - camera.x) / camera.escala - 240,
+          y: (caixa.height / 2 - camera.y) / camera.escala - 160,
+        }
+      : { x: 0, y: 0 };
+    aoAgrupar?.({ nome: "", x: meio.x, y: meio.y, largura: 480, altura: 320 });
+  };
 
   const escolher = (notaId) => {
     if (primeira === null) { setPrimeira(notaId); return; }
@@ -186,6 +414,13 @@ export function Canvas({ nos = [], ligacoes = [], notas = [], erro, aoTrazer, ao
             <Botao tom="secundaria" onClick={() => setTrazendo(true)} disabled={!deFora.length}>
               Trazer nota {deFora.length > 0 && <span className="dado">{deFora.length}</span>}
             </Botao>
+            {/* CRIAR UM GRUPO. Ele nasce no meio do que está sendo visto, e não
+                na origem do plano: numa superfície sem fim, a origem pode estar
+                a mil pixels de distância, e o retângulo apareceria fora da
+                tela. */}
+            <Botao tom="secundaria" onClick={criarAqui}>
+              Agrupar uma área
+            </Botao>
             <Botao
               tom={ligando ? "primaria" : "secundaria"}
               aria-pressed={ligando ? "true" : "false"}
@@ -211,7 +446,15 @@ export function Canvas({ nos = [], ligacoes = [], notas = [], erro, aoTrazer, ao
             Duas camadas porque só assim o zoom e o arrasto valem para tudo o que
             está dentro sem cada nota precisar saber da câmera. */}
         <div
+          ref={mundo}
           className="canvas-mundo"
+          /* O chão pontilhado anda com a câmera: as duas variáveis são lidas
+             pelo `background-position` e pelo `background-size` em canvas.css. */
+          style={{
+            "--camera-x": `${camera.x}px`,
+            "--camera-y": `${camera.y}px`,
+            "--escala": camera.escala,
+          }}
           onPointerDown={chaoDesce}
           onPointerMove={chaoMove}
           onPointerUp={chaoSobe}
@@ -232,21 +475,40 @@ export function Canvas({ nos = [], ligacoes = [], notas = [], erro, aoTrazer, ao
               Desenhá-los como bordas entre elementos exigiria que cada nota
               soubesse das outras; assim, a ligação é desenhada por quem sabe
               onde as duas estão. */}
-          <svg className="canvas-tracos" aria-hidden="true">
-            {ligacoes.map((l) => {
-              const a = posicaoDe(l.de_id);
-              const b = posicaoDe(l.para_id);
-              if (!a || !b) return null;
-              return (
-                <line
-                  key={l.id}
-                  x1={a.x + 110} y1={a.y + 50}
-                  x2={b.x + 110} y2={b.y + 50}
-                  className="traco"
-                />
-              );
-            })}
-          </svg>
+          {/* OS GRUPOS FICAM NO FUNDO: eles são o chão, e as notas estão em
+              cima. Vêm antes no DOM, e é isso que os põe atrás. */}
+          {grupos.map((g) => (
+            <Grupo
+              key={g.id}
+              grupo={g}
+              aoMudar={aoMudarArea}
+              aoApagar={aoDesagrupar}
+              escala={camera.escala}
+            />
+          ))}
+
+          {/* OS TRAÇOS TÊM CAIXA PRÓPRIA, medida a partir das ligações.
+              A versão anterior era `inset: 0` com 100% de largura e altura — e o
+              plano é uma superfície SEM FIM, então "100%" não quer dizer nada:
+              o SVG media 0×0 e as linhas só apareciam porque o navegador não as
+              recortava. Funcionava por sorte, e qualquer `overflow` num
+              ancestral apagaria todas as ligações de uma vez, sem erro nenhum.
+
+              Agora a caixa é o retângulo que contém as pontas, e o `viewBox` põe
+              o sistema de coordenadas do SVG em cima do sistema do plano — a
+              linha usa as mesmas posições que as notas. */}
+          {tracos && (
+            <svg
+              className="canvas-tracos"
+              aria-hidden="true"
+              style={{ left: tracos.x, top: tracos.y, width: tracos.largura, height: tracos.altura }}
+              viewBox={`${tracos.x} ${tracos.y} ${tracos.largura} ${tracos.altura}`}
+            >
+              {tracos.linhas.map((l) => (
+                <line key={l.id} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} className="traco" />
+              ))}
+            </svg>
+          )}
 
           {nos.map((no) => (
             <Nota
