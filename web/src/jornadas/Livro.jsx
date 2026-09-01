@@ -4,7 +4,7 @@ import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { ConfiguracoesArquivo } from "../componentes/ConfiguracoesArquivo.jsx";
 import { DESTAQUES } from "./Leitura.jsx";
-import { analisar, lerNotas, lerProgresso } from "../../../contrato/api.js";
+import { analisar, criarNota, lerNotas, lerProgresso } from "../../../contrato/api.js";
 import { tamanhoLegivel } from "../../../contrato/tamanho.js";
 import "./livro.css";
 
@@ -39,6 +39,10 @@ export function Livro() {
   const [onde, setOnde] = useState(null);
   const [erro, setErro] = useState(null);
   const [ajustando, setAjustando] = useState(false);
+  /* "Escrever sobre o livro" — nó 895:7839. */
+  const [sobreOLivro, setSobreOLivro] = useState("");
+  const [guardando, setGuardando] = useState(false);
+  const [recado, setRecado] = useState(null);
 
   /* `rodada` sobe quando algo muda de fora — renomear, por exemplo — e faz a
    * ficha buscar de novo. Sem isto o nome novo só apareceria ao recarregar a
@@ -178,17 +182,76 @@ export function Livro() {
           <ul className="livro-pagina-notas">
             {notas.map((n) => (
               <li key={n.id}>
-                <blockquote style={{ background: DESTAQUES[n.cor] }}>{n.trecho}</blockquote>
+                {/* NOTA SEM TRECHO NÃO VIRA CAIXA VAZIA COLORIDA. A nota escrita
+                    sobre o livro não aponta para frase nenhuma, e um bloco de cor
+                    sem texto dentro é uma citação de nada. */}
+                {n.trecho
+                  ? <blockquote style={{ background: DESTAQUES[n.cor] }}>{n.trecho}</blockquote>
+                  : null}
                 {n.comentario && <p className="livro-pagina-comentario">{n.comentario}</p>}
                 <p className="livro-pagina-lugar">
                   {/* CAPÍTULO, e não página: a página muda quando a fonte muda,
                       e o número que se guarda é outro. */}
-                  Capítulo {(n.capitulo ?? 0) + 1}
+                  {n.fonte === "livro" ? "Sobre o livro" : `Capítulo ${(n.capitulo ?? 0) + 1}`}
                   {n.fonte === "kindle" && " · trazida do Kindle"}
                 </p>
               </li>
             ))}
           </ul>
+        </section>
+
+        {/* ESCREVER SOBRE O LIVRO — nó 895:7839.
+         *
+         * Uma nota do LIVRO INTEIRO, sem trecho: o que se pensa depois de ler, e
+         * que não cabe em nenhuma frase marcada. Até agora toda nota precisava
+         * de um trecho para existir, e o pensamento sobre o conjunto não tinha
+         * onde morar.
+         *
+         * GUARDA NO BOTÃO, e não ao sair do campo. No caderno o `onBlur` grava
+         * porque a nota já existe e o que muda é o comentário dela; aqui o
+         * gesto CRIA — e criar sem clique nenhum faria uma nota nascer de um
+         * clique fora do campo. */}
+        <section className="livro-pagina-secao">
+          <h2>Escrever sobre o livro</h2>
+          <p className="livro-pagina-nota">
+            O que ficou do conjunto, e não de uma frase. Fica com o livro, junto
+            das outras notas.
+          </p>
+          <textarea
+            className="livro-pagina-escrever"
+            placeholder="Escreva aqui..."
+            aria-label="O que você quer dizer sobre este livro"
+            value={sobreOLivro}
+            onChange={(e) => { setSobreOLivro(e.target.value); setRecado(null); }}
+          />
+          <div className="livro-pagina-acoes">
+            <Botao
+              tom="primaria"
+              disabled={!sobreOLivro.trim() || guardando}
+              onClick={async () => {
+                setGuardando(true);
+                setRecado(null);
+                try {
+                  /* Sem trecho, e sem âncora: `de` e `ate` em zero dizem que ela
+                     não aponta para lugar nenhum do texto. */
+                  await criarNota(id, {
+                    capitulo: 0, de: 0, ate: 0, cor: "amarelo",
+                    trecho: "", comentario: sobreOLivro.trim(), fonte: "livro",
+                  });
+                  setSobreOLivro("");
+                  setRodada((n) => n + 1);
+                  setRecado("Guardado com o livro.");
+                } catch (e) {
+                  setRecado(e.status === 401 ? "Entre para guardar notas." : e.message);
+                } finally {
+                  setGuardando(false);
+                }
+              }}
+            >
+              {guardando ? "Guardando…" : "Guardar"}
+            </Botao>
+            {recado && <p className="livro-pagina-nota" role="status">{recado}</p>}
+          </div>
         </section>
 
         <section className="livro-pagina-secao">

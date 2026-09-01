@@ -298,3 +298,49 @@ def test_trabalho_antigo_nao_mente_o_tamanho(client_cru, db, correio):
 
     ficha = client_cru.get(f"/analyze/{j.id}").json()
     assert ficha["input_bytes"] is None
+
+
+# ── escrever sobre o livro — nó 895:7839 ────────────────────────────────────
+
+def test_nota_sobre_o_livro_nao_precisa_cobrir_caractere(client, tmp_storage, sample_pdf):
+    """O conjunto não tem começo nem fim no texto.
+
+    A conferência exigia `ate > de` de TODA nota, e com razão para um destaque:
+    marcar zero caracteres é marcar nada. Uma nota sobre o livro não marca —
+    ela fala do todo. `de` e `ate` em zero dizem exatamente isso.
+
+    Sem esta distinção o campo respondia 422 a cada tentativa, e a tela mostrava
+    um erro que fala de `ate` e de `de` para quem só escreveu uma frase.
+    """
+    with open(sample_pdf, "rb") as f:
+        job = client.post("/upload", files={"file": ("p.pdf", f, "application/pdf")}).json()["upload_id"]
+
+    r = client.post(f"/jobs/{job}/notas", json={
+        "capitulo": 0, "de": 0, "ate": 0, "cor": "amarelo",
+        "trecho": "", "comentario": "O conjunto vale mais que a frase.", "fonte": "livro",
+    })
+    assert r.status_code == 201, r.text
+    assert r.json()["fonte"] == "livro"
+    assert r.json()["trecho"] == ""
+
+
+def test_destaque_continua_precisando_cobrir_caractere(client, tmp_storage, sample_pdf):
+    """A regra não se afrouxou para todo mundo: marcar zero caracteres na
+    leitura continua sendo marcar nada."""
+    with open(sample_pdf, "rb") as f:
+        job = client.post("/upload", files={"file": ("p.pdf", f, "application/pdf")}).json()["upload_id"]
+
+    r = client.post(f"/jobs/{job}/notas", json={
+        "capitulo": 0, "de": 10, "ate": 10, "cor": "amarelo", "trecho": "x",
+    })
+    assert r.status_code == 422
+
+
+def test_fonte_desconhecida_e_recusada(client, tmp_storage, sample_pdf):
+    with open(sample_pdf, "rb") as f:
+        job = client.post("/upload", files={"file": ("p.pdf", f, "application/pdf")}).json()["upload_id"]
+
+    r = client.post(f"/jobs/{job}/notas", json={
+        "capitulo": 0, "de": 0, "ate": 5, "cor": "amarelo", "trecho": "x", "fonte": "inventada",
+    })
+    assert r.status_code == 422

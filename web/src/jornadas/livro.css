@@ -144,3 +144,21 @@
   color: var(--muted-foreground);
   font-size: 14px; line-height: 22px;   /* Label/Small */
 }
+
+/* "Escrever sobre o livro" — nó 895:7839. Uma superfície recuada e sem borda,
+   como o desenho: o campo é o convite, e a moldura o transformaria em
+   formulário. */
+.livro-pagina-escrever {
+  inline-size: 100%;
+  min-block-size: 108px;
+  margin-block-start: 16px;
+  padding: 32px;
+  border: 0;
+  background: var(--background-secondary, var(--muted));
+  color: var(--foreground);
+  font: inherit;
+  font-size: 20px; line-height: 30px;   /* Body/Medium */
+  resize: vertical;
+}
+.livro-pagina-escrever::placeholder { color: var(--muted-foreground); opacity: 1; }
+.livro-pagina-escrever:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }

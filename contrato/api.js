@@ -97,7 +97,22 @@ async function pede(caminho, opcoes) {
     // aconteceu. Engolir e mostrar "erro 500" é o que faz o usuário abrir um
     // chamado que ninguém consegue responder.
     let detalhe = "";
-    try { detalhe = (await r.json())?.detail ?? ""; } catch { /* corpo nao-JSON */ }
+    try {
+      const d = (await r.json())?.detail;
+      /* O 422 DO FASTAPI VEM COMO LISTA, e não como frase.
+       *
+       * `{"detail": [{"loc": ["body","ate"], "msg": "..."}]}`. O código antigo
+       * o punha inteiro num `new Error(...)`, e a tela mostrava
+       * `[object Object]` — ou, pior, nada. Aconteceu no campo "Escrever sobre
+       * o livro": o servidor recusava com um motivo escrito, e a tela ficava
+       * muda.
+       *
+       * A mensagem que interessa é a `msg`; a `loc` fala de `ate` e de `de`
+       * para quem só escreveu uma frase. */
+      detalhe = Array.isArray(d)
+        ? d.map((x) => x?.msg).filter(Boolean).join(". ")
+        : (d ?? "");
+    } catch { /* corpo nao-JSON */ }
     /* SEM DETALHE, UMA FRASE E NAO UM CODIGO.
      *
      * O fallback era `${r.status} em ${caminho}` — "500 em /upload" —, que e

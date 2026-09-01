@@ -108,13 +108,14 @@ de "Continuar lendo" — cinco decisões raras não merecem o mesmo peso visual 
 ação que se faz sempre. Os selos dizem formato, páginas, se está preparado e se
 foi ao Kindle, e cada um só aparece quando há o que dizer.
 
-**O que ficou desta tela, e não dá para ler no Figma:** o desenho tem um bloco
-escuro com a citação e dois botões, um cartão "três páginas ficaram sem texto ·
-Ver o original", e um campo **"Escrever sobre o livro"** no fim — uma nota do
-livro inteiro, sem trecho. A 390 de largura por 4673 de altura, a captura que a
-ferramenta devolve tem 38 pixels de largura: não dá para ler os rótulos, e
-construir a partir disso seria inventar com cara de fidelidade. **Preciso de um
-recorte dessa parte, ou de você selecionando o trecho no Figma.**
+**"Escrever sobre o livro" foi construído** — o Erik mandou o id do trecho
+(`895:7839`, a versão de computador) quando eu disse que a captura saía com 38
+pixels de largura. É a lição prática: numa tela de 4673 de altura, o caminho é
+pedir o NÓ DE DENTRO, e não a tela inteira.
+
+**Ainda ilegíveis nesta tela:** o bloco escuro com a citação e dois botões, e o
+cartão "três páginas ficaram sem texto · Ver o original". Mesmo problema, mesma
+saída — o id do trecho.
 
 ~~**Preparo (`966:31504`)**~~ — fechada. O alternador **Guiado / Personalizado**
 subiu para o topo, e o botão do fim saiu. O **tamanho do arquivo** passou a

@@ -19,12 +19,31 @@ router = APIRouter()
 
 
 class NotaNova(BaseModel):
+    # A FONTE VEM PRIMEIRO, e a ordem não é estilo: o Pydantic valida na ordem
+    # de declaração, e o validador de `ate` precisa saber de onde a nota vem
+    # para decidir se ela tem de cobrir algum caractere. Declarada depois, ela
+    # não estaria em `info.data` na hora da conferência — e o campo "Escrever
+    # sobre o livro" continuaria respondendo 422.
+    #
+    # O nó `895:7839` traz "Escrever sobre o livro": uma nota do LIVRO INTEIRO,
+    # sem trecho — o que se pensa depois de ler, e que não cabe em nenhuma frase
+    # marcada. `leitura` continua o padrão, e `kindle` nunca chega por aqui (ela
+    # vem da importação).
+    fonte: str = "leitura"
+
     capitulo: int = Field(ge=0)
     de: int = Field(ge=0)
     ate: int = Field(ge=0)
     cor: str = "amarelo"
     trecho: str = ""
     comentario: str = ""
+
+    @field_validator("fonte")
+    @classmethod
+    def fonte_conhecida(cls, v: str) -> str:
+        if v not in ("leitura", "livro"):
+            raise ValueError("A nota vem da leitura ou do livro.")
+        return v
 
     @field_validator("cor")
     @classmethod
@@ -41,6 +60,20 @@ class NotaNova(BaseModel):
     @field_validator("ate")
     @classmethod
     def intervalo_com_conteudo(cls, v: int, info) -> int:
+        """Uma nota de LEITURA precisa cobrir pelo menos um caractere.
+
+        Uma nota SOBRE O LIVRO não cobre nada, e é isso que ela é: o nó
+        `895:7839` pede o que ficou do conjunto, e o conjunto não tem começo nem
+        fim no texto. `de` e `ate` em zero dizem exatamente isso — ela não aponta
+        para lugar nenhum.
+
+        A conferência ficou onde estava, e passou a perguntar de onde a nota vem.
+        Sem isso, o campo "Escrever sobre o livro" respondia 422 a cada tentativa
+        — e a tela mostrava o erro do Pydantic, que fala de `ate` e de `de` para
+        quem só escreveu uma frase.
+        """
+        if info.data.get("fonte") == "livro":
+            return v
         de = info.data.get("de")
         if de is not None and v <= de:
             raise ValueError("a nota precisa cobrir pelo menos um caractere")
@@ -289,6 +322,7 @@ def criar(
         pessoa_id=pessoa.id, job_id=job_id, capitulo=nova.capitulo,
         de=nova.de, ate=nova.ate, cor=nova.cor,
         trecho=nova.trecho[:2000], comentario=nova.comentario,
+        fonte=nova.fonte,
     )
     db.add(n)
     db.commit()
