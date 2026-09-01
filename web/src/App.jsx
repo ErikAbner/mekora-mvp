@@ -65,12 +65,25 @@ function usaExemplo() {
 }
 
 function Mesa() {
-  const { arquivos, backend, receber } = useJornada();
+  const { arquivos, livros, backend, receber, carregarEstante } = useJornada();
   const navegar = useNavigate();
   const lista = arquivos.length ? arquivos : usaExemplo() ? EXEMPLO_FILA : [];
 
+  /* A MESA TAMBÉM PRECISA DA ESTANTE. O nó 895:9981 termina em três blocos
+     feitos de livros — "Continue", "Ficaram prontos" e "Na estante" —, e nenhum
+     deles sai da fila: a fila é o que ainda não virou livro. */
+  useEffect(() => { carregarEstante().catch(() => {}); }, [carregarEstante]);
+
   if (!lista.length) return <MesaVazia aoReceberArquivos={receber} backend={backend} />;
-  return <MesaCheia arquivos={lista} aoVerEstante={() => navegar("/estante")} aoReceberArquivos={receber} backend={backend} />;
+  return (
+    <MesaCheia
+      arquivos={lista}
+      livros={livros}
+      aoVerEstante={() => navegar("/estante")}
+      aoReceberArquivos={receber}
+      backend={backend}
+    />
+  );
 }
 
 function PaginaApresentacao() {

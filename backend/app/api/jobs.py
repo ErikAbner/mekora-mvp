@@ -122,7 +122,17 @@ def _leitura_de(db: Session, job: ProcessingJob) -> dict:
     from app.models.nota import Nota
     from app.models.progresso import Progresso
 
-    fora = {"notas": 0, "capitulo": None, "capitulos": None, "fracao": None, "ultima_nota": None}
+    fora = {
+        "notas": 0, "capitulo": None, "capitulos": None, "fracao": None,
+        "ultima_nota": None,
+        # QUANDO A LEITURA FOI MEXIDA PELA ÚLTIMA VEZ.
+        #
+        # A Mesa do nó 895:9981 abre com um cartão "Continue" — um livro só, o
+        # que a pessoa estava lendo. Sem esta data não há como escolher qual: a
+        # estante devolve os livros por data de CRIAÇÃO, que é quando o arquivo
+        # chegou, e não quando alguém o leu.
+        "lido_em": None,
+    }
     if not job.dono_id:
         return fora
 
@@ -156,6 +166,7 @@ def _leitura_de(db: Session, job: ProcessingJob) -> dict:
     # amarrá-la à condição do outro esconderia o melhor dado por causa do pior.
     if p is not None:
         fora["fracao"] = p.fracao
+        fora["lido_em"] = p.atualizado_em
 
     return fora
 

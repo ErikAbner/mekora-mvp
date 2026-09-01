@@ -46,6 +46,9 @@ class JobResponse(BaseModel):
     # conhece a extensao; nula para leitura registrada antes disso.
     fracao: Optional[float] = None
     ultima_nota: Optional[dict] = None
+    # Quando a leitura foi mexida pela última vez — o que deixa a Mesa escolher
+    # QUAL livro vai no cartão "Continue" do nó 895:9981.
+    lido_em: Optional[datetime] = None
 
     original_filename: str
     status: str
@@ -172,6 +175,9 @@ class HistoryEntry(BaseModel):
     # conhece a extensao; nula para leitura registrada antes disso.
     fracao: Optional[float] = None
     ultima_nota: Optional[dict] = None
+    # Quando a leitura foi mexida pela última vez — o que deixa a Mesa escolher
+    # QUAL livro vai no cartão "Continue" do nó 895:9981.
+    lido_em: Optional[datetime] = None
 
     original_filename: str
     # URL da capa, montada no backend e não no cliente. A estante não deve

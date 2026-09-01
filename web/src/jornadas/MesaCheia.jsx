@@ -138,11 +138,78 @@ function Arquivo({ nome, estado, feito, total, progresso, detalhe, etapa, motivo
   );
 }
 
-export function MesaCheia({ arquivos = [], aoVerEstante, aoReceberArquivos, backend }) {
+/* HÁ QUANTO TEMPO, EM PALAVRAS. O nó 895:9981 escreve "Agora há pouco" ao lado
+ * de "Ficaram prontos", e escrever isso fixo seria mentira no dia seguinte. */
+function quandoFoi(iso) {
+  if (!iso) return null;
+  const t = Date.parse(iso.endsWith("Z") || iso.includes("+") ? iso : `${iso}Z`);
+  if (!Number.isFinite(t)) return null;
+  const min = Math.floor((Date.now() - t) / 60000);
+  if (min < 0) return "Agora há pouco";
+  if (min < 10) return "Agora há pouco";
+  if (min < 60) return `Há ${min} minutos`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return h === 1 ? "Há uma hora" : `Há ${h} horas`;
+  const d = Math.floor(h / 24);
+  if (d === 1) return "Ontem";
+  if (d < 30) return `Há ${d} dias`;
+  return null;
+}
+
+/* Uma fileira de capas, com o título por baixo. Serve às duas faixas do fim da
+ * Mesa — "Ficaram prontos" e "Na estante" —, que no desenho são a mesma coisa
+ * com listas diferentes. */
+function Faixa({ titulo, quando, livros, verTudo }) {
+  if (!livros.length) return null;
+  return (
+    <section className="faixa">
+      <header className="faixa-topo">
+        <h2>{titulo}</h2>
+        {quando && <p className="faixa-quando">{quando}</p>}
+      </header>
+      <ul className="faixa-capas">
+        {livros.map((l) => (
+          <li key={l.chave}>
+            <Link to={verTudo}>
+              {l.capa ? (
+                <img src={l.capa} alt="" />
+              ) : (
+                <span className="faixa-sem-capa">{l.titulo}</span>
+              )}
+              <span className="faixa-titulo">{l.titulo}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberArquivos, backend }) {
   const [recorte, setRecorte] = useState("tudo");
   const c = contar(arquivos);
   /* A lista filtrada pelo recorte. `tudo` é o padrão, e é o que o desenho marca. */
   const visiveis = recorte === "tudo" ? arquivos : arquivos.filter((a) => a.estado === recorte);
+
+  /* O CARTÃO "CONTINUE" — nó 895:9981, o primeiro bloco depois da área de
+     soltar. É UM livro: o que a pessoa estava lendo. A escolha sai de
+     `lidoEm`, que é a data do progresso; sem progresso não há leitura em
+     curso, e o cartão não aparece — em vez de escolher o primeiro da lista e
+     dizer "Continue" para um livro que ninguém abriu. */
+  const lendo = livros
+    .filter((l) => l.lidoEm && l.leituraUrl)
+    .sort((a, b) => String(b.lidoEm).localeCompare(String(a.lidoEm)));
+  const continuar = lendo[0] ?? null;
+  const outrosAbertos = Math.max(0, lendo.length - 1);
+
+  /* "Ficaram prontos": os últimos preparados, pela data em que o trabalho mudou
+     de estado. "Na estante": os mesmos livros, na ordem em que a estante os
+     mostra. As duas faixas do fim do desenho. */
+  const prontos = livros
+    .filter((l) => l.leituraUrl)
+    .slice()
+    .sort((a, b) => String(b.mexidoEm ?? "").localeCompare(String(a.mexidoEm ?? "")))
+    .slice(0, 6);
   const [sobre, setSobre] = useState(false);
 
   /* SOLTAR CONTINUA VALENDO COM A MESA CHEIA.
@@ -274,6 +341,55 @@ export function MesaCheia({ arquivos = [], aoVerEstante, aoReceberArquivos, back
         </div>
       </section>
     
+      {/* O CARTÃO "CONTINUE", do nó 895:9981. A Mesa terminava na fila, e o
+          desenho a continua: o livro em curso, e depois as duas faixas de capas.
+          Sem isso a Mesa é só uma fila de espera — e a promessa do topo é
+          "uma estante para aquilo que ainda está em movimento". */}
+      {continuar && (
+        <section className="continue">
+          <div className="continue-capa">
+            {continuar.capa ? <img src={continuar.capa} alt="" /> : <span>{continuar.titulo}</span>}
+          </div>
+          <div className="continue-texto">
+            <p className="continue-marca">Continue</p>
+            <h2>{continuar.titulo}</h2>
+            {typeof continuar.fracao === "number" && (
+              <p className="continue-onde">
+                Você parou em <span className="dado">{Math.round(continuar.fracao * 100)}%</span>.
+              </p>
+            )}
+            {/* O filete marca a citação, e aqui marca o que o livro tem de seu:
+                as notas e quem escreveu. O autor só entra quando existe. */}
+            <p className="continue-dados">
+              {continuar.notas === 1 ? "1 nota neste livro" : `${continuar.notas} notas neste livro`}
+              {continuar.autor ? ` · ${continuar.autor}` : ""}
+            </p>
+            {outrosAbertos > 0 && (
+              <p className="continue-outros">
+                {outrosAbertos === 1 ? "Mais um aberto" : `Mais ${outrosAbertos} abertos`}
+              </p>
+            )}
+            <div className="continue-acoes">
+              <Link to={`/leitura/${continuar.chave}`} className="botao primaria">
+                Continuar lendo
+              </Link>
+              <Link to={`/estante/${continuar.chave}`} className="botao secundaria">
+                Ver as notas
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
+      <Faixa
+        titulo="Ficaram prontos"
+        quando={quandoFoi(prontos[0]?.mexidoEm)}
+        livros={prontos}
+        verTudo="/estante"
+      />
+
+      <Faixa titulo="Na estante" livros={livros.filter((l) => l.leituraUrl).slice(0, 6)} verTudo="/estante" />
+
       <Rodape />
     </div>
   );

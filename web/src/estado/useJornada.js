@@ -204,6 +204,11 @@ export function useJornada() {
          * 0,8963 e a tela mostrando "no ultimo capitulo". */
         fracao: typeof e.fracao === "number" ? e.fracao : null,
         ultima_nota: e.ultima_nota ?? null,
+        /* Quando a leitura foi mexida pela última vez, e quando o arquivo mudou
+           de estado pela última vez. A Mesa precisa das duas: uma escolhe o
+           livro do cartão "Continue", a outra ordena "Ficaram prontos". */
+        lidoEm: e.lido_em ?? null,
+        mexidoEm: e.updated_at ?? null,
         quadrinho: !!e.comic_mode,
         /* A capa vem PRONTA do backend, como URL. A versão anterior devolvia
          * `null` sempre, porque o `/history` não expunha nada — e montar o
