@@ -288,8 +288,13 @@
    * pessoa tem `_` no meio.
    *
    * O portão não via porque a checagem de acento é por palavra conhecida, e
-   * `no_canvas` não está em dicionário nenhum. Esta vê a FORMA. */
-  const NOME_DE_CODIGO = /\b[a-z]+_[a-z_]+\b/;
+   * `no_canvas` não está em dicionário nenhum. Esta vê a FORMA.
+   *
+   * AS BORDAS EXCLUEM ENDEREÇO. `erik_mekora@kindle.com` é um e-mail que a
+   * pessoa cadastrou, e sublinhado dentro de e-mail, URL ou nome de arquivo é
+   * legítimo — a primeira versão desta checagem reprovou a tela de Kindle por
+   * causa dele. O que se procura é a palavra SOZINHA com underline no meio. */
+  const NOME_DE_CODIGO = /(?<![\w@./-])[a-z]+_[a-z_]+(?![\w@./-])/;
   const codigoNaTela = [];
 
   /* O TEXTO DO LIVRO NÃO É INTERFACE, e o portão não o julga.

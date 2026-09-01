@@ -100,3 +100,19 @@
 .ficha-arquivo dt { font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
 .ficha-arquivo dd { margin: 0; font-size: 16px; line-height: 24px; color: var(--foreground); }
 .ficha-arquivo dd .dado { font-variant-numeric: tabular-nums; }
+
+/* ---- no telefone — nó 966:29052 --------------------------------------------
+ *
+ * A CAPA OCUPA A LARGURA. Ela tinha 180px fixos, herdados do desktop, onde ela
+ * divide a linha com o título — e a 390 a linha quebra, então a capa fica
+ * pequena e sozinha num canto, com metade da tela vazia ao lado. O desenho
+ * mobile a põe inteira no topo, que é o que se reconhece de um livro antes de
+ * ler o nome dele.
+ */
+@media (max-width: 619px) {
+  .livro-pagina-topo { gap: 24px; }
+  .livro-pagina-capa { inline-size: 100%; aspect-ratio: 420 / 594; }
+  .livro-pagina-identidade { inline-size: 100%; }
+  .livro-pagina-acoes { flex-direction: column; align-items: stretch; }
+  .livro-pagina-acoes .botao { inline-size: 100%; justify-content: center; }
+}

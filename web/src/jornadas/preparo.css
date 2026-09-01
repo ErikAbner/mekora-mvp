@@ -160,3 +160,16 @@
 /* O "Baixar EPUB" e uma ancora com cara de botao: precisa do que so o <button>
  * trazia. */
 .preparo-fim-acoes .botao { text-decoration: none; }
+
+/* ---- no telefone — nó 966:31504 --------------------------------------------
+ *
+ * A CAPA OCUPA A LARGURA, como na ficha do livro. Ela tinha 120px fixos,
+ * herdados do desktop onde divide a linha com o título; a 390 a linha quebra e
+ * sobra meia tela vazia ao lado de uma capa pequena. O desenho mobile a põe
+ * inteira no topo — é o que se reconhece de um arquivo antes de ler o nome.
+ */
+@media (max-width: 619px) {
+  .preparo-pagina-capa { inline-size: 100%; aspect-ratio: 420 / 594; }
+  .preparo-pagina-pagina-acoes { flex-direction: column; align-items: stretch; }
+  .preparo-pagina-pagina-acoes .botao { inline-size: 100%; justify-content: center; }
+}
