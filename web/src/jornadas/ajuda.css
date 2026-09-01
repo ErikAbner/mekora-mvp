@@ -127,3 +127,11 @@
   .ajuda-tarefas h2 { font-size: 20px; line-height: 30px; }
   .ajuda-tarefas .botao { align-self: stretch; }
 }
+
+/* A BUSCA DA AJUDA — no 895:11193. Larga, sob o titulo, centrada com ele. */
+.ajuda-topo .campo { max-inline-size: 520px; margin-inline: auto; inline-size: 100%; }
+.ajuda-resultado {
+  margin: 12px 0 0;
+  font-size: 14px; line-height: 20px;
+  color: var(--muted-foreground);
+}

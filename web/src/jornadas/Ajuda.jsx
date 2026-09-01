@@ -16,7 +16,9 @@
  * menos do que a página mostra inteira. Fica de fora até haver busca de
  * verdade.
  */
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { Campo } from "../componentes/Campo.jsx";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Rodape } from "../componentes/Rodape.jsx";
 import "./ajuda.css";
@@ -93,7 +95,35 @@ const CATEGORIAS = [
   },
 ];
 
+/* Sem acento e sem caixa, para "página" achar "Paginas" e "OCR" achar "ocr". */
+function achatar(t) {
+  return t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
 export function Ajuda() {
+  /* A BUSCA DA AJUDA — o campo do nó 895:11193, logo abaixo do título.
+   *
+   * Ele não existia, e a página tem vinte e uma perguntas em quatro
+   * categorias: quem chega com uma dúvida específica lê as vinte para achar a
+   * dela. A trilha de categorias ajuda quem sabe em qual delas procurar, que é
+   * justamente o que quem tem um problema não sabe.
+   *
+   * A busca é NA PÁGINA, e não no servidor: as perguntas estão todas aqui,
+   * escritas neste arquivo. Pedir ao backend seria uma volta pela rede para
+   * filtrar uma lista que já está na memória.
+   */
+  const [procura, setProcura] = useState("");
+  const alvo = achatar(procura.trim());
+
+  const categorias = alvo
+    ? CATEGORIAS.map((c) => ({
+        ...c,
+        itens: c.itens.filter((i) => achatar(`${i.p} ${i.r}`).includes(alvo)),
+      })).filter((c) => c.itens.length)
+    : CATEGORIAS;
+
+  const quantas = categorias.reduce((n, c) => n + c.itens.length, 0);
+
   return (
     <div className="mesa">
       <Cabecalho />
@@ -101,6 +131,24 @@ export function Ajuda() {
       <main className="ajuda">
         <header className="ajuda-topo">
           <h1>Por onde você quer começar</h1>
+          <Campo
+            tipo="search"
+            rotulo="Buscar na Ajuda"
+            rotuloOculto
+            placeholder="Buscar na Ajuda"
+            value={procura}
+            onChange={(e) => setProcura(e.target.value)}
+          />
+          {/* O resultado é dito, e não só mostrado: quem filtrou precisa saber
+              que a lista encurtou de propósito — e quem usa leitor de tela não
+              vê a lista encurtar. */}
+          {alvo && (
+            <p className="ajuda-resultado" role="status">
+              {quantas === 0
+                ? `Nenhuma pergunta com “${procura.trim()}”. A lista inteira volta apagando a busca.`
+                : `${quantas} ${quantas === 1 ? "pergunta" : "perguntas"} com “${procura.trim()}”.`}
+            </p>
+          )}
         </header>
 
         <ul className="ajuda-tarefas">
@@ -122,7 +170,7 @@ export function Ajuda() {
               que já está abaixo. */}
           <nav className="ajuda-trilha" aria-label="Categorias da ajuda">
             <ul>
-              {CATEGORIAS.map((c) => (
+              {categorias.map((c) => (
                 <li key={c.titulo}>
                   <a href={`#${c.titulo.toLowerCase().replace(/\s+/g, "-")}`}>{c.titulo}</a>
                 </li>
@@ -131,7 +179,7 @@ export function Ajuda() {
           </nav>
 
           <div className="ajuda-listas">
-            {CATEGORIAS.map((c) => (
+            {categorias.map((c) => (
               <section
                 key={c.titulo}
                 className="ajuda-categoria"

@@ -19,7 +19,7 @@
 import { useId } from "react";
 import "./campo.css";
 
-export function Campo({ rotulo, ajuda, erro, tipo = "text", ...resto }) {
+export function Campo({ rotulo, ajuda, erro, tipo = "text", rotuloOculto = false, ...resto }) {
   const id = useId();
   const idAjuda = `${id}-ajuda`;
   const idErro = `${id}-erro`;
@@ -27,7 +27,12 @@ export function Campo({ rotulo, ajuda, erro, tipo = "text", ...resto }) {
 
   return (
     <div className={`campo${erro ? " com-erro" : ""}`}>
-      <label htmlFor={id}>{rotulo}</label>
+      {/* `rotuloOculto` esconde o rótulo DA VISTA, e não de quem ouve. Serve
+          para o campo cujo lugar já o explica — a busca da Ajuda, logo abaixo
+          do título da página, com a lupa dentro. Um `placeholder` sozinho não
+          resolve: ele some ao digitar, e leitor de tela nenhum é obrigado a
+          lê-lo. */}
+      <label htmlFor={id} className={rotuloOculto ? "visualmente-oculto" : undefined}>{rotulo}</label>
       {ajuda && <p className="campo-ajuda" id={idAjuda}>{ajuda}</p>}
       <input
         id={id}

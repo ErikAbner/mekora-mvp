@@ -11,6 +11,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { enviarArquivo, analisar, esperarAnalise, converter, acompanhar, historico, backendNoAr, enviarAoKindle, lerPreferencias } from "../../../contrato/api.js";
+import { estadoDe } from "../../../contrato/estado.js";
 
 export function useJornada() {
   const [arquivos, setArquivos] = useState([]);
@@ -31,6 +32,51 @@ export function useJornada() {
 
   useEffect(() => {
     backendNoAr().then((ok) => setBackend(ok ? "no ar" : "fora do ar"));
+  }, []);
+
+  /* A FILA SOBREVIVE A UM RECARREGAMENTO — e não sobrevivia.
+   *
+   * `arquivos` nascia `[]` e só era preenchido por `receber`, ou seja, por um
+   * arquivo solto NESTA aba. Recarregar a Mesa no meio de uma conversão de dez
+   * minutos apagava a fila inteira da tela: o trabalho continuava no servidor, e
+   * a pessoa via "A mesa está limpa".
+   *
+   * O nó 895:9348 mostra uma Mesa com fila de três, um deles com erro. Nada
+   * disso era alcançável recarregando a página — e é assim que se chega numa
+   * tela, não soltando um arquivo de novo a cada visita.
+   *
+   * `/history` já devolve todos os trabalhos da pessoa, com as colunas de
+   * estado. O que entra na Mesa é o que AINDA NÃO ESTÁ PRONTO: pronto é livro, e
+   * livro mora na estante. Quem decide isso é o `estadoDe` do contrato, o mesmo
+   * que decide para os arquivos desta sessão — duas derivações seriam duas
+   * telas discordando sobre o mesmo arquivo.
+   */
+  useEffect(() => {
+    let vivo = true;
+    historico()
+      .then((h) => {
+        if (!vivo) return;
+        const emCurso = h
+          .map((e) => ({ bruto: e, estado: estadoDe(e) }))
+          .filter(({ estado }) => estado.estado !== "pronto")
+          .map(({ bruto, estado }) => ({
+            id: bruto.upload_id,
+            nome: bruto.final_title || bruto.original_filename,
+            preparo: bruto.upload_id,
+            ...estado,
+            progresso: estado.progresso?.porcento ?? null,
+          }));
+        if (!emCurso.length) return;
+        /* Junta em vez de substituir: um arquivo solto agora está na lista com
+           id provisório e ainda não existe no servidor, e sobrescrever apagaria
+           justamente o que a pessoa acabou de fazer. */
+        setArquivos((atual) => {
+          const jaTem = new Set(atual.map((a) => a.id));
+          return [...emCurso.filter((a) => !jaTem.has(a.id)), ...atual];
+        });
+      })
+      .catch(() => {});
+    return () => { vivo = false; };
   }, []);
 
   /* Atualiza UM arquivo pelo id, sem reescrever a lista inteira. Reescrever

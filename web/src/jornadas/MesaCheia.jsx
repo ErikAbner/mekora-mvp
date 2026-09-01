@@ -14,17 +14,25 @@
  */
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Rodape } from "../componentes/Rodape.jsx";
+import { Soltar } from "../componentes/Soltar.jsx";
 import { Icone } from "../componentes/Icone.jsx";
 import { Link } from "react-router-dom";
 import { Botao } from "../componentes/Botao.jsx";
 import "./mesa-cheia.css";
+/* A PROMESSA E A ÁREA DE SOLTAR SÃO AS MESMAS DAS DUAS TELAS, e o CSS delas mora
+ * no arquivo da mesa vazia. Importar aqui é o que torna a dependência explícita:
+ * o pacote junta tudo num arquivo só, então funcionaria em silêncio — até o dia
+ * em que a mesa vazia deixasse de existir e esta tela perdesse o estilo sem que
+ * ninguém tivesse tocado nela. Copiar as regras não é opção: `scripts/classes.mjs`
+ * recusa uma classe definida em dois arquivos, e com razão. */
+import "./mesa-vazia.css";
 
 const iconeEnviar = "/icones/icone-enviar.svg";
 
 /* Os quatro estados vêm do contrato, não daqui. Se esta lista divergir da de
  * `contrato/estado.js`, a tela passa a mostrar rótulo para um estado que não
  * existe — ou a esconder um que existe. */
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { ESTADOS as DO_CONTRATO } from "../../../contrato/estado.js";
 
 /* OS RÓTULOS SÃO OS DO DESENHO — nó 895:9736: Enviando, Na fila, Pronto, Com
@@ -34,9 +42,14 @@ import { ESTADOS as DO_CONTRATO } from "../../../contrato/estado.js";
  * Eu tinha resolvido trocando o nome da seção para "A mesa" — o que consertou a
  * contradição e afastou a tela do desenho. O desenho não tem esse problema:
  * lá a seção é "Em preparo" e o estado é "Enviando". */
+/* A ORDEM É A DO NÓ 895:9348 — Enviando, Na fila, Pronto, Com erro —, e não a
+ * ordem em que o contrato lista os estados. Ela segue o caminho do arquivo pela
+ * tela: primeiro o que está acontecendo agora, depois o que espera, depois os
+ * dois fins. `Object.keys` de um literal preserva a ordem de escrita, então é
+ * aqui que ela se decide. */
 const ESTADOS = {
-  fila: { rotulo: "Na fila", classe: "fila" },
   trabalhando: { rotulo: "Enviando", classe: "enviando" },
+  fila: { rotulo: "Na fila", classe: "fila" },
   pronto: { rotulo: "Pronto", classe: "pronto" },
   erro: { rotulo: "Com erro", classe: "erro" },
 };
@@ -48,7 +61,13 @@ for (const e of DO_CONTRATO) {
 
 function contar(arquivos) {
   // Derivado, sempre. A contagem não pode divergir da lista porque ela É a lista.
-  const c = Object.fromEntries(DO_CONTRATO.map((e) => [e, 0]));
+  //
+  // A ORDEM VEM DE `ESTADOS`, e não de `DO_CONTRATO`: o contrato lista os
+  // estados que existem, e não a ordem em que a tela os mostra. Os dois papéis
+  // moravam na mesma lista, e por isso os recortes apareciam fora da ordem do
+  // desenho. O laço acima continua garantindo que nenhum estado do contrato
+  // fique de fora daqui.
+  const c = Object.fromEntries(Object.keys(ESTADOS).map((e) => [e, 0]));
   for (const a of arquivos) if (c[a.estado] !== undefined) c[a.estado] += 1;
   return c;
 }
@@ -119,12 +138,11 @@ function Arquivo({ nome, estado, feito, total, progresso, detalhe, etapa, motivo
   );
 }
 
-export function MesaCheia({ arquivos = [], aoVerEstante, aoReceberArquivos }) {
+export function MesaCheia({ arquivos = [], aoVerEstante, aoReceberArquivos, backend }) {
   const [recorte, setRecorte] = useState("tudo");
   const c = contar(arquivos);
   /* A lista filtrada pelo recorte. `tudo` é o padrão, e é o que o desenho marca. */
   const visiveis = recorte === "tudo" ? arquivos : arquivos.filter((a) => a.estado === recorte);
-  const campo = useRef(null);
   const [sobre, setSobre] = useState(false);
 
   /* SOLTAR CONTINUA VALENDO COM A MESA CHEIA.
@@ -153,6 +171,30 @@ export function MesaCheia({ arquivos = [], aoVerEstante, aoReceberArquivos }) {
       onDrop={soltar}
     >
       <Cabecalho lugar="mesa" />
+
+      {/* A PROMESSA E A ÁREA DE SOLTAR, NO TOPO — nó 895:9348.
+       *
+       * A mesa cheia começava direto na fila, e a única forma de acrescentar um
+       * arquivo era o botão "Adicionar mais", no fim de uma lista que pode ter
+       * trinta itens. No desenho a área de soltar é a PRIMEIRA coisa da tela,
+       * antes da fila, igual à mesa vazia — a mesma área, com a mesma lista de
+       * formatos e a mesma frase sobre não precisar de conta.
+       *
+       * É o mesmo componente das outras duas telas. Uma segunda cópia aqui seria
+       * a lista de formatos divergindo em um dos três lugares. */}
+      <section className="promessa">
+        <h1>
+          Uma estante para aquilo
+          <br />
+          que ainda está em movimento.
+        </h1>
+      </section>
+
+      {aoReceberArquivos && (
+        <section className="entrada">
+          <Soltar aoReceberArquivos={aoReceberArquivos} backend={backend} />
+        </section>
+      )}
 
       <section className="preparo">
         <div className="preparo-caixa">
@@ -197,7 +239,12 @@ export function MesaCheia({ arquivos = [], aoVerEstante, aoReceberArquivos }) {
                 disabled={quantos === 0 && id !== recorte}
                 onClick={() => setRecorte(id)}
               >
-                {id === "tudo" ? rotulo : <>{rotulo} <span className="dado">{quantos}</span></>}
+                {/* O NÚMERO ANTES DO RÓTULO — "1 Enviando", "0 Na fila", como o
+                    nó 895:9348 escreve. Estava ao contrário. A ordem importa
+                    numa fileira de quatro: o olho corre a coluna dos números,
+                    e com eles no fim ele precisa ler o rótulo de cada um para
+                    achar onde o número está. */}
+                {id === "tudo" ? rotulo : <><span className="dado">{quantos}</span> {rotulo}</>}
               </button>
             ))}
           </nav>
@@ -218,28 +265,11 @@ export function MesaCheia({ arquivos = [], aoVerEstante, aoReceberArquivos }) {
             <Botao tom="primaria" icone={iconeEnviar} onClick={aoVerEstante}>
               Ver na estante
             </Botao>
-            {aoReceberArquivos && (
-              <>
-                <Botao tom="secundaria" onClick={() => campo.current?.click()}>
-                  Adicionar mais
-                </Botao>
-                {/* O input nativo fica escondido e o botão o aciona: input de
-                    arquivo não se estiliza, e recriar um por fora quebraria
-                    teclado e leitor de tela. */}
-                <input
-                  ref={campo}
-                  type="file"
-                  multiple
-                  className="campo-arquivo"
-                  onChange={(e) => {
-                    if (e.target.files?.length) aoReceberArquivos(e.target.files);
-                    /* Limpa o valor: sem isto, escolher O MESMO arquivo duas
-                       vezes seguidas não dispara `change` na segunda. */
-                    e.target.value = "";
-                  }}
-                />
-              </>
-            )}
+            {/* "Adicionar mais" saiu: a área de soltar do topo faz a mesma
+                coisa, com a lista de formatos junto, e é ela que o desenho põe
+                na tela. Dois caminhos para a mesma ação em pontas opostas de uma
+                página que pode ter trinta itens é a pessoa procurando qual dos
+                dois vale. */}
           </div>
         </div>
       </section>
