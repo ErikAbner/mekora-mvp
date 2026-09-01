@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
+import { Folha } from "../componentes/Folha.jsx";
 import { DESTAQUES } from "./Leitura.jsx";
 import {
   apagarNota, desligarNotas, editarNota, lerEstudos, lerNota,
@@ -68,6 +69,7 @@ export function Nota() {
   const [outras, setOutras] = useState([]);
   const [estudos, setEstudos] = useState([]);
   const [procura, setProcura] = useState("");
+  const [ligando, setLigando] = useState(false);
   /* As sugestões vêm numa busca própria, e não junto da nota: elas percorrem o
    * acervo inteiro, e prender a abertura da nota a isso faria a tela esperar por
    * um cálculo que ela mostra no fim da página. */
@@ -257,10 +259,22 @@ export function Nota() {
               </li>
             ))}
           </ul>
+
+          <Botao tom="secundaria" onClick={() => setLigando(true)}>
+            Ligar a outra nota
+          </Botao>
         </section>
 
-        <section className="nota-secao">
-          <h2>Ligar esta nota a qual?</h2>
+        {/* LIGAR VIROU FOLHA — nó 941:23108 (A-24).
+            Ela era uma seção fixa da página, sempre aberta com a lista inteira
+            de notas embaixo da nota que se está lendo. O desenho a põe por
+            cima, e por uma razão que a tela mostra: ligar é raro e a página é
+            para LER a nota, não para escolher entre quarenta outras. */}
+        <Folha
+          aberta={ligando}
+          titulo="Ligar esta nota a qual?"
+          aoFechar={() => { setLigando(false); setProcura(""); }}
+        >
           <input
             type="search"
             className="nota-procura"
@@ -274,7 +288,12 @@ export function Nota() {
               <li key={o.id}>
                 <button
                   type="button"
-                  onClick={async () => { await ligarNotas(nota.id, o.id); buscar(); }}
+                  onClick={async () => {
+                    await ligarNotas(nota.id, o.id);
+                    setLigando(false);
+                    setProcura("");
+                    buscar();
+                  }}
                 >
                   <span className="marca-cor" style={{ background: DESTAQUES[o.cor] }} />
                   <span className="candidata-texto">{o.trecho}</span>
@@ -290,7 +309,7 @@ export function Nota() {
               {procura.trim() ? "Nenhuma nota com esse texto." : "Não há outras notas para ligar ainda."}
             </p>
           )}
-        </section>
+        </Folha>
 
         {/* AS SUGESTÕES, em faixas nomeadas e com a evidência ao lado.
             Cada uma diz quantas palavras as duas notas dividem e QUAIS — é o que

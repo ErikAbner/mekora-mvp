@@ -730,7 +730,10 @@
   .cromo-caixa { flex: 1 1 auto; justify-content: space-around; gap: 0; padding: 6px; }
   .cromo-caixa button, .cromo-link { padding: 10px; inline-size: 44px; block-size: 44px; }
   .abertura { padding: 40px 24px; gap: 24px; }
-  .abertura h1 { font-size: 40px; line-height: 48px; }
+  /* 56, como o desenho mobile pede — e o degrau agora existe na escala (A-12).
+     Ele ia 48 → 64, e o que faltava era justamente o do meio: a cauda anda de 8
+     em 8, e acrescentá-lo tornou a sequência regular em vez de abrir exceção. */
+  .abertura h1 { font-size: 56px; line-height: 64px; }
 }
 
 /* ---- Nota · cartão — nó 941:23113 -----------------------------------------
@@ -811,4 +814,41 @@
   .cartao-nota blockquote { font-size: 20px; line-height: 30px; }
   .cartao-nota-x { inline-size: 44px; block-size: 44px; }
   .cartao-nota footer .botao { inline-size: 100%; }
+}
+
+/* ---- Buscar no livro (A-26) ------------------------------------------------
+ *
+ * Ela veste a gaveta do índice — mesma posição, mesma moldura —, porque é o
+ * mesmo tipo de coisa: um jeito de ir a um lugar do livro. Uma terceira forma
+ * de gaveta para a mesma função seria três desenhos para uma ideia.
+ */
+.busca-livro .caderno-procura { margin-block-end: 0; }
+
+.busca-livro-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.busca-livro-lista li { border-block-end: 1px solid var(--border); }
+
+.busca-livro-lista button {
+  display: flex; flex-direction: column; gap: 8px;
+  inline-size: 100%;
+  padding: 20px 12px;
+  border: 0; background: transparent;
+  text-align: start; cursor: pointer;
+}
+.busca-livro-lista button:hover { background: var(--muted); }
+.busca-livro-lista button:focus-visible { outline: 1px solid var(--foreground); outline-offset: -1px; }
+
+.busca-livro-trecho {
+  color: var(--card-foreground);
+  font-size: 16px; line-height: 24px;
+  text-wrap: pretty;
+}
+/* O achado marcado com o amarelo dos destaques: é a mesma ideia — este pedaço
+   é o que interessa —, e reaproveitar a cor evita inventar uma sexta. */
+.busca-livro-trecho mark {
+  background: var(--nota-amarelo, #fff8bf);
+  color: var(--foreground);
+}
+.busca-livro-onde {
+  color: var(--muted-foreground);
+  font-size: 14px; line-height: 22px;
 }

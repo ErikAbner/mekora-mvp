@@ -95,7 +95,11 @@
     '#f0c4c0': 'nota/rosa (sepia)',
     '#b9d3ea': 'nota/azul (sepia)'
   };
-  const CORPOS = [14, 16, 18, 20, 22, 24, 28, 32, 40, 48, 64];
+  /* 56 ENTROU (A-12). O desenho mobile pede 56 para o título de abertura da
+   * leitura, e a escala ia 48 → 64: o degrau que faltava é justamente o do meio,
+   * e a cauda da escala anda de 8 em 8 (32, 40, 48, [56], 64). Acrescentá-lo
+   * torna a sequência regular em vez de abrir uma exceção. */
+  const CORPOS = [14, 16, 18, 20, 22, 24, 28, 32, 40, 48, 56, 64];
 
   const hex = (c) => {
     const m = c.match(

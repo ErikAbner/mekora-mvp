@@ -236,16 +236,15 @@ evidência — e é por isso que ficou deliberadamente aberta.
 
 ## Levantado na noite de 01/09, na auditoria contra o Figma
 
-**A-11 · A vista 3D pode estar na orientação errada.** Implementei os livros **em
-pé, lado a lado**, com a lombada de frente. O nó `895:7506` (`D · Livro — ficha`)
-mostra os livros **deitados e empilhados**, vistos de lado, com um índice de
-títulos à esquerda. As duas leituras cabem no nome do nó, e refazer com base na
-leitura incerta custaria mais que perguntar. **Decisão do Erik.**
+**A-11 · RESOLVIDA.** A vista 3D foi refeita como **pilha de livros deitados**,
+com o índice de títulos à esquerda, depois dos prints que o Erik mandou — é o
+que o nó `895:7506` mostra. A anotação ficou para trás; fica aqui o registro.
 
-**A-12 · O degrau de 56px não existe na escala.** O desenho mobile pede `56px`
-para o título de abertura da leitura, e a escala é
-`[14,16,18,20,22,24,28,32,40,48,64]`. Ficou 48, o degrau mais perto. Acrescentar
-56 mexe no sistema inteiro por causa de uma tela. **Decisão do Erik.**
+**A-12 · RESOLVIDA.** 56 entrou na escala. Ela ia `48 → 64`, e o que faltava era
+justamente o degrau do meio: a cauda anda de 8 em 8 (`32, 40, 48, [56], 64`).
+Acrescentá-lo tornou a sequência regular em vez de abrir uma exceção para uma
+tela, e o título de abertura da leitura no telefone passou a ser o 56 do
+desenho.
 
 **A-13 · 34 caracteres por linha na leitura mobile.** Seguindo o desenho — corpo
 de 20px numa coluna de 358 —, a Zodiak dá cerca de 34 caracteres por linha,
@@ -287,7 +286,12 @@ Ajuda, Apresentação, Estante e Mesa. Faltam: `M · Estante — busca`, `M · C
 no portão e no transbordo a 390 — mas passar na medida não é ter sido comparada,
 e a Apresentação provou isso.
 
-**A-21 · "Baixar" promete o original, e o produto não pode entregá-lo.** O nó
+**A-21 · RESOLVIDA.** O Erik respondeu: *"qual seria o sentido de baixar um
+arquivo que você já possui?"* — o original é o arquivo que ele mesmo mandou. O
+botão oferece só o EPUB preparado, que é o que o Mekora fez, e a frase do desenho
+é que muda. A porta de `/storage/input` continua fechada.
+
+**A-21 (registro do que era) · "Baixar" promete o original.** O nó
 `941:23118` diz *"O EPUB preparado, ou o PDF original do jeito que chegou"*. O
 segundo não existe: `files.py` fecha `/storage/{rest}` com 404 de propósito, e
 `input/` está do lado de dentro dessa porta — servir o arquivo enviado é abrir
@@ -308,7 +312,12 @@ implementação — desenhar cinco ícones à mão produziria ícones que não p
 pelo efeito handmade e não seriam do sistema. Faltam: renomear, páginas, baixar,
 refazer, remover, no Solar 480.
 
-**A-24 · "Conectar nota" é folha no desenho e seção na tela.** O nó `941:23108`
+**A-24 · RESOLVIDA.** Virou folha, como o `941:23108` mostra. Era uma seção fixa
+da página da nota, sempre aberta com a lista inteira de notas embaixo — e a
+página é para LER a nota, não para escolher entre quarenta outras. Um botão
+"Ligar a outra nota" abre a folha.
+
+**A-24 (registro do que era) · "Conectar nota" é folha no desenho e seção na tela.** O nó `941:23108`
 mostra *"Ligar esta nota a qual?"* como diálogo por cima, com busca, lista de
 candidatas e "Cancelar". Na tela ela é uma seção da página da nota, com a mesma
 busca e a mesma lista. O conteúdo é o mesmo; o recipiente não. **Decisão do
@@ -320,7 +329,14 @@ assunto dos estudos — tudo que o banco sabe. O texto do livro está dentro do
 EPUB, não no banco, e indexá-lo é trabalho de outra ordem. A tela diz isso
 quando não acha nada.
 
-**A-26 · Buscar no livro e Marcadores não têm painel desenhado.** Os dois ícones
+**A-26 · METADE RESOLVIDA.** A **busca dentro do livro** foi construída: ela não
+tem painel desenhado, então veste a gaveta do índice — é o mesmo tipo de coisa,
+um jeito de ir a um lugar do livro, e uma terceira forma de gaveta seria três
+desenhos para uma ideia. Ela procura no LIVRO INTEIRO e não só no que está
+carregado: abre os capítulos que faltam, um a um, e diz em qual está enquanto
+procura. Os **Marcadores** continuam sem painel e sem função.
+
+**A-26 (registro do que era) · Buscar no livro e Marcadores não têm painel.** Os dois ícones
 estão no cromo da leitura desde o começo. Os quatro painéis que existem no Figma
 — `941:23110` aparência, `941:23111` notas e destaques, `941:23112` índice,
 `941:23120` seleção — foram construídos, e nenhum deles é um destes dois. Eles
@@ -353,3 +369,14 @@ que não foi feito, e por quê:
 botão "Salvar". Ele estava selecionado no Figma quando a ferramenta leu a
 seleção. Parece ser a edição de uma nota — sobreposto ao texto, provavelmente.
 **Decisão do Erik:** onde ele abre.
+
+
+**A-30 · Como eu leio as telas do Figma sem os ids.** A ferramenta do Figma lê a
+**seleção atual** quando não recebe um id — foi assim que o `941:23113` apareceu.
+Então: **selecione na aba de camadas os quadros que quer que eu abra** (clique no
+primeiro, `Shift` no último) e me avise. Eu leio nome e id de todos de uma vez, e
+o problema do A-27 acaba para sempre.
+
+Sozinho eu não consigo: `get_metadata` da página vem truncado e não devolve as
+telas, e sondar id por id não funciona — os números não são sequenciais entre
+quadros irmãos (medido: `964:24607` é FILHO de `964:24606`, não o vizinho dele).

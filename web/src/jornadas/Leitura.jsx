@@ -13,7 +13,7 @@
  * matizes com a tinta da prosa. Marca-texto é nota, e nota é um dos três
  * endereços onde a cor é permitida.
  */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Icone } from "../componentes/Icone.jsx";
 import { Botao } from "../componentes/Botao.jsx";
@@ -22,6 +22,7 @@ import { GRUPOS, aplicarAparencia, gravarAparencia, lerAparencia } from "../leit
 import { aplicarTema, temaEspelhado } from "../estado/tema.js";
 import { lerSelecao, notasDoBloco } from "../leitor/selecao.js";
 import { ondeComeca, tituloDoCapitulo, usarSumario } from "../leitor/sumario.js";
+import { blocosDoCapitulo } from "../leitor/abrir.js";
 import "./leitura.css";
 
 const iconeMenu = "/icones/icone-menu.svg";
@@ -258,6 +259,128 @@ function Indice({ livro, aqui, aoIr, aoFechar }) {
   );
 }
 
+
+/* BUSCAR NO LIVRO — o botão que estava `disabled` desde sempre (A-26).
+ *
+ * Ele não tem painel desenhado no Figma, e por isso ficou desligado. Mas o
+ * ícone está no cromo desde o começo, e um leitor em que não se pode procurar
+ * uma palavra é um leitor pela metade — então ele usa a forma dos outros
+ * painéis da leitura, que estão desenhados: gaveta à esquerda, campo em cima,
+ * resultados embaixo.
+ *
+ * ELA PROCURA NO LIVRO INTEIRO, e não só no que está carregado.
+ *
+ * A rolagem é em janela — três capítulos por vez —, e uma busca que olhasse só
+ * a janela acharia menos do que o livro tem e diria "nada encontrado" com a
+ * palavra três capítulos abaixo. Então ela abre os capítulos que faltam, um a
+ * um, direto do EPUB. Custa tempo, e a tela diz quanto falta enquanto procura.
+ *
+ * O QUE ELA NÃO FAZ: acentos contam. "expedicao" não acha "expedição". Ignorar
+ * acento exigiria normalizar o texto do livro inteiro a cada busca, e o produto
+ * é em português — quem procura "método" escreve "método".
+ */
+const POR_VOLTA = 60;   /* letras de contexto de cada lado do achado */
+
+function BuscaNoLivro({ livro, aoIr, aoFechar }) {
+  const { itens } = usarSumario(livro);
+  const [termo, setTermo] = useState("");
+  const [achados, setAchados] = useState(null);
+  const [andando, setAndando] = useState(null);
+  const campo = useRef(null);
+
+  useEffect(() => { campo.current?.focus(); }, []);
+
+  const procurar = useCallback(async (texto) => {
+    const alvo = texto.trim().toLowerCase();
+    if (alvo.length < 2) { setAchados(null); setAndando(null); return; }
+
+    setAchados([]);
+    const fora = [];
+    for (let i = 0; i < livro.capitulos; i++) {
+      setAndando({ feito: i, total: livro.capitulos });
+      const blocos = await blocosDoCapitulo(livro, i);
+      if (!blocos) continue;
+      for (const b of blocos) {
+        const texto_ = b.texto ?? "";
+        let onde = texto_.toLowerCase().indexOf(alvo);
+        while (onde !== -1) {
+          fora.push({
+            capitulo: i,
+            de: onde,
+            antes: texto_.slice(Math.max(0, onde - POR_VOLTA), onde),
+            achado: texto_.slice(onde, onde + alvo.length),
+            depois: texto_.slice(onde + alvo.length, onde + alvo.length + POR_VOLTA),
+          });
+          onde = texto_.toLowerCase().indexOf(alvo, onde + alvo.length);
+        }
+      }
+      /* Mostra o que já achou a cada capítulo, em vez de esperar o livro
+         inteiro: num livro de oitenta capítulos a primeira resposta chegaria
+         depois de todos. */
+      setAchados([...fora]);
+    }
+    setAndando(null);
+  }, [livro]);
+
+  return (
+    <aside className="indice busca-livro" aria-label="Buscar no livro">
+      <header>
+        <h2>Buscar no livro</h2>
+        <button type="button" onClick={aoFechar} aria-label="Fechar a busca">Fechar</button>
+      </header>
+
+      <input
+        ref={campo}
+        type="search"
+        className="caderno-procura"
+        placeholder="Uma palavra ou trecho"
+        aria-label="Procurar no texto do livro"
+        value={termo}
+        onChange={(e) => setTermo(e.target.value)}
+        onKeyDown={(e) => { if (e.key === "Enter") procurar(termo); }}
+      />
+
+      {/* O PRODUTO DIZ O QUE ESTÁ FAZENDO. Abrir oitenta capítulos leva tempo,
+          e uma lista que cresce sem explicação parece defeito. */}
+      {andando && (
+        <p className="indice-aviso" role="status">
+          Procurando — capítulo <span className="dado">{andando.feito + 1}</span> de{" "}
+          <span className="dado">{andando.total}</span>.
+        </p>
+      )}
+
+      {achados === null && termo.trim().length > 0 && termo.trim().length < 2 && (
+        <p className="indice-aviso">Escreva ao menos duas letras.</p>
+      )}
+      {achados !== null && !achados.length && !andando && (
+        <p className="indice-aviso">
+          Nada com esse texto neste livro. A busca conta os acentos: "método" e
+          "metodo" são coisas diferentes para ela.
+        </p>
+      )}
+
+      {!!achados?.length && (
+        <ul className="busca-livro-lista">
+          {achados.map((a, n) => (
+            <li key={`${a.capitulo}-${a.de}-${n}`}>
+              <button type="button" onClick={() => { aoIr?.(a.capitulo); aoFechar?.(); }}>
+                <span className="busca-livro-trecho">
+                  {a.antes ? `…${a.antes}` : ""}
+                  <mark>{a.achado}</mark>
+                  {a.depois ? `${a.depois}…` : ""}
+                </span>
+                <span className="busca-livro-onde">
+                  Capítulo {a.capitulo + 1}
+                  {tituloDoCapitulo(itens, a.capitulo) ? ` — ${tituloDoCapitulo(itens, a.capitulo)}` : ""}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </aside>
+  );
+}
 
 /* NOTA · CARTÃO — nó 941:23113.
  *
@@ -573,6 +696,7 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
   const [copiado, setCopiado] = useState(null);
   /* A nota que o cartão do 941:23113 está mostrando. `null` é "não há cartão". */
   const [cartao, setCartao] = useState(null);
+  const [procurando, setProcurando] = useState(false);
   useEffect(() => { aplicarAparencia(aparencia); gravarAparencia(aparencia); }, [aparencia]);
 
   /* O TEMA FICA NO PAINEL TAMBÉM, como o desenho põe — e continua sendo o mesmo
@@ -703,7 +827,18 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
               clique e não fazer nada — botão que não responde ensina a não
               clicar. Sair do cromo seria apagar do produto duas intenções que o
               desenho registrou. */}
-          <button type="button" aria-label="Buscar no livro" disabled title="A busca dentro do livro ainda não existe.">
+          {/* A BUSCA NO LIVRO EXISTE AGORA (A-26). Ela não tem painel desenhado,
+              e por isso usa a forma dos outros painéis da leitura — gaveta à
+              esquerda, campo em cima, resultados embaixo. Só aparece quando há
+              livro de verdade: no texto de exemplo não há o que procurar. */}
+          <button
+            type="button"
+            aria-label="Buscar no livro"
+            aria-pressed={procurando ? "true" : "false"}
+            disabled={!aoIrParaCapitulo}
+            title={aoIrParaCapitulo ? undefined : "Sem livro aberto, não há o que procurar."}
+            onClick={() => setProcurando((v) => !v)}
+          >
             <Icone src={iconeBuscar} />
           </button>
           <Link to="/conta" className="cromo-link" aria-label="Conta"><Icone src={iconeConta} /></Link>
@@ -855,6 +990,14 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
             if (texto !== cartao.comentario) await aoComentar?.(cartao.id, texto);
             setCartao(null);
           }}
+        />
+      )}
+
+      {procurando && (
+        <BuscaNoLivro
+          livro={livro}
+          aoIr={aoIrParaCapitulo}
+          aoFechar={() => setProcurando(false)}
         />
       )}
 
