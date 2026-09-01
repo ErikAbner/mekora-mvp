@@ -78,12 +78,15 @@ desenho: o Figma mostra seis, o backend aceita oito.
 
 ### Buracos que ficaram, e não são de layout
 
-**Estudos (`966:31095`)** — três coisas que o desenho tem e o produto não:
+**Estudos (`966:31095`)** — dois dos três buracos foram fechados:
 
-1. **Recortes** (abertos / fechados / respondidos) acima da lista.
-2. **A capa do livro** ao lado de cada nota reunida; hoje há só o bloco de cor.
-3. **"Fora de estudo — N"**: a seção com as notas que não estão em estudo
-   nenhum. É a que fecha o gesto — sem ela não há de onde puxar.
+1. ~~**Recortes**~~ — construídos: Abertos / Respondidos / Tudo, com a contagem
+   de cada um, e o recorte vazio não é clicável.
+2. **A capa do livro** ao lado de cada nota reunida continua faltando; hoje há o
+   bloco de cor e o nome do livro em texto.
+3. ~~**"Fora de estudo — N"**~~ — construída. É a que fecha o gesto: um estudo
+   se monta a partir do que sobrou solto, e a tela mostrava o que já foi reunido
+   e escondia o material. Vinte por vez, e o teto é DITO.
 
 **Conta (`966:25321`)** — o desenho tem **retrato**, **Nome** e **Senha**. O
 produto não tem nenhum dos três: a conta é um e-mail e mais nada, sem senha, por

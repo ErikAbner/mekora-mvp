@@ -145,3 +145,57 @@
 .reunir-marca { grid-row: span 2; inline-size: 14px; block-size: 14px; margin-block-start: 3px; }
 .reunir-texto { font-size: 14px; line-height: 20px; }
 .reunir-origem { font-size: 14px; line-height: 20px; color: var(--muted-foreground); }
+
+/* ---- Os recortes e o que ficou fora — nó 966:31095 -------------------------
+ *
+ * O desenho tem os dois, e a tela não tinha nenhum: ela mostrava o que já foi
+ * reunido e escondia o material de onde um estudo se monta.
+ */
+.estudos-recortes {
+  display: flex; align-self: flex-start; flex-wrap: wrap;
+  padding: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+.estudos-recortes button {
+  padding: 14px 24px; border: 0;
+  background: transparent; color: var(--muted-foreground);
+  font: inherit; font-size: 16px; line-height: 24px; cursor: pointer;
+}
+.estudos-recortes button[aria-pressed="true"] {
+  background: var(--foreground);
+  color: var(--primary-foreground);
+}
+.estudos-recortes button:not([aria-pressed="true"]):hover { background: var(--muted); }
+/* O NÚMERO HERDA A TINTA DO BOTÃO. `.dado` traz a sua própria — a tinta cheia —
+   e dentro do recorte marcado, que já é tinta cheia, ele virava preto sobre
+   preto: o portão mediu 1,0 de contraste. A estante já tinha esta linha; os
+   Estudos nasceram sem ela. */
+.estudos-recortes button .dado { color: currentColor; }
+/* Recorte vazio não é clicável: levar alguém a uma tela em branco é pior que
+   dizer antes que não há nada lá. */
+.estudos-recortes button:disabled { opacity: 0.45; cursor: default; }
+.estudos-recortes button:focus-visible { outline: 1px solid var(--foreground); outline-offset: -2px; }
+
+.estudos-soltas { margin-block-start: 48px; padding-block-start: 32px; border-block-start: 1px solid var(--border); }
+.estudos-soltas h2 {
+  margin: 0 0 8px;
+  font-size: 24px; line-height: 32px; font-weight: 500;   /* Body/Large */
+  color: var(--foreground);
+}
+.estudos-soltas h2 .dado { color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+.estudos-soltas ul { margin: 24px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 24px; }
+.estudos-soltas li { display: flex; flex-direction: column; gap: 8px; }
+.estudos-soltas blockquote {
+  margin: 0; padding: 16px;
+  color: var(--foreground);
+  font-size: 16px; line-height: 24px;
+  text-wrap: pretty;
+}
+.estudos-solta-origem { margin: 0; color: var(--muted-foreground); font-size: 14px; line-height: 22px; }
+.estudos-soltas a { color: inherit; }
+
+@media (max-width: 767px) {
+  .estudos-recortes { align-self: stretch; }
+  .estudos-recortes button { flex: 1 1 auto; padding: 12px 16px; }
+}

@@ -119,10 +119,39 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, 
   );
 }
 
+/* OS RECORTES DOS ESTUDOS — o nó 966:31095 os tem, e a tela não tinha.
+ *
+ * "Fechado" não quer dizer apagado: fechar um estudo é dizer que a pergunta foi
+ * respondida, e o que se respondeu continua valendo a releitura. Por isso o
+ * recorte, e não um filtro que some com eles. */
+/* Quantas notas soltas a tela mostra antes de mandar para as Notas. Vinte é o
+ * que cabe numa rolagem sem virar uma segunda tela de Notas dentro dos Estudos. */
+const LIMITE_DAS_SOLTAS = 20;
+
+const RECORTES = [
+  { id: "abertos", rotulo: "Abertos", cabe: (e) => !e.fechado },
+  { id: "respondidos", rotulo: "Respondidos", cabe: (e) => e.fechado },
+  { id: "tudo", rotulo: "Tudo", cabe: () => true },
+];
+
 export function Estudos({ estudos = [], notas = [], erro, aoCriar, aoMudar, aoApagar, aoReunir, aoTirar }) {
   const [criando, setCriando] = useState(false);
   const [nome, setNome] = useState("");
   const [sobre, setSobre] = useState("");
+  const [recorte, setRecorte] = useState("abertos");
+
+  /* AS NOTAS QUE NÃO ESTÃO EM ESTUDO NENHUM — a seção "Fora de estudo" do
+   * 966:31095, e a que fecha o gesto: sem ela não há de onde puxar. Um estudo
+   * se monta a partir do que sobrou solto, e a tela não mostrava esse resto em
+   * lugar nenhum.
+   *
+   * A conta é feita AQUI e não no servidor: as duas listas já chegam inteiras
+   * para desenhar os estudos, e uma rota nova só para subtrair uma da outra
+   * seria uma ida à rede para uma diferença de conjuntos. */
+  const reunidas = new Set(estudos.flatMap((e) => (e.notas ?? []).map((n) => n.id)));
+  const soltas = notas.filter((n) => !reunidas.has(n.id));
+
+  const visiveis = estudos.filter(RECORTES.find((r) => r.id === recorte)?.cabe ?? (() => true));
 
   return (
     <div className="mesa">
@@ -144,6 +173,28 @@ export function Estudos({ estudos = [], notas = [], erro, aoCriar, aoMudar, aoAp
 
         {erro && <p className="estudos-erro" role="alert">{erro}</p>}
 
+        {/* A contagem ao lado de cada recorte vem da MESMA lista que ele filtra:
+            um recorte vazio se anuncia antes de ser clicado, em vez de levar a
+            uma tela em branco sem explicação. */}
+        {estudos.length > 0 && (
+          <nav className="estudos-recortes" aria-label="Recortes dos estudos">
+            {RECORTES.map((r) => {
+              const quantos = estudos.filter(r.cabe).length;
+              return (
+                <button
+                  key={r.id}
+                  type="button"
+                  aria-pressed={r.id === recorte ? "true" : "false"}
+                  disabled={quantos === 0 && r.id !== recorte}
+                  onClick={() => setRecorte(r.id)}
+                >
+                  {r.rotulo} <span className="dado">{quantos}</span>
+                </button>
+              );
+            })}
+          </nav>
+        )}
+
         {!estudos.length && (
           <p className="estudos-vazio">
             Nenhum estudo ainda. Um estudo começa com uma pergunta que você quer
@@ -151,8 +202,14 @@ export function Estudos({ estudos = [], notas = [], erro, aoCriar, aoMudar, aoAp
           </p>
         )}
 
+        {estudos.length > 0 && !visiveis.length && (
+          <p className="estudos-vazio">
+            Nenhum estudo neste recorte. Os outros continuam nos seus.
+          </p>
+        )}
+
         <div className="estudos-lista">
-          {estudos.map((e) => (
+          {visiveis.map((e) => (
             <Estudo
               key={e.id}
               estudo={e}
@@ -164,6 +221,39 @@ export function Estudos({ estudos = [], notas = [], erro, aoCriar, aoMudar, aoAp
             />
           ))}
         </div>
+
+        {/* FORA DE ESTUDO — o que sobrou solto, e de onde um estudo se monta.
+            O nó 966:31095 tem esta seção, e sem ela a tela mostra o que já foi
+            reunido e esconde o material. */}
+        {soltas.length > 0 && (
+          <section className="estudos-soltas">
+            <h2>
+              Fora de estudo <span className="dado">{soltas.length}</span>
+            </h2>
+            <p className="estudos-sobre">
+              Notas que você marcou e ainda não levou para lugar nenhum. Um
+              estudo começa aqui.
+            </p>
+            <ul>
+              {soltas.slice(0, LIMITE_DAS_SOLTAS).map((n) => (
+                <li key={n.id}>
+                  <blockquote style={{ background: DESTAQUES[n.cor] }}>{n.trecho}</blockquote>
+                  <p className="estudos-solta-origem">
+                    {n.origem || (n.fonte === "solta" ? "escrita no Canvas" : "de um livro seu")}
+                  </p>
+                </li>
+              ))}
+            </ul>
+            {soltas.length > LIMITE_DAS_SOLTAS && (
+              /* O TETO É DITO, e não escondido. Uma lista cortada em silêncio
+                 faz a pessoa achar que só há vinte notas soltas. */
+              <p className="estudos-sobre">
+                Mostrando {LIMITE_DAS_SOLTAS} de <span className="dado">{soltas.length}</span>.
+                As outras estão em <Link to="/notas">Notas</Link>.
+              </p>
+            )}
+          </section>
+        )}
       </section>
 
       <Folha
