@@ -454,6 +454,15 @@ export function encerrarOutrasSessoes() {
   return pede("/sessoes/encerrar-outras", { method: "POST" });
 }
 
+/** GET /notas/{id}/sugestoes — que outras notas parecem falar do mesmo assunto.
+ *
+ * Devolve duas faixas — `proximas` e `talvez` — e os `cortes` que as separam,
+ * porque limiar escondido e limiar em que ninguem pode discordar. Cada sugestao
+ * traz as PALAVRAS em comum, e nao so quantas. */
+export function lerSugestoes(notaId) {
+  return pede(`/notas/${notaId}/sugestoes`);
+}
+
 export function lerPrivacidade() {
   return pede("/privacidade");
 }

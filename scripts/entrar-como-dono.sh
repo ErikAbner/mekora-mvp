@@ -17,7 +17,8 @@
 #   uso: scripts/entrar-como-dono.sh <job_id> [banco] [log]
 set -euo pipefail
 
-JOB="${1:?falta o id do trabalho}"
+# Sem id, so cria a sessao — util para medir tela que nao depende de trabalho.
+JOB="${1:-}"
 BANCO="${2:-$MEKORA_PROVA/storage/kindle_tool.db}"
 LOG="${3:-$MEKORA_PROVA/servidor.log}"
 API="${MEKORA_API:-http://localhost:8199}"
@@ -37,13 +38,27 @@ done
 
 python3 - "$BANCO" "$EMAIL" "$JOB" <<'PY'
 import sqlite3, sys
-banco, email, job = sys.argv[1], sys.argv[2], int(sys.argv[3])
+banco, email, job = sys.argv[1], sys.argv[2], sys.argv[3]
 c = sqlite3.connect(banco)
 r = c.execute("SELECT id FROM pessoas WHERE email=?", (email,)).fetchone()
 if not r:
     print(f"a conta {email} não existe no banco", file=sys.stderr); raise SystemExit(1)
-c.execute("UPDATE processing_jobs SET dono_id=? WHERE id=?", (r[0], job))
-c.commit()
+if job:
+    # Com id, o trabalho passa para a conta nova. Sem id, so a sessao interessa.
+    c.execute("UPDATE processing_jobs SET dono_id=? WHERE id=?", (r[0], int(job)))
+    c.commit()
 PY
+
+# SEM ACERVO, A MEDIDA NAO VALE.
+#
+# Este script cria uma conta NOVA a cada chamada, e conta nova abre toda tela
+# vazia. Uma auditoria que mede a estante sem livros, os estudos sem estudo e as
+# notas sem nota passa em tudo — e nao disse nada sobre o produto.
+#
+# Aconteceu: 41 de 41 telas "passaram" numa rodada inteira antes de alguem
+# reparar que a estante media estava vazia. Entao a conta nasce com acervo.
+if [ -z "$JOB" ]; then
+  MEKORA_PROVA="$(dirname "$BANCO")/.." MEKORA_EMAIL="$EMAIL" python3 scripts/semear.py >/dev/null 2>&1 || true
+fi
 
 echo "$CHAVE"

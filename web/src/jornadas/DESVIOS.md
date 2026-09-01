@@ -940,3 +940,50 @@ pedindo `minmax(32px, 1fr)`. Com só 32px de folga, uma borda ficou com 32 e a
 outra com **zero**: o texto encostava na direita.
 
 `--borda` cai junto com `--respiro`, e a medida confirma **16 · 358 · 16**.
+
+---
+
+# Conexões — sugestões: o C16 resolvido pelo próprio desenho
+
+Esta era a última tela D que faltava, e eu a tinha deixado de fora dizendo que
+dependia de uma decisão sua sobre o limiar. **O desenho já a tinha tomado.**
+
+O C16 pedia um número e alertava: *"uma palavra em comum pode ser generoso demais
+num acervo grande, e calibrar com onze notas seria no escuro."* O nó `895:8545`
+não pede um corte binário — pede **faixas nomeadas**: "Parecem próximas" e
+"Talvez".
+
+Isso muda a natureza da decisão. Um limiar único obriga a acertar onde a linha
+cai; duas faixas só precisam estar **em ordem**, e quem lê vê o rótulo junto com
+a evidência. Errar a fronteira custa um rótulo; errar um corte binário esconde a
+sugestão.
+
+**Os cortes aparecem na tela**: *"A partir de 4 palavras de assunto em comum."*
+Limiar escondido é limiar em que ninguém pode discordar.
+
+## A evidência vai junto, e o portão me corrigiu nela
+
+Cada sugestão diz **quantas palavras** as duas notas dividem e **quais** — o
+`CLAUDE.md` exige isso de qualquer coisa que o produto proponha por conta
+própria, e sem as palavras seria palpite apresentado como fato.
+
+A primeira versão mostrava a forma **normalizada**: "tambem", "memoria". O portão
+pegou como texto sem acento, e ele estava certo — normalizar para comparar é
+correto, mostrar o resultado da normalização é devolver à pessoa uma versão pior
+do que ela escreveu. Agora a comparação usa a forma sem acento e a tela mostra a
+original.
+
+## O que isto não é
+
+**Não é busca semântica.** Não há modelo, embedding nem serviço externo: é
+interseção de palavras. Duas notas que dizem a mesma coisa com palavras
+diferentes não se encontram — limitação registrada, e preferível a um vetor que
+ninguém pode conferir.
+
+Palavras de menos de quatro letras e uma lista curta de vazias ficam de fora:
+sem isso, "para o que é um dia" ligaria metade do acervo.
+
+## Já ligadas não voltam como sugestão
+
+Sugerir o que a pessoa já conectou é pedir que ela faça de novo o que fez, e faz
+a lista parecer que não aprendeu nada.

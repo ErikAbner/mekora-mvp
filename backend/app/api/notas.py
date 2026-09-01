@@ -344,3 +344,51 @@ def apagar(
     db.delete(n)
     db.commit()
     return None
+
+
+@router.get("/notas/{nota_id}/sugestoes")
+def sugestoes(
+    nota_id: int,
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Que outras notas parecem falar do mesmo assunto que esta.
+
+    O nó `895:8545` pede três faixas — "Parecem próximas", "Talvez" e "Talvez um
+    estudo" —, e é isso que resolve o C16: um limiar único obriga a acertar onde
+    a linha cai, três faixas só precisam estar em ordem.
+
+    JÁ LIGADAS FICAM DE FORA. Sugerir o que a pessoa já conectou é pedir que ela
+    faça de novo o que fez, e faz a lista parecer que não aprendeu nada.
+    """
+    from app.models.canvas import Ligacao
+    from app.services import sugestoes_service
+
+    pessoa = _quem(db, mekora_sessao)
+    n = db.query(Nota).filter(Nota.id == nota_id, Nota.pessoa_id == pessoa.id).first()
+    if n is None:
+        raise HTTPException(status_code=404, detail="Nota não encontrada.")
+
+    ligadas = set()
+    for a, b in db.query(Ligacao.de_id, Ligacao.para_id).filter(
+        (Ligacao.de_id == nota_id) | (Ligacao.para_id == nota_id)
+    ):
+        ligadas.add(a)
+        ligadas.add(b)
+
+    candidatas = [
+        c for c in db.query(Nota).filter(Nota.pessoa_id == pessoa.id).all()
+        if c.id not in ligadas
+    ]
+    achadas = sugestoes_service.sugerir(n, candidatas)
+
+    return {
+        "proximas": [s for s in achadas if s["faixa"] == "proximas"],
+        "talvez": [s for s in achadas if s["faixa"] == "talvez"],
+        # OS CORTES SAEM NA RESPOSTA. Limiar escondido é limiar em que ninguém
+        # pode discordar — a tela mostra "a partir de N palavras em comum".
+        "cortes": {
+            "proximas": sugestoes_service.PROXIMAS,
+            "talvez": sugestoes_service.TALVEZ,
+        },
+    }

@@ -5,7 +5,7 @@ import { Botao } from "../componentes/Botao.jsx";
 import { DESTAQUES } from "./Leitura.jsx";
 import {
   apagarNota, desligarNotas, editarNota, lerEstudos, lerNota,
-  lerTodasAsNotas, ligarNotas, reunirNoEstudo,
+  lerSugestoes, lerTodasAsNotas, ligarNotas, reunirNoEstudo,
 } from "../../../contrato/api.js";
 import "./nota.css";
 
@@ -23,12 +23,18 @@ import "./nota.css";
  * marcado, o que a pessoa escreveu ao lado, de que livro veio, em que estudos
  * está, e a que outras notas se liga.
  *
- * AS SUGESTÕES NÃO ESTÃO AQUI, e a ausência é deliberada. O desenho prevê
- * "Talvez", "Parecem próximas" e "Talvez um estudo" — e o `CLAUDE.md` exige que
- * elas venham com as palavras contadas ao lado, para poderem ser discordadas.
- * Sem esse número, seriam palpite apresentado como fato. O que existe hoje é a
- * ligação feita À MÃO, que é a metade da relação que a DEC-0030 chama de
- * "Canvas organiza".
+ * AS SUGESTÕES ESTÃO AQUI, e com as palavras ao lado. O desenho (`895:8545`)
+ * prevê "Parecem próximas" e "Talvez", e o `CLAUDE.md` exige que elas venham com
+ * as palavras contadas — sem isso seriam palpite apresentado como fato.
+ *
+ * As duas faixas são o que resolve o C16, que pedia um limiar e alertava que
+ * "uma palavra em comum pode ser generoso demais num acervo grande, e calibrar
+ * com onze notas seria no escuro". Com faixas, a decisão muda de natureza: um
+ * corte único obriga a acertar onde a linha cai; duas faixas nomeadas só
+ * precisam estar em ordem, e a pessoa lê o rótulo junto com a evidência.
+ *
+ * Os cortes aparecem na tela. Errar a fronteira custa um rótulo; escondê-la
+ * custa a possibilidade de alguém discordar.
  */
 
 function Trilha({ livro, estudos }) {
@@ -62,6 +68,10 @@ export function Nota() {
   const [outras, setOutras] = useState([]);
   const [estudos, setEstudos] = useState([]);
   const [procura, setProcura] = useState("");
+  /* As sugestões vêm numa busca própria, e não junto da nota: elas percorrem o
+   * acervo inteiro, e prender a abertura da nota a isso faria a tela esperar por
+   * um cálculo que ela mostra no fim da página. */
+  const [sugestoes, setSugestoes] = useState(null);
 
   const buscar = useCallback(async () => {
     try {
@@ -74,6 +84,16 @@ export function Nota() {
   }, [id]);
 
   useEffect(() => { buscar(); }, [buscar]);
+
+  useEffect(() => {
+    let vivo = true;
+    lerSugestoes(id)
+      .then((r) => vivo && setSugestoes(r))
+      /* Falhar aqui não é motivo para a nota não abrir: a sugestão é um extra,
+         e a seção some em silêncio. */
+      .catch(() => vivo && setSugestoes(null));
+    return () => { vivo = false; };
+  }, [id]);
 
   useEffect(() => {
     let vivo = true;
@@ -271,6 +291,51 @@ export function Nota() {
             </p>
           )}
         </section>
+
+        {/* AS SUGESTÕES, em faixas nomeadas e com a evidência ao lado.
+            Cada uma diz quantas palavras as duas notas dividem e QUAIS — é o que
+            permite discordar, e é o que o CLAUDE.md exige de qualquer coisa que
+            o produto proponha por conta própria. */}
+        {sugestoes && (sugestoes.proximas?.length || sugestoes.talvez?.length) ? (
+          <>
+            {[
+              ["proximas", "Parecem próximas", sugestoes.cortes?.proximas],
+              ["talvez", "Talvez", sugestoes.cortes?.talvez],
+            ].map(([chave, titulo, corte]) =>
+              sugestoes[chave]?.length ? (
+                <section className="nota-secao nota-sugestoes" key={chave}>
+                  <h2>{titulo}</h2>
+                  {/* O CORTE APARECE. Limiar escondido é limiar em que ninguém
+                      pode discordar — e este é o do C16, que ficou aberto
+                      justamente por não haver como calibrá-lo às cegas. */}
+                  <p className="nota-aviso">
+                    A partir de {corte} {corte === 1 ? "palavra" : "palavras"} de assunto em comum.
+                  </p>
+                  <ul className="nota-candidatas">
+                    {sugestoes[chave].map((sug) => (
+                      <li key={sug.id}>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            await ligarNotas(nota.id, sug.id);
+                            buscar();
+                            lerSugestoes(id).then(setSugestoes).catch(() => {});
+                          }}
+                        >
+                          <span className="marca-cor" style={{ background: DESTAQUES[sug.cor] }} />
+                          <span className="candidata-texto">{sug.trecho}</span>
+                          <span className="candidata-origem">
+                            {sug.quantas} em comum: {sug.palavras.join(", ")}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ) : null,
+            )}
+          </>
+        ) : null}
       </main>
     </div>
   );
