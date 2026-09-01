@@ -1,87 +1,129 @@
-/* Ajuda. Coluna unica de 680px, que e a medida de texto corrido do sistema.
+/* Ajuda — por tarefa, e nao por indice. Do no 895:11193.
+ *
+ * A pagina tem duas larguras: as tarefas ocupam a coluna larga, porque sao
+ * cartoes lado a lado; a lista por categoria volta para a medida de texto.
  */
 .ajuda {
-  display: flex; flex-direction: column; gap: 56px;
-  inline-size: 100%; max-inline-size: 680px;
+  display: flex; flex-direction: column; gap: 64px;
+  inline-size: 100%; max-inline-size: 1096px;
   margin-inline: auto;
   padding: 96px 32px 128px;
 }
 
-.ajuda-topo { display: flex; flex-direction: column; gap: 24px; }
 .ajuda-topo h1 {
   margin: 0;
   font-size: 48px; line-height: 56px; font-weight: 540;   /* Heading/XL */
   letter-spacing: -2%;
   color: var(--foreground);
+  text-align: center;
 }
-.ajuda-topo p,
-.ajuda-resto p {
-  margin: 0;
-  font-size: 20px; line-height: 30px;   /* Body/Medium */
+
+/* As quatro tarefas, duas por linha como no desenho. */
+.ajuda-tarefas {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px;
+  margin: 0; padding: 0; list-style: none;
+}
+.ajuda-tarefas li {
+  display: flex; flex-direction: column; gap: 12px; align-items: flex-start;
+  padding: 32px;
+  border: 1px solid var(--border);
+  background: var(--background);
+}
+/* O numero e capitular, como nos passos da Apresentacao: e o mesmo papel — a
+ * contagem que nao disputa com o titulo. */
+.ajuda-numero {
+  font-size: 40px; line-height: 48px;   /* Heading/LG */
   color: var(--muted-foreground);
+}
+.ajuda-tarefas h2 {
+  margin: 0;
+  font-size: 24px; line-height: 32px; font-weight: 540;   /* Body/Large */
+  color: var(--foreground);
   text-wrap: pretty;
 }
-
-.ajuda-secao { display: flex; flex-direction: column; gap: 16px; }
-.ajuda-secao h2 {
-  margin: 0;
-  font-size: 28px; line-height: 36px; font-weight: 540;   /* Heading/SM */
-  color: var(--foreground);
-}
-.ajuda-secao ul { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
-.ajuda-secao li { border-bottom: 1px solid var(--separator); }
-
-/* O `<details>` nativo. A seta padrao sai e entra uma marca do sistema, porque
- * a nativa varia entre navegadores e nao segue a cor do texto. */
-.ajuda-secao summary {
-  display: flex; align-items: baseline; gap: 12px;
-  padding: 20px 0;
-  font-size: 20px; line-height: 30px;
-  color: var(--foreground);
-  cursor: pointer;
-  list-style: none;
-  text-wrap: pretty;
-}
-.ajuda-secao summary::-webkit-details-marker { display: none; }
-.ajuda-secao summary::before {
-  content: "+";
-  flex: none;
-  inline-size: 16px;
-  color: var(--muted-foreground);
-  font-variant-numeric: tabular-nums;
-}
-.ajuda-secao details[open] summary::before { content: "\2212"; }   /* menos */
-.ajuda-secao summary:hover { background: var(--surface-hover); }
-.ajuda-secao summary:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
-
-/* `display: flex` NUM FILHO DE `<details>` ANULA O ESCONDER NATIVO.
- *
- * O navegador esconde os filhos de um `details` fechado por um `display: none`
- * implicito, e qualquer `display` declarado no filho ganha dele. Medido: com os
- * dez fechados, a resposta tinha altura maior que zero — as respostas apareciam
- * todas, e o acordeao nao acordeava nada.
- *
- * Duas linhas, e nao uma: a primeira devolve o esconder, a segunda mantem o
- * flex quando esta aberto. */
-.ajuda-secao details:not([open]) .ajuda-resposta { display: none; }
-.ajuda-resposta {
-  display: flex; flex-direction: column; gap: 16px; align-items: flex-start;
-  padding: 0 0 24px 28px;
-}
-.ajuda-resposta p {
+.ajuda-tarefas p {
   margin: 0;
   font-size: 18px; line-height: 27px;
   color: var(--muted-foreground);
   text-wrap: pretty;
 }
-.ajuda-resposta a { color: var(--foreground); font-size: 18px; line-height: 27px; }
+.ajuda-tarefas .botao { margin-block-start: 8px; text-decoration: none; }
 
-.ajuda-resto { gap: 24px; }
+/* A trilha e a lista, lado a lado. */
+.ajuda-corpo { display: flex; gap: 56px; align-items: flex-start; }
+
+.ajuda-trilha { position: sticky; top: 32px; flex: none; inline-size: 200px; }
+.ajuda-trilha ul { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.ajuda-trilha a {
+  display: block; padding: 12px 0;
+  color: var(--muted-foreground);
+  font-size: 16px; line-height: 24px;   /* Label/Medium */
+  text-decoration: none;
+}
+.ajuda-trilha a:hover { color: var(--foreground); text-decoration: underline; }
+
+.ajuda-listas { display: flex; flex-direction: column; gap: 48px; flex: 1 1 0; min-inline-size: 0; }
+
+.ajuda-categoria { display: flex; flex-direction: column; gap: 8px; scroll-margin-top: 32px; }
+.ajuda-categoria > h2 {
+  margin: 0 0 8px;
+  padding-inline-start: 16px;
+  border-inline-start: 2px solid var(--foreground);
+  font-size: 24px; line-height: 32px; font-weight: 540;
+  color: var(--foreground);
+}
+.ajuda-categoria ul { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.ajuda-categoria li {
+  display: flex; flex-direction: column; gap: 6px; align-items: flex-start;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--separator);
+}
+.ajuda-categoria h3 {
+  margin: 0;
+  font-size: 20px; line-height: 30px; font-weight: 400;   /* Body/Medium */
+  color: var(--foreground);
+  text-wrap: pretty;
+}
+.ajuda-categoria p {
+  margin: 0;
+  font-size: 16px; line-height: 24px;   /* Body/Small */
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+.ajuda-categoria a { color: var(--foreground); font-size: 16px; line-height: 24px; }
+
+.ajuda-resto { display: flex; flex-direction: column; gap: 16px; max-inline-size: 680px; }
+.ajuda-resto h2 {
+  margin: 0;
+  font-size: 28px; line-height: 36px; font-weight: 540;   /* Heading/SM */
+  color: var(--foreground);
+}
+.ajuda-resto p {
+  margin: 0;
+  font-size: 18px; line-height: 27px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+:where(.ajuda-trilha, .ajuda-categoria, .ajuda-tarefas) a:focus-visible {
+  outline: 1px solid var(--foreground); outline-offset: 2px;
+}
+
+@media (max-width: 1023px) {
+  /* A trilha vira uma fila rolavel acima das listas: coluna fixa de 200px numa
+     tela estreita rouba metade do texto. */
+  .ajuda-corpo { flex-direction: column; gap: 32px; }
+  .ajuda-trilha { position: static; inline-size: 100%; }
+  .ajuda-trilha ul { flex-direction: row; flex-wrap: wrap; gap: 8px 20px; }
+  .ajuda-trilha a { padding: 8px 0; }
+}
 
 @media (max-width: 767px) {
   .ajuda { gap: 40px; padding: 40px 24px 80px; }
-  .ajuda-topo h1 { font-size: 32px; line-height: 40px; }
-  .ajuda-secao h2 { font-size: 24px; line-height: 32px; }
-  .ajuda-secao summary { font-size: 18px; line-height: 27px; }
-  .ajuda-resposta { padding-inline-start: 28px; }
+  .ajuda-topo h1 { font-size: 32px; line-height: 40px; text-align: start; }
+  .ajuda-tarefas { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .ajuda-tarefas li { padding: 24px 20px; }
+  .ajuda-numero { font-size: 32px; line-height: 40px; }
+  .ajuda-tarefas h2 { font-size: 20px; line-height: 30px; }
+  .ajuda-tarefas .botao { align-self: stretch; }
 }

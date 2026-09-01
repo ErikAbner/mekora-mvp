@@ -1,98 +1,94 @@
-/* Ajuda — as perguntas que o produto levanta.
+/* Ajuda — por tarefa, e não por índice. Do nó 895:11193.
  *
- * ELA NÃO EXISTIA. E a razão de existir não é ter uma seção de ajuda: é que o
- * Mekora faz três coisas que não se parecem com nada — entrar sem senha, mandar
- * para o Kindle por e-mail, e converter um arquivo que a pessoa já tem. Cada uma
- * gera uma dúvida previsível, e sem lugar para ela a dúvida vira e-mail ou
- * abandono.
+ * A PRIMEIRA VERSÃO DESTA TELA ERA POR ASSUNTO, e o desenho decide o contrário:
+ * quatro tarefas em destaque no topo — conectar o Kindle, preparar o primeiro
+ * arquivo, o envio que não chegou, os dois modos —, e só abaixo delas a lista
+ * por categoria. O próprio changelog do produto já tinha essa decisão escrita:
+ * *"Ajuda por tarefa, não por índice."*
  *
- * O QUE ESTÁ AQUI É O QUE O PRODUTO FAZ, e não o que ele gostaria de fazer. Toda
- * resposta abaixo pode ser desmentida abrindo a tela correspondente — e é assim
- * que ela precisa continuar: se uma capacidade mudar, esta página está errada, e
- * a pessoa descobre antes de nós.
+ * A diferença não é de arrumação. Quem abre a ajuda está tentando FAZER alguma
+ * coisa, e um índice pede que ela primeiro descubra em que categoria o problema
+ * dela mora.
  *
- * O que ela NÃO tem: busca, categorias, artigos numerados, "isto foi útil?".
- * São nove perguntas. Uma estrutura de central de ajuda em cima de nove
- * perguntas é mais navegação que conteúdo.
- *
- * Construída sem o desenho: o `figma-local` exige o Dev Mode ligado, e a aba
- * estava em modo design. Está em DESVIOS.md, para o pente fino.
+ * O QUE NÃO ENTROU, E POR QUÊ: o desenho tem um campo de busca abaixo do
+ * título. A busca do produto não existe — o próprio cabeçalho traz o botão
+ * desligado dizendo isso —, e uma busca que só olha esta página encontraria
+ * menos do que a página mostra inteira. Fica de fora até haver busca de
+ * verdade.
  */
 import { Link } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Rodape } from "../componentes/Rodape.jsx";
 import "./ajuda.css";
 
-/* Cada resposta cita o lugar onde ela pode ser conferida. Ajuda que não leva a
- * lugar nenhum obriga a pessoa a procurar de novo, agora com a resposta na
- * cabeça e sem saber onde aplicá-la. */
-const ASSUNTOS = [
+/* As quatro tarefas do desenho. Cada uma leva ao lugar onde ela se faz — o
+ * botão não abre um artigo sobre a tarefa, abre a tarefa. */
+const TAREFAS = [
   {
-    titulo: "Entrar e sair",
-    perguntas: [
-      {
-        p: "Por que não tem senha?",
-        r: "Porque senha é mais uma coisa para você guardar, e o e-mail já é o que identifica sua conta. Você pede um link, ele chega, vale quinze minutos e serve uma vez. Quem tem acesso ao seu e-mail entra na sua conta — é onde a segurança mora, e vale protegê-la lá.",
-        onde: { rota: "/conta/seguranca", diz: "Ver onde estou logado" },
-      },
-      {
-        p: "Pedi o link e ele não chegou.",
-        r: "Olhe o spam primeiro. Se não estiver lá, peça outro: o anterior deixa de valer assim que você pede um novo. Um mesmo e-mail pode pedir cinco links a cada dez minutos — o limite existe para o campo aberto na internet não virar máquina de incomodar quem alguém quiser.",
-      },
-      {
-        p: "Entrei em um computador que não é meu.",
-        r: "Dá para sair dele à distância. A tela de Segurança lista os navegadores em que você entrou, e você encerra o que quiser sem precisar voltar até ele.",
-        onde: { rota: "/conta/seguranca", diz: "Ir para Segurança" },
-      },
+    n: 1,
+    titulo: "Conectar meu Kindle",
+    diz: "Encontrar o endereço do aparelho e autorizar o Mekora a enviar. Leva dois minutos e só se faz uma vez.",
+    acao: "Começar",
+    rota: "/conta/kindle",
+  },
+  {
+    n: 2,
+    titulo: "Preparar meu primeiro arquivo",
+    diz: "Solte um PDF, veja o que o Mekora encontrou e confirme uma vez.",
+    acao: "Ir para a Mesa",
+    rota: "/",
+  },
+  {
+    n: 3,
+    titulo: "Meu envio não chegou",
+    diz: "Quase sempre é o remetente não autorizado: a Amazon recusa em silêncio.",
+    acao: "Ver o que fazer",
+    rota: "/conta/kindle",
+  },
+  {
+    n: 4,
+    titulo: "Quando usar cada modo",
+    diz: "A diferença entre Guiado e Personalizado, e quando vale trocar.",
+    acao: "Entender",
+    rota: "/conta/preferencias",
+  },
+];
+
+/* Pergunta e resposta CURTA, do jeito do desenho: a resposta cabe na linha de
+ * baixo. Quando ela não couber, o lugar dela é a tela que responde, e não um
+ * parágrafo aqui. */
+const CATEGORIAS = [
+  {
+    titulo: "Formatos",
+    itens: [
+      { p: "Por que alguns PDFs precisam de OCR", r: "Porque neles não existe texto; existe foto de texto." },
+      { p: "PDF, EPUB e a diferença que importa", r: "O EPUB se ajusta à tela. O PDF tem tamanho fixo." },
+      { p: "CBZ, CBR e pastas de imagens", r: "São quadrinhos: um monte de imagem em ordem." },
     ],
   },
   {
-    titulo: "Preparar arquivos",
-    perguntas: [
-      {
-        p: "Preciso de conta para converter?",
-        r: "Não. Você solta o arquivo, ele é preparado e você baixa. A conta entra depois, e ela é a estante: o lugar onde o acervo fica, onde o seu Kindle fica salvo e onde o que você marcou continua. Sem conta, a aba aberta é o único endereço do seu trabalho.",
-        onde: { rota: "/", diz: "Ir para a Mesa" },
-      },
-      {
-        p: "Que formatos são aceitos?",
-        r: "A lista aparece na área de soltar arquivo, e ela vem do servidor — não de uma lista escrita à mão que poderia estar desatualizada. Se o formato aparece lá, ele é aceito.",
-        onde: { rota: "/", diz: "Ver a lista" },
-      },
-      {
-        p: "Por que converter um PDF que eu já consigo abrir?",
-        r: "Porque PDF digitalizado é imagem de texto. Você aumenta a letra e nada acontece, a busca não encontra nada, e não há sumário para pular capítulos. Convertido para EPUB, o texto reflui e o aparelho passa a saber o que está escrito.",
-        onde: { rota: "/apresentacao", diz: "A explicação inteira" },
-      },
-      {
-        p: "Quanto tempo demora?",
-        r: "Depende do arquivo. Documento com texto é rápido; digitalização de trezentas páginas precisa de reconhecimento e leva minutos. A tela de preparação mostra a etapa, e diz quando o servidor não informa quanto falta — em vez de uma barra que anda sozinha.",
-      },
+    titulo: "Entenda o processo",
+    itens: [
+      { p: "O que acontece com os arquivos durante o processamento", r: "O original fica guardado, e o conteúdo não é lido por ninguém.", onde: { rota: "/conta/privacidade", diz: "Ver o que está guardado" } },
+      { p: "Por que não mostramos porcentagem", r: "Porque na maior parte das etapas ela seria inventada." },
+      { p: "Posso fechar a aba no meio?", r: "Pode. O preparo não é feito no seu computador." },
     ],
   },
   {
-    titulo: "Kindle e leitura",
-    perguntas: [
-      {
-        p: "Como o arquivo chega no meu Kindle?",
-        r: "Por e-mail. Cada Kindle tem um endereço próprio terminado em @kindle.com, e você o cadastra na conta. É preciso também autorizar o remetente do Mekora na Amazon, senão ela descarta a mensagem sem avisar ninguém.",
-        onde: { rota: "/conta/kindle", diz: "Cadastrar um aparelho" },
-      },
-      {
-        p: "O que acontece com o que eu marco lendo?",
-        r: "Fica preso ao trecho, e não num caderno separado. Voltar ao livro seis meses depois devolve o que você pensou lendo aquilo, no lugar onde pensou. E o que você marcou no próprio Kindle pode ser trazido para cá.",
-        onde: { rota: "/notas", diz: "Ver minhas notas" },
-      },
+    titulo: "Resolver problemas",
+    itens: [
+      { p: "Mandei para o Kindle e não chegou", r: "Quase sempre é o remetente não autorizado.", onde: { rota: "/conta/kindle", diz: "Ver meus aparelhos" } },
+      { p: "O arquivo não abre", r: "Costuma ser senha ou download interrompido." },
+      { p: "A capa não apareceu", r: "Se o arquivo não tinha capa, o Mekora monta uma." },
+      { p: "As páginas estão fora de ordem", r: "Acontece em quadrinho quando os nomes não têm número." },
     ],
   },
   {
-    titulo: "Seus dados",
-    perguntas: [
-      {
-        p: "O que o Mekora guarda sobre mim?",
-        r: "A lista completa está na tela de Privacidade, com a contagem de cada coisa e o que ela é em português. De lá também dá para levar tudo embora, e apagar a conta.",
-        onde: { rota: "/conta/privacidade", diz: "Ver o que está guardado" },
-      },
+    titulo: "Avançado",
+    itens: [
+      { p: "Quando usar o Guiado e quando usar o Personalizado", r: "No Guiado você confirma. No Personalizado você ajusta.", onde: { rota: "/conta/preferencias", diz: "Escolher o modo" } },
+      { p: "Organizar as páginas na mão", r: "Não é etapa obrigatória, e nunca vai ser." },
+      { p: "Tradução", r: "Gera um segundo arquivo. O original fica intacto." },
     ],
   },
 ];
@@ -104,36 +100,59 @@ export function Ajuda() {
 
       <main className="ajuda">
         <header className="ajuda-topo">
-          <h1>Ajuda</h1>
-          <p>
-            As perguntas que o Mekora costuma levantar, e onde conferir cada
-            resposta. Se alguma delas estiver errada, a tela citada é que manda.
-          </p>
+          <h1>Por onde você quer começar</h1>
         </header>
 
-        {ASSUNTOS.map((a) => (
-          <section key={a.titulo} className="ajuda-secao">
-            <h2>{a.titulo}</h2>
+        <ul className="ajuda-tarefas">
+          {TAREFAS.map((t) => (
+            <li key={t.n}>
+              {/* O número é figura: o `<ol>` numeraria de novo para quem ouve, e
+                  "1 1 Conectar meu Kindle" é o que sai disso. */}
+              <span className="ajuda-numero" aria-hidden="true">{t.n}</span>
+              <h2>{t.titulo}</h2>
+              <p>{t.diz}</p>
+              <Link to={t.rota} className="botao primaria">{t.acao}</Link>
+            </li>
+          ))}
+        </ul>
+
+        <div className="ajuda-corpo">
+          {/* A trilha repete os títulos das categorias como âncoras. É navegação
+              dentro da página, e não um segundo menu: cada item leva ao bloco
+              que já está abaixo. */}
+          <nav className="ajuda-trilha" aria-label="Categorias da ajuda">
             <ul>
-              {a.perguntas.map((q) => (
-                <li key={q.p}>
-                  {/* `<details>` nativo, e não um acordeão de `<div>`: ele já
-                      abre com teclado, entra na busca da página em navegadores
-                      que a suportam, e imprime aberto. */}
-                  <details>
-                    <summary>{q.p}</summary>
-                    <div className="ajuda-resposta">
-                      <p>{q.r}</p>
-                      {q.onde && <Link to={q.onde.rota}>{q.onde.diz}</Link>}
-                    </div>
-                  </details>
+              {CATEGORIAS.map((c) => (
+                <li key={c.titulo}>
+                  <a href={`#${c.titulo.toLowerCase().replace(/\s+/g, "-")}`}>{c.titulo}</a>
                 </li>
               ))}
             </ul>
-          </section>
-        ))}
+          </nav>
 
-        <section className="ajuda-secao ajuda-resto">
+          <div className="ajuda-listas">
+            {CATEGORIAS.map((c) => (
+              <section
+                key={c.titulo}
+                className="ajuda-categoria"
+                id={c.titulo.toLowerCase().replace(/\s+/g, "-")}
+              >
+                <h2>{c.titulo}</h2>
+                <ul>
+                  {c.itens.map((i) => (
+                    <li key={i.p}>
+                      <h3>{i.p}</h3>
+                      <p>{i.r}</p>
+                      {i.onde && <Link to={i.onde.rota}>{i.onde.diz}</Link>}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </div>
+        </div>
+
+        <section className="ajuda-resto">
           <h2>Não achou</h2>
           <p>
             O Mekora ainda é novo e feito por uma pessoa só. Se a sua pergunta não

@@ -470,10 +470,24 @@ Medido: com os dez fechados, `.ajuda-resposta` tinha altura maior que zero — a
 dez respostas apareciam de uma vez, e o `+` não fazia nada. Só apareceu porque a
 medida perguntou pela altura, e não pelo `open`.
 
-## A Ajuda não tem busca, categorias nem "isto foi útil?"
+## A Ajuda foi refeita quando o desenho apareceu, e a mudança é de tese
 
-São nove perguntas. Uma estrutura de central de ajuda em cima de nove perguntas é
-mais navegação que conteúdo.
+Eu a construí **por assunto**, com nove perguntas em acordeão. O nó `895:11193`
+decide o contrário: **por tarefa**. Quatro tarefas em destaque no topo — conectar
+o Kindle, preparar o primeiro arquivo, o envio que não chegou, os dois modos —, e
+só abaixo delas a lista por categoria, com resposta de uma linha.
+
+O próprio changelog do produto já tinha essa decisão escrita: *"Ajuda por tarefa,
+não por índice."* Eu tinha feito o índice.
+
+A diferença não é de arrumação. Quem abre a ajuda está tentando **fazer** alguma
+coisa, e um índice pede que ela primeiro descubra em que categoria o problema
+dela mora. Os botões das quatro tarefas não abrem artigo sobre a tarefa: abrem a
+tarefa.
+
+**O campo de busca do desenho não entrou.** A busca do produto não existe — o
+próprio cabeçalho traz o botão desligado dizendo isso —, e uma busca que só olha
+esta página encontraria menos do que a página mostra inteira.
 
 **Cada resposta leva ao lugar onde ela pode ser conferida.** Ajuda que não leva a
 lugar nenhum obriga a pessoa a procurar de novo, agora com a resposta na cabeça e
