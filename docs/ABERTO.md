@@ -268,3 +268,21 @@ três vezes (`895:7195`, `895:7285`, `895:7306`). Implementei uma de cada.
 **A-17 · Duas cores fora do sistema no desenho:** `#666668` (nó `895:7232`) e
 `#727274` (chip `.cbr`, nó `895:7275`). Os vizinhos usam `text/secondary`
 `#6A6A6A`. Implementado com o token.
+
+**A-18 · O Canvas não tem grupos.** O nó `895:6938` mostra os cartões dentro de
+uma área tracejada com título — *"Design & Tecnologia"*. Isso é um agrupamento
+espacial, e exige modelo novo: um grupo com nome e retângulo. A superfície
+infinita entrou; o agrupamento não.
+
+**A-19 · O Canvas não mostra prévia de link.** O desenho traz cartões com
+miniatura de página externa (*DesignTakes*, um preview de artigo). Buscar uma
+prévia é ir a um endereço de fora, e a Privacidade diz hoje que *"não há
+rastreamento, análise de uso nem terceiros"* — a prévia contradiz isso, ou exige
+que a frase mude. **Decisão do Erik.**
+
+**A-20 · Dezesseis telas M ainda não foram abertas uma a uma.** Conferi Leitura,
+Ajuda, Apresentação, Estante e Mesa. Faltam: `M · Estante — busca`, `M · Conta`
+(quatro), `M · Estudos` (duas), `M · Estudo — página`, `M · Conexões`,
+`M · Preparo` (duas), `M · Livro — o que ficou`, `M · Atualizações`. Elas passam
+no portão e no transbordo a 390 — mas passar na medida não é ter sido comparada,
+e a Apresentação provou isso.
