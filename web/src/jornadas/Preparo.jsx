@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
-import { acompanhar, analisar, converter, esperarAnalise } from "../../../contrato/api.js";
+import { acompanhar, analisar, converter, enviarAoKindle, esperarAnalise } from "../../../contrato/api.js";
 import "./preparo.css";
 
 /* O preparo-pagina: o que o Mekora encontrou, e o que vai fazer.
@@ -135,6 +135,12 @@ export function Preparo() {
    * Mesa sem saber se algo estava acontecendo. */
   const [andamento, setAndamento] = useState(null);
   const [feito, setFeito] = useState(false);
+  /* O JOB DEPOIS DA CONVERSAO. `epub_path` so existe quando o EPUB existe, e a
+   * tela de pronto precisa dele para oferecer o download — o job carregado na
+   * analise ainda o traz vazio. */
+  const [convertido, setConvertido] = useState(null);
+  const [enviando, setEnviando] = useState(false);
+  const [enviado, setEnviado] = useState(false);
   const [titulo, setTitulo] = useState("");
   const [autor, setAutor] = useState("");
   const [ajustando, setAjustando] = useState(false);
@@ -174,6 +180,22 @@ export function Preparo() {
    * para a Mesa: quem esperou a conversao quer saber que ela terminou, e
    * escolher o que fazer com o resultado. */
   if (feito) {
+    /* O nome do EPUB sai do `epub_path`, que e caminho no servidor: o que
+       interessa a pessoa e o ultimo pedaco. */
+    const j = convertido ?? job;
+    const arquivoPronto = j?.epub_path ? j.epub_path.split("/").pop() : null;
+    /* O download passa pelo `endereco` — o token publico do trabalho —, que e o
+       que a rota de arquivo aceita sem sessao. Sem ele, sem botao: melhor faltar
+       o botao do que oferecer um que responde 404.
+    
+       CAMINHO RELATIVO, sem base. E a mesma regra que o contrato ja escreveu: o
+       caminho da chamada e o MESMO em dev e em producao, porque a borda repassa
+       /storage para /storage. Nao ha ambiente onde ele seja outro, logo nao ha o
+       que configurar nem como configurar errado. */
+    const baixar =
+      j?.endereco && arquivoPronto
+        ? `/storage/output/${j.endereco}/${arquivoPronto}`
+        : null;
     return (
       <div className="mesa">
         <Cabecalho lugar="mesa" />
@@ -181,16 +203,58 @@ export function Preparo() {
           <section className="preparo-fim">
             <p className="preparo-fim-marca">Pronto</p>
             <h1>{titulo} está na estante.</h1>
+
+            {/* O ARQUIVO GERADO, PELO NOME. O desenho traz também o tamanho —
+                "8,4 MB" —, e o backend não o expõe em lugar nenhum: nem o
+                `status` nem o job completo têm bytes. Inventar um número numa
+                faixa que existe para dar certeza seria o oposto do que ela faz.
+                Fica o nome, que é verdade. */}
+            {arquivoPronto && (
+              <p className="preparo-fim-arquivo">{arquivoPronto}</p>
+            )}
+
             <p className="preparo-fim-diz">
               O arquivo virou EPUB e entrou no seu acervo. O que você marcar
               lendo fica junto do livro, no trecho onde marcou.
             </p>
+
+            {enviado && (
+              <p className="preparo-fim-aviso" role="status">
+                Enviado. Ele chega no aparelho em alguns minutos — e se a Amazon
+                recusar, o erro aparece na Mesa.
+              </p>
+            )}
+
             <div className="preparo-fim-acoes">
-              <Botao tom="primaria" onClick={() => navegar(`/leitura/${id}`)}>
-                Ler agora
+              {/* AS DUAS AÇÕES QUE FALTAVAM. A tela terminava em "Ler agora" e
+                  "Ver na estante", e o produto promete na Apresentação "receba o
+                  resultado e baixe" — não havia como baixar em tela nenhuma. */}
+              <Botao
+                tom="primaria"
+                disabled={enviando || enviado}
+                onClick={async () => {
+                  setEnviando(true);
+                  try {
+                    await enviarAoKindle(id);
+                    setEnviado(true);
+                  } catch (e) {
+                    setErro(e.message);
+                  } finally {
+                    setEnviando(false);
+                  }
+                }}
+              >
+                {enviando ? "Enviando…" : enviado ? "Enviado" : "Enviar ao Kindle"}
               </Botao>
+
+              {baixar && (
+                <a className="botao secundaria" href={baixar} download>
+                  Baixar EPUB
+                </a>
+              )}
+
               <Botao tom="secundaria" onClick={() => navegar("/estante")}>
-                Ver na estante
+                Abrir na estante
               </Botao>
               <Botao tom="secundaria" onClick={() => navegar("/")}>
                 Preparar outro
@@ -366,6 +430,9 @@ export function Preparo() {
                   setAndamento(null);
                   return;
                 }
+                /* Rebusca: o job da analise nao tem `epub_path`, e sem ele a
+                   tela de pronto nao sabe o que oferecer para baixar. */
+                try { setConvertido(await analisar(id)); } catch { /* a tela funciona sem */ }
                 setFeito(true);
               } catch (e) {
                 setErro(e.message);

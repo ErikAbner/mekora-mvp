@@ -447,8 +447,31 @@ tela diz *"O servidor não informa quanto falta nesta etapa"*. Uma barra que and
 sozinha sem dado por trás é a mentira mais comum desta tela em qualquer produto.
 
 **Pronto** é uma tela, e não um empurrão de volta para a Mesa: quem esperou a
-conversão quer saber que terminou, e escolher o que fazer — ler, ver na estante,
-ou preparar outro.
+conversão quer saber que terminou, e escolher o que fazer.
+
+### E o desenho mostrou que eu tinha escolhido as ações erradas
+
+O nó `895:8164` traz **Enviar ao Kindle**, **Baixar EPUB** e **Abrir na estante**.
+A minha primeira versão oferecia "Ler agora", "Ver na estante" e "Preparar
+outro" — e perdia as duas ações que a tela existe para dar.
+
+**Baixar não existia em tela nenhuma do produto.** A Apresentação promete *"Solte
+ele agora, receba o resultado e baixe"*, e não havia como baixar em lugar
+algum. O endpoint `/storage/output/{endereco}/{arquivo}` já existia; nada o
+usava.
+
+O link usa o `endereco` — o token público do trabalho —, que é o que a rota
+aceita sem sessão, e é caminho relativo pela mesma regra que o contrato já
+escreveu: o caminho é o mesmo em dev e em produção, porque a borda repassa
+`/storage` para `/storage`.
+
+Provado: `HTTP 200`, 37.955 bytes, `application/epub+zip`. Com chave inválida,
+404.
+
+**O tamanho do arquivo não entrou.** O desenho mostra "8,4 MB", e o backend não
+expõe bytes em lugar nenhum — nem o `status` nem o job completo. Inventar um
+número numa faixa que existe para dar certeza seria o oposto do que ela faz.
+Ficou o nome do arquivo, que é verdade.
 
 Medido com conversão real de ponta a ponta: o clique dispara, a tela mostra
 *"Convertendo…"*, e termina em *"Medida está na estante."*
