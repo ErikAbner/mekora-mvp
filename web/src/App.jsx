@@ -115,14 +115,6 @@ function PaginaEstante() {
       selecionado={selecionado}
       aoEscolher={(l) => setAberto(l.chave)}
       aoEnviar={(l) => enviar(l.chave)}
-      aoImportar={async (f) => {
-        const r = await importarClippings(f);
-        /* Recarrega a estante: as notas importadas mudam a contagem da ficha e
-         * o recorte "Com nota", e deixar isso para a próxima visita faria a
-         * pessoa duvidar de que a importação funcionou. */
-        await carregarEstante();
-        return r;
-      }}
       aoAbrir={(l) => {
         /* Sem arquivo convertido não há o que abrir. Navegar mesmo assim
          * levaria a um leitor em branco, e o leitor em branco não distingue
@@ -535,6 +527,9 @@ function PaginaNotas() {
     <Notas
       notas={notas}
       carregando={carregando}
+      /* A importação do Kindle vive aqui agora — o botão que estava na estante
+         não existe no desenho dela. */
+      aoImportar={async (f) => { const r = await importarClippings(f); buscar(); return r; }}
       aoApagar={async (n) => {
         /* Apagar de VERDADE, e não tirar de uma lista: aqui é o lugar onde a
          * nota mora. No Canvas e no estudo, "tirar" desfaz a reunião; aqui não

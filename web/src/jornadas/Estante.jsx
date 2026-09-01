@@ -117,17 +117,24 @@ function Estante3D({ livros, selecionado, aoEscolher }) {
                 }
                 title={mm === null ? "O arquivo não trouxe contagem de páginas" : undefined}
               >
-                {/* A face de cima: é ela que se vê de um livro deitado. */}
-                {/* A FACE DE CIMA É O CORTE DAS PÁGINAS, e não a capa.
-                    Um livro deitado mostra o papel por cima; a capa fica
-                    embaixo, contra a mesa. Eu tinha posto a capa aqui, e a
-                    imagem de 420×594 espremida numa faixa girada 74° virava uma
-                    mancha listrada por cima do título do livro de baixo — está
-                    na captura que o Erik mandou. */}
+                {/* A face de cima — o corte das páginas. Um livro deitado
+                    mostra o papel por cima; a capa fica embaixo, contra a mesa.
+                    Eu já tinha posto a capa aqui uma vez, e a imagem espremida
+                    numa faixa girada virava mancha listrada sobre o título do
+                    livro de baixo. */}
                 <span className="deitado-topo" aria-hidden="true" />
-                {/* A lombada, na frente da pilha, com o título de pé. */}
-                <span className="deitado-lombada">
-                  <span className="deitado-titulo">{l.titulo}</span>
+                {/* A frente da fatia. A altura dela é a espessura do livro. */}
+                <span className="deitado-lombada" aria-hidden="true">
+                  {/* O TÍTULO SÓ APARECE NO ESCOLHIDO, e de pé na borda
+                      esquerda — é o que o 895:7506 mostra. Antes ele estava
+                      dentro de TODAS as fatias, deitado: numa pilha de seis, os
+                      títulos se cruzavam porque a altura de cada fatia é a
+                      espessura do livro, e um livro de 88 páginas não tem altura
+                      para uma linha de texto. Os nomes moram na trilha ao lado.
+
+                      O bloco escuro na ponta direita é o marcador do desenho. */}
+                  {escolhido && <span className="deitado-titulo">{l.titulo}</span>}
+                  {escolhido && <span className="deitado-marca" />}
                 </span>
               </button>
             </li>
@@ -184,11 +191,7 @@ function Livro({ titulo, autor, notas, capa, aoEscolher, escolhido }) {
   );
 }
 
-export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnviar, aoImportar }) {
-  const [importando, setImportando] = useState(false);
-  const [resultado, setResultado] = useState(null);
-  const [erroImportar, setErroImportar] = useState(null);
-  const arquivo = useRef(null);
+export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnviar }) {
   /* OS RECORTES FILTRAM AGORA.
    *
    * Eram quatro botões sem `onClick`, com "Tudo" marcado por `aria-pressed={i === 0}`
@@ -212,15 +215,15 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnvia
 
       <section className="estante">
         <div className="estante-grade">
-          {/* Recorte nomeado, nao eixo repetido. */}
-          {aoImportar && (
-            <div className="estante-importar">
-              <Botao tom="secundaria" onClick={() => { setResultado(null); setErroImportar(null); setImportando(true); }}>
-                Trazer notas do Kindle
-              </Botao>
-            </div>
-          )}
+          {/* "TRAZER NOTAS DO KINDLE" SAIU DAQUI, e ele nunca esteve no desenho.
+              O nó 895:7315 tem os recortes e a grade, e mais nada — eu pus o
+              botão aqui por conta própria. O Erik apontou.
 
+              A feature continua existindo: ela mora em `/notas`, que é o lugar
+              das notas, e é para lá que a importação leva. Tirar do desenho o
+              que ele não tem é a regra; apagar uma feature que funciona não é.
+              Ver a Folha no fim deste arquivo — ela agora vive na tela de
+              Notas. */}
           <nav className="recortes" aria-label="Recortes da estante">
             {RECORTES.map((r) => {
               const quantos = livros.filter(r.cabe).length;
@@ -498,81 +501,6 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnvia
         </aside>
       </section>
 
-      <Folha
-        aberta={importando}
-        titulo="Trazer notas do Kindle"
-        aoFechar={() => setImportando(false)}
-        acoes={
-          resultado ? (
-            <Botao tom="primaria" onClick={() => setImportando(false)}>Pronto</Botao>
-          ) : (
-            <Botao tom="primaria" onClick={() => arquivo.current?.click()}>Escolher o arquivo</Botao>
-          )
-        }
-      >
-        {!resultado && (
-          <>
-            <p>
-              Todo Kindle guarda um arquivo com tudo o que você marcou, em todos
-              os livros. Ele se chama <strong>My Clippings.txt</strong> e fica na
-              raiz do aparelho quando você o liga no computador por cabo.
-            </p>
-            {/* O QUE ACONTECE ANTES DE ACONTECER. Importar mexe na estante, e
-                dizer o resultado depois deixa a pessoa descobrir sozinha se
-                pode repetir — e ela vai querer repetir, porque o arquivo cresce. */}
-            <p className="folha-nota">
-              Trazer de novo mais tarde não duplica nada: o que já está aqui é
-              reconhecido e ignorado. As notas de livros que também estão na sua
-              estante ficam ligadas a eles; as de outros livros ficam guardadas
-              com o nome do livro.
-            </p>
-            {erroImportar && <p className="folha-erro" role="alert">{erroImportar}</p>}
-            <input
-              ref={arquivo}
-              type="file"
-              accept=".txt,text/plain"
-              className="campo-arquivo"
-              onChange={async (e) => {
-                const f = e.target.files?.[0];
-                e.target.value = "";
-                if (!f) return;
-                setErroImportar(null);
-                try {
-                  setResultado(await aoImportar(f));
-                } catch (erro) {
-                  setErroImportar(erro.message);
-                }
-              }}
-            />
-          </>
-        )}
-
-        {resultado && (
-          <div className="importou">
-            <p>
-              <span className="dado">{resultado.novas}</span>{" "}
-              {resultado.novas === 1 ? "nota nova" : "notas novas"}
-              {resultado.repetidas > 0 && (
-                <>
-                  {" · "}
-                  <span className="dado">{resultado.repetidas}</span> já estavam aqui
-                </>
-              )}
-            </p>
-            {resultado.livros?.length > 0 && (
-              <ul className="importou-livros">
-                {resultado.livros.map((l) => <li key={l}>{l}</li>)}
-              </ul>
-            )}
-            {resultado.novas === 0 && resultado.repetidas > 0 && (
-              <p className="folha-nota">
-                Nada novo desta vez — todas as notas do arquivo já estavam na sua
-                estante.
-              </p>
-            )}
-          </div>
-        )}
-      </Folha>
     
       <Rodape />
     </div>

@@ -409,23 +409,25 @@
   transition: transform var(--d2, 240ms) cubic-bezier(.16, 1, .3, 1);
 }
 
-/* AS FATIAS SE ENCOSTAM, e isto exige margem negativa.
+/* AS FATIAS NÃO SE ENCOSTAM — e a versão anterior as fazia se encostar.
  *
- * A face de cima tem 96px de altura e e girada 72 graus: ela OCUPA cerca de
- * 30px na tela, e RESERVA os 96 no fluxo. Sem compensar, sobram 66px de vazio
- * entre um livro e o proximo — medido, a pilha tinha 105px de altura por livro
- * onde a soma das partes visiveis dava 40.
+ * Havia `margin-block-start: -52px` entre uma e a seguinte, para "colar" a
+ * pilha. O resultado, na captura que o Erik mandou, foi títulos cortados ao
+ * meio por cima do livro de baixo: as fatias têm alturas diferentes (a
+ * espessura vem das páginas), então o recuo fixo acerta uma e erra as outras
+ * cinco.
  *
- * O valor sai da propria conta: 96 menos 96·cos(72°), arredondado. */
-/* 72 menos 72·cos(74°) = 52. A face reserva 72px no fluxo e ocupa cerca de 20 na
- * tela; sem devolver a diferenca, sobra vazio entre um livro e o proximo. */
-.pilha li + li { margin-block-start: -52px; }
+ * O nó 895:7506 mostra as fatias SEPARADAS, com ar entre elas. É uma pilha em
+ * que se vê cada livro, e não um bloco compacto.
+ *
+ * O vão é o que a face de cima não ocupa: ela reserva 72px no fluxo e desenha
+ * cerca de 20 depois do giro de 74°, e 24px de respiro deixam a diferença
+ * visível como espaço entre livros. */
+.pilha li + li { margin-block-start: -28px; }
 
-/* A FACE DE CIMA — o que se ve de um livro deitado. Inclinada para tras, ela
- * cria profundidade sem geometria nenhuma: um retangulo e um giro. */
-/* A FACE DE CIMA E O CORTE DAS PAGINAS, e nao a capa: um livro deitado mostra o
- * papel por cima, e a capa fica embaixo contra a mesa. As listras finas sao as
- * folhas — e o unico detalhe que essa superficie tem de verdade. */
+/* A FACE DE CIMA É O CORTE DAS PÁGINAS, e não a capa: um livro deitado mostra o
+ * papel por cima, e a capa fica embaixo contra a mesa. As listras finas são as
+ * folhas — e o único detalhe que essa superfície tem de verdade. */
 .deitado-topo {
   display: block;
   block-size: 72px;
@@ -440,38 +442,73 @@
   transform: rotateX(74deg);
 }
 
-/* A LOMBADA, de frente. A altura dela E a espessura do livro. */
+/* A FRENTE DA FATIA. A altura é a espessura do livro, com um piso: abaixo de
+ * 18px a fatia some entre as vizinhas, e um livro fino continua sendo um livro.
+ * O teto existe pelo motivo oposto — 1020 páginas dariam uma fatia mais alta
+ * que a tela. */
 .deitado-lombada {
+  position: relative;
   display: flex; align-items: center;
-  block-size: var(--espessura, 2px);
-  min-block-size: 3px;
+  block-size: clamp(18px, var(--espessura, 18px), 96px);
   padding-inline: 16px;
   background: var(--card);
   border: 1px solid var(--border);
   border-block-start: 0;
   overflow: hidden;
 }
+
+/* O TÍTULO DO ESCOLHIDO, DE PÉ NA BORDA ESQUERDA — como no 895:7506. Ele fica
+ * fora da fatia, à esquerda dela, e por isso não depende da altura dela: uma
+ * fatia de 18px não caberia uma linha de texto deitada, e era exatamente esse o
+ * defeito da versão anterior. */
 .deitado-titulo {
-  color: var(--foreground);
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  display: flex; align-items: center;
+  padding-inline: 8px;
+  background: var(--foreground);
+  color: var(--primary-foreground);
   font-size: 14px; line-height: 22px;   /* Label/Small */
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  /* Ela sobe além da fatia para o nome caber, como o desenho mostra. */
+  block-size: 96px;
+  align-self: center;
+  transform-origin: center;
+}
+
+/* O bloco escuro na ponta direita — o marcador do desenho. */
+.deitado-marca {
+  position: absolute;
+  inset-block: 4px;
+  inset-inline-end: 12px;
+  inline-size: 18px;
+  background: var(--muted-foreground);
 }
 
 /* AO PASSAR E AO ESCOLHER: o livro cresce e vem para a frente, e os outros
- * recuam mais. */
+ * recuam mais. O escolhido também SAI PARA A ESQUERDA, como no desenho — é o
+ * gesto de puxar um livro de dentro da pilha. */
 .pilha:hover .livro-deitado { transform: translateZ(calc(var(--ordem, 0) * -12px)); }
 .livro-deitado:hover,
 .livro-deitado:focus-visible,
-.livro-deitado.escolhido,
-.pilha:hover .livro-deitado:hover,
-.pilha:hover .livro-deitado.escolhido {
-  transform: translateZ(48px) scale(1.05);
+.pilha:hover .livro-deitado:hover {
+  transform: translateZ(32px);
   z-index: 2;
 }
-.livro-deitado.escolhido .deitado-lombada { background: var(--foreground); }
-.livro-deitado.escolhido .deitado-titulo { color: var(--primary-foreground); }
+.livro-deitado.escolhido,
+.pilha:hover .livro-deitado.escolhido {
+  transform: translateZ(56px) translateX(-24px);
+  z-index: 3;
+}
+.livro-deitado.escolhido .deitado-lombada {
+  block-size: 96px;
+  border-color: var(--foreground);
+}
 .livro-deitado:focus-visible { outline: 1px solid var(--foreground); outline-offset: 4px; }
 
 @media (prefers-reduced-motion: reduce) {

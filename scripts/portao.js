@@ -301,9 +301,40 @@
     if (m) semAcento.push({ palavra: m[0], trecho: t.slice(0, 70) });
   }
 
+  /* TINTA DE LINK DO NAVEGADOR — a que o portão não via.
+   *
+   * Um `<a>` sem `color` declarado herda a cor de link do NAVEGADOR: azul
+   * (#0000EE) antes de visitar, ROXO (#551A8B) depois. Nenhuma das duas é do
+   * sistema, e a regra aqui é que cor é objetivo.
+   *
+   * O portão media só nó de TEXTO, e por isso passou verde por meses sobre dois
+   * ícones roxos no cabeçalho: `Icone` é uma MÁSCARA pintada por `currentColor`,
+   * e uma máscara não tem texto para medir. O Erik viu numa captura de tela.
+   *
+   * Aqui a conferência é sobre o ELEMENTO, e não sobre o texto dele: todo `<a>`
+   * visível cuja tinta computada é uma das duas do navegador. É barato e não
+   * tem falso positivo — ninguém escolhe #551A8B de propósito.
+   */
+  const TINTA_DO_NAVEGADOR = { '#0000ee': 'link não visitado', '#551a8b': 'link visitado' };
+  const linkSemTinta = [];
+  for (const a of document.querySelectorAll('a')) {
+    const cs = getComputedStyle(a);
+    if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+    const h = hex(cs.color);
+    const qual = h && TINTA_DO_NAVEGADOR[h.toLowerCase()];
+    if (!qual) continue;
+    linkSemTinta.push({
+      valor: h,
+      qual,
+      onde: (a.getAttribute('aria-label') || a.textContent || '').trim().slice(0, 60) || a.className,
+      nota: 'link sem `color` declarado herda a tinta do navegador — e o ícone dentro dele a herda também',
+    });
+  }
+
   return {
     url: location.pathname,
     nos_com_texto: medidos,
+    link_com_tinta_do_navegador: unico(linkSemTinta, (x) => x.valor + x.onde),
     cor_fora_do_sistema: unico(corFora, (x) => x.valor + x.papel),
     contraste_abaixo: unico(contraste, (x) => x.tinta + x.fundo + x.corpo),
     corpo_fora_da_escala: unico(corpoFora, (x) => x.corpo),
@@ -327,6 +358,7 @@
 
     passou:
       medidos >= 5 &&
+      linkSemTinta.length === 0 &&
       corFora.length === 0 &&
       contraste.length === 0 &&
       corpoFora.length === 0 &&

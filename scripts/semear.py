@@ -25,18 +25,19 @@ if not BANCO.exists():
     print(f"  banco não encontrado em {BANCO}", file=sys.stderr)
     raise SystemExit(1)
 
-# O PRIMEIRO LIVRO TEM EPUB DE VERDADE.
+# TODOS OS LIVROS TÊM EPUB.
 #
-# Os outros são mentira confessa e bastam para a estante, que só precisa de
-# título, capa e contagem. A LEITURA não: ela abre o arquivo no navegador, lê a
-# espinha e o sumário. Sem EPUB em disco, `/leitura/:id` cai no texto de
-# exemplo, e o índice, as notas e a barra de seleção — que são o que há para ver
-# ali — nunca aparecem.
-COM_EPUB = 0
+# Só o primeiro tinha, e o resultado foi o Erik abrir a estante e encontrar
+# "Ainda em preparo. O texto abre quando a conversão terminar" em cinco dos seis
+# — com o "Continuar" desligado. A leitura ficava inalcançável na prática: para
+# chegar nela era preciso adivinhar qual dos seis era o que funcionava.
+#
+# O texto é o mesmo nos seis, e isso é mentira confessa: o que está sob prova é
+# a leitura, e não a variedade do acervo.
 
 LIVROS = [
     # titulo, autor, paginas, capa, notas, fracao lida
-    ("Memórias Póstumas de Brás Cubas", "Machado de Assis", 248, "/capas/exemplo-1.png", 24, 0.80),
+    ("Malha Urbana", "Ana Duarte", 248, "/capas/exemplo-1.png", 24, 0.80),
     ("Apresentação Institucional", "Ana Duarte", 96, "/capas/exemplo-2.png", 8, 0.35),
     ("Sequência Noturna", "Ana Duarte", 412, "/capas/exemplo-3.png", 12, 0.12),
     ("Estudo de Viabilidade", "Ana Duarte", 640, "/capas/exemplo-4.png", 5, None),
@@ -148,16 +149,16 @@ for i, (titulo, autor, paginas, capa, quantas_notas, fracao) in enumerate(LIVROS
             (destino / "page_0.png").write_bytes(origem.read_bytes())
 
     # O EPUB, para este livro abrir de verdade na leitura.
-    if i == COM_EPUB:
-        sys.path.insert(0, str(Path(__file__).resolve().parent))
-        from livro_de_prova import escrever
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from livro_de_prova import escrever
 
-        arquivo = RAIZ / "storage" / "output" / str(job) / "memorias-postumas.epub"
-        escrever(arquivo)
-        c.execute(
-            "UPDATE processing_jobs SET epub_path = ? WHERE id = ?",
-            (str(arquivo), job),
-        )
+    nome = titulo.lower().replace(" ", "-").replace("ó", "o").replace("ã", "a").replace("ç", "c").replace("á", "a").replace("é", "e")
+    arquivo = RAIZ / "storage" / "output" / str(job) / f"{nome}.epub"
+    escrever(arquivo, titulo=titulo, autor=autor)
+    c.execute(
+        "UPDATE processing_jobs SET epub_path = ? WHERE id = ?",
+        (str(arquivo), job),
+    )
 
     if fracao is not None:
         inserir("progressos", {"pessoa_id": pessoa, "job_id": job, "capitulo": 1,
@@ -233,4 +234,4 @@ c.commit()
 n = c.execute("SELECT COUNT(*) FROM processing_jobs WHERE dono_id = ?", (pessoa,)).fetchone()[0]
 m = c.execute("SELECT COUNT(*) FROM notas WHERE pessoa_id = ?", (pessoa,)).fetchone()[0]
 g = c.execute("SELECT COUNT(*) FROM canvas_nos WHERE pessoa_id = ?", (pessoa,)).fetchone()[0]
-print(f"  semeado: {n} livros (1 com EPUB de verdade), {m} notas, {g} no Canvas, 1 aparelho, 1 estudo")
+print(f"  semeado: {n} livros (todos com EPUB), {m} notas, {g} no Canvas, 1 aparelho, 1 estudo")

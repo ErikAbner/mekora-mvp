@@ -140,8 +140,18 @@ def _ncx() -> str:
 </ncx>"""
 
 
-def escrever(destino: Path) -> Path:
-    """Grava o EPUB em `destino` e devolve o caminho."""
+def escrever(destino: Path, titulo: str | None = None, autor: str | None = None) -> Path:
+    """Grava o EPUB em `destino` e devolve o caminho.
+
+    O título e o autor entram por fora para que cada livro semeado abra com o
+    nome que a estante mostra. O TEXTO é o mesmo nos seis, e isso é mentira
+    confessa — o que está sob prova é a leitura, não a variedade do acervo.
+    """
+    global TITULO, AUTOR
+    if titulo:
+        TITULO = titulo
+    if autor:
+        AUTOR = autor
     destino.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(destino, "w", zipfile.ZIP_DEFLATED) as z:
         # O `mimetype` é o PRIMEIRO e vai SEM COMPRESSÃO — é o que a

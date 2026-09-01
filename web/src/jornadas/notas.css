@@ -105,3 +105,6 @@
 .nota-link { display: block; text-decoration: none; color: inherit; }
 .nota-link:hover blockquote { outline: 1px solid var(--foreground); outline-offset: -1px; }
 .nota-link:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+
+/* As ações do topo das Notas: agrupar, e trazer do Kindle. */
+.notas-acoes { display: flex; gap: 16px; flex-wrap: wrap; }

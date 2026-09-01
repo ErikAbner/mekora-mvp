@@ -52,6 +52,17 @@
   align-items: center;
   justify-content: center;
   padding: 17px;
+  /* A TINTA PRECISA SER DECLARADA, e o ícone é o motivo.
+   *
+   * `.acao` é um `NavLink`, ou seja um `<a>`. Sem `color`, ele herda a cor de
+   * link do NAVEGADOR — azul, e ROXO depois de visitado. O `Icone` se pinta com
+   * `currentColor`, então os dois ícones do cabeçalho apareciam roxos, que é
+   * matiz num elemento de interface: exatamente o que a regra do sistema
+   * proíbe.
+   *
+   * O portão não viu porque ele mede nó de TEXTO, e um ícone é máscara sem
+   * texto nenhum. Agora há uma checagem para isso — ver `portao.js`. */
+  color: var(--muted-foreground);
   cursor: pointer;
 }
 
@@ -68,7 +79,7 @@ a.lugar { text-decoration: none; }
 /* Os ícones do cabeçalho viraram links: precisam do mesmo alvo e do mesmo foco
    que os botões tinham. */
 a.acao { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
-a.acao.active { background: var(--muted); }
+a.acao.active { background: var(--muted); color: var(--foreground); }
 
 /* ---- no telefone ---------------------------------------------------------
  *

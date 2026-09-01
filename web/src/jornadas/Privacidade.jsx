@@ -49,6 +49,17 @@ export function Privacidade({ pessoa, aoSair, aoApagarConta }) {
     }
   }
 
+  /* O DESENHO SAIU, E ELE NUNCA FOI UM DESENHO.
+   *
+   * O `ilustracao-privacidade.svg` era um bloco de texto BRANCO — a citacao em
+   * destaque da tela de LEITURA — exportado do Figma sem o fundo escuro que ele
+   * tinha la. Na pagina clara virava letra branca sobre papel branco,
+   * atravessada por cima do conteudo. O Erik mandou a captura.
+   *
+   * Exportei o no errado, e nada apontou: o portao mede texto do DOM, e isto e
+   * imagem. O arquivo foi apagado junto — asset que so sabe estar errado nao
+   * serve de nada guardado.
+   */
   return (
     <div className="mesa">
       <Cabecalho />
@@ -56,7 +67,6 @@ export function Privacidade({ pessoa, aoSair, aoApagarConta }) {
         <TrilhaConta pessoa={pessoa} aoSair={aoSair} />
 
         <main className="conta-painel">
-        <img className="conta-desenho" src="/icones/ilustracao-privacidade.svg" alt="" aria-hidden="true" />
           <section className="conta-secao">
             <h2>O que o Mekora guarda</h2>
 

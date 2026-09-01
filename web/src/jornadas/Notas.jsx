@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Rodape } from "../componentes/Rodape.jsx";
 import { Botao } from "../componentes/Botao.jsx";
+import { TrazerDoKindle } from "../componentes/TrazerDoKindle.jsx";
 import { DESTAQUES } from "./Leitura.jsx";
 import "./notas.css";
 
@@ -33,7 +34,7 @@ function ondeVeio(n) {
   return n.origem || "de um livro seu";
 }
 
-export function Notas({ notas = [], carregando, aoApagar }) {
+export function Notas({ notas = [], carregando, aoApagar, aoImportar }) {
   const [recorte, setRecorte] = useState("todas");
   const [porLivro, setPorLivro] = useState(true);
 
@@ -67,13 +68,18 @@ export function Notas({ notas = [], carregando, aoApagar }) {
               Tudo que você marcou lendo, trouxe do Kindle ou escreveu solto.
             </p>
           </div>
-          <Botao
-            tom="secundaria"
-            aria-pressed={porLivro ? "true" : "false"}
-            onClick={() => setPorLivro((v) => !v)}
-          >
-            {porLivro ? "Ver em lista" : "Agrupar por origem"}
-          </Botao>
+          <div className="notas-acoes">
+            {/* A importação do Kindle mora aqui, e não na estante: o botão que
+                eu tinha posto lá não existe no 895:7315. */}
+            <TrazerDoKindle aoTrazer={aoImportar} />
+            <Botao
+              tom="secundaria"
+              aria-pressed={porLivro ? "true" : "false"}
+              onClick={() => setPorLivro((v) => !v)}
+            >
+              {porLivro ? "Ver em lista" : "Agrupar por origem"}
+            </Botao>
+          </div>
         </header>
 
         <nav className="notas-recortes" aria-label="Recortes das notas">
