@@ -116,3 +116,31 @@
   .livro-pagina-acoes { flex-direction: column; align-items: stretch; }
   .livro-pagina-acoes .botao { inline-size: 100%; justify-content: center; }
 }
+
+/* ---- O título com o ⋮, e os selos — nó 966:29052 --------------------------- */
+.livro-pagina-titulo { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.livro-pagina-titulo h1 { flex: 1 1 auto; min-width: 0; }
+
+.livro-pagina-mais {
+  flex: 0 0 auto;
+  inline-size: 44px; block-size: 44px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--muted-foreground);
+  font-size: 20px; line-height: 1;
+  cursor: pointer;
+}
+.livro-pagina-mais:hover { background: var(--muted); color: var(--foreground); }
+.livro-pagina-mais:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+
+.livro-pagina-selos {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin: 16px 0 0; padding: 0; list-style: none;
+}
+.livro-pagina-selos li {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-size: 14px; line-height: 22px;   /* Label/Small */
+}

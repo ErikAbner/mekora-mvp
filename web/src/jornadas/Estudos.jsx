@@ -44,9 +44,43 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, 
         <span className="dado">{estudo.notas.length}</span>{" "}
         {estudo.notas.length === 1 ? "nota" : "notas"}
         {estudo.livros.length > 0 && (
-          <> · de {estudo.livros.join(", ")}</>
+          <> · de <span className="dado">{estudo.livros.length}</span>{" "}
+          {estudo.livros.length === 1 ? "livro" : "livros"}</>
         )}
       </p>
+
+      {/* LIVROS — a faixa de capas do nó 966:29743.
+          Ela dizia " · de Malha Urbana, Sequência Noturna" em texto cinza: para
+          quem tem quarenta livros na estante, o nome sozinho não diz de qual se
+          trata. A capa diz de relance, e leva de volta ao livro.
+
+          O livro sem arquivo — nota trazida do Kindle, que guarda só o título —
+          entra com a caixa vazia e o nome dentro. Sumir com ele porque não há
+          arquivo seria o produto negar o que a própria nota diz. */}
+      {estudo.livros.length > 0 && (
+        <div className="estudo-livros">
+          <h3>Livros</h3>
+          <ul>
+            {estudo.livros.map((l) => (
+              <li key={l.id ?? l.titulo}>
+                {l.id ? (
+                  <Link to={`/estante/${l.id}`} title={`Ver ${l.titulo} na estante`}>
+                    {l.capa
+                      ? <img src={l.capa} alt="" aria-hidden="true" loading="lazy" />
+                      : <span className="estudo-livro-vazio">{l.titulo}</span>}
+                    <span className="estudo-livro-nome">{l.titulo}</span>
+                  </Link>
+                ) : (
+                  <span className="estudo-livro-fora">
+                    <span className="estudo-livro-vazio">{l.titulo}</span>
+                    <span className="estudo-livro-nome">{l.titulo}</span>
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {estudo.notas.length > 0 && (
         <ul className="estudo-notas">

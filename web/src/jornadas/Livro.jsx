@@ -103,8 +103,41 @@ export function Livro() {
           </div>
 
           <div className="livro-pagina-identidade">
-            <h1>{titulo}</h1>
+            {/* O ⋮ AO LADO DO TÍTULO — o nó 966:29052 o tem, e ele abre o que já
+                existia como um botão de largura inteira embaixo de "Continuar
+                lendo". Cinco decisões raras não merecem o mesmo peso visual da
+                ação que se faz sempre. */}
+            <div className="livro-pagina-titulo">
+              <h1>{titulo}</h1>
+              <button
+                type="button"
+                className="livro-pagina-mais"
+                aria-label="Configurações de arquivo"
+                aria-haspopup="dialog"
+                onClick={() => setAjustando(true)}
+              >
+                <span aria-hidden="true">⋮</span>
+              </button>
+            </div>
             {autor && <p className="livro-pagina-autor">{autor}</p>}
+
+            {/* OS SELOS: o que o arquivo é, e em que pé ele está. O desenho os
+                põe logo abaixo do título. Cada um só aparece quando há o que
+                dizer — uma fileira de "—" descreve a ausência com a ênfase da
+                informação. */}
+            {(() => {
+              const selos = [
+                livro.input_format && livro.input_format.toUpperCase(),
+                livro.page_count && `${livro.page_count} páginas`,
+                livro.leitura_url ? "Preparado" : "Em preparo",
+                livro.kindle_sent ? "No Kindle" : null,
+              ].filter(Boolean);
+              return (
+                <ul className="livro-pagina-selos">
+                  {selos.map((t) => <li key={t}>{t}</li>)}
+                </ul>
+              );
+            })()}
 
             {onde?.capitulos > 0 && (
               <p className="livro-pagina-onde">
@@ -122,13 +155,6 @@ export function Livro() {
                 }
               >
                 {onde?.capitulos > 0 ? "Continuar lendo" : "Começar a ler"}
-              </Botao>
-              {/* Renomear, ver as páginas, baixar, refazer e remover — nó
-                  941:23118. Ficam atrás de um botão porque são cinco decisões
-                  raras, e cinco botões ao lado de "Começar a ler" fariam a ação
-                  frequente competir com elas. */}
-              <Botao tom="secundaria" onClick={() => setAjustando(true)}>
-                Configurações de arquivo
               </Botao>
               {!livro.leitura_url && (
                 <p className="livro-pagina-nota">Ainda em preparo. O texto abre quando a conversão terminar.</p>

@@ -77,6 +77,38 @@ def _capas(db: Session, notas) -> dict:
     return fora
 
 
+def _livros_das_notas(db: Session, notas) -> list:
+    """Os livros de onde as notas vieram, com capa e endereço.
+
+    Nota escrita solta não tem livro, e some daqui — ela continua no estudo, e
+    é o `origem` dela que fica vazio.
+    """
+    from app.models.processing_job import ProcessingJob
+
+    ids = {n.job_id for n in notas if n.job_id}
+    capas = _capas(db, notas)
+
+    fora = []
+    if ids:
+        for j in db.query(ProcessingJob).filter(ProcessingJob.id.in_(ids)).all():
+            fora.append({
+                "id": j.id,
+                "titulo": j.final_title or j.detected_title or j.original_filename,
+                "autor": j.final_author or j.detected_author or "",
+                "capa": capas.get(j.id),
+            })
+
+    # E OS LIVROS QUE SÓ EXISTEM COMO NOME. Uma nota trazida do Kindle guarda o
+    # título em `origem` e nunca teve trabalho no Mekora: o livro existe para
+    # quem leu, e sumir com ele porque não há arquivo seria o produto negar o
+    # que a própria nota diz.
+    conhecidos = {l["titulo"] for l in fora}
+    for nome in sorted({n.origem for n in notas if n.origem and n.origem not in conhecidos}):
+        fora.append({"id": None, "titulo": nome, "autor": "", "capa": None})
+
+    return sorted(fora, key=lambda l: l["titulo"])
+
+
 def _fora(db: Session, e: Estudo) -> dict:
     notas = (
         db.query(Nota)
@@ -100,7 +132,16 @@ def _fora(db: Session, e: Estudo) -> dict:
         # OS LIVROS SAEM DAS NOTAS, e não são campo. Um campo de livros exigiria
         # alguém mantê-lo, e seria a primeira coisa a ficar desatualizada — o
         # `CLAUDE.md` chama isso de "campo de status para alguém manter".
-        "livros": sorted({n.origem for n in notas if n.origem}),
+        #
+        # AGORA COM CAPA E ENDEREÇO. O nó `966:29743` põe uma faixa de CAPAS no
+        # topo do estudo, com "Ver na estante": é de onde o estudo veio, e de
+        # relance. Só o nome em texto não diz de que livro se trata para quem
+        # tem quarenta na estante.
+        #
+        # Um livro entra uma vez, mesmo com dez notas dele — a chave é o
+        # `job_id`, e a ordem é a do nome, para a faixa não trocar de ordem a
+        # cada visita.
+        "livros": _livros_das_notas(db, notas),
     }
 
 

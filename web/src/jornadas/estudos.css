@@ -210,3 +210,51 @@
   display: block;
   border: 1px solid var(--border);
 }
+
+/* ---- A faixa de livros do estudo — nó 966:29743 ---------------------------
+ *
+ * Ela era uma linha de texto cinza com os nomes separados por vírgula. Para
+ * quem tem quarenta livros na estante, o nome sozinho não diz de qual se trata;
+ * a capa diz de relance, e leva de volta ao livro.
+ */
+.estudo-livros { margin-block-start: 24px; }
+.estudo-livros h3 {
+  margin: 0 0 12px;
+  font-size: 16px; line-height: 24px;   /* Label/Medium */
+  color: var(--muted-foreground);
+}
+.estudo-livros ul {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  margin: 0; padding: 0; list-style: none;
+}
+.estudo-livros a,
+.estudo-livro-fora {
+  display: flex; flex-direction: column; gap: 8px;
+  inline-size: 88px;
+  color: var(--muted-foreground);
+  text-decoration: none;
+}
+.estudo-livros a:hover { color: var(--foreground); }
+.estudo-livros a:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+
+.estudo-livros img,
+.estudo-livro-vazio {
+  inline-size: 88px; block-size: 124px;   /* 420/594, a proporção das capas */
+  object-fit: cover;
+  display: flex; align-items: center; justify-content: center;
+  padding: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  font-size: 14px; line-height: 20px;
+  text-align: center;
+  overflow: hidden;
+}
+/* O nome embaixo, em duas linhas no máximo: uma faixa de capas com títulos de
+   seis linhas vira uma lista de títulos com miniaturas em cima. */
+.estudo-livro-nome {
+  font-size: 14px; line-height: 20px;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+/* A caixa vazia já mostra o nome; repeti-lo embaixo diria duas vezes. */
+.estudo-livro-vazio + .estudo-livro-nome { display: none; }

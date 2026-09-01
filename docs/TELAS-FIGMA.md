@@ -30,10 +30,10 @@ quadro e peça — o nome e o id vêm juntos.
 | `966:28476` | M · Mesa | `/mesa` | **comparada · confere** |
 | `966:29052` | M · Livro — o que ficou | `/estante/:id` | **comparada · corrigida** |
 | `966:29395` | M · Leitura | `/leitura/:id` | **comparada · corrigida** |
-| `966:29743` | M · Nota — página | `/nota/:id` | **comparada · dois buracos abaixo** |
-| `966:30269` | M · Nota — ligar e estudos | `/nota/:id` | **comparada · confere** |
-| `966:30771` | M · Estudo — página | `/estudo/:id` | **comparada · os mesmos buracos do 966:31095** |
-| `966:31095` | M · Estudos | `/estudos` | **comparada · três buracos abaixo** |
+| `966:29743` | M · Estudo — página | `/estudo/:id` | **comparada · falta a seção Livros** |
+| `966:30269` | M · Conexões — sugestões | `/nota/:id` | **comparada · confere** |
+| `966:30771` | M · Estudos — lista | `/estudos` | **comparada · corrigida** |
+| `966:31095` | M · Estudos — lista (variação) | `/estudos` | **comparada · corrigida** |
 | `966:31504` | M · Preparo — o que encontrei | `/preparo/:id` | **comparada · corrigida** |
 | `967:31833` | M · Preparo — em andamento | `/preparo/:id` | **exige conversão rodando — ver abaixo** |
 | `973:32414` | M · Leitura · aparência | painel da leitura | **é o `941:23110`, já construído** |
@@ -102,16 +102,29 @@ corrigir um endereço digitado errado. A única saída era apagar o aparelho e
 ligar de novo, perdendo nome e histórico. O endereço passa pela mesma validação
 de forma do cadastro, e dois aparelhos com o mesmo endereço são recusados.
 
-**Livro (`966:29052`)** — o desenho tem um **menu ⋮** ao lado do título e chips
-de formato/estado; e cada nota tem **"Editar"** e **"Copiar para estudo"**.
+~~**Livro (`966:29052`)** — menu ⋮ ao lado do título e chips de formato/estado.~~
+Construídos. O ⋮ abre o que já existia como um botão de largura inteira embaixo
+de "Continuar lendo" — cinco decisões raras não merecem o mesmo peso visual da
+ação que se faz sempre. Os selos dizem formato, páginas, se está preparado e se
+foi ao Kindle, e cada um só aparece quando há o que dizer.
+
+**O que ficou desta tela, e não dá para ler no Figma:** o desenho tem um bloco
+escuro com a citação e dois botões, um cartão "três páginas ficaram sem texto ·
+Ver o original", e um campo **"Escrever sobre o livro"** no fim — uma nota do
+livro inteiro, sem trecho. A 390 de largura por 4673 de altura, a captura que a
+ferramenta devolve tem 38 pixels de largura: não dá para ler os rótulos, e
+construir a partir disso seria inventar com cara de fidelidade. **Preciso de um
+recorte dessa parte, ou de você selecionando o trecho no Figma.**
 
 **Preparo (`966:31504`)** — o desenho tem um alternador **Personalizado /
 Guiado** no topo (no produto ele é o botão "Ajustar manualmente", embaixo) e
 chips de **tamanho do arquivo** e **idioma**. O tamanho não existe no backend.
 
-**Nota (`966:29743`)** — o desenho tem uma seção **"Livros"** com as capas dos
-livros onde aquele trecho aparece, e cada sugestão traz **"Editar"** e **"Copiar
-para estudo"**. A nossa tem a origem em texto e o botão de ligar.
+**Estudo (`966:29743`)** — os nomes que eu tinha posto nesta lista estavam
+errados em quatro linhas, e a ferramenta os deu certos quando perguntei um a um.
+Este é o **estudo aberto**, e ele tem uma seção **"Livros"** com as CAPAS dos
+livros de onde as notas vieram, e um "Ver na estante". A API já devolve os nomes
+dos livros (`livros`), em texto; faltam as capas e a seção.
 
 **Preparo em andamento (`967:31833`)** — só existe enquanto uma conversão roda,
 com os passos e o tempo de cada um. Não dá para capturá-la sem uma conversão de
