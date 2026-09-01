@@ -21,7 +21,7 @@ def test_a_lista_cobre_tudo_que_aponta_para_a_pessoa():
                 apontam.add(tabela.name)
 
     listadas = set()
-    for _, modelo, _ in O_QUE_GUARDAMOS:
+    for _, _, modelo, _ in O_QUE_GUARDAMOS:
         listadas.add(modelo.__tablename__)
 
     faltando = apontam - listadas
@@ -107,3 +107,16 @@ def test_apagar_leva_os_arquivos_do_disco(client, tmp_storage, sample_pdf):
     assert client.post("/privacidade/apagar", json={"email": email}).status_code == 204
 
     assert not list(STORAGE_INPUT.glob(f"{job}_*")), "o arquivo continuou no disco"
+
+
+def test_os_nomes_da_tela_nao_sao_chaves_de_codigo():
+    """A tela mostrava `preferencias`, `no_canvas` e `grupos_do_canvas`.
+
+    Eram os identificadores internos servidos crus para quem lê. O underline é a
+    assinatura do defeito: nenhuma palavra escrita para uma pessoa tem `_` no
+    meio. A falta de acento é a outra metade.
+    """
+    for _, nome, _, _ in O_QUE_GUARDAMOS:
+        assert "_" not in nome, f"'{nome}' é chave de código, não nome de tela"
+    nomes = {n for _, n, _, _ in O_QUE_GUARDAMOS}
+    assert "preferências" in nomes and "ligações" in nomes and "sessões" in nomes

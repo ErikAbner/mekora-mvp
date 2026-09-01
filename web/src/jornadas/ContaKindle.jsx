@@ -71,33 +71,6 @@ export function ContaKindle({ pessoa, aoSair }) {
                 Sem esta explicação, o primeiro envio falha com uma mensagem da
                 Amazon que não menciona o Mekora, e não há como ligar uma coisa
                 à outra. */}
-            {/* O CAMINHO GUIADO VEM ANTES DO AVISO. A condição que a Amazon
-                impõe continua dita — ela não some —, mas quem chega aqui pela
-                primeira vez precisa de um caminho, e não de uma advertência. */}
-            <div className="conta-guiado">
-              <p>
-                Primeira vez? O passo a passo abre a Amazon no lugar certo, guarda
-                o endereço e manda um arquivo de teste no fim.
-              </p>
-              <Botao tom="primaria" onClick={() => setAssistente(true)}>
-                Conectar meu Kindle
-              </Botao>
-            </div>
-
-            <div className="conta-condicao">
-              <h3>Antes do primeiro envio</h3>
-              <p>
-                A Amazon só entrega documentos enviados de um endereço que você
-                autorizou. Entre em <strong>amazon.com.br › Conteúdo e dispositivos ›
-                Preferências › Configurações de documentos</strong> e adicione o
-                endereço de quem envia à lista de e-mails aprovados.
-              </p>
-              <p className="conta-nota">
-                Sem isso o Mekora envia, a Amazon recusa em silêncio, e o arquivo
-                não aparece no aparelho.
-              </p>
-            </div>
-
             {erroDoServidor && <p className="conta-erro" role="alert">{erroDoServidor}</p>}
 
             {carregando && <p className="conta-nota">Carregando seus aparelhos…</p>}
@@ -143,6 +116,43 @@ export function ContaKindle({ pessoa, aoSair }) {
                 <p>Não sei o endereço do meu Kindle</p>
               </div>
             </div>
+
+            {/* O CAMINHO GUIADO E O AVISO DESCEM QUANDO JÁ HÁ APARELHO.
+             *
+             * O nó 966:25554 abre com os CARTÕES dos aparelhos; "Primeira vez?"
+             * e "Antes do primeiro envio" não estão no topo dele. E faz sentido:
+             * quem já ligou um Kindle não precisa do passo a passo antes de ver
+             * o que ligou — ele vira referência, não porta de entrada.
+             *
+             * Sem aparelho nenhum, a ordem se inverte sozinha: aí o caminho
+             * guiado É a tela, e a lista vazia é que vira nota de rodapé. */}
+            {/* O CAMINHO GUIADO VEM ANTES DO AVISO. A condição que a Amazon
+                impõe continua dita — ela não some —, mas quem chega aqui pela
+                primeira vez precisa de um caminho, e não de uma advertência. */}
+            <div className="conta-guiado">
+              <p>
+                Primeira vez? O passo a passo abre a Amazon no lugar certo, guarda
+                o endereço e manda um arquivo de teste no fim.
+              </p>
+              <Botao tom="primaria" onClick={() => setAssistente(true)}>
+                Conectar meu Kindle
+              </Botao>
+            </div>
+
+            <div className="conta-condicao">
+              <h3>Antes do primeiro envio</h3>
+              <p>
+                A Amazon só entrega documentos enviados de um endereço que você
+                autorizou. Entre em <strong>amazon.com.br › Conteúdo e dispositivos ›
+                Preferências › Configurações de documentos</strong> e adicione o
+                endereço de quem envia à lista de e-mails aprovados.
+              </p>
+              <p className="conta-nota">
+                Sem isso o Mekora envia, a Amazon recusa em silêncio, e o arquivo
+                não aparece no aparelho.
+              </p>
+            </div>
+
 
             {/* O produto diz o que o "principal" decide, em vez de deixar o
                 rótulo sozinho. */}

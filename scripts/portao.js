@@ -278,7 +278,19 @@
    * fora de propósito: "esta casa", "e também", "São Paulo" são texto correto, e
    * um detector que acusa texto certo é lido uma vez e ignorado depois.
    */
-  const SEM_ACENTO = /\b(nao|voce|tambem|atencao|informacao|conversao|operacao|possivel|disponivel|ultimo|proximo|pagina|codigo|automatico|preparacao|instrucao|traducao|selecao|conexao|reuniao|versao)\b/i;
+  const SEM_ACENTO = /\b(nao|voce|tambem|atencao|informacao|conversao|operacao|possivel|disponivel|ultimo|proximo|pagina|codigo|automatico|preparacao|instrucao|traducao|selecao|conexao|reuniao|versao|preferencia|preferencias|ligacao|ligacoes|sessao|sessoes|memoria|estao|sao|conteudo|titulo|numero|area|areas|capitulo|inicio|so|ja)\b/i;
+
+  /* NOME DE CÓDIGO NA TELA.
+   *
+   * A tela de Privacidade listava `preferencias`, `no_canvas` e
+   * `grupos_do_canvas` — as chaves do inventário do backend, mostradas cruas
+   * para quem lê. O underline é a assinatura: nenhuma palavra escrita para uma
+   * pessoa tem `_` no meio.
+   *
+   * O portão não via porque a checagem de acento é por palavra conhecida, e
+   * `no_canvas` não está em dicionário nenhum. Esta vê a FORMA. */
+  const NOME_DE_CODIGO = /\b[a-z]+_[a-z_]+\b/;
+  const codigoNaTela = [];
 
   /* O TEXTO DO LIVRO NÃO É INTERFACE, e o portão não o julga.
    *
@@ -299,6 +311,8 @@
     if (!t) continue;
     const m = SEM_ACENTO.exec(t);
     if (m) semAcento.push({ palavra: m[0], trecho: t.slice(0, 70) });
+    const c = NOME_DE_CODIGO.exec(t);
+    if (c) codigoNaTela.push({ palavra: c[0], trecho: t.slice(0, 70) });
   }
 
   /* TINTA DE LINK DO NAVEGADOR — a que o portão não via.
@@ -341,6 +355,7 @@
     assets_conferidos: fontes.size,
     tinta_cravada_em_asset: tintaEmAsset,
     texto_sem_acento: unico(semAcento, (x) => x.palavra + x.trecho),
+    nome_de_codigo_na_tela: unico(codigoNaTela, (x) => x.palavra),
 
     /* TELA EM BRANCO NÃO PASSA.
      *
@@ -359,6 +374,7 @@
     passou:
       medidos >= 5 &&
       linkSemTinta.length === 0 &&
+      codigoNaTela.length === 0 &&
       corFora.length === 0 &&
       contraste.length === 0 &&
       corpoFora.length === 0 &&

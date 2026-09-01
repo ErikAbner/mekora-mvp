@@ -1,45 +1,38 @@
 /* A trilha lateral da Conta: quem é você, e onde dentro da conta.
  *
- * A NAVEGAÇÃO É A `TrilhaLinhas` — o `LineSidebar` que o Erik trouxe e disse
- * ser "a maior parte das navegações do projeto". Ela nasceu na estante em 3D e
- * esta é a segunda: cinco lugares numa coluna, que é exatamente a forma para a
- * qual o componente existe.
+ * A `TrilhaLinhas` SAIU DAQUI, e eu a tinha posto por conta própria.
  *
- * O item ativo continua marcado por SUPERFÍCIE e por `aria-current`, e cada
- * item continua sendo um `<button>` de verdade — a diferença aparece para quem
- * navega por teclado ou leitor de tela.
+ * O Erik disse que o `LineSidebar` é "a maior parte das navegações do projeto",
+ * e eu li isso como "todas". O nó `966:25321` mostra outra coisa para a Conta:
+ * uma lista com ÍCONE em cada item, e o item ativo como uma barra de tinta
+ * cheia com o rótulo em branco — que é a marcação de superfície do resto do
+ * sistema, e não o traço que cresce.
  *
- * O ROTEAMENTO FICA AQUI, e não dentro do componente: `TrilhaLinhas` avisa qual
- * item foi escolhido e não conhece rota nenhuma. Um componente de navegação que
- * importasse o roteador só serviria a projetos com aquele roteador.
+ * A trilha de linhas continua na estante em 3D, onde o `895:7506` a mostra.
+ *
+ * O item ativo é marcado por SUPERFÍCIE e por `aria-current`, e é `<nav>` com
+ * `NavLink`: a diferença aparece para quem navega por teclado ou leitor de tela.
  */
-import { useLocation, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { Botao } from "./Botao.jsx";
-import { TrilhaLinhas } from "./TrilhaLinhas.jsx";
+import { Icone } from "./Icone.jsx";
 import "./trilha-conta.css";
 
 const PAGINAS = [
-  { id: "conta", rotulo: "Conta", rota: "/conta" },
-  { id: "kindle", rotulo: "Dispositivos Kindle", rota: "/conta/kindle" },
-  { id: "seguranca", rotulo: "Segurança", rota: "/conta/seguranca" },
-  { id: "preferencias", rotulo: "Preferências", rota: "/conta/preferencias" },
-  { id: "privacidade", rotulo: "Privacidade", rota: "/conta/privacidade" },
+  { id: "conta", rotulo: "Conta", rota: "/conta", icone: "/icones/icone-conta.svg" },
+  { id: "kindle", rotulo: "Dispositivos Kindle", rota: "/conta/kindle", icone: "/icones/icone-aparelho.svg" },
+  /* SEGURANÇA NÃO ESTÁ NO 966:25321, e fica.
+   *
+   * O desenho lista quatro: Conta, Dispositivos Kindle, Preferências,
+   * Privacidade. Segurança — as sessões abertas, e o botão de encerrar as
+   * outras — é tela que existe e funciona, e tirá-la do menu esconderia o único
+   * caminho até ela. O desenho é anterior a ela. */
+  { id: "seguranca", rotulo: "Segurança", rota: "/conta/seguranca", icone: "/icones/icone-atalho.svg" },
+  { id: "preferencias", rotulo: "Preferências", rota: "/conta/preferencias", icone: "/icones/icone-preferencias.svg" },
+  { id: "privacidade", rotulo: "Privacidade", rota: "/conta/privacidade", icone: "/icones/icone-privacidade.svg" },
 ];
 
 export function TrilhaConta({ pessoa, aoSair }) {
-  const navegar = useNavigate();
-  const { pathname } = useLocation();
-
-  /* O MAIS LONGO QUE CASA, e não o primeiro: `/conta` é prefixo de todos os
-   * outros, e a busca ingênua marcaria "Conta" estando em `/conta/kindle`. */
-  const onde = PAGINAS.reduce(
-    (melhor, p, i) =>
-      pathname === p.rota || pathname.startsWith(`${p.rota}/`)
-        ? (melhor === null || p.rota.length > PAGINAS[melhor].rota.length ? i : melhor)
-        : melhor,
-    null,
-  );
-
   return (
     <aside className="trilha">
       <div className="pessoa">
@@ -55,12 +48,14 @@ export function TrilhaConta({ pessoa, aoSair }) {
         </div>
       </div>
 
-      <TrilhaLinhas
-        rotulo="Conta"
-        itens={PAGINAS.map((p) => p.rotulo)}
-        ativo={onde}
-        aoEscolher={(i) => navegar(PAGINAS[i].rota)}
-      />
+      <nav aria-label="Conta">
+        {PAGINAS.map((p) => (
+          <NavLink key={p.id} to={p.rota} end className="trilha-item">
+            <Icone src={p.icone} tamanho={20} />
+            <span>{p.rotulo}</span>
+          </NavLink>
+        ))}
+      </nav>
 
       {/* Sair fica no fim da trilha, separado por filete e longe da navegação.
           Junto dos itens ele viraria mais um lugar para onde ir — e é o

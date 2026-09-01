@@ -57,19 +57,25 @@ def _quem(db: Session, biscoito: Optional[str]) -> Pessoa:
 # O que existe, e o que cada coisa é em português. A explicação fica ao lado da
 # contagem porque um número sozinho não diz o que se está guardando — "7
 # progressos" não significa nada para quem não escreveu o código.
+# O NOME É O QUE A PESSOA LÊ, e não a chave do código.
+#
+# A tela mostrava `preferencias`, `no_canvas` e `grupos_do_canvas` — sem acento e
+# com underline, porque eram os identificadores internos servidos crus. O Erik
+# viu numa captura. Agora há um `nome` para a tela e um `chave` para o código, e
+# o portão passou a recusar `_` no meio de palavra em texto de interface.
 O_QUE_GUARDAMOS = [
-    ("conta", Pessoa, "Seu e-mail. É a única coisa que identifica você — não há nome, telefone nem foto."),
-    ("livros", ProcessingJob, "Os arquivos que você enviou e o que foi convertido a partir deles."),
-    ("notas", Nota, "O que você marcou lendo, e o que trouxe do Kindle."),
-    ("leituras", Progresso, "Onde você parou em cada livro."),
-    ("aparelhos", Aparelho, "Os endereços de Kindle que você ligou à conta."),
-    ("preferencias", Preferencia, "As escolhas que você fez em Preferências."),
-    ("estudos", Estudo, "Os estudos que você montou, com a pergunta de cada um."),
-    ("no_canvas", NoCanvas, "As notas que você pôs no Canvas, e onde cada uma está."),
-    ("grupos_do_canvas", GrupoCanvas, "As áreas que você nomeou no Canvas, e o tamanho de cada uma."),
-    ("ligacoes", Ligacao, "As ligações que você fez entre notas."),
-    ("sessoes", Sessao, "Os navegadores em que você entrou."),
-    ("links", Chave, "Links de entrada pedidos e ainda não vencidos. Guardados como resumo, nunca em texto."),
+    ("conta", "conta", Pessoa, "Seu e-mail. É a única coisa que identifica você — não há nome, telefone nem foto."),
+    ("livros", "livros", ProcessingJob, "Os arquivos que você enviou e o que foi convertido a partir deles."),
+    ("notas", "notas", Nota, "O que você marcou lendo, e o que trouxe do Kindle."),
+    ("leituras", "leituras", Progresso, "Onde você parou em cada livro."),
+    ("aparelhos", "aparelhos", Aparelho, "Os endereços de Kindle que você ligou à conta."),
+    ("preferencias", "preferências", Preferencia, "As escolhas que você fez em Preferências."),
+    ("estudos", "estudos", Estudo, "Os estudos que você montou, com a pergunta de cada um."),
+    ("no_canvas", "notas no Canvas", NoCanvas, "As notas que você pôs no Canvas, e onde cada uma está."),
+    ("grupos_do_canvas", "grupos no Canvas", GrupoCanvas, "As áreas que você nomeou no Canvas, e o tamanho de cada uma."),
+    ("ligacoes", "ligações", Ligacao, "As ligações que você fez entre notas."),
+    ("sessoes", "sessões", Sessao, "Os navegadores em que você entrou."),
+    ("links", "links de entrada", Chave, "Links de entrada pedidos e ainda não vencidos. Guardados como resumo, nunca em texto."),
 ]
 
 
@@ -85,14 +91,14 @@ def o_que_existe(
     pessoa = _quem(db, mekora_sessao)
 
     itens = []
-    for nome, modelo, explicacao in O_QUE_GUARDAMOS:
+    for chave, nome, modelo, explicacao in O_QUE_GUARDAMOS:
         if modelo is Pessoa:
             quantos = 1
         elif modelo is ProcessingJob:
             quantos = db.query(modelo).filter(modelo.dono_id == pessoa.id).count()
         else:
             quantos = db.query(modelo).filter(modelo.pessoa_id == pessoa.id).count()
-        itens.append({"nome": nome, "quantos": quantos, "explicacao": explicacao})
+        itens.append({"chave": chave, "nome": nome, "quantos": quantos, "explicacao": explicacao})
 
     return {
         "email": pessoa.email,

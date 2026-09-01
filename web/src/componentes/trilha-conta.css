@@ -31,14 +31,28 @@
   overflow-wrap: anywhere;
 }
 
-/* A navegação é a `TrilhaLinhas`, e o estilo dela mora em trilha-linhas.css.
-   O que sobra aqui é o respiro dela dentro da coluna da conta — a `.trilha-item`
-   saiu junto com os `NavLink` que ela vestia. */
-.trilha .trilha-linhas { padding: 8px 32px 24px; }
+/* A LISTA COM ÍCONE, e o ativo em tinta cheia — o que o 966:25321 mostra.
+   Eu tinha trocado isto pela `TrilhaLinhas`, que o desenho não usa aqui. */
+.trilha nav { display: flex; flex-direction: column; }
+
+.trilha-item {
+  display: flex; align-items: center; gap: 24px;
+  padding: 16px 32px;
+  color: var(--muted-foreground);
+  text-decoration: none;
+  font-size: 20px; line-height: 30px;                     /* Body/Medium */
+}
+/* Aqui = degrau de superficie, nunca matiz. */
+.trilha-item[aria-current="page"] {
+  background: var(--foreground);
+  color: var(--primary-foreground);
+}
+.trilha-item:not([aria-current]):hover { background: var(--muted); }
+.trilha-item:focus-visible { outline: 1px solid var(--foreground); outline-offset: -1px; }
 
 @media (max-width: 1023px) {
   .trilha { inline-size: 100%; }
-  .trilha .trilha-linhas { padding: 8px 24px 16px; }
+  .trilha-item { padding: 16px 24px; gap: 16px; font-size: 18px; line-height: 27px; }
 }
 
 /* Sair: no fim, atrás de um filete, e com o respiro que diz que não pertence à
