@@ -34,12 +34,33 @@
   justify-content: flex-end;
   gap: 56px;
   padding: 12px;
+  /* O painel da busca pendura AQUI, e não no campo: no `941:23107` ele é
+   * `w-full` da mesma caixa que a barra, e não da largura do input. */
+  position: relative;
   /* 476px, do `900:53900`. É essa largura que faz a busca ser MENOR: com 12px
    * de recheio de cada lado, 56 de vão e dois atalhos de 58 com 16 entre eles,
    * sobram 264px para o campo. Eu tinha deixado a caixa crescer com o conteúdo,
    * e a busca virava uma faixa larga que não é a do desenho. */
   inline-size: 476px;
   flex: none;
+  /* E ELA CRESCE PARA 626 QUANDO A BUSCA ABRE.
+   *
+   * Os dois números são do desenho: `900:53900` é a caixa parada, e o
+   * `941:23107` — a busca com o painel aberto — mede 626. É a expansão que o
+   * Erik descreveu: "a pesquisa é menor e se expande quando o usuário tenta
+   * pesquisar algo". Eu tinha feito um campo largo e parado.
+   *
+   * 200ms na curva de saída: acima de 300 a interface fica lenta, e `inline-size`
+   * é uma das poucas propriedades de layout que valem a pena animar — não há
+   * como fingir mudança de largura com `transform` sem esticar o que está
+   * dentro. É uma caixa pequena, num ramo raso da árvore. */
+  transition: inline-size 200ms var(--saida);
+}
+
+.cabecalho-acoes:has(.busca-painel) { inline-size: 626px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cabecalho-acoes { transition: none; }
 }
 
 .cabecalho-atalhos { display: flex; align-items: center; gap: 16px; }

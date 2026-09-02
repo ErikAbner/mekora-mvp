@@ -120,6 +120,27 @@
 
 html { -webkit-text-size-adjust: 100%; }
 
+/* AS CURVAS, NOMEADAS.
+ *
+ * O Erik disse "péssimas animações ao longo do site", e parte disso é não haver
+ * curva nenhuma decidida: cada transição escolhia a sua, e as embutidas do CSS
+ * são fracas — falta a puxada que faz o movimento parecer intencional.
+ *
+ * `--saida` é o que ENTRA e o que SAI. Começa rápido e desacelera, e é isso que
+ * faz a interface parecer que respondeu na hora. `ease-in` é o oposto e não se
+ * usa aqui: ele atrasa justamente o instante que a pessoa está olhando.
+ *
+ * `--movimento` é para o que anda ou se transforma NA TELA, já visível: acelera
+ * e desacelera, como coisa com massa.
+ *
+ * `--gaveta` é a curva do iOS para folha que sobe, e é a que a `vaul` usa. Ela
+ * mora aqui para a gaveta e o resto não divergirem. */
+:root {
+  --saida: cubic-bezier(0.23, 1, 0.32, 1);
+  --movimento: cubic-bezier(0.77, 0, 0.175, 1);
+  --gaveta: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
 /* ESCONDE DA VISTA, E NÃO DE QUEM OUVE.
  *
  * Morava em `jornadas/estante.css`, e é usada pelo `Campo`, pela `Gaveta` e por

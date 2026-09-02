@@ -1254,3 +1254,39 @@ do Solar 480 com o efeito handmade — achados por folha de contato entre 182
 assets de nome-hash. Cinco traziam `#878787` cozido dentro do SVG, uma cor que
 não existe no sistema, e o portão reprovou. Passam a herdar `currentColor`, como
 todos os outros; os caminhos ficam intactos.
+
+---
+
+## A busca do cabeçalho — `941:23107` · 03/09/2026
+
+Três coisas mudaram para bater com o desenho, e uma não pôde bater.
+
+**A caixa cresce.** `900:53900` mede 476px parada e o `941:23107` mede 626 com o
+painel aberto. É a expansão que o Erik descreveu — "a pesquisa é menor e se
+expande quando o usuário tenta pesquisar algo" — e eu tinha feito um campo largo
+e parado. 200ms na curva de saída. `inline-size` é propriedade de layout, e
+animá-la costuma ser o erro; aqui é o certo, porque não há como fingir mudança de
+largura com `transform` sem esticar o que está dentro, e é uma caixa pequena num
+ramo raso.
+
+**O painel é da largura da CAIXA, não do campo.** Ele pendurava no
+`.busca-caixa` e saía com 277px — metade do desenho. Passou a pendurar na
+`.cabecalho-acoes`, que é o que o desenho mede `w-full` nos dois estados.
+
+**A linha do resultado tinha metade da presença.** O desenho dá Body/Large ao
+título (24/32, peso 540) e Body/Medium ao subtítulo (20/30), com 16px entre os
+dois. Eu tinha posto Label/Medium e Label/Small com 8px, e a busca virava uma
+listinha em vez de ser o resultado principal. Medido depois: linha de 126px, que
+é o número do desenho.
+
+### O que NÃO pôde bater: o branco
+
+O desenho põe o painel em `#ffffff` e as linhas em `surface/base` (`#f9f9f9`).
+**Branco não é superfície do sistema** — o portão o tolera apenas como fundo
+implícito do documento, e cravá-lo aqui abriria a porta que ele existe para
+fechar.
+
+Então o que se copia é a RELAÇÃO, e não o valor: as linhas ficam um degrau
+distintas da folha do painel. O painel usa `surface/base` e a linha usa o degrau
+seguinte. A hierarquia que o desenho pede — "a linha se destaca da folha" —
+continua de pé; o par de valores é outro.
