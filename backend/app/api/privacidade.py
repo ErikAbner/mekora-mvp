@@ -138,6 +138,11 @@ def o_que_existe(
                     "Guardado enquanto o livro existir. É ele que permite refazer a "
                     "preparação com outras opções, sem você enviar de novo."
                 ),
+                # ESTA FRASE FOI ESCRITA ANTES DE SER VERDADE, e virou verdade
+                # em 03/09. O filtro da limpeza olhava `status in ("done",
+                # "error")`, e a conversão bem-sucedida grava `"converted"` —
+                # então de todo trabalho que deu certo o original ficava para
+                # sempre, enquanto esta linha prometia trinta dias.
                 "prazo": (
                     f"Apagado {dias} dias depois que o preparo termina — a limpeza "
                     "roda quando o servidor sobe, então a data exata varia."
@@ -145,7 +150,12 @@ def o_que_existe(
             },
             {
                 "titulo": "O resultado",
-                "explicacao": "Fica na sua estante. Sai quando você remove o livro.",
+                # E ESTA TAMBÉM SÓ AGORA É VERDADE. A limpeza por idade removia
+                # a pasta de saída inteira — o EPUB junto com o original —, e o
+                # livro de alguém sumiria da estante trinta dias depois de ser
+                # preparado. Não aconteceu com ninguém porque o outro defeito
+                # impedia a limpeza de rodar; um escondia o outro.
+                "explicacao": "Fica na sua estante. Sai quando você remove o livro, e não por tempo.",
                 "prazo": None,
             },
             {

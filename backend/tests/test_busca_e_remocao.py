@@ -511,3 +511,113 @@ def test_pdf_com_senha_nao_conta_nada(tmp_path):
     assert r["paginas_sem_texto"] is None
     assert r["paginas_ilegiveis"] is None
     assert r["capitulos_declarados"] is None
+
+
+# ---------------------------------------------------------------------------
+# A limpeza por idade: o original sai, o livro fica
+# ---------------------------------------------------------------------------
+
+def _job_velho(db, dono_id, status, dias=60):
+    """Um trabalho terminado há muito tempo, com os três arquivos em disco."""
+    from datetime import datetime, timedelta
+
+    from app.core.config import STORAGE_INPUT, STORAGE_OUTPUT, STORAGE_TEMP
+    from app.models.processing_job import ProcessingJob
+
+    j = ProcessingJob(
+        dono_id=dono_id, original_filename="velho.pdf", status=status,
+        input_format="pdf", processing_mode="document",
+    )
+    db.add(j)
+    db.commit()
+    db.refresh(j)
+
+    STORAGE_INPUT.mkdir(parents=True, exist_ok=True)
+    entrada = STORAGE_INPUT / f"{j.id}_velho.pdf"
+    entrada.write_bytes(b"%PDF-1.4 original")
+    j.input_path = str(entrada)
+
+    saida = STORAGE_OUTPUT / str(j.id)
+    saida.mkdir(parents=True, exist_ok=True)
+    epub = saida / "velho.epub"
+    epub.write_bytes(b"PK epub")
+    j.epub_path = str(epub)
+
+    temp = STORAGE_TEMP / str(j.id)
+    temp.mkdir(parents=True, exist_ok=True)
+    (temp / "page_0.png").write_bytes(b"png")
+
+    j.updated_at = datetime.utcnow() - timedelta(days=dias)
+    db.commit()
+    return j, entrada, epub, temp
+
+
+def test_a_limpeza_apaga_o_original_e_deixa_o_livro(db, correio, client_cru, tmp_storage):
+    """DOIS DEFEITOS QUE SE ESCONDIAM.
+
+    O filtro era `status in ("done", "error")`, e uma conversão bem-sucedida
+    grava `"converted"` — "done" é valor do OUTRO campo, o `conversion_status`.
+    De todo trabalho que deu certo, o original ficava no disco para sempre,
+    enquanto a tela de privacidade prometia trinta dias.
+
+    E se a limpeza rodasse, ela apagava `output/{id}` — o EPUB da estante. O
+    primeiro defeito escondia o segundo: consertar só ele teria apagado o acervo
+    de todo mundo na primeira subida do servidor.
+    """
+    from app.services.cleanup_service import cleanup_old_jobs
+
+    eu = entrar(client_cru, db, correio, "erik@exemplo.com")
+    j, entrada, epub, temp = _job_velho(db, eu, "converted")
+
+    assert entrada.is_file() and epub.is_file() and temp.is_dir()
+    resultado = cleanup_old_jobs(30)
+    assert resultado["deleted_jobs_files"] >= 1
+
+    assert not entrada.exists(), "o original tinha de sair"
+    assert not temp.exists(), "a pasta temporária tinha de sair"
+    assert epub.is_file(), "o LIVRO tinha de ficar — ele é a estante da pessoa"
+
+
+def test_a_limpeza_alcanca_os_estados_terminais_de_verdade(db, correio, client_cru, tmp_storage):
+    """`converted` é o estado do trabalho que deu certo, e era justamente o que
+    a lista não continha."""
+    from app.services.cleanup_service import TERMINADOS, cleanup_old_jobs
+
+    assert "converted" in TERMINADOS
+    eu = entrar(client_cru, db, correio, "erik@exemplo.com")
+
+    entradas = []
+    for status in ("converted", "analyzed", "error"):
+        _, entrada, _, _ = _job_velho(db, eu, status)
+        entradas.append(entrada)
+
+    cleanup_old_jobs(30)
+    for entrada in entradas:
+        assert not entrada.exists(), f"não apagou o original de um {entrada}"
+
+
+def test_a_limpeza_nao_toca_em_trabalho_em_curso(db, correio, client_cru, tmp_storage):
+    """Apagar o original de um trabalho em andamento é apagar o que ele está
+    lendo. `uploaded` e `converting` ficam de fora por isso."""
+    from app.services.cleanup_service import cleanup_old_jobs
+
+    eu = entrar(client_cru, db, correio, "erik@exemplo.com")
+    _, entrada, _, _ = _job_velho(db, eu, "converting")
+
+    cleanup_old_jobs(30)
+    assert entrada.is_file()
+
+
+def test_remover_da_estante_leva_o_livro_junto(db, correio, client_cru, tmp_storage):
+    """A limpeza por IDADE e a remoção por ORDEM apagam coisas diferentes, e a
+    diferença é o ponto: quem pediu para remover o livro pediu para remover o
+    livro."""
+    from app.services.cleanup_service import apagar_arquivos_do_trabalho
+
+    eu = entrar(client_cru, db, correio, "erik@exemplo.com")
+    j, entrada, epub, temp = _job_velho(db, eu, "converted")
+
+    apagar_arquivos_do_trabalho(j)
+    assert not entrada.exists()
+    assert not epub.exists()
+    assert not temp.exists()

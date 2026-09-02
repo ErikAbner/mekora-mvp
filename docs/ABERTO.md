@@ -1,7 +1,7 @@
 # Aberto — o que ainda não foi decidido
 
 **Estado:** vigente
-**Última revisão:** 2026-09-02
+**Última revisão:** 2026-09-03
 
 > **Esta é a fila, não um registro.** Um item sai daqui quando vira decisão, e a linha some.
 >
@@ -28,17 +28,30 @@ D   backlog técnico             decide-se durante a implementação, por quem i
 |---|---:|
 | **A** — antes da arquitetura | 6 |
 | **B** — antes da feature afetada | 22 |
-| **C** — antes do lançamento | 16 |
+| **C** — antes do lançamento | 12 |
 | **D** — backlog técnico | 14 |
-| | **58** |
+| | **54** |
 
-*A contagem de C caiu de 18 para 16 em 02/09: `C9` e `C16` fecharam. A regra do
+*A contagem de C caiu para 12 em 03/09: `C9` e `C16` fecharam em 02/09, e `C1`, `C3`, `C4` e `C8`
+em 03/09 — as quatro últimas por leitura do código, não por decisão. A regra do
 topo diz que a numeração não se reorganiza — as duas linhas continuam onde
 estavam, riscadas, porque outros documentos apontam para elas.*
 
 ### Saíram da fila em 2026-08-21
 
 `A1` → `DEC-0031` · `A3` → `DEC-0032` · `A6` e `B19` → `DEC-0033`
+
+### Saíram da fila em 2026-09-03
+
+`C1`, `C3`, `C4` e `C8` **não eram perguntas: eram fatos que ninguém tinha ido ler no código.** Uma
+pergunta aberta que já tem resposta escrita em Python custa o mesmo que uma que não tem — ela ocupa
+a mesma linha da fila e faz a lista parecer maior do que é.
+
+**E `C3` levou a um achado.** Ir conferir por quanto tempo o original sobrevive mostrou que ele
+sobrevive PARA SEMPRE no caso comum: a limpeza filtrava `status in ("done", "error")`, e a conversão
+bem-sucedida grava `"converted"` — "done" é valor do outro campo, o `conversion_status`. E se ela
+rodasse, apagaria a pasta de saída inteira, ou seja o EPUB da estante. Um defeito escondia o outro.
+Corrigido, com quatro provas.
 
 ### Saíram da fila em 2026-09-02
 
@@ -134,13 +147,13 @@ Podem ser decididas durante a construção. Não podem ficar sem resposta na V1.
 
 | | pergunta | origem |
 |---|---|---|
-| **C1** | Que criptografia é usada, e se o produto tem acesso ao conteúdo em claro durante o processamento | DEC-0022 |
+| **C1** | ~~Que criptografia é usada, e se o produto tem acesso ao conteúdo em claro durante o processamento~~ — **respondida pelo código em 03/09.** Não há criptografia em repouso: `grep` por `Fernet`/`cryptography` no backend não devolve nada. O servidor lê o arquivo em claro, porque converter é ler — o Calibre e o ocrmypdf recebem o caminho. O que existe é o endereço não adivinhável (`token_publico`) e o dono. Isto é fato, não decisão; a decisão que sobra é se ISSO BASTA | DEC-0022 |
 | **C2** | O que é "processo mínimo necessário", e como o acesso humano interno é auditado e por quem | DEC-0022 |
-| **C3** | Por quanto tempo o original temporário sobrevive entre a falha e o descarte | DEC-0021 · DEC-0022 |
-| **C4** | **Prazo exato de retenção de sessões anônimas.** Sem conta os dados são temporários, e o prazo foi deliberadamente não fixado | DEC-0018 |
+| **C3** | ~~Por quanto tempo o original temporário sobrevive entre a falha e o descarte~~ — **respondida em 03/09.** O mesmo prazo de todos: `retention_days`, hoje 30. `error` está na lista de estados terminais da limpeza desde sempre, e agora `converted` e `analyzed` também — ver o achado abaixo | DEC-0021 · DEC-0022 |
+| **C4** | ~~Prazo exato de retenção de sessões anônimas~~ — **respondida em 03/09.** Trabalho sem dono não é caso à parte: ele cai na mesma limpeza por idade, que olha `updated_at` e não o dono. São os mesmos 30 dias, e a tela de privacidade os diz | DEC-0018 |
 | **C6** | Se há consentimento para a coleta de uso, e como é pedido | DEC-0029 |
 | **C7** | Por quanto tempo os eventos coletados são mantidos | DEC-0029 |
-| **C8** | Qual ferramenta de instrumentação é usada, e se é própria | DEC-0029 |
+| **C8** | ~~Qual ferramenta de instrumentação é usada, e se é própria~~ — **respondida pelo código.** É própria: a tabela `stage_metrics`, escrita por `record_stage`. Não há serviço externo, e nada sai da máquina — a tela de privacidade diz isso desde 02/09 | DEC-0029 |
 | **C9** | ~~Quando as telas passam a ser efetivamente verificadas a 390px~~ — **fechada em 02/09.** As treze cabem, a Leitura inclusive: a auditoria a mede com um livro convertido de verdade, e ela passa com 21 nós | DEC-0023 |
 | **C10** | A migração do acervo e das notas existentes para identidade estável | DEC-0021 |
 | **C11** | Que estado cada uma das 19 DECs anteriores recebe além da normalização mecânica | DEC-0027 |

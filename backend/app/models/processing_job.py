@@ -44,7 +44,9 @@ class ProcessingJob(Base):
     # O nó `966:31504` põe "11.5 MB" como selo, ao lado do formato e das
     # páginas. Ele existia só no disco, e ler o disco a cada abertura de tela
     # faria a ficha depender de um arquivo que a limpeza pode ter apagado —
-    # `cleanup_old_jobs` remove o input e deixa o EPUB.
+    # `cleanup_old_jobs` remove o input e deixa o EPUB — o que passou a ser
+    # verdade em 03/09. Até ali ela removia a pasta de saída inteira, e este
+    # comentário descrevia a intenção, não o código.
     #
     # Guardado no momento em que o arquivo chega, que é o único em que ele
     # existe com certeza. Nulo para trabalho anterior a esta coluna: nulo é "não
