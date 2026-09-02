@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
-import { Rodape } from "../componentes/Rodape.jsx";
 import { Botao } from "../componentes/Botao.jsx";
+import { Icone } from "../componentes/Icone.jsx";
 import { Campo } from "../componentes/Campo.jsx";
 import { Folha } from "../componentes/Folha.jsx";
 import { DESTAQUES } from "./Leitura.jsx";
@@ -77,7 +77,17 @@ function Previa({ link, previa }) {
   );
 }
 
+/* A data curta do rodapé — "05/08/26", como o desenho escreve. Duas casas no
+ * ano porque a linha é estreita e o século não está em disputa. */
+function dataCurta(iso) {
+  if (!iso) return null;
+  const d = new Date(iso.endsWith("Z") || iso.includes("+") ? iso : `${iso}Z`);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" });
+}
+
 function Nota({ no, aoMover, aoTirar, aoLigar, ligando, escolhida, escala = 1 }) {
+  const quando = dataCurta(no.criada_em);
   const caixa = useRef(null);
   const arrasto = useRef(null);
   const [posicao, setPosicao] = useState(null);
@@ -128,7 +138,6 @@ function Nota({ no, aoMover, aoTirar, aoLigar, ligando, escolhida, escala = 1 })
   const estilo = {
     left: no.x,
     top: no.y,
-    background: DESTAQUES[no.cor] ?? DESTAQUES.amarelo,
     transform: posicao ? `translate(${posicao.dx}px, ${posicao.dy}px)` : undefined,
     /* Enquanto arrasta, a nota sobe: passar por baixo de outra faria parecer
        que ela sumiu. */
@@ -146,6 +155,22 @@ function Nota({ no, aoMover, aoTirar, aoLigar, ligando, escolhida, escala = 1 })
       onPointerCancel={soltar}
       onClick={() => ligando && aoLigar(no.nota_id)}
     >
+      {/* A COR DA NOTA VIRA UMA MARCA, e não o papel inteiro.
+          
+          O nó 895:6938 mostra cartões BRANCOS, com filete fino e uma sombra
+          quase nada — o mesmo cartão para todos. Aqui cada um era uma folha
+          amarela, azul ou verde, e com quatro cores no mesmo espaço a cor deixa
+          de significar o que ela significa na leitura: ali ela é a marca que a
+          pessoa escolheu para o trecho, e aqui virava a identidade do objeto.
+          
+          A marca guarda a informação e devolve o cartão ao sistema. */}
+      {no.cor && (
+        <span
+          className="nota-marca"
+          style={{ background: DESTAQUES[no.cor] ?? DESTAQUES.amarelo }}
+          aria-hidden="true"
+        />
+      )}
       <p className="nota-texto">{no.texto}</p>
       {no.comentario && <p className="nota-comentario">{no.comentario}</p>}
 
@@ -155,23 +180,34 @@ function Nota({ no, aoMover, aoTirar, aoLigar, ligando, escolhida, escala = 1 })
           isso com todas as letras. */}
       {link && <Previa link={link} previa={previa} />}
 
+      {/* O RODAPÉ DO DESENHO É ORIGEM E DATA — "Erik · 05/08/26" —, e não uma
+          fileira de botões.
+          
+          "Tirar" estava na cara de TODO cartão, e o `CLAUDE.md` já nomeia o que
+          isso faz: *"botão repetido cinco vezes vira textura e some como coisa
+          clicável"*. Num canvas de vinte notas eram vinte botões idênticos
+          competindo com o texto que a pessoa escreveu.
+          
+          Ele passou a aparecer só no cartão sob o ponteiro, ou com o foco do
+          teclado dentro dele — quem chega de teclado precisa alcançá-lo, e
+          `:hover` sozinho o esconderia para sempre. */}
       <footer>
-        {/* A ORIGEM FICA, e leva de volta. O item 6 do contrato pede "manter a
-            origem da nota, e abri-la" — sem isso a nota vira texto sem
-            procedência, e voltar ao livro exigiria procurá-la. */}
         <span className="nota-origem">
           {no.fonte === "solta" ? "escrita aqui" : no.origem || "do seu livro"}
         </span>
-        {no.job_id && (
-          <Link to={`/leitura/${no.job_id}`} className="nota-abrir">
-            Abrir no livro
-          </Link>
-        )}
-        {/* TIRAR não apaga: a nota continua na estante e no caderno. O rótulo
-            diz "tirar" e não "apagar" por isso. */}
-        <button type="button" onClick={(e) => { e.stopPropagation(); aoTirar(no.id); }}>
-          Tirar
-        </button>
+        {quando && <span className="nota-quando">{quando}</span>}
+        <span className="nota-acoes">
+          {no.job_id && (
+            <Link to={`/leitura/${no.job_id}`} className="nota-abrir">
+              Abrir no livro
+            </Link>
+          )}
+          {/* TIRAR não apaga: a nota continua na estante e no caderno. O rótulo
+              diz "tirar" e não "apagar" por isso. */}
+          <button type="button" onClick={(e) => { e.stopPropagation(); aoTirar(no.id); }}>
+            Tirar
+          </button>
+        </span>
       </footer>
     </article>
   );
@@ -319,10 +355,29 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
       const a = nos.find((n) => n.nota_id === l.de_id);
       const b = nos.find((n) => n.nota_id === l.para_id);
       if (!a || !b) continue;
+      const x1 = a.x + NOTA_LARGURA / 2;
+      const y1 = a.y + NOTA_ALTURA / 2;
+      const x2 = b.x + NOTA_LARGURA / 2;
+      const y2 = b.y + NOTA_ALTURA / 2;
+      /* A CURVA DO DESENHO, e não um segmento reto.
+       *
+       * O nó 895:6938 liga os cartões com uma curva que SAI E CHEGA NA
+       * HORIZONTAL, e isso não é enfeite: com reta, duas notas quase alinhadas
+       * produzem uma diagonal de um grau que parece um erro de renderização, e
+       * quatro ligações saindo de uma nota viram um leque ilegível.
+       *
+       * A curva é uma Bézier cúbica com as duas alças horizontais, a metade da
+       * distância — a mesma forma dos diagramas de nó de todo editor visual,
+       * pela mesma razão. */
+      const alca = Math.max(40, Math.abs(x2 - x1) / 2);
       linhas.push({
         id: l.id,
-        x1: a.x + NOTA_LARGURA / 2, y1: a.y + NOTA_ALTURA / 2,
-        x2: b.x + NOTA_LARGURA / 2, y2: b.y + NOTA_ALTURA / 2,
+        d: `M ${x1} ${y1} C ${x1 + alca} ${y1}, ${x2 - alca} ${y2}, ${x2} ${y2}`,
+        /* O MEIO DA CURVA, e não o meio da reta: é onde o ponto de desfazer
+           mora, e ele tem de cair EM CIMA do traço. Numa Bézier com alças
+           horizontais, t=0,5 dá exatamente isto. */
+        mx: (x1 + 3 * (x1 + alca) + 3 * (x2 - alca) + x2) / 8,
+        my: (y1 + 3 * y1 + 3 * y2 + y2) / 8,
       });
     }
     if (!linhas.length) return null;
@@ -398,39 +453,66 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
       <Cabecalho lugar="canvas" />
 
       <section className="canvas">
-        <header className="canvas-topo">
-          <div>
-            <h1>Canvas</h1>
-            <p className="canvas-sobre">
-              O espaço onde as notas se ligam umas às outras. Nada se move
-              sozinho: o que está aqui foi posto por você.
-            </p>
-          </div>
-
-          <div className="canvas-acoes">
-            <Botao tom="secundaria" onClick={() => { setTexto(""); setEscrevendo(true); }}>
-              Escrever uma nota
-            </Botao>
-            <Botao tom="secundaria" onClick={() => setTrazendo(true)} disabled={!deFora.length}>
-              Trazer nota {deFora.length > 0 && <span className="dado">{deFora.length}</span>}
-            </Botao>
-            {/* CRIAR UM GRUPO. Ele nasce no meio do que está sendo visto, e não
-                na origem do plano: numa superfície sem fim, a origem pode estar
-                a mil pixels de distância, e o retângulo apareceria fora da
-                tela. */}
-            <Botao tom="secundaria" onClick={criarAqui}>
-              Agrupar uma área
-            </Botao>
-            <Botao
-              tom={ligando ? "primaria" : "secundaria"}
-              aria-pressed={ligando ? "true" : "false"}
-              onClick={() => { setLigando((v) => !v); setPrimeira(null); }}
-              disabled={nos.length < 2}
-            >
-              {ligando ? "Escolhendo…" : "Ligar duas"}
-            </Botao>
-          </div>
-        </header>
+        {/* A BARRA DE FERRAMENTAS, FLUTUANDO À ESQUERDA — nó 895:6938.
+         *
+         * O que havia aqui era um título "Canvas", um parágrafo explicando o que
+         * ele é, e quatro botões largos numa fileira. Nada disso está no
+         * desenho, e o motivo é o que a tela é: no desenho o canvas É a página,
+         * de borda a borda, e as ferramentas flutuam sobre ele numa coluna
+         * estreita.
+         *
+         * O título dizia "Canvas" a três centímetros do item "Canvas" marcado no
+         * menu, e o parágrafo explicava a área toda vez que alguém a abre — a
+         * milésima vez inclusive. Numa tela de trabalho, o que ocupa o alto é o
+         * trabalho.
+         *
+         * OS RÓTULOS NÃO SUMIRAM: cada botão tem `aria-label` e título, e o nome
+         * aparece ao passar o ponteiro. Ícone sem nome é adivinhação, e é o
+         * defeito mais comum de barra de ferramenta. */}
+        <nav className="canvas-ferramentas" aria-label="Ferramentas do Canvas">
+          <button
+            type="button"
+            title="Escrever uma nota"
+            aria-label="Escrever uma nota"
+            onClick={() => { setTexto(""); setEscrevendo(true); }}
+          >
+            <Icone src="/icones/icone-nota-nova.svg" />
+          </button>
+          <button
+            type="button"
+            title={deFora.length ? `Trazer nota (${deFora.length} fora do Canvas)` : "Nenhuma nota fora do Canvas"}
+            aria-label={deFora.length ? `Trazer nota — ${deFora.length} fora do Canvas` : "Nenhuma nota fora do Canvas"}
+            onClick={() => setTrazendo(true)}
+            disabled={!deFora.length}
+          >
+            <Icone src="/icones/icone-caderno.svg" />
+            {/* O NÚMERO FICA. Ele é o que diz se vale abrir a folha — sem ele o
+                botão desabilitado e o botão com dezenove notas atrás parecem a
+                mesma coisa. */}
+            {deFora.length > 0 && <span className="canvas-conta">{deFora.length}</span>}
+          </button>
+          {/* CRIAR UM GRUPO. Ele nasce no meio do que está sendo visto, e não
+              na origem do plano: numa superfície sem fim, a origem pode estar
+              a mil pixels de distância, e o retângulo apareceria fora da tela. */}
+          <button
+            type="button"
+            title="Agrupar uma área"
+            aria-label="Agrupar uma área"
+            onClick={criarAqui}
+          >
+            <Icone src="/icones/icone-estudos.svg" />
+          </button>
+          <button
+            type="button"
+            title={ligando ? "Escolhendo as notas para ligar" : "Ligar duas notas"}
+            aria-label={ligando ? "Escolhendo as notas para ligar" : "Ligar duas notas"}
+            aria-pressed={ligando ? "true" : "false"}
+            onClick={() => { setLigando((v) => !v); setPrimeira(null); }}
+            disabled={nos.length < 2}
+          >
+            <Icone src="/icones/icone-atalho.svg" />
+          </button>
+        </nav>
 
         {erro && <p className="canvas-erro" role="alert">{erro}</p>}
 
@@ -505,7 +587,36 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
               viewBox={`${tracos.x} ${tracos.y} ${tracos.largura} ${tracos.altura}`}
             >
               {tracos.linhas.map((l) => (
-                <line key={l.id} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} className="traco" />
+                <g key={l.id}>
+                  <path d={l.d} className="traco" fill="none" />
+                  {/* DESFAZER MORA NA PRÓPRIA LIGAÇÃO.
+                  
+                      Havia uma lista "Ligações N" abaixo do canvas, com um
+                      "Desfazer" por linha — e ela não está no desenho, por um
+                      motivo que se vê usando: para desfazer a ligação entre
+                      duas notas que estão na tela, a pessoa rolava para fora do
+                      canvas, procurava a linha certa entre trinta parecidas
+                      ("A expedição partiu de manhã, c… — Uma foto é obser…") e
+                      clicava. A ligação está ali, desenhada.
+                      
+                      O ponto é o círculo que o desenho põe na junta. Ele só
+                      ganha o × sob o ponteiro; parado, é a junta. */}
+                  <g
+                    className="traco-junta"
+                    transform={`translate(${l.mx} ${l.my})`}
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Desfazer esta ligação"
+                    onClick={() => aoDesligar(l.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); aoDesligar(l.id); }
+                    }}
+                  >
+                    <circle r="9" className="traco-alvo" />
+                    <circle r="4" className="traco-ponto" />
+                    <path d="M -3 -3 L 3 3 M 3 -3 L -3 3" className="traco-x" />
+                  </g>
+                </g>
               ))}
             </svg>
           )}
@@ -541,25 +652,11 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
           </div>
         </div>
 
-        {ligacoes.length > 0 && (
-          <div className="canvas-ligacoes">
-            <h2>Ligações <span className="dado">{ligacoes.length}</span></h2>
-            <ul>
-              {ligacoes.map((l) => {
-                const a = posicaoDe(l.de_id);
-                const b = posicaoDe(l.para_id);
-                return (
-                  <li key={l.id}>
-                    <span>
-                      {(a?.texto ?? "").slice(0, 30)}… — {(b?.texto ?? "").slice(0, 30)}…
-                    </span>
-                    <button type="button" onClick={() => aoDesligar(l.id)}>Desfazer</button>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        )}
+        {/* A LISTA "LIGAÇÕES N" SAIU. Ela não está no desenho, e o custo dela
+            aparecia usando: para desfazer a ligação entre duas notas visíveis na
+            tela, era preciso rolar para fora do canvas e achar a linha certa
+            entre trinta parecidas. O ponto na junta da curva faz o mesmo gesto
+            onde a ligação está. */}
       </section>
 
       <Folha
@@ -619,7 +716,10 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
         </ul>
       </Folha>
     
-      <Rodape />
+      {/* SEM RODAPÉ AQUI. O Canvas é uma superfície SEM FIM, e um rodapé com
+          links institucionais logo abaixo dela diz que o plano acabou ali — o
+          contrário do que a tela é. Nenhuma outra tela de trabalho contínuo tem
+          um: a Leitura também não tem. */}
     </div>
   );
 }

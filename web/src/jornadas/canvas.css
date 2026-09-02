@@ -1,9 +1,17 @@
 /* O Canvas. Superfície de organização deliberada: nada se move sozinho. */
+/* O CANVAS E A PAGINA, de borda a borda — no 895:6938.
+ *
+ * Ele era uma secao com 40px de respiro dos lados, titulo em cima e botoes numa
+ * fileira. No desenho o chao pontilhado vai ate as bordas da janela e as
+ * ferramentas flutuam sobre ele: numa tela de trabalho, o que ocupa o alto e o
+ * trabalho.
+ *
+ * `position: relative` porque a barra e o zoom flutuam DENTRO dele. */
 .canvas {
-  padding: 32px 40px 64px;
+  position: relative;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 20px;
 }
 
 .canvas-topo {
@@ -55,11 +63,14 @@
  * O MUNDO e a janela; o PLANO e a superficie, e ela nao tem borda. Duas camadas
  * porque so assim o zoom e o arrasto valem para tudo o que esta dentro sem cada
  * nota precisar saber da camera. */
+/* O CHAO TOMA O QUE SOBRA DA JANELA. Ele tinha altura fixa de 720 com um filete
+ * em volta, dentro de uma pagina com titulo e rodape — uma janelinha de canvas.
+ * No no 895:6938 o chao pontilhado vai ate as bordas: os 88px descontados sao o
+ * cabecalho, que e a unica coisa que fica por cima. */
 .canvas-mundo {
   position: relative;
-  block-size: min(72vh, 720px);
+  block-size: calc(100vh - 88px);
   overflow: hidden;
-  border: 1px solid var(--border);
   background: var(--card, var(--background));
   cursor: grab;
   touch-action: none;
@@ -130,32 +141,71 @@
 
 .traco { stroke: var(--foreground); stroke-width: 1; opacity: 0.45; }
 
+/* A JUNTA DA CURVA, e o gesto de desfazer.
+ *
+ * A lista "Ligacoes N" abaixo do canvas saiu: para desfazer a ligacao entre duas
+ * notas visiveis na tela, era preciso rolar para fora e achar a linha certa
+ * entre trinta parecidas. Aqui o gesto acontece onde a ligacao esta.
+ *
+ * O ALVO E MAIOR QUE O PONTO: 9px de raio invisivel contra 4px de ponto
+ * visivel. Acertar um circulo de oito pixels com o mouse e dificil, e com o dedo
+ * e sorte. */
+.traco-junta { cursor: pointer; }
+.traco-alvo { fill: transparent; }
+.traco-ponto {
+  fill: var(--background);
+  stroke: var(--foreground);
+  stroke-width: 1;
+  opacity: 0.55;
+}
+.traco-x { stroke: var(--background); stroke-width: 1.5; opacity: 0; }
+.traco-junta:hover .traco-ponto,
+.traco-junta:focus-visible .traco-ponto { fill: var(--foreground); opacity: 1; }
+.traco-junta:hover .traco-x,
+.traco-junta:focus-visible .traco-x { opacity: 1; }
+.traco-junta:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+
 /* A NOTA. Largura fixa de 220 para o traço saber onde é o centro dela — o SVG
    soma 110 e 50 para chegar ao meio. */
+/* O CARTAO E BRANCO, e a cor da nota virou uma marca.
+ *
+ * Ele era uma folha AMARELA, AZUL ou VERDE — a cor do destaque pintando o
+ * objeto inteiro. Com quatro cores no mesmo espaco, a cor deixa de significar o
+ * que significa na leitura: la ela e a marca que a pessoa escolheu para o
+ * trecho, aqui virava a identidade do cartao.
+ *
+ * O no 895:6938 mostra cartoes brancos, filete fino, sombra quase nada — o
+ * mesmo cartao para todos. A cor volta a ser informacao numa faixa de 3px.
+ *
+ * E SOME UM PROBLEMA DE CONTRASTE INTEIRO: as tres regras abaixo existiam para
+ * fazer a tinta funcionar sobre quatro fundos diferentes em dois temas. Com um
+ * fundo so, `--foreground` sobre `--background` e o par do sistema. */
 .nota-canvas {
   position: absolute;
   inline-size: 220px;
-  padding: 12px 14px;
-  border: 1px solid color-mix(in srgb, var(--foreground) 25%, transparent);
-  /* A TINTA SEGUE O TEMA, e não é cravada.
-     Eu tinha escrito `#151515` citando a medida "os pastéis carregam #151515 de
-     7,37 a 17,15" — e essa medida é do conjunto CLARO. No tema escuro os
-     pastéis são outros (#746c2f, #406f9e), escuros, e a tinta escura sobre eles
-     media 3,42 e 3,47 a 14px: abaixo dos 4,5 que AA pede.
-
-     `--foreground` acompanha: escuro sobre pastel claro, claro sobre pastel
-     escuro. Citar uma medida verdadeira para o caso que ela não governa é o
-     mesmo engano que já custou uma rodada com o raio dos chips. */
+  padding: 12px 14px 12px 20px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  /* A sombra do desenho e quase nada: ela diz "isto flutua sobre o chao", e nao
+   * "isto e um cartao de dashboard". */
+  box-shadow: 0 1px 2px rgb(0 0 0 / 4%), 0 4px 12px rgb(0 0 0 / 4%);
   color: var(--foreground);
   cursor: grab;
   touch-action: none;
   user-select: none;
 }
 
+/* A cor da nota, na borda de inicio. Tres pixels bastam para distinguir quatro
+ * marcas, e ela nao disputa com o texto. */
+.nota-marca {
+  position: absolute;
+  inset-inline-start: 0; inset-block: 0;
+  inline-size: 3px;
+}
+
 .nota-canvas.movendo { cursor: grabbing; box-shadow: 0 6px 20px rgb(0 0 0 / 18%); }
-/* A escolhida para ligar ganha ESPESSURA, não cor: sobre quatro fundos pastéis
-   diferentes, mudar a cor da borda não se vê igual em todos. */
-.nota-canvas.escolhida { border-width: 3px; border-color: var(--foreground); }
+/* A escolhida para ligar ganha ESPESSURA e tinta cheia. */
+.nota-canvas.escolhida { border-width: 2px; border-color: var(--foreground); }
 .nota-canvas:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
 
 .nota-texto {
@@ -175,40 +225,65 @@
 }
 
 .nota-canvas footer {
-  margin-block-start: 10px;
+  margin-block-start: 12px;
+  padding-block-start: 10px;
+  border-block-start: 1px solid var(--border);
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  min-block-size: 28px;
+}
+
+/* ORIGEM E DATA, na mesma linha — "escrita aqui · 05/08/26", que e o rodape do
+ * no 895:6938. Com o cartao branco, a tinta secundaria do sistema volta a
+ * servir: as tres regras que existiam aqui para fazer a tinta funcionar sobre
+ * quatro pasteis em dois temas deixaram de ser necessarias com o fundo unico.
+ *
+ * ESCOPADA PELO CANVAS, e nao solta: `.nota-origem` tambem e definida em
+ * `notas.css`, os dois arquivos entram no mesmo pacote, e o ultimo carregado
+ * vence. */
+/* 14, E NAO 13. A escala do sistema e [14,16,18,20,22,24,28,32,40,48,64], e o
+ * portao recusou: "corpo 13, degrau mais perto 14". Treze pareceu bom no
+ * desenho da linha e nao pertence a progressao — acrescentar um degrau por causa
+ * de um rodape mexe no sistema inteiro. */
+.nota-canvas .nota-origem,
+.nota-canvas .nota-quando {
+  color: var(--muted-foreground);
   font-size: 14px;
   line-height: 20px;
 }
+.nota-canvas .nota-quando { font-variant-numeric: tabular-nums; }
 
-/* A ORIGEM NÃO É ESMAECIDA POR OPACIDADE.
+/* AS ACOES SO APARECEM NO CARTAO SOB O PONTEIRO, ou com o foco do teclado
+ * dentro dele.
  *
- * Ela era `--foreground` a 65%, e sobre os quatro pastéis do tema escuro isso
- * dava 2,53 a 2,55 — bem abaixo dos 4,5. Esmaecer funciona sobre um fundo só;
- * sobre quatro fundos diferentes, cada um chega num contraste próprio, e o pior
- * deles é o que vale.
+ * "Tirar" estava na cara de TODO cartao, e o `CLAUDE.md` ja nomeia o efeito:
+ * "botao repetido cinco vezes vira textura e some como coisa clicavel". Num
+ * canvas de vinte notas eram vinte botoes identicos competindo com o texto que
+ * a pessoa escreveu.
  *
- * A hierarquia vem do CORPO e do peso: 14px contra os 14px do texto, mas sem o
- * peso — e principalmente da posição, numa linha própria abaixo. Hierarquia é
- * distância, não transparência. */
-/* ESCOPADA PELO CANVAS, e não solta.
+ * `:focus-within` esta junto de proposito: `:hover` sozinho esconderia a acao
+ * para sempre de quem chega pelo teclado.
  *
- * `.nota-origem` também é definida em `notas.css`, com `--muted-foreground`. Os
- * dois arquivos entram no mesmo pacote, e o último a ser carregado vence — a
- * regra daqui era desfeita pela de lá, sem erro nenhum, e sobre o pastel escuro
- * o resultado media 2,53.
- *
- * Segunda colisão de classe no mesmo dia; a primeira foi `.rodape`, com dois
- * rodapés. O CSS das jornadas divide um espaço de nomes global, e um nome
- * genérico em dois arquivos é uma regra apagando a outra em silêncio. */
-.nota-canvas .nota-origem {
-  flex: 1 0 100%;
-  color: var(--foreground);
-  font-size: 14px;
-  line-height: 20px;
+ * ESCOPADA PELO CARTAO: `.nota-acoes` tambem existe em `leitura.css`, e o
+ * `scripts/classes.mjs` recusou — os dois arquivos entram no mesmo pacote, e a
+ * ultima regra carregada apagaria a outra em silencio. Terceira colisao de nome
+ * nesta pasta. */
+.nota-canvas .nota-acoes {
+  display: flex; gap: 8px; align-items: center;
+  margin-inline-start: auto;
+  opacity: 0;
+  transition: opacity var(--d1, 160ms) ease;
+}
+.nota-canvas:hover .nota-acoes,
+.nota-canvas:focus-within .nota-acoes { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nota-canvas .nota-acoes { transition: none; }
+}
+/* Sem ponteiro nao ha `:hover`, e a acao ficaria inalcancavel. */
+@media (hover: none) {
+  .nota-canvas .nota-acoes { opacity: 1; }
 }
 
 .nota-abrir, .nota-canvas footer button {
@@ -379,4 +454,65 @@
   font-size: 14px; line-height: 20px;
   opacity: 0.75;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+
+/* ─── A barra de ferramentas, flutuando a esquerda — no 895:6938 ────────────
+ *
+ * O que havia era um titulo "Canvas", um paragrafo e quatro botoes largos numa
+ * fileira. Nada disso esta no desenho: la o canvas E a pagina, de borda a borda,
+ * e as ferramentas flutuam sobre ele numa coluna estreita.
+ *
+ * O titulo dizia "Canvas" a tres centimetros do item "Canvas" marcado no menu, e
+ * o paragrafo explicava a area toda vez que alguem a abre — a milesima inclusive.
+ */
+.canvas-ferramentas {
+  position: absolute;
+  inset-inline-start: 16px;
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  display: flex; flex-direction: column;
+  padding: 8px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 4%), 0 8px 24px rgb(0 0 0 / 6%);
+}
+.canvas-ferramentas button {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  inline-size: 44px; block-size: 44px;
+  border: 0; background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+.canvas-ferramentas button:hover:not(:disabled) { background: var(--background-secondary); color: var(--foreground); }
+.canvas-ferramentas button[aria-pressed="true"] { background: var(--foreground); color: var(--background); }
+/* Desabilitado nao vira invisivel: ele conta que a ferramenta existe e que
+ * ainda nao ha o que fazer com ela. */
+.canvas-ferramentas button:disabled { opacity: 0.35; cursor: default; }
+.canvas-ferramentas button:focus-visible { outline: 2px solid var(--foreground); outline-offset: -2px; }
+
+/* O numero de notas fora do Canvas. Sem ele, o botao desabilitado e o botao com
+ * dezenove notas atras parecem a mesma coisa. */
+/* 14 aqui tambem, pela mesma razao — eu tinha posto 11. O selo cresce para
+ * caber o corpo, e nao o contrario. */
+.canvas-conta {
+  position: absolute;
+  inset-block-start: 2px; inset-inline-end: 2px;
+  min-inline-size: 20px; padding: 0 4px;
+  background: var(--foreground); color: var(--background);
+  font-size: 14px; line-height: 20px; text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 767px) {
+  /* No telefone a coluna vira uma barra no rodape: uma coluna de 44px na borda
+   * esquerda come um oitavo da largura util. */
+  .canvas-ferramentas {
+    inset-block-start: auto; inset-block-end: 16px;
+    inset-inline: 16px;
+    transform: none;
+    flex-direction: row; justify-content: center;
+  }
 }

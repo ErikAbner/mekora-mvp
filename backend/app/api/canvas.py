@@ -116,6 +116,11 @@ def superficie(
                 # sem procedência, e voltar ao livro exigiria procurá-la.
                 "fonte": nota.fonte, "origem": nota.origem, "job_id": nota.job_id,
                 "capitulo": nota.capitulo, "de": nota.de,
+                # QUANDO A NOTA FOI ESCRITA. O rodapé do cartão no nó 895:6938 é
+                # "Erik · 05/08/26" — origem e data —, e a data não saía daqui.
+                # Num canvas que cresce por meses, ela é o que separa o que se
+                # pensou ontem do que se pensou em março.
+                "criada_em": nota.criada_em,
             }
             for n, nota in nos
         ],
