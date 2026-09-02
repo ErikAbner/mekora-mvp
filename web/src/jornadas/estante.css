@@ -601,7 +601,27 @@
 /* O FUNIL DO TELEFONE — no 964:24606. Ele nao existe no computador: la os cinco
  * recortes cabem em linha, e um botao que abre o que ja esta na tela e onde a
  * pessoa comeca a duvidar de qual dos dois vale. */
-.estante-funil { display: none; }
+/* AS CORES FICAM FORA DA CONSULTA DE MEDIA, e o `display` fica dentro.
+ *
+ * Eu tinha declarado tudo dentro do `@media (max-width: 767px)`, e o portao
+ * pegou a 1440: "cor fora do sistema #6b6b6b, superficie, texto Filtrar". Um
+ * `<button>` sem `background` declarado herda o `buttonface` do navegador, e o
+ * elemento continua no DOM mesmo escondido — o portao le a arvore, nao o que
+ * esta visivel.
+ *
+ * A regra que sobra: o que um elemento E se declara sempre; o que decide se ele
+ * APARECE e que mora na consulta de media. */
+.estante-funil {
+  display: none;
+  align-items: center; gap: 8px; align-self: flex-start;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit; font-size: 16px; line-height: 24px;
+  cursor: pointer;
+}
+.estante-funil:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
 
 .estante-filtros { display: flex; flex-direction: column; }
 .estante-filtros button {
@@ -622,13 +642,5 @@
    * livro — ou rolam para o lado, e recorte que rola para o lado e recorte que
    * ninguem ve. */
   .estante-grade > .recortes { display: none; }
-  .estante-funil {
-    display: flex; align-items: center; gap: 8px; align-self: flex-start;
-    padding: 12px 16px;
-    border: 1px solid var(--border); background: var(--background);
-    color: var(--foreground);
-    font: inherit; font-size: 16px; line-height: 24px;
-    cursor: pointer;
-  }
-  .estante-funil:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+  .estante-funil { display: flex; }
 }

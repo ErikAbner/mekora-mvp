@@ -147,7 +147,11 @@ a.acao.active { background: var(--muted); color: var(--foreground); }
  * No computador os mesmos lugares ja estao a vista: os dois icones aqui do lado
  * e o rodape. Um menu que repete o que esta na tela e onde a pessoa comeca a
  * duvidar de qual dos dois vale. */
-.cabecalho-menu { display: none; }
+/* Mesma regra do funil da estante: o que o elemento E se declara sempre, e so o
+ * `display` mora na consulta de media. O `.acao` ja pinta borda, fundo e tinta —
+ * o portao pegou um `<button>` sem fundo declarado herdando o `buttonface` do
+ * navegador, e o elemento continua no DOM mesmo escondido. */
+.cabecalho-menu { display: none; background: var(--background); color: var(--foreground); }
 
 .menu-grupo + .menu-grupo { margin-block-start: 24px; }
 .menu-grupo h3 {

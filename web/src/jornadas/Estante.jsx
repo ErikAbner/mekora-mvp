@@ -22,7 +22,6 @@ import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Rodape } from "../componentes/Rodape.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { Folha } from "../componentes/Folha.jsx";
-import { Icone } from "../componentes/Icone.jsx";
 import { DESTAQUES } from "./Leitura.jsx";
 import "./estante.css";
 
@@ -271,7 +270,13 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnvia
             aria-expanded={filtrando ? "true" : "false"}
             onClick={() => setFiltrando(true)}
           >
-            <Icone src="/icones/icone-buscar.svg" />
+            {/* SEM ÍCONE, e isso é escolha. Não existe funil no conjunto de
+                ícones do produto, e o mais parecido é a LUPA — que quer dizer
+                busca, e a busca de verdade está a dois centímetros dali, no
+                cabeçalho. Dois significados no mesmo símbolo na mesma tela é
+                pior que um botão só com texto.
+                
+                Quando o funil for exportado do Figma, ele entra aqui. */}
             <span>{recorte === "tudo" ? "Filtrar" : RECORTES.find((r) => r.id === recorte)?.rotulo}</span>
           </button>
 
