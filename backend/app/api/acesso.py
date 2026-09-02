@@ -7,7 +7,7 @@ as decisões de porta: o que a resposta conta, e como o cookie é escrito.
 import os
 from typing import Optional
 
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Cookie, Depends, File, HTTPException, Request, Response, UploadFile
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -125,7 +125,23 @@ def eu(mekora_sessao: Optional[str] = Cookie(default=None), db: Session = Depend
     pessoa = acesso_service.quem_e(db, mekora_sessao)
     if pessoa is None:
         return {"entrou": False}
-    return {"entrou": True, "email": pessoa.email, "desde": pessoa.criada_em}
+    return {
+        "entrou": True,
+        "email": pessoa.email,
+        # NOME E RETRATO, decididos pelo Erik em 02/09/2026.
+        #
+        # `nome` nulo é estado normal: entrar não pede nome, e quem não escreveu
+        # é chamado pelo e-mail. O que NÃO se faz mais é derivar um nome do
+        # e-mail — `erik@x.com` virava "erik" na trilha da conta, e a tela de
+        # privacidade dizia ao lado que não havia nome nenhum.
+        "nome": pessoa.nome,
+        # O ENDEREÇO DO RETRATO, e não o retrato. `true` aqui vira um `<img>`
+        # apontando para `/eu/retrato`, que exige o biscoito — sem URL
+        # adivinhável e sem token público. Capa de livro precisa ser alcançável
+        # sem conta porque trabalho sem dono existe; retrato nunca precisa.
+        "tem_retrato": bool(pessoa.retrato),
+        "desde": pessoa.criada_em,
+    }
 
 
 @router.post("/sair", status_code=204)
@@ -186,3 +202,181 @@ def encerrar_outras(
     """
     exigir_conta(mekora_sessao, db)
     return {"encerradas": acesso_service.encerrar_as_outras(db, mekora_sessao)}
+
+
+# ---------------------------------------------------------------------------
+# O perfil: como a pessoa quer ser chamada, e a cara dela
+# ---------------------------------------------------------------------------
+
+# Um nome não é um campo livre de tamanho infinito: 80 é folgado para qualquer
+# nome de pessoa e curto o bastante para não virar um parágrafo no lugar de um
+# rótulo.
+NOME_MAXIMO = 80
+
+# O LADO DO RETRATO, em pixels. Ele é sempre reescrito como PNG quadrado deste
+# tamanho, e por dois motivos: a tela o mostra em círculo pequeno, e guardar o
+# arquivo que chegou seria guardar EXIF — câmera, data e, em foto de celular,
+# coordenada de GPS.
+RETRATO_LADO = 512
+
+# O que o servidor aceita RECEBER. O limite é do arquivo que chega, antes de
+# qualquer processamento: sem ele, uma imagem de 200 MB é lida inteira na
+# memória antes de alguém poder recusá-la.
+RETRATO_BYTES = 5 * 1024 * 1024
+
+# Os formatos que o Pillow abre e que uma pessoa realmente manda. HEIC fica de
+# fora porque o Pillow não o lê sem plugin, e uma lista que promete o que não
+# abre é pior que uma lista curta.
+RETRATO_TIPOS = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+
+
+class PerfilEditado(BaseModel):
+    nome: Optional[str] = None
+
+
+@router.patch("/eu")
+def mudar_perfil(
+    troca: PerfilEditado,
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Muda o nome. O e-mail não se muda por aqui — ele É a conta.
+
+    Trocar o e-mail é trocar de identidade: os links de entrada, as sessões e o
+    dono de tudo apontam para ele. Isso é outra operação, com confirmação nos
+    dois endereços, e não um campo de texto ao lado do nome.
+    """
+    pessoa = exigir_conta(mekora_sessao, db)
+
+    if troca.nome is not None:
+        nome = troca.nome.strip()
+        if len(nome) > NOME_MAXIMO:
+            raise HTTPException(
+                status_code=422,
+                detail=f"O nome tem no máximo {NOME_MAXIMO} caracteres.",
+            )
+        # Vazio APAGA, e não guarda string vazia: "sem nome" e "nome em branco"
+        # são o mesmo estado para quem lê a tela, e dois jeitos de escrever o
+        # mesmo estado é como um deles deixa de ser tratado.
+        pessoa.nome = nome or None
+
+    db.commit()
+    db.refresh(pessoa)
+    return {"nome": pessoa.nome, "tem_retrato": bool(pessoa.retrato)}
+
+
+@router.put("/eu/retrato")
+async def por_retrato(
+    arquivo: UploadFile = File(...),
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Recebe uma imagem e guarda um PNG quadrado feito pelo servidor.
+
+    O QUE ENTRA NÃO É O QUE FICA. A imagem é aberta, o EXIF é descartado com ela
+    — câmera, data, e em foto de celular a coordenada de GPS —, o recorte é
+    central e a saída é sempre PNG de lado fixo. Guardar os bytes que chegaram
+    seria guardar tudo isso, e servir de volta para qualquer um que veja o
+    retrato.
+    """
+    from io import BytesIO
+
+    from PIL import Image, UnidentifiedImageError
+
+    from app.core.config import STORAGE_RAIZ
+
+    pessoa = exigir_conta(mekora_sessao, db)
+
+    if arquivo.content_type not in RETRATO_TIPOS:
+        raise HTTPException(
+            status_code=400,
+            detail="Formato não aceito. Mande JPEG, PNG, WebP ou GIF.",
+        )
+
+    # LIDO COM TETO, e não `await arquivo.read()` sem limite: o `content-length`
+    # é dito pelo cliente, e acreditar nele é deixar a memória do servidor na
+    # mão de quem envia.
+    bruto = await arquivo.read(RETRATO_BYTES + 1)
+    if len(bruto) > RETRATO_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"A imagem passa de {RETRATO_BYTES // (1024 * 1024)} MB.",
+        )
+    if not bruto:
+        raise HTTPException(status_code=400, detail="O arquivo chegou vazio.")
+
+    try:
+        imagem = Image.open(BytesIO(bruto))
+        imagem.load()
+    except (UnidentifiedImageError, OSError) as exc:
+        # O TIPO DECLARADO NÃO É PROVA. `content_type` vem do cliente; quem diz
+        # se aquilo é imagem é o decodificador.
+        raise HTTPException(status_code=400, detail="Não consegui abrir essa imagem.") from exc
+
+    imagem = imagem.convert("RGB")
+    lado = min(imagem.size)
+    esquerda = (imagem.width - lado) // 2
+    topo = (imagem.height - lado) // 2
+    imagem = imagem.crop((esquerda, topo, esquerda + lado, topo + lado))
+    imagem = imagem.resize((RETRATO_LADO, RETRATO_LADO), Image.LANCZOS)
+
+    pasta = STORAGE_RAIZ / "retratos"
+    pasta.mkdir(parents=True, exist_ok=True)
+    destino = pasta / f"{pessoa.id}.png"
+    imagem.save(destino, format="PNG", optimize=True)
+
+    pessoa.retrato = str(destino)
+    db.commit()
+    return {"tem_retrato": True}
+
+
+@router.get("/eu/retrato")
+def ver_retrato(
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+):
+    """O retrato de quem está pedindo, e só dele.
+
+    Não há id no caminho de propósito: com `/retrato/{id}` haveria como varrer
+    números e recolher a cara de todo mundo. Aqui a rota não tem parâmetro
+    nenhum — ela responde a quem o biscoito diz que é.
+    """
+    from fastapi.responses import FileResponse
+    from pathlib import Path as _Path
+
+    pessoa = exigir_conta(mekora_sessao, db)
+    if not pessoa.retrato:
+        raise HTTPException(status_code=404, detail="Sem retrato.")
+    caminho = _Path(pessoa.retrato)
+    if not caminho.is_file():
+        # A COLUNA PODE SOBREVIVER AO ARQUIVO — limpeza de disco, restauração de
+        # banco sem storage. 404 aqui é a verdade; 500 seria a tela dizendo que
+        # o Mekora quebrou por causa de um retrato que sumiu.
+        raise HTTPException(status_code=404, detail="Sem retrato.")
+    # `no-store`: o retrato muda quando a pessoa troca, e o endereço é sempre o
+    # mesmo — com cache o rosto antigo fica na tela até alguém recarregar à mão.
+    return FileResponse(caminho, media_type="image/png", headers={"Cache-Control": "no-store"})
+
+
+@router.delete("/eu/retrato", status_code=204)
+def tirar_retrato(
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> Response:
+    """Tira o retrato, e apaga o arquivo junto.
+
+    Deixar o PNG no disco com a coluna limpa seria "removido da tela" em vez de
+    removido — a mesma distinção que a tela de privacidade faz sobre apagar a
+    conta.
+    """
+    from pathlib import Path as _Path
+
+    pessoa = exigir_conta(mekora_sessao, db)
+    if pessoa.retrato:
+        try:
+            _Path(pessoa.retrato).unlink(missing_ok=True)
+        except OSError:
+            pass
+        pessoa.retrato = None
+        db.commit()
+    return Response(status_code=204)

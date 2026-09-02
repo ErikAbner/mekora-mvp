@@ -53,8 +53,19 @@ import { EXEMPLO_FILA, EXEMPLO_ESTANTE, EXEMPLO_LEITURA } from "./exemplos.js";
 /* A pessoa VEM DO SERVIDOR agora. O que sobrou do exemplo é o nome, porque a
  * conta guarda um e-mail e nada mais — a DEC-0039 §1 não pede nome, e pedir um
  * dado que o produto não usa é coletar por hábito. */
+/* O NOME AGORA É O QUE A PESSOA ESCREVEU, e não um pedaço do e-mail.
+ *
+ * Isto fazia `email.split("@")[0]`: `erik@mekora.local` virava "erik" na trilha
+ * da conta — enquanto a tela de privacidade afirmava, a duas telas de
+ * distância, que "não há nome, telefone nem foto". Uma das duas mentia, e era
+ * esta.
+ *
+ * Sem nome escolhido, a trilha cai no rótulo genérico dela ("Sua conta") e
+ * mostra o e-mail embaixo, que é o que o produto de fato sabe. */
 function comoChamar(pessoa) {
-  return pessoa ? { nome: pessoa.email.split("@")[0], email: pessoa.email } : null;
+  return pessoa
+    ? { nome: pessoa.nome ?? null, email: pessoa.email, retrato: pessoa.retrato ?? null }
+    : null;
 }
 
 /* Aparelhos de exemplo, com os nomes do desenho. Enquanto o backend não os
@@ -613,7 +624,10 @@ export function App() {
         {/* A visao geral, que ate 01/09 nao existia: `/conta` renderizava a
             tela de Dispositivos Kindle, e a trilha da conta prometia quatro
             destinos com dois abrindo a mesma coisa. */}
-        <Route path="/conta" element={<SoParaQuemEntrou acesso={acesso}><ContaVisao pessoa={comoChamar(acesso.pessoa)} aoSair={acesso.sair} /></SoParaQuemEntrou>} />
+        {/* `aoMudarPerfil` faz o `usePessoa` perguntar de novo: sem isso, trocar o
+            nome muda a tela e deixa a TRILHA AO LADO com o nome antigo, na mesma
+            página. */}
+        <Route path="/conta" element={<SoParaQuemEntrou acesso={acesso}><ContaVisao pessoa={comoChamar(acesso.pessoa)} aoSair={acesso.sair} aoMudarPerfil={acesso.conferir} /></SoParaQuemEntrou>} />
         <Route path="/conta/seguranca" element={<SoParaQuemEntrou acesso={acesso}><ContaSeguranca pessoa={comoChamar(acesso.pessoa)} aoSair={acesso.sair} /></SoParaQuemEntrou>} />
         <Route path="/conta/kindle" element={<SoParaQuemEntrou acesso={acesso}><ContaKindle pessoa={comoChamar(acesso.pessoa)} aoSair={acesso.sair} /></SoParaQuemEntrou>} />
         <Route

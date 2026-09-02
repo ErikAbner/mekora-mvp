@@ -177,3 +177,124 @@ def test_privacidade_conta_o_ciclo_dos_arquivos_e_o_que_e_medido(client):
     junto = " ".join(corpo["para_onde_vai"])
     assert "análise de uso" not in junto
     assert "medição fica neste servidor" in junto
+
+
+# ---------------------------------------------------------------------------
+# Nome e retrato — a decisão de 02/09/2026
+# ---------------------------------------------------------------------------
+
+def test_nome_entra_e_sai(client):
+    """Vazio APAGA. "Sem nome" e "nome em branco" são o mesmo estado para quem
+    lê a tela, e dois jeitos de escrever o mesmo estado é como um deles deixa de
+    ser tratado."""
+    assert client.get("/eu").json()["nome"] is None
+
+    assert client.patch("/eu", json={"nome": "  Erik Abner  "}).status_code == 200
+    assert client.get("/eu").json()["nome"] == "Erik Abner"
+
+    assert client.patch("/eu", json={"nome": "   "}).status_code == 200
+    assert client.get("/eu").json()["nome"] is None
+
+
+def test_nome_tem_teto(client):
+    r = client.patch("/eu", json={"nome": "a" * 81})
+    assert r.status_code == 422
+    assert "80" in r.json()["detail"]
+
+
+def test_o_email_nao_se_muda_por_aqui(client):
+    """Trocar o e-mail é trocar de identidade: links, sessões e o dono de tudo
+    apontam para ele. O corpo com `email` é ignorado, não obedecido."""
+    antes = client.get("/eu").json()["email"]
+    client.patch("/eu", json={"nome": "Erik", "email": "outro@exemplo.com"})
+    assert client.get("/eu").json()["email"] == antes
+
+
+def _png(cor=(200, 30, 30), tamanho=(900, 400)):
+    from io import BytesIO
+
+    from PIL import Image
+
+    buf = BytesIO()
+    Image.new("RGB", tamanho, cor).save(buf, format="PNG")
+    return buf.getvalue()
+
+
+def test_retrato_vira_png_quadrado_do_servidor(client, tmp_storage):
+    """O QUE ENTRA NÃO É O QUE FICA: entra uma imagem 900x400, fica um PNG
+    quadrado de lado fixo. Guardar os bytes que chegaram seria guardar o EXIF —
+    câmera, data e, em foto de celular, coordenada de GPS."""
+    from io import BytesIO
+
+    from PIL import Image
+
+    from app.api.acesso import RETRATO_LADO
+
+    assert client.get("/eu").json()["tem_retrato"] is False
+    assert client.get("/eu/retrato").status_code == 404
+
+    r = client.put("/eu/retrato", files={"arquivo": ("eu.png", _png(), "image/png")})
+    assert r.status_code == 200, r.text
+    assert client.get("/eu").json()["tem_retrato"] is True
+
+    saida = client.get("/eu/retrato")
+    assert saida.status_code == 200
+    assert saida.headers["content-type"] == "image/png"
+    imagem = Image.open(BytesIO(saida.content))
+    assert imagem.size == (RETRATO_LADO, RETRATO_LADO)
+
+
+def test_retrato_recusa_o_que_nao_e_imagem(client, tmp_storage):
+    """O TIPO DECLARADO NÃO É PROVA: `content_type` vem do cliente, e quem diz
+    se aquilo é imagem é o decodificador."""
+    r = client.put("/eu/retrato", files={"arquivo": ("x.png", b"nao sou imagem", "image/png")})
+    assert r.status_code == 400
+    assert client.get("/eu").json()["tem_retrato"] is False
+
+    r = client.put("/eu/retrato", files={"arquivo": ("x.pdf", _png(), "application/pdf")})
+    assert r.status_code == 400
+
+
+def test_tirar_o_retrato_apaga_o_arquivo(client, tmp_storage):
+    """Deixar o PNG no disco com a coluna limpa seria "removido da tela" em vez
+    de removido."""
+    from pathlib import Path
+
+    from app.models.pessoa import Pessoa
+    from app.db.database import SessionLocal
+
+    client.put("/eu/retrato", files={"arquivo": ("eu.png", _png(), "image/png")})
+
+    db = SessionLocal()
+    caminho = Path(db.query(Pessoa).first().retrato)
+    db.close()
+    assert caminho.is_file()
+
+    assert client.delete("/eu/retrato").status_code == 204
+    assert not caminho.exists()
+    assert client.get("/eu").json()["tem_retrato"] is False
+
+
+def test_estranho_nao_ve_retrato_de_ninguem(client_cru):
+    """A rota não tem parâmetro nenhum de propósito: com `/retrato/{id}` haveria
+    como varrer números e recolher a cara de todo mundo."""
+    assert client_cru.get("/eu/retrato").status_code == 401
+    assert client_cru.patch("/eu", json={"nome": "invasor"}).status_code == 401
+
+
+def test_apagar_a_conta_leva_o_retrato_do_disco(client, tmp_storage):
+    """O CASCADE do banco não alcança o disco."""
+    from pathlib import Path
+
+    from app.models.pessoa import Pessoa
+    from app.db.database import SessionLocal
+
+    client.put("/eu/retrato", files={"arquivo": ("eu.png", _png(), "image/png")})
+    db = SessionLocal()
+    pessoa = db.query(Pessoa).first()
+    caminho, email = Path(pessoa.retrato), pessoa.email
+    db.close()
+    assert caminho.is_file()
+
+    assert client.post("/privacidade/apagar", json={"email": email}).status_code == 204
+    assert not caminho.exists()

@@ -22,9 +22,13 @@
  * Construída sem o desenho: o `figma-local` exige o Dev Mode ligado, e a aba
  * estava em modo design. Está em DESVIOS.md, para o pente fino.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { quemSouEu, lerPrivacidade } from "../../../contrato/api.js";
+import {
+  enderecoDoRetrato, lerPrivacidade, mudarPerfil, porRetrato, quemSouEu, tirarRetrato,
+} from "../../../contrato/api.js";
+import { Botao } from "../componentes/Botao.jsx";
+import { Campo } from "../componentes/Campo.jsx";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { TrilhaConta } from "../componentes/TrilhaConta.jsx";
 import "./conta-visao.css";
@@ -47,10 +51,19 @@ const data = (iso) => {
   } catch { return null; }
 };
 
-export function ContaVisao({ pessoa, aoSair }) {
+export function ContaVisao({ pessoa, aoSair, aoMudarPerfil }) {
   const [eu, setEu] = useState(null);
   const [contagens, setContagens] = useState(null);
   const [erro, setErro] = useState(null);
+  /* O NOME E O RETRATO, decididos em 02/09/2026. Até então a conta era só o
+     e-mail — e a trilha ao lado inventava um nome a partir dele. */
+  const [nome, setNome] = useState("");
+  const [guardando, setGuardando] = useState(false);
+  const [recado, setRecado] = useState(null);
+  /* Sobe a cada troca de retrato. O endereço da imagem é sempre o mesmo, então
+     sem isto o navegador continua desenhando o rosto anterior. */
+  const [versao, setVersao] = useState(0);
+  const campoDoRetrato = useRef(null);
 
   useEffect(() => {
     let vivo = true;
@@ -58,6 +71,7 @@ export function ContaVisao({ pessoa, aoSair }) {
       .then(([e, p]) => {
         if (!vivo) return;
         setEu(e);
+        setNome(e?.nome ?? "");
         /* O `/privacidade` responde `itens: [{nome, quantos, explicacao}]`.
            Vira mapa aqui, e não no render, para a tela não repetir a busca por
            chave a cada linha. */
@@ -107,13 +121,119 @@ export function ContaVisao({ pessoa, aoSair }) {
               </div>
             )}
           </dl>
-          {/* A frase é a mesma do backend, e ela é uma promessa que pode ser
-              desmentida: se um dia houver nome ou telefone, esta linha precisa
-              mudar junto. */}
+          {/* A FRASE MUDOU quando o nome e o retrato passaram a existir. Ela
+              dizia "seu e-mail é a única coisa que identifica você; não há nome,
+              telefone nem foto", e a partir do momento em que os dois campos
+              existem essa frase vira a mentira que ela existia para evitar.
+
+              O que continua verdade, e é o que importa: os dois são opcionais, e
+              entrar nunca pede nenhum deles. */}
           <p className="visao-nota">
-            Seu e-mail é a única coisa que identifica você. Não há nome, telefone
-            nem foto — e não há senha: você entra por link.
+            O nome e o retrato são seus e são opcionais — entrar nunca pede
+            nenhum dos dois. Telefone não existe, e senha também não: você entra
+            por link.
           </p>
+        </section>
+
+        {/* COMO VOCÊ QUER SER CHAMADO. O campo e o retrato juntos, porque são a
+            mesma decisão vista de dois jeitos. */}
+        <section className="visao-perfil">
+          <h2>Como você quer ser chamado</h2>
+
+          <div className="visao-retrato">
+            <div className="visao-retrato-atual" aria-hidden="true">
+              {eu?.tem_retrato
+                ? <img src={enderecoDoRetrato(versao)} alt="" />
+                : <span>{(nome || eu?.email || "?").trim().charAt(0).toUpperCase()}</span>}
+            </div>
+            <div className="visao-retrato-acoes">
+              <Botao tom="secundaria" onClick={() => campoDoRetrato.current?.click()}>
+                {eu?.tem_retrato ? "Trocar o retrato" : "Pôr um retrato"}
+              </Botao>
+              {eu?.tem_retrato && (
+                <Botao
+                  tom="secundaria"
+                  onClick={async () => {
+                    setRecado(null);
+                    try {
+                      await tirarRetrato();
+                      setEu((x) => ({ ...x, tem_retrato: false }));
+                      setVersao((v) => v + 1);
+                      aoMudarPerfil?.();
+                    } catch (e) {
+                      setRecado(e.message);
+                    }
+                  }}
+                >
+                  Tirar
+                </Botao>
+              )}
+              {/* O input nativo fica escondido e o botão o aciona: input de
+                  arquivo não se estiliza, e recriar um por fora quebraria
+                  teclado e leitor de tela. */}
+              <input
+                ref={campoDoRetrato}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                className="campo-arquivo"
+                onChange={async (e) => {
+                  const arquivo = e.target.files?.[0];
+                  /* Limpa o valor: sem isto, escolher O MESMO arquivo duas
+                     vezes seguidas não dispara `change` na segunda. */
+                  e.target.value = "";
+                  if (!arquivo) return;
+                  setRecado(null);
+                  try {
+                    await porRetrato(arquivo);
+                    setEu((x) => ({ ...x, tem_retrato: true }));
+                    setVersao((v) => v + 1);
+                    aoMudarPerfil?.();
+                  } catch (err) {
+                    setRecado(err.message);
+                  }
+                }}
+              />
+              <p className="visao-nota">
+                O servidor guarda um recorte quadrado feito por ele, e não a
+                imagem que você mandou — junto com a original iriam a câmera, a
+                data e, em foto de celular, a coordenada de onde ela foi tirada.
+              </p>
+            </div>
+          </div>
+
+          <div className="visao-nome">
+            <Campo
+              rotulo="Nome"
+              value={nome}
+              maxLength={80}
+              placeholder="Como aparece na sua conta"
+              ajuda="Deixe em branco para não ter nenhum."
+              onChange={(e) => setNome(e.target.value)}
+            />
+            <Botao
+              tom="primaria"
+              disabled={guardando || (nome.trim() === (eu?.nome ?? ""))}
+              onClick={async () => {
+                setGuardando(true);
+                setRecado(null);
+                try {
+                  const r = await mudarPerfil({ nome });
+                  setEu((x) => ({ ...x, nome: r.nome }));
+                  setNome(r.nome ?? "");
+                  setRecado("Guardado.");
+                  aoMudarPerfil?.();
+                } catch (e) {
+                  setRecado(e.message);
+                } finally {
+                  setGuardando(false);
+                }
+              }}
+            >
+              {guardando ? "Guardando…" : "Guardar"}
+            </Botao>
+          </div>
+
+          {recado && <p className="visao-recado" role="status">{recado}</p>}
         </section>
 
         {linhas.length > 0 && (

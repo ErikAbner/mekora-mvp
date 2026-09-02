@@ -66,6 +66,30 @@ class Pessoa(Base):
     # `erik@x.com` viram duas contas com duas estantes, e a pessoa perde a dela
     # por causa da tecla shift.
     email = Column(String, unique=True, nullable=False, index=True)
+
+    # COMO A PESSOA QUER SER CHAMADA, e ela escolhe.
+    #
+    # A trilha da conta já mostrava um nome, e ele era INVENTADO: `App.jsx` fazia
+    # `email.split("@")[0]`, então `erik@mekora.local` virava "erik". Enquanto
+    # isso a tela de privacidade afirmava "não há nome, telefone nem foto" — uma
+    # das duas mentia, e era a primeira.
+    #
+    # Nulo é o estado normal, e não um defeito: converter não exige conta
+    # (DEC-0018), e entrar não pede nome nenhum. Quem não escreveu é chamado
+    # pelo e-mail, que é o que o produto realmente sabe.
+    nome = Column(String)
+
+    # O RETRATO, guardado como CAMINHO e servido por rota com sessão.
+    #
+    # Não há URL adivinhável: o arquivo sai por `GET /eu/retrato`, que exige o
+    # biscoito. As capas dos livros usam token público porque um trabalho sem
+    # dono precisa ser alcançável sem conta; um retrato nunca precisa.
+    #
+    # O que entra aqui é sempre reescrito pelo servidor — PNG quadrado, lado
+    # fixo —, e não os bytes que chegaram. Guardar o arquivo original seria
+    # guardar metadado de câmera, GPS e o que mais o EXIF trouxer.
+    retrato = Column(String)
+
     criada_em = Column(DateTime(timezone=True), default=agora, nullable=False)
     ultimo_acesso = Column(DateTime(timezone=True))
 

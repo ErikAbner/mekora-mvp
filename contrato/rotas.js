@@ -27,6 +27,7 @@ export const COM_SUBCAMINHO = [
   "/config",
   "/entrar",
   "/estudos",
+  "/eu",
   "/jobs",
   "/metrics",
   "/notas",

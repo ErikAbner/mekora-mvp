@@ -96,7 +96,7 @@ def exigir_acesso(
 def exigir_conta(
     mekora_sessao: Optional[str] = Cookie(default=None),
     db: Session = Depends(get_db),
-) -> None:
+):
     """A segunda porta: exige uma conta, sem falar de trabalho nenhum.
 
     `exigir_acesso` cobre tudo que tem `job_id` no caminho — e por isso mesmo
@@ -128,5 +128,11 @@ def exigir_conta(
     """
     from app.services import acesso_service
 
-    if acesso_service.quem_e(db, mekora_sessao) is None:
+    pessoa = acesso_service.quem_e(db, mekora_sessao)
+    if pessoa is None:
         raise HTTPException(status_code=401, detail="Entre para continuar.")
+    # DEVOLVE A PESSOA, e não `None`. Como dependência o retorno é ignorado, e
+    # era só isso que ela fazia; chamada direta, quem precisa de quem está
+    # logado tinha de perguntar de novo ao `acesso_service` logo abaixo. Duas
+    # buscas para uma pergunta, e duas chances de uma delas mudar sozinha.
+    return pessoa

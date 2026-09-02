@@ -27,6 +27,7 @@ conta, "os arquivos continuam lá, sem seu nome" não é o que foi pedido.
 from __future__ import annotations
 
 import shutil
+from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, Cookie, Depends, HTTPException
@@ -64,7 +65,14 @@ def _quem(db: Session, biscoito: Optional[str]) -> Pessoa:
 # viu numa captura. Agora há um `nome` para a tela e um `chave` para o código, e
 # o portão passou a recusar `_` no meio de palavra em texto de interface.
 O_QUE_GUARDAMOS = [
-    ("conta", "conta", Pessoa, "Seu e-mail. É a única coisa que identifica você — não há nome, telefone nem foto."),
+    # A FRASE MUDOU EM 02/09/2026, quando o Erik decidiu que a conta tem nome e
+    # retrato. Ela dizia "seu e-mail; é a única coisa que identifica você — não
+    # há nome, telefone nem foto", e a partir do momento em que os dois campos
+    # existem essa frase vira a mentira que ela existia para evitar.
+    #
+    # O que continua verdade e importa mais: os dois são OPCIONAIS, e o produto
+    # nunca pediu nenhum dos dois para deixar alguém entrar.
+    ("conta", "conta", Pessoa, "Seu e-mail, e o nome e o retrato que você tiver escolhido pôr. Os dois últimos são opcionais — entrar nunca pede nenhum deles."),
     ("livros", "livros", ProcessingJob, "Os arquivos que você enviou e o que foi convertido a partir deles."),
     ("notas", "notas", Nota, "O que você marcou lendo, e o que trouxe do Kindle."),
     ("leituras", "leituras", Progresso, "Onde você parou em cada livro."),
@@ -215,7 +223,19 @@ def levar(
     pessoa = _quem(db, mekora_sessao)
 
     return {
-        "conta": {"email": pessoa.email, "desde": pessoa.criada_em},
+        # O NOME VAI JUNTO; o retrato vai como um SIM ou NÃO.
+        #
+        # Um JSON com a imagem embutida em base64 é grande, ilegível e não abre
+        # em nada — a mesma razão pela qual os EPUBs não vão. O que a exportação
+        # deve garantir é que nada seja OMITIDO em silêncio: quem lê o arquivo
+        # fica sabendo que há um retrato, e ele está a um clique na tela da
+        # conta.
+        "conta": {
+            "email": pessoa.email,
+            "nome": pessoa.nome,
+            "tem_retrato": bool(pessoa.retrato),
+            "desde": pessoa.criada_em,
+        },
         "notas": [
             {
                 "livro": n.origem or (n.job_id and f"trabalho {n.job_id}") or "",
@@ -303,6 +323,12 @@ def apagar(
         for entrada in STORAGE_INPUT.glob(f"{j.id}_*"):
             entrada.unlink(missing_ok=True)
         db.delete(j)
+
+    # O RETRATO É ARQUIVO, e o CASCADE do banco não alcança o disco. Deixá-lo
+    # ali com a linha apagada seria "removido da tela" em vez de removido — a
+    # mesma distinção que esta tela faz sobre a conta inteira.
+    if pessoa.retrato:
+        Path(pessoa.retrato).unlink(missing_ok=True)
 
     # E a pessoa por último: o CASCADE leva sessões, chaves, notas, progresso,
     # aparelhos e preferências.

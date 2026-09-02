@@ -67,3 +67,42 @@
   .visao-resumo a { min-inline-size: 0; flex: 1 1 40%; padding: 16px 20px; }
   .visao-numero { font-size: 32px; line-height: 40px; }
 }
+
+/* ─── Nome e retrato ────────────────────────────────────────────────────────
+ *
+ * A conta era so o e-mail, e a trilha ao lado inventava um nome a partir dele.
+ * Decidido em 02/09/2026: os dois existem, os dois sao opcionais.
+ */
+.visao-perfil { display: flex; flex-direction: column; gap: 24px; }
+.visao-perfil h2 {
+  margin: 0;
+  font-size: 20px; line-height: 30px; font-weight: 540;
+  color: var(--foreground);
+}
+.visao-retrato { display: flex; gap: 24px; align-items: flex-start; }
+.visao-retrato-atual {
+  flex: 0 0 auto;
+  inline-size: 96px; block-size: 96px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border);
+  background: var(--background-secondary);
+  overflow: hidden;
+}
+.visao-retrato-atual img { inline-size: 100%; block-size: 100%; object-fit: cover; }
+.visao-retrato-atual span {
+  font-size: 40px; line-height: 48px; font-weight: 540;
+  color: var(--muted-foreground);
+}
+.visao-retrato-acoes { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.visao-retrato-acoes .visao-nota { flex-basis: 100%; margin: 0; }
+
+.visao-nome { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
+.visao-nome .campo { flex: 1 1 260px; }
+
+.visao-recado { margin: 0; font-size: 14px; line-height: 20px; color: var(--muted-foreground); }
+
+@media (max-width: 767px) {
+  .visao-retrato { flex-direction: column; }
+  .visao-nome { align-items: stretch; }
+  .visao-nome .botao { inline-size: 100%; justify-content: center; }
+}

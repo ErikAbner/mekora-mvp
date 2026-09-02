@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { quemSouEu, sair as sairNoServidor } from "../../../contrato/api.js";
+import { enderecoDoRetrato, quemSouEu, sair as sairNoServidor } from "../../../contrato/api.js";
 
 /* Quem está usando o Mekora agora.
  *
@@ -23,7 +23,24 @@ export function usePessoa() {
   const conferir = useCallback(async () => {
     try {
       const r = await quemSouEu();
-      setPessoa(r?.entrou ? { email: r.email, desde: r.desde } : null);
+      /* NOME E RETRATO VÊM DO SERVIDOR, e o nome não é mais derivado do
+         e-mail. A trilha da conta mostrava `email.split("@")[0]` — um nome
+         inventado — enquanto a tela de privacidade dizia ao lado que não havia
+         nome nenhum.
+
+         `retrato` é o ENDEREÇO, montado só quando o servidor diz que existe:
+         um `<img>` apontando para uma rota que responde 404 desenha o ícone de
+         imagem quebrada, que é pior que a inicial. */
+      setPessoa(
+        r?.entrou
+          ? {
+              email: r.email,
+              nome: r.nome || null,
+              retrato: r.tem_retrato ? enderecoDoRetrato() : null,
+              desde: r.desde,
+            }
+          : null,
+      );
     } catch {
       /* Backend fora do ar não é o mesmo que não estar logado, mas para a tela
        * dá no mesmo: sem servidor não há estante para mostrar. */

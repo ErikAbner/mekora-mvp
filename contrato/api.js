@@ -250,6 +250,46 @@ export function quemSouEu() {
   return pede("/eu");
 }
 
+/** PATCH /eu — como voce quer ser chamado. O e-mail NAO se muda por aqui: ele E
+ *  a conta, e troca-lo e trocar de identidade. String vazia apaga o nome. */
+export function mudarPerfil({ nome }) {
+  return pede("/eu", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nome }),
+  });
+}
+
+/**
+ * PUT /eu/retrato — manda a imagem. O servidor reescreve como PNG quadrado.
+ *
+ * SEM `Content-Type` A MAO. O `FormData` monta o `multipart/form-data` com a
+ * fronteira que ele mesmo sorteou, e escrever o cabecalho por cima apaga essa
+ * fronteira — o servidor recebe um corpo que nao sabe separar e responde 422.
+ * O mesmo cuidado do `/notas/importar`.
+ */
+export function porRetrato(arquivo) {
+  const corpo = new FormData();
+  corpo.append("arquivo", arquivo);
+  return pede("/eu/retrato", { method: "PUT", body: corpo });
+}
+
+/** DELETE /eu/retrato — tira, e apaga o arquivo do disco junto. */
+export function tirarRetrato() {
+  return pede("/eu/retrato", { method: "DELETE" });
+}
+
+/* O ENDERECO DO RETRATO E FIXO, e nao vem do servidor: a rota nao tem parametro
+ * nenhum — ela responde a quem o biscoito diz que e. Com `/retrato/{id}` haveria
+ * como varrer numeros e recolher a cara de todo mundo.
+ *
+ * A `versao` existe para o navegador nao mostrar o rosto antigo depois da troca:
+ * o endereco e sempre o mesmo, e sem ela a imagem em cache fica ate alguem
+ * recarregar a mao. */
+export function enderecoDoRetrato(versao) {
+  return versao ? `/eu/retrato?v=${versao}` : "/eu/retrato";
+}
+
 /** POST /sair — encerra no servidor, e nao so apaga o cookie. */
 export function sair() {
   return pede("/sair", { method: "POST" });
