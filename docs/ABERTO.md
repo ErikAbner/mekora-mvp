@@ -32,10 +32,14 @@ D   backlog técnico             decide-se durante a implementação, por quem i
 | **D** — backlog técnico | 14 |
 | | **44** |
 
-*A contagem de C caiu para 12 em 03/09: `C9` e `C16` fecharam em 02/09, e `C1`, `C3`, `C4` e `C8`
-em 03/09 — as quatro últimas por leitura do código, não por decisão. A regra do
-topo diz que a numeração não se reorganiza — as duas linhas continuam onde
-estavam, riscadas, porque outros documentos apontam para elas.*
+*A contagem de C caiu de 12 para 2 em 03/09. `C9` e `C16` fecharam em 02/09; `C1`, `C3`, `C4` e `C8`
+na manhã de 03/09, as quatro por leitura do código e não por decisão; `C6`, `C7`, `C17` e `C18` à
+noite, por decisão do Erik; e `C19`, `C14`, `C12` e `C11` de madrugada. **Sobram `C2` e `C10`, e as
+duas só são respondíveis com usuário de verdade na frente** — a primeira pergunta quem pode olhar
+documento de gente e como isso fica registrado, que só se define quando existe um "quem" além do
+Erik; a segunda pergunta como migrar acervo e notas para identidade estável, que não tem o que
+migrar enquanto ninguém tiver acervo. A regra do topo diz que a numeração não se reorganiza — as
+linhas continuam onde estavam, riscadas, porque outros documentos apontam para elas.*
 
 ### Saíram da fila em 2026-08-21
 
