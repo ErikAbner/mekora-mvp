@@ -21,6 +21,7 @@ import { Link } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Rodape } from "../componentes/Rodape.jsx";
 import { Estudo } from "./Estudos.jsx";
+import { TrilhaDaPagina } from "../componentes/TrilhaDaPagina.jsx";
 import "./estudo-pagina.css";
 
 export function EstudoPagina({ estudo, notas = [], erro, aoMudar, aoApagar, aoReunir, aoTirar, carregando }) {
@@ -29,6 +30,22 @@ export function EstudoPagina({ estudo, notas = [], erro, aoMudar, aoApagar, aoRe
       <Cabecalho lugar="estudos" />
 
       <main className="estudo-pagina">
+        {/* A TRILHA DE ÂNCORAS — nó 895:8260. Um estudo que cumpriu seu papel
+            tem trinta notas de cinco livros; a coluna diz onde se está sem que
+            seja preciso rolar de volta para descobrir. Ela só aparece quando há
+            estudo — antes disso não há seção nenhuma para apontar. */}
+        {estudo && (
+          <TrilhaDaPagina
+            rotulo="Neste estudo"
+            itens={[
+              { id: "estudo-inicio", rotulo: "Início" },
+              ...(estudo.livros?.length ? [{ id: "estudo-livros", rotulo: "Livros" }] : []),
+              ...(estudo.notas?.length ? [{ id: "estudo-formou", rotulo: "O que ficou" }] : []),
+            ]}
+          />
+        )}
+
+        <div className="estudo-pagina-corpo">
         <Link to="/estudos" className="estudo-pagina-volta">← Estudos</Link>
 
         {erro && <p className="estudos-erro" role="alert">{erro}</p>}
@@ -63,6 +80,7 @@ export function EstudoPagina({ estudo, notas = [], erro, aoMudar, aoApagar, aoRe
             semLink
           />
         )}
+        </div>
       </main>
 
       <Rodape />

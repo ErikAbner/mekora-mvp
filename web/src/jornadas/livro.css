@@ -1,4 +1,10 @@
-.livro-pagina { max-inline-size: 900px; margin: 0 auto; padding: 32px 40px 80px; display: flex; flex-direction: column; gap: 48px; }
+/* DUAS COLUNAS: a trilha de ancoras e o conteudo. A trilha some abaixo de 1024
+ * (regra dela), e ai a pagina volta a ser uma coluna so. */
+.livro-pagina { max-inline-size: 1140px; margin: 0 auto; padding: 32px 40px 80px; display: flex; gap: 48px; align-items: flex-start; }
+.livro-pagina-corpo { flex: 1 1 0; min-inline-size: 0; max-inline-size: 900px; display: flex; flex-direction: column; gap: 48px; }
+/* A ancora nao pode encostar no topo da janela: sem isto o titulo da secao fica
+ * colado na borda e parece cortado. */
+.livro-pagina-secao, .livro-pagina-topo { scroll-margin-top: 32px; }
 
 .livro-pagina-volta {
   align-self: flex-start;
@@ -202,6 +208,12 @@
 .livro-pagina-filtro .campo { inline-size: 100%; max-inline-size: 520px; }
 
 .livro-pagina-acoes-nota { display: flex; flex-wrap: wrap; gap: 12px; margin-block-start: 12px; }
+
+/* Abaixo de 1024 a trilha some (regra dela), e a pagina volta a ser uma coluna
+ * so — sem o `gap` de 48 sobrando onde nao ha mais duas colunas. */
+@media (max-width: 1023px) {
+  .livro-pagina { gap: 0; padding: 32px 24px 80px; }
+}
 
 @media (max-width: 767px) {
   .livro-pagina-acoes-nota .botao { flex: 1 1 auto; justify-content: center; }

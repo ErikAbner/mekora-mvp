@@ -4,6 +4,7 @@ import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { ConfiguracoesArquivo } from "../componentes/ConfiguracoesArquivo.jsx";
 import { Campo } from "../componentes/Campo.jsx";
+import { TrilhaDaPagina } from "../componentes/TrilhaDaPagina.jsx";
 import { achatar } from "../../../contrato/texto.js";
 import { DESTAQUES } from "./Leitura.jsx";
 import { analisar, apagarNota, criarNota, enviarAoKindle, lerNotas, lerProgresso } from "../../../contrato/api.js";
@@ -130,9 +131,24 @@ export function Livro() {
       <Cabecalho lugar="estante" />
 
       <main className="livro-pagina">
+        {/* A TRILHA DE ÂNCORAS — nó 895:7631. A ficha de um livro com trinta
+            notas rola por muito tempo sem dizer onde se está, e o desenho põe
+            esta coluna à esquerda com o traço marcando a seção que está sendo
+            lida. Ela some no telefone, onde rolar já é o gesto natural. */}
+        <TrilhaDaPagina
+          rotulo="Nesta ficha"
+          itens={[
+            { id: "livro-inicio", rotulo: "Início" },
+            { id: "livro-o-que-ficou", rotulo: "O que ficou" },
+            { id: "livro-escrever", rotulo: "Escrever sobre" },
+            { id: "livro-arquivo", rotulo: "Este arquivo" },
+          ]}
+        />
+
+        <div className="livro-pagina-corpo">
         <Link to="/estante" className="livro-pagina-volta">← Estante</Link>
 
-        <header className="livro-pagina-topo">
+        <header className="livro-pagina-topo" id="livro-inicio">
           <div className="livro-pagina-capa">
             {capa ? (
               <img src={capa} alt={`Primeira página de ${titulo}`} />
@@ -274,7 +290,7 @@ export function Livro() {
           </div>
         </header>
 
-        <section className="livro-pagina-secao">
+        <section className="livro-pagina-secao" id="livro-o-que-ficou">
           <h2>
             O que ficou <span className="dado">{notas.length}</span>
           </h2>
@@ -414,7 +430,7 @@ export function Livro() {
          * porque a nota já existe e o que muda é o comentário dela; aqui o
          * gesto CRIA — e criar sem clique nenhum faria uma nota nascer de um
          * clique fora do campo. */}
-        <section className="livro-pagina-secao">
+        <section className="livro-pagina-secao" id="livro-escrever">
           <h2>Escrever sobre o livro</h2>
           <p className="livro-pagina-nota">
             O que ficou do conjunto, e não de uma frase. Fica com o livro, junto
@@ -457,7 +473,7 @@ export function Livro() {
           </div>
         </section>
 
-        <section className="livro-pagina-secao">
+        <section className="livro-pagina-secao" id="livro-arquivo">
           <h2>Este arquivo</h2>
           <p className="livro-pagina-nota">
             O que o Mekora fez com o documento que você enviou.
@@ -500,6 +516,7 @@ export function Livro() {
             </Linha>
           </dl>
         </section>
+        </div>
       </main>
 
       <ConfiguracoesArquivo

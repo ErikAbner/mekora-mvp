@@ -45,7 +45,7 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, 
 
   return (
     <article className={`estudo${estudo.fechado ? " fechado" : ""}`}>
-      <header>
+      <header id="estudo-inicio">
         <div>
           <h2>
             {/* Na lista o titulo leva ao estudo sozinho; na pagina dele, o
@@ -78,7 +78,7 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, 
           entra com a caixa vazia e o nome dentro. Sumir com ele porque não há
           arquivo seria o produto negar o que a própria nota diz. */}
       {estudo.livros.length > 0 && (
-        <div className="estudo-livros">
+        <div className="estudo-livros" id="estudo-livros">
           <h3>Livros</h3>
           <ul>
             {estudo.livros.map((l) => (
@@ -107,7 +107,7 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, 
           foi juntado em volta: sem o título, as notas parecem o estudo inteiro
           em vez da resposta que se acumulou. */}
       {!resumido && estudo.notas.length > 0 && (
-        <div className="estudo-formou">
+        <div className="estudo-formou" id="estudo-formou">
           <h3>Como isso se formou</h3>
           {estudo.notas.length > 3 && (
             <Campo

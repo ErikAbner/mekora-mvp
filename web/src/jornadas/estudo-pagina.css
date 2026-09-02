@@ -1,9 +1,11 @@
 /* Um estudo sozinho. O estudo em si e pintado por `estudos.css`, que e o mesmo
  * componente da lista — aqui so muda o entorno.
  */
+/* DUAS COLUNAS: a trilha de ancoras e o estudo. A trilha some abaixo de 1024
+ * (regra dela), e ai a pagina volta a ser uma coluna so. */
 .estudo-pagina {
-  display: flex; flex-direction: column; gap: 32px;
-  inline-size: 100%; max-inline-size: 863px;
+  display: flex; gap: 48px; align-items: flex-start;
+  inline-size: 100%; max-inline-size: 1120px;
   margin-inline: auto;
   padding: 64px 32px 128px;
 }
@@ -39,4 +41,16 @@
 @media (max-width: 767px) {
   .estudo-pagina { gap: 24px; padding: 32px 16px 80px; }
   .estudo-pagina-nao h1 { font-size: 24px; line-height: 32px; }
+}
+
+
+.estudo-pagina-corpo {
+  flex: 1 1 0; min-inline-size: 0; max-inline-size: 863px;
+  display: flex; flex-direction: column; gap: 32px;
+}
+/* A ancora nao pode encostar no topo da janela. */
+.estudo-pagina-corpo :where(#estudo-inicio, #estudo-livros, #estudo-formou) { scroll-margin-top: 32px; }
+
+@media (max-width: 1023px) {
+  .estudo-pagina { gap: 0; }
 }

@@ -1,0 +1,46 @@
+/* A coluna de ancoras dos nos 895:7631, 895:8260 e 895:8849: um traco antes de
+ * cada item, e o item de onde a leitura esta com o traco em tinta cheia.
+ *
+ * MARCADO POR TINTA E POR PESO, e nao so por cor: quem nao distingue as duas
+ * tintas continua vendo qual e — o traco do ativo e mais longo e mais escuro, e
+ * o rotulo muda de cor junto. */
+.trilha-pagina {
+  position: sticky; top: 32px;
+  flex: none; inline-size: 200px;
+  align-self: flex-start;
+}
+.trilha-pagina ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; }
+.trilha-pagina a {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 0;
+  color: var(--muted-foreground);
+  font-size: 16px; line-height: 24px;   /* Label/Medium */
+  text-decoration: none;
+  /* O rotulo nao quebra em duas linhas: a coluna e estreita, e uma linha e meia
+   * desalinha o traco do texto que ele marca. */
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.trilha-pagina-traco {
+  flex: none; display: block;
+  inline-size: 24px; block-size: 1px;
+  background: var(--border);
+  transition: inline-size var(--d1, 160ms) cubic-bezier(.16, 1, .3, 1), background var(--d1, 160ms);
+}
+.trilha-pagina a:hover { color: var(--foreground); }
+.trilha-pagina a:hover .trilha-pagina-traco { background: var(--muted-foreground); }
+.trilha-pagina a[aria-current="location"] { color: var(--foreground); }
+.trilha-pagina a[aria-current="location"] .trilha-pagina-traco {
+  inline-size: 40px; block-size: 2px; background: var(--foreground);
+}
+.trilha-pagina a:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+
+/* A trilha SOME no telefone. Ela e uma coluna ao lado do conteudo, e empilhada
+ * acima dele vira um indice que se le antes de saber que ha o que indexar —
+ * numa tela onde rolar ja e o gesto natural. */
+@media (max-width: 1023px) {
+  .trilha-pagina { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trilha-pagina-traco { transition: none; }
+}
