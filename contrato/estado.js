@@ -42,8 +42,14 @@ export const VALORES = {
   comic_export_status: ["not_started", "in_progress", "done", "failed"],
 };
 
-/** Os quatro estados que a interface conhece. Mais que isto vira ruído. */
-export const ESTADOS = ["fila", "trabalhando", "pronto", "erro"];
+/** Os cinco estados que a interface conhece. Mais que isto vira ruído.
+ *
+ * "PRECISA" É O QUINTO, e ele entrou porque faltava mesmo — não por gosto de
+ * simetria. Um PDF com senha não estava com erro (nada falhou), não estava
+ * trabalhando (nada anda) e não estava na fila (a fila não vai chegar nele
+ * sozinha). Ele espera uma decisão da pessoa, e sem um estado próprio a tela
+ * dizia "com erro" para um arquivo que só precisava de uma senha. */
+export const ESTADOS = ["precisa", "fila", "trabalhando", "pronto", "erro"];
 
 const FALHOU = new Set(["failed", "error", "interrupted"]);
 const ANDANDO = new Set(["in_progress", "analyzing", "converting", "sending"]);
@@ -71,6 +77,19 @@ const NEUTRO = new Set(["uploaded", "pending", "not_started", "not_needed", "nee
  */
 export function estadoDe(j) {
   if (!j) return { estado: "fila", motivo: "sem resposta do backend ainda" };
+
+  /* BLOQUEIO VEM ANTES DE TUDO, inclusive do erro.
+   *
+   * Um arquivo travado esperando senha tem, no banco, `ocr_status: "needed"` e
+   * texto nenhum — e se a análise tivesse seguido, teria `error_message`
+   * também. Deixar o erro decidir primeiro faria a tela dizer "OCR falhou" para
+   * um arquivo que só precisa de uma senha, que é exatamente o que ela dizia
+   * antes de este estado existir.
+   *
+   * `bloqueio` guarda o NOME do motivo, e a tela o traduz. Nulo é o normal. */
+  if (j.bloqueio) {
+    return { estado: "precisa", bloqueio: j.bloqueio };
+  }
 
   /* Os rótulos são o que o usuário lê, então são frases e não nomes de campo.
    * "Parou em: status" não fala com ninguém; "Parou em: a análise do arquivo"

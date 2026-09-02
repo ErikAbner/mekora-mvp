@@ -10,7 +10,7 @@
  * discordar sobre o mesmo arquivo.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { enviarArquivo, analisar, esperarAnalise, converter, acompanhar, historico, backendNoAr, enviarAoKindle, lerPreferencias } from "../../../contrato/api.js";
+import { enviarArquivo, analisar, esperarAnalise, converter, acompanhar, historico, backendNoAr, enviarAoKindle, lerPreferencias, destravarComSenha } from "../../../contrato/api.js";
 import { estadoDe } from "../../../contrato/estado.js";
 
 export function useJornada() {
@@ -61,6 +61,9 @@ export function useJornada() {
           .filter(({ estado }) => estado.estado !== "pronto")
           .map(({ bruto, estado }) => ({
             id: bruto.upload_id,
+            /* O TÍTULO NÃO EXISTE NUM ARQUIVO TRAVADO: sem a senha não dá para
+               ler nada dele, nem o título. Sobra o nome do arquivo, que é o que
+               a pessoa reconhece. */
             nome: bruto.final_title || bruto.original_filename,
             preparo: bruto.upload_id,
             ...estado,
@@ -267,5 +270,19 @@ export function useJornada() {
     }
   }, [carregarEstante]);
 
-  return { arquivos, livros, backend, receber, carregarEstante, enviar };
+  /* A SENHA DE UM PDF PROTEGIDO. Vai uma vez para o servidor, que abre o
+   * arquivo, regrava sem proteção e esquece — e aqui ela nem é guardada: passa
+   * direto para o contrato e o que fica na tela é o resultado.
+   *
+   * Depois de destravar, a análise recomeça no servidor. O que a tela faz é
+   * voltar o arquivo para "fila" e acompanhar de novo, como se ele tivesse
+   * acabado de chegar — que é o que ele é agora. */
+  const destravar = useCallback(async (id, senha) => {
+    await destravarComSenha(id, senha);
+    grava(id, { estado: "fila", etapa: "analisando", bloqueio: null, motivo: null });
+    const pronto = await esperarAnalise(id);
+    grava(id, { ...pronto, progresso: pronto.progresso?.porcento ?? null, preparo: id });
+  }, [grava]);
+
+  return { arquivos, livros, backend, receber, carregarEstante, enviar, destravar };
 }

@@ -9,6 +9,24 @@
 import { estadoDe, estadosNaoCobertos, VALORES } from "./estado.js";
 
 let falhas = 0;
+/* `iguais` compara um VALOR, e nao o estado derivado — serve para conferir o
+ * que vem junto do estado: a porcentagem, o nome da etapa, o motivo do
+ * bloqueio.
+ *
+ * ELE FALTAVA, E OS TESTES QUE O USAVAM NUNCA RODARAM. Eu os escrevi acrescentando
+ * ao fim do arquivo, e o fim do arquivo tinha o `process.exit` — o processo
+ * morria antes de chegar neles, e a saida dizia "tudo passou" porque o resumo
+ * era impresso na linha anterior. Onze provas do progresso ficaram tres dias
+ * como decoracao.
+ *
+ * O resumo e o `exit` agora sao as duas ultimas linhas do arquivo, e continuam
+ * sendo: quem acrescentar caso novo daqui em diante o acrescenta antes deles. */
+const iguais = (real, esperado, nome) => {
+  const ok = JSON.stringify(real) === JSON.stringify(esperado);
+  if (!ok) falhas++;
+  console.log(`  ${ok ? "ok  " : "FALHA"} ${nome}${ok ? "" : `  ->  ${JSON.stringify(real)} (esperava ${JSON.stringify(esperado)})`}`);
+};
+
 const caso = (nome, j, esperado) => {
   const r = estadoDe(j);
   const ok = r.estado === esperado;
@@ -66,8 +84,6 @@ const orfaos = estadosNaoCobertos();
 if (orfaos.length) { falhas++; orfaos.forEach((o) => console.log("  FALHA", o)); }
 else console.log(`  ok   ${Object.values(VALORES).flat().length} valores, nenhum orfao`);
 
-console.log(falhas ? `\n${falhas} falha(s)\n` : "\ntudo passou\n");
-process.exit(falhas ? 1 : 0);
 
 /* ─── O progresso, que agora carrega mais que a porcentagem ─────────────────
  *
@@ -106,3 +122,32 @@ process.exit(falhas ? 1 : 0);
   iguais(andando(null).progresso, null, "sem progresso, sem objeto");
   iguais(andando("nao e objeto").progresso, null, "progresso invalido vira null");
 }
+
+/* ─── O arquivo que espera você ─────────────────────────────────────────────
+ *
+ * Faltava um estado. Um PDF com senha nao estava com erro (nada falhou), nao
+ * estava trabalhando (nada anda) e nao estava na fila (a fila nao vai chegar
+ * nele sozinha). Ele espera uma decisao da pessoa.
+ */
+caso("bloqueado por senha", { status: "analyzed", bloqueio: "senha" }, "precisa");
+iguais(
+  estadoDe({ status: "analyzed", bloqueio: "senha" }).bloqueio,
+  "senha",
+  "o motivo do bloqueio vem junto",
+);
+
+/* BLOQUEIO VENCE O ERRO, e este e o caso que motivou a ordem: um arquivo
+ * travado tem `ocr_status: "needed"` e, se a analise tivesse seguido, teria
+ * `error_message` tambem. Com o erro decidindo primeiro, a tela dizia "OCR
+ * falhou" para um arquivo que so precisava de uma senha. */
+caso(
+  "bloqueio vence erro",
+  { status: "error", error_message: "OCR falhou", ocr_status: "failed", bloqueio: "senha" },
+  "precisa",
+);
+
+/* E `bloqueio` nulo nao muda nada: e o estado normal de todo arquivo. */
+caso("sem bloqueio, o resto decide", { status: "converted", conversion_status: "done", bloqueio: null }, "pronto");
+
+console.log(falhas ? `\n${falhas} falha(s)\n` : "\ntudo passou\n");
+process.exit(falhas ? 1 : 0);

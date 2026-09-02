@@ -18,6 +18,7 @@ import { Soltar } from "../componentes/Soltar.jsx";
 import { Icone } from "../componentes/Icone.jsx";
 import { Link } from "react-router-dom";
 import { Botao } from "../componentes/Botao.jsx";
+import { Campo } from "../componentes/Campo.jsx";
 import "./mesa-cheia.css";
 /* A PROMESSA E A ÁREA DE SOLTAR SÃO AS MESMAS DAS DUAS TELAS, e o CSS delas mora
  * no arquivo da mesa vazia. Importar aqui é o que torna a dependência explícita:
@@ -48,6 +49,11 @@ import { ESTADOS as DO_CONTRATO } from "../../../contrato/estado.js";
  * dois fins. `Object.keys` de um literal preserva a ordem de escrita, então é
  * aqui que ela se decide. */
 const ESTADOS = {
+  /* "PRECISA DE VOCÊ" VEM PRIMEIRO, e não por ordem alfabética: é o único
+     estado em que a fila parou de andar e não volta a andar sozinha. Um arquivo
+     esperando senha no meio de trinta é o que a pessoa precisa ver antes de
+     tudo. */
+  precisa: { rotulo: "Precisa de você", classe: "precisa" },
   trabalhando: { rotulo: "Enviando", classe: "enviando" },
   fila: { rotulo: "Na fila", classe: "fila" },
   pronto: { rotulo: "Pronto", classe: "pronto" },
@@ -71,6 +77,17 @@ function contar(arquivos) {
   for (const a of arquivos) if (c[a.estado] !== undefined) c[a.estado] += 1;
   return c;
 }
+
+/* O QUE CADA BLOQUEIO PEDE, em português e com o que fazer junto. O backend
+ * guarda o NOME do motivo — hoje só `senha` —, e a tradução mora aqui: uma
+ * chave nova aparece como texto genérico, e não como tela em branco. */
+const BLOQUEIOS = {
+  senha: {
+    titulo: "O PDF pede senha",
+    diz: "Sem ela não consigo abrir as páginas, e ele fica parado.",
+    acao: "Informar senha",
+  },
+};
 
 function Arquivo({ nome, estado, feito, total, progresso, detalhe, etapa, motivo, digitalizado, preparo }) {
   const e = ESTADOS[estado];
@@ -156,6 +173,103 @@ function quandoFoi(iso) {
   return null;
 }
 
+/* "PRECISA DE VOCÊ" — a seção do nó 895:9348, e o item que faltava dela.
+ *
+ * O desenho a põe entre a fila e as capas: os arquivos que pararam esperando
+ * uma decisão. Ela não existia porque o ESTADO não existia — um PDF com senha
+ * era tratado como PDF quebrado, e a pessoa recebia "OCR falhou" para um
+ * arquivo que só precisava de uma senha.
+ *
+ * A SENHA É `type="password"` E NÃO É GUARDADA. Ela vai uma vez para o
+ * servidor, que abre o arquivo, regrava sem proteção e esquece — e aqui o
+ * estado do campo morre com o componente.
+ */
+function PrecisaDeVoce({ arquivos, aoDestravar }) {
+  const [senhas, setSenhas] = useState({});
+  const [tentando, setTentando] = useState(null);
+  const [erros, setErros] = useState({});
+
+  if (!arquivos.length) return null;
+
+  return (
+    <section className="precisa-de-voce">
+      <div className="precisa-de-voce-caixa">
+        <h2>Precisa de você</h2>
+        <p className="precisa-de-voce-diz">
+          {arquivos.length === 1
+            ? "Um arquivo parou e não volta a andar sozinho."
+            : `${arquivos.length} arquivos pararam e não voltam a andar sozinhos.`}
+        </p>
+
+        <ul className="precisa-de-voce-lista">
+          {arquivos.map((a) => {
+            const qual = BLOQUEIOS[a.bloqueio] ?? {
+              titulo: "Este arquivo parou",
+              diz: "O servidor não disse o motivo com um nome que eu conheça.",
+              acao: null,
+            };
+            return (
+              <li key={a.id}>
+                <h3>{a.nome}</h3>
+                <p className="precisa-de-voce-motivo">
+                  <strong>{qual.titulo}</strong> {qual.diz}
+                </p>
+
+                {a.bloqueio === "senha" && (
+                  <form
+                    className="precisa-de-voce-forma"
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      const senha = senhas[a.id] ?? "";
+                      if (!senha) return;
+                      setTentando(a.id);
+                      setErros((x) => ({ ...x, [a.id]: null }));
+                      try {
+                        await aoDestravar(a.id, senha);
+                        /* O campo é limpo assim que a senha serve: deixá-la ali
+                           depois de usada é guardar em tela o que o servidor
+                           acabou de esquecer. */
+                        setSenhas((x) => ({ ...x, [a.id]: "" }));
+                      } catch (err) {
+                        setErros((x) => ({ ...x, [a.id]: err.message }));
+                      } finally {
+                        setTentando(null);
+                      }
+                    }}
+                  >
+                    <Campo
+                      tipo="password"
+                      rotulo={`Senha de ${a.nome}`}
+                      rotuloOculto
+                      placeholder="A senha do arquivo"
+                      autoComplete="off"
+                      value={senhas[a.id] ?? ""}
+                      erro={erros[a.id] ?? null}
+                      onChange={(e) => setSenhas((x) => ({ ...x, [a.id]: e.target.value }))}
+                    />
+                    {/* `tipo="submit"` PORQUE O PADRÃO DO `Botao` É `button`.
+                        Sem isto o clique não envia o formulário — e a tecla
+                        Enter no campo de senha, que é como se manda uma senha,
+                        também não faz nada. Medido: senha errada não mostrava
+                        erro nenhum, porque nada tinha sido enviado. */}
+                    <Botao
+                      tom="primaria"
+                      tipo="submit"
+                      disabled={tentando === a.id || !(senhas[a.id] ?? "").length}
+                    >
+                      {tentando === a.id ? "Abrindo…" : qual.acao}
+                    </Botao>
+                  </form>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
 /* Uma fileira de capas, com o título por baixo. Serve às duas faixas do fim da
  * Mesa — "Ficaram prontos" e "Na estante" —, que no desenho são a mesma coisa
  * com listas diferentes. */
@@ -185,7 +299,7 @@ function Faixa({ titulo, quando, livros, verTudo }) {
   );
 }
 
-export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberArquivos, backend }) {
+export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberArquivos, aoDestravar, backend }) {
   const [recorte, setRecorte] = useState("tudo");
   const c = contar(arquivos);
   /* A lista filtrada pelo recorte. `tudo` é o padrão, e é o que o desenho marca. */
@@ -341,6 +455,15 @@ export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberA
         </div>
       </section>
     
+      {/* "PRECISA DE VOCÊ" — nó 895:9348, entre a fila e as capas. Os arquivos
+          que pararam esperando uma decisão sua. */}
+      {aoDestravar && (
+        <PrecisaDeVoce
+          arquivos={arquivos.filter((a) => a.estado === "precisa")}
+          aoDestravar={aoDestravar}
+        />
+      )}
+
       {/* O CARTÃO "CONTINUE", do nó 895:9981. A Mesa terminava na fila, e o
           desenho a continua: o livro em curso, e depois as duas faixas de capas.
           Sem isso a Mesa é só uma fila de espera — e a promessa do topo é

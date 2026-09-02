@@ -60,6 +60,18 @@ class ProcessingJob(Base):
     # por idade apaga a pasta de saída, e depois disso o disco não sabe mais
     # responder.
     epub_bytes = Column(Integer)
+
+    # O QUE TRAVA ESTE TRABALHO, esperando uma decisão da pessoa.
+    #
+    # Faltava um estado. Um PDF com senha não é um PDF quebrado, e o produto
+    # tratava os dois igual: a análise não conseguia ler nada, o arquivo era
+    # classificado como digitalização, e a pessoa recebia "OCR falhou" para um
+    # arquivo que só precisava de uma senha.
+    #
+    # Guarda o NOME do motivo — hoje só `"senha"` — e não um booleano: o segundo
+    # motivo vai aparecer, e `is_blocked` obrigaria uma segunda coluna para
+    # dizer por quê. Nulo quer dizer que nada trava.
+    bloqueio = Column(String)
     # O EPUB com as imagens em WebP, para ler no navegador. Separado porque o
     # `epub_path` e o que vai para o Kindle, e o Kindle nao le WebP de forma
     # confiavel. Nulo quando o livro nao tem imagem que valha converter.

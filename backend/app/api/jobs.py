@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, Cookie, BackgroundTasks, Depends, File, HTTPException, UploadFile
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.core.config import STORAGE_INPUT, STORAGE_OUTPUT, STORAGE_TEMP
@@ -352,6 +353,24 @@ def _bg_analyze(job_id: int) -> None:
 
         thumbnails_dir = STORAGE_TEMP / str(job_id)
         result = analyze_pdf(job.input_path, thumbnails_dir)
+
+        # O ARQUIVO QUE ESPERA VOCÊ — "Precisa de você", do nó 895:9348.
+        #
+        # A análise para aqui e o trabalho fica marcado como bloqueado, em vez
+        # de seguir e falhar mais adiante com uma mensagem que não ajuda em
+        # nada. Sem título, sem contagem de páginas, sem miniatura: nada disso
+        # dá para ler sem a senha, e inventar qualquer um deles seria pior que
+        # deixar em branco.
+        if result.get("needs_password"):
+            job.bloqueio = "senha"
+            job.status = "analyzed"
+            job.updated_at = datetime.utcnow()
+            db.commit()
+            from app.services.metrics_service import record_stage
+            record_stage(job_id, "analyze", "completed",
+                         duration_ms=(time.monotonic() - t0) * 1000,
+                         processing_mode=job.processing_mode, input_format=job.input_format)
+            return
 
         detected_title = result["title"] or (
             Path(job.original_filename).stem
@@ -1216,6 +1235,70 @@ def remover_da_estante(job_id: int, db: Session = Depends(get_db)) -> None:
 # ---------------------------------------------------------------------------
 # POST /jobs/{job_id}/convert — converte PDF para EPUB via ebook-convert
 # ---------------------------------------------------------------------------
+
+class SenhaDoArquivo(BaseModel):
+    senha: str
+
+
+@router.post("/jobs/{job_id}/senha", response_model=JobResponse)
+def destravar_com_senha(
+    job_id: int,
+    corpo: SenhaDoArquivo,
+    tarefas: BackgroundTasks,
+    db: Session = Depends(get_db),
+) -> dict:
+    """A senha do PDF, usada uma vez para tirar a proteção.
+
+    Quem guarda a porta é o `exigir_acesso` do roteador inteiro, em `main.py`:
+    toda rota com `job_id` no caminho já passa por ele, e repeti-lo aqui seria
+    uma segunda verificação que pode divergir da primeira.
+
+    A SENHA NÃO É GUARDADA. Ela abre o arquivo, o arquivo é regravado sem
+    proteção, e a variável morre com a requisição — não vai para o banco, não vai
+    para o log, não vai para a métrica. Guardá-la seria criar um cofre de senhas
+    de terceiros para resolver um problema que se resolve uma vez.
+
+    E ela não é comparada com nada: quem diz se está certa é o PyMuPDF, ao
+    tentar autenticar. Não há como responder "senha errada" sem tentar.
+    """
+    import fitz
+
+    job = _get_or_404(db, job_id)
+    if job.bloqueio != "senha":
+        raise HTTPException(status_code=409, detail="Este arquivo não está esperando senha.")
+    if not job.input_path or not Path(job.input_path).is_file():
+        raise HTTPException(status_code=410, detail="O arquivo original não está mais aqui.")
+
+    doc = fitz.open(job.input_path)
+    try:
+        if not doc.authenticate(corpo.senha):
+            # 403, e não 400: a requisição está bem formada e o servidor a
+            # entendeu — o que faltou foi a credencial. E a mensagem não diz
+            # nada além disso, porque não há mais nada a dizer.
+            raise HTTPException(status_code=403, detail="Essa senha não abre o arquivo.")
+
+        # REGRAVADO SEM PROTEÇÃO, e por cima do original. O caminho continua o
+        # mesmo porque tudo aponta para ele — o `_bg_convert`, a limpeza por
+        # idade, o apagar da conta. Um segundo arquivo ao lado seria uma cópia
+        # protegida sobrando no disco depois de a pessoa ter pedido para
+        # destravar.
+        aberto = Path(job.input_path).with_suffix(".aberto.pdf")
+        doc.save(str(aberto), encryption=fitz.PDF_ENCRYPT_NONE)
+    finally:
+        doc.close()
+
+    aberto.replace(Path(job.input_path))
+    job.input_bytes = _bytes_de(Path(job.input_path))
+    job.bloqueio = None
+    job.status = "uploaded"
+    job.updated_at = datetime.utcnow()
+    db.commit()
+
+    # E a análise recomeça do zero: agora há título, páginas e miniaturas para
+    # ler, e nada disso foi lido antes.
+    tarefas.add_task(_bg_analyze, job_id)
+    return _to_job(_get_or_404(db, job_id))
+
 
 @router.post("/jobs/{job_id}/convert", response_model=JobResponse)
 def convert_job(

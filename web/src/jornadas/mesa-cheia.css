@@ -201,3 +201,55 @@
   .faixa-capas { gap: 24px; }
   .faixa-capas li { inline-size: 156px; }
 }
+
+/* ─── "Precisa de voce" — no 895:9348 ───────────────────────────────────────
+ *
+ * Os arquivos que pararam esperando uma decisao. A secao nao existia porque o
+ * ESTADO nao existia: um PDF com senha era tratado como PDF quebrado, e a
+ * pessoa recebia "OCR falhou" para um arquivo que so precisava de uma senha.
+ *
+ * O NOME DAS CLASSES E `precisa-de-voce` E NAO `precisa`, e isso nao e enfeite:
+ * `precisa` ja e o nome do ESTADO, e ele vira classe na linha da fila
+ * (`.arquivo.precisa`). Com o mesmo nome nos dois, uma regra da secao pintaria a
+ * linha da fila — medido, `querySelector(".precisa")` devolvia a linha e nao a
+ * secao. O `scripts/classes.mjs` nao pega este caso: ele recusa a mesma classe
+ * DEFINIDA em dois arquivos, e aqui havia uma definicao so para dois papeis.
+ */
+.precisa-de-voce { display: flex; justify-content: center; padding: 0 64px 64px; }
+.precisa-de-voce-caixa {
+  inline-size: 100%; max-inline-size: 888px;
+  padding: 40px;
+  background: var(--background-secondary);
+}
+.precisa-de-voce-caixa h2 {
+  margin: 0 0 8px;
+  font-size: 40px; line-height: 48px; font-weight: 540;   /* Heading/LG */
+  letter-spacing: -0.015em;
+  color: var(--foreground);
+  text-wrap: pretty;
+}
+.precisa-de-voce-diz { margin: 0 0 32px; font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
+.precisa-de-voce-lista { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 24px; }
+.precisa-de-voce-lista > li {
+  padding: 24px;
+  background: var(--background);
+  border: 1px solid var(--border);
+}
+.precisa-de-voce-lista h3 {
+  margin: 0 0 8px;
+  font-size: 20px; line-height: 30px; font-weight: 540;
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}
+.precisa-de-voce-motivo { margin: 0 0 16px; font-size: 16px; line-height: 24px; color: var(--muted-foreground); text-wrap: pretty; }
+.precisa-de-voce-motivo strong { color: var(--foreground); font-weight: 540; }
+.precisa-de-voce-forma { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
+.precisa-de-voce-forma .campo { flex: 1 1 260px; }
+
+@media (max-width: 1023px) {
+  .precisa-de-voce { padding: 0 24px 40px; }
+  .precisa-de-voce-caixa { padding: 24px 16px; }
+  .precisa-de-voce-caixa h2 { font-size: 28px; line-height: 36px; }
+  .precisa-de-voce-forma { align-items: stretch; }
+  .precisa-de-voce-forma .botao { inline-size: 100%; justify-content: center; }
+}

@@ -20,6 +20,10 @@ class JobResponse(BaseModel):
     """Retornado por GET /analyze/{upload_id} e POST /jobs/{id}/metadata|cover."""
 
     upload_id: int
+    # O que trava este trabalho — a tela de Preparo precisa dele pelo mesmo
+    # motivo da Mesa: um arquivo esperando senha não tem título, nem páginas,
+    # nem miniatura, e a tela precisa dizer por quê em vez de mostrar tudo vazio.
+    bloqueio: Optional[str] = None
     # Por onde os arquivos deste trabalho são alcançados. Vem do backend porque
     # é ele que sabe — e porque o número ao lado não serve mais para isso.
     endereco: Optional[str] = None
@@ -159,6 +163,11 @@ class HistoryEntry(BaseModel):
     leitura_url: Optional[str] = None
     # O tamanho do arquivo que chegou, em bytes — o selo "11.5 MB" do desenho.
     input_bytes: Optional[int] = None
+    # O QUE TRAVA ESTE TRABALHO. Precisa atravessar o schema porque a Mesa monta
+    # a fila a partir do `/history`, e é o `estadoDe` do contrato que decide o
+    # estado de cada linha — sem este campo, um arquivo esperando senha
+    # reaparece a cada recarga como "com erro".
+    bloqueio: Optional[str] = None
 
     # O que a ficha da estante mostra sobre a LEITURA. Tudo derivado — antes
     # estes quatro vinham de um exemplo escrito à mão, iguais em todo livro.
@@ -275,6 +284,11 @@ class JobStatusResponse(BaseModel):
     comic_translation_status: str = "not_started"
     error_message: Optional[str] = None
     send_error: Optional[str] = None
+    # O QUE TRAVA ESTE TRABALHO, esperando uma decisão da pessoa — hoje só
+    # `"senha"`, e nulo quando nada trava. Precisa atravessar o schema: o
+    # `estadoDe` do contrato decide por ele ANTES de olhar o erro, e sem este
+    # campo a tela volta a dizer "OCR falhou" para um PDF que só pede senha.
+    bloqueio: Optional[str] = None
 
     # Export final de quadrinhos (Estabilização v1)
     comic_export_status: str = "not_started"

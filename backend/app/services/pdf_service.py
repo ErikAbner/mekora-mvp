@@ -15,6 +15,29 @@ def analyze_pdf(pdf_path: str, thumbnails_dir: Path) -> dict:
         dict com title, author, language, page_count, is_scanned, avg_chars_per_page.
     """
     doc = fitz.open(pdf_path)
+
+    # PDF COM SENHA NÃO É PDF QUEBRADO, e o produto tratava os dois igual.
+    #
+    # O PyMuPDF ABRE um arquivo protegido sem reclamar: `doc.needs_pass` fica
+    # `True` e o texto sai vazio. Com isso a densidade de caracteres dava zero, o
+    # arquivo era classificado como digitalização, o OCR rodava numa página que
+    # ninguém consegue renderizar, e a pessoa recebia "OCR falhou" para um
+    # arquivo que só precisava de uma senha.
+    #
+    # A análise para aqui. Quem sabe o que fazer é a pessoa — é o "Precisa de
+    # você" do nó 895:9348.
+    if doc.needs_pass:
+        doc.close()
+        return {
+            "title": "",
+            "author": "",
+            "language": "",
+            "page_count": 0,
+            "is_scanned": False,
+            "avg_chars_per_page": 0.0,
+            "needs_password": True,
+        }
+
     metadata = doc.metadata
     page_count = doc.page_count
 
@@ -39,6 +62,7 @@ def analyze_pdf(pdf_path: str, thumbnails_dir: Path) -> dict:
         "page_count": page_count,
         "is_scanned": is_scanned,
         "avg_chars_per_page": round(avg_chars, 2),
+        "needs_password": False,
     }
 
 

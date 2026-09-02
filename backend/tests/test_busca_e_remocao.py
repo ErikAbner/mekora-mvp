@@ -362,3 +362,90 @@ def test_o_tamanho_do_epub_gerado_e_gravado(client, tmp_storage, sample_pdf, mon
     # Arquivo que não está lá devolve `None`, e não zero: zero seria o produto
     # afirmando que o EPUB é vazio.
     assert rotas._bytes_de(Path(tmp_storage) / "nao-existe.epub") is None
+
+
+# ---------------------------------------------------------------------------
+# O arquivo que espera você — PDF com senha (nó 895:9348)
+# ---------------------------------------------------------------------------
+
+def _pdf_com_senha(caminho, senha="abre-te"):
+    import fitz
+
+    d = fitz.open()
+    for i in range(3):
+        p = d.new_page()
+        p.insert_text((72, 80), f"Pagina {i + 1} de um arquivo protegido", fontsize=16)
+        for j in range(12):
+            p.insert_text((72, 120 + j * 20), "Texto de prova. " * 6, fontsize=10)
+    d.save(str(caminho), encryption=fitz.PDF_ENCRYPT_AES_256, user_pw=senha, owner_pw=senha)
+    d.close()
+    return caminho
+
+
+def test_pdf_com_senha_para_e_nao_finge_ser_digitalizacao(tmp_path):
+    """O PyMuPDF ABRE um arquivo protegido sem reclamar: `needs_pass` fica True e
+    o texto sai vazio. Com isso a densidade dava zero, o arquivo era classificado
+    como digitalização, o OCR rodava numa página que ninguém consegue renderizar,
+    e a pessoa recebia "OCR falhou" para um arquivo que só precisava de senha."""
+    from app.services.pdf_service import analyze_pdf
+
+    r = analyze_pdf(str(_pdf_com_senha(tmp_path / "t.pdf")), tmp_path / "mini")
+    assert r["needs_password"] is True
+    # Nada é inventado: sem a senha não dá para ler título, páginas nem texto.
+    assert r["is_scanned"] is False
+    assert r["page_count"] == 0
+    assert r["title"] == ""
+
+
+def test_a_senha_destrava_e_nao_fica_guardada(client, tmp_path, tmp_storage):
+    """A senha abre o arquivo, o arquivo é regravado sem proteção, e a variável
+    morre com a requisição — nem banco, nem log, nem métrica."""
+    import fitz
+
+    from app.db.database import SessionLocal
+    from app.models.processing_job import ProcessingJob
+
+    caminho = _pdf_com_senha(tmp_path / "trancado.pdf")
+    with open(caminho, "rb") as f:
+        envio = client.post("/upload", files={"file": ("trancado.pdf", f.read(), "application/pdf")})
+    assert envio.status_code == 201
+    job_id = envio.json()["upload_id"]
+
+    client.get(f"/analyze/{job_id}")
+    assert client.get(f"/jobs/{job_id}/status").json()["bloqueio"] == "senha"
+
+    # 403 é "essa senha não abre", e não "você não pode": a requisição está bem
+    # formada e o servidor a entendeu — o que faltou foi a credencial.
+    errada = client.post(f"/jobs/{job_id}/senha", json={"senha": "nao-e-essa"})
+    assert errada.status_code == 403
+    assert client.get(f"/jobs/{job_id}/status").json()["bloqueio"] == "senha"
+
+    assert client.post(f"/jobs/{job_id}/senha", json={"senha": "abre-te"}).status_code == 200
+
+    db = SessionLocal()
+    job = db.query(ProcessingJob).filter(ProcessingJob.id == job_id).first()
+    caminho_no_disco, colunas = job.input_path, {
+        c.name: getattr(job, c.name) for c in job.__table__.columns
+    }
+    db.close()
+
+    # A SENHA NÃO ESTÁ EM COLUNA NENHUMA. O teste varre todas em vez de checar
+    # uma: uma coluna nova que a guardasse por engano passaria despercebida.
+    assert not any("abre-te" == str(v) for v in colunas.values())
+    assert colunas["bloqueio"] is None
+
+    # E o arquivo no disco abre sem senha agora.
+    # `needs_pass` do PyMuPDF é 0 ou 1, e não um booleano — `is False` falha
+    # num zero que é a resposta certa.
+    aberto = fitz.open(caminho_no_disco)
+    assert not aberto.needs_pass
+    assert aberto.page_count == 3
+    aberto.close()
+
+
+def test_senha_em_arquivo_que_nao_espera_senha_da_409(client, sample_pdf):
+    with open(sample_pdf, "rb") as f:
+        envio = client.post("/upload", files={"file": ("livre.pdf", f.read(), "application/pdf")})
+    job_id = envio.json()["upload_id"]
+    r = client.post(f"/jobs/{job_id}/senha", json={"senha": "qualquer"})
+    assert r.status_code == 409

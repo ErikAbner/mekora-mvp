@@ -613,6 +613,24 @@ export function renomearArquivo(jobId, final_filename) {
   });
 }
 
+/**
+ * POST /jobs/{id}/senha — a senha do PDF, usada uma vez para tirar a protecao.
+ *
+ * A SENHA NAO E GUARDADA em lugar nenhum: ela abre o arquivo, o arquivo e
+ * regravado sem protecao, e a variavel morre com a requisicao. Nem banco, nem
+ * log, nem metrica.
+ *
+ * 403 quer dizer "essa senha nao abre", e nao "voce nao pode": a requisicao
+ * esta bem formada e o servidor a entendeu — o que faltou foi a credencial.
+ */
+export function destravarComSenha(jobId, senha) {
+  return pede(`/jobs/${jobId}/senha`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ senha }),
+  });
+}
+
 /** POST /jobs/{id}/duplicate — jobs.py. "Refazer a preparação": mesmo arquivo,
  *  do começo. `metadata_only` é o único modo que existe, e é o que o desenho
  *  descreve — "Nada é enviado de novo". */

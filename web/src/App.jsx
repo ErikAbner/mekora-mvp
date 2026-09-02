@@ -76,7 +76,7 @@ function usaExemplo() {
 }
 
 function Mesa() {
-  const { arquivos, livros, backend, receber, carregarEstante } = useJornada();
+  const { arquivos, livros, backend, receber, carregarEstante, destravar } = useJornada();
   const navegar = useNavigate();
   const lista = arquivos.length ? arquivos : usaExemplo() ? EXEMPLO_FILA : [];
 
@@ -92,6 +92,7 @@ function Mesa() {
       livros={livros}
       aoVerEstante={() => navegar("/estante")}
       aoReceberArquivos={receber}
+      aoDestravar={destravar}
       backend={backend}
     />
   );
