@@ -576,3 +576,80 @@ precisa de uma pergunta que ele não faz: **esta tela bate com o nó do Figma?**
 Não dá para automatizar "bate" por inteiro, e dá para automatizar o que mais doeu
 aqui — asset usado pelo nome sem ninguém olhar o desenho, e componente
 reimplementado quando já existia um.
+
+## Segunda leva — mesma sessão, resto do produto
+
+### Leitura (continuação)
+
+| | o que está errado |
+|---|---|
+| L3 | Menu errado: os itens abrem do lado CONTRÁRIO ao do ícone. Dropdown e modal abrem errado, com largura errada, ícones apertados |
+| L4 | Notas e destaques coloridos demais. Deve ter cor — mas o jeito que ficou precisa ser reavaliado |
+| L5 | ~~Em Aparência, os temas têm uma palavra cada e "Do sistema" tem duas: é ela que quebra a fileira~~ **feito** — virou "Sistema" |
+| L6 | **O "vertical trim" dos textos.** Ver a nota abaixo: é sistêmico e é provavelmente a causa de "tudo está grande demais" |
+| L7 | Clicar em adicionar cor (destaque, não nota) **não muda a cor do texto na leitura**. Botão que não aperta, não muda e não dá retorno |
+
+### Configurações
+
+| | o que está errado |
+|---|---|
+| G1 | As imagens ilustrativas das seções foram posicionadas com cuidado POR CIMA do contêiner, numa ordem de camadas feita para não dar problema na implementação. Eu fiz errado mesmo assim |
+| G2 | As letras miúdas têm o tamanho certo, e o texto quebrado e minúsculo espalhado é ruim. Vira **hot spot**: bolinha clicável que abre um balão com a explicação |
+| G3 | Em "dados de uso" eu modifiquei tudo. Havia razão? Se não, seguir o desenho |
+| G4 | A tela de privacidade está completamente quebrada |
+
+### Por onde começar (`/ajuda`, `895:11193`)
+
+| | o que está errado |
+|---|---|
+| A1 | Espaçamento bugado |
+| A2 | Não segue o grid do Figma |
+| A3 | Navegação errada |
+
+### Preparo de arquivos — `895:7856`, `895:8029`, `895:8164`
+
+Bem errada, não condiz com o desenho.
+
+### Estante 3D — `895:7506`
+
+Continua completamente bugada.
+
+---
+
+## As três coisas SISTÊMICAS
+
+Consertar tela por tela sem estas três é repintar parede molhada.
+
+### 1. As seções sobre o pontilhado são GAVETAS, não páginas
+
+Onde há um contêiner de cor diferente sobre o canvas pontilhado, aquilo **não é
+uma página nova**: é uma seção que SOBREPÕE o conteúdo anterior, seguindo a
+lógica de navegação dentro do canvas. Eu li como rota e construí como página.
+
+O Erik indicou o componente para isso — a `vaul`, do Emil Kowalski
+(<https://github.com/emilkowalski/vaul>) — e disse que ela precisa perder borda e
+mais alguma coisa, **e que era para ter sido usada desde o começo**. Já está
+instalada.
+
+Isto vem PRIMEIRO porque muda o que as outras telas são. Consertar o espaçamento
+de uma página que devia ser gaveta é trabalho jogado fora.
+
+### 2. Tudo está grande demais — e há uma causa mecânica
+
+"Popups grandes demais, fontes enormes, coisas que deviam caber numa tela só
+precisam de scroll." Isso não é gosto, é medida.
+
+**No Figma o texto tem trim vertical: a caixa abraça as letras.** No CSS a caixa
+de linha acrescenta meia entrelinha ACIMA e ABAIXO das letras. Num corpo de 20
+com entrelinha 30, são 5px sobrando em cima e 5 embaixo, **em cada bloco de
+texto**. Eu li os espaçamentos do desenho e apliquei como margem, e cada um deles
+saiu 10px maior — somando descendo a tela.
+
+Conferido: não há `text-box-trim` nem `leading-trim` em nenhum CSS do produto. A
+diferença está entre os dois sistemas, e não numa propriedade que eu tenha
+ligado.
+
+### 3. O portão não pergunta se a tela é a do desenho
+
+Ele mede cor, contraste e escala tipográfica. Passou 60/60 enquanto tudo acima
+era verdade.

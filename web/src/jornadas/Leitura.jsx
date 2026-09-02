@@ -1025,8 +1025,13 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
                 ["escuro", "Escuro"],
                 /* "Sistema" não está no desenho e fica: sem ele, quem tem o
                    telefone em automático perde isso ao tocar uma vez aqui, e não
-                   tem como voltar. */
-                ["sistema", "Do sistema"],
+                   tem como voltar.
+
+                   UMA PALAVRA, e não duas. Era "Do sistema", e as outras três
+                   têm uma palavra só — a quarta quebrava em duas linhas e
+                   desalinhava a fileira inteira. O "Do" não carregava sentido
+                   nenhum que "Sistema" não carregue. */
+                ["sistema", "Sistema"],
               ].map(([id, rotulo]) => (
                 <button
                   key={id}
