@@ -26,7 +26,7 @@ const iconeConta = "/icones/icone-conta.svg";
 const iconeMenu = "/icones/icone-menu.svg";
 
 import { useEffect, useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { Icone } from "./Icone.jsx";
 import { Busca } from "./Busca.jsx";
 import { MenuDaConta } from "./MenuDaConta.jsx";
@@ -40,7 +40,7 @@ import "./cabecalho.css";
 /* A lista vem de `lugares.js`, não daqui. Ter os lugares em dois arquivos é como
  * o menu passa a oferecer um lugar que a rota não conhece, e o clique vira tela
  * branca. */
-import { LUGARES, lugarDaRota } from "../lugares.js";
+import { LUGARES, lugarDaRota, lembrarLugar, lugarDoRastro } from "../lugares.js";
 
 export function Cabecalho() {
   /* A PESSOA VEM DO SERVIDOR AQUI, e não por propriedade.
@@ -57,17 +57,34 @@ export function Cabecalho() {
   }, []);
 
   const { pathname } = useLocation();
-  const aqui = lugarDaRota(pathname);
+
+  /* O LUGAR ATIVO É O RASTRO, e não a rota.
+   *
+   * Ver `lugares.js`: o cabeçalho é quase um caminho de migalhas. No `895:10599`
+   * a tela de Conta está aberta e o cabeçalho marca ESTANTE — a pessoa não saiu
+   * da Estante, o conteúdo foi sobreposto.
+   *
+   * Quando a rota É um dos quatro lugares, ela manda e vira o rastro. Quando não
+   * é — Conta, Ajuda, Preparo, um livro —, o que fica marcado é de onde a pessoa
+   * veio. E quem abriu o endereço direto não recebe marca nenhuma, porque não
+   * percorreu caminho nenhum. */
+  const daRota = lugarDaRota(pathname);
+  useEffect(() => { lembrarLugar(pathname); }, [pathname]);
+  const aqui = daRota ?? lugarDoRastro();
   const [menuAberto, setMenuAberto] = useState(false);
   const [menuConta, setMenuConta] = useState(false);
   return (
     <header className="cabecalho">
       <nav className="cabecalho-lugares" aria-label="Lugares do Mekora">
         {LUGARES.map((l) => (
-          <NavLink
+          /* `Link`, E NÃO `NavLink`. O `NavLink` marca sozinho conforme a rota
+             CASA com o `to` dele, e ignora um `aria-current` vindo de fora — foi
+             assim que a gaveta de Conta apareceu sem lugar nenhum marcado, com o
+             rastro guardado e sem efeito.
+             Quem marca aqui é o rastro, e não a rota. Ver acima. */
+          <Link
             key={l.id}
             to={l.rota}
-            end={l.rota === "/"}
             className="lugar"
             /* O lugar ainda não construído continua clicável e leva a uma tela
                que DIZ isso. Desabilitar o botão esconderia que ele existe. */
@@ -75,7 +92,7 @@ export function Cabecalho() {
           >
             <Icone src={l.icone} />
             <span>{l.rotulo}</span>
-          </NavLink>
+          </Link>
         ))}
       </nav>
 

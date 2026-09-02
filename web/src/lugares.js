@@ -26,3 +26,41 @@ export const LUGARES = [
 export const lugarDaRota = (caminho) =>
   LUGARES.find((l) => l.rota === caminho) ??
   LUGARES.find((l) => l.rota !== "/" && caminho.startsWith(l.rota));
+
+/* ONDE VOCÊ ESTÁ, quando a tela aberta não é um dos quatro lugares.
+ *
+ * O CABEÇALHO É QUASE UM RASTRO. O Erik nomeou isso olhando o `895:10599`: lá a
+ * tela de Conta está aberta e o cabeçalho marca ESTANTE. Não é engano do
+ * desenho — tecnicamente a pessoa não saiu da Estante, o conteúdo foi
+ * sobreposto. A Conta é uma gaveta por cima, e o rastro continua apontando para
+ * onde ela estava.
+ *
+ * Então o lugar ativo não sai da rota atual: sai da última rota que ERA um
+ * lugar. `sessionStorage` e não memória, porque recarregar com a gaveta aberta
+ * não pode apagar o rastro — e não `localStorage`, porque o rastro é desta aba e
+ * desta visita, não uma preferência.
+ *
+ * QUEM ABRE `/conta` DIRETO, por link, não recebe rastro nenhum, e é o certo:
+ * marcar Estante ali seria inventar um caminho que a pessoa não percorreu.
+ */
+const RASTRO = "mekora-lugar";
+
+export function lembrarLugar(caminho) {
+  const l = lugarDaRota(caminho);
+  if (!l) return;
+  try {
+    sessionStorage.setItem(RASTRO, l.id);
+  } catch {
+    /* Modo privado. O rastro vale enquanto a aba viver na memória do React. */
+  }
+}
+
+/** O lugar do rastro, ou `undefined` se não houver. */
+export function lugarDoRastro() {
+  try {
+    const id = sessionStorage.getItem(RASTRO);
+    return LUGARES.find((l) => l.id === id);
+  } catch {
+    return undefined;
+  }
+}
