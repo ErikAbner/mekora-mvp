@@ -261,3 +261,17 @@
   .preparo-pagina-modo { align-self: stretch; }
   .preparo-pagina-modo button { flex: 1 1 0; padding: 12px 16px; }
 }
+
+/* A TRADUCAO — no 895:7856. O botao so existe quando ha para onde traduzir; sem
+ * pacote de idioma instalado a linha diz o que falta, em texto e nao em botao. */
+.preparo-pagina-sem-traducao {
+  grid-column: 2; grid-row: 1 / -1; align-self: center;
+  max-inline-size: 22ch;
+  font-size: 13px; line-height: 18px;
+  color: var(--muted-foreground);
+  text-align: end; text-wrap: pretty;
+}
+.preparo-pagina-idiomas {
+  margin: 24px 0 0; padding: 0; list-style: none;
+  display: flex; flex-wrap: wrap; gap: 12px;
+}

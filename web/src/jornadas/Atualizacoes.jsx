@@ -36,6 +36,35 @@ const MUDANCAS = [
     data: "2026-09-02",
     itens: [
       {
+        tipo: "novo",
+        titulo: "A conta tem nome e retrato, e os dois são opcionais",
+        diz: "Antes a conta era só o e-mail — e a trilha ao lado inventava um nome a partir dele, enquanto a tela de privacidade dizia que não havia nome nenhum. Agora você escolhe os dois, ou nenhum. Do retrato o servidor guarda um recorte quadrado feito por ele: junto com a imagem original iriam a câmera, a data e, em foto de celular, a coordenada de onde ela foi tirada.",
+        onde: { rota: "/conta", diz: "Ver minha conta" },
+      },
+      {
+        tipo: "novo",
+        titulo: "Um PDF com senha para e pergunta, em vez de falhar",
+        diz: "Ele era tratado como PDF quebrado: a análise não conseguia ler nada, o arquivo passava por digitalização, e você recebia “OCR falhou” para um arquivo que só precisava de uma senha. Agora ele aparece em “Precisa de você”, na Mesa, com um campo. A senha abre o arquivo e é esquecida — não vai para o banco nem para o log.",
+        onde: { rota: "/mesa", diz: "Ver a Mesa" },
+      },
+      {
+        tipo: "novo",
+        titulo: "O Mekora mostra os assuntos que atravessaram seus livros",
+        diz: "Nos Estudos, “Você ligou” junta notas de livros diferentes que dividem palavras — com as palavras à vista, para você poder discordar. Ele não organiza nada sozinho: oferece juntar num estudo, e a pergunta do centro continua sendo sua.",
+        onde: { rota: "/estudos", diz: "Ver meus estudos" },
+      },
+      {
+        tipo: "novo",
+        titulo: "A tradução saiu do servidor e apareceu na tela",
+        diz: "O Preparo passou a oferecer “Traduzir”, com os idiomas que a sua instalação realmente tem — e, quando não tem nenhum, diz o que falta em vez de mostrar um botão que não funciona. O arquivo original fica intacto: o que sai é um segundo texto.",
+        onde: { rota: "/mesa", diz: "Preparar um arquivo" },
+      },
+      {
+        tipo: "melhorado",
+        titulo: "As páginas longas dizem onde você está",
+        diz: "A ficha de um livro e a página de um estudo ganharam uma coluna de âncoras à esquerda, com a seção que você está lendo marcada. No celular ela não aparece: lá rolar já é o gesto.",
+      },
+      {
         tipo: "corrigido",
         titulo: "A fila da Mesa parou de sumir quando você recarrega",
         diz: "Ela só existia na aba em que você soltou o arquivo: recarregar no meio de uma conversão de dez minutos apagava a fila da tela, enquanto o trabalho seguia no servidor. Agora ela vem do servidor, e a área de soltar subiu para o topo — dava para acrescentar um arquivo só pelo botão no fim de uma lista que pode ter trinta itens.",
@@ -128,19 +157,19 @@ const NAO_ESTA_DE_PE = [
     diz: "Todas as outras telas foram medidas a 390 pixels e cabem. A de leitura não: verificá-la exige um livro já convertido, e isso ainda não está no caminho da medida.",
   },
   {
-    /* ESTE ITEM SUBSTITUIU O DO PRAZO DE RETENÇÃO, que dizia "decisão
-       pendente". O prazo deixou de ser pendente: o código já apaga o original
-       trinta dias depois, e a tela de privacidade agora diz isso. Manter o item
-       antigo aqui seria a página de atualizações desatualizada — que é o
-       defeito mais fácil de ter numa página que existe para contar o que
+    /* AS DUAS PENDÊNCIAS QUE ESTAVAM AQUI SAÍRAM, e o motivo é o mesmo: as duas
+       deixaram de ser pendências.
+
+       "Por quanto tempo guardamos o arquivo original" saiu em 01/09, quando a
+       tela de privacidade passou a dizer os trinta dias. "Nome e retrato na
+       conta" saiu em 02/09, quando o Erik decidiu e a coisa foi construída — e
+       virou uma linha de "novo" lá em cima, que é onde ela passa a valer.
+
+       Manter item antigo aqui seria a página de atualizações desatualizada, que
+       é o defeito mais fácil de ter numa página que existe para contar o que
        mudou. */
-    titulo: "Nome e retrato na conta — decisão pendente",
-    diz: "Hoje a conta é só o e-mail. Se ela vai ter nome e foto, ninguém decidiu — e enquanto não decidir, a tela de privacidade diz o que é verdade: não há nome, telefone nem foto.",
-    onde: { rota: "/conta/privacidade", diz: "Ver o que está guardado" },
-  },
-  {
-    titulo: "As notas que o Mekora liga entre livros ainda não têm página própria",
-    diz: "Cada nota mostra as parecidas com ela, com as palavras em comum ao lado. A vista de todas as ligações do acervo de uma vez, que o desenho chama de “Você ligou”, ainda não existe.",
+    titulo: "A tradução não está instalada nesta máquina",
+    diz: "A tela já sabe pedir e mostrar os idiomas que existem, mas o tradutor em si é um pacote à parte e ele não está aqui. Enquanto não estiver, o Preparo diz o que falta na linha do idioma, em vez de oferecer um botão que não funciona.",
   },
 ];
 

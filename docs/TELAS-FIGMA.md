@@ -331,12 +331,12 @@ porque vem do servidor, que é a fonte certa.
 | "42 de 96 páginas reconhecidas" | `895:8029` | o `ocrmypdf` roda como processo externo dentro da análise, sem retorno por página |
 | Tempo por passo ("01:10", "00:40") | `895:8029` | é previsão, e nada estima |
 | "A partir dos 14 títulos de capítulo" | `895:7856` | a análise não conta capítulos; quem lê o sumário é o `epub.js`, depois da conversão |
-| Botão "Traduzir" | `895:7856` | a tradução existe no backend e em tela nenhuma — botão que abre caminho sem tela é pior que botão a menos |
-| "Precisa de você" | `895:9348` | precisa de detecção de PDF com senha e de um estado de "bloqueado esperando você", que não existem |
+| ~~Botão "Traduzir"~~ | `895:7856` | **construído em 02/09** — a tela pergunta ao servidor os pares instalados; sem motor, ela diz o que falta |
+| ~~"Precisa de você"~~ | `895:9348` | **construído em 02/09** — `needs_pass` do PyMuPDF, coluna `bloqueio` e o estado `precisa` no contrato |
 | Recorte "rascunho" | `895:7631` | não há estado de nota no modelo; recorte que devolve sempre zero é promessa, não filtro |
 | "Três páginas ficaram sem texto" | `895:7631` | não há detecção de página sem texto |
-| "Você ligou" | `895:8849` | o motor existe e é por nota; a vista agregada por acervo precisa de rota nova |
-| Trilha de âncoras à esquerda | `895:7631`, `895:8260` | navegação dentro da página; vale, mas não muda o que a tela afirma |
+| ~~"Você ligou"~~ | `895:8849` | **construído em 02/09** — `GET /notas/agrupadas`, união de conjuntos com dois cortes ditos na tela |
+| ~~Trilha de âncoras à esquerda~~ | `895:7631`, `895:8260` | **construída em 02/09** — `TrilhaDaPagina`, marcada pelo que está sendo lido |
 | Modelo e resolução do aparelho | `895:10599` | o Mekora guarda nome e endereço; a Amazon não conta o resto |
 
 ### Perguntas para o Erik
@@ -350,3 +350,47 @@ porque vem do servidor, que é a fonte certa.
    dispositivos têm tela própria. Os dois desenhos discordam, e no desktop não
    existe um `D · Conta — Kindle`. Provavelmente é mock com conteúdo não trocado
    — mas é a sua palavra, não a minha.
+
+
+## 02/09 — o que o Erik mandou atacar
+
+Ele decidiu duas coisas e mandou seguir com as quatro pendências construíveis.
+
+**Nome e retrato na conta.** A pergunta estava aberta desde o começo, e o que
+havia era pior que a falta: `App.jsx` fazia `email.split("@")[0]`, então
+`erik@mekora.local` virava "erik" na trilha — enquanto a tela de privacidade
+afirmava, a duas telas de distância, que não havia nome nenhum. Os dois campos
+agora existem, os dois são opcionais, e o retrato é sempre reescrito pelo
+servidor como PNG quadrado: guardar o arquivo que chega seria guardar o EXIF.
+
+**"Precisa de você".** Faltava um estado, e por isso a seção não existia. Um PDF
+com senha não está com erro, não está trabalhando e não está na fila — e o
+PyMuPDF abre um arquivo protegido sem reclamar, o que fazia o produto tratá-lo
+como digitalização e responder "OCR falhou". Agora ele para e pergunta.
+
+**"Você ligou".** União de conjuntos sobre as notas, com dois cortes ditos na
+tela: três notas no mínimo, e dois livros no mínimo. É a travessia que faz o
+grupo ser notícia — três notas do mesmo capítulo sobre o mesmo assunto é o
+capítulo.
+
+**Tradução.** A tela pergunta ao servidor quais pares estão instalados. Nesta
+máquina não há nenhum, e ela diz isso — `argostranslate` não está instalado, e
+ele puxa `stanza`, que puxa `torch`. O outro ramo foi provado trocando as duas
+respostas do servidor na mão, e está registrado como tal.
+
+**Trilha de âncoras.** Construída, e a primeira versão foi jogada fora: o
+`IntersectionObserver` errava a última seção sempre, porque ela nunca chega ao
+alto da tela. O porquê está no comentário do componente.
+
+### O que ficou de fora, agora
+
+| O que | Onde | Por quê |
+|---|---|---|
+| "Nenhuma página corrompida" | `895:7856` | não há campo de página corrompida |
+| "42 de 96 páginas reconhecidas" | `895:8029` | o `ocrmypdf` roda como processo externo, sem retorno por página |
+| Tempo por passo | `895:8029` | é previsão, e nada estima |
+| "os 14 títulos de capítulo" | `895:7856` | a análise não conta capítulos |
+| Recorte "rascunho" | `895:7631` | não há estado de nota no modelo |
+| "Três páginas ficaram sem texto" | `895:7631` | não há detecção de página sem texto |
+| "Ignorar" num grupo | `895:8849` | ignorar precisa ser LEMBRADO, e não há onde |
+| Modelo e resolução do aparelho | `895:10599` | a Amazon não conta |

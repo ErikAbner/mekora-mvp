@@ -4,7 +4,12 @@ import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { AvisoPreferencias } from "../componentes/AvisoPreferencias.jsx";
 import { Campo } from "../componentes/Campo.jsx";
-import { acompanhar, analisar, cancelarOperacao, converter, enviarAoKindle, esperarAnalise } from "../../../contrato/api.js";
+import {
+  acompanhar, analisar, cancelarOperacao, converter, enviarAoKindle, escolherIdiomas,
+  esperarAnalise, motoresDeTraducao, paresDeTraducao, traduzir,
+} from "../../../contrato/api.js";
+import { nomeDoIdioma, paraOndeTraduzir } from "../../../contrato/idiomas.js";
+import { Folha } from "../componentes/Folha.jsx";
 import { tamanhoLegivel } from "../../../contrato/tamanho.js";
 import "./preparo.css";
 
@@ -81,7 +86,7 @@ function planos(job) {
          qual linha está acontecendo agora, em vez de a tela adivinhar pela
          ordem em que as escreveu. */
       passo: "ocr",
-      titulo: `Reconhecer o texto${job.detected_language ? ` em ${job.detected_language}` : ""}`,
+      titulo: `Reconhecer o texto${job.detected_language ? ` em ${nomeDoIdioma(job.detected_language)}` : ""}`,
       diz: "Depois disso o Kindle acha palavras e você pode mudar o corpo da letra.",
     });
   }
@@ -157,7 +162,11 @@ function planos(job) {
    * menos. */
   if (job.detected_language) {
     fora.push({
-      titulo: `Idioma: ${job.detected_language}, como no original`,
+      /* `traducao` marca a linha que ganha o botão do nó 895:7856. Ele só
+         aparece quando o servidor tem para onde traduzir — a tela decide isso
+         na hora de desenhar, com a lista de pares instalados. */
+      traducao: true,
+      titulo: `Idioma: ${nomeDoIdioma(job.detected_language)}, como no original`,
       diz: "Nada é traduzido a não ser que você peça.",
     });
   }
@@ -189,7 +198,7 @@ function Topo({ job, titulo, ajustando, aoTrocar, inerte = false }) {
        que o arquivo chegou. */
     tamanhoLegivel(job.input_bytes),
     job.page_count && `${job.page_count} páginas`,
-    job.detected_language,
+    nomeDoIdioma(job.detected_language),
   ].filter(Boolean);
 
   return (
@@ -296,6 +305,16 @@ export function Preparo() {
   const [inicio, setInicio] = useState(null);
   const [agora, setAgora] = useState(0);
   const [cancelando, setCancelando] = useState(false);
+  /* A TRADUÇÃO — o botão "Traduzir" do nó 895:7856, que ficou de fora antes
+     porque a tradução existia no backend e em tela nenhuma.
+     
+     A tela PERGUNTA AO SERVIDOR o que existe: a tradução roda local, por pacote
+     de idioma instalado na máquina, e uma lista escrita à mão prometeria
+     "português para inglês" numa instalação que responde 409. */
+  const [pares, setPares] = useState(null);
+  const [motores, setMotores] = useState(null);
+  const [traduzindo, setTraduzindo] = useState(false);
+  const [escolhendoIdioma, setEscolhendoIdioma] = useState(false);
 
   const buscar = useCallback(async () => {
     try {
@@ -318,6 +337,17 @@ export function Preparo() {
   }, [id]);
 
   useEffect(() => { buscar(); }, [buscar]);
+
+  useEffect(() => {
+    let vivo = true;
+    Promise.all([paresDeTraducao().catch(() => null), motoresDeTraducao().catch(() => null)])
+      .then(([p, m]) => {
+        if (!vivo) return;
+        setPares(p);
+        setMotores(m);
+      });
+    return () => { vivo = false; };
+  }, []);
 
   useEffect(() => {
     if (!preparando || inicio == null) return undefined;
@@ -570,6 +600,16 @@ export function Preparo() {
     );
   }
 
+  /* PARA ONDE DÁ PARA TRADUZIR — só com os pares que o motor tem instalados.
+     `null` enquanto a pergunta não voltou, e aí a linha não promete nada. */
+  const destinos = paraOndeTraduzir(pares?.argos, job.detected_language);
+  const motorDisponivel = motores?.engines?.some((e) => e.available);
+  const porQueNaoTraduz = !pares
+    ? "Perguntando ao servidor se dá para traduzir…"
+    : !motorDisponivel
+      ? (motores?.engines?.[0]?.note ?? "O tradutor não está instalado nesta máquina.")
+      : `Nenhum pacote de idioma a partir de ${nomeDoIdioma(job.detected_language)} está instalado aqui.`;
+
   const oQueVouFazer = planos(job);
   const sozinhas = oQueVouFazer.map((x) => x.sozinho).filter(Boolean);
 
@@ -636,6 +676,20 @@ export function Preparo() {
               <li key={p.titulo}>
                 <h3>{p.titulo}</h3>
                 <p>{p.diz}</p>
+                {/* O "TRADUZIR" do nó 895:7856, e ele só existe quando há para
+                    onde. A tradução é local, por pacote instalado na máquina:
+                    numa instalação sem o motor ou sem o par, o botão abriria um
+                    caminho que responde 409, e a linha diz o que falta em vez
+                    disso — que é a mesma regra do resto desta tela. */}
+                {p.traducao && (
+                  destinos.length > 0 ? (
+                    <Botao tom="secundaria" onClick={() => setEscolhendoIdioma(true)}>
+                      Traduzir
+                    </Botao>
+                  ) : (
+                    <span className="preparo-pagina-sem-traducao">{porQueNaoTraduz}</span>
+                  )
+                )}
               </li>
             ))}
           </ul>
@@ -722,6 +776,69 @@ export function Preparo() {
           )}
         </div>
         </AvisoPreferencias>
+
+        {/* A ESCOLHA DO IDIOMA, numa folha. O que ela diz antes de traduzir é o
+            que separa esta tela de um botão mágico: a tradução é feita por um
+            programa, não por uma pessoa, e o original não se perde. */}
+        <Folha
+          aberta={escolhendoIdioma}
+          titulo={`Traduzir ${titulo}`}
+          aoFechar={() => setEscolhendoIdioma(false)}
+        >
+          <p>
+            De <strong>{nomeDoIdioma(job.detected_language)}</strong> para qual
+            idioma? A tradução é feita aqui no servidor, por um programa — não
+            por uma pessoa —, e o resultado se lê como tradução automática.
+          </p>
+          <p>
+            O arquivo original fica intacto. O que sai é um segundo texto, e é
+            dele que o EPUB é montado.
+          </p>
+          <ul className="preparo-pagina-idiomas">
+            {destinos.map((d) => (
+              <li key={d.codigo}>
+                <Botao
+                  tom="secundaria"
+                  disabled={traduzindo}
+                  onClick={async () => {
+                    setTraduzindo(true);
+                    setErro(null);
+                    try {
+                      /* OS IDIOMAS SÃO GRAVADOS ANTES. O `/translate` não os
+                         recebe no corpo: ele os LÊ do trabalho, e chamar sem
+                         gravar traduziria para o padrão do servidor. */
+                      await escolherIdiomas(id, {
+                        source_language: job.detected_language,
+                        target_language: d.codigo,
+                      });
+                      await traduzir(id);
+                      setEscolhendoIdioma(false);
+                      setPreparando(true);
+                      setInicio(Date.now());
+                      setAgora(0);
+                      const fim = await acompanhar(id, setAndamento);
+                      if (fim.estado === "erro") {
+                        setErro(fim.motivo || "A tradução não terminou.");
+                      }
+                      setPreparando(false);
+                      setAndamento(null);
+                      /* Rebusca: o trabalho agora tem o texto traduzido, e a
+                         tela precisa mostrar o que mudou. */
+                      try { setJob(await analisar(id)); } catch { /* a tela funciona sem */ }
+                    } catch (e) {
+                      setErro(e.message);
+                      setEscolhendoIdioma(false);
+                    } finally {
+                      setTraduzindo(false);
+                    }
+                  }}
+                >
+                  {d.nome}
+                </Botao>
+              </li>
+            ))}
+          </ul>
+        </Folha>
       </main>
     </div>
   );

@@ -613,6 +613,41 @@ export function renomearArquivo(jobId, final_filename) {
   });
 }
 
+/* ─── Traducao ──────────────────────────────────────────────────────────────
+ *
+ * A TELA PERGUNTA AO SERVIDOR O QUE EXISTE, e nao oferece uma lista escrita a
+ * mao. A traducao roda local, por pacote de idioma instalado na maquina — e
+ * numa instalacao sem o motor, ou sem o par baixado, oferecer "portugues para
+ * ingles" e prometer o que responde 409.
+ */
+
+/** GET /translation/engines — quais motores existem, e se estao instalados. */
+export function motoresDeTraducao() {
+  return pede("/translation/engines");
+}
+
+/** GET /translation/engines/pairs — os pares REALMENTE instalados, por motor.
+ *  Codigos ISO 639-2 de tres letras: por, eng, spa. */
+export function paresDeTraducao() {
+  return pede("/translation/engines/pairs");
+}
+
+/** POST /jobs/{id}/metadata — de que idioma para qual. O `translate` nao recebe
+ *  os idiomas: ele os LE do trabalho, entao eles sao gravados antes. */
+export function escolherIdiomas(jobId, { source_language, target_language }) {
+  return pede(`/jobs/${jobId}/metadata`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ translation_enabled: true, source_language, target_language }),
+  });
+}
+
+/** POST /jobs/{id}/translate — dispara a traducao. Gera um SEGUNDO arquivo; o
+ *  original fica intacto, e e dele que a conversao parte se ninguem pedir. */
+export function traduzir(jobId) {
+  return pede(`/jobs/${jobId}/translate`, { method: "POST" });
+}
+
 /**
  * POST /jobs/{id}/senha — a senha do PDF, usada uma vez para tirar a protecao.
  *
