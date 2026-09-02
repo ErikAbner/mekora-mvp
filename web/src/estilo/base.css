@@ -141,6 +141,44 @@ html { -webkit-text-size-adjust: 100%; }
   --gaveta: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
+/* O CHÃO E A FOLHA — dois degraus, e eu tinha posto os dois no MESMO.
+ *
+ * Foi a terceira rodada num detalhe que o desenho já resolvia, e a causa foi
+ * sempre a mesma: eu escolhia valores em vez de ler os de lá. Lidos agora, do
+ * `895:10599` e do `get_variable_defs`:
+ *
+ *   a raiz da tela   `bg-white` — BRANCO, e não um token
+ *   o bloco          `surface/base`, #F9F9F9
+ *
+ * Eu tinha posto o chão em `surface/base` — a cor DO BLOCO. Os dois ficavam
+ * idênticos, e nenhuma sombra ia salvar isso: o Erik viu como "a cor do bg agora
+ * nem gera contraste com o fundo do canvas".
+ *
+ * Branco não é token do sistema claro, e é o que o desenho usa como chão. O
+ * portão o tolera explicitamente como fundo — `fundo !== '#ffffff'` está escrito
+ * na regra dele —, justamente porque é o fundo implícito do documento.
+ *
+ * NO ESCURO os dois degraus existem sem inventar nada: o chão é `--background`
+ * (#161616, `surface/inverse`) e a folha sobe para `--card` (#1c1c1c). Mesma
+ * relação, valores do sistema.
+ */
+:root {
+  --piso: #ffffff;
+  --folha: var(--background);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) {
+    --piso: var(--background);
+    --folha: var(--card);
+  }
+}
+
+:root[data-tema="escuro"] {
+  --piso: var(--background);
+  --folha: var(--card);
+}
+
 /* O CHÃO PONTILHADO É O PISO DO PRODUTO, e não decoração do Canvas.
  *
  * Ele só existia em `jornadas/canvas.css`. O Erik apontou o contrário — "as
@@ -149,33 +187,16 @@ html { -webkit-text-size-adjust: 100%; }
  * (Conta) e o `964:24606` (Estante no telefone) mostram os pontos por baixo,
  * com o cabeçalho flutuando em cima deles.
  *
- * É o piso sobre o qual as seções se abrem, e é o que dá sentido ao rastro do
- * cabeçalho: quem abre a Conta não trocou de chão, ganhou uma folha em cima.
+ * O CHÃO PRECISA COBRIR A TELA, e não a altura do que sobrou: a gaveta é
+ * `position: fixed` e sai do fluxo, então a `.mesa` que a contém colapsava para
+ * a altura do cabeçalho — 118px — e todo o resto era o fundo do `html`.
  *
- * 24px de passo e um ponto de 1px, os mesmos do Canvas. Lá eles andam com a
- * câmera; aqui ficam parados, porque não há câmera para seguir. */
+ * O PONTO NÃO USA A TINTA DE MOLDURA. `--border` existe para separar duas
+ * superfícies e tem peso para isso; o ponto não separa nada, ele diz que há um
+ * plano embaixo. */
 .chao {
-  /* O CHÃO PRECISA COBRIR A TELA, e não a altura do que sobrou.
-   *
-   * A gaveta é `position: fixed` e sai do fluxo, então a `.mesa` que a contém
-   * colapsava para a altura do CABEÇALHO — 118px. Os pontos existiam só naquela
-   * faixa, atrás das duas caixas opacas, e todo o resto era o fundo do `html`.
-   *
-   * O Erik viu como "na div onde tem o vaul, o bg é branco e não pontilhado como
-   * deveria". Medido antes do conserto: `elementFromPoint` na faixa entre o
-   * cabeçalho e o bloco devolvia `HTML`, com fundo transparente e sem imagem. */
   min-block-size: 100dvh;
-  background-color: var(--background);
-  /* O PONTO É FRACO, e o `--border` era forte demais.
-   *
-   * O Erik: "a cor dos pontos do bg está muito forte, não condiz com o Figma".
-   * `--border` é a tinta de MOLDURA — ela existe para separar duas superfícies e
-   * tem peso para isso. O ponto não separa nada: ele diz que existe um plano
-   * embaixo, e some assim que há qualquer coisa em cima.
-   *
-   * `surface/deep` é o degrau mais escuro entre as superfícies claras, e sobre
-   * `surface/base` dá uma marca que se percebe e não se lê. Continua sendo valor
-   * do sistema — nenhum cinza inventado para o caso. */
+  background-color: var(--piso);
   background-image: radial-gradient(var(--muted) 1px, transparent 1px);
   background-size: 24px 24px;
 }

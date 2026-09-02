@@ -16,7 +16,7 @@
   display: flex; gap: 56px; align-items: flex-start; justify-content: center;
   padding: 128px 32px;
   inline-size: 100%;
-  background: var(--background);
+  background: var(--folha);
   box-shadow:
     0 -1px 0 rgb(0 0 0 / 0.08),
     0 242px 34px rgb(0 0 0 / 0),

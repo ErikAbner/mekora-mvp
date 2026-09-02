@@ -1,9 +1,16 @@
-/* `background-color`, e NÃO o atalho `background`.
+/* O FUNDO É PADRÃO, e não decisão desta folha — daí o `:where`.
  *
- * O atalho zera `background-image` junto, e é o que apagava o chão pontilhado:
- * a `.chao` da base põe os pontos, esta regra vem depois e os limpava sem que
- * nada acusasse — o fundo continuava certo, só liso. */
-.mesa { display: flex; flex-direction: column; background-color: var(--background); }
+ * Esta regra já apagou o chão pontilhado DUAS vezes, de dois jeitos. Primeiro
+ * pelo atalho `background`, que zera `background-image` junto. Depois, corrigida
+ * para `background-color`, ela continuou vencendo a `.chao` da base — mesma
+ * especificidade, e esta carrega depois.
+ *
+ * `:where()` zera a especificidade do seletor. A `.mesa` continua com fundo
+ * quando ninguém disse outra coisa, e qualquer classe que diga outra coisa
+ * ganha, sem precisar saber que esta regra existe. É o que ela sempre quis
+ * dizer. */
+:where(.mesa) { background-color: var(--background); }
+.mesa { display: flex; flex-direction: column; }
 
 .promessa {
   display: flex; justify-content: center; align-items: center;
