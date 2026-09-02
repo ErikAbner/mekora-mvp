@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
@@ -250,11 +250,16 @@ function Nota({ no, aoMover, aoTirar, aoLigar, ligando, escolhida, escala = 1 })
  * área move a NOTA, ou o chão, e nunca o retângulo por baixo. O que pega o
  * retângulo é a barra do título — a mesma regra de uma janela.
  */
-function Grupo({ grupo, aoMudar, aoApagar, escala }) {
+function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0 }) {
   const arrasto = useRef(null);
   const [desloca, setDesloca] = useState(null);
   const [medindo, setMedindo] = useState(null);
   const [editando, setEditando] = useState(false);
+
+  /* NASCEU AGORA: abre pedindo o nome. O carimbo de tempo entra nas dependências
+   * para que dois grupos seguidos disparem duas vezes — um booleano já ligado
+   * não dispara. */
+  useEffect(() => { if (nasceuAgora) setEditando(true); }, [nasceuAgora]);
 
   const pegar = (e, qual) => {
     if (e.button !== 0) return;
@@ -320,7 +325,13 @@ function Grupo({ grupo, aoMudar, aoApagar, escala }) {
             type="text"
             defaultValue={grupo.nome}
             aria-label="Nome do grupo"
-            autoFocus
+            /* `ref` DE CALLBACK, e não `autoFocus`.
+             *
+             * O `autoFocus` do React age no monte, e aqui o campo monta no mesmo
+             * quadro em que o botão de agrupar ainda tem o foco — medido: o
+             * campo abria e o foco continuava no botão, então digitar não escrevia
+             * nada. O callback roda com o nó já no documento. */
+            ref={(el) => { if (el) { el.focus(); el.select(); } }}
             maxLength={120}
             onPointerDown={(e) => e.stopPropagation()}
             onBlur={(e) => { setEditando(false); if (e.target.value !== grupo.nome) aoMudar(grupo.id, { nome: e.target.value }); }}
@@ -440,7 +451,25 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
           y: (caixa.height / 2 - camera.y) / camera.escala - 160,
         }
       : { x: 0, y: 0 };
-    aoAgrupar?.({ nome: "", x: meio.x, y: meio.y, largura: 480, altura: 320 });
+    /* O GRUPO NASCE PEDINDO O NOME.
+     *
+     * Ele nascia sem nome nenhum, e ficava um retângulo tracejado anônimo no
+     * meio da tela — a pessoa tinha de descobrir que o rótulo "Dar um nome" era
+     * clicável. No desenho, todo grupo tem nome: o `895:7024` é "Design &
+     * Tecnologia", e um grupo é uma ÁREA COM ASSUNTO. Sem assunto ele é só uma
+     * caixa.
+     *
+     * `recemCriado` faz o campo do nome abrir já em edição, com o foco dentro.
+     * Quem não quiser nomear aperta `Esc` e o grupo continua lá. */
+    /* GUARDA OS IDS DE ANTES, e não a posição.
+     *
+     * A primeira versão marcava "o último da lista", e a lista se reordena
+     * quando ela volta do servidor: medido, DOIS campos de nome abriam ao mesmo
+     * tempo — o grupo que era o último antes, e o que passou a ser depois.
+     *
+     * Id é o que não muda de lugar. */
+    idsDeAntes.current = new Set(grupos.map((g) => g.id));
+    return aoAgrupar?.({ nome: "", x: meio.x, y: meio.y, largura: 480, altura: 320 });
   };
 
   const escolher = (notaId) => {
@@ -466,13 +495,33 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
 
   const ESCALA_MIN = 0.25;
   const ESCALA_MAX = 2;
-  const aproximar = (passo) =>
+  /* O SALTO DO BOTÃO ANIMA; o gesto não.
+   *
+   * Arrastar e a pinça mandam dezenas de valores por segundo, e uma transição
+   * ali põe atraso entre o dedo e a superfície — é o que faz um canvas parecer
+   * que patina. Os botões saltam de 100 para 110 de uma vez, e sem transição o
+   * salto lê como um piscar.
+   *
+   * A marca dura o tempo da transição e sai sozinha. Se a pessoa começar a
+   * arrastar nesse meio tempo, o próximo `pointerdown` a tira antes. */
+  const [saltando, setSaltando] = useState(false);
+  const idsDeAntes = useRef(null);
+  const relogioDoSalto = useRef(null);
+
+  const aproximar = (passo) => {
+    setSaltando(true);
+    clearTimeout(relogioDoSalto.current);
+    relogioDoSalto.current = setTimeout(() => setSaltando(false), 220);
     setCamera((c) => ({ ...c, escala: Math.min(ESCALA_MAX, Math.max(ESCALA_MIN, +(c.escala + passo).toFixed(2))) }));
+  };
 
   /* ARRASTAR O CHÃO leva a câmera junto. Só o chão: começar o arrasto sobre uma
    * nota move a nota, e é o que a pessoa espera dos dois gestos. */
   const chaoDesce = (e) => {
     if (e.target.closest(".canvas-nota")) return;
+    /* O gesto tira a transição na hora: nada de o plano seguir o dedo com
+     * 200ms de atraso porque um botão foi apertado meio segundo antes. */
+    setSaltando(false);
     arrastandoChao.current = { x0: e.clientX, y0: e.clientY, cx: camera.x, cy: camera.y };
     e.currentTarget.setPointerCapture?.(e.pointerId);
   };
@@ -505,6 +554,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
    * o cursor depois da escala. */
   const rodar = (e) => {
     e.preventDefault();
+    setSaltando(false);
     const caixa = e.currentTarget.getBoundingClientRect();
     const px = e.clientX - caixa.left;
     const py = e.clientY - caixa.top;
@@ -633,7 +683,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
           onPointerCancel={chaoSobe}
         >
           <div
-            className="canvas-plano"
+            className={`canvas-plano${saltando ? " saltando" : ""}`}
             style={{ transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.escala})` }}
           >
           {!nos.length && (
@@ -656,6 +706,9 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
               aoMudar={aoMudarArea}
               aoApagar={aoDesagrupar}
               escala={camera.escala}
+              /* O grupo cujo id NÃO existia antes da última criação abre já
+                 pedindo o nome. Ver `idsDeAntes`. */
+              nasceuAgora={idsDeAntes.current && !idsDeAntes.current.has(g.id) ? g.id : 0}
             />
           ))}
 

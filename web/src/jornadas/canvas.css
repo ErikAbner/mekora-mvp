@@ -311,7 +311,10 @@
   display: flex; gap: 8px; align-items: center;
   margin-inline-start: auto;
   opacity: 0;
-  transition: opacity var(--d1, 160ms) ease;
+  /* `--d1` NÃO EXISTE em lugar nenhum do projeto: a transição vinha caindo no
+   * padrão de 160ms escrito no segundo argumento, e a curva era a `ease` crua.
+   * Agora usa a curva nomeada da base. */
+  transition: opacity 160ms var(--saida);
 }
 .nota-canvas:hover .nota-acoes,
 .nota-canvas:focus-within .nota-acoes { opacity: 1; }
@@ -647,3 +650,68 @@
 }
 .canvas-ou-trazer button:hover { color: var(--muted-foreground); }
 .canvas-ou-trazer button:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+
+
+/* AS ANIMAÇÕES DO CANVAS.
+ *
+ * O Erik: "péssimas animações ao longo do site". Aqui o defeito era a AUSÊNCIA:
+ * a tela não tinha nenhuma, e o manual de animação nomeia esse caso — "elemento
+ * que aparece ou some sem transição parece quebrado".
+ *
+ * O que ganha animação e o que não ganha sai da primeira pergunta: quantas vezes
+ * por dia a pessoa vê isto?
+ *
+ *   arrastar uma nota      centenas   NENHUMA. O cartão segue o dedo.
+ *   andar/aproximar o plano  centenas   NENHUMA no gesto. Ver abaixo.
+ *   nota nova chegando     poucas     entra, porque veio do nada
+ *   grupo nascendo         poucas     idem
+ *   zoom pelos botões      poucas     anima, porque o salto é discreto
+ */
+
+/* A NOTA E O GRUPO ENTRAM, e não aparecem.
+ *
+ * De 0,96 e não de zero: nada no mundo aparece do nada, e escala zero é o que
+ * faz uma animação parecer truque. 200ms na curva de saída — começa rápido, que
+ * é o que faz parecer que respondeu na hora. */
+@keyframes canvas-entra {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.nota-canvas, .canvas-grupo {
+  animation: canvas-entra 200ms var(--saida) both;
+}
+/* A nota em movimento NÃO reanima: o `transform` dela é o arrasto, e a animação
+ * o sobrescreveria a cada quadro. */
+.nota-canvas.movendo { animation: none; }
+
+/* O PLANO SÓ ANIMA QUANDO O SALTO É DISCRETO.
+ *
+ * Arrastar e a pinça mandam dezenas de valores por segundo, e uma transição ali
+ * põe um atraso entre o dedo e a superfície — é o que faz um canvas parecer que
+ * está patinando. Os botões de zoom são o contrário: eles saltam de 100 para
+ * 110 de uma vez, e sem transição o salto lê como um piscar.
+ *
+ * A classe entra pelo botão e sai sozinha. */
+.canvas-plano.saltando {
+  transition: transform 200ms var(--movimento);
+}
+
+/* O BOTÃO RESPONDE AO DEDO. `scale(0.97)` no `:active` é o que faz a interface
+ * parecer que ouviu — sem isso, apertar um ícone não devolve nada até a tela
+ * mudar. */
+.canvas-ferramentas button,
+.canvas-zoom button {
+  transition: transform 160ms var(--saida), background-color 160ms var(--saida);
+}
+.canvas-ferramentas button:active,
+.canvas-zoom button:active { transform: scale(0.97); }
+
+@media (prefers-reduced-motion: reduce) {
+  .nota-canvas, .canvas-grupo { animation: none; }
+  .canvas-plano.saltando { transition: none; }
+  .canvas-ferramentas button,
+  .canvas-zoom button { transition: none; }
+  .canvas-ferramentas button:active,
+  .canvas-zoom button:active { transform: none; }
+}
