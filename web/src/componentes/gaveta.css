@@ -1,0 +1,82 @@
+/* O visual da `vaul` zerado, e a mecânica dela mantida.
+ *
+ * Ela vem com canto arredondado, sombra e alça — a linguagem de gaveta de
+ * telefone. O Mekora não tem raio, não tem sombra e separa superfície por
+ * degrau de cor e filete de 1px. O que fica da biblioteca é o gesto. */
+
+.gaveta-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  /* Escurece o chão SEM apagá-lo: a gaveta sobrepõe o que estava ali, e o que
+   * estava ali continua sendo o assunto. Preto sólido transformaria a gaveta
+   * numa tela nova, que é exatamente o que ela não é. */
+  background: rgb(0 0 0 / 0.32);
+}
+
+.gaveta {
+  position: fixed;
+  z-index: 51;
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  color: var(--foreground);
+  /* Zerado de propósito — ver o cabeçalho. */
+  border-radius: 0;
+  box-shadow: none;
+  outline: none;
+}
+
+/* O filete fica no lado por onde ela entrou, e só nele: é a borda que separa a
+ * gaveta do chão. Nos outros três lados ela encosta na janela, e um filete ali
+ * seria moldura de nada. */
+.gaveta-de-bottom {
+  inset-inline: 0; inset-block-end: 0;
+  max-block-size: 92dvh;
+  border-block-start: 1px solid var(--border);
+}
+.gaveta-de-top {
+  inset-inline: 0; inset-block-start: 0;
+  max-block-size: 92dvh;
+  border-block-end: 1px solid var(--border);
+}
+.gaveta-de-right {
+  inset-block: 0; inset-inline-end: 0;
+  inline-size: min(560px, 92vw);
+  border-inline-start: 1px solid var(--border);
+}
+.gaveta-de-left {
+  inset-block: 0; inset-inline-start: 0;
+  inline-size: min(560px, 92vw);
+  border-inline-end: 1px solid var(--border);
+}
+
+.gaveta-conteudo {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* A alça, quando ligada: um retângulo do sistema, sem raio. */
+.gaveta-alca {
+  flex: none;
+  inline-size: 48px;
+  block-size: 4px;
+  margin: 12px auto;
+  border-radius: 0;
+  background: var(--border);
+}
+
+/* A `vaul` anima por transform, e a curva dela é a do Ionic — a mesma que o
+ * iOS usa para folha que sobe. Ela já é a certa; o que se declara aqui é a
+ * DURAÇÃO, porque o padrão de 500ms é longo para uma seção que a pessoa vai
+ * abrir e fechar dezenas de vezes. */
+.gaveta[data-vaul-drawer] {
+  transition-duration: 260ms;
+  transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gaveta[data-vaul-drawer] { transition-duration: 1ms; }
+  .gaveta-fundo { transition: none; }
+}

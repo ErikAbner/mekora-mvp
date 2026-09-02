@@ -96,3 +96,11 @@
   .sistema-topo h1 { font-size: 28px; line-height: 36px; }
   .peca h2 { font-size: 22px; line-height: 32px; }
 }
+
+/* O espécime da gaveta. Ele existe só no catálogo, e o espaçamento aqui é o
+ * necessário para ler — a gaveta de verdade recebe o conteúdo já montado, e o
+ * vão dele vem da tela que a abre. */
+.especime-gaveta { display: flex; flex-direction: column; gap: 24px; padding: 32px; }
+.especime-gaveta h3 { margin: 0; font-size: 24px; line-height: 36px; }
+.especime-gaveta p { margin: 0; max-inline-size: 62ch; }
+.especime-gaveta > button { align-self: start; }

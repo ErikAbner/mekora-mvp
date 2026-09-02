@@ -120,6 +120,28 @@
 
 html { -webkit-text-size-adjust: 100%; }
 
+/* ESCONDE DA VISTA, E NÃO DE QUEM OUVE.
+ *
+ * Morava em `jornadas/estante.css`, e é usada pelo `Campo`, pela `Gaveta` e por
+ * quem vier. Utilidade dentro da folha de UMA tela é dívida esperando: quem
+ * apagar aquela tela um dia leva junto uma regra que três outras usam, e o
+ * sintoma é um rótulo invisível aparecendo no meio da página. */
+.visualmente-oculto {
+  position: absolute;
+  inline-size: 1px; block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  /* O CORPO É DECLARADO mesmo sendo invisível.
+   *
+   * O título da `Gaveta` usa esta classe e é um `<h2>`: sem tamanho declarado,
+   * ele herdava o padrão do navegador e caía em 30px, que não é degrau da
+   * escala. Invisível não quer dizer inexistente — o portão o mediu e recusou a
+   * tela, e estava certo: um valor que ninguém escolheu é um valor que ninguém
+   * escolheu, e o próximo a herdá-lo pode estar à vista. */
+  font-size: 16px; line-height: 24px;
+}
+
 body {
   margin: 0;
   background: var(--background);

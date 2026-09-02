@@ -27,6 +27,7 @@ import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
 import { Escolha } from "../componentes/Escolha.jsx";
 import { Folha } from "../componentes/Folha.jsx";
+import { Gaveta } from "../componentes/Gaveta.jsx";
 import { Icone } from "../componentes/Icone.jsx";
 import { Formatos } from "../componentes/Formatos.jsx";
 import { TrilhaDaPagina } from "../componentes/TrilhaDaPagina.jsx";
@@ -144,6 +145,7 @@ function EspecimeBotao({ tom, icone, children }) {
 
 export function Sistema() {
   const [folhaAberta, setFolhaAberta] = useState(false);
+  const [gaveta, setGaveta] = useState(null);
   const [escolha, setEscolha] = useState("guiado");
   const [texto, setTexto] = useState("");
 
@@ -162,6 +164,7 @@ export function Sistema() {
             { id: "peca-campo", rotulo: "Campo" },
             { id: "peca-escolha", rotulo: "Escolha" },
             { id: "peca-folha", rotulo: "Folha" },
+            { id: "peca-gaveta", rotulo: "Gaveta" },
             { id: "peca-icone", rotulo: "Ícone" },
             { id: "peca-compostos", rotulo: "Compostos" },
           ]}
@@ -298,6 +301,19 @@ export function Sistema() {
           </Peca>
 
           <Peca
+            id="peca-gaveta"
+            nome="Gaveta"
+            diz="A seção que sobrepõe o que estava na tela, sem trocar de tela. Arrasta para fechar por VELOCIDADE e não só distância — um peteleco rápido basta. É a `vaul` do Emil Kowalski com o visual dela zerado: sem raio, sem sombra, sem alça."
+          >
+            <Estado rotulo="de baixo — a que o telefone usa">
+              <Botao tom="secundaria" onClick={() => setGaveta("bottom")}>Abrir de baixo</Botao>
+            </Estado>
+            <Estado rotulo="da direita — a que a mesa usa">
+              <Botao tom="secundaria" onClick={() => setGaveta("right")}>Abrir da direita</Botao>
+            </Estado>
+          </Peca>
+
+          <Peca
             id="peca-icone"
             nome="Ícone"
             diz="Máscara, e não imagem: a tinta vem do `currentColor`, então o mesmo arquivo serve nos dois temas e dentro de um botão invertido."
@@ -347,6 +363,29 @@ export function Sistema() {
         </p>
         <Campo rotulo="Um campo dentro da folha" defaultValue="" />
       </Folha>
+
+      <Gaveta
+        aberta={gaveta !== null}
+        de={gaveta || "bottom"}
+        titulo="Uma gaveta de exemplo"
+        aoFechar={() => setGaveta(null)}
+        alca={gaveta === "bottom"}
+      >
+        <div className="especime-gaveta">
+          <h3>Uma seção por cima</h3>
+          <p>
+            O que estava na tela continua embaixo, e continua onde estava:
+            fechar devolve exatamente aquilo, sem a rolagem voltar ao topo e sem
+            uma ida ao histórico do navegador.
+          </p>
+          <p>
+            No telefone, arraste para baixo. Um peteleco rápido fecha mesmo sem
+            percorrer o caminho todo, e passar do limite encontra atrito em vez
+            de parede.
+          </p>
+          <Botao tom="secundaria" onClick={() => setGaveta(null)}>Fechar</Botao>
+        </div>
+      </Gaveta>
     </div>
   );
 }

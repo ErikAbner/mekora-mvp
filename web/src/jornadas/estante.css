@@ -341,14 +341,6 @@
   color: var(--muted-foreground);
 }
 
-.visualmente-oculto {
-  position: absolute;
-  inline-size: 1px; block-size: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
 /* O envio ao Kindle fica abaixo das ações de leitura, separado: ele age FORA
    da tela — manda um arquivo para um aparelho — e as duas de cima agem dentro
    dela. Misturá-los faria "Enviar" parecer tão reversível quanto "Notas". */
