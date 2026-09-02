@@ -257,6 +257,10 @@ function Topo({ job, titulo, ajustando, aoTrocar, inerte = false }) {
  */
 const EM_CURSO = {
   analisando: "lendo o arquivo",
+  /* Os nomes que o `report_progress` da análise emite, para a tela dizer a
+     ETAPA e não o campo. Eles chegam em `progresso.passo`. */
+  analyze: "lendo o arquivo e contando as páginas",
+  ocr: "reconhecendo o texto das páginas",
   convertendo: "convertendo para EPUB",
   traduzindo: "traduzindo o texto",
   exportando: "exportando o resultado",
@@ -322,7 +326,13 @@ export function Preparo() {
        * desenhar devolveria uma tela sem páginas, sem idioma e sem saber se é
        * digitalização — que é justamente o que ela existe para contar. */
       await analisar(id);
-      const pronto = await esperarAnalise(id);
+      /* A ANÁLISE PASSA A DIZER EM QUE ETAPA ESTÁ, e por isso ela reusa o
+         mesmo `andamento` da conversão: as duas são a mesma espera, com etapa,
+         recado do servidor e relógio. */
+      setInicio(Date.now());
+      setAgora(0);
+      const pronto = await esperarAnalise(id, setAndamento);
+      setAndamento(null);
       if (pronto.estado === "erro") {
         setErro(pronto.motivo || "A análise não terminou.");
         return;
@@ -589,12 +599,47 @@ export function Preparo() {
     );
   }
 
+  /* ANALISANDO. Era uma linha imóvel — "Analisando o arquivo…" — para a espera
+     MAIS LONGA do produto: o reconhecimento de texto roda dentro da análise, e
+     um PDF digitalizado de trezentas páginas fica minutos aqui.
+     
+     Agora ela é a mesma tela do andamento da conversão: a etapa que o servidor
+     está fazendo, o recado dele, e o relógio do que já passou. Sem barra, porque
+     nem o leitor de PDF nem o reconhecedor contam páginas para fora — e a tela
+     diz isso com todas as letras em vez de inventar uma que anda sozinha. */
   if (!job) {
+    const p = andamento?.progresso;
+    /* O PASSO DO SERVIDOR VENCE O RÓTULO DERIVADO. `estadoDe` sabe dizer
+       "analisando", que serve para uma coluna de lista; o `passo` diz QUAL parte
+       da análise está acontecendo, e é a diferença entre "está lendo" e "está
+       reconhecendo o texto", que é a que demora. */
+    const rotulo = (p?.passo && EM_CURSO[p.passo])
+      || (andamento?.etapa ? EM_CURSO[andamento.etapa] || andamento.etapa : null);
     return (
       <div className="mesa">
         <Cabecalho lugar="mesa" />
         <main className="preparo-pagina">
-          <p className="preparo-pagina-nota" role="status">Analisando o arquivo…</p>
+          <section className="preparo-andando">
+            <div className="preparo-andando-card">
+              <h2 role="status">{rotulo ? `Analisando, ${rotulo}` : "Analisando o arquivo…"}</h2>
+              <p>
+                Antes de propor qualquer coisa eu preciso abrir o arquivo e ver o
+                que tem dentro. Num PDF digitalizado isto inclui reconhecer o
+                texto das páginas, que é a parte demorada.
+              </p>
+              {p?.recado && <p className="preparo-andando-recado">{p.recado}</p>}
+            </div>
+
+            <p className="preparo-andando-medida">
+              <span>Sem contagem nesta etapa</span>
+              <span>{relogio(agora)}</span>
+            </p>
+          </section>
+
+          <p className="preparo-andando-nota">
+            Dá para fechar esta aba: a análise continua no servidor, e o arquivo
+            espera por você na Mesa.
+          </p>
         </main>
       </div>
     );

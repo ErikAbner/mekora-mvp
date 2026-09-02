@@ -216,3 +216,75 @@ def test_agrupadas_nao_e_lida_como_id_de_nota(client):
 
 def test_estranho_nao_ve_os_grupos_de_ninguem(client_cru):
     assert client_cru.get("/notas/agrupadas").status_code == 401
+
+
+# ---------------------------------------------------------------------------
+# Rascunho — a nota que ficou pela metade (nó 895:7631)
+# ---------------------------------------------------------------------------
+
+def test_rascunho_nao_entra_em_estudo(client):
+    """O Erik definiu em 02/09: rascunho é a nota "começada e não terminada,
+    abandonada, logo não sendo possível ir para os estudos". A regra mora no
+    SERVIDOR, e não só na tela — a tela pode esconder o botão, mas se a garantia
+    for só dela, a mesma nota entra por outro caminho."""
+    envio = client.post("/upload", files={"file": ("x.txt", b"texto de prova", "text/plain")})
+    job_id = envio.json()["upload_id"]
+
+    nota = client.post(f"/jobs/{job_id}/notas", json={
+        "capitulo": 0, "de": 0, "ate": 5, "trecho": "texto", "cor": "amarelo",
+    })
+    assert nota.status_code == 201, nota.text
+    nota_id = nota.json()["id"]
+
+    estudo = client.post("/estudos/novo", json={"nome": "Um estudo", "sobre": ""})
+    estudo_id = estudo.json()["id"]
+
+    # Antes de marcar, entra.
+    assert client.post(f"/estudos/{estudo_id}/notas", json={"nota_id": nota_id}).status_code == 201
+    client.delete(f"/estudos/{estudo_id}/notas/{nota_id}")
+
+    marcada = client.patch(f"/jobs/{job_id}/notas/{nota_id}", json={"estado": "rascunho"})
+    assert marcada.status_code == 200
+    assert marcada.json()["estado"] == "rascunho"
+
+    recusa = client.post(f"/estudos/{estudo_id}/notas", json={"nota_id": nota_id})
+    assert recusa.status_code == 409
+    assert "rascunho" in recusa.json()["detail"]
+
+    # E TIRAR A MARCA DEVOLVE: string vazia apaga o estado, e `None` não mexe.
+    limpa = client.patch(f"/jobs/{job_id}/notas/{nota_id}", json={"estado": ""})
+    assert limpa.json()["estado"] is None
+    assert client.post(f"/estudos/{estudo_id}/notas", json={"nota_id": nota_id}).status_code == 201
+
+
+def test_estado_desconhecido_e_recusado(client):
+    """A lista de estados existe para o segundo entrar por ela, e não como um
+    `if` espalhado — e para um valor inventado não virar coluna com lixo."""
+    envio = client.post("/upload", files={"file": ("x.txt", b"texto", "text/plain")})
+    job_id = envio.json()["upload_id"]
+    nota_id = client.post(f"/jobs/{job_id}/notas", json={
+        "capitulo": 0, "de": 0, "ate": 5, "trecho": "texto", "cor": "amarelo",
+    }).json()["id"]
+
+    r = client.patch(f"/jobs/{job_id}/notas/{nota_id}", json={"estado": "arquivada"})
+    assert r.status_code == 422
+
+
+def test_rascunho_fica_de_fora_de_voce_ligou(client):
+    """A seção oferece juntar o grupo num estudo, e rascunho não entra em
+    estudo: um grupo com um dentro traria um botão que responde 409 na metade."""
+    envio = client.post("/upload", files={"file": ("x.txt", b"texto", "text/plain")})
+    job_id = envio.json()["upload_id"]
+
+    ids = []
+    for i in range(3):
+        ids.append(client.post(f"/jobs/{job_id}/notas", json={
+            "capitulo": i, "de": 0, "ate": 5,
+            "trecho": "repeticao fotografica imagem comparacao registro",
+            "cor": "amarelo",
+        }).json()["id"])
+
+    antes = client.get("/notas/agrupadas").json()["olhadas"]
+    client.patch(f"/jobs/{job_id}/notas/{ids[0]}", json={"estado": "rascunho"})
+    depois = client.get("/notas/agrupadas").json()["olhadas"]
+    assert depois == antes - 1

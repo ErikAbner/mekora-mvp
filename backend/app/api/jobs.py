@@ -323,18 +323,58 @@ def _build_engine(engine_name: str, cfg: dict):
 # Background tasks — rodam fora da request com sessão de banco própria
 # ---------------------------------------------------------------------------
 
-def _bg_analyze(job_id: int) -> None:
+def _perfil_do_aparelho(db: Session, job: ProcessingJob) -> str | None:
+    """O perfil de tela do Kindle PARA ONDE ESTE ARQUIVO VAI.
+
+    Até 02/09/2026 o quadrinho saía no `kcc_profile` da INSTALAÇÃO — um valor só,
+    para todo mundo —, e quem tem um Oasis recebia páginas montadas para um
+    Paperwhite. O Erik decidiu que o produto pergunta qual Kindle é, e é esta
+    função que transforma a resposta em consequência.
+
+    Usa o aparelho PRINCIPAL: é para ele que o envio vai quando ninguém escolhe
+    outro. Sem dono, sem aparelho, ou sem modelo declarado, devolve `None` — e
+    quem chama fica com o padrão da instalação, exatamente como era.
+    """
+    if not job.dono_id:
+        return None
+    from app.models.aparelho import Aparelho
+    from app.services.kindles import perfil_do_kcc
+
+    a = (
+        db.query(Aparelho)
+        .filter(Aparelho.pessoa_id == job.dono_id, Aparelho.principal.is_(True))
+        .first()
+    )
+    return perfil_do_kcc(a.modelo) if a else None
+
+
+def _bg_analyze(job_id: int, operation_id: str | None = None) -> None:
     """Executa análise + OCR em segundo plano.
 
     Quadrinhos (processing_mode='comic') são marcados como analisados imediatamente
     sem análise de texto — o pipeline KCC não precisa de extração textual.
+
+    AS ETAPAS SÃO RELATADAS. Não há contagem de página: o `analyze_pdf` lê o
+    arquivo inteiro numa passada e o `ocrmypdf` é uma chamada externa só. O que
+    dá para dizer com verdade é QUAL etapa está acontecendo — e é o que a tela
+    precisa para parar de mostrar uma linha imóvel por minutos.
     """
     import time
     from app.db.database import SessionLocal
     from app.services.app_config_service import load_app_config
+    from app.services.progress_service import end_operation, report_progress
 
     db = SessionLocal()
     t0 = time.monotonic()
+    op_dir = STORAGE_OUTPUT / str(job_id)
+    op_status = "completed"
+
+    def passo(nome: str, recado: str) -> None:
+        """Diz em que etapa está. `total=None` é indeterminado honesto: nem o
+        `analyze_pdf` nem o `ocrmypdf` contam páginas para fora."""
+        if operation_id:
+            report_progress(op_dir, operation_id, nome, 0, None, recado)
+
     try:
         job = db.query(ProcessingJob).filter(ProcessingJob.id == job_id).first()
         if not job:
@@ -352,6 +392,7 @@ def _bg_analyze(job_id: int) -> None:
             return
 
         thumbnails_dir = STORAGE_TEMP / str(job_id)
+        passo("analyze", "Lendo o arquivo e contando as páginas")
         result = analyze_pdf(job.input_path, thumbnails_dir)
 
         # O ARQUIVO QUE ESPERA VOCÊ — "Precisa de você", do nó 895:9348.
@@ -362,6 +403,7 @@ def _bg_analyze(job_id: int) -> None:
         # dá para ler sem a senha, e inventar qualquer um deles seria pior que
         # deixar em branco.
         if result.get("needs_password"):
+            # A operação fecha no `finally`; aqui só o estado do trabalho.
             job.bloqueio = "senha"
             job.status = "analyzed"
             job.updated_at = datetime.utcnow()
@@ -395,6 +437,11 @@ def _bg_analyze(job_id: int) -> None:
         if result["is_scanned"]:
             from app.services.ocr_service import OCRFailedError, apply_ocr
 
+            # A ETAPA MAIS LONGA DO PRODUTO, e a que passava calada. O
+            # reconhecimento é uma chamada externa só, sem retorno por página —
+            # o que dá para dizer é que ela começou, e que não há estimativa.
+            passo("ocr", "Reconhecendo o texto das páginas (sem estimativa)")
+
             cfg = load_app_config()
             ocr_out = STORAGE_TEMP / str(job_id) / f"{Path(job.input_path).stem}_ocr.pdf"
             try:
@@ -426,7 +473,19 @@ def _bg_analyze(job_id: int) -> None:
         record_stage(job_id, "analyze", "failed",
                      duration_ms=(time.monotonic() - t0) * 1000,
                      error_type=type(exc).__name__, error_message=str(exc)[:500])
+        op_status = "failed"
     finally:
+        # A OPERAÇÃO PRECISA FECHAR SEMPRE. Se ela ficar aberta, o job continua
+        # ocupado e a próxima chamada responde 409 para sempre — é o mesmo
+        # cuidado que a conversão já tinha.
+        try:
+            if operation_id:
+                job = db.query(ProcessingJob).filter(ProcessingJob.id == job_id).first()
+                if job:
+                    end_operation(job, op_dir, operation_id, op_status)
+                    db.commit()
+        except Exception:
+            pass
         db.close()
 
 
@@ -632,7 +691,7 @@ def _bg_comic_convert(job_id: int, operation_id: str | None = None) -> None:
             return
 
         config = load_app_config()
-        profile = config.get('kcc_profile', 'KPW5')
+        profile = _perfil_do_aparelho(db, job) or config.get('kcc_profile', 'KPW5')
         output_dir = STORAGE_OUTPUT / str(job_id)
 
         if operation_id:
@@ -969,12 +1028,22 @@ async def analyze_upload(
     if not job.input_path or not Path(job.input_path).exists():
         raise HTTPException(status_code=422, detail="Arquivo não encontrado no servidor.")
 
+    # A ANÁLISE VIRA UMA OPERAÇÃO, como a conversão já era.
+    #
+    # Ela é a espera MAIS LONGA do produto e era a que menos dizia: o
+    # reconhecimento de texto roda aqui dentro, não na conversão, e um PDF
+    # digitalizado de trezentas páginas ficava minutos numa tela que dizia
+    # "Analisando o arquivo…" e mais nada. Sem etapa, sem relógio, sem cancelar.
+    #
+    # Com `operation_id` ela ganha as três coisas de graça: o mesmo `progresso`
+    # que a tela de preparo já sabe desenhar, e o mesmo botão de cancelar.
+    op_id = _begin_job_operation(job, "analyze")
     job.status = "analyzing"
     job.updated_at = datetime.utcnow()
     db.commit()
     db.refresh(job)
 
-    background_tasks.add_task(_bg_analyze, upload_id)
+    background_tasks.add_task(_bg_analyze, upload_id, op_id)
     return _to_job(job)
 
 

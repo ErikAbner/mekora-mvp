@@ -77,7 +77,7 @@ def test_analyze_returns_analyzing(client, sample_pdf, monkeypatch):
     import app.api.jobs as jobs_mod
 
     # Impede que a tarefa de análise real seja executada durante o teste
-    monkeypatch.setattr(jobs_mod, "_bg_analyze", lambda job_id: None)
+    monkeypatch.setattr(jobs_mod, "_bg_analyze", lambda job_id, operation_id=None: None)
 
     with open(sample_pdf, "rb") as f:
         r = client.post("/upload", files={"file": ("sample.pdf", f, "application/pdf")})
@@ -92,7 +92,7 @@ def test_analyze_idempotent(client, sample_pdf, monkeypatch):
     """Segunda chamada a /analyze/{id} retorna o job sem reiniciar a análise."""
     import app.api.jobs as jobs_mod
 
-    monkeypatch.setattr(jobs_mod, "_bg_analyze", lambda job_id: None)
+    monkeypatch.setattr(jobs_mod, "_bg_analyze", lambda job_id, operation_id=None: None)
 
     with open(sample_pdf, "rb") as f:
         r = client.post("/upload", files={"file": ("sample.pdf", f, "application/pdf")})
@@ -138,7 +138,7 @@ def test_translation_status_in_status_response(client, sample_pdf, monkeypatch):
     """GET /jobs/{id}/status deve incluir translation_status."""
     import app.api.jobs as jobs_mod
 
-    monkeypatch.setattr(jobs_mod, "_bg_analyze", lambda job_id: None)
+    monkeypatch.setattr(jobs_mod, "_bg_analyze", lambda job_id, operation_id=None: None)
 
     with open(sample_pdf, "rb") as f:
         r = client.post("/upload", files={"file": ("sample.pdf", f, "application/pdf")})
@@ -158,7 +158,7 @@ def test_translate_comic_returns_409(client, sample_pdf, monkeypatch):
     """POST /jobs/{id}/translate deve retornar 409 se processing_mode='comic'."""
     import app.api.jobs as jobs_mod
 
-    monkeypatch.setattr(jobs_mod, "_bg_analyze", lambda job_id: None)
+    monkeypatch.setattr(jobs_mod, "_bg_analyze", lambda job_id, operation_id=None: None)
 
     with open(sample_pdf, "rb") as f:
         r = client.post("/upload", files={"file": ("sample.pdf", f, "application/pdf")})
@@ -177,7 +177,7 @@ def test_bg_translate_updates_fields(client, sample_pdf, tmp_path, monkeypatch):
     import app.api.jobs as jobs_mod
     import app.core.config as cfg_mod
 
-    monkeypatch.setattr(jobs_mod, "_bg_analyze", lambda job_id: None)
+    monkeypatch.setattr(jobs_mod, "_bg_analyze", lambda job_id, operation_id=None: None)
     monkeypatch.setattr(cfg_mod, "STORAGE_TEMP", tmp_path / "temp")
     (tmp_path / "temp").mkdir(parents=True, exist_ok=True)
 
@@ -229,7 +229,7 @@ def test_convert_blocked_when_ocr_failed(client, sample_pdf, monkeypatch, test_e
     from sqlalchemy.orm import sessionmaker
     from app.models.processing_job import ProcessingJob
 
-    monkeypatch.setattr(jobs_mod, "_bg_analyze", lambda job_id: None)
+    monkeypatch.setattr(jobs_mod, "_bg_analyze", lambda job_id, operation_id=None: None)
     with open(sample_pdf, "rb") as f:
         r = client.post("/upload", files={"file": ("scan.pdf", f, "application/pdf")})
     upload_id = r.json()["upload_id"]
@@ -257,7 +257,27 @@ def test_convert_allowed_after_ocr_success(client, sample_pdf, monkeypatch, test
     from sqlalchemy.orm import sessionmaker
     from app.models.processing_job import ProcessingJob
 
-    monkeypatch.setattr(jobs_mod, "_bg_analyze", lambda job_id: None)
+    # O DUPLO PRECISA FECHAR A OPERAÇÃO, porque a análise de verdade fecha.
+    #
+    # Desde que a análise virou operação, ela registra um `operation_id` e o
+    # encerra no `finally`. Um duplo que não faz nada deixa o trabalho ocupado
+    # para sempre, e a conversão responde 409 — o que este teste viu. Não é
+    # defeito do produto: em produção o `begin_operation` recupera órfã sozinho,
+    # e aqui a operação nunca morre porque nada a matou.
+    def _analise_falsa(job_id, operation_id=None):
+        if operation_id:
+            from app.core.config import STORAGE_OUTPUT
+            from app.services.progress_service import end_operation
+            from app.db.database import SessionLocal
+            db = SessionLocal()
+            try:
+                j = db.query(ProcessingJob).filter(ProcessingJob.id == job_id).first()
+                end_operation(j, STORAGE_OUTPUT / str(job_id), operation_id, "completed")
+                db.commit()
+            finally:
+                db.close()
+
+    monkeypatch.setattr(jobs_mod, "_bg_analyze", _analise_falsa)
     monkeypatch.setattr(jobs_mod, "_bg_convert", lambda job_id, operation_id=None: None)
     with open(sample_pdf, "rb") as f:
         r = client.post("/upload", files={"file": ("scan.pdf", f, "application/pdf")})

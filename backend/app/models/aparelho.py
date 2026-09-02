@@ -47,6 +47,19 @@ class Aparelho(Base):
     # Para onde vai o envio quando ninguém escolheu outro. Guardado como
     # bandeira e não como "o primeiro da lista": a ordem muda ao apagar um
     # aparelho, e o destino não pode mudar junto sem alguém ter pedido.
+    # QUAL KINDLE É ESTE. O Erik decidiu em 02/09/2026 que o produto pergunta.
+    #
+    # A Amazon não conta o modelo, e não há como descobrir pelo endereço de
+    # e-mail. Quem sabe é a pessoa — e saber muda o que o preparo faz: até aqui
+    # quadrinho saía no perfil da INSTALAÇÃO, um valor só para todo mundo, e
+    # quem tem um Oasis recebia páginas montadas para um Paperwhite.
+    #
+    # Nulo é sempre uma resposta válida — "não sei", "outro", ou um modelo que a
+    # lista ainda não conhece —, e nesse caso tudo segue como sempre foi. A
+    # lista de modelos vive em `services/kindles.py`, fora do banco: ela
+    # envelhece, e envelhecer numa coluna é bem pior.
+    modelo = Column(String)
+
     principal = Column(Boolean, nullable=False, default=False)
 
     autorizado_em = Column(DateTime)

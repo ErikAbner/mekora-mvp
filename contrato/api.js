@@ -168,12 +168,23 @@ export async function situacao(jobId) {
  * A espera mora aqui porque é conhecimento sobre o CICLO DE VIDA do backend —
  * se ficasse na tela, a próxima tela que converter repetiria o mesmo erro.
  */
-export async function esperarAnalise(jobId, { intervaloMs = 800, tetoMs = 5 * 60 * 1000 } = {}) {
+export async function esperarAnalise(jobId, aoMudar, { intervaloMs = 800, tetoMs = 5 * 60 * 1000 } = {}) {
   const limite = Date.now() + tetoMs;
+  let ultimo = null;
   while (Date.now() < limite) {
     const bruto = await pede(`/jobs/${jobId}/status`);
+    const agora = { ...estadoDe(bruto), bruto };
+    /* AVISA A CADA MUDANCA, como o `acompanhar` da conversao ja fazia.
+     *
+     * Ela perguntava em silencio e so devolvia no fim, e a tela mostrava
+     * "Analisando o arquivo..." — uma linha imovel — por todo o tempo. E esta e
+     * a espera MAIS LONGA do produto: o reconhecimento de texto roda dentro da
+     * analise, nao da conversao, e um PDF digitalizado de trezentas paginas fica
+     * minutos aqui. */
+    const chave = `${agora.estado}:${agora.progresso?.passo ?? ""}:${agora.progresso?.recado ?? ""}`;
+    if (chave !== ultimo) { ultimo = chave; aoMudar?.(agora); }
     if (bruto.status !== "analyzing" && bruto.status !== "uploaded") {
-      return { ...estadoDe(bruto), bruto };
+      return agora;
     }
     await new Promise((r) => setTimeout(r, intervaloMs));
   }
@@ -571,12 +582,22 @@ export function lerAparelhos() {
   return pede("/aparelhos");
 }
 
-export function ligarAparelho({ endereco, nome = "" }) {
+export function ligarAparelho({ endereco, nome = "", modelo = null }) {
   return pede("/aparelhos", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ endereco, nome }),
+    body: JSON.stringify({ endereco, nome, modelo }),
   });
+}
+
+/** GET /aparelhos/modelos — os Kindles que o produto conhece, com a tela de
+ *  cada um ja escrita.
+ *
+ *  A LISTA VEM DO SERVIDOR, e nao daqui: e ela que decide o perfil do conversor
+ *  de quadrinhos, e uma segunda copia na tela e como as duas passam a discordar
+ *  sobre a resolucao de um aparelho. */
+export function modelosDeKindle() {
+  return pede("/aparelhos/modelos");
 }
 
 export function mudarAparelho(id, troca) {

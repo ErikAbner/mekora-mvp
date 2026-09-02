@@ -22,9 +22,31 @@ router = APIRouter()
 FORMA = re.compile(r"^[^@\s]+@kindle\.com$", re.I)
 
 
+def _modelo_conhecido(v):
+    """`None` e `""` passam: "não sei" é resposta válida, e é a que a lista de
+    modelos precisa aceitar para não impedir ninguém de usar o produto quando
+    ela envelhecer.
+
+    E O VAZIO VOLTA COMO VAZIO, não como `None`. Os dois querem dizer coisas
+    diferentes na edição: `None` é "não mexi neste campo" e `""` é "apague o que
+    está lá". Normalizar aqui apagava a distinção, e o resultado era um "não
+    sei" que nunca limpava o modelo — escrevi assim na primeira versão, e o teste
+    pegou."""
+    from app.services.kindles import existe
+
+    if v in (None, ""):
+        return v
+    if not existe(v):
+        raise ValueError(f"modelo de Kindle desconhecido: {v}")
+    return v
+
+
 class AparelhoNovo(BaseModel):
     endereco: str
     nome: str = ""
+    modelo: Optional[str] = None
+
+    _modelo = field_validator("modelo")(_modelo_conhecido)
 
     @field_validator("endereco")
     @classmethod
@@ -53,6 +75,11 @@ class AparelhoEditado(BaseModel):
     endereco: Optional[str] = None
     principal: Optional[bool] = None
     autorizado: Optional[bool] = None
+    # Qual Kindle é. `""` apaga — "não sei" é uma resposta, e não a ausência de
+    # uma; `None` não mexe.
+    modelo: Optional[str] = None
+
+    _modelo = field_validator("modelo")(_modelo_conhecido)
 
     @field_validator("endereco")
     @classmethod
@@ -76,12 +103,35 @@ def _quem(db: Session, biscoito: Optional[str]) -> Pessoa:
 
 
 def _fora(a: Aparelho) -> dict:
+    from app.services.kindles import descricao
+
     return {
         "id": a.id, "nome": a.nome or a.endereco.split("@")[0],
         "endereco": a.endereco, "principal": a.principal,
         "autorizado": a.autorizado_em is not None,
         "ultimo_envio": a.ultimo_envio,
+        # O modelo, e a frase já montada — "Paperwhite (11ª geração) · 1236 ×
+        # 1648". A tela não deve derivar isso: a resolução é do modelo, e
+        # duplicar a tabela no navegador é como as duas passam a discordar.
+        "modelo": a.modelo,
+        "modelo_diz": descricao(a.modelo),
     }
+
+
+@router.get("/aparelhos/modelos")
+def modelos() -> dict:
+    """Os Kindles que o produto conhece, com a tela de cada um.
+
+    A lista sai do servidor, e não do navegador: é ela que decide o perfil do
+    conversor de quadrinhos, e uma segunda cópia na tela é como as duas passam a
+    discordar sobre a resolução de um aparelho.
+
+    Declarada ANTES de `/aparelhos/{id}` — senão o FastAPI tenta ler "modelos"
+    como um número. Terceira vez que isto aparece no projeto.
+    """
+    from app.services.kindles import como_lista
+
+    return {"modelos": como_lista()}
 
 
 @router.get("/aparelhos")
@@ -120,6 +170,7 @@ def ligar(
 
     a = Aparelho(
         pessoa_id=pessoa.id, endereco=novo.endereco,
+        modelo=novo.modelo or None,
         nome=novo.nome.strip() or novo.endereco.split("@")[0],
         principal=primeiro,
     )
@@ -162,6 +213,10 @@ def mudar(
         a.endereco = troca.endereco
         if hasattr(a, "email"):
             a.email = troca.endereco
+    if troca.modelo is not None:
+        # `""` apaga: "não sei" é uma resposta, e guardar string vazia faria
+        # dois jeitos de escrever o mesmo estado.
+        a.modelo = troca.modelo or None
     if troca.autorizado is not None:
         a.autorizado_em = agora() if troca.autorizado else None
     if troca.principal:

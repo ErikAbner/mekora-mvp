@@ -38,7 +38,9 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, 
   const [procura, setProcura] = useState("");
   const [copiada, setCopiada] = useState(null);
   const dentro = new Set(estudo.notas.map((n) => n.id));
-  const deFora = notasDisponiveis.filter((n) => !dentro.has(n.id));
+  /* RASCUNHO NÃO APARECE PARA REUNIR. O servidor recusa — é a regra que dá
+     sentido ao estado —, e oferecer aqui seria levar a pessoa a um 409. */
+  const deFora = notasDisponiveis.filter((n) => !dentro.has(n.id) && n.estado !== "rascunho");
   const alvo = achatar(procura.trim());
   const notasVisiveis = estudo.notas.filter(
     (n) => !alvo || achatar(`${n.trecho ?? ""} ${n.comentario ?? ""} ${n.origem ?? ""}`).includes(alvo),
@@ -304,7 +306,9 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
    * para desenhar os estudos, e uma rota nova só para subtrair uma da outra
    * seria uma ida à rede para uma diferença de conjuntos. */
   const reunidas = new Set(estudos.flatMap((e) => (e.notas ?? []).map((n) => n.id)));
-  const soltas = notas.filter((n) => !reunidas.has(n.id));
+  /* "Fora de estudo" é de onde se PUXA para montar um estudo, e rascunho não
+     entra em estudo nenhum. Listá-lo aqui seria oferecer o que será recusado. */
+  const soltas = notas.filter((n) => !reunidas.has(n.id) && n.estado !== "rascunho");
 
   /* AS ANOTAÇÕES ESCRITAS E NÃO LEVADAS — o cartão cinza do desenho, "4
      anotações escritas e ainda não levadas". É um subconjunto do "Fora de

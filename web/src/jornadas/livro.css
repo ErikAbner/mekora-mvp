@@ -218,3 +218,15 @@
 @media (max-width: 767px) {
   .livro-pagina-acoes-nota .botao { flex: 1 1 auto; justify-content: center; }
 }
+
+/* A marca de rascunho na propria nota. Ela muda o que a nota PODE FAZER — nao
+ * vai para estudo nenhum —, entao a linha diz isso em vez de deixar a pessoa
+ * descobrir num 409 tres telas adiante. */
+.livro-pagina-rascunho {
+  grid-column: 1;
+  margin: 8px 0 0;
+  padding-inline-start: 12px;
+  border-inline-start: 2px solid var(--muted-foreground);
+  font-size: 14px; line-height: 20px;
+  color: var(--muted-foreground);
+}

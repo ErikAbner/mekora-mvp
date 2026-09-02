@@ -26,7 +26,7 @@ export function ContaKindle({ pessoa, aoSair }) {
    * `App.jsx` — dois Kindles de mentira que sumiam ao recarregar a página. A
    * tela parecia inteira e não guardava nada, e o envio ia para o
    * `KINDLE_EMAIL` do servidor de qualquer jeito. */
-  const { aparelhos, erro: erroDoServidor, carregando, ligar, mudar, desligar } = usarAparelhos();
+  const { aparelhos, modelos, erro: erroDoServidor, carregando, ligar, mudar, desligar } = usarAparelhos();
   /* O ASSISTENTE, que faltava inteiro. Quatro telas desenhadas e nenhuma
    * construída — e o changelog do produto já as descrevia. Ele abre sobre esta
    * tela em vez de virar rota própria: a tarefa começa aqui, passa pela Amazon e
@@ -66,11 +66,17 @@ export function ContaKindle({ pessoa, aoSair }) {
   const [nomeNovo, setNomeNovo] = useState("");
   const [enderecoNovo, setEnderecoNovo] = useState("");
   const [erroEditar, setErroEditar] = useState(null);
+  /* QUAL KINDLE É ESTE — nó 895:10599. A Amazon não conta o modelo, e não há
+     como descobrir pelo endereço: quem sabe é a pessoa. Saber muda o que o
+     preparo faz — quadrinho passa a sair no tamanho da tela deste aparelho, e
+     não no perfil único da instalação. */
+  const [modeloNovo, setModeloNovo] = useState("");
 
   const abrirEdicao = (ap) => {
     setEditando(ap);
     setNomeNovo(ap.nome ?? "");
     setEnderecoNovo(ap.endereco ?? "");
+    setModeloNovo(ap.modelo ?? "");
     setErroEditar(null);
   };
 
@@ -80,7 +86,10 @@ export function ContaKindle({ pessoa, aoSair }) {
       setErroEditar("Um endereço de Kindle tem @ — é um e-mail.");
       return;
     }
-    const deu = await mudar(editando.id, { nome: nomeNovo.trim(), endereco });
+    /* `modelo: ""` APAGA e `null` não mexe — os dois querem dizer coisas
+       diferentes, e aqui a pessoa sempre responde alguma coisa, inclusive "não
+       sei". */
+    const deu = await mudar(editando.id, { nome: nomeNovo.trim(), endereco, modelo: modeloNovo });
     /* A MENSAGEM DO SERVIDOR, e não uma minha. Ele sabe dizer "já tem um
      * aparelho com esse endereço" e "precisa terminar em @kindle.com"; trocar
      * isso por "não deu para guardar" apagaria a única informação útil. */
@@ -123,6 +132,12 @@ export function ContaKindle({ pessoa, aoSair }) {
                   <div className="aparelho-texto">
                     <p className="aparelho-nome">{ap.nome}</p>
                     <p className="aparelho-detalhe">{ap.detalhe ?? ap.endereco}</p>
+                    {/* "Paperwhite (11ª geração) · 1236 × 1648" — a frase vem
+                        montada do servidor. A resolução é do MODELO, e derivá-la
+                        aqui seria uma segunda tabela para discordar da primeira.
+                        Sem modelo a linha não aparece: "modelo desconhecido" não
+                        é informação, é ruído em todo cartão. */}
+                    {ap.modelo_diz && <p className="aparelho-modelo">{ap.modelo_diz}</p>}
                     {ap.ultimoEnvio && <p className="aparelho-envio">Último envio {ap.ultimoEnvio}</p>}
                   </div>
                   <div className="aparelho-acoes">
@@ -248,6 +263,36 @@ export function ContaKindle({ pessoa, aoSair }) {
           onChange={(e) => { setEnderecoNovo(e.target.value); setErroEditar(null); }}
           erro={erroEditar}
         />
+
+        {/* QUAL KINDLE É ESTE. A Amazon não conta, e não dá para descobrir pelo
+            endereço — quem sabe é você.
+
+            E ISSO NÃO É ETIQUETA: até aqui, quadrinho saía no perfil de tela da
+            instalação, um valor só para todo mundo, e quem tem um Oasis recebia
+            páginas montadas para um Paperwhite. Sabendo o modelo, o preparo usa
+            a tela deste aparelho.
+
+            "Não sei" é a primeira opção e é uma resposta de verdade: sem ela, o
+            produto segue exatamente como sempre seguiu. */}
+        {modelos.length > 0 && (
+          <div className="campo">
+            <label htmlFor="modelo-do-kindle">Modelo</label>
+            <p className="campo-ajuda">
+              Serve para o quadrinho sair no tamanho certo da tela. Nos livros de
+              texto não muda nada — ali o texto se ajusta sozinho.
+            </p>
+            <select
+              id="modelo-do-kindle"
+              value={modeloNovo}
+              onChange={(e) => { setModeloNovo(e.target.value); setErroEditar(null); }}
+            >
+              <option value="">Não sei / outro</option>
+              {modelos.map((m) => (
+                <option key={m.chave} value={m.chave}>{m.nome} · {m.tela}</option>
+              ))}
+            </select>
+          </div>
+        )}
       </Folha>
 
       {assistente && (

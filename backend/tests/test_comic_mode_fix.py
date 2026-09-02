@@ -17,7 +17,7 @@ def _upload_and_analyze(client, sample_pdf, monkeypatch):
     """Upload + dispara análise (mock) e retorna upload_id."""
     import app.api.jobs as jobs_mod
 
-    monkeypatch.setattr(jobs_mod, "_bg_analyze", lambda job_id: None)
+    monkeypatch.setattr(jobs_mod, "_bg_analyze", lambda job_id, operation_id=None: None)
 
     with open(sample_pdf, "rb") as f:
         r = client.post("/upload", files={"file": ("sample.pdf", f, "application/pdf")})
@@ -129,7 +129,7 @@ def test_kcc_endpoint_returns_409_when_not_in_path(client, sample_pdf, monkeypat
     """POST /comic-convert deve retornar 409 (não 500) quando kcc-c2e não está no PATH."""
     import app.api.jobs as jobs_mod
 
-    monkeypatch.setattr(jobs_mod, "_bg_analyze", lambda job_id: None)
+    monkeypatch.setattr(jobs_mod, "_bg_analyze", lambda job_id, operation_id=None: None)
 
     with open(sample_pdf, "rb") as f:
         r = client.post("/upload", files={"file": ("sample.pdf", f, "application/pdf")})

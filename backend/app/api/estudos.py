@@ -234,6 +234,21 @@ def reunir(
     if nota is None:
         raise HTTPException(status_code=404, detail="Nota não encontrada.")
 
+    # RASCUNHO NÃO ENTRA EM ESTUDO, e é isto que faz o estado valer alguma coisa.
+    #
+    # O Erik definiu em 02/09/2026: rascunho é a nota "começada e não terminada,
+    # abandonada, logo não sendo possível ir para os estudos". A regra mora aqui,
+    # e não só na tela: a tela pode esconder o botão, mas quem garante é o
+    # servidor — senão a mesma nota entra por outro caminho.
+    if nota.estado == "rascunho":
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Esta nota está marcada como rascunho. Tire a marca para poder "
+                "levá-la para um estudo."
+            ),
+        )
+
     ja = (
         db.query(EstudoNota)
         .filter(EstudoNota.estudo_id == e.id, EstudoNota.nota_id == nota.id)

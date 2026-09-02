@@ -87,5 +87,21 @@ class Nota(Base):
     # um clique num formulário.
     comentario = Column(Text, nullable=False, default="")
 
+    # A NOTA QUE FICOU PELA METADE.
+    #
+    # O Erik definiu em 02/09/2026: rascunho é a nota "começada e não terminada,
+    # abandonada" — e a consequência que ele nomeou junto é o que faz o campo
+    # valer alguma coisa: **ela não pode ir para um estudo**. Sem consequência,
+    # seria só uma etiqueta a mais para manter.
+    #
+    # É MARCADO PELA PESSOA, e não deduzido. O produto poderia adivinhar — uma
+    # nota sem comentário, parada há duas semanas — e adivinhar aqui seria o
+    # produto decidindo o que você abandonou. É a "IA mágica" que o `CLAUDE.md`
+    # proíbe, com outra roupa.
+    #
+    # Nulo é o normal, como em `bloqueio`: guarda o NOME do estado quando ele
+    # existe, e nada quando a nota é uma nota comum.
+    estado = Column(String)
+
     criada_em = Column(DateTime, default=agora, nullable=False)
     atualizada_em = Column(DateTime, default=agora, onupdate=agora, nullable=False)

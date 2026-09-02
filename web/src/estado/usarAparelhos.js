@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-  desligarAparelho, lerAparelhos, ligarAparelho, mudarAparelho,
+  desligarAparelho, lerAparelhos, ligarAparelho, modelosDeKindle, mudarAparelho,
 } from "../../../contrato/api.js";
 
 /* Os Kindles ligados à conta.
@@ -13,6 +13,18 @@ export function usarAparelhos() {
   const [aparelhos, setAparelhos] = useState([]);
   const [erro, setErro] = useState(null);
   const [carregando, setCarregando] = useState(true);
+  /* OS MODELOS QUE O PRODUTO CONHECE. Vêm do servidor porque é a lista de lá que
+     decide o perfil do conversor de quadrinhos — duas cópias discordariam sobre
+     a resolução de um aparelho, e a que manda não seria a que a tela mostra. */
+  const [modelos, setModelos] = useState([]);
+
+  useEffect(() => {
+    let vivo = true;
+    modelosDeKindle()
+      .then((r) => vivo && setModelos(r?.modelos ?? []))
+      .catch(() => {});
+    return () => { vivo = false; };
+  }, []);
 
   const recarregar = useCallback(async () => {
     try {
@@ -26,10 +38,10 @@ export function usarAparelhos() {
 
   useEffect(() => { recarregar(); }, [recarregar]);
 
-  const ligar = useCallback(async (endereco, nome) => {
+  const ligar = useCallback(async (endereco, nome, modelo = null) => {
     setErro(null);
     try {
-      const novo = await ligarAparelho({ endereco, nome });
+      const novo = await ligarAparelho({ endereco, nome, modelo });
       setAparelhos((a) => [...a, novo]);
       return true;
     } catch (e) {
@@ -71,5 +83,5 @@ export function usarAparelhos() {
     }
   }, [recarregar]);
 
-  return { aparelhos, erro, carregando, ligar, mudar, desligar };
+  return { aparelhos, modelos, erro, carregando, ligar, mudar, desligar };
 }

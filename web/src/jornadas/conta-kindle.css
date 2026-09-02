@@ -99,3 +99,30 @@
 @media (max-width: 767px) {
   .conta-guiado { padding: 20px 16px; }
 }
+
+/* "Paperwhite (11a geracao) · 1236 × 1648" — a frase vem montada do servidor. A
+ * resolucao e do MODELO, e deriva-la na tela seria uma segunda tabela para
+ * discordar da primeira. Sem modelo a linha nao aparece: "modelo desconhecido"
+ * nao e informacao, e ruido em todo cartao. */
+.aparelho-modelo {
+  margin: 4px 0 0;
+  font-size: 14px; line-height: 20px;
+  color: var(--muted-foreground);
+}
+
+/* O seletor de modelo usa a mesma caixa dos campos de texto: mesma altura, mesmo
+ * filete, mesmo raio zero. Sem `appearance: none` ele vira o controle do sistema
+ * no meio de uma folha que nao tem nenhum outro. */
+.campo select {
+  appearance: none;
+  inline-size: 100%;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+  font-size: 16px; line-height: 24px;
+  cursor: pointer;
+}
+.campo select:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }

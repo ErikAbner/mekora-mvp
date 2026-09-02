@@ -7,7 +7,7 @@ import { Campo } from "../componentes/Campo.jsx";
 import { TrilhaDaPagina } from "../componentes/TrilhaDaPagina.jsx";
 import { achatar } from "../../../contrato/texto.js";
 import { DESTAQUES } from "./Leitura.jsx";
-import { analisar, apagarNota, criarNota, enviarAoKindle, lerNotas, lerProgresso } from "../../../contrato/api.js";
+import { analisar, apagarNota, criarNota, editarNota, enviarAoKindle, lerNotas, lerProgresso } from "../../../contrato/api.js";
 import { tamanhoLegivel } from "../../../contrato/tamanho.js";
 import "./livro.css";
 
@@ -31,9 +31,10 @@ import "./livro.css";
  * livro. "Rascunho" não sai: não há estado de nota no modelo, e um recorte que
  * devolve sempre zero não é filtro, é promessa.
  */
-const ehSobreOLivro = (n) => !n.trecho;
-const ehMarcador = (n) => Boolean(n.trecho) && !n.comentario;
-const ehAnotacao = (n) => Boolean(n.trecho) && Boolean(n.comentario);
+const ehRascunho = (n) => n.estado === "rascunho";
+const ehSobreOLivro = (n) => !n.trecho && !ehRascunho(n);
+const ehMarcador = (n) => Boolean(n.trecho) && !n.comentario && !ehRascunho(n);
+const ehAnotacao = (n) => Boolean(n.trecho) && Boolean(n.comentario) && !ehRascunho(n);
 
 /* Cada linha só aparece quando há o que dizer. Uma ficha-arquivo com seis "—" descreve
  * a ausência de informação com a mesma ênfase da informação. */
@@ -121,6 +122,7 @@ export function Livro() {
       recorte === "marcadores" ? ehMarcador(n)
       : recorte === "anotacoes" ? ehAnotacao(n)
       : recorte === "sobre" ? ehSobreOLivro(n)
+      : recorte === "rascunho" ? ehRascunho(n)
       : true,
     )
     .filter((n) => !alvo || achatar(`${n.trecho ?? ""} ${n.comentario ?? ""}`).includes(alvo));
@@ -319,6 +321,12 @@ export function Livro() {
                   ["marcadores", "Marcadores", notas.filter(ehMarcador).length],
                   ["anotacoes", "Anotações", notas.filter(ehAnotacao).length],
                   ["sobre", "Sobre o livro", notas.filter(ehSobreOLivro).length],
+                  /* RASCUNHO — o terceiro recorte do desenho, que ficou de fora
+                     até o Erik dizer o que ele é: nota começada e não terminada,
+                     abandonada, e que por isso não vai para um estudo. Ele é
+                     EXCLUSIVO dos outros três: uma nota marcada aparece aqui e
+                     não lá, senão a soma dos recortes passaria do total. */
+                  ["rascunho", "Rascunhos", notas.filter(ehRascunho).length],
                 ].map(([chave, rotulo, quantos]) => (
                   <button
                     key={chave}
@@ -371,6 +379,15 @@ export function Livro() {
                     transferência traz o livro e o capítulo junto, e é por isso
                     que ela pode ser colada em qualquer lugar sem virar frase
                     órfã. */}
+                {/* A MARCA DE RASCUNHO, dita na própria nota. Ela muda o que a
+                    nota pode fazer — não vai para estudo nenhum —, então a linha
+                    diz isso em vez de deixar a pessoa descobrir num 409. */}
+                {ehRascunho(n) && (
+                  <p className="livro-pagina-rascunho">
+                    Rascunho — não vai para os estudos enquanto estiver assim.
+                  </p>
+                )}
+
                 <div className="livro-pagina-acoes-nota">
                   <Botao
                     tom="secundaria"
@@ -394,6 +411,20 @@ export function Livro() {
                     }}
                   >
                     {copiada === n.id ? "Copiado" : "Copiar com origem"}
+                  </Botao>
+                  <Botao
+                    tom="secundaria"
+                    onClick={async () => {
+                      const virar = ehRascunho(n) ? "" : "rascunho";
+                      try {
+                        const nova = await editarNota(id, n.id, { estado: virar });
+                        setNotas((tudo) => tudo.map((x) => (x.id === n.id ? { ...x, estado: nova.estado } : x)));
+                      } catch (e) {
+                        setRecado(e.message);
+                      }
+                    }}
+                  >
+                    {ehRascunho(n) ? "Não é mais rascunho" : "Marcar como rascunho"}
                   </Botao>
                   <Botao
                     tom="secundaria"

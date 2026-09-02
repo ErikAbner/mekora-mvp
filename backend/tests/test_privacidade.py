@@ -298,3 +298,55 @@ def test_apagar_a_conta_leva_o_retrato_do_disco(client, tmp_storage):
 
     assert client.post("/privacidade/apagar", json={"email": email}).status_code == 204
     assert not caminho.exists()
+
+
+# ---------------------------------------------------------------------------
+# Qual Kindle é este (nó 895:10599)
+# ---------------------------------------------------------------------------
+
+def test_modelo_do_kindle_entra_e_descreve(client):
+    """A resolução é do MODELO, e a frase vem montada do servidor: duplicar a
+    tabela no navegador é como as duas passam a discordar."""
+    r = client.get("/aparelhos/modelos")
+    assert r.status_code == 200
+    chaves = {m["chave"] for m in r.json()["modelos"]}
+    assert "pw5" in chaves and "oasis3" in chaves
+
+    novo = client.post("/aparelhos", json={
+        "endereco": "erik_x@kindle.com", "nome": "O meu", "modelo": "pw5",
+    })
+    assert novo.status_code == 201, novo.text
+    assert novo.json()["modelo"] == "pw5"
+    assert "1236 × 1648" in novo.json()["modelo_diz"]
+
+
+def test_nao_saber_o_modelo_e_resposta_valida(client):
+    """A lista envelhece, e por isso tem saída: sem modelo o produto segue com o
+    padrão da instalação, exatamente como fazia antes."""
+    novo = client.post("/aparelhos", json={"endereco": "erik_y@kindle.com", "nome": "Sem modelo"})
+    assert novo.status_code == 201
+    assert novo.json()["modelo"] is None
+    assert novo.json()["modelo_diz"] is None
+
+    # E dá para tirar depois: `""` apaga, `None` não mexe.
+    posto = client.patch(f"/aparelhos/{novo.json()['id']}", json={"modelo": "oasis3"})
+    assert posto.json()["modelo"] == "oasis3"
+    tirado = client.patch(f"/aparelhos/{novo.json()['id']}", json={"modelo": ""})
+    assert tirado.json()["modelo"] is None
+
+
+def test_modelo_inventado_e_recusado(client):
+    novo = client.post("/aparelhos", json={"endereco": "erik_z@kindle.com", "modelo": "kindle-do-futuro"})
+    assert novo.status_code == 422
+
+
+def test_o_modelo_escolhe_o_perfil_do_quadrinho():
+    """É a consequência que faz a pergunta valer. Sem ela, saber o modelo seria
+    uma etiqueta bonita no cartão do aparelho."""
+    from app.services.kindles import perfil_do_kcc
+
+    assert perfil_do_kcc("oasis3") == "KO"
+    assert perfil_do_kcc("pw5") == "KPW5"
+    # Não saber devolve None, e quem chama fica com o padrão da instalação.
+    assert perfil_do_kcc(None) is None
+    assert perfil_do_kcc("modelo-que-nao-existe") is None

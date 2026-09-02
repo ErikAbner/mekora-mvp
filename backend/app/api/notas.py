@@ -80,9 +80,24 @@ class NotaNova(BaseModel):
         return v
 
 
+# Os estados que uma nota pode ter. Hoje um só, e nulo — a lista existe para o
+# segundo entrar por aqui, e não como `if estado == "rascunho"` espalhado.
+ESTADOS_DA_NOTA = {"rascunho"}
+
+
 class NotaEditada(BaseModel):
     cor: Optional[str] = None
     comentario: Optional[str] = None
+    # "" APAGA O ESTADO, e `None` não mexe nele. São coisas diferentes: quem
+    # muda só a cor manda `estado` ausente; quem tira o rascunho manda vazio.
+    estado: Optional[str] = None
+
+    @field_validator("estado")
+    @classmethod
+    def estado_conhecido(cls, v: Optional[str]) -> Optional[str]:
+        if v not in (None, "") and v not in ESTADOS_DA_NOTA:
+            raise ValueError(f"estado de nota desconhecido: {v}")
+        return v
 
     @field_validator("cor")
     @classmethod
@@ -109,6 +124,10 @@ def _fora(n: Nota) -> dict:
         # De onde a nota veio. A tela precisa disto para dizer "do Kindle" em
         # vez de oferecer "abrir no livro" numa nota que não tem livro aqui.
         "origem": n.origem, "fonte": n.fonte,
+        # O estado da nota — hoje `"rascunho"` ou nulo. A tela precisa dele para
+        # o recorte do nó 895:7631 e para explicar por que a nota não entra num
+        # estudo.
+        "estado": n.estado,
         "criada_em": n.criada_em,
     }
 
@@ -169,6 +188,10 @@ def agrupadas(
     minhas = (
         db.query(Nota)
         .filter(Nota.pessoa_id == pessoa.id)
+        # RASCUNHO FICA DE FORA DA VARREDURA. O que esta seção oferece é juntar o
+        # grupo num estudo, e rascunho não entra em estudo — um grupo com um
+        # dentro traria um botão que responde 409 na metade do caminho.
+        .filter((Nota.estado.is_(None)) | (Nota.estado != "rascunho"))
         .order_by(Nota.criada_em.desc())
         .limit(sugestoes_service.TETO_DE_NOTAS)
         .all()
@@ -407,6 +430,11 @@ def editar(
         n.cor = troca.cor
     if troca.comentario is not None:
         n.comentario = troca.comentario
+    if troca.estado is not None:
+        # Vazio apaga: "nota comum" e "estado em branco" são o mesmo estado para
+        # quem lê a tela, e dois jeitos de escrever o mesmo estado é como um
+        # deles deixa de ser tratado.
+        n.estado = troca.estado or None
     n.atualizada_em = agora()
     db.commit()
     db.refresh(n)
