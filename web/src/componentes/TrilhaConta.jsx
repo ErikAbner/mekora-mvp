@@ -18,7 +18,13 @@ import { Botao } from "./Botao.jsx";
 import { Icone } from "./Icone.jsx";
 import "./trilha-conta.css";
 
-const PAGINAS = [
+/* AS TELAS DA CONTA, numa lista só.
+ *
+ * Ela era daqui, e passou a ser exportada porque o menu do cabeçalho mostra as
+ * mesmas: dois lugares oferecendo telas de conta é como um deles fica com uma
+ * tela a menos no dia em que alguém acrescentar a próxima — e ninguém percebe,
+ * porque os dois continuam funcionando. */
+export const PAGINAS = [
   { id: "conta", rotulo: "Conta", rota: "/conta", icone: "/icones/icone-conta.svg" },
   { id: "kindle", rotulo: "Dispositivos Kindle", rota: "/conta/kindle", icone: "/icones/icone-aparelho.svg" },
   /* SEGURANÇA NÃO ESTÁ NO 966:25321, e fica.

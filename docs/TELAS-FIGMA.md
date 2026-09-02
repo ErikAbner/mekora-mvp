@@ -516,7 +516,7 @@ tinha certeza, está escrito que não tenho.
 | C1 | ~~O ícone ao lado da busca é de DÚVIDAS ("?"), não de notas~~ | `941:23107` · **feito** |
 | C2 | ~~O ícone da Estante estava trocado com ele~~ | **feito** — os arquivos estavam trocados |
 | C3 | A busca é MENOR e se expande quando a pessoa digita, com resultados embaixo (capa, título, autor · formato). Eu ignorei o componente e fiz outro | `941:23107` |
-| C4 | Conta abre um DROPDOWN com as telas de configuração; hoje ela navega direto | a conferir |
+| ~~C4~~ | ~~Conta abre um DROPDOWN com as telas de configuração; hoje ela navega direto~~ **feito** — ver a nota abaixo | não está no Figma atual |
 | C5 | Espaçamento entre a busca, as dúvidas e a conta não é o do desenho | `895:7315` |
 | C6 | Espaçamento entre itens errado em geral | a conferir |
 
@@ -653,3 +653,26 @@ ligado.
 
 Ele mede cor, contraste e escala tipográfica. Passou 60/60 enquanto tudo acima
 era verdade.
+
+
+## O menu da conta não está no Figma atual — 03/09/2026
+
+O Erik pediu, e a mecânica não tem ambiguidade: clicar na conta oferece as telas
+em vez de levar a uma delas. Foi construído.
+
+**A aparência não veio do desenho, e isso precisa estar escrito.** Há um menu
+suspenso no arquivo — o `55:2563`, na página `Exploração` —, e ele é da fase
+ANTERIOR: fonte Satoshi, cantos de 24px, cinza `#636363`, itens com seta. Copiá-lo
+traria de volta a linguagem que a DEC-0038 aposentou quando o produto virou um
+repositório só.
+
+Então o menu usa a linguagem de HOJE: filete de 1px, sem raio, degrau de
+superfície, Zodiak, e a mesma `.acao` do cabeçalho. Ele nasce do canto de cima à
+direita — de onde o botão está — em 180ms, começando em 0,96 e não em zero.
+
+**Se houver um nó do menu no desenho atual que eu não achei, é só apontar** que
+eu troco. Procurei em `900:52331` (só tem a variante Default), na página
+`Exploração` inteira, e nas telas de Conta.
+
+As cinco telas vêm de `TrilhaConta`, exportadas de lá: duas listas das telas de
+conta é como uma delas fica sem a próxima que alguém acrescentar.

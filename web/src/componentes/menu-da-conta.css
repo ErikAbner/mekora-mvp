@@ -1,0 +1,61 @@
+/* O menu da conta. Pendura na `.cabecalho-acoes`, alinhado à direita — o botão
+ * que o abre é o último dali. */
+.menu-conta {
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block-start: calc(100% + 10px);
+  z-index: 41;
+  min-inline-size: 280px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  background: var(--background);
+
+  /* ELE NASCE DO BOTÃO, e não do centro.
+   *
+   * `transform-origin` no canto de cima à direita, que é onde o botão está: um
+   * menu que cresce do próprio meio parece ter vindo de lugar nenhum. E começa
+   * em 0.96 e não em zero — nada no mundo aparece do nada, e escala zero é o que
+   * faz uma animação parecer truque. */
+  transform-origin: 100% 0;
+  animation: menu-conta-abre 180ms var(--saida) both;
+}
+
+@keyframes menu-conta-abre {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-conta { animation: none; }
+}
+
+.menu-conta-lista { margin: 0; padding: 0; list-style: none; }
+
+.menu-conta-item {
+  display: flex; align-items: center; gap: 16px;
+  padding: 16px;
+  color: var(--foreground);
+  font-size: 16px; line-height: 24px;
+  text-decoration: none;
+}
+
+.menu-conta-item:hover { background: var(--card); }
+.menu-conta-item[aria-current="page"] { color: var(--muted-foreground); }
+.menu-conta-item:focus-visible { outline: 1px solid var(--foreground); outline-offset: -1px; }
+
+.menu-conta-sair {
+  display: block;
+  inline-size: 100%;
+  margin-block-start: 12px;
+  padding: 16px;
+  border: 0;
+  border-block-start: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted-foreground);
+  font-family: var(--font-sans);
+  font-size: 16px; line-height: 24px;
+  text-align: start;
+  cursor: pointer;
+}
+.menu-conta-sair:hover { background: var(--card); color: var(--foreground); }
+.menu-conta-sair:focus-visible { outline: 1px solid var(--foreground); outline-offset: -1px; }

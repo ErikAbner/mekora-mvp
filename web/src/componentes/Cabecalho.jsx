@@ -29,6 +29,7 @@ import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Icone } from "./Icone.jsx";
 import { Busca } from "./Busca.jsx";
+import { MenuDaConta } from "./MenuDaConta.jsx";
 import { Folha } from "./Folha.jsx";
 import { gruposDeLugares } from "../menu.js";
 import { abrirRecado } from "../recado.js";
@@ -44,6 +45,7 @@ export function Cabecalho() {
   const { pathname } = useLocation();
   const aqui = lugarDaRota(pathname);
   const [menuAberto, setMenuAberto] = useState(false);
+  const [menuConta, setMenuConta] = useState(false);
   return (
     <header className="cabecalho">
       <nav className="cabecalho-lugares" aria-label="Lugares do Mekora">
@@ -77,10 +79,23 @@ export function Cabecalho() {
           <NavLink to="/ajuda" className="acao" aria-label="Dúvidas">
             <Icone src={iconeDuvidas} />
           </NavLink>
-          <NavLink to="/conta" className="acao" aria-label="Conta">
+          {/* CONTA ABRE UM MENU, e não navega.
+              O Erik apontou: clicar levava direto para `/conta`, e daí a pessoa
+              tinha de achar a trilha lateral para chegar em Privacidade ou nos
+              aparelhos. O botão agora oferece as telas. */}
+          <button
+            type="button"
+            className="acao"
+            aria-label="Sua conta"
+            aria-haspopup="menu"
+            aria-expanded={menuConta}
+            onClick={() => setMenuConta((v) => !v)}
+          >
             <Icone src={iconeConta} />
-          </NavLink>
+          </button>
         </div>
+
+        <MenuDaConta aberto={menuConta} aoFechar={() => setMenuConta(false)} />
 
         {/* O HAMBÚRGUER DO TELEFONE — nó 964:24606, ao lado da busca.
          *
