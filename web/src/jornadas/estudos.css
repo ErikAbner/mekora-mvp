@@ -17,12 +17,28 @@
   .estudos { padding: 32px 24px 64px; }
 }
 
+/* O TOPO E CENTRADO, e nao uma barra com o botao puxado para a direita.
+ *
+ * Nos nos 900:56142 e 895:8849 o titulo, a frase e a busca sao uma coluna
+ * estreita no meio, e as acoes comecam na fileira de baixo, junto dos recortes.
+ * Com o botao colado no titulo, "Comecar um estudo" pesa igual ao nome da area
+ * toda vez que alguem abre a pagina — e comecar um estudo se faz de vez em
+ * quando. */
 .estudos-topo {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: center;
   gap: 24px;
-  flex-wrap: wrap;
+  text-align: center;
+  padding-block-end: 8px;
+}
+.estudos-topo > div { max-inline-size: 56ch; }
+.estudos-topo .campo { inline-size: 100%; max-inline-size: 560px; }
+
+/* A fileira de controle: recortes a esquerda, acao na ponta. */
+.estudos-fileira {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 24px; flex-wrap: wrap;
 }
 
 .estudos h1 { margin: 0 0 6px; font-size: 32px; line-height: 40px; letter-spacing: -0.01em; color: var(--foreground); }

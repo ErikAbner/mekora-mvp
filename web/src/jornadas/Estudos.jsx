@@ -355,6 +355,15 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
       />
 
       <section className="estudos">
+        {/* O TOPO É CENTRADO, e não uma barra com o botão puxado para a
+            direita. Nos nós 900:56142 e 895:8849 o título, a frase e a busca são
+            uma coluna estreita no meio, e as ações começam na FILEIRA DE BAIXO,
+            junto dos recortes.
+
+            A diferença não é gosto: com o botão colado no título, "Começar um
+            estudo" pesa igual ao nome da área toda vez que alguém abre a
+            página — e começar um estudo é uma coisa que se faz de vez em
+            quando. */}
         <header className="estudos-topo" id="estudos-inicio">
           <div>
             <h1>Estudos</h1>
@@ -367,23 +376,20 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
               ficar de fora — nem toda ideia entra numa gaveta.
             </p>
           </div>
-          <Botao tom="primaria" onClick={() => { setNome(""); setSobre(""); setCriando(true); }}>
-            Começar um estudo
-          </Botao>
+
+          {estudos.length > 0 && (
+            <Campo
+              tipo="search"
+              rotulo="Buscar nos estudos"
+              rotuloOculto
+              placeholder="Buscar em livros, notas e contextos"
+              value={procura}
+              onChange={(e) => setProcura(e.target.value)}
+            />
+          )}
         </header>
 
         {erro && <p className="estudos-erro" role="alert">{erro}</p>}
-
-        {estudos.length > 0 && (
-          <Campo
-            tipo="search"
-            rotulo="Buscar nos estudos"
-            rotuloOculto
-            placeholder="Buscar em livros, notas e contextos"
-            value={procura}
-            onChange={(e) => setProcura(e.target.value)}
-          />
-        )}
 
         {/* O QUE FICOU PELA METADE — o cartão cinza do desenho. Ele não é um
             aviso: é o lembrete de que escrever e arquivar são gestos
@@ -408,24 +414,31 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
         {/* A contagem ao lado de cada recorte vem da MESMA lista que ele filtra:
             um recorte vazio se anuncia antes de ser clicado, em vez de levar a
             uma tela em branco sem explicação. */}
-        {estudos.length > 0 && (
-          <nav className="estudos-recortes" aria-label="Recortes dos estudos">
-            {RECORTES.map((r) => {
-              const quantos = estudos.filter(r.cabe).length;
-              return (
-                <button
-                  key={r.id}
-                  type="button"
-                  aria-pressed={r.id === recorte ? "true" : "false"}
-                  disabled={quantos === 0 && r.id !== recorte}
-                  onClick={() => setRecorte(r.id)}
-                >
-                  {r.rotulo} <span className="dado">{quantos}</span>
-                </button>
-              );
-            })}
-          </nav>
-        )}
+        {/* A FILEIRA DE CONTROLE: os recortes à esquerda, a ação na ponta —
+            como os dois nós a desenham. O botão saiu do cabeçalho para cá. */}
+        <div className="estudos-fileira">
+          {estudos.length > 0 && (
+            <nav className="estudos-recortes" aria-label="Recortes dos estudos">
+              {RECORTES.map((r) => {
+                const quantos = estudos.filter(r.cabe).length;
+                return (
+                  <button
+                    key={r.id}
+                    type="button"
+                    aria-pressed={r.id === recorte ? "true" : "false"}
+                    disabled={quantos === 0 && r.id !== recorte}
+                    onClick={() => setRecorte(r.id)}
+                  >
+                    {r.rotulo} <span className="dado">{quantos}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          )}
+          <Botao tom="primaria" onClick={() => { setNome(""); setSobre(""); setCriando(true); }}>
+            Começar um estudo
+          </Botao>
+        </div>
 
         {!estudos.length && (
           <p className="estudos-vazio">
