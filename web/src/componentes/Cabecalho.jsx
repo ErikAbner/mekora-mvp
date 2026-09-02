@@ -22,6 +22,7 @@ import { Icone } from "./Icone.jsx";
 import { Busca } from "./Busca.jsx";
 import { Folha } from "./Folha.jsx";
 import { gruposDeLugares } from "../menu.js";
+import { abrirRecado } from "../recado.js";
 
 import "./cabecalho.css";
 
@@ -103,14 +104,31 @@ export function Cabecalho() {
             <h3>{g.titulo}</h3>
             <ul>
               {g.itens.map((i) => (
-                <li key={i.rota}>
-                  <NavLink
-                    to={i.rota}
-                    end={i.rota === "/"}
-                    onClick={() => setMenuAberto(false)}
-                  >
-                    {i.rotulo}
-                  </NavLink>
+                <li key={i.rota || i.acao}>
+                  {i.rota ? (
+                    <NavLink
+                      to={i.rota}
+                      end={i.rota === "/"}
+                      onClick={() => setMenuAberto(false)}
+                    >
+                      {i.rotulo}
+                    </NavLink>
+                  ) : (
+                    /* Fecha ESTE menu antes de abrir a folha de recado: duas
+                       `<dialog>` modais abertas empilham o foco preso, e a de
+                       baixo fica alcançável por leitor de tela sem estar
+                       visível. */
+                    <button
+                      type="button"
+                      className="menu-acao"
+                      onClick={() => {
+                        setMenuAberto(false);
+                        abrirRecado();
+                      }}
+                    >
+                      {i.rotulo}
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>

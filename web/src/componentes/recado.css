@@ -1,0 +1,78 @@
+/* A caixa de recado. A moldura, o `Esc` e o foco preso vêm da `Folha`; aqui só
+ * o que é do recado. */
+
+.recado-corpo { display: flex; flex-direction: column; gap: 24px; }
+
+.recado-abre {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 16px; line-height: 24px;
+  text-wrap: pretty;
+}
+
+.recado-humor { margin: 0; padding: 0; border: 0; }
+.recado-humor legend {
+  padding: 0;
+  margin-block-end: 12px;
+  color: var(--foreground);
+  font-size: 16px; line-height: 24px;
+}
+
+.recado-humor-linha { display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* TRÊS BOTÕES E NÃO TRÊS `radio`, e a razão é o desmarcar: o humor é opcional,
+ * e um grupo de `radio` não deixa a pessoa voltar atrás depois de escolher —
+ * ela ficaria presa a uma resposta que quis retirar. `aria-pressed` diz a quem
+ * ouve o mesmo que a superfície diz a quem vê. */
+.recado-degrau {
+  flex: 1 1 0;
+  min-inline-size: 140px;
+  min-block-size: 56px;
+  padding: 16px;
+  border: 1px solid var(--borda-controle);
+  border-radius: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 16px; line-height: 24px;
+  cursor: pointer;
+}
+
+.recado-degrau:hover { background: var(--muted); }
+
+/* Escolhido = degrau de superfície, nunca matiz — a mesma regra do lugar ativo
+ * no cabeçalho. Matiz aqui obrigaria a inventar uma cor para "escolhido" que o
+ * sistema não tem, e ela reapareceria em outra tela querendo significar outra
+ * coisa. */
+.recado-degrau[aria-pressed="true"] {
+  background: var(--foreground);
+  color: var(--background);
+  border-color: var(--foreground);
+}
+
+.recado-degrau:focus-visible {
+  outline: 1px solid var(--foreground);
+  outline-offset: 2px;
+}
+
+.recado-erro {
+  margin: 0;
+  padding: 16px;
+  border-inline-start: 4px solid var(--destructive);
+  background: var(--muted);
+  color: var(--foreground);
+  font-size: 16px; line-height: 24px;
+}
+
+.recado-fim { display: flex; flex-direction: column; gap: 16px; }
+.recado-fim p { margin: 0; font-size: 20px; line-height: 30px; }
+
+.recado-miudo {
+  color: var(--muted-foreground);
+  font-size: 16px; line-height: 24px;
+}
+.recado-fim .recado-miudo { font-size: 16px; line-height: 24px; }
+
+@media (max-width: 767px) {
+  .recado-degrau { flex: 1 1 100%; }
+}

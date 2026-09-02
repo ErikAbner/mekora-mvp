@@ -193,6 +193,18 @@ quantidade essa garantia era o caminho para encher o disco da máquina.
 teste é proteção que some no próximo refactor — e ele foi provado removendo uma
 das portas, para confirmar que reprova.
 
+### Onde ficam os recados
+
+A caixa de recado é pública — quem converteu sem conta é justamente quem tem a
+primeira impressão. Os recados chegam em `GET /recados`, e só o dono lê:
+
+```bash
+curl -s -b "mekora_sessao=SUA-SESSAO" https://SEU-DOMINIO/recados | python3 -m json.tool
+```
+
+Não há tela para eles ainda. Ela vale a pena a partir do dia em que houver
+recado demais para ler no terminal, e não antes.
+
 ### Quem manda na instalação
 
 `/config`, `/app-config` e `/presets` falam da INSTALAÇÃO inteira — o `smtp_user`

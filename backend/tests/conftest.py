@@ -78,6 +78,7 @@ def test_engine(tmp_path):
     from app.models.processing_job import ProcessingJob  # noqa: F401 — registra modelo
     from app.models.stage_metric import StageMetric  # noqa: F401 — registra modelo Fase L
     from app.models.grupo_ignorado import GrupoIgnorado  # noqa: F401 — registra os grupos calados
+    from app.models.recado import Recado  # noqa: F401 — registra os recados
 
     Base.metadata.create_all(bind=engine)
     yield engine

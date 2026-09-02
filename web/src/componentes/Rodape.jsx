@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { gruposDeLugares } from "../menu.js";
+import { abrirRecado } from "../recado.js";
 
 const marca = "/icones/marca-mekora.svg";
 import "./rodape.css";
@@ -30,7 +31,18 @@ export function Rodape() {
             <h2>{g.titulo}</h2>
             <ul>
               {g.itens.map((i) => (
-                <li key={i.rota}><Link to={i.rota}>{i.rotulo}</Link></li>
+                <li key={i.rota || i.acao}>
+                  {i.rota ? (
+                    <Link to={i.rota}>{i.rotulo}</Link>
+                  ) : (
+                    /* Botão, e não link: ele não leva a lugar nenhum, abre uma
+                       folha sobre a tela atual. Um `<a href="#">` daqui mentiria
+                       para quem navega por teclado e para quem ouve. */
+                    <button type="button" className="rodape-acao" onClick={abrirRecado}>
+                      {i.rotulo}
+                    </button>
+                  )}
+                </li>
               ))}
             </ul>
           </nav>

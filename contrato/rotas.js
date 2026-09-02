@@ -51,6 +51,7 @@ export const EXATAS = [
   "/preferencias",
   "/presets",
   "/privacidade",
+  "/recados",
   "/sair",
   "/sessoes",
   "/upload",

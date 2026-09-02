@@ -34,15 +34,29 @@
 
 .rodape ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
 
-.rodape a {
+/* Mesma regra do link ao lado, mais o que o `<button>` traz e atrapalha. Ver o
+ * `.menu-acao` no cabeçalho: é o mesmo item, na outra lista. */
+.rodape-acao {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--font-sans);
+  text-align: start;
+  cursor: pointer;
+}
+
+.rodape a,
+.rodape-acao {
   color: var(--background);
   font-size: 16px;
   line-height: 24px;
   text-decoration: none;
 }
 
-.rodape a:hover { text-decoration: underline; text-underline-offset: 3px; }
-.rodape a:focus-visible { outline: 2px solid var(--background); outline-offset: 3px; }
+.rodape a:hover,
+.rodape-acao:hover { text-decoration: underline; text-underline-offset: 3px; }
+.rodape a:focus-visible,
+.rodape-acao:focus-visible { outline: 2px solid var(--background); outline-offset: 3px; }
 
 /* A marca ocupa a largura e é cortada embaixo, como no desenho.
    `filter: invert` porque o SVG é preto e o rodapé é escuro no tema claro — e

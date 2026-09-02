@@ -793,3 +793,24 @@ export function apagarGrupo(id) {
 export function previaDoLink(url) {
   return pede(`/canvas/previa?url=${encodeURIComponent(url)}`);
 }
+
+/* O RECADO. Não é uma rota de trabalho: ela não pede chave nem sessão, e é
+ * pública de propósito — quem converteu sem conta (DEC-0018) é justamente quem
+ * tem a primeira impressão, e exigir cadastro para reclamar garante que só quem
+ * já gostou reclame. */
+
+/** O teto do texto, o mesmo do modelo em `app/models/recado.py`.
+ *
+ * Ele mora aqui porque a tela precisa dizer quantos caracteres faltam ANTES de
+ * mandar. Um número diferente dos dois lados corta a frase de alguém sem aviso —
+ * e é o backend que ganha, calado, depois de a pessoa já ter escrito. */
+export const LIMITE_DO_RECADO = 2000;
+
+/** POST /recados — recados.py:47. */
+export function mandarRecado({ texto, humor, onde, email }) {
+  return pede("/recados", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ texto, humor, onde, email: email || null }),
+  });
+}

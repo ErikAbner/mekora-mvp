@@ -11,7 +11,18 @@
   text-wrap: pretty;
 }
 
-.campo input {
+/* A AREA HERDA TUDO DO CAMPO, e muda so o que a tag obriga. Repetir borda,
+ * tipografia e foco numa regra propria seria a segunda implementacao que o
+ * comentario do `Campo.jsx` recusa — e a que envelheceria calada. */
+.campo textarea {
+  resize: vertical;
+  /* A altura de uma linha do campo, para a area nao poder encolher abaixo do
+   * tamanho do irmao dela. */
+  min-block-size: 58px;
+}
+
+.campo input,
+.campo textarea {
   min-block-size: 58px;
   padding: 16px 24px;
   /* Raio zero: campo e estrutura. E a borda e de CONTROLE, nao filete — o
@@ -23,24 +34,28 @@
   font-family: var(--font-sans);
   font-size: 20px; line-height: 30px;
 }
-.campo input::placeholder { color: var(--muted-foreground); }
+.campo input::placeholder,
+.campo textarea::placeholder { color: var(--muted-foreground); }
 
 /* O foco engrossa a borda ALEM do contorno: quem enxerga pouco pode nao ver um
  * contorno de 1px, e quem usa alto contraste pode nao ver o contorno nenhum. */
-.campo input:focus-visible {
+.campo input:focus-visible,
+.campo textarea:focus-visible {
   outline: 1px solid var(--foreground);
   outline-offset: 2px;
   border-color: var(--foreground);
 }
 
-.campo input:disabled {
+.campo input:disabled,
+.campo textarea:disabled {
   background: var(--muted);
   cursor: not-allowed;
 }
 
 /* O erro nao e so cor. A borda muda de ESPESSURA junto, para quem nao distingue
  * vermelho de cinza, e a mensagem diz o que fazer. */
-.com-erro input { border-color: var(--destructive); border-inline-start-width: 4px; }
+.com-erro input,
+.com-erro textarea { border-color: var(--destructive); border-inline-start-width: 4px; }
 .campo-erro {
   margin: 0;
   font-size: 16px; line-height: 24px;

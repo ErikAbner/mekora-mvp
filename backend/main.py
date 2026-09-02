@@ -27,6 +27,8 @@ from app.core.config import PROJECT_ROOT
 from app.db.database import init_db
 from app.api.acesso import router as acesso_router
 from app.api.porta import exigir_acesso, exigir_conta, exigir_dono
+from app.api.recados import do_dono as recados_do_dono
+from app.api.recados import router as recados_router
 from app.api.health import router as health_router
 from app.api.aparelhos import router as aparelhos_router
 from app.api.notas import router as notas_router
@@ -136,6 +138,13 @@ app.include_router(busca_router, dependencies=[Depends(exigir_conta)])
 # extensões.
 app.include_router(config_publico)
 app.include_router(config_router, dependencies=[Depends(exigir_dono)])
+
+# OS RECADOS. Escrever é público de propósito: quem converteu sem conta
+# (DEC-0018) é justamente quem tem a primeira impressão, e exigir cadastro para
+# reclamar garante que só quem já gostou reclame. Ler é do dono — recado tem
+# texto livre e às vezes um e-mail para responder.
+app.include_router(recados_router)
+app.include_router(recados_do_dono, dependencies=[Depends(exigir_dono)])
 app.include_router(jobs_router, dependencies=[Depends(exigir_acesso)])
 app.include_router(app_config_router, dependencies=[Depends(exigir_dono)])
 app.include_router(translation_router, dependencies=[Depends(exigir_acesso), Depends(exigir_conta)])

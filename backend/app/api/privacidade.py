@@ -41,6 +41,7 @@ from app.models.grupo_ignorado import GrupoIgnorado
 from app.models.estudo import Estudo, EstudoNota
 from app.models.nota import Nota
 from app.models.pessoa import Chave, Pessoa, Sessao
+from app.models.recado import Recado
 from app.models.preferencia import Preferencia
 from app.models.processing_job import ProcessingJob
 from app.models.progresso import Progresso
@@ -87,6 +88,7 @@ O_QUE_GUARDAMOS = [
     ("grupos_calados", "grupos que você mandou parar", GrupoIgnorado, "Os grupos de notas parecidas que você pediu para o Mekora não sugerir mais."),
     ("sessoes", "sessões", Sessao, "Os navegadores em que você entrou."),
     ("links", "links de entrada", Chave, "Links de entrada pedidos e ainda não vencidos. Guardados como resumo, nunca em texto."),
+    ("recados", "recados", Recado, "O que você escreveu na caixa de recado, e em que tela estava quando escreveu."),
 ]
 
 

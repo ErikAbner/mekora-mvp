@@ -36,6 +36,8 @@ import { Livro } from "./jornadas/Livro.jsx";
 import { Nota } from "./jornadas/Nota.jsx";
 import { Preparo } from "./jornadas/Preparo.jsx";
 import { usarEstudos } from "./estado/usarEstudos.js";
+import { Recado } from "./componentes/Recado.jsx";
+import { RECADO_PEDIDO } from "./recado.js";
 import { ContaKindle } from "./jornadas/ContaKindle.jsx";
 import { LUGARES } from "./lugares.js";
 import { useJornada } from "./estado/useJornada.js";
@@ -574,10 +576,44 @@ function PaginaNotas() {
   );
 }
 
+/* A FOLHA DE RECADO MORA AQUI, uma só para o produto inteiro.
+ *
+ * Ela precisa estar DENTRO do `BrowserRouter` — `useLocation` é o que diz em que
+ * tela a pessoa estava quando escreveu, e sem isso o recado chega sem contexto:
+ * "não entendi" dito na Mesa e dito na Leitura são dois problemas diferentes.
+ *
+ * O caminho vai SEM o parâmetro: `/leitura/:id` e não `/leitura/37`. O número do
+ * livro não ajuda a consertar nada e conta o que a pessoa estava lendo.
+ */
+function FolhaDeRecado({ temConta }) {
+  const [aberta, setAberta] = useState(false);
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    const abrir = () => setAberta(true);
+    window.addEventListener(RECADO_PEDIDO, abrir);
+    return () => window.removeEventListener(RECADO_PEDIDO, abrir);
+  }, []);
+
+  const onde = pathname
+    .replace(/^\/(leitura|preparo|estante|nota|estudo)\/[^/]+$/, "/$1/:id")
+    .slice(0, 120);
+
+  return (
+    <Recado
+      aberta={aberta}
+      aoFechar={() => setAberta(false)}
+      onde={onde}
+      temConta={temConta}
+    />
+  );
+}
+
 export function App() {
   const acesso = usePessoa();
   return (
     <BrowserRouter>
+      <FolhaDeRecado temConta={Boolean(acesso.pessoa)} />
       <Routes>
         <Route path="/entrar" element={<Entrar />} />
         {/* A LP E A PRIMEIRA TELA DO PROJETO.

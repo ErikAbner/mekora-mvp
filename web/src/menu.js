@@ -33,6 +33,12 @@ export function gruposDeLugares() {
         { rota: "/atualizacoes", rotulo: "Atualizações" },
         { rota: "/politica-de-privacidade", rotulo: "Política de privacidade" },
         { rota: "/termos-de-uso", rotulo: "Termos de uso" },
+        /* O ÚNICO ITEM QUE NÃO É LUGAR. Ele abre a folha de recado por cima da
+           tela em que a pessoa está, e é de propósito: o recado leva junto ONDE
+           ela estava, e uma rota própria perderia isso e ainda a tiraria de
+           onde ela queria falar. Quem desenha a lista trata `acao` como botão;
+           `rota`, como link. */
+        { acao: "recado", rotulo: "Deixar um recado" },
       ],
     },
     {

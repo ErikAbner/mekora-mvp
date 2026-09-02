@@ -161,7 +161,21 @@ a.acao.active { background: var(--muted); color: var(--foreground); }
   color: var(--muted-foreground);
 }
 .menu-grupo ul { margin: 0; padding: 0; list-style: none; }
-.menu-grupo a {
+/* O ITEM QUE NÃO É LINK usa a mesma regra do que é, e acrescenta só o que a
+ * tag `<button>` traz de fábrica e atrapalha: fundo cinza, borda e texto
+ * centralizado. Uma regra própria repetiria padding, borda e tipografia — e
+ * seria a cópia que se desalinha quando alguém mexer numa das duas. */
+.menu-acao {
+  inline-size: 100%;
+  border-width: 0 0 1px;
+  background: transparent;
+  font-family: var(--font-sans);
+  text-align: start;
+  cursor: pointer;
+}
+
+.menu-grupo a,
+.menu-acao {
   display: block;
   padding: 14px 0;
   border-block-end: 1px solid var(--border);
@@ -169,11 +183,13 @@ a.acao.active { background: var(--muted); color: var(--foreground); }
   font-size: 18px; line-height: 27px;
   text-decoration: none;
 }
-.menu-grupo li:last-child a { border-block-end: 0; }
+.menu-grupo li:last-child a,
+.menu-grupo li:last-child .menu-acao { border-block-end: 0; }
 /* O lugar onde se esta ja e dito pela barra de baixo; aqui ele so nao se
  * apresenta como destino. */
 .menu-grupo a[aria-current="page"] { color: var(--muted-foreground); }
-.menu-grupo a:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+.menu-grupo a:focus-visible,
+.menu-acao:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
 
 @media (max-width: 767px) {
   .cabecalho-menu { display: flex; }

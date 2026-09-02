@@ -34,13 +34,28 @@ export function Campo({ rotulo, ajuda, erro, tipo = "text", rotuloOculto = false
           lê-lo. */}
       <label htmlFor={id} className={rotuloOculto ? "visualmente-oculto" : undefined}>{rotulo}</label>
       {ajuda && <p className="campo-ajuda" id={idAjuda}>{ajuda}</p>}
-      <input
-        id={id}
-        type={tipo}
-        aria-invalid={erro ? "true" : undefined}
-        aria-describedby={descrito || undefined}
-        {...resto}
-      />
+      {/* `tipo="area"` desenha um `<textarea>`, e não um `<input>`.
+          A alternativa era um componente `Area` separado, e ela custava mais do
+          que parece: rótulo, ajuda, erro, `aria-describedby` e as classes do
+          campo teriam DUAS implementações, e a segunda envelheceria calada — foi
+          exatamente assim que `.nota-origem` acabou definida em dois arquivos.
+          O que muda entre os dois é a tag; o resto é o mesmo campo. */}
+      {tipo === "area" ? (
+        <textarea
+          id={id}
+          aria-invalid={erro ? "true" : undefined}
+          aria-describedby={descrito || undefined}
+          {...resto}
+        />
+      ) : (
+        <input
+          id={id}
+          type={tipo}
+          aria-invalid={erro ? "true" : undefined}
+          aria-describedby={descrito || undefined}
+          {...resto}
+        />
+      )}
       {/* `role="alert"` faz o leitor anunciar assim que o erro aparece, sem
           esperar o foco chegar ali. */}
       {erro && <p className="campo-erro" id={idErro} role="alert">{erro}</p>}
