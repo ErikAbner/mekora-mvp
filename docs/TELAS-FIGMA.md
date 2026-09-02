@@ -394,3 +394,56 @@ alto da tela. O porquê está no comentário do componente.
 | "Três páginas ficaram sem texto" | `895:7631` | não há detecção de página sem texto |
 | "Ignorar" num grupo | `895:8849` | ignorar precisa ser LEMBRADO, e não há onde |
 | Modelo e resolução do aparelho | `895:10599` | a Amazon não conta |
+
+
+## 02/09 — Canvas e Estudos, refeitos contra o desenho
+
+O Erik disse que os dois "ficaram péssimos e não seguiram o Figma". Olhados lado
+a lado, ele estava certo — e no Canvas o erro era estrutural, não de acabamento.
+
+### Canvas (`895:6938`)
+
+| o que o desenho tem | o que eu tinha feito |
+|---|---|
+| o canvas É a página, de borda a borda | uma seção com título, parágrafo e uma janelinha de 720px com filete |
+| barra vertical de ícones flutuando à esquerda | quatro botões largos numa fileira no alto |
+| cartão branco, filete fino, sombra quase nada | folha amarela, azul ou verde — a cor do destaque pintando o objeto |
+| rodapé com origem e data | uma fileira de botões, com "Tirar" na cara de todo cartão |
+| ligação em curva, com um ponto na junta | segmento reto, e uma lista "Ligações N" abaixo do canvas |
+| sem rodapé | rodapé institucional debaixo de uma superfície sem fim |
+
+O cartão branco apagou um problema inteiro de contraste: havia três regras
+existindo só para fazer a tinta funcionar sobre quatro pastéis em dois temas.
+
+O ponto na junta substituiu a lista, e o motivo aparece usando: para desfazer a
+ligação entre duas notas visíveis na tela, era preciso rolar para fora do canvas
+e achar a linha certa entre trinta parecidas.
+
+**O portão pegou dois corpos fora da escala** — 11 e 13 —, que eu tinha inventado
+para o selo de contagem e para o rodapé do cartão. Os dois viraram 14.
+
+### Estudos (`900:56142`, `895:8849`)
+
+O topo era uma barra com o botão puxado para a direita; nos dois nós ele é uma
+coluna estreita centrada — título, frase e busca —, e as ações começam na fileira
+de baixo, junto dos recortes.
+
+**O que não copiei:** o desenho recorta em "Estudos / Todas as notas / Em
+pesquisa", e os nossos são "Abertos / Respondidos / Tudo". Os nossos saem de um
+estado que existe no modelo; "Em pesquisa" não tem definição em lugar nenhum.
+
+### Telefone
+
+As três telas novas foram medidas a 390 e nenhuma tem rolagem lateral.
+
+O Canvas tinha dois defeitos só visíveis lá, e os dois vieram de número mágico:
+a altura do chão era `calc(100vh - 88px)`, e 88 é o cabeçalho medido no
+computador — a 390 ele tem 76, e sobravam doze pixels de nada. Agora quem faz a
+conta é o `flex`, e `100dvh` cuida da barra do navegador que entra e sai.
+
+E o zoom ficava POR CIMA da barra de ferramentas: medido, a barra começa em
+y=766 e o zoom estava em 770. Ele subiu.
+
+**Sem desenho de telefone, e adaptados do computador:** `Canvas` e `Preparo —
+pronto` não têm nó `M ·` nenhum. Os dois são as mesmas telas com as regras de
+390 já aplicadas — a barra de ferramentas vira barra de rodapé, e o zoom sobe.

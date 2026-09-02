@@ -63,13 +63,29 @@
  * O MUNDO e a janela; o PLANO e a superficie, e ela nao tem borda. Duas camadas
  * porque so assim o zoom e o arrasto valem para tudo o que esta dentro sem cada
  * nota precisar saber da camera. */
-/* O CHAO TOMA O QUE SOBRA DA JANELA. Ele tinha altura fixa de 720 com um filete
- * em volta, dentro de uma pagina com titulo e rodape — uma janelinha de canvas.
- * No no 895:6938 o chao pontilhado vai ate as bordas: os 88px descontados sao o
- * cabecalho, que e a unica coisa que fica por cima. */
+/* O CHAO TOMA O QUE SOBRA DA JANELA, e a conta e feita pelo LAYOUT.
+ *
+ * Ele tinha altura fixa de 720 com um filete em volta, dentro de uma pagina com
+ * titulo e rodape — uma janelinha de canvas. No no 895:6938 o chao pontilhado vai
+ * ate as bordas.
+ *
+ * A primeira correcao usou `calc(100vh - 88px)`, e 88 era o cabecalho MEDIDO no
+ * computador: a 390 ele tem 76, e sobravam doze pixels de nada embaixo. Numero
+ * magico de altura de cabecalho e o tipo de coisa que erra em toda largura em
+ * que ninguem mediu.
+ *
+ * Agora quem faz a conta e o `flex`: a pagina ocupa a janela, o cabecalho toma o
+ * que precisa, e o chao fica com o resto — em qualquer largura, sem numero.
+ *
+ * `100dvh` e nao `100vh`: no telefone a barra do navegador entra e sai, e `vh`
+ * conta a janela SEM ela — o chao ficaria maior que a tela e a barra de baixo
+ * cairia fora. */
+.mesa:has(> .canvas) { min-block-size: 100dvh; }
+.canvas { flex: 1 1 auto; min-block-size: 0; }
 .canvas-mundo {
   position: relative;
-  block-size: calc(100vh - 88px);
+  flex: 1 1 auto;
+  min-block-size: 0;
   overflow: hidden;
   background: var(--card, var(--background));
   cursor: grab;
@@ -100,6 +116,7 @@
 /* O controle de zoom, do canto do desenho. */
 .canvas-zoom {
   position: absolute; inset-block-end: 16px; inset-inline-end: 16px;
+  z-index: 3;
   display: flex; align-items: center; gap: 4px;
   padding: 4px;
   background: var(--background);
@@ -515,4 +532,8 @@
     transform: none;
     flex-direction: row; justify-content: center;
   }
+  /* E O ZOOM SOBE, senao os dois ocupam o mesmo canto. Medido a 390: a barra
+   * comeca em y=754 e o zoom estava em y=770, um por cima do outro — dois
+   * controles flutuantes disputando o mesmo lugar, e o de baixo inalcancavel. */
+  .canvas-zoom { inset-block-end: 90px; }
 }
