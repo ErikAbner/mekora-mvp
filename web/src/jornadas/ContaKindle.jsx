@@ -12,7 +12,7 @@
 import { useState } from "react";
 import { usarAparelhos } from "../estado/usarAparelhos.js";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
-import { TrilhaConta } from "../componentes/TrilhaConta.jsx";
+import { MenuDaConta } from "../componentes/MenuDaConta.jsx";
 import { AssistenteKindle } from "./AssistenteKindle.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
@@ -101,7 +101,7 @@ export function ContaKindle({ pessoa, aoSair }) {
     <div className="mesa">
       <Cabecalho />
       <div className="conta">
-        <TrilhaConta pessoa={pessoa} aoSair={aoSair} />
+        <MenuDaConta pessoa={pessoa} />
 
         <main className="conta-painel">
           <section className="conta-secao">

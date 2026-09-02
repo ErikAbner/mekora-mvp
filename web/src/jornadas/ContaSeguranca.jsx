@@ -22,7 +22,7 @@ import {
 } from "../../../contrato/api.js";
 import { Botao } from "../componentes/Botao.jsx";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
-import { TrilhaConta } from "../componentes/TrilhaConta.jsx";
+import { MenuDaConta } from "../componentes/MenuDaConta.jsx";
 import "./conta-seguranca.css";
 
 /* "há 3 dias" diz mais que uma data para julgar se uma sessão é sua: ninguém
@@ -107,7 +107,7 @@ export function ContaSeguranca({ pessoa, aoSair }) {
     <div className="mesa">
       <Cabecalho />
       <div className="conta">
-        <TrilhaConta pessoa={pessoa} aoSair={aoSair} />
+        <MenuDaConta pessoa={pessoa} />
 
         <main className="conta-painel">
         {erro && <p className="conta-erro" role="alert">{erro}</p>}

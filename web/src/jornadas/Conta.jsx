@@ -16,7 +16,7 @@ import { gravarPreferencias, lerPreferencias } from "../../../contrato/api.js";
 import { aplicarTema } from "../estado/tema.js";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Escolha } from "../componentes/Escolha.jsx";
-import { TrilhaConta } from "../componentes/TrilhaConta.jsx";
+import { MenuDaConta } from "../componentes/MenuDaConta.jsx";
 import { GRUPOS, PADROES } from "../preferencias.js";
 import "./conta.css";
 
@@ -74,7 +74,7 @@ export function Conta({ pessoa , aoSair }) {
     <div className="mesa">
       <Cabecalho />
       <div className="conta">
-        <TrilhaConta pessoa={pessoa} aoSair={aoSair} aqui="preferencias" />
+        <MenuDaConta pessoa={pessoa} />
 
         <main className="conta-painel">
           {erro && <p className="conta-erro" role="alert">{erro}</p>}

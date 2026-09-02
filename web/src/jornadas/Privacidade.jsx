@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
-import { TrilhaConta } from "../componentes/TrilhaConta.jsx";
+import { MenuDaConta } from "../componentes/MenuDaConta.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
 import { Folha } from "../componentes/Folha.jsx";
@@ -64,7 +64,7 @@ export function Privacidade({ pessoa, aoSair, aoApagarConta }) {
     <div className="mesa">
       <Cabecalho />
       <div className="conta">
-        <TrilhaConta pessoa={pessoa} aoSair={aoSair} />
+        <MenuDaConta pessoa={pessoa} />
 
         <main className="conta-painel">
           <section className="conta-secao">

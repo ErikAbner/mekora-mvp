@@ -25,11 +25,12 @@ const iconeDuvidas = "/icones/icone-duvidas.svg";
 const iconeConta = "/icones/icone-conta.svg";
 const iconeMenu = "/icones/icone-menu.svg";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Icone } from "./Icone.jsx";
 import { Busca } from "./Busca.jsx";
 import { MenuDaConta } from "./MenuDaConta.jsx";
+import { quemSouEu } from "../../../contrato/api.js";
 import { Folha } from "./Folha.jsx";
 import { gruposDeLugares } from "../menu.js";
 import { abrirRecado } from "../recado.js";
@@ -42,6 +43,19 @@ import "./cabecalho.css";
 import { LUGARES, lugarDaRota } from "../lugares.js";
 
 export function Cabecalho() {
+  /* A PESSOA VEM DO SERVIDOR AQUI, e não por propriedade.
+   *
+   * O cabeçalho está em vinte e duas telas, e nenhuma delas passa a pessoa —
+   * atravessar todas com uma propriedade nova faria a tela que esquecesse ficar
+   * com um menu sem nome e sem retrato, sem erro nenhum. `quemSouEu` já é o que
+   * o `usePessoa` chama; a resposta é a mesma e o navegador a guarda. */
+  const [pessoa, setPessoa] = useState(null);
+  useEffect(() => {
+    let vivo = true;
+    quemSouEu().then((r) => { if (vivo) setPessoa(r?.pessoa ?? null); }).catch(() => {});
+    return () => { vivo = false; };
+  }, []);
+
   const { pathname } = useLocation();
   const aqui = lugarDaRota(pathname);
   const [menuAberto, setMenuAberto] = useState(false);
@@ -95,7 +109,7 @@ export function Cabecalho() {
           </button>
         </div>
 
-        <MenuDaConta aberto={menuConta} aoFechar={() => setMenuConta(false)} />
+        <MenuDaConta suspenso aberto={menuConta} pessoa={pessoa} aoFechar={() => setMenuConta(false)} />
 
         {/* O HAMBÚRGUER DO TELEFONE — nó 964:24606, ao lado da busca.
          *

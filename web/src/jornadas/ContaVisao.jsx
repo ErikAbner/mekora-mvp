@@ -30,7 +30,7 @@ import {
 import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
-import { TrilhaConta } from "../componentes/TrilhaConta.jsx";
+import { MenuDaConta } from "../componentes/MenuDaConta.jsx";
 import "./conta-visao.css";
 
 /* O que vale mostrar em cima, e o rótulo de cada um. As chaves são as do
@@ -97,7 +97,7 @@ export function ContaVisao({ pessoa, aoSair, aoMudarPerfil }) {
     <div className="mesa">
       <Cabecalho />
       <div className="conta">
-        <TrilhaConta pessoa={pessoa} aoSair={aoSair} />
+        <MenuDaConta pessoa={pessoa} />
 
         <main className="conta-painel">
         {/* A ILUSTRAÇÃO DO DESENHO, que faltava. O nó traz uma acima do painel
