@@ -510,7 +510,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
             onClick={() => { setLigando((v) => !v); setPrimeira(null); }}
             disabled={nos.length < 2}
           >
-            <Icone src="/icones/icone-atalho.svg" />
+            <Icone src="/icones/icone-estante.svg" />
           </button>
         </nav>
 

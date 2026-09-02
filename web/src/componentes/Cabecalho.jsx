@@ -12,7 +12,16 @@
  */
 // Assets do Figma, servidos de `publico/`. Caminho e nao import: o import ES
 // so vale para asset dentro de src/, que o Vite processa e versiona.
-const iconeAtalho = "/icones/icone-atalho.svg";
+/* DÚVIDAS, e não notas. O botão ao lado da busca é o "?" do desenho
+ * (`941:23107`), e ele leva a quem não sabe usar a ferramenta — não a um atalho
+ * para as notas.
+ *
+ * O erro tinha DUAS metades, e a segunda é a que o fez durar: os ARQUIVOS
+ * estavam trocados. `icone-estante.svg` desenhava um "?" e `icone-atalho.svg`
+ * desenhava um livro aberto. Eu li os nomes e não abri nenhum dos dois, então a
+ * Estante ganhou uma interrogação e o cabeçalho ganhou um livro. Os arquivos
+ * foram renomeados para o que eles DESENHAM. */
+const iconeDuvidas = "/icones/icone-duvidas.svg";
 const iconeConta = "/icones/icone-conta.svg";
 const iconeMenu = "/icones/icone-menu.svg";
 
@@ -59,8 +68,8 @@ export function Cabecalho() {
             motivo escrito — "não há rota de busca no backend" —, e a rota é o
             `busca.py`. O nó 941:23107 é o painel que ela abre. */}
         <Busca />
-        <NavLink to="/notas" className="acao" aria-label="Notas">
-          <Icone src={iconeAtalho} />
+        <NavLink to="/ajuda" className="acao" aria-label="Dúvidas">
+          <Icone src={iconeDuvidas} />
         </NavLink>
         <NavLink to="/conta" className="acao" aria-label="Conta">
           <Icone src={iconeConta} />

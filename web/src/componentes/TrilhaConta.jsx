@@ -27,7 +27,7 @@ const PAGINAS = [
    * Privacidade. Segurança — as sessões abertas, e o botão de encerrar as
    * outras — é tela que existe e funciona, e tirá-la do menu esconderia o único
    * caminho até ela. O desenho é anterior a ela. */
-  { id: "seguranca", rotulo: "Segurança", rota: "/conta/seguranca", icone: "/icones/icone-atalho.svg" },
+  { id: "seguranca", rotulo: "Segurança", rota: "/conta/seguranca", icone: "/icones/icone-estante.svg" },
   { id: "preferencias", rotulo: "Preferências", rota: "/conta/preferencias", icone: "/icones/icone-preferencias.svg" },
   { id: "privacidade", rotulo: "Privacidade", rota: "/conta/privacidade", icone: "/icones/icone-privacidade.svg" },
 ];
