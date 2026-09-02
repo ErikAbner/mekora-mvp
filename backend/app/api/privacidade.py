@@ -202,6 +202,43 @@ def o_que_existe(
                 ),
                 "marca": "Regra fixa",
             },
+            # ── AS TRÊS FERRAMENTAS DE FORA, a partir de 03/09/2026.
+            #
+            # Até aqui esta tela podia dizer "não há rastreamento por
+            # terceiros". Não pode mais, e a mudança tem de aparecer ANTES de
+            # qualquer script descer — uma tela de privacidade que descreve o
+            # produto de ontem é pior que não ter tela.
+            {
+                "titulo": "Quem mede a navegação, e só depois de você deixar",
+                "explicacao": (
+                    "Duas ferramentas de fora — PostHog e Microsoft Clarity — registram "
+                    "onde as pessoas clicam e onde travam, e gravam a navegação. Elas só "
+                    "são carregadas depois de você responder que pode: até lá o Mekora "
+                    "nem busca o arquivo delas. Dizer não não tira nada de você, e a "
+                    "resposta pode ser mudada aqui a qualquer momento."
+                ),
+                "marca": "Só com o seu sim",
+            },
+            {
+                "titulo": "O que essas gravações NÃO mostram",
+                "explicacao": (
+                    "O texto dos seus livros, o trecho das suas notas, o que você "
+                    "escreveu num estudo e o que você digitou num recado ficam TAPADOS "
+                    "nas gravações — em preto, sempre, sem opção de ligar. Seu endereço "
+                    "de rede também não é guardado por elas."
+                ),
+                "marca": "Regra fixa",
+            },
+            {
+                "titulo": "Quantas visitas houve",
+                "explicacao": (
+                    "A Cloudflare, que já é por onde todo pedido ao Mekora passa, conta "
+                    "quantas visitas cada tela teve. Ela não põe cookie, não guarda "
+                    "identificador e não monta perfil — por isso essa contagem não "
+                    "espera resposta sua."
+                ),
+                "marca": "Sem interruptor",
+            },
         ],
         # Ditos aqui, e não num texto à parte, porque são fatos do código:
         # `email_service` manda o EPUB por SMTP, e nada mais sai daqui.
@@ -215,15 +252,23 @@ def o_que_existe(
             "o endereço que você colou. O site visitado vê o pedido, como veria "
             "se você abrisse o link. Nada além do endereço é enviado, e a prévia "
             "só acontece quando você cola um link.",
-            # ESTA FRASE DIZIA "não há rastreamento, ANÁLISE DE USO nem
-            # publicidade", e a segunda parte era falsa: `stage_metrics` mede o
-            # preparo etapa por etapa. O que é verdade — e é o que importa — é
-            # que a medição não sai daqui. A seção "Dados de uso" abaixo diz o
-            # que ela guarda.
-            "Não há rastreamento por terceiros nem publicidade. O preparo é "
-            "medido, e a medição fica neste servidor: os únicos lugares fora do "
-            "Mekora para onde algo seu vai são os dois acima — a Amazon, quando "
-            "você manda ao Kindle, e o site do link que você colou.",
+            # ESTA FRASE JÁ ERROU DUAS VEZES, e por isso está comentada.
+            #
+            # Ela dizia "não há rastreamento, ANÁLISE DE USO nem publicidade", e
+            # a segunda parte era falsa: `stage_metrics` mede o preparo etapa
+            # por etapa. Corrigida, ela passou a dizer "não há rastreamento POR
+            # TERCEIROS" — e isso deixou de ser verdade em 03/09, quando PostHog,
+            # Clarity e Cloudflare entraram.
+            #
+            # O padrão é o mesmo das duas vezes: a frase descrevia o produto de
+            # ontem. Ela agora nomeia os destinos em vez de negar categorias, que
+            # é a forma que não envelhece sozinha.
+            "Publicidade não existe aqui, e nada seu é vendido para ninguém. "
+            "O que sai do Mekora sai para quatro lugares, e só: a Amazon, quando "
+            "você manda ao Kindle; o site do link que você colou no Canvas; e o "
+            "PostHog e a Microsoft Clarity, que medem a navegação e só entram "
+            "depois de você deixar. A Cloudflare conta as visitas na borda, sem "
+            "cookie e sem perfil.",
         ],
     }
 

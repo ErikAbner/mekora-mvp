@@ -50,6 +50,10 @@ node scripts/botoes.mjs || true
 "$PY_" scripts/conferir-ferramentas.py 2>&1 | grep -E "FALTA|Faltam" || true
 # Os testes do contrato: funcoes puras, sem navegador, um arquivo por peca.
 for t in contrato/*.teste.mjs; do node "$t" >/dev/null 2>&1 || echo "FALHOU  $t"; done
+# A mascara das gravadoras. As duas tapam de jeitos diferentes, e a da Clarity
+# nao acusa nada quando esta errada — a gravacao sai com o livro de alguem
+# dentro, embaixo de uma tela de privacidade dizendo que nao sai.
+node web/src/medir.teste.mjs || true
 echo
 
 medida() {   # $1 rota  $2 largura  $3 altura  $4 tema  $5 privada?

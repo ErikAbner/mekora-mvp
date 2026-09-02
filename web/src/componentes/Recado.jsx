@@ -97,7 +97,7 @@ export function Recado({ aberta, aoFechar, onde, temConta }) {
           </p>
         </div>
       ) : (
-        <div className="recado-corpo">
+        <div className="recado-corpo" data-clarity-mask="true">
           <p className="recado-abre">
             O que deu errado, o que faltou, o que você esperava e não achou. Escreva
             do jeito que vier.

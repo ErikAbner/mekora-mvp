@@ -132,7 +132,7 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, 
       )}
 
       {!resumido && estudo.notas.length > 0 && (
-        <ul className="estudo-notas">
+        <ul className="estudo-notas" data-clarity-mask="true">
           {notasVisiveis.map((n) => (
             <li key={n.id}>
               {/* A CAPA DO LIVRO ao lado do trecho — o nó 966:31095 a tem.

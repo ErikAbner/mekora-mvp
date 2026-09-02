@@ -140,7 +140,7 @@ export function Nota() {
 
         {/* O CHÃO marca o que foi lido. É a coisa mais importante da tela, e
             recebe o tratamento de conteúdo — não de citação. */}
-        <blockquote className="nota-trecho" style={{ background: DESTAQUES[nota.cor] }}>
+        <blockquote className="nota-trecho" data-clarity-mask="true" style={{ background: DESTAQUES[nota.cor] }}>
           {nota.trecho}
         </blockquote>
 

@@ -1,0 +1,51 @@
+/* A faixa fica presa embaixo, na largura da tela, e ACIMA da barra de baixo do
+ * telefone — senão ela cobre justamente a navegação que a pessoa precisa usar
+ * para fugir dela. */
+.consentimento {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding: 24px 32px;
+  border-block-start: 1px solid var(--border);
+  background: var(--card);
+  /* Entra de baixo, uma vez, em 240ms. `ease-out` porque é entrada: começa
+   * rápido e desacelera, que é o que faz parecer que respondeu na hora. */
+  animation: consentimento-entra 240ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes consentimento-entra {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .consentimento { animation: none; }
+}
+
+.consentimento-diz {
+  flex: 1 1 auto;
+  margin: 0;
+  max-inline-size: 90ch;
+  color: var(--foreground);
+  font-size: 16px; line-height: 24px;
+  text-wrap: pretty;
+}
+
+.consentimento-acoes { display: flex; gap: 16px; flex: none; }
+
+@media (max-width: 767px) {
+  .consentimento {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding: 16px;
+    /* A barra de baixo do telefone tem 76px. Sem isto a faixa senta em cima
+     * dela. */
+    inset-block-end: 76px;
+  }
+  .consentimento-acoes > * { flex: 1 1 0; }
+}

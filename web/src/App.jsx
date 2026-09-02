@@ -38,6 +38,8 @@ import { Preparo } from "./jornadas/Preparo.jsx";
 import { usarEstudos } from "./estado/usarEstudos.js";
 import { Recado } from "./componentes/Recado.jsx";
 import { RECADO_PEDIDO } from "./recado.js";
+import { Consentimento } from "./componentes/Consentimento.jsx";
+import { ligarMedicao, medirTela } from "./medir.js";
 import { ContaKindle } from "./jornadas/ContaKindle.jsx";
 import { LUGARES } from "./lugares.js";
 import { useJornada } from "./estado/useJornada.js";
@@ -576,6 +578,18 @@ function PaginaNotas() {
   );
 }
 
+/* O caminho sem o número: `/leitura/:id` e não `/leitura/37`.
+ *
+ * Usado pelo recado e pela medição, e por isso mora fora dos dois: o número do
+ * livro não ajuda a consertar nada e conta o que a pessoa está lendo. Duas
+ * cópias desta linha seria uma delas ficando para trás no dia em que aparecer
+ * uma rota nova com parâmetro. */
+function semParametro(caminho) {
+  return caminho
+    .replace(/^\/(leitura|preparo|estante|nota|estudo)\/[^/]+$/, "/$1/:id")
+    .slice(0, 120);
+}
+
 /* A FOLHA DE RECADO MORA AQUI, uma só para o produto inteiro.
  *
  * Ela precisa estar DENTRO do `BrowserRouter` — `useLocation` é o que diz em que
@@ -595,9 +609,7 @@ function FolhaDeRecado({ temConta }) {
     return () => window.removeEventListener(RECADO_PEDIDO, abrir);
   }, []);
 
-  const onde = pathname
-    .replace(/^\/(leitura|preparo|estante|nota|estudo)\/[^/]+$/, "/$1/:id")
-    .slice(0, 120);
+  const onde = semParametro(pathname);
 
   return (
     <Recado
@@ -609,10 +621,37 @@ function FolhaDeRecado({ temConta }) {
   );
 }
 
+/* A TROCA DE TELA É UM ACONTECIMENTO, e o roteador é quem sabe dela.
+ *
+ * O `capture_pageview` automático do PostHog só vê a primeira: daqui para
+ * frente quem troca a tela é o `react-router`, sem o navegador recarregar nada.
+ * Sem isto, a medição inteira diria que todo mundo abre a Mesa e nunca sai.
+ *
+ * O caminho vai SEM o parâmetro, pela mesma razão do recado: `/leitura/:id` não
+ * conta o que a pessoa está lendo, e `/leitura/37` conta.
+ */
+function MedirTrocaDeTela() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    medirTela(semParametro(pathname));
+  }, [pathname]);
+  return null;
+}
+
 export function App() {
   const acesso = usePessoa();
+
+  /* Se a pessoa já disse sim numa visita anterior, liga sem perguntar de novo.
+   * Dentro do `App` e não no `main.jsx` porque ele espera a primeira pintura, e
+   * o `main.jsx` roda antes dela. */
+  useEffect(() => {
+    ligarMedicao();
+  }, []);
+
   return (
     <BrowserRouter>
+      <MedirTrocaDeTela />
+      <Consentimento />
       <FolhaDeRecado temConta={Boolean(acesso.pessoa)} />
       <Routes>
         <Route path="/entrar" element={<Entrar />} />

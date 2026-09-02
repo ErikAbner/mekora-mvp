@@ -172,14 +172,39 @@ def test_privacidade_conta_o_ciclo_dos_arquivos_e_o_que_e_medido(client):
     assert "dias" not in corpo["arquivos"][0]["prazo"]
 
     medido = {u["titulo"]: u for u in corpo["uso"]}
-    assert set(medido) == {"O que é medido", "O que nunca é medido"}
+    # As três últimas entraram em 03/09, com PostHog, Clarity e Cloudflare. A
+    # lista é conferida INTEIRA de propósito: uma ferramenta nova que meça a
+    # navegação e não apareça aqui faz a tela descrever o produto de ontem, que
+    # é o defeito que esta seção já teve duas vezes.
+    assert set(medido) == {
+        "O que é medido",
+        "O que nunca é medido",
+        "Quem mede a navegação, e só depois de você deixar",
+        "O que essas gravações NÃO mostram",
+        "Quantas visitas houve",
+    }
+    # O QUE FICA TAPADO PRECISA ESTAR ESCRITO. Não basta mascarar no código: a
+    # pessoa tem de conseguir ler que o livro dela não vai para a gravação.
+    tapado = medido["O que essas gravações NÃO mostram"]["explicacao"]
+    for palavra in ("livros", "notas", "recado", "TAPADOS"):
+        assert palavra in tapado, f"a tela não diz que {palavra} fica de fora"
     assert medido["O que nunca é medido"]["marca"] == "Regra fixa"
 
-    # A FRASE QUE ERA FALSA. Ela dizia "não há rastreamento, análise de uso nem
-    # publicidade", e `stage_metrics` mede o preparo etapa por etapa.
+    # A FRASE QUE JÁ ERROU DUAS VEZES.
+    #
+    # Primeiro dizia "não há rastreamento, ANÁLISE DE USO nem publicidade", e
+    # `stage_metrics` media o preparo etapa por etapa. Corrigida, passou a dizer
+    # "não há rastreamento POR TERCEIROS" — e isso morreu em 03/09, com PostHog,
+    # Clarity e Cloudflare.
+    #
+    # O padrão das duas vezes foi o mesmo: NEGAR UMA CATEGORIA envelhece sozinho.
+    # Então o teste passou a exigir o contrário — que a frase NOMEIE cada
+    # destino. Uma ferramenta nova sem nome aqui derruba isto.
     junto = " ".join(corpo["para_onde_vai"])
-    assert "análise de uso" not in junto
-    assert "medição fica neste servidor" in junto
+    for negacao in ("análise de uso", "Não há rastreamento por terceiros"):
+        assert negacao not in junto, f"voltou a negar categoria: {negacao!r}"
+    for destino in ("Amazon", "PostHog", "Clarity", "Cloudflare"):
+        assert destino in junto, f"a tela não nomeia {destino}"
 
 
 # ---------------------------------------------------------------------------

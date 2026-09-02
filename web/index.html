@@ -100,5 +100,41 @@
       }
     </script>
     <script type="module" src="/src/main.jsx"></script>
+
+    <!-- QUANTAS VISITAS HOUVE DE VERDADE.
+
+         Esta é a única medição que NÃO espera o consentimento, e a razão é o
+         que ela é: a Cloudflare não põe cookie aqui, não guarda identificador e
+         não monta perfil — ela conta pedido na própria borda. E ela JÁ VÊ todos
+         os pedidos, porque a borda do Mekora é ela. Ligar isto não acrescenta
+         destinatário nenhum, e a base legal é interesse legítimo, declarada na
+         tela de privacidade.
+
+         PostHog e Clarity são o contrário: identificador próprio, propósito
+         próprio, gravação de tela. Eles só descem depois de um "sim", e quem
+         cuida disso é `src/medir.js`.
+
+         E ela existe por um motivo que os outros dois não resolvem: bloqueador
+         de anúncio derruba PostHog e Clarity, e em público técnico isso passa
+         de 30%. Esta conta na borda e não é bloqueável — é o denominador contra
+         o qual os outros dois se comparam.
+
+         Fora do ar de verdade o script nem é buscado: em `localhost` ele
+         mediria a máquina de quem está mexendo na tela. -->
+    <script>
+      (function () {
+        var h = location.hostname;
+        if (h === "localhost" || h === "127.0.0.1" || h.endsWith(".local")) return;
+        var s = document.createElement("script");
+        s.type = "module";
+        s.src = "https://static.cloudflareinsights.com/beacon.min.js";
+        s.defer = true;
+        s.setAttribute(
+          "data-cf-beacon",
+          '{"token": "46a411bebf6949bbaecd41e96b7f1848"}'
+        );
+        document.head.appendChild(s);
+      })();
+    </script>
   </body>
 </html>

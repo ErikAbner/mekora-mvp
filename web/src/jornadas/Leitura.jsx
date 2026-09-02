@@ -872,6 +872,7 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
           tem, declarado onde um instrumento alcança. */}
       <article
         className="prosa"
+        data-clarity-mask="true"
         ref={prosa}
         data-capitulos={livro.capitulos ?? 1}
         data-carregados={capitulos.length}
