@@ -28,9 +28,9 @@ D   backlog técnico             decide-se durante a implementação, por quem i
 |---|---:|
 | **A** — antes da arquitetura | 6 |
 | **B** — antes da feature afetada | 22 |
-| **C** — antes do lançamento | 5 |
+| **C** — antes do lançamento | 2 |
 | **D** — backlog técnico | 14 |
-| | **47** |
+| | **44** |
 
 *A contagem de C caiu para 12 em 03/09: `C9` e `C16` fecharam em 02/09, e `C1`, `C3`, `C4` e `C8`
 em 03/09 — as quatro últimas por leitura do código, não por decisão. A regra do
@@ -40,6 +40,27 @@ estavam, riscadas, porque outros documentos apontam para elas.*
 ### Saíram da fila em 2026-08-21
 
 `A1` → `DEC-0031` · `A3` → `DEC-0032` · `A6` e `B19` → `DEC-0033`
+
+### Saíram da fila em 2026-09-03 (madrugada) — as três de registro
+
+`C14` — o `artefato-mekora.html` saiu do versionamento. Ele é **gerado** do `prototipo-mesa.html`, e
+o gerador o reproduz byte a byte: mesmo `sha256`, conferido antes de tirar. Versioná-lo gravava 2,87
+MB de HTML com trinta imagens embutidas a cada mudança, e HTML não faz delta — 29 objetos inteiros
+num pacote de 29,4 MB. O histórico não foi reescrito: os objetos continuam alcançáveis pelos commits
+antigos, que é o que a DEC-0028 pede.
+
+`C12` — os dezoito repositórios foram normalizados contra o vocabulário da DEC-0026, e a abertura que
+ela prevê foi usada duas vezes, cada uma por um caso que nenhum dos cinco descrevia: `product` (o
+repositório que É o produto inteiro — Mekora depois da fusão, Panela, Plantas) e `native-client`
+(Siphon e o widget do Plantas, que não são web-frontend). O texto livre migrou para
+`role_description`, e o `os context` imprime os dois.
+
+`C11` — as trinta e nove DECs continuam `accepted`, e isso não é omissão: a DEC-0027 §4 diz que
+emenda parcial não é estado. O que faltava era mecânico e relacional. **E o conflito que ela deixou
+explicitamente em aberto foi resolvido:** a emendada é a DEC-0017 — as duas explorações deixaram de
+ser *fontes* quando o produto virou um repositório só, e hoje o registro carrega
+`historical-reference` nas duas, que é literalmente o que o ponto 4 da DEC-0011 dizia. O que
+permanece da DEC-0017 é o que ela existia para dizer: nenhuma foi descartada.
 
 ### Saíram da fila em 2026-09-03 (noite)
 
@@ -199,8 +220,8 @@ Podem ser decididas durante a construção. Não podem ficar sem resposta na V1.
 | **C8** | ~~Qual ferramenta de instrumentação é usada, e se é própria~~ — **respondida pelo código.** É própria: a tabela `stage_metrics`, escrita por `record_stage`. Não há serviço externo, e nada sai da máquina — a tela de privacidade diz isso desde 02/09 | DEC-0029 |
 | **C9** | ~~Quando as telas passam a ser efetivamente verificadas a 390px~~ — **fechada em 02/09.** As treze cabem, a Leitura inclusive: a auditoria a mede com um livro convertido de verdade, e ela passa com 21 nós | DEC-0023 |
 | **C10** | A migração do acervo e das notas existentes para identidade estável | DEC-0021 |
-| **C11** | Que estado cada uma das 19 DECs anteriores recebe além da normalização mecânica | DEC-0027 |
-| **C12** | O `role` literal de cada repositório existente | DEC-0026 |
+| **C11** | ~~Que estado cada uma das 19 DECs anteriores recebe~~ — **fechada em 03/09.** As trinta e nove continuam `accepted`: a própria DEC-0027 §4 diz que emenda parcial NÃO é estado, e nenhuma foi superada ou revogada. O que faltava era mecânico e relacional — onze declaravam com item de lista e passaram à forma em negrito, e três emendadas não tinham apontamento reverso. E o conflito que ela nomeava foi resolvido: **a emendada é a DEC-0017** | DEC-0027 |
+| **C12** | ~~O `role` literal de cada repositório existente~~ — **reconciliado em 03/09.** Os dezoito foram normalizados contra o vocabulário da DEC-0026, e a abertura que ela prevê foi usada duas vezes: `product` (o repositório que é o produto inteiro — Mekora depois da fusão, Panela, Plantas) e `native-client` (Siphon e o widget do Plantas, que não são web-frontend). O texto livre migrou para `role_description` e o `os context` imprime os dois | DEC-0026 |
 | **C13** | ~~Quando a máquina Windows é efetivamente zerada~~ — **aposentada em 03/09.** `status: retired` no `machines.json`, com data, razão e sucessor. A entrada FICA: a DEC-0028 permite zerar e proíbe remover do histórico, e os 100 runs dela continuam apontando para uma máquina que o registro conhece. O `role`, que estava errado desde 06/08, foi corrigido para o que ela de fato foi | DEC-0028 |
 | **C14** | ~~O destino do `artefato-mekora.html`~~ — **fora do versionamento, 03/09.** Ele é GERADO do `prototipo-mesa.html`, que é versionado, e o gerador o reproduz byte a byte — mesmo `sha256`, conferido. Versioná-lo gravava 2,87 MB de HTML com trinta imagens embutidas a cada mudança, e HTML não faz delta: 29 objetos inteiros num pacote de 29,4 MB. O histórico não é reescrito — os objetos continuam alcançáveis pelos commits antigos, que é o que a DEC-0028 pede | DEC-0028 |
 | **C15** | ~~Quando a V1 é lançada~~ — **respondida em 03/09: quando estiver pronta.** Nas palavras do Erik, *"vai ser um mistério até que tudo esteja devidamente implementado"*. Não é adiamento: é a recusa de uma data que faria o resto ser cortado para caber nela | DEC-0029 |
