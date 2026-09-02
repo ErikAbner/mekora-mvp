@@ -7,7 +7,7 @@ import { Campo } from "../componentes/Campo.jsx";
 import { achatar, comecosDistintos } from "../../../contrato/texto.js";
 import { Folha } from "../componentes/Folha.jsx";
 import { TrilhaDaPagina } from "../componentes/TrilhaDaPagina.jsx";
-import { criarEstudo, ignorarGrupo, lerAgrupadas, ouvirGruposDeNovo, reunirNoEstudo } from "../../../contrato/api.js";
+import { criarEstudo, gravarProgresso, ignorarGrupo, lerAgrupadas, ouvirGruposDeNovo, reunirNoEstudo } from "../../../contrato/api.js";
 import { DESTAQUES } from "./Leitura.jsx";
 import "./estudos.css";
 
@@ -249,6 +249,22 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, 
  * deixaria livro terminado eternamente em "Lendo", e é o tipo de erro que a
  * pessoa não tem como corrigir.
  */
+/* O QUADRO NÃO SE ARRASTA, e isso é decisão e não falta.
+ *
+ * O Erik: "kanban não funciona, interação péssima, parece de enfeite". A parte
+ * de enfeite era verdade — não havia gesto nenhum. Mas o gesto que falta não é
+ * arrastar.
+ *
+ * A COLUNA É DERIVADA DA FRAÇÃO LIDA, que é um fato medido pelo leitor, e não um
+ * estado que alguém escolhe. Arrastar um livro para "Lido" faria o número
+ * mentir — e é o MESMO número que a Estante, a ficha e a barra de progresso
+ * mostram. Um quadro que deixa você declarar que leu o que não leu não organiza
+ * nada; ele só estraga a medida.
+ *
+ * O desenho não pede arrastar: ele põe um botão "Reler" na coluna do que já foi
+ * lido (`895:8849`). Esse é o gesto — ler de novo zera a marca, e o livro volta
+ * para "A ler" por si.
+ */
 const COLUNAS = [
   { id: "aler", rotulo: "A ler", cabe: (l) => typeof l.fracao !== "number" || l.fracao <= 0 },
   { id: "lendo", rotulo: "Lendo", cabe: (l) => typeof l.fracao === "number" && l.fracao > 0 && l.fracao < 0.98 },
@@ -284,7 +300,7 @@ const RECORTES = [
   { id: "pergunta", rotulo: "Por pergunta" },
 ];
 
-export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, aoMudar, aoApagar, aoReunir, aoTirar }) {
+export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, aoMudar, aoApagar, aoReunir, aoTirar, aoReler }) {
   const [criando, setCriando] = useState(false);
   const [nome, setNome] = useState("");
   const [sobre, setSobre] = useState("");
@@ -303,6 +319,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
      ninguém organizar nada. É a promessa da Apresentação ganhando tela: "o que
      você marcou em livros diferentes sobre o mesmo assunto se encontra". */
   const [ligou, setLigou] = useState(null);
+  const [relendo, setRelendo] = useState(null);
   const [montando, setMontando] = useState(null);
   const [calando, setCalando] = useState(null);
   const navegar = useNavigate();
@@ -444,17 +461,23 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
               </button>
             ))}
           </nav>
-          {/* O DESENHO TEM UM QUARTO ITEM AQUI — "Escrever uma nota" — e ele
-              NÃO foi construído, de propósito.
+          {/* "ESCREVER UMA NOTA" LEVA AO CANVAS, e não abre um formulário aqui.
               
-              No modelo toda nota pertence a um livro: `criarNota` pede um
-              `jobId`, e daqui não há livro nenhum escolhido. Construir o botão
-              sem resolver isso daria exatamente o defeito que o Erik apontou na
-              Leitura — "botão que não pressiona, não muda, não dá retorno".
+              No modelo toda nota pertence a um livro — `criarNota` pede um
+              `jobId` —, e daqui não há livro escolhido. O Erik decidiu onde mora
+              a nota sem livro: "Canvas é lugar de nota sem livro, mas acredito
+              que só faça sentido se o usuário criar essa nota lá".
               
-              O que falta é a decisão dele: a nota escrita daqui pergunta de qual
-              livro é, ou o Canvas é o lugar da nota sem livro? As duas existem
-              no produto, e escolher por conta própria seria inventar de novo. */}
+              E há uma segunda razão, do lado desta tela: os Estudos são sobre
+              ORGANIZAR o que já existe. Um verbo de criação aqui produziria uma
+              nota sem contexto de leitura — que é justamente o que separa uma
+              nota do Mekora de um arquivo de texto.
+              
+              Então o botão do desenho existe, e faz a coisa honesta: leva ao
+              lugar onde aquilo se escreve. */}
+          <Botao tom="primaria" onClick={() => navegar("/canvas")}>
+            Escrever uma nota
+          </Botao>
         </div>
 
         {!estudos.length && (
@@ -526,6 +549,34 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                             )}
                           </span>
                         </Link>
+                        {/* "RELER" — o `895:8849` põe este botão, e só na coluna
+                            do que já foi lido. É ele o gesto que move um livro
+                            entre colunas: ler de novo zera a marca, e o livro
+                            volta para "A ler".
+                            
+                            E É POR ISSO QUE O QUADRO NÃO SE ARRASTA. Ver a nota
+                            em `COLUNAS`: a coluna é DERIVADA da fração lida, que
+                            é um fato medido, e não um estado que alguém escolhe.
+                            Arrastar um livro para "Lido" faria o número mentir —
+                            e é o mesmo número que a Estante e a ficha mostram. */}
+                        {id === "lido" && (
+                          <button
+                            type="button"
+                            className="estudos-reler"
+                            disabled={relendo === l.chave}
+                            onClick={async () => {
+                              setRelendo(l.chave);
+                              try {
+                                await gravarProgresso(l.chave, { capitulo: 0, deslocamento: 0, fracao: 0 });
+                                aoReler?.(l.chave);
+                              } finally {
+                                setRelendo(null);
+                              }
+                            }}
+                          >
+                            {relendo === l.chave ? "Zerando…" : "Reler"}
+                          </button>
+                        )}
                       </li>
                     ))}
                   </ul>

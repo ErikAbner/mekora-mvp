@@ -732,6 +732,25 @@ Lidos no `895:8911`, `895:8913` e `895:8915`, eles trocam o que a tela MOSTRA:
 | Todas as notas | tudo o que marcou, sem passar por estudo | não |
 | Por pergunta | as notas debaixo da pergunta do estudo | não |
 
+### O quadro não se arrasta, e isso é decisão
+
+O Erik: *"kanban não funciona, interação péssima, parece de enfeite"*. A parte de
+enfeite era verdade — não havia gesto nenhum. Mas o gesto que faltava **não é
+arrastar**.
+
+A coluna é DERIVADA da fração lida, que é um fato medido pelo leitor e não um
+estado que alguém escolhe. Arrastar um livro para "Lido" faria o número mentir —
+e é o mesmo número que a Estante, a ficha e a barra de progresso mostram. Um
+quadro que deixa você declarar que leu o que não leu não organiza nada; ele
+estraga a medida.
+
+O desenho não pede arrastar: ele põe um botão **"Reler"** na coluna do que já foi
+lido (`895:8849`). É esse o gesto — ler de novo zera a marca, e o livro volta
+para "A ler" por si.
+
+Construído e conferido num Chrome de verdade: `Lido 1 → Lido 0`,
+`A ler 2 → A ler 3`, e o botão some com a coluna vazia.
+
 ### O quarto item NÃO foi construído, e é decisão do Erik
 
 O desenho põe **"Escrever uma nota"** como botão dessa fileira. No modelo toda
@@ -745,4 +764,11 @@ existe, e a pergunta é:
 - a nota escrita daqui **pergunta de qual livro é**, ou
 - o **Canvas** é o lugar da nota sem livro, e o botão leva para lá?
 
-As duas existem no produto. Escolher por conta própria seria inventar de novo.
+**Respondido pelo Erik:** *"Canvas é lugar de nota sem livro, mas acredito que só
+faça sentido se o usuário criar essa nota lá"*. E há uma segunda razão do lado
+desta tela: os Estudos são sobre ORGANIZAR o que já existe — um verbo de criação
+aqui produziria uma nota sem contexto de leitura, que é justamente o que separa
+uma nota do Mekora de um arquivo de texto.
+
+O botão do desenho existe, e faz a coisa honesta: **leva ao Canvas**, o lugar
+onde aquilo se escreve.

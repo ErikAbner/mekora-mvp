@@ -507,3 +507,21 @@
   font-size: 24px; line-height: 36px; font-weight: 540;   /* Heading/SM */
   color: var(--card-foreground);
 }
+
+/* "RELER" — `895:8849`, e só na coluna do que já foi lido. Ele é o único gesto
+ * do quadro, e por isso não se esconde atrás de hover: num toque não há hover, e
+ * um botão que só aparece com o mouse não existe no telefone. */
+.estudos-reler {
+  align-self: flex-start;
+  margin-block-start: 12px;
+  padding: 8px 16px;
+  border: 1px solid var(--borda-controle);
+  background: var(--background);
+  color: var(--muted-foreground);
+  font-family: var(--font-sans);
+  font-size: 14px; line-height: 22px;   /* Label/Small */
+  cursor: pointer;
+}
+.estudos-reler:hover:not(:disabled) { background: var(--muted); color: var(--foreground); }
+.estudos-reler:disabled { cursor: progress; }
+.estudos-reler:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }

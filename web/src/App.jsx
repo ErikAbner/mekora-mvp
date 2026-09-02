@@ -512,6 +512,10 @@ function PaginaEstudos() {
       aoApagar={apagar}
       aoReunir={reunir}
       aoTirar={tirar}
+      /* Depois de zerar a marca de um livro, a estante precisa ser relida: a
+         coluna do quadro é DERIVADA da fração, e sem reler o livro fica onde
+         estava até alguém recarregar a página. */
+      aoReler={() => carregarEstante().catch(() => {})}
     />
   );
 }
