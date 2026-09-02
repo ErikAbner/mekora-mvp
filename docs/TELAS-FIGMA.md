@@ -447,3 +447,49 @@ y=766 e o zoom estava em 770. Ele subiu.
 **Sem desenho de telefone, e adaptados do computador:** `Canvas` e `Preparo —
 pronto` não têm nó `M ·` nenhum. Os dois são as mesmas telas com as regras de
 390 já aplicadas — a barra de ferramentas vira barra de rodapé, e o zoom sobe.
+
+
+## 02/09, noite — o hambúrguer e o funil, decididos
+
+O Erik respondeu a pergunta que estava aberta desde 01/09 — o painel do
+`895:10599` é **conteúdo copiado de outra tela sem trocar** — e autorizou decidir
+o resto sozinho.
+
+### O que o `895:10599` ser cópia significa
+
+Que a tela de Conta do computador mostra os **dados da conta**, e os aparelhos
+têm tela própria — que é exatamente o que o telefone (`966:25321` e `966:25554`)
+desenha, e o que o produto já fazia. Nada a mudar; a pergunta fecha.
+
+### O hambúrguer (`964:24606`)
+
+Ele existe no desenho, ao lado da busca, e não tem painel desenhado em lugar
+nenhum do arquivo. **Decisão:** o que ele abre é o que NÃO CABE na barra de
+baixo.
+
+A barra tem os quatro lugares principais. Sobram as Notas, a Conta e suas quatro
+telas, a Ajuda, as Atualizações e os dois documentos — que no computador se
+alcança pelos dois ícones do cabeçalho e pelo rodapé. No telefone o rodapé fica
+no fim de uma página que pode ter três telas de altura, e os dois ícones não
+cabem junto da busca: o nó traz **um** ícone ao lado dela.
+
+Nada foi inventado — a lista é a mesma do rodapé. E ela passou a morar num lugar
+só, `menu.js`: duas cópias é como o menu passa a oferecer um lugar que o rodapé
+não tem.
+
+**Um link morto apareceu ao juntar as duas:** o rodapé dizia "Dispositivos
+Kindle" apontando para `/conta`. O rótulo é de quando não existia tela de
+aparelhos, e sobreviveu à criação dela.
+
+### O funil (`964:24606`)
+
+Mesma situação, mesma decisão: ele abre **os mesmos recortes** que o computador
+mostra em linha. Num telefone de 390 os cinco ou quebram em duas fileiras —
+comendo um terço da tela antes do primeiro livro — ou rolam para o lado, e
+recorte que rola para o lado é recorte que ninguém vê.
+
+O botão **diz qual recorte está valendo** quando não é "tudo": um funil mudo
+esconde que a estante está filtrada, e aí a pessoa procura um livro que está ali.
+
+Medido a 390: um ícone ao lado da busca, quinze lugares no menu, os recortes em
+linha escondidos, o funil visível, e nenhuma rolagem lateral.

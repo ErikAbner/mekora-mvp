@@ -22,6 +22,7 @@ import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Rodape } from "../componentes/Rodape.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { Folha } from "../componentes/Folha.jsx";
+import { Icone } from "../componentes/Icone.jsx";
 import { DESTAQUES } from "./Leitura.jsx";
 import "./estante.css";
 
@@ -203,6 +204,9 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnvia
    * recorte vazio se anuncia antes de ser clicado, em vez de levar a uma estante
    * em branco sem explicação. */
   const [recorte, setRecorte] = useState("tudo");
+  /* O funil do telefone (nó 964:24606): abre os mesmos recortes que o computador
+     mostra em linha. */
+  const [filtrando, setFiltrando] = useState(false);
   /* A vista começa em "capas", e não em 3D: quem abre a estante quer achar o
    * livro, e a capa de frente é o que se reconhece de longe. A estante de pé é
    * para olhar o acervo, que é outra coisa e vem por escolha. */
@@ -212,6 +216,30 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnvia
   return (
     <div className="mesa">
       <Cabecalho lugar="estante" />
+
+      <Folha
+        aberta={filtrando}
+        titulo="Mostrar na estante"
+        aoFechar={() => setFiltrando(false)}
+      >
+        <nav className="estante-filtros" aria-label="Recortes da estante">
+          {RECORTES.map((r) => {
+            const quantos = livros.filter(r.cabe).length;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                aria-pressed={r.id === recorte ? "true" : "false"}
+                disabled={quantos === 0 && r.id !== "tudo"}
+                onClick={() => { setRecorte(r.id); setFiltrando(false); }}
+              >
+                <span>{r.rotulo}</span>
+                <span className="dado">{quantos}</span>
+              </button>
+            );
+          })}
+        </nav>
+      </Folha>
 
       <section className="estante">
         <div className="estante-grade">
@@ -224,6 +252,29 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnvia
               que ele não tem é a regra; apagar uma feature que funciona não é.
               Ver a Folha no fim deste arquivo — ela agora vive na tela de
               Notas. */}
+          {/* O FUNIL DO TELEFONE — nó 964:24606, ao lado do alternador de vista.
+           *
+           * Ele existia no desenho e não tinha painel desenhado em lugar nenhum
+           * do arquivo. A decisão foi tomada em 02/09, e ela não inventa nada: o
+           * que o funil abre são OS MESMOS RECORTES que o computador mostra em
+           * linha. Num telefone de 390 os cinco recortes ou quebram em duas
+           * fileiras — comendo um terço da tela antes do primeiro livro — ou
+           * rolam para o lado, e recorte que rola para o lado é recorte que
+           * ninguém vê.
+           *
+           * O botão diz QUAL recorte está valendo quando não é "tudo": um funil
+           * mudo esconde que a estante está filtrada, e aí a pessoa procura um
+           * livro que está ali. */}
+          <button
+            type="button"
+            className="estante-funil"
+            aria-expanded={filtrando ? "true" : "false"}
+            onClick={() => setFiltrando(true)}
+          >
+            <Icone src="/icones/icone-buscar.svg" />
+            <span>{recorte === "tudo" ? "Filtrar" : RECORTES.find((r) => r.id === recorte)?.rotulo}</span>
+          </button>
+
           <nav className="recortes" aria-label="Recortes da estante">
             {RECORTES.map((r) => {
               const quantos = livros.filter(r.cabe).length;

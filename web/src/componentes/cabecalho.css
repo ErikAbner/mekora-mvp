@@ -141,3 +141,40 @@ a.acao.active { background: var(--muted); color: var(--foreground); }
   .cabecalho-acoes { flex: 1 1 auto; gap: 8px; }
   .acao { padding: 13px; }
 }
+
+/* O HAMBURGUER SO EXISTE NO TELEFONE — no 964:24606.
+ *
+ * No computador os mesmos lugares ja estao a vista: os dois icones aqui do lado
+ * e o rodape. Um menu que repete o que esta na tela e onde a pessoa comeca a
+ * duvidar de qual dos dois vale. */
+.cabecalho-menu { display: none; }
+
+.menu-grupo + .menu-grupo { margin-block-start: 24px; }
+.menu-grupo h3 {
+  margin: 0 0 8px;
+  font-size: 14px; line-height: 20px;   /* Label/Small */
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--muted-foreground);
+}
+.menu-grupo ul { margin: 0; padding: 0; list-style: none; }
+.menu-grupo a {
+  display: block;
+  padding: 14px 0;
+  border-block-end: 1px solid var(--border);
+  color: var(--foreground);
+  font-size: 18px; line-height: 27px;
+  text-decoration: none;
+}
+.menu-grupo li:last-child a { border-block-end: 0; }
+/* O lugar onde se esta ja e dito pela barra de baixo; aqui ele so nao se
+ * apresenta como destino. */
+.menu-grupo a[aria-current="page"] { color: var(--muted-foreground); }
+.menu-grupo a:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+
+@media (max-width: 767px) {
+  .cabecalho-menu { display: flex; }
+  /* E OS DOIS ATALHOS SOMEM: os dois destinos deles estao dentro do menu, e
+   * tres icones ao lado da busca numa tela de 390 deixam a busca com metade da
+   * largura. O no traz UM icone ao lado dela. */
+  .cabecalho-acoes > .acao:not(.cabecalho-menu) { display: none; }
+}

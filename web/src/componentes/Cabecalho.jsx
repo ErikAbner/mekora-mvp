@@ -14,10 +14,14 @@
 // so vale para asset dentro de src/, que o Vite processa e versiona.
 const iconeAtalho = "/icones/icone-atalho.svg";
 const iconeConta = "/icones/icone-conta.svg";
+const iconeMenu = "/icones/icone-menu.svg";
 
+import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Icone } from "./Icone.jsx";
 import { Busca } from "./Busca.jsx";
+import { Folha } from "./Folha.jsx";
+import { gruposDeLugares } from "../menu.js";
 
 import "./cabecalho.css";
 
@@ -29,6 +33,7 @@ import { LUGARES, lugarDaRota } from "../lugares.js";
 export function Cabecalho() {
   const { pathname } = useLocation();
   const aqui = lugarDaRota(pathname);
+  const [menuAberto, setMenuAberto] = useState(false);
   return (
     <header className="cabecalho">
       <nav className="cabecalho-lugares" aria-label="Lugares do Mekora">
@@ -59,7 +64,59 @@ export function Cabecalho() {
         <NavLink to="/conta" className="acao" aria-label="Conta">
           <Icone src={iconeConta} />
         </NavLink>
+
+        {/* O HAMBÚRGUER DO TELEFONE — nó 964:24606, ao lado da busca.
+         *
+         * Ele existia no desenho e não tinha painel desenhado em lugar nenhum do
+         * arquivo, então ficou meses na lista de pendências. A decisão foi
+         * tomada em 02/09: o que ele abre é o que NÃO CABE na barra de baixo.
+         *
+         * A barra tem os quatro lugares principais. Sobram as Notas, a Conta e
+         * suas quatro telas, a Ajuda, as Atualizações e os dois documentos — que
+         * no computador se alcança pelos dois ícones aqui do lado e pelo rodapé.
+         * No telefone o rodapé fica no fim de uma página que pode ter três
+         * telas de altura, e os dois ícones não cabem junto da busca.
+         *
+         * Nada foi inventado: a lista é a mesma do rodapé, de `menu.js`.
+         *
+         * ELE SÓ EXISTE ABAIXO DE 768 (regra em `cabecalho.css`): no computador
+         * os mesmos lugares já estão à vista, e um menu que repete o que está na
+         * tela é onde a pessoa começa a duvidar de qual dos dois vale. */}
+        <button
+          type="button"
+          className="acao cabecalho-menu"
+          aria-label="Mais lugares do Mekora"
+          aria-expanded={menuAberto ? "true" : "false"}
+          onClick={() => setMenuAberto(true)}
+        >
+          <Icone src={iconeMenu} />
+        </button>
       </div>
+
+      <Folha
+        aberta={menuAberto}
+        titulo="Ir para"
+        aoFechar={() => setMenuAberto(false)}
+      >
+        {gruposDeLugares().map((g) => (
+          <nav key={g.titulo} className="menu-grupo" aria-label={g.titulo}>
+            <h3>{g.titulo}</h3>
+            <ul>
+              {g.itens.map((i) => (
+                <li key={i.rota}>
+                  <NavLink
+                    to={i.rota}
+                    end={i.rota === "/"}
+                    onClick={() => setMenuAberto(false)}
+                  >
+                    {i.rotulo}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ))}
+      </Folha>
     </header>
   );
 }

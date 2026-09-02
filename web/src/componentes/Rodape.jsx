@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { LUGARES } from "../lugares.js";
+import { gruposDeLugares } from "../menu.js";
 
 const marca = "/icones/marca-mekora.svg";
 import "./rodape.css";
@@ -17,39 +17,24 @@ import "./rodape.css";
 export function Rodape() {
   return (
     <footer className="rodape">
+      {/* AS COLUNAS SAEM DE `menu.js`, e não daqui.
+       *
+       * A mesma lista passou a ser usada pelo hambúrguer do telefone (nó
+       * 964:24606), e duas cópias é como o menu passa a oferecer um lugar que o
+       * rodapé não tem — ou como um link morto sobrevive num dos dois. Foi
+       * exatamente o que aconteceu com "Dispositivos Kindle", que apontava para
+       * `/conta` desde antes de a tela de aparelhos existir. */}
       <div className="rodape-colunas">
-        <nav aria-label="Lugares">
-          <h2>No Mekora</h2>
-          <ul>
-            {LUGARES.filter((l) => l.pronto).map((l) => (
-              <li key={l.id}><Link to={l.rota}>{l.rotulo}</Link></li>
-            ))}
-            <li><Link to="/notas">Notas</Link></li>
-          </ul>
-        </nav>
-
-        {/* Ajuda e Atualizacoes sao publicas, entao ficam fora da coluna da
-            conta: quem nao entrou tambem precisa delas. */}
-        <nav aria-label="O produto">
-          <h2>O produto</h2>
-          <ul>
-            <li><Link to="/apresentacao">O que é o Mekora</Link></li>
-            <li><Link to="/ajuda">Ajuda</Link></li>
-            <li><Link to="/atualizacoes">Atualizações</Link></li>
-            {/* O documento fica no rodape, que e onde se procura por ele. */}
-            <li><Link to="/politica-de-privacidade">Política de privacidade</Link></li>
-            <li><Link to="/termos-de-uso">Termos de uso</Link></li>
-          </ul>
-        </nav>
-
-        <nav aria-label="Sua conta">
-          <h2>Sua conta</h2>
-          <ul>
-            <li><Link to="/conta">Dispositivos Kindle</Link></li>
-            <li><Link to="/conta/preferencias">Preferências</Link></li>
-            <li><Link to="/conta/privacidade">Privacidade</Link></li>
-          </ul>
-        </nav>
+        {gruposDeLugares().map((g) => (
+          <nav key={g.titulo} aria-label={g.titulo}>
+            <h2>{g.titulo}</h2>
+            <ul>
+              {g.itens.map((i) => (
+                <li key={i.rota}><Link to={i.rota}>{i.rotulo}</Link></li>
+              ))}
+            </ul>
+          </nav>
+        ))}
       </div>
 
       {/* A MARCA É O ATIVO SVG, e não texto grande.

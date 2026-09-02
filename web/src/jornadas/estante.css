@@ -597,3 +597,38 @@
 .ficha-detalhes summary .dado { font-variant-numeric: tabular-nums; }
 
 .ficha-detalhes .ficha-dados { padding-block-end: 8px; }
+
+/* O FUNIL DO TELEFONE — no 964:24606. Ele nao existe no computador: la os cinco
+ * recortes cabem em linha, e um botao que abre o que ja esta na tela e onde a
+ * pessoa comeca a duvidar de qual dos dois vale. */
+.estante-funil { display: none; }
+
+.estante-filtros { display: flex; flex-direction: column; }
+.estante-filtros button {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 16px 0;
+  border: 0; border-block-end: 1px solid var(--border);
+  background: none; color: var(--foreground);
+  font: inherit; font-size: 18px; line-height: 27px;
+  text-align: start; cursor: pointer;
+}
+.estante-filtros button[aria-pressed="true"] { font-weight: 540; }
+.estante-filtros button:disabled { color: var(--muted-foreground); cursor: default; }
+.estante-filtros button:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+
+@media (max-width: 767px) {
+  /* OS RECORTES EM LINHA SOMEM e o funil aparece. Num telefone de 390 os cinco
+   * ou quebram em duas fileiras — comendo um terco da tela antes do primeiro
+   * livro — ou rolam para o lado, e recorte que rola para o lado e recorte que
+   * ninguem ve. */
+  .estante-grade > .recortes { display: none; }
+  .estante-funil {
+    display: flex; align-items: center; gap: 8px; align-self: flex-start;
+    padding: 12px 16px;
+    border: 1px solid var(--border); background: var(--background);
+    color: var(--foreground);
+    font: inherit; font-size: 16px; line-height: 24px;
+    cursor: pointer;
+  }
+  .estante-funil:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+}
