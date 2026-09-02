@@ -44,6 +44,10 @@ node scripts/botoes.mjs || true
 # O SVG re-exportado do Figma volta com seis casas decimais e 51 KB por icone.
 # Isto so avisa; enxugar e um comando, e o desenho nao muda (scripts/svg.py).
 "$PY_" scripts/svg.py --conferir || true
+# As ferramentas de fora do Python. A imagem de producao as confere no build; a
+# maquina de quem desenvolve, ninguem conferia — e a falta so aparecia como
+# "o OCR falhou" no meio de um arquivo de verdade.
+"$PY_" scripts/conferir-ferramentas.py 2>&1 | grep -E "FALTA|Faltam" || true
 # Os testes do contrato: funcoes puras, sem navegador, um arquivo por peca.
 for t in contrato/*.teste.mjs; do node "$t" >/dev/null 2>&1 || echo "FALHOU  $t"; done
 echo
