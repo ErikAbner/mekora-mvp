@@ -483,6 +483,57 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
   };
   const chaoSobe = () => { arrastandoChao.current = null; };
 
+  /* DOIS DEDOS ANDAM, E A PINÇA APROXIMA — e isto é o que faltava.
+   *
+   * O Erik: "o canvas é travado". Medi antes de mexer, e o arrasto do chão
+   * funcionava (−150px exatos) e os dois botões de zoom também. O que não
+   * existia era a RODA: num trackpad, dois dedos não faziam nada e a pinça não
+   * fazia nada. Sobrava arrastar clicando, que é o gesto do mouse — e ninguém
+   * navega um plano infinito assim.
+   *
+   * O NAVEGADOR RELATA A PINÇA COMO RODA COM `ctrlKey`. Não é gambiarra: é como
+   * o Safari e o Chrome entregam o gesto de dois dedos no macOS, e é o único
+   * jeito de recebê-lo.
+   *
+   * A PINÇA APROXIMA NO PONTEIRO, e não no centro. É o princípio do Muse que o
+   * Erik mandou — "você nunca perde a orientação": aproximar pelo meio da tela
+   * joga para longe o que a pessoa estava olhando, e ela tem de procurar de
+   * novo. Ancorado no cursor, o ponto sob o dedo fica parado e o resto cresce em
+   * volta dele.
+   *
+   * A conta é essa: o ponto do PLANO que está sob o cursor tem de continuar sob
+   * o cursor depois da escala. */
+  const rodar = (e) => {
+    e.preventDefault();
+    const caixa = e.currentTarget.getBoundingClientRect();
+    const px = e.clientX - caixa.left;
+    const py = e.clientY - caixa.top;
+
+    setCamera((c) => {
+      if (!e.ctrlKey) {
+        /* Dois dedos: anda. O sinal é invertido porque rolar para baixo leva a
+         * vista para baixo, e a vista é a câmera ao contrário. */
+        return { ...c, x: c.x - e.deltaX, y: c.y - e.deltaY };
+      }
+      /* O PASSO SERVE AOS DOIS APARELHOS, e o primeiro que escrevi não servia
+       * a nenhum: `exp(-deltaY/120)` levou 100% a 200% num único evento.
+       *
+       * A pinça do trackpad manda MUITOS eventos com delta pequeno (1 a 10); a
+       * roda com `ctrl` manda um evento de 100 a 120. `0.999^deltaY` dá 0,5% no
+       * primeiro caso e 13% no segundo — suave onde o gesto é contínuo, e um
+       * degrau perceptível onde ele é discreto. */
+      const nova = Math.min(
+        ESCALA_MAX,
+        Math.max(ESCALA_MIN, c.escala * Math.pow(0.999, Math.max(-240, Math.min(240, e.deltaY)))),
+      );
+      if (nova === c.escala) return c;
+      /* Onde, no plano, está o ponto sob o cursor — antes de mudar a escala. */
+      const noPlanoX = (px - c.x) / c.escala;
+      const noPlanoY = (py - c.y) / c.escala;
+      return { x: px - noPlanoX * nova, y: py - noPlanoY * nova, escala: nova };
+    });
+  };
+
   return (
     /* `chao` E `com-cabecalho-solto`: no Canvas o chão pontilhado vai de borda a
        borda e o cabeçalho FLUTUA sobre ele. O `895:6938` põe as duas caixas dele
@@ -568,6 +619,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
         <div
           ref={mundo}
           className="canvas-mundo"
+          onWheel={rodar}
           /* O chão pontilhado anda com a câmera: as duas variáveis são lidas
              pelo `background-position` e pelo `background-size` em canvas.css. */
           style={{
