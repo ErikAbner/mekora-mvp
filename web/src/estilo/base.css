@@ -69,6 +69,55 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
+/* A CAIXA DO TEXTO ABRAÇA AS LETRAS, COMO NO FIGMA.
+ *
+ * ESTA É A CAUSA DE "ESTÁ TUDO GRANDE DEMAIS". No Figma o texto tem trim
+ * vertical: a caixa mede da altura de caixa-alta até a linha de base. No CSS a
+ * caixa de linha põe METADE DA ENTRELINHA SOBRANDO acima e abaixo das letras.
+ * Num corpo de 20 com entrelinha 30 são cerca de 7,8px de cada lado — em CADA
+ * bloco de texto.
+ *
+ * Eu li os espaçamentos do desenho e apliquei como margem. Cada um saiu 15,6px
+ * maior que o desenho, e isso soma descendo a tela: telas que cabiam numa altura
+ * passaram a pedir rolagem, e caixas que eram justas ficaram folgadas. O Erik
+ * viu como "popups grandes demais, fontes enormes, coisas que deviam caber numa
+ * tela só".
+ *
+ * Com `text-box` a caixa passa a medir o mesmo dos dois lados, e AÍ o número do
+ * Figma vale literalmente — sem eu calcular compensação nenhuma. A entrelinha
+ * não muda: o que some é só a sobra.
+ *
+ * ONDE NÃO ENTRA, e por quê:
+ *   `button`, `input`, `select`, `textarea` — o rótulo deles é centralizado
+ *   VERTICALMENTE dentro do controle, e a sobra é o que faz o centro cair no
+ *   lugar. Aparar ali sobe o texto dentro do botão.
+ *
+ * Navegador sem suporte ignora as duas linhas e volta ao comportamento de
+ * antes: fica folgado, e não quebrado.
+ *
+ * NÃO ESTÁ LIGADO AINDA, e a razão é o que ligar revelou.
+ *
+ * Ligado de uma vez, o título da Ajuda encostou no campo de busca abaixo dele.
+ * Medido: o `h1` de 48/56 tem `margin-block-end: 0`. O vão inteiro debaixo
+ * daquele título NUNCA FOI UMA DECISÃO — era a meia-entrelinha sobrando. Aparar
+ * tirou a sobra e tirou o vão junto, porque não havia vão nenhum embaixo.
+ *
+ * Isso é o mesmo defeito visto do outro lado: em muitos lugares eu não copiei o
+ * espaçamento do desenho, eu deixei a entrelinha fazer as vezes dele. Ligar o
+ * trim sozinho troca "folgado demais" por "colado", e nenhum dos dois é o
+ * desenho.
+ *
+ * Então ele entra JUNTO com cada tela refeita, quando o vão de cada bloco vira
+ * um número tirado do Figma. Ligar aqui, hoje:
+ *
+ *   :where(h1,h2,h3,h4,h5,h6,p,li,dt,dd,figcaption,legend,blockquote) {
+ *     text-box-trim: trim-both;
+ *     text-box-edge: cap alphabetic;
+ *   }
+ *
+ * Medido antes de desligar: Ajuda 3782 -> 3128px (654px, 17%), Atualizações
+ * 6250 -> 5547px (703px, 11%), Termos 2832 -> 2401px (431px, 15%). */
+
 html { -webkit-text-size-adjust: 100%; }
 
 body {
