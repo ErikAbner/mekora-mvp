@@ -28,9 +28,9 @@ D   backlog técnico             decide-se durante a implementação, por quem i
 |---|---:|
 | **A** — antes da arquitetura | 6 |
 | **B** — antes da feature afetada | 22 |
-| **C** — antes do lançamento | 6 |
+| **C** — antes do lançamento | 5 |
 | **D** — backlog técnico | 14 |
-| | **48** |
+| | **47** |
 
 *A contagem de C caiu para 12 em 03/09: `C9` e `C16` fecharam em 02/09, e `C1`, `C3`, `C4` e `C8`
 em 03/09 — as quatro últimas por leitura do código, não por decisão. A regra do
@@ -42,6 +42,21 @@ estavam, riscadas, porque outros documentos apontam para elas.*
 `A1` → `DEC-0031` · `A3` → `DEC-0032` · `A6` e `B19` → `DEC-0033`
 
 ### Saíram da fila em 2026-09-03 (noite)
+
+`C19` — o catálogo existe, em `/sistema`, e **só em desenvolvimento**. Ele mostra as tintas, a escala
+de corpos e cada componente com os estados dele lado a lado: os três tons de botão com e sem
+desligado, o campo com ajuda e com erro, a escolha de duas e de três opções, os vinte e dois ícones.
+
+A razão de não ser produto: uma tela que o Figma não tem seria escopo acrescentado por mim.
+
+**Ele usa os componentes de verdade, não cópias** — uma cópia envelhece, e o catálogo passaria a
+mostrar um botão que o produto já não tem, que é o defeito que ele existe para evitar.
+
+**E os dois guardas o corrigiram, um de cada vez.** O portão recusou os ícones rotulados pelo nome do
+arquivo (`preferencias`, sem acento — é assim que identificador interno vaza para a tela), e estava
+certo duas vezes, porque o nome do arquivo também não diz o que o desenho significa. O
+`scripts/botoes.mjs` recusou os botões do catálogo, que clicavam e não faziam nada: o gesto que um
+espécime tem de verdade é entregar a si mesmo, e clicar copia o JSX daquele estado.
 
 `C7` — 90 dias para os eventos de uso, aceito pelo Erik.
 
@@ -192,7 +207,7 @@ Podem ser decididas durante a construção. Não podem ficar sem resposta na V1.
 | **C16** | ~~O limiar de "talvez" em Conexões~~ — **fechada pelo desenho.** O nó `895:8545` não pede um corte binário: pede três faixas nomeadas, e três faixas só precisam estar em ordem. O corte de cada uma aparece na tela, com as palavras em comum ao lado | DEC-0024 |
 | **C17** | ~~Se o Mekora terá usuários fora do Brasil~~ — **decidido em 03/09: só Brasil na V1.** O produto é todo em português e a jurisdição é uma só; nada impede alguém de fora usar, e a política fala de LGPD e mais nada. Atender a Europa traria GDPR, que é trabalho de texto e de encarregado — quando houver público para isso | DEC-0031 |
 | **C18** | ~~Em que país ficam os servidores da VPS~~ — **decidido em 03/09: Brasil.** A Hostinger tem região aqui. Dado de brasileiro em servidor no Brasil é a resposta mais simples para a LGPD, e a leitura fica mais rápida para quem está aqui | DEC-0031 |
-| **C19** | **O catálogo de componentes.** O `DESIGN-SYSTEM.md` cobre fundamentos e composição; não existe catálogo com estados, variantes e anatomia. Sete componentes foram construídos até 31/08 — Botao, Campo, Escolha, Folha, Icone, Cabecalho, TrilhaConta — e nenhum tem página que mostre seus estados | DEC-0033 |
+| **C19** | ~~O catálogo de componentes~~ — **construído em 03/09**, na rota `/sistema`. Ele NÃO é tela do produto: a rota só é registrada quando `import.meta.env.DEV` é verdadeiro, e em produção o Rollup corta o ramo e o arquivo nem entra no pacote. A razão é de escopo — o Erik fixou que a V1 é o Figma inteiro, e uma tela que o Figma não tem seria escopo acrescentado por mim. É instrumento, como o `scripts/portao.js` | DEC-0033 |
 
 ### C9 · o que a medida a 390px encontrou
 

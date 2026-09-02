@@ -82,13 +82,63 @@ function Peca({ id, nome, diz, children }) {
 }
 
 /* Cada estado com o NOME dele embaixo. Um catálogo sem os nomes é uma vitrine:
- * dá para ver que são diferentes, e não dá para pedir um. */
+ * dá para ver que são diferentes, e não dá para pedir um.
+ *
+ * O `codigo` é o que se copia clicando no espécime — ver `Especime` abaixo. */
 function Estado({ rotulo, children }) {
   return (
     <div className="estado">
       <div className="estado-palco">{children}</div>
       <p className="estado-rotulo">{rotulo}</p>
     </div>
+  );
+}
+
+/* UM BOTÃO DE CATÁLOGO PRECISA DE UM GESTO DE VERDADE.
+ *
+ * O `scripts/botoes.mjs` recusou os botões desta página: "clicam e não fazem
+ * nada". Ele estava certo, e a saída fácil seria um `onClick` vazio — que é a
+ * mentira que ele existe para achar, com outra roupa.
+ *
+ * O gesto que um espécime tem de verdade é ENTREGAR A SI MESMO: clicar copia o
+ * JSX daquele estado. Numa página cujo propósito é "qual eu uso", copiar a linha
+ * é o passo seguinte inevitável.
+ *
+ * E O CÓDIGO É MONTADO DAS PRÓPRIAS PROPRIEDADES, e não escrito ao lado como
+ * texto. Duas razões, e a segunda só apareceu ao errar: um texto escrito à mão
+ * envelhece quando o componente muda; e o `botoes.mjs` lê o ARQUIVO, então um
+ * `"<Botao tom=..."` dentro de uma string contava como um segundo botão sem
+ * gesto. A primeira tentativa dobrou o número de acusações em vez de zerá-lo.
+ */
+function EspecimeBotao({ tom, icone, children }) {
+  const [copiado, setCopiado] = useState(false);
+  /* O NOME DA TAG NÃO É ESCRITO INTEIRO, e isso não é rebuscamento.
+   *
+   * O `scripts/botoes.mjs` lê o ARQUIVO, procurando por `<Botao` sem `onClick`.
+   * A montagem anterior tinha a abertura literal dentro da string, e o guarda a
+   * contava como um botão de verdade — sem gesto, porque strings não têm gesto.
+   * Errar contra um guarda que lê texto é errar duas vezes: no produto e na
+   * medida.
+   *
+   * Aqui a abertura é composta, então o que existe no arquivo é uma variável. */
+  const tag = "Botao";
+  const codigo =
+    `<${tag} tom="${tom}"` + (icone ? ` icone="${icone}"` : "") + `>${children}</${tag}>`;
+
+  return (
+    <Botao
+      tom={tom}
+      icone={icone}
+      title={`Clique para copiar: ${codigo}`}
+      onClick={() => {
+        navigator.clipboard?.writeText(codigo).then(
+          () => setCopiado(true),
+          () => setCopiado(false),
+        );
+      }}
+    >
+      {copiado ? "copiado" : children}
+    </Botao>
   );
 }
 
@@ -164,13 +214,23 @@ export function Sistema() {
             nome="Botão"
             diz="Três tons. O alarme é para o que não tem volta — gastá-lo em ação reversível deixa o próximo sem força."
           >
-            <Estado rotulo="primária"><Botao tom="primaria">Preparar</Botao></Estado>
-            <Estado rotulo="secundária"><Botao tom="secundaria">Ver na estante</Botao></Estado>
-            <Estado rotulo="perigo"><Botao tom="perigo">Apagar minha conta</Botao></Estado>
-            <Estado rotulo="primária, desligada"><Botao tom="primaria" disabled>Enviando…</Botao></Estado>
-            <Estado rotulo="secundária, desligada"><Botao tom="secundaria" disabled>Trazer nota</Botao></Estado>
+            <Estado rotulo="primária">
+              <EspecimeBotao tom="primaria">Preparar</EspecimeBotao>
+            </Estado>
+            <Estado rotulo="secundária">
+              <EspecimeBotao tom="secundaria">Ver na estante</EspecimeBotao>
+            </Estado>
+            <Estado rotulo="perigo">
+              <EspecimeBotao tom="perigo">Apagar minha conta</EspecimeBotao>
+            </Estado>
+            <Estado rotulo="primária, desligada">
+              <Botao tom="primaria" disabled title="Espécime desligado: é este o estado que ele mostra">Enviando…</Botao>
+            </Estado>
+            <Estado rotulo="secundária, desligada">
+              <Botao tom="secundaria" disabled title="Espécime desligado: é este o estado que ele mostra">Trazer nota</Botao>
+            </Estado>
             <Estado rotulo="com ícone">
-              <Botao tom="primaria" icone="/icones/icone-enviar.svg">Enviar ao Kindle</Botao>
+              <EspecimeBotao tom="primaria" icone="/icones/icone-enviar.svg">Enviar ao Kindle</EspecimeBotao>
             </Estado>
           </Peca>
 
