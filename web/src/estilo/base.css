@@ -155,8 +155,28 @@ html { -webkit-text-size-adjust: 100%; }
  * 24px de passo e um ponto de 1px, os mesmos do Canvas. Lá eles andam com a
  * câmera; aqui ficam parados, porque não há câmera para seguir. */
 .chao {
+  /* O CHÃO PRECISA COBRIR A TELA, e não a altura do que sobrou.
+   *
+   * A gaveta é `position: fixed` e sai do fluxo, então a `.mesa` que a contém
+   * colapsava para a altura do CABEÇALHO — 118px. Os pontos existiam só naquela
+   * faixa, atrás das duas caixas opacas, e todo o resto era o fundo do `html`.
+   *
+   * O Erik viu como "na div onde tem o vaul, o bg é branco e não pontilhado como
+   * deveria". Medido antes do conserto: `elementFromPoint` na faixa entre o
+   * cabeçalho e o bloco devolvia `HTML`, com fundo transparente e sem imagem. */
+  min-block-size: 100dvh;
   background-color: var(--background);
-  background-image: radial-gradient(var(--border) 1px, transparent 1px);
+  /* O PONTO É FRACO, e o `--border` era forte demais.
+   *
+   * O Erik: "a cor dos pontos do bg está muito forte, não condiz com o Figma".
+   * `--border` é a tinta de MOLDURA — ela existe para separar duas superfícies e
+   * tem peso para isso. O ponto não separa nada: ele diz que existe um plano
+   * embaixo, e some assim que há qualquer coisa em cima.
+   *
+   * `surface/deep` é o degrau mais escuro entre as superfícies claras, e sobre
+   * `surface/base` dá uma marca que se percebe e não se lê. Continua sendo valor
+   * do sistema — nenhum cinza inventado para o caso. */
+  background-image: radial-gradient(var(--muted) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 

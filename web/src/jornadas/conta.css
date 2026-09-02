@@ -1,7 +1,29 @@
+/* O BLOCO — `895:10650`. É ele que se distingue do chão, e não a região inteira.
+ *
+ * A ordem que o Erik deu, e que é a ordem certa: cor primeiro; sombra se a cor
+ * não bastar; filete só se os dois falharem.
+ *
+ * COR: `surface/base` sobre o chão pontilhado. O bloco é liso onde o chão tem
+ * pontos, e essa é a primeira diferença — ela não depende de tom nenhum.
+ *
+ * SOMBRA: os cinco degraus do desenho, mais um fio de 1px para cima. Os cinco
+ * têm deslocamento Y positivo e desenham só a aresta de baixo; sem o fio, a de
+ * cima ficava sem nada.
+ *
+ * FILETE: não entrou. Cor e sombra dão conta, e um traço aqui competiria com as
+ * molduras das seções que vivem dentro do bloco. */
 .conta {
   display: flex; gap: 56px; align-items: flex-start; justify-content: center;
   padding: 128px 32px;
   inline-size: 100%;
+  background: var(--background);
+  box-shadow:
+    0 -1px 0 rgb(0 0 0 / 0.08),
+    0 242px 34px rgb(0 0 0 / 0),
+    0 155px 31px rgb(0 0 0 / 0.01),
+    0 87px 26px rgb(0 0 0 / 0.03),
+    0 39px 19.5px rgb(0 0 0 / 0.05),
+    0 10px 10.5px rgb(0 0 0 / 0.06);
 }
 
 .conta-painel {

@@ -17,33 +17,20 @@
   flex-direction: column;
   border-radius: 0;
 
-  /* A MESMA COR DO CHÃO, e quem separa é a sombra.
+  /* A GAVETA NÃO TEM FUNDO. Ela é a região que rola e que se arrasta, e o que
+   * aparece dentro dela é o CHÃO — pontilhado, como em qualquer outro lugar do
+   * produto.
    *
-   * Eu tinha descido a folha um degrau (`surface/sunken`) para a aresta de cima
-   * aparecer, e o Erik viu o resultado: "ficou mais estranho, só a cor mais
-   * escura que o bg". Ele está certo — a mancha escura chama atenção para a
-   * superfície em vez de para o conteúdo, e o desenho não pede isso.
+   * Eu tinha pintado a região inteira de `surface/base`, e o efeito foi o que o
+   * Erik descreveu: "na div onde tem o vaul, o bg é branco e não pontilhado como
+   * deveria". A folha comia o chão.
    *
-   * A sombra resolve, e a de antes não resolvia por um motivo geométrico: os
-   * cinco degraus do `895:10650` têm deslocamento Y POSITIVO, então caem todos
-   * ABAIXO da folha e a aresta de cima ficava sem nada.
-   *
-   * Falta um fio para cima, e é só isso: 1px de preto a 8%, sem borrão. Ele
-   * desenha a aresta e some no resto. Não é borda — borda seria um traço do
-   * sistema, com peso próprio; isto é a mesma sombra, terminando onde a folha
-   * começa. */
-  background: var(--background);
-
-  /* A SOMBRA É O QUE FAZ A GAVETA. Sem ela a folha e o chão viram a mesma coisa.
-   * Os cinco degraus são do `895:10650`, e o primeiro tem alfa zero porque é
-   * assim que o Figma escreve o começo da rampa. */
-  box-shadow:
-    0 -1px 0 rgb(0 0 0 / 0.08),
-    0 242px 34px rgb(0 0 0 / 0),
-    0 155px 31px rgb(0 0 0 / 0.01),
-    0 87px 26px rgb(0 0 0 / 0.03),
-    0 39px 19.5px rgb(0 0 0 / 0.05),
-    0 10px 10.5px rgb(0 0 0 / 0.06);
+   * Quem se distingue é o BLOCO de conteúdo lá dentro — `.conta`, no
+   * `jornadas/conta.css` —, e é ele que leva a cor, a sombra e, se precisar, o
+   * filete. Ordem dada pelo Erik, e é a ordem certa: cor primeiro, sombra se a
+   * cor não bastar, traço só se os dois falharem. */
+  background: transparent;
+  box-shadow: none;
 
   outline: none;
 }
