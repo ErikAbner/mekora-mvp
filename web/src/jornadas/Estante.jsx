@@ -251,35 +251,6 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnvia
               que ele não tem é a regra; apagar uma feature que funciona não é.
               Ver a Folha no fim deste arquivo — ela agora vive na tela de
               Notas. */}
-          {/* O FUNIL DO TELEFONE — nó 964:24606, ao lado do alternador de vista.
-           *
-           * Ele existia no desenho e não tinha painel desenhado em lugar nenhum
-           * do arquivo. A decisão foi tomada em 02/09, e ela não inventa nada: o
-           * que o funil abre são OS MESMOS RECORTES que o computador mostra em
-           * linha. Num telefone de 390 os cinco recortes ou quebram em duas
-           * fileiras — comendo um terço da tela antes do primeiro livro — ou
-           * rolam para o lado, e recorte que rola para o lado é recorte que
-           * ninguém vê.
-           *
-           * O botão diz QUAL recorte está valendo quando não é "tudo": um funil
-           * mudo esconde que a estante está filtrada, e aí a pessoa procura um
-           * livro que está ali. */}
-          <button
-            type="button"
-            className="estante-funil"
-            aria-expanded={filtrando ? "true" : "false"}
-            onClick={() => setFiltrando(true)}
-          >
-            {/* SEM ÍCONE, e isso é escolha. Não existe funil no conjunto de
-                ícones do produto, e o mais parecido é a LUPA — que quer dizer
-                busca, e a busca de verdade está a dois centímetros dali, no
-                cabeçalho. Dois significados no mesmo símbolo na mesma tela é
-                pior que um botão só com texto.
-                
-                Quando o funil for exportado do Figma, ele entra aqui. */}
-            <span>{recorte === "tudo" ? "Filtrar" : RECORTES.find((r) => r.id === recorte)?.rotulo}</span>
-          </button>
-
           <nav className="recortes" aria-label="Recortes da estante">
             {RECORTES.map((r) => {
               const quantos = livros.filter(r.cabe).length;
@@ -340,18 +311,53 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnvia
           {/* O ALTERNADOR EXISTIA E NÃO FAZIA NADA: dois botões com
               `aria-pressed` cravado e sem `onClick`. A vista 3D era o desenho
               prometendo o que o produto não tinha. */}
-          <nav className="recortes vista" aria-label="Modo de vista">
-            {["capas", "3d"].map((v) => (
-              <button
-                key={v}
-                type="button"
-                aria-pressed={vista === v ? "true" : "false"}
-                onClick={() => setVista(v)}
-              >
-                {v === "capas" ? "Capas" : "Estante em 3D"}
-              </button>
-            ))}
-          </nav>
+          {/* O ALTERNADOR E O FUNIL SÃO IRMÃOS, e no telefone a caixa deles vira
+              uma fileira — que é onde o nó 964:24606 os põe. No computador ela
+              dissolve (`display: contents`) e o alternador continua sendo filho
+              direto da ficha, como sempre foi. */}
+          <div className="estante-vista">
+            <nav className="recortes vista" aria-label="Modo de vista">
+              {["capas", "3d"].map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  aria-pressed={vista === v ? "true" : "false"}
+                  onClick={() => setVista(v)}
+                >
+                  {v === "capas" ? "Capas" : "Estante em 3D"}
+                </button>
+              ))}
+            </nav>
+
+          {/* O FUNIL DO TELEFONE — nó 964:24606, ao lado do alternador de vista.
+           *
+           * Ele existia no desenho e não tinha painel desenhado em lugar nenhum
+           * do arquivo. A decisão foi tomada em 02/09, e ela não inventa nada: o
+           * que o funil abre são OS MESMOS RECORTES que o computador mostra em
+           * linha. Num telefone de 390 os cinco recortes ou quebram em duas
+           * fileiras — comendo um terço da tela antes do primeiro livro — ou
+           * rolam para o lado, e recorte que rola para o lado é recorte que
+           * ninguém vê.
+           *
+           * O botão diz QUAL recorte está valendo quando não é "tudo": um funil
+           * mudo esconde que a estante está filtrada, e aí a pessoa procura um
+           * livro que está ali. */}
+          <button
+            type="button"
+            className="estante-funil"
+            aria-expanded={filtrando ? "true" : "false"}
+            onClick={() => setFiltrando(true)}
+          >
+            {/* SEM ÍCONE, e isso é escolha. Não existe funil no conjunto de
+                ícones do produto, e o mais parecido é a LUPA — que quer dizer
+                busca, e a busca de verdade está a dois centímetros dali, no
+                cabeçalho. Dois significados no mesmo símbolo na mesma tela é
+                pior que um botão só com texto.
+                
+                Quando o funil for exportado do Figma, ele entra aqui. */}
+            <span>{recorte === "tudo" ? "Filtrar" : RECORTES.find((r) => r.id === recorte)?.rotulo}</span>
+          </button>
+          </div>
 
           {selecionado && (
             <article className="ficha-caixa">

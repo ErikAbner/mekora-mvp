@@ -25,6 +25,9 @@
   color: var(--primary-foreground);
 }
 .recortes button:not([aria-pressed="true"]):hover { background: var(--muted); }
+/* No computador a caixa da vista nao existe como caixa: ela dissolve e o
+ * alternador continua sendo filho direto da ficha, como sempre foi. */
+.estante-vista { display: contents; }
 .recortes.vista { align-self: stretch; }
 .recortes.vista button { flex: 1 0 0; }
 
@@ -39,6 +42,8 @@
 
 /* `align-items: flex-end` alinha o marcador a direita, como o `items-end` do
  * no 895:7385. */
+/* A CAIXA DA CAPA MEDE A CAPA, e mais nada. O marcador e absoluto dentro dela —
+ * ver a razao na regra dele. */
 .capa-caixa { position: relative; display: flex; flex-direction: column; align-items: flex-end; }
 
 /* A CAPA NAO TEM BORDA EM REPOUSO.
@@ -73,11 +78,21 @@
  * mascara no proprio elemento, o fundo do numero E o balao — na tela e na
  * arvore. */
 .marcador {
-  /* No fluxo e com recuo negativo: a capa, que vem depois, e pintada por cima
-   * dos 13px de baixo. Do marcador sobra a ponta saindo do livro. */
-  position: relative; z-index: 0;
-  /* Encostado na borda direita da capa, como o `items-end` do 895:7385. */
-  margin-block-end: -13px;
+  /* FORA DO FLUXO, e nao no fluxo com recuo negativo.
+   *
+   * Ele estava no fluxo com `margin-block-end: -13px`, e a conta nao fechava: o
+   * recuo tirava 13 dos 50 de altura, entao a caixa da capa ficava 37px mais
+   * alta nos livros COM marcador. Medido: 214 de altura sem marcador, 251 com —
+   * e os titulos da mesma fileira saiam desalinhados em 37px, um erro que so
+   * aparece quando um livro tem nota e o do lado nao.
+   *
+   * Absoluto, ele nao mede nada: a caixa e a capa, e o marcador aparece por
+   * tras dela, saindo por cima. E o que o Erik descreveu — "o item que conta
+   * quantas notas tem na parte de tras com z-index menor, livro na frente". */
+  position: absolute;
+  inset-block-start: -37px;
+  inset-inline-end: 0;
+  z-index: 0;
   inline-size: 36px; block-size: 50px;
   display: flex; justify-content: center; padding-block-start: 12px;
   background: var(--foreground);
@@ -202,9 +217,22 @@
    * duas juntas. A `.ficha` perde a caixa e os filhos viram itens da grade da
    * `.estante` — que é onde a ordem é decidida. */
   .ficha { display: contents; }
-  .ficha > .recortes.vista { order: 1; }
+  .ficha > .estante-vista { order: 1; }
   .estante-grade { order: 2; }
   .ficha > .ficha-caixa { order: 3; }
+
+  /* O FUNIL DIVIDE A FILEIRA COM O ALTERNADOR — no 964:24606, onde ele esta a
+   * direita de "Capas | Estante em 3D". Sozinho numa linha ele gastava 76px de
+   * altura para um botao, numa tela onde a primeira capa ja comeca longe.
+   *
+   * Quem resolve isso e a ESTRUTURA, e nao posicao absoluta com deslocamento
+   * medido: os dois sao irmaos dentro de `.estante-vista`, e no telefone essa
+   * caixa vira uma fileira. Deslocamento medido a mao erra na primeira largura
+   * em que ninguem mediu — foi o defeito do `calc(100vh - 88px)` do Canvas, hoje
+   * de manha. */
+  .estante-vista { display: flex; align-items: stretch; gap: 12px; order: 1; }
+  .estante-vista > .recortes.vista { flex: 1 1 auto; }
+  .estante-funil { display: flex; flex: 0 0 auto; }
 }
 
 /* Capa ausente: a caixa fica e mostra o titulo. Grade com lacuna parece
@@ -290,7 +318,19 @@
   border-color: var(--foreground);
   box-shadow: 0 16px 16px rgb(0 0 0 / 0.03), 0 4px 9px rgb(0 0 0 / 0.04);
 }
-.livro.escolhido .livro-texto { background: color-mix(in srgb, var(--foreground) 6%, transparent); }
+/* A ESCOLHA SE MARCA NA CAPA, e nao com uma placa cinza atras do titulo.
+ *
+ * O degrau de superficie no texto foi escrito para "nao deixar titulo e autor de
+ * fora da mesma selecao" — e no telefone ele vira uma placa cinza de 152x90
+ * embaixo da capa, que le como caixa de erro. O desenho marca a escolha com
+ * borda e sombra na capa, e a ficha que abre embaixo ja diz qual livro e.
+ *
+ * Fica o filete a esquerda: ele acompanha o texto sem virar bloco. */
+.livro.escolhido .livro-texto {
+  border-inline-start: 2px solid var(--foreground);
+  padding-inline-start: 12px;
+  margin-inline-start: -14px;
+}
 .livro-alvo:hover { background: color-mix(in srgb, var(--foreground) 4%, transparent); }
 .livro-alvo:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
 
