@@ -493,3 +493,86 @@ esconde que a estante está filtrada, e aí a pessoa procura um livro que está 
 
 Medido a 390: um ícone ao lado da busca, quinze lugares no menu, os recortes em
 linha escondidos, o funil visível, e nenhuma rolagem lateral.
+
+---
+
+# O que o Erik achou percorrendo o produto — 03/09/2026
+
+Ele abriu o produto pela primeira vez de ponta a ponta e escreveu uma lista. A
+auditoria estava em 60/60 no mesmo momento, e é isso que precisa ser dito
+primeiro: **o portão mede cor, contraste e escala tipográfica. Ele nunca mediu se
+a tela é a do desenho.** Verde por omissão outra vez, e o mais caro até aqui —
+porque o escopo do V1 é o Figma completo, e o instrumento não olhava justamente
+para isso.
+
+A lista abaixo é dele, item por item, com o nó do Figma ao lado quando eu já
+conferi. Nada aqui é interpretação minha do que ele quis dizer: onde eu não
+tinha certeza, está escrito que não tenho.
+
+## Cabeçalho — vale para TODAS as telas
+
+| | o que está errado | conferido |
+|---|---|---|
+| C1 | ~~O ícone ao lado da busca é de DÚVIDAS ("?"), não de notas~~ | `941:23107` · **feito** |
+| C2 | ~~O ícone da Estante estava trocado com ele~~ | **feito** — os arquivos estavam trocados |
+| C3 | A busca é MENOR e se expande quando a pessoa digita, com resultados embaixo (capa, título, autor · formato). Eu ignorei o componente e fiz outro | `941:23107` |
+| C4 | Conta abre um DROPDOWN com as telas de configuração; hoje ela navega direto | a conferir |
+| C5 | Espaçamento entre a busca, as dúvidas e a conta não é o do desenho | `895:7315` |
+| C6 | Espaçamento entre itens errado em geral | a conferir |
+
+## Estante — `895:7315`
+
+| | o que está errado |
+|---|---|
+| E1 | O *hover* nos livros é feio e não destaca — passa despercebido |
+| E2 | O clique só funciona na faixa abaixo da capa. A pessoa clica NA CAPA |
+| E3 | O marcador de notas quebra a grade: sai da capa e invade o filtro de cima. No desenho ele fica DENTRO do canto da capa |
+| E4 | O painel de detalhes à direita está gigante |
+| E5 | A cor no destaque/nota não funciona: pesa e puxa toda a atenção. No desenho a citação é um bloco discreto com filete à esquerda, sem fundo colorido |
+| E6 | "Enviar ao Kindle" não existe ali. Isso é da tela do livro |
+| E7 | "Ver detalhes do arquivo" — eu inventei; não está no desenho |
+
+## Canvas — `895:6938`
+
+O mais errado de todos. O desenho tem:
+
+| | o que está errado |
+|---|---|
+| K1 | **O cabeçalho continua lá.** Eu tirei e pus uma barra flutuante no lugar |
+| K2 | O fundo pontilhado vai por baixo do cabeçalho. No meu, o topo é branco |
+| K3 | A barra de ferramentas é um cartão pequeno e flutuante com TRÊS ícones, no meio da lateral esquerda |
+| K4 | As funções estão erradas, e os itens dentro delas também |
+| K5 | Não dá para mover os post-its |
+| K6 | Os grupos se sobrepõem. No desenho o grupo é um retângulo tracejado com o nome ACIMA dele |
+| K7 | O canvas é travado; animação ruim; interação confusa; ícones errados |
+
+## Estudos — `895:8849`
+
+| | o que está errado |
+|---|---|
+| S1 | A trilha lateral (`Início / Pela metade / …`) no desenho aparece **só na parte de baixo**, ao lado de "Você ligou". Eu pus no topo, para a página inteira |
+| S2 | Kanban não funciona: não arrasta, parece enfeite |
+| S3 | A coluna central tem duas larguras sem necessidade |
+| S4 | Os recortes do desenho são "Abertos / Todas as notas / Em pesquisa"; os meus são "Abertos / Respondidos / Tudo" — **este é um desvio que eu registrei de propósito** porque "Em pesquisa" não tem definição no modelo. Fica para o Erik decidir |
+
+## Detalhes do arquivo
+
+| | o que está errado |
+|---|---|
+| D1 | Navegação onde não devia haver, e errada |
+| D2 | Não segue o desenho; tem coisa que não devia existir |
+
+## Leitura — `895:10472`
+
+| | o que está errado |
+|---|---|
+| L1 | A ideia está certa; o **grid** fugiu muito |
+| L2 | A epígrafe ("Ao verme que primeiro roeu…") pede enquadramento melhor, ainda mais tendo sido feita como texto |
+
+## O que muda no instrumento
+
+Consertar as telas sem consertar isto deixa a mesma armadilha armada. O portão
+precisa de uma pergunta que ele não faz: **esta tela bate com o nó do Figma?**
+Não dá para automatizar "bate" por inteiro, e dá para automatizar o que mais doeu
+aqui — asset usado pelo nome sem ninguém olhar o desenho, e componente
+reimplementado quando já existia um.
