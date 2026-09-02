@@ -57,8 +57,16 @@ function Previa({ link, previa }) {
       href={link}
       target="_blank"
       rel="noreferrer noopener"
-      onPointerDown={(e) => e.stopPropagation()}
-      onClick={(e) => e.stopPropagation()}
+      /* NEM `pointerdown` NEM `click` PARAM AQUI.
+       *
+       * Os dois paravam, e o `pointerdown` era o defeito que o Erik descreveu
+       * como "eu não consigo mover os post-it": uma nota que virou prévia de
+       * link não arrastava, porque o `<a>` engolia o começo do gesto — e a
+       * prévia é a maior parte do cartão.
+       *
+       * Quem cancela o clique depois de um arrasto é a NOTA, no
+       * `onClickCapture` dela: ela sabe se o dedo andou, e a captura chega
+       * antes de o link agir. */
     >
       {previa?.imagem && <img src={previa.imagem} alt="" loading="lazy" />}
       <span className="nota-previa-texto">
@@ -104,6 +112,8 @@ function Nota({ no, aoMover, aoTirar, aoLigar, ligando, escolhida, escala = 1 })
    * o `transform`, que não mexe na árvore.
    *
    * A posição só vai para o servidor ao SOLTAR. */
+  const moveu = useRef(false);
+
   const comecar = (e) => {
     if (e.button !== 0 || ligando) return;
     caixa.current?.setPointerCapture(e.pointerId);
@@ -126,6 +136,11 @@ function Nota({ no, aoMover, aoTirar, aoLigar, ligando, escolhida, escala = 1 })
 
   const soltar = (e) => {
     const a = arrasto.current;
+    /* `moveu` sobrevive ao fim do arrasto por um instante: o `click` chega
+     * DEPOIS do `pointerup`, e sem esta marca ele não teria como saber que
+     * acabou de haver um gesto. */
+    moveu.current = Boolean(a?.mexeu);
+    if (moveu.current) setTimeout(() => { moveu.current = false; }, 0);
     arrasto.current = null;
     caixa.current?.releasePointerCapture?.(e.pointerId);
     if (!a) return;
@@ -133,6 +148,15 @@ function Nota({ no, aoMover, aoTirar, aoLigar, ligando, escolhida, escala = 1 })
       aoMover(no.id, no.x + (e.clientX - a.x0) / escala, no.y + (e.clientY - a.y0) / escala);
     }
     setPosicao(null);
+  };
+
+  /* O CLIQUE MORRE SE HOUVE ARRASTO, e a nota é quem sabe disso.
+   *
+   * Sem isto, terminar um arrasto em cima da prévia abriria a página no instante
+   * em que a pessoa só queria soltar a nota. `onClickCapture` porque ele precisa
+   * chegar ANTES do `<a>` — na fase de descida, e não na de subida. */
+  const talvezCancelarClique = (e) => {
+    if (moveu.current) { e.preventDefault(); e.stopPropagation(); }
   };
 
   const estilo = {
@@ -149,6 +173,7 @@ function Nota({ no, aoMover, aoTirar, aoLigar, ligando, escolhida, escala = 1 })
       ref={caixa}
       className={`nota-canvas${posicao ? " movendo" : ""}${escolhida ? " escolhida" : ""}`}
       style={estilo}
+      onClickCapture={talvezCancelarClique}
       onPointerDown={comecar}
       onPointerMove={andar}
       onPointerUp={soltar}
