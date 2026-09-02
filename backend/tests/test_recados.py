@@ -154,3 +154,40 @@ def correio_recado(monkeypatch):
 def _entrar(client, caixa, email):
     assert client.post("/entrar/pedir", json={"email": email}).status_code == 204
     assert client.get(f"/entrar/{caixa[-1]}", follow_redirects=False).status_code == 303
+
+
+# ── a configuração da instalação não aceita valor de qualquer formato ────────
+#
+# Aqui e não num arquivo próprio: é a mesma porta de dono, e o `client` já é
+# nomeado dono no conftest.
+
+def test_ocr_languages_como_texto_e_recusado(client):
+    """`"por"` em vez de `["por"]` grava um texto, e o ocrmypdf itera os
+    caracteres: todo OCR do servidor passa a morrer com "does not have language
+    data for: o / r / p" — que não diz nada sobre configuração."""
+    r = client.patch("/app-config", json={"ocr_languages": "por"})
+    assert r.status_code == 422
+    assert "ocr_languages" in r.json()["detail"]
+
+
+def test_retencao_zero_e_recusada(client):
+    """Ela decide quando o arquivo de alguém é apagado."""
+    assert client.patch("/app-config", json={"retention_days": 0}).status_code == 422
+    assert client.patch("/app-config", json={"retention_days": -5}).status_code == 422
+    assert client.patch("/app-config", json={"retention_days": True}).status_code == 422
+
+
+def test_um_campo_ruim_nao_deixa_o_bom_passar(client):
+    """Gravar metade de um pedido deixa a instalação num estado que ninguém
+    pediu, e quem mandou não fica sabendo qual metade valeu."""
+    antes = client.get("/app-config").json()["polling_interval_ms"]
+    r = client.patch("/app-config", json={"polling_interval_ms": 5000, "retention_days": 0})
+    assert r.status_code == 422
+    assert client.get("/app-config").json()["polling_interval_ms"] == antes
+
+
+def test_o_que_esta_no_formato_passa(client):
+    r = client.patch("/app-config", json={"ocr_languages": ["por", "eng"], "retention_days": 120})
+    assert r.status_code == 200
+    assert r.json()["ocr_languages"] == ["por", "eng"]
+    assert r.json()["retention_days"] == 120
