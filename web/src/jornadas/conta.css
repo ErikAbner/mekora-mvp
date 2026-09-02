@@ -27,7 +27,9 @@
 }
 
 .conta-painel {
-  display: flex; flex-direction: column; gap: 40px;
+  /* O VÃO TEM NOME porque a ilustração precisa desfazê-lo. Ver `.conta-desenho`. */
+  --vao: 40px;
+  display: flex; flex-direction: column; gap: var(--vao);
   inline-size: 100%; max-inline-size: 863px;
 }
 
@@ -59,11 +61,24 @@
   align-self: flex-end;
   inline-size: 272px; max-inline-size: 60%;
   block-size: auto;
-  /* 26px, do `934:10740`. Ela ENCAVALA o painel de propósito: no desenho a
-   * ilustração está numa camada acima e desce sobre a borda de cima da folha.
-   * O Erik apontou que isso foi posicionado com cuidado e que eu tinha feito
-   * errado — eram 24. */
-  margin-block-end: -26px;
+  /* ELA ENCAVALA O CARD, e o `-26px` sozinho não fazia isso.
+   *
+   * O `934:10740` traz `mb-[-26px]`, e o contêiner dele no desenho — o
+   * `895:10682` — NÃO TEM VÃO. Aqui a ilustração é filha do `.conta-painel`, que
+   * tem `gap: 40px`, e o vão entra DEPOIS da margem: −26 + 40 = +14. Medido:
+   * a base da ilustração ficava 14px ACIMA do card, sem encostar.
+   *
+   * O Erik viu: "ele invade levemente o card onde estão os itens da conta".
+   * Desfazer o vão é parte da conta, e por isso ele tem nome — se alguém mudar
+   * `--vao`, isto acompanha. */
+  margin-block-end: calc(-26px - var(--vao));
+
+  /* 34px DA BORDA DA SEÇÃO, e não encostada nela.
+   *
+   * O `895:10682` alinha por `items-end`, o que dá zero — e era o que eu tinha.
+   * O Erik mediu no desenho: são 34. */
+  margin-inline-end: 34px;
+
   position: relative; z-index: 1;
 }
 /* No escuro ele clareia junto com as outras ilustracoes — a regra do base.css e
