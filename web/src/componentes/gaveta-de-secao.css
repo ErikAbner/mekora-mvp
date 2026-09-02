@@ -1,0 +1,69 @@
+/* A folha do `895:10650`, com o gesto da `vaul` por baixo.
+ *
+ * O visual da biblioteca é zerado — sem raio, sem sombra dela — e o que fica é o
+ * arrasto: fechar por VELOCIDADE e não só distância, atrito ao passar do limite,
+ * captura do ponteiro, e o toque adicional ignorado depois que o arrasto começou.
+ */
+.gaveta-secao {
+  position: fixed;
+  /* 32px do cabeçalho e dos lados, do `895:10649`. O cabeçalho tem 118px de
+   * altura — a medida do desenho, conferida. */
+  inset-block-start: 150px;
+  inset-inline: 32px;
+  inset-block-end: 0;
+  z-index: 30;
+
+  display: flex;
+  flex-direction: column;
+  border-radius: 0;
+  background: var(--background);
+
+  /* A SOMBRA É O QUE FAZ A GAVETA. Sem ela a folha e o chão viram a mesma coisa.
+   * Os cinco degraus são do `895:10650`, e o primeiro tem alfa zero porque é
+   * assim que o Figma escreve o começo da rampa. */
+  box-shadow:
+    0 242px 34px rgb(0 0 0 / 0),
+    0 155px 31px rgb(0 0 0 / 0.01),
+    0 87px 26px rgb(0 0 0 / 0.03),
+    0 39px 19.5px rgb(0 0 0 / 0.05),
+    0 10px 10.5px rgb(0 0 0 / 0.06);
+
+  outline: none;
+}
+
+/* A alça: um retângulo do sistema, sem raio, e alvo de toque de verdade em
+ * volta dela — 4px de traço não se pega com o dedo. */
+.gaveta-secao-alca {
+  flex: none;
+  inline-size: 48px;
+  block-size: 4px;
+  margin: 16px auto;
+  border-radius: 0;
+  background: var(--border);
+  cursor: grab;
+}
+.gaveta-secao-alca:active { cursor: grabbing; }
+
+.gaveta-secao-conteudo {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* A `vaul` anda por `transform`, e a curva dela é a do iOS para folha que sobe.
+ * O que se declara aqui é a DURAÇÃO: 500ms é o padrão dela e é longo para uma
+ * seção que a pessoa abre e fecha dezenas de vezes. */
+.gaveta-secao[data-vaul-drawer] {
+  transition-duration: 260ms;
+  transition-timing-function: var(--gaveta);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gaveta-secao[data-vaul-drawer] { transition-duration: 1ms; }
+}
+
+@media (max-width: 767px) {
+  /* No telefone o cabeçalho tem 76px, e a barra de baixo cobre a última linha —
+   * a folha para antes dela. */
+  .gaveta-secao { inset-block-start: 108px; inset-inline: 16px; }
+}

@@ -17,6 +17,7 @@ import { aplicarTema } from "../estado/tema.js";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Escolha } from "../componentes/Escolha.jsx";
 import { MenuDaConta } from "../componentes/MenuDaConta.jsx";
+import { GavetaDeSecao } from "../componentes/GavetaDeSecao.jsx";
 import { GRUPOS, PADROES } from "../preferencias.js";
 import "./conta.css";
 
@@ -75,7 +76,7 @@ export function Conta({ pessoa , aoSair }) {
        pontilhado, e é o que o `895:10599` mostra. */
     <div className="mesa chao">
       <Cabecalho />
-      <div className="conta-gaveta">
+      <GavetaDeSecao titulo="Preferências">
       <div className="conta">
         <MenuDaConta pessoa={pessoa} />
 
@@ -102,7 +103,7 @@ export function Conta({ pessoa , aoSair }) {
           ))}
         </main>
       </div>
-      </div>
+      </GavetaDeSecao>
     </div>
   );
 }

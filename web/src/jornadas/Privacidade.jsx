@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { MenuDaConta } from "../componentes/MenuDaConta.jsx";
+import { GavetaDeSecao } from "../componentes/GavetaDeSecao.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
 import { Folha } from "../componentes/Folha.jsx";
@@ -65,7 +66,7 @@ export function Privacidade({ pessoa, aoSair, aoApagarConta }) {
        pontilhado, e é o que o `895:10599` mostra. */
     <div className="mesa chao">
       <Cabecalho />
-      <div className="conta-gaveta">
+      <GavetaDeSecao titulo="Privacidade">
       <div className="conta">
         <MenuDaConta pessoa={pessoa} />
 
@@ -214,7 +215,7 @@ export function Privacidade({ pessoa, aoSair, aoApagarConta }) {
           autoComplete="off"
         />
       </Folha>
-      </div>
+      </GavetaDeSecao>
     </div>
   );
 }

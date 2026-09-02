@@ -31,6 +31,7 @@ import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { MenuDaConta } from "../componentes/MenuDaConta.jsx";
+import { GavetaDeSecao } from "../componentes/GavetaDeSecao.jsx";
 import "./conta-visao.css";
 
 /* O que vale mostrar em cima, e o rótulo de cada um. As chaves são as do
@@ -98,7 +99,7 @@ export function ContaVisao({ pessoa, aoSair, aoMudarPerfil }) {
        pontilhado, e é o que o `895:10599` mostra. */
     <div className="mesa chao">
       <Cabecalho />
-      <div className="conta-gaveta">
+      <GavetaDeSecao titulo="Sua conta">
       <div className="conta">
         <MenuDaConta pessoa={pessoa} />
 
@@ -260,7 +261,7 @@ export function ContaVisao({ pessoa, aoSair, aoMudarPerfil }) {
 
         </main>
       </div>
-      </div>
+      </GavetaDeSecao>
     </div>
   );
 }

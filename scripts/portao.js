@@ -144,7 +144,8 @@
 
   const corFora = [],
     contraste = [],
-    corpoFora = [];
+    corpoFora = [],
+    escondidoDeQuemOuve = [];
   let medidos = 0;
 
   for (const el of document.querySelectorAll('body *')) {
@@ -167,12 +168,31 @@
      * tela —, e nenhum instrumento que mede a página consegue distinguir os dois
      * casos. Quem escrever o atributo está afirmando que aquilo é ornamento.
      */
-    if (el.closest('[aria-hidden="true"]')) continue;
     const texto = Array.from(el.childNodes)
       .filter((n) => n.nodeType === 3 && n.textContent.trim())
       .map((n) => n.textContent.trim())
       .join(' ');
     if (!texto) continue;
+
+    /* TEXTO ESCONDIDO DE QUEM OUVE É CONTADO, e não só pulado.
+     *
+     * Pular era certo e era metade. Em 03/09 a gaveta de Conta entrou sobre a
+     * `vaul`, que usa o `Dialog` do Radix por baixo e NÃO repassa o
+     * `modal={false}`: o Radix marcou a página inteira com `aria-hidden`, o
+     * cabeçalho sumiu para leitor de tela, e o portão passou — medindo 14 nós
+     * numa tela que tinha 49.
+     *
+     * Ele não errou nenhuma regra. Ele mediu um terço da tela e disse que estava
+     * tudo bem, que é a forma mais cara de verde por omissão.
+     *
+     * Ornamento de verdade quase nunca tem TEXTO: ícone é máscara, ilustração é
+     * imagem, marca é SVG. Texto atrás de `aria-hidden` é conteúdo que
+     * desapareceu para quem ouve — ou uma biblioteca escondendo o que não
+     * devia. */
+    if (el.closest('[aria-hidden="true"]')) {
+      escondidoDeQuemOuve.push(texto.slice(0, 40));
+      continue;
+    }
 
     medidos++;
     const tinta = hex(cs.color),
@@ -412,8 +432,37 @@
      */
     tela_vazia: medidos < 5 ? { nos: medidos, nota: 'a tela não carregou' } : null,
 
+    /* PROPORÇÃO, E NÃO CONTAGEM — e o primeiro número que escrevi estava errado.
+     *
+     * Pus teto de três, medi, e as telas honestas deram cinco a oito: o "×" do
+     * botão de fechar que tem `aria-label`, os títulos desenhados DENTRO das
+     * capas, os números "1" e "2" ao lado de cabeçalhos de verdade. Texto atrás
+     * de `aria-hidden` é comum e é legítimo neste produto.
+     *
+     * O que NÃO é legítimo é a página inteira sumir. A separação entre os dois
+     * casos é gritante: com a `vaul` escondendo tudo deram 14 medidos para 35
+     * escondidos — 71%. A apresentação dá 8 escondidos para 141 medidos — 5%.
+     *
+     * Daí a regra: mais de um terço da tela escondida, e a partir de oito para
+     * não disparar em tela pequena onde três ornamentos já seriam um terço. */
+    texto_escondido_de_quem_ouve: (() => {
+      const escondidos = escondidoDeQuemOuve.length;
+      const total = medidos + escondidos;
+      const parte = total ? escondidos / total : 0;
+      if (escondidos < 8 || parte <= 0.35) return null;
+      return {
+        quantos: escondidos,
+        de: total,
+        porcento: Math.round(parte * 100),
+        amostra: unico(escondidoDeQuemOuve.slice(0, 6), (x) => x),
+        nota: 'a maior parte da tela está atrás de aria-hidden: some para leitor de tela, e o portão deixa de medi-la',
+      };
+    })(),
+
     passou:
       medidos >= 5 &&
+      (escondidoDeQuemOuve.length < 8 ||
+        escondidoDeQuemOuve.length / (medidos + escondidoDeQuemOuve.length) <= 0.35) &&
       fonteNaoDesceu === null &&
       linkSemTinta.length === 0 &&
       codigoNaTela.length === 0 &&

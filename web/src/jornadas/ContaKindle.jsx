@@ -13,6 +13,7 @@ import { useState } from "react";
 import { usarAparelhos } from "../estado/usarAparelhos.js";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { MenuDaConta } from "../componentes/MenuDaConta.jsx";
+import { GavetaDeSecao } from "../componentes/GavetaDeSecao.jsx";
 import { AssistenteKindle } from "./AssistenteKindle.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
@@ -102,7 +103,7 @@ export function ContaKindle({ pessoa, aoSair }) {
        pontilhado, e é o que o `895:10599` mostra. */
     <div className="mesa chao">
       <Cabecalho />
-      <div className="conta-gaveta">
+      <GavetaDeSecao titulo="Dispositivos Kindle">
       <div className="conta">
         <MenuDaConta pessoa={pessoa} />
 
@@ -308,7 +309,7 @@ export function ContaKindle({ pessoa, aoSair }) {
           aoEnviarTeste={async () => { /* o envio de teste entra quando o backend o tiver */ }}
         />
       )}
-      </div>
+      </GavetaDeSecao>
     </div>
   );
 }

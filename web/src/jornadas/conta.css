@@ -1,37 +1,3 @@
-/* A GAVETA: a folha que se abre POR CIMA do chão pontilhado.
- *
- * O `895:10649` põe 32px acima e 32 nos lados, e o `895:10650` é a folha:
- * `surface/base`, largura inteira do que sobra, e uma sombra grande e macia. É a
- * SOMBRA que faz ela parecer estar em cima — sem ela a folha e o chão viram a
- * mesma coisa, e foi assim que eu tinha construído: uma página, não uma seção
- * sobreposta.
- *
- * Os cinco degraus da sombra são os do desenho, e o primeiro tem alfa zero de
- * propósito — é como o Figma escreve o começo da rampa. */
-.conta-gaveta {
-  margin: 32px 32px 0;
-  background: var(--background);
-  box-shadow:
-    0 242px 34px rgb(0 0 0 / 0),
-    0 155px 31px rgb(0 0 0 / 0.01),
-    0 87px 26px rgb(0 0 0 / 0.03),
-    0 39px 19.5px rgb(0 0 0 / 0.05),
-    0 10px 10.5px rgb(0 0 0 / 0.06);
-  /* Ela ENTRA de baixo, uma vez, na curva do iOS para folha que sobe — a mesma
-   * da `vaul`. 24px e não a altura toda: a folha já está quase no lugar quando
-   * a pessoa olha, e um percurso longo aqui viraria espera. */
-  animation: gaveta-sobe 260ms var(--gaveta) both;
-}
-
-@keyframes gaveta-sobe {
-  from { opacity: 0; transform: translateY(24px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .conta-gaveta { animation: none; }
-}
-
 .conta {
   display: flex; gap: 56px; align-items: flex-start; justify-content: center;
   padding: 128px 32px;

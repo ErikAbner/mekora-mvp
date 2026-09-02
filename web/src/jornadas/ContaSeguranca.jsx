@@ -23,6 +23,7 @@ import {
 import { Botao } from "../componentes/Botao.jsx";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { MenuDaConta } from "../componentes/MenuDaConta.jsx";
+import { GavetaDeSecao } from "../componentes/GavetaDeSecao.jsx";
 import "./conta-seguranca.css";
 
 /* "há 3 dias" diz mais que uma data para julgar se uma sessão é sua: ninguém
@@ -108,7 +109,7 @@ export function ContaSeguranca({ pessoa, aoSair }) {
        pontilhado, e é o que o `895:10599` mostra. */
     <div className="mesa chao">
       <Cabecalho />
-      <div className="conta-gaveta">
+      <GavetaDeSecao titulo="Segurança">
       <div className="conta">
         <MenuDaConta pessoa={pessoa} />
 
@@ -181,7 +182,7 @@ export function ContaSeguranca({ pessoa, aoSair }) {
         </section>
         </main>
       </div>
-      </div>
+      </GavetaDeSecao>
     </div>
   );
 }
