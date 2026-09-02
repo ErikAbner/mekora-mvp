@@ -197,15 +197,25 @@
  * E SOME UM PROBLEMA DE CONTRASTE INTEIRO: as tres regras abaixo existiam para
  * fazer a tinta funcionar sobre quatro fundos diferentes em dois temas. Com um
  * fundo so, `--foreground` sobre `--background` e o par do sistema. */
+/* A NOTA — `895:7033` e `895:7044`, e as medidas sao de la.
+ *
+ * 375 de largura e 40 de recheio, contra os 220 e os 12/14/20 que eu tinha: o
+ * cartao do desenho e quase o dobro, e o texto dentro dele respira. Um cartao de
+ * 220 numa superficie infinita parece uma etiqueta; o de 375 parece um pedaco de
+ * papel, que e o que ele e.
+ *
+ * NAO TEM MOLDURA. O desenho separa a nota do chao pela SOMBRA — dois degraus,
+ * um curto e um longo —, e nao por um filete. Sobre o pontilhado, moldura em
+ * volta de cada nota vira uma grade de retangulos. */
 .nota-canvas {
   position: absolute;
-  inline-size: 220px;
-  padding: 12px 14px 12px 20px;
-  border: 1px solid var(--border);
-  background: var(--background);
-  /* A sombra do desenho e quase nada: ela diz "isto flutua sobre o chao", e nao
-   * "isto e um cartao de dashboard". */
-  box-shadow: 0 1px 2px rgb(0 0 0 / 4%), 0 4px 12px rgb(0 0 0 / 4%);
+  inline-size: 375px;
+  padding: 40px;
+  border: 0;
+  background: var(--piso);
+  box-shadow:
+    0 2px 2.5px rgb(0 0 0 / 0.13),
+    0 9px 7.55px rgb(0 0 0 / 0.07);
   color: var(--foreground);
   cursor: grab;
   touch-action: none;
@@ -220,15 +230,26 @@
   inline-size: 3px;
 }
 
-.nota-canvas.movendo { cursor: grabbing; box-shadow: 0 6px 20px rgb(0 0 0 / 18%); }
+/* Ao mover, a sombra cresce: e a unica pista de que a nota saiu do plano e esta
+ * na mao. Os mesmos dois degraus, mais longos. */
+.nota-canvas.movendo {
+  cursor: grabbing;
+  box-shadow:
+    0 4px 5px rgb(0 0 0 / 0.13),
+    0 18px 15px rgb(0 0 0 / 0.10);
+}
 /* A escolhida para ligar ganha ESPESSURA e tinta cheia. */
 .nota-canvas.escolhida { border-width: 2px; border-color: var(--foreground); }
 .nota-canvas:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
 
+/* Body/Medium, do `895:7035`. Estava em Label/Small — o que a pessoa escreveu
+ * tinha o corpo de uma legenda, no cartao em que ele e a unica coisa que
+ * importa. */
 .nota-texto {
   margin: 0;
-  font-size: 14px;
-  line-height: 20px;
+  color: var(--muted-foreground);
+  font-size: 20px;
+  line-height: 30px;
   text-wrap: pretty;
 }
 
@@ -371,30 +392,47 @@
  * nota não fica presa dentro dela, e uma linha cheia prometeria um recipiente
  * que o grupo não é. Quem está dentro é quem está por cima.
  */
+/* O GRUPO SÃO DUAS COISAS EMPILHADAS: o nome, e a área tracejada embaixo dele.
+ *
+ * O `895:7024` põe o nome como parágrafo SOBRE a caixa, com 24px entre os dois.
+ * Eu tinha uma barra de título DENTRO do retângulo, e a diferença não é
+ * cosmética: dentro, o nome disputa espaço com as notas e cobre a de cima. */
 .canvas-grupo {
   position: absolute;
   z-index: 0;
-  border: 1px dashed var(--borda-controle, var(--border));
-  background: color-mix(in srgb, var(--foreground) 3%, transparent);
+  display: flex; flex-direction: column; gap: 24px;
   /* O MEIO NÃO PEGA O PONTEIRO. Arrastar dentro da área move a nota, ou o chão
-     — nunca o retângulo por baixo. O que pega é a barra do título. */
+     — nunca o retângulo por baixo. O que pega é a linha do nome. */
   pointer-events: none;
 }
 
+/* A área é `surface/base` e o traço é o filete do sistema. Eu tinha uma tinta
+ * derivada a 3% sobre transparente — quase invisível sobre o chão pontilhado,
+ * que é justamente onde ela precisa se ver. */
+.canvas-grupo-area {
+  flex: 1 1 auto;
+  position: relative;
+  min-block-size: 0;
+  border: 1px dashed var(--border);
+  background: var(--folha);
+}
+
 .canvas-grupo-titulo {
+  flex: none;
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 8px 12px;
   pointer-events: auto;
   cursor: grab;
   touch-action: none;
 }
 .canvas-grupo-titulo:active { cursor: grabbing; }
 
+/* Body/Medium, do `895:7024`. Estava em Label/Medium — o nome da área tinha
+ * menos presença que o texto de uma nota. */
 .canvas-grupo-nome {
-  padding: 2px 4px;
+  padding: 0;
   border: 0; background: transparent;
-  color: var(--muted-foreground);
-  font: inherit; font-size: 16px; line-height: 24px;
+  color: var(--foreground);
+  font: inherit; font-size: 20px; line-height: 30px;
   cursor: text;
 }
 .canvas-grupo-nome:hover { color: var(--foreground); }

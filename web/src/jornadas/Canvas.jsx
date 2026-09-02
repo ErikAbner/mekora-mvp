@@ -300,6 +300,13 @@ function Grupo({ grupo, aoMudar, aoApagar, escala }) {
   };
 
   return (
+    /* O NOME FICA ACIMA DO RETÂNGULO, e não dentro dele.
+     *
+     * O `895:7024` põe "Design & Tecnologia" como um parágrafo SOBRE a caixa
+     * tracejada, com 24px entre os dois. Eu tinha posto uma barra de título
+     * dentro do retângulo, e a diferença não é cosmética: dentro, o nome disputa
+     * o espaço com as notas do grupo e cobre a de cima. Acima, ele nomeia a área
+     * sem ocupar nada dela. */
     <section className="canvas-grupo" style={estilo} aria-label={grupo.nome || "Grupo sem nome"}>
       <header
         className="canvas-grupo-titulo"
@@ -344,14 +351,17 @@ function Grupo({ grupo, aoMudar, aoApagar, escala }) {
       {/* O canto que redimensiona. `aria-hidden` porque o teclado não arrasta —
           o tamanho por teclado não existe ainda, e fingir um alvo focável que
           não responde é pior que não oferecer. */}
-      <span
-        className="canvas-grupo-canto"
-        aria-hidden="true"
-        onPointerDown={(e) => pegar(e, "medir")}
-        onPointerMove={andar}
-        onPointerUp={soltar}
-        onPointerCancel={soltar}
-      />
+      {/* A CAIXA TRACEJADA — `895:7025`. Ela é irmã do nome, e não a mãe dele. */}
+      <div className="canvas-grupo-area">
+        <span
+          className="canvas-grupo-canto"
+          aria-hidden="true"
+          onPointerDown={(e) => pegar(e, "medir")}
+          onPointerMove={andar}
+          onPointerUp={soltar}
+          onPointerCancel={soltar}
+        />
+      </div>
     </section>
   );
 }
