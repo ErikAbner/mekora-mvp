@@ -11,6 +11,21 @@ import { analisar, apagarNota, criarNota, editarNota, enviarAoKindle, lerNotas, 
 import { tamanhoLegivel } from "../../../contrato/tamanho.js";
 import "./livro.css";
 
+/* O COMEÇO DE UMA NOTA, para caber na trilha.
+ *
+ * O desenho corta com reticências — "Isso serve para…", "Que método de…" —, e o
+ * corte é por PALAVRA e não por caractere: parar no meio de uma palavra dá
+ * "Que méto…", que se lê pior e não economiza nada. */
+const PALAVRAS_NA_TRILHA = 3;
+
+function primeirasPalavras(texto) {
+  const limpo = (texto ?? "").trim().replace(/\s+/g, " ");
+  if (!limpo) return "Nota sem texto";
+  const partes = limpo.split(" ");
+  if (partes.length <= PALAVRAS_NA_TRILHA) return limpo;
+  return partes.slice(0, PALAVRAS_NA_TRILHA).join(" ") + "…";
+}
+
 /* A ficha de um livro, inteira.
  *
  * A estante mostra um resumo ao lado da grade; aqui cabe o que não cabe lá: as
@@ -137,11 +152,30 @@ export function Livro() {
             notas rola por muito tempo sem dizer onde se está, e o desenho põe
             esta coluna à esquerda com o traço marcando a seção que está sendo
             lida. Ela some no telefone, onde rolar já é o gesto natural. */}
+        {/* A TRILHA LISTA AS NOTAS, e não os nomes das seções.
+            
+            Eu tinha feito um sumário de cabeçalhos: "Início / O que ficou /
+            Escrever sobre / Este arquivo". O `895:7631` lista outra coisa —
+            "Início / O que ficou / Isso serve para… / Que método de… / Solto no
+            livro… / Escreva sobr…" —, e as quatro do meio são as PRÓPRIAS NOTAS
+            da pessoa, cortadas nas primeiras palavras.
+            
+            A diferença é o que a trilha serve para fazer. Um sumário de seções
+            diz que a página tem quatro partes, o que a pessoa já vê rolando.
+            Listar as notas deixa ela pular para UMA delas lendo o começo — e num
+            livro com dezenas de notas é a única forma de achar aquela. */}
         <TrilhaDaPagina
           rotulo="Nesta ficha"
           itens={[
             { id: "livro-inicio", rotulo: "Início" },
             { id: "livro-o-que-ficou", rotulo: "O que ficou" },
+            ...visiveis.map((n) => ({
+              id: `nota-${n.id}`,
+              /* O QUE APARECE É O QUE A PESSOA ESCREVEU, e o trecho vem antes do
+                 comentário: é ele que ela reconhece. Nota escrita sobre o livro
+                 não tem trecho, e aí o comentário é tudo o que há. */
+              rotulo: primeirasPalavras(n.trecho || n.comentario),
+            })),
             { id: "livro-escrever", rotulo: "Escrever sobre" },
             { id: "livro-arquivo", rotulo: "Este arquivo" },
           ]}
@@ -358,7 +392,7 @@ export function Livro() {
 
           <ul className="livro-pagina-notas">
             {visiveis.map((n) => (
-              <li key={n.id}>
+              <li key={n.id} id={`nota-${n.id}`}>
                 {/* NOTA SEM TRECHO NÃO VIRA CAIXA VAZIA COLORIDA. A nota escrita
                     sobre o livro não aponta para frase nenhuma, e um bloco de cor
                     sem texto dentro é uma citação de nada. */}

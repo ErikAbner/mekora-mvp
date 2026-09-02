@@ -32,7 +32,7 @@
  * posição lida na hora. Nada é guardado entre um evento e outro, e com quatro
  * seções a medida é barata; `requestAnimationFrame` garante uma por quadro.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./trilha-da-pagina.css";
 
 /* Onde fica a linha de leitura: um quarto da altura da janela. Acima dela está
@@ -46,6 +46,20 @@ export function TrilhaDaPagina({ itens = [], rotulo = "Nesta página" }) {
    * quadro. */
   const chaves = itens.map((i) => i.id).join("|");
 
+  /* QUEM CLICA MANDA, e por um instante.
+   *
+   * A trilha decide pela rolagem: o último item acima da linha de 25% vence. Isso
+   * está certo para quem rola, e erra para quem CLICA — o clique põe o alvo no
+   * topo, e aí é o item SEGUINTE que fica sobre a linha. A pessoa clica em "Uma
+   * foto é…" e a trilha marca "O problema não…". Medido: rolagem foi para 1222,
+   * e a marca caiu na nota errada.
+   *
+   * Então o clique fixa a marca, e a medida por rolagem fica em silêncio até a
+   * rolagem suave terminar. Meio segundo cobre o percurso do `scroll-behavior`
+   * sem prender a marca depois — quem rolar com o dedo nesse meio tempo destrava
+   * na próxima medida. */
+  const mandouNoClique = useRef(0);
+
   useEffect(() => {
     const ids = chaves ? chaves.split("|") : [];
     if (ids.length < 2) return undefined;
@@ -54,6 +68,7 @@ export function TrilhaDaPagina({ itens = [], rotulo = "Nesta página" }) {
 
     const medir = () => {
       pedido = null;
+      if (Date.now() < mandouNoClique.current) return;
 
       /* O FIM DO DOCUMENTO GANHA DE TUDO. Os 2px de folga existem porque a soma
        * dá fracionária em tela com zoom ou densidade não inteira, e `>=` exato
@@ -96,6 +111,7 @@ export function TrilhaDaPagina({ itens = [], rotulo = "Nesta página" }) {
           <li key={i.id}>
             <a
               href={`#${i.id}`}
+              onClick={() => { mandouNoClique.current = Date.now() + 500; setAqui(i.id); }}
               /* `aria-current="location"` é o valor para "este é o lugar onde
                  se está dentro de um conjunto" — `page` diria que é a página
                  atual do site, que não é o caso: é a seção. */

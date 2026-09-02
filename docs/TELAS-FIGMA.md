@@ -676,3 +676,42 @@ eu troco. Procurei em `900:52331` (só tem a variante Default), na página
 
 As cinco telas vêm de `TrilhaConta`, exportadas de lá: duas listas das telas de
 conta é como uma delas fica sem a próxima que alguém acrescentar.
+
+
+## A gaveta NÃO é o padrão de todas as telas — 03/09/2026
+
+Depois de a Conta virar gaveta eu ia aplicar o mesmo em Preparo e Livro. Fui
+conferir antes, e os dois **não são gavetas**:
+
+| nó | tem a sombra de gaveta? | fundo |
+|---|---|---|
+| `895:10599` Conta | **sim**, os cinco degraus até 242px | pontilhado por baixo |
+| `895:7631` Livro | não — nenhum `242px` no arquivo | `bg-white`, liso |
+| `895:7856` Preparo | não | liso, conteúdo centrado |
+
+O Livro é página normal: cabeçalho, um `hero` com `py-64`, e uma fileira de
+1222px com `gap-48`. Preparo idem.
+
+**Fica registrado para eu não generalizar de novo**: a gaveta é o tratamento da
+área de CONFIGURAÇÃO, e não de tudo que se abre. Antes de aplicar em outra tela,
+procurar a sombra no nó.
+
+## A trilha lateral lista as NOTAS, não as seções — `895:7631`
+
+Eu tinha construído um sumário de cabeçalhos: "Início / O que ficou / Escrever
+sobre / Este arquivo". O desenho lista outra coisa:
+
+> Início · O que ficou · **Isso serve para…** · **Que método de…** · **Solto no
+> livro…** · Escreva sobr…
+
+As do meio são as PRÓPRIAS NOTAS da pessoa, cortadas nas primeiras palavras.
+
+A diferença é o que a trilha serve para fazer. Um sumário de seções diz que a
+página tem quatro partes — o que a pessoa já vê rolando. Listar as notas deixa
+ela pular para UMA delas lendo o começo, e num livro com dezenas de notas é a
+única forma de achar aquela.
+
+**A mesma leitura vale para os Estudos** (`895:8849`), cuja trilha lista
+"Início / O que ficou / Isso serve para… / Que método de… / Solto no livro… /
+Escreva sobr…" — e lá ela ainda aparece só na parte de baixo, o que continua por
+fazer.
