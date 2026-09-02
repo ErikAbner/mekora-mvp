@@ -439,6 +439,18 @@ export function apagarEstudo(id) {
   return pede(`/estudos/${id}`, { method: "DELETE" });
 }
 
+/**
+ * GET /notas/agrupadas — os assuntos que apareceram no acervo sem ninguem
+ * organizar. E a secao "Voce ligou" do no 895:8849.
+ *
+ * NAO E `lerSugestoes` COM OUTRO NOME. Aquela responde "o que se parece com
+ * ESTA nota" e vive na pagina de uma nota; esta varre o acervo inteiro e
+ * responde "que fios existem no que eu ja marquei".
+ */
+export function lerAgrupadas() {
+  return pede("/notas/agrupadas");
+}
+
 export function reunirNoEstudo(id, nota_id) {
   return pede(`/estudos/${id}/notas`, {
     method: "POST",

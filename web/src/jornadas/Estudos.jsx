@@ -1,11 +1,12 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Rodape } from "../componentes/Rodape.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
 import { achatar } from "../../../contrato/texto.js";
 import { Folha } from "../componentes/Folha.jsx";
+import { criarEstudo, lerAgrupadas, reunirNoEstudo } from "../../../contrato/api.js";
 import { DESTAQUES } from "./Leitura.jsx";
 import "./estudos.css";
 
@@ -281,6 +282,18 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
      perguntas diferentes sobre o mesmo material, e por isso não são duas telas:
      "o que eu estou juntando" e "o que eu estou lendo". */
   const [vista, setVista] = useState("lista");
+  /* "VOCÊ LIGOU" — nó 895:8849. Os assuntos que apareceram no acervo sem
+     ninguém organizar nada. É a promessa da Apresentação ganhando tela: "o que
+     você marcou em livros diferentes sobre o mesmo assunto se encontra". */
+  const [ligou, setLigou] = useState(null);
+  const [montando, setMontando] = useState(null);
+  const navegar = useNavigate();
+
+  useEffect(() => {
+    let vivo = true;
+    lerAgrupadas().then((r) => vivo && setLigou(r)).catch(() => {});
+    return () => { vivo = false; };
+  }, []);
 
   /* AS NOTAS QUE NÃO ESTÃO EM ESTUDO NENHUM — a seção "Fora de estudo" do
    * 966:31095, e a que fecha o gesto: sem ela não há de onde puxar. Um estudo
@@ -461,6 +474,88 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
               );
             })}
           </div>
+        )}
+
+        {/* A SEÇÃO SÓ EXISTE QUANDO HÁ GRUPO. Uma seção "Você ligou" vazia
+            afirma que o acervo não tem fio nenhum — e o que ela quer dizer é
+            que ainda não há notas suficientes para atravessar livros. Calar é
+            mais honesto que anunciar ausência. */}
+        {ligou?.grupos?.length > 0 && (
+          <section className="estudos-ligou">
+            <h2>Você ligou</h2>
+            <p className="estudos-ligou-criterio">
+              Grupos de <span className="dado">{ligou.criterios.notas}</span> notas
+              ou mais que dividem pelo menos{" "}
+              <span className="dado">{ligou.criterios.palavras}</span> palavras de
+              assunto, em <span className="dado">{ligou.criterios.livros}</span>{" "}
+              livros ou mais. Nada foi organizado por você.
+              {ligou.olhadas >= ligou.teto && (
+                <> Das suas notas, as <span className="dado">{ligou.teto}</span> mais recentes entraram na conta.</>
+              )}
+            </p>
+
+            <ul className="estudos-fios">
+              {ligou.grupos.map((g) => {
+                /* A chave é o menor id do grupo: ele não muda enquanto o grupo
+                   for o mesmo, e o índice mudaria a cada recarga. */
+                const chave = Math.min(...g.notas.map((n) => n.id));
+                return (
+                  <li key={chave}>
+                    <p className="estudos-fio-conta">
+                      <span className="dado">{g.quantas}</span> notas suas, em{" "}
+                      <span className="dado">{g.livros}</span>{" "}
+                      {g.livros === 1 ? "livro" : "livros diferentes"}, usam as mesmas palavras.
+                    </p>
+                    {/* AS PALAVRAS VÃO JUNTO. Sem elas o produto afirma um
+                        assunto e não diz de onde o tirou — e ninguém pode
+                        discordar de uma afirmação sem evidência. */}
+                    <p className="estudos-fio-palavras">{g.palavras.join(" · ")}</p>
+
+                    <ul className="estudos-fio-notas">
+                      {g.notas.slice(0, 4).map((n) => (
+                        <li key={n.id}>
+                          <Link to={`/nota/${n.id}`}>
+                            <span className="estudos-fio-trecho">{n.trecho || n.comentario}</span>
+                            {n.origem && <span className="estudos-fio-origem">{n.origem}</span>}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                    {g.notas.length > 4 && (
+                      <p className="estudos-fio-resto">
+                        e mais {g.notas.length - 4}{" "}
+                        {g.notas.length - 4 === 1 ? "nota" : "notas"}.
+                      </p>
+                    )}
+
+                    {/* O produto NÃO CRIA o estudo sozinho e não escreve a
+                        pergunta: ele monta com as notas dentro e leva até lá. A
+                        pergunta do centro é o estudo inteiro, e é a única coisa
+                        que ninguém pode escrever no lugar da pessoa. */}
+                    <Botao
+                      tom="secundaria"
+                      disabled={montando === chave}
+                      onClick={async () => {
+                        setMontando(chave);
+                        try {
+                          const semente = (g.palavras.slice(0, 3).join(", ") || "Notas parecidas");
+                          const novo = await criarEstudo({ nome: semente, sobre: "" });
+                          for (const n of g.notas) {
+                            await reunirNoEstudo(novo.id, n.id).catch(() => {});
+                          }
+                          navegar(`/estudo/${novo.id}`);
+                        } catch {
+                          setMontando(null);
+                        }
+                      }}
+                    >
+                      {montando === chave ? "Montando…" : `Juntar as ${g.quantas} num estudo`}
+                    </Botao>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
         )}
 
         <div className="estudos-lista" hidden={vista !== "lista"}>

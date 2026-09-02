@@ -97,3 +97,122 @@ def test_ordena_da_mais_proxima_para_a_menos_e_respeita_o_teto():
     assert [s["id"] for s in fora] == [2, 3, 4]
     assert fora[0]["quantas"] > fora[-1]["quantas"]
     assert len(sugerir(a, muitas, teto=2)) == 2
+
+
+# ---------------------------------------------------------------------------
+# Os grupos — "Você ligou" (nó 895:8849)
+# ---------------------------------------------------------------------------
+
+class _Nota:
+    """O mínimo que `agrupar` lê. Não é um `Nota` do banco de propósito: o
+    serviço é função pura, e amarrá-lo ao ORM faria o teste precisar de sessão
+    para provar aritmética de conjuntos."""
+
+    def __init__(self, id, trecho, job_id, comentario=""):
+        self.id = id
+        self.trecho = trecho
+        self.comentario = comentario
+        self.cor = "amarelo"
+        self.job_id = job_id
+        self.origem = "livro"
+
+
+def test_grupo_precisa_atravessar_livros():
+    """Três notas do mesmo capítulo falando do mesmo assunto não é descoberta
+    nenhuma — é o capítulo. O que a seção celebra é a travessia."""
+    from app.services.sugestoes_service import agrupar
+
+    mesmo_livro = [
+        _Nota(1, "A repeticao fotografica produz imagem em dado bruto", 7),
+        _Nota(2, "Repeticao fotografica: imagem produz dado quando comparada", 7),
+        _Nota(3, "Comparar imagem produz dado, e a repeticao fotografica sustenta", 7),
+    ]
+    assert agrupar(mesmo_livro) == []
+
+    espalhadas = [
+        _Nota(1, "A repeticao fotografica produz imagem em dado bruto", 7),
+        _Nota(2, "Repeticao fotografica: imagem produz dado quando comparada", 8),
+        _Nota(3, "Comparar imagem produz dado, e a repeticao fotografica sustenta", 9),
+    ]
+    grupos = agrupar(espalhadas)
+    assert len(grupos) == 1
+    assert grupos[0]["quantas"] == 3
+    assert grupos[0]["livros"] == 3
+
+
+def test_grupo_precisa_de_tres_notas():
+    """Com duas, a ligação entre as duas já diz tudo — e ela aparece na página
+    de cada uma."""
+    from app.services.sugestoes_service import agrupar
+
+    duas = [
+        _Nota(1, "A repeticao fotografica produz imagem em dado bruto", 7),
+        _Nota(2, "Repeticao fotografica: imagem produz dado quando comparada", 8),
+    ]
+    assert agrupar(duas) == []
+
+
+def test_o_fio_e_transitivo():
+    """A e C acabam juntas sem dividirem palavra nenhuma, desde que as duas
+    dividam com B. É o que se quer de um assunto: não uma frase repetida, um
+    fio."""
+    from app.services.sugestoes_service import agrupar
+
+    fio = [
+        _Nota(1, "expedicao caderno registro material bruto", 7),
+        _Nota(2, "expedicao caderno registro material somado comparacao imagem repeticao", 8),
+        _Nota(3, "comparacao imagem repeticao somado dado", 9),
+    ]
+    grupos = agrupar(fio)
+    assert len(grupos) == 1
+    assert {n["id"] for n in grupos[0]["notas"]} == {1, 2, 3}
+
+
+def test_as_palavras_saem_com_acento_como_a_pessoa_escreveu():
+    """Normalizar para comparar é correto; mostrar o resultado da normalização é
+    devolver à pessoa uma versão pior do que ela escreveu."""
+    from app.services.sugestoes_service import agrupar
+
+    # QUATRO palavras em comum, e não três: `PROXIMAS` é 4, e com três o grupo
+    # não se forma — foi assim que este teste falhou na primeira escrita.
+    notas = [
+        _Nota(1, "A memória fotográfica sustenta a comparação do material", 7),
+        _Nota(2, "memória fotográfica e comparação de material", 8),
+        _Nota(3, "material, memória fotográfica, comparação", 9),
+    ]
+    palavras = agrupar(notas)[0]["palavras"]
+    assert "memória" in palavras
+    assert "memoria" not in palavras
+
+
+def test_notas_sem_assunto_em_comum_nao_viram_grupo():
+    from app.services.sugestoes_service import agrupar
+
+    soltas = [
+        _Nota(1, "expedicao caderno registro material bruto", 7),
+        _Nota(2, "arquitetura urbana malha quadra desenho", 8),
+        _Nota(3, "cozinha receita fermento farinha tempo", 9),
+    ]
+    assert agrupar(soltas) == []
+
+
+def test_a_rota_devolve_os_criterios(client):
+    """Critério escondido é critério em que ninguém pode discordar — a mesma
+    regra dos cortes das faixas."""
+    r = client.get("/notas/agrupadas")
+    assert r.status_code == 200
+    corpo = r.json()
+    assert set(corpo["criterios"]) == {"palavras", "notas", "livros"}
+    assert isinstance(corpo["grupos"], list)
+    assert corpo["teto"] >= corpo["olhadas"]
+
+
+def test_agrupadas_nao_e_lida_como_id_de_nota(client):
+    """`/notas/agrupadas` vem ANTES de `/notas/{id}/...` na declaração: sem
+    isso o FastAPI tenta ler "agrupadas" como um número. O mesmo cuidado que
+    `/notas/importar` já exigiu."""
+    assert client.get("/notas/agrupadas").status_code == 200
+
+
+def test_estranho_nao_ve_os_grupos_de_ninguem(client_cru):
+    assert client_cru.get("/notas/agrupadas").status_code == 401

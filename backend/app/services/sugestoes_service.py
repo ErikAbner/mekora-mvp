@@ -127,3 +127,130 @@ def sugerir(nota, candidatas: Iterable, teto: int = 12) -> list[dict]:
 
     fora.sort(key=lambda s: (-s["quantas"], s["id"]))
     return fora[:teto]
+
+
+# ---------------------------------------------------------------------------
+# Os grupos: "Você ligou" (nó 895:8849)
+# ---------------------------------------------------------------------------
+
+# Um grupo precisa de pelo menos três notas para valer a pena mostrar. Com duas
+# a ligação entre as duas já diz tudo o que há para dizer, e ela aparece na
+# página de cada uma.
+MINIMO_DO_GRUPO = 3
+
+# E precisa ATRAVESSAR LIVROS. Três notas do mesmo capítulo falando do mesmo
+# assunto não é descoberta nenhuma — é o capítulo. O que o desenho celebra é
+# "sete notas suas, em quatro livros diferentes, usam as mesmas palavras", e é a
+# travessia que faz isso ser notícia.
+MINIMO_DE_LIVROS = 2
+
+# TETO DE NOTAS COMPARADAS. O agrupamento é O(n²) em intersecções de conjunto:
+# com duzentas notas são vinte mil, que o Python faz sem suar; com dez mil seriam
+# cinquenta milhões, e a página de Estudos passaria a demorar sem ninguém saber
+# por quê. As mais recentes são as que interessam, e o corte é dito na resposta.
+TETO_DE_NOTAS = 400
+
+
+def agrupar(notas: list) -> list[dict]:
+    """Grupos de notas que dividem assunto, atravessando livros.
+
+    NÃO É A MESMA PERGUNTA DE `sugerir`. Aquela é "o que se parece com ESTA
+    nota", e vive na página de uma nota. Esta é "que assuntos apareceram no meu
+    acervo sem eu ter organizado nada", e vive nos Estudos — é a promessa da
+    Apresentação, "o que você marcou em livros diferentes sobre o mesmo assunto
+    se encontra, sem você organizar pasta nenhuma".
+
+    O ALGORITMO É UNIÃO DE CONJUNTOS, e está aqui inteiro de propósito: cada
+    par de notas que divide `PROXIMAS` palavras entra no mesmo grupo, por
+    transitividade. Isso significa que A e C podem acabar juntas sem dividirem
+    palavra nenhuma, desde que as duas dividam com B — e isso é o que se quer de
+    um assunto, que não é uma frase repetida mas um fio.
+
+    A limitação é a mesma do resto do serviço, e continua honesta: é interseção
+    de palavras, não busca semântica. Duas notas que dizem a mesma coisa com
+    palavras diferentes não se encontram.
+    """
+    usadas = list(notas)[:TETO_DE_NOTAS]
+    if len(usadas) < MINIMO_DO_GRUPO:
+        return []
+
+    palavras = {n.id: _limpar(_texto_da_nota(n)) for n in usadas}
+
+    # União de conjuntos, sem classe: `pai[x]` é o representante do grupo de x.
+    pai = {n.id: n.id for n in usadas}
+
+    def raiz(x):
+        while pai[x] != x:
+            pai[x] = pai[pai[x]]
+            x = pai[x]
+        return x
+
+    def unir(a, b):
+        ra, rb = raiz(a), raiz(b)
+        if ra != rb:
+            pai[rb] = ra
+
+    # As palavras que sustentam cada par ficam guardadas: o grupo mostra as que
+    # mais se repetem, e sem elas a lista seria o produto afirmando um assunto
+    # sem dizer de onde o tirou.
+    contagem: dict = {}
+    for i, a in enumerate(usadas):
+        de_a = palavras[a.id]
+        if not de_a:
+            continue
+        for b in usadas[i + 1:]:
+            comuns = set(de_a) & set(palavras[b.id])
+            if len(comuns) < PROXIMAS:
+                continue
+            unir(a.id, b.id)
+            for c in comuns:
+                contagem[c] = contagem.get(c, 0) + 1
+
+    grupos: dict = {}
+    for n in usadas:
+        grupos.setdefault(raiz(n.id), []).append(n)
+
+    fora = []
+    for membros in grupos.values():
+        if len(membros) < MINIMO_DO_GRUPO:
+            continue
+        livros = {m.job_id for m in membros if m.job_id is not None}
+        # Nota escrita solta não tem livro. Ela pode ENTRAR num grupo — o
+        # assunto é o mesmo —, mas não conta para a travessia, que é sobre o
+        # acervo.
+        if len(livros) < MINIMO_DE_LIVROS:
+            continue
+
+        # As palavras do grupo: as que aparecem em mais de um membro, das mais
+        # comuns para as menos.
+        do_grupo: dict = {}
+        for m in membros:
+            for chave, forma in palavras[m.id].items():
+                do_grupo.setdefault(chave, [0, forma])
+                do_grupo[chave][0] += 1
+        comuns = sorted(
+            ((forma, quantas) for quantas, forma in do_grupo.values() if quantas > 1),
+            key=lambda p: (-p[1], p[0]),
+        )
+
+        fora.append({
+            "notas": [
+                {
+                    "id": m.id,
+                    "trecho": m.trecho,
+                    "comentario": m.comentario,
+                    "cor": m.cor,
+                    "origem": getattr(m, "origem", "") or "",
+                    "job_id": m.job_id,
+                }
+                for m in membros
+            ],
+            "quantas": len(membros),
+            "livros": len(livros),
+            "palavras": [forma for forma, _ in comuns[:8]],
+        })
+
+    # O maior primeiro: um grupo de sete notas em quatro livros é mais notícia
+    # que um de três em dois.
+    fora.sort(key=lambda g: (-g["quantas"], -g["livros"]))
+    return fora

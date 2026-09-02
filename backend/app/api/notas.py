@@ -139,6 +139,59 @@ def todas(
     return [_fora(n) for n in notas]
 
 
+@router.get("/notas/agrupadas")
+def agrupadas(
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> dict:
+    """"Você ligou" — os assuntos que apareceram no acervo sem ninguém organizar.
+
+    O nó `895:8849` põe esta seção nos Estudos: "sete notas suas, em quatro
+    livros diferentes, usam as mesmas palavras". É a promessa da Apresentação
+    ganhando tela — *"o que você marcou em livros diferentes sobre o mesmo
+    assunto se encontra, sem você organizar pasta nenhuma"*.
+
+    NÃO É `/{id}/sugestoes` COM OUTRO NOME. Aquela responde "o que se parece com
+    ESTA nota", e vive na página de uma nota. Esta responde "que fios existem no
+    que eu já marquei", e é uma varredura do acervo inteiro.
+
+    O CAMINHO É `/notas/agrupadas`, E A ORDEM DE DECLARAÇÃO IMPORTA.
+    
+    Ele precisa vir antes de `/notas/{nota_id}` — o FastAPI casa na ordem em que
+    as rotas são declaradas, e a primeira versão deste endpoint estava depois:
+    "agrupadas" caía no caminho do id e o FastAPI respondia 422 tentando lê-lo
+    como número. É o mesmo cuidado que `/notas/todas` já exigia, e ele está
+    declarado três linhas acima por essa razão.
+    """
+    from app.services import sugestoes_service
+
+    pessoa = _quem(db, mekora_sessao)
+    minhas = (
+        db.query(Nota)
+        .filter(Nota.pessoa_id == pessoa.id)
+        .order_by(Nota.criada_em.desc())
+        .limit(sugestoes_service.TETO_DE_NOTAS)
+        .all()
+    )
+
+    return {
+        "grupos": sugestoes_service.agrupar(minhas),
+        # OS CRITÉRIOS SAEM NA RESPOSTA, como os cortes das faixas: a tela diz
+        # "a partir de N palavras", e sem isso o produto afirma um agrupamento
+        # que ninguém pode discordar.
+        "criterios": {
+            "palavras": sugestoes_service.PROXIMAS,
+            "notas": sugestoes_service.MINIMO_DO_GRUPO,
+            "livros": sugestoes_service.MINIMO_DE_LIVROS,
+        },
+        # Quantas notas entraram na varredura. Quando o acervo passa do teto, a
+        # tela pode dizer que olhou as mais recentes — em vez de deixar a pessoa
+        # achar que olhou tudo.
+        "olhadas": len(minhas),
+        "teto": sugestoes_service.TETO_DE_NOTAS,
+    }
+
+
 @router.get("/notas/{nota_id}")
 def uma(
     nota_id: int,
