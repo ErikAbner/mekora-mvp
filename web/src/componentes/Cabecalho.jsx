@@ -68,12 +68,19 @@ export function Cabecalho() {
             motivo escrito — "não há rota de busca no backend" —, e a rota é o
             `busca.py`. O nó 941:23107 é o painel que ela abre. */}
         <Busca />
-        <NavLink to="/ajuda" className="acao" aria-label="Dúvidas">
-          <Icone src={iconeDuvidas} />
-        </NavLink>
-        <NavLink to="/conta" className="acao" aria-label="Conta">
-          <Icone src={iconeConta} />
-        </NavLink>
+        {/* OS DOIS ATALHOS NUMA CAIXA PRÓPRIA, e não soltos ao lado da busca.
+            No `900:52331` a direita é uma caixa com 12px de recheio, e dentro
+            dela há 56px entre a busca e os dois atalhos — que por sua vez têm
+            16px entre si (`900:52339`). Eu tinha 16px nos dois lugares, e o
+            resultado é a busca e os atalhos lidos como uma coisa só. */}
+        <div className="cabecalho-atalhos">
+          <NavLink to="/ajuda" className="acao" aria-label="Dúvidas">
+            <Icone src={iconeDuvidas} />
+          </NavLink>
+          <NavLink to="/conta" className="acao" aria-label="Conta">
+            <Icone src={iconeConta} />
+          </NavLink>
+        </div>
 
         {/* O HAMBÚRGUER DO TELEFONE — nó 964:24606, ao lado da busca.
          *

@@ -10,6 +10,21 @@
   padding: 96px 32px 128px;
 }
 
+/* O TÍTULO E A BUSCA, com o vão do desenho.
+ *
+ * `895:11245` é uma coluna de 755px com `gap: 48px`. Aqui não havia gap nenhum:
+ * o `h1` tem `margin: 0`, e o que separava os dois era a meia-entrelinha
+ * sobrando embaixo do título. Com o trim ligado essa sobra some, e a busca
+ * encostava na barriga do "q" e do "ç".
+ *
+ * É o mesmo defeito das duas pontas: eu nunca copiei o vão do desenho, deixei a
+ * entrelinha fazer as vezes dele. Folgado demais e colado são o mesmo buraco. */
+.ajuda-topo {
+  display: flex; flex-direction: column; gap: 48px;
+  inline-size: 100%; max-inline-size: 755px;
+  margin-inline: auto;
+}
+
 .ajuda-topo h1 {
   margin: 0;
   font-size: 48px; line-height: 56px; font-weight: 540;   /* Heading/XL */

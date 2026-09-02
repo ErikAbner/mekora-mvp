@@ -144,6 +144,17 @@ function subirPostHog() {
          * depende dele. A região vem do Cloudflare, que já a tem. */
         ip: false,
         persistence: "localStorage",
+        /* ERRO TAMBÉM É COISA QUE A PESSOA VIVEU.
+         *
+         * O Sentry ia cuidar disto e o Erik o excluiu — ele se sentiu inseguro
+         * com mais uma conta guardando coisa dele, e a decisão é dele. Mas erro
+         * não visto continua não visto: sem isto, uma tela que quebra para um
+         * visitante quebra em silêncio, e o único sinal seria ele desistir.
+         *
+         * Aqui não há conta nova: é o mesmo PostHog que já está no ar, e a
+         * exceção chega junto da gravação daquela sessão — dá para ver o que a
+         * pessoa fez até estourar, e isso o Sentry sozinho não daria. */
+        capture_exceptions: true,
       });
       window.__posthog = posthog;
       posthog.capture("$pageview");

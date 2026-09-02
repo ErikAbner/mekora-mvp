@@ -8,15 +8,41 @@
 }
 
 /* Duas caixas, não uma. Navegação e ferramenta são categorias diferentes, e
- * juntá-las na mesma moldura faria o olho ler uma lista só. */
+ * juntá-las na mesma moldura faria o olho ler uma lista só.
+ *
+ * AS DUAS SÃO SIMÉTRICAS NO DESENHO: `900:54322` dá 12px de recheio à esquerda e
+ * `900:52331` dá os mesmos 12px à direita. Eu tinha a moldura só nos botões
+ * soltos, e a direita ficava sem caixa nenhuma. */
 .cabecalho-lugares,
-.cabecalho-acoes > .acao {
+.cabecalho-acoes,
+.cabecalho-acoes .acao {
   border: 1px solid var(--border);
   background: var(--card);
 }
 
 .cabecalho-lugares { display: flex; padding: 12px; }
-.cabecalho-acoes { display: flex; align-items: center; gap: 16px; }
+
+/* 56px ENTRE A BUSCA E OS ATALHOS, e 16px entre os dois atalhos.
+ *
+ * Os números são do `900:52331` e do `900:52339`. Eu tinha 16px nos dois
+ * lugares, e o efeito era a busca e os atalhos lidos como uma lista só — que é
+ * exatamente o que a separação em duas caixas existe para impedir do outro
+ * lado. */
+.cabecalho-acoes {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 56px;
+  padding: 12px;
+  /* 476px, do `900:53900`. É essa largura que faz a busca ser MENOR: com 12px
+   * de recheio de cada lado, 56 de vão e dois atalhos de 58 com 16 entre eles,
+   * sobram 264px para o campo. Eu tinha deixado a caixa crescer com o conteúdo,
+   * e a busca virava uma faixa larga que não é a do desenho. */
+  inline-size: 476px;
+  flex: none;
+}
+
+.cabecalho-atalhos { display: flex; align-items: center; gap: 16px; }
 
 .lugar {
   display: flex;
@@ -44,8 +70,7 @@
 .lugar:not([aria-current]):hover { background: var(--muted); }
 
 
-.cabecalho-acoes { flex: 0 1 476px; }
-.cabecalho-acoes > .busca-caixa { flex: 1 0 0; }
+.cabecalho-acoes > .busca-caixa { flex: 0 1 auto; }
 
 .acao {
   display: flex;
