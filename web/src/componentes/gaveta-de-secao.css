@@ -17,28 +17,28 @@
   flex-direction: column;
   border-radius: 0;
 
-  /* UM DEGRAU ABAIXO DO CHÃO, e não a mesma cor dele.
+  /* A MESMA COR DO CHÃO, e quem separa é a sombra.
    *
-   * O Erik: "o topo da gaveta tá sem contraste ou distinção do bg, isso causa
-   * ruído visual". A borda de cima não tinha como aparecer, e o motivo é
-   * geométrico: os cinco degraus de sombra do desenho têm deslocamento Y
-   * POSITIVO — `0 10px`, `0 39px`, `0 87px` —, então a sombra cai toda ABAIXO da
-   * folha. Ela nunca ia desenhar a aresta de cima.
+   * Eu tinha descido a folha um degrau (`surface/sunken`) para a aresta de cima
+   * aparecer, e o Erik viu o resultado: "ficou mais estranho, só a cor mais
+   * escura que o bg". Ele está certo — a mancha escura chama atenção para a
+   * superfície em vez de para o conteúdo, e o desenho não pede isso.
    *
-   * No `895:10599` quem desenha essa aresta é a COR: o chão é branco e a folha é
-   * `surface/base`. Eu tinha posto as duas em `surface/base`, e só os pontos
-   * separavam uma da outra.
+   * A sombra resolve, e a de antes não resolvia por um motivo geométrico: os
+   * cinco degraus do `895:10650` têm deslocamento Y POSITIVO, então caem todos
+   * ABAIXO da folha e a aresta de cima ficava sem nada.
    *
-   * Branco não é superfície do sistema, então o que se copia é a direção: o chão
-   * fica no degrau mais claro que existe e a folha desce um. Mesma relação do
-   * desenho — folha mais escura que o chão —, com dois valores que o sistema
-   * tem. */
-  background: var(--card);
+   * Falta um fio para cima, e é só isso: 1px de preto a 8%, sem borrão. Ele
+   * desenha a aresta e some no resto. Não é borda — borda seria um traço do
+   * sistema, com peso próprio; isto é a mesma sombra, terminando onde a folha
+   * começa. */
+  background: var(--background);
 
   /* A SOMBRA É O QUE FAZ A GAVETA. Sem ela a folha e o chão viram a mesma coisa.
    * Os cinco degraus são do `895:10650`, e o primeiro tem alfa zero porque é
    * assim que o Figma escreve o começo da rampa. */
   box-shadow:
+    0 -1px 0 rgb(0 0 0 / 0.08),
     0 242px 34px rgb(0 0 0 / 0),
     0 155px 31px rgb(0 0 0 / 0.01),
     0 87px 26px rgb(0 0 0 / 0.03),
@@ -48,13 +48,21 @@
   outline: none;
 }
 
-/* A alça: um retângulo do sistema, sem raio, e alvo de toque de verdade em
- * volta dela — 4px de traço não se pega com o dedo. */
+/* A ALÇA FLUTUA, e não empurra o conteúdo.
+ *
+ * Em fluxo ela somava 36px — 16 de margem de cada lado mais os 4 do traço — ao
+ * recheio de 128 que o `895:10650` já pede. O resultado era o que aparece nas
+ * capturas do Erik: um vão morto no alto da folha, antes de qualquer coisa.
+ *
+ * Fora do fluxo, o vão volta a ser exatamente o do desenho, e a alça continua
+ * onde a mão a procura. */
 .gaveta-secao-alca {
-  flex: none;
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 16px;
   inline-size: 48px;
   block-size: 4px;
-  margin: 16px auto;
+  margin-inline: auto;
   border-radius: 0;
   background: var(--border);
   cursor: grab;
@@ -70,13 +78,37 @@
 /* A `vaul` anda por `transform`, e a curva dela é a do iOS para folha que sobe.
  * O que se declara aqui é a DURAÇÃO: 500ms é o padrão dela e é longo para uma
  * seção que a pessoa abre e fecha dezenas de vezes. */
-.gaveta-secao[data-vaul-drawer] {
+/* A ENTRADA É CURTA, E A `vaul` ESTAVA SOBREPONDO ISSO.
+ *
+ * Ela anima a abertura com `@keyframes` próprios, de `translate3d(0, 100%, 0)` —
+ * cem por cento da ALTURA DA FOLHA. Numa folha de 850px é um percurso de 850px,
+ * e o Erik pegou exatamente isso numa captura: a gaveta a setenta por cento da
+ * tela, subindo.
+ *
+ * Eu tinha escrito uma subida de 24px e ela nunca rodou: `transition-duration`
+ * não alcança `animation`, e a regra da biblioteca ganhava calada.
+ *
+ * 24px porque a folha já está quase no lugar quando a pessoa olha. Percurso
+ * longo aqui não é elegância, é espera — e esta é a mesma tela que o Erik
+ * apontou que não pode animar a cada clique. */
+.gaveta-secao[data-vaul-drawer][data-vaul-drawer-direction="bottom"] {
+  /* `--initial-transform` É O GANCHO DA PRÓPRIA `vaul`, e usá-lo é melhor que
+   * brigar com ela: os `@keyframes` dela leem
+   * `translate3d(0, var(--initial-transform, 100%), 0)`. Eu tinha escrito uma
+   * animação concorrente e ela perdia calada — a regra da biblioteca continuava
+   * valendo, e a folha subia os 850px mesmo assim. */
+  --initial-transform: 24px;
+  animation-duration: 260ms;
+  animation-timing-function: var(--gaveta);
   transition-duration: 260ms;
   transition-timing-function: var(--gaveta);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .gaveta-secao[data-vaul-drawer] { transition-duration: 1ms; }
+  .gaveta-secao[data-vaul-drawer][data-vaul-drawer-direction="bottom"] {
+    animation: none;
+    transition-duration: 1ms;
+  }
 }
 
 @media (max-width: 767px) {
