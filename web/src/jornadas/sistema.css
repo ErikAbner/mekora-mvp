@@ -1,0 +1,98 @@
+/* O catalogo dos componentes — instrumento, e nao tela do produto.
+ *
+ * Ele reusa a mesma linguagem do resto: filete fino, raio zero, serifa no
+ * titulo, sans na interface. Um catalogo com estilo proprio mostraria os
+ * componentes num ambiente que nao existe, e e justamente o ambiente que faz
+ * um estado quebrar.
+ */
+.sistema {
+  display: flex; gap: 48px; align-items: flex-start;
+  max-inline-size: 1180px; margin-inline: auto;
+  padding: 32px 40px 96px;
+}
+.sistema-corpo { flex: 1 1 0; min-inline-size: 0; display: flex; flex-direction: column; gap: 64px; }
+
+.sistema-topo { display: flex; flex-direction: column; gap: 12px; scroll-margin-top: 32px; }
+.sistema-marca {
+  margin: 0;
+  font-size: 14px; line-height: 20px;   /* Label/Small */
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.sistema-topo h1 {
+  margin: 0;
+  font-size: 40px; line-height: 48px; font-weight: 540;   /* Heading/LG */
+  letter-spacing: -0.015em; color: var(--foreground);
+  text-wrap: balance;
+}
+.sistema-sobre {
+  margin: 0; max-inline-size: 62ch;
+  font-size: 18px; line-height: 27px;
+  color: var(--muted-foreground); text-wrap: pretty;
+}
+
+.peca { display: flex; flex-direction: column; gap: 16px; scroll-margin-top: 32px; }
+.peca h2 {
+  margin: 0; padding-block-end: 12px;
+  border-block-end: 2px solid var(--foreground);
+  font-size: 28px; line-height: 36px; font-weight: 540;   /* Heading/SM */
+  color: var(--foreground);
+}
+.peca-diz {
+  margin: 0; max-inline-size: 68ch;
+  font-size: 16px; line-height: 24px;
+  color: var(--muted-foreground); text-wrap: pretty;
+}
+.peca-nota {
+  margin: 0; max-inline-size: 46ch;
+  font-size: 14px; line-height: 20px;
+  color: var(--muted-foreground); text-wrap: pretty;
+}
+
+/* Os estados lado a lado, cada um com o NOME embaixo. Sem o nome e uma vitrine:
+ * da para ver que sao diferentes, e nao da para pedir um. */
+.peca-corpo { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+.estado { display: flex; flex-direction: column; gap: 8px; min-inline-size: 0; }
+.estado-palco {
+  display: flex; align-items: center; justify-content: center;
+  min-block-size: 76px; padding: 20px;
+  border: 1px solid var(--border);
+  background: var(--background);
+}
+.estado-rotulo {
+  margin: 0;
+  font-size: 14px; line-height: 20px;
+  color: var(--muted-foreground);
+}
+/* Escolha e Campo sao largos: eles ocupam a linha inteira do palco. */
+.estado:has(.escolha), .estado:has(.campo) { flex: 1 1 340px; }
+.estado:has(.escolha) .estado-palco,
+.estado:has(.campo) .estado-palco { align-items: stretch; }
+.estado .campo, .estado .escolha { inline-size: 100%; }
+
+.tintas, .corpos, .icones { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 20px; }
+.tintas li, .corpos li, .icones li {
+  display: flex; flex-direction: column; gap: 8px; align-items: center;
+  min-inline-size: 92px;
+}
+.tinta-quadro {
+  inline-size: 72px; block-size: 48px;
+  border: 1px solid var(--border);
+}
+.tinta-nome { font-size: 14px; line-height: 20px; color: var(--foreground); }
+.tintas code, .corpos code {
+  font-size: 14px; line-height: 20px;
+  color: var(--muted-foreground);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+/* O rotulo do icone e o que ele QUER DIZER, e por isso e texto e nao codigo. O
+ * nome do arquivo vive no `title`. */
+.icones span { font-size: 14px; line-height: 20px; color: var(--muted-foreground); text-align: center; }
+.corpos li > span:first-child, .icones li > .icone { color: var(--foreground); }
+.icones li { min-inline-size: 76px; }
+
+@media (max-width: 1023px) {
+  .sistema { display: block; padding: 24px 20px 80px; }
+  .sistema-topo h1 { font-size: 28px; line-height: 36px; }
+  .peca h2 { font-size: 22px; line-height: 32px; }
+}

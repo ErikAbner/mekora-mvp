@@ -17,6 +17,7 @@ import { ContaVisao } from "./jornadas/ContaVisao.jsx";
 import { ContaSeguranca } from "./jornadas/ContaSeguranca.jsx";
 import { Ajuda } from "./jornadas/Ajuda.jsx";
 import { Atualizacoes } from "./jornadas/Atualizacoes.jsx";
+import { Sistema } from "./jornadas/Sistema.jsx";
 import { Politicas } from "./jornadas/Politicas.jsx";
 import { EstudoPagina } from "./jornadas/EstudoPagina.jsx";
 import { MesaCheia } from "./jornadas/MesaCheia.jsx";
@@ -592,6 +593,20 @@ export function App() {
             tem direito de saber o que mudou. */}
         <Route path="/ajuda" element={<Ajuda />} />
         <Route path="/atualizacoes" element={<Atualizacoes />} />
+
+        {/* O CATÁLOGO DOS COMPONENTES — a pergunta C19 do `ABERTO.md`.
+         *
+         * SÓ EXISTE EM DESENVOLVIMENTO. `import.meta.env.DEV` é constante em
+         * tempo de compilação: em produção a condição vira `false`, o Rollup
+         * corta o ramo, e o `Sistema.jsx` nem entra no pacote. A rota não existe
+         * como caminho nem como código.
+         *
+         * A razão de não ser produto: o escopo da V1 é o Figma inteiro, e uma
+         * tela que o Figma não tem seria eu acrescentando escopo sozinho. Isto é
+         * instrumento, como o `scripts/portao.js` — serve para OLHAR o que já
+         * existe, lado a lado, em estados que de outro modo só aparecem um por
+         * vez dentro da tela onde moram. */}
+        {import.meta.env.DEV && <Route path="/sistema" element={<Sistema />} />}
         {/* O DOCUMENTO, e nao a tela de Privacidade da conta. Aquela mostra o
             que A SUA conta tem, com contagem; estas duas dizem o que vale para
             qualquer pessoa. Publicas, e sem exigir conta: quem esta decidindo se
