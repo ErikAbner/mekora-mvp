@@ -99,8 +99,15 @@
    * caixa presa. A posicao e a escala vem das variaveis que o JSX escreve, e
    * sao as mesmas da camera — um chao que anda diferente das notas seria pior
    * que um chao parado. */
-  background-image: radial-gradient(var(--border) 1px, transparent 1px);
-  background-size: calc(24px * var(--escala, 1)) calc(24px * var(--escala, 1));
+  /* A mesma forca do `.chao`, misturada com o fundo DESTA superficie. Ver
+   * `--forca-do-ponto` em estilo/base.css. */
+  background-image: radial-gradient(
+    color-mix(in oklab, var(--border) var(--forca-do-ponto), var(--card, var(--background))) 1px,
+    transparent 1px
+  );
+  /* `--passo` vem do JSX e ja dobra sozinho quando a malha ficaria densa demais.
+   * Ver `passoDoChao` em Canvas.jsx. */
+  background-size: calc(var(--passo, 24px) * var(--escala, 1)) calc(var(--passo, 24px) * var(--escala, 1));
   background-position: calc(var(--camera-x, 0px)) calc(var(--camera-y, 0px));
 }
 .canvas-mundo:active { cursor: grabbing; }

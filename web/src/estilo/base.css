@@ -139,6 +139,15 @@ html { -webkit-text-size-adjust: 100%; }
   --saida: cubic-bezier(0.23, 1, 0.32, 1);
   --movimento: cubic-bezier(0.77, 0, 0.175, 1);
   --gaveta: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* QUANTO DA COR DA BORDA SOBRA NO PONTO DO CHÃO.
+   *
+   * Vale para todos os temas de propósito: a proporção é a decisão, e a cor sai
+   * do tema que estiver valendo. Fica aqui, e não junto de `--border`, porque
+   * `--border` é redefinida por cada tema — pôr a proporção dentro de um deles a
+   * faz existir só naquele, e nos outros o `color-mix` cai inteiro. Foi o que
+   * aconteceu: eu a escrevi dentro do tema sépia e o ponto sumiu no claro. */
+  --forca-do-ponto: 55%;
 }
 
 /* O CHÃO E A FOLHA — dois degraus, e eu tinha posto os dois no MESMO.
@@ -205,11 +214,22 @@ html { -webkit-text-size-adjust: 100%; }
  * de um degrau que não existe — `--background-secondary` e `--surface-hover` são
  * `color-mix` em cima de dois tokens. Aqui é a moldura misturada ao piso, em
  * oklab para a mistura ser perceptualmente igual nos dois temas. */
+/* A FORCA DO PONTO, num lugar so.
+ *
+ * Duas superficies do produto sao pontilhadas — o `.chao` das secoes e o chao do
+ * Canvas — e elas tinham cada uma a sua conta: o `.chao` suavizava a cor da
+ * borda a 55%, e o Canvas usava a cor crua, quase o dobro de forca. Dois lugares
+ * decidindo a mesma coisa e um deles ia ficar para tras, que foi o que
+ * aconteceu.
+ *
+ * A conta e uma mistura, e nao um valor pronto, porque as duas superficies
+ * assentam sobre fundos diferentes: o ponto tem de ceder ao fundo de baixo dele,
+ * seja qual for. */
 .chao {
   min-block-size: 100dvh;
   background-color: var(--piso);
   background-image: radial-gradient(
-    color-mix(in oklab, var(--border) 55%, var(--piso)) 1px,
+    color-mix(in oklab, var(--border) var(--forca-do-ponto), var(--piso)) 1px,
     transparent 1px
   );
   background-size: 24px 24px;

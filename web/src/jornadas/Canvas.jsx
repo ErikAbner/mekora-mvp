@@ -94,6 +94,24 @@ function dataCurta(iso) {
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" });
 }
 
+/* O PASSO DO CHAO PONTILHADO, em unidades do plano.
+ *
+ * A malha e de 24 em 24, e ela acompanhava o zoom sem piso nenhum: a 25% os
+ * pontos caiam para 6px de distancia na tela, com 2px de diametro cada. Isso
+ * deixa de ser textura e vira chiado — foi o que o Erik viu comparando com o
+ * Figma, "mais harmonioso, menos pesado, um detalhe e nao o foco". O peso nao
+ * estava na cor do ponto: estava na DENSIDADE, e por isso so aparecia longe.
+ *
+ * Aqui a malha dobra sempre que ficaria mais junta que 18px na tela, entao a
+ * distancia entre pontos fica sempre perto de 24px, em qualquer zoom. Dobrar (e
+ * nao interpolar) mantem os pontos em cima dos mesmos lugares do plano: some um
+ * a cada dois, e os que ficam nao saem do lugar. */
+function passoDoChao(escala) {
+  let passo = 24;
+  while (passo * escala < 18) passo *= 2;
+  return passo;
+}
+
 function Nota({ no, aoMover, aoTirar, aoLigar, ligando, escolhida, escala = 1 }) {
   const quando = dataCurta(no.criada_em);
   const caixa = useRef(null);
@@ -116,6 +134,18 @@ function Nota({ no, aoMover, aoTirar, aoLigar, ligando, escolhida, escala = 1 })
 
   const comecar = (e) => {
     if (e.button !== 0 || ligando) return;
+    /* O GESTO PARA AQUI.
+     *
+     * O chão também escuta `pointerdown`, e ele estava roubando a captura de
+     * ponteiro da nota — quem chama `setPointerCapture` por último ganha. Medido:
+     * o dedo andava 120px, a nota andava 0 no plano, e o canvas inteiro andava
+     * 120. Era isto que fazia arrastar uma nota parecer travado.
+     *
+     * A guarda do chão existia, mas procurava a classe `.canvas-nota`, que não
+     * existe em lugar nenhum — a classe é `nota-canvas`. Uma lista de exceções
+     * escrita à mão erra em silêncio; parar o evento na origem não erra: quem
+     * cuida do próprio arrasto não deixa o gesto subir. */
+    e.stopPropagation();
     caixa.current?.setPointerCapture(e.pointerId);
     arrasto.current = { x0: e.clientX, y0: e.clientY, mexeu: false };
   };
@@ -263,6 +293,8 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0 }) {
 
   const pegar = (e, qual) => {
     if (e.button !== 0) return;
+    e.stopPropagation();
+    /* Mesma razão da nota: o chão não pode roubar este gesto. */
     e.stopPropagation();
     e.currentTarget.setPointerCapture?.(e.pointerId);
     arrasto.current = { qual, x0: e.clientX, y0: e.clientY };
@@ -508,17 +540,47 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
   const idsDeAntes = useRef(null);
   const relogioDoSalto = useRef(null);
 
+  /* APROXIMAR SEM PERDER O QUE SE OLHAVA.
+   *
+   * O botão só mexia na escala. Como o plano tem `transform-origin: 0 0`, tudo
+   * crescia e encolhia a partir do canto do plano, e não do que estava na tela:
+   * afastar duas vezes jogava as notas para fora do enquadramento, e a pessoa
+   * tinha de sair procurando. Medido numa captura a 25% — as notas escaparam
+   * para o canto superior esquerdo.
+   *
+   * É o princípio do Muse que o Erik mandou, "você nunca perde a orientação",
+   * e a pinça já o respeitava: ela ancora no cursor. O botão não tem cursor,
+   * então ancora no CENTRO DA JANELA, que é onde a atenção está.
+   *
+   * A conta é a mesma dos dois: o ponto do plano que está sob a âncora tem de
+   * continuar sob a âncora depois da escala — por isso ela mora num lugar só. */
+  const escalarEmVolta = (c, nova, ax, ay) => {
+    if (nova === c.escala) return c;
+    const noPlanoX = (ax - c.x) / c.escala;
+    const noPlanoY = (ay - c.y) / c.escala;
+    return { x: ax - noPlanoX * nova, y: ay - noPlanoY * nova, escala: nova };
+  };
+
   const aproximar = (passo) => {
     setSaltando(true);
     clearTimeout(relogioDoSalto.current);
     relogioDoSalto.current = setTimeout(() => setSaltando(false), 220);
-    setCamera((c) => ({ ...c, escala: Math.min(ESCALA_MAX, Math.max(ESCALA_MIN, +(c.escala + passo).toFixed(2))) }));
+    const caixa = mundo.current?.getBoundingClientRect();
+    const ax = caixa ? caixa.width / 2 : 0;
+    const ay = caixa ? caixa.height / 2 : 0;
+    setCamera((c) =>
+      escalarEmVolta(
+        c,
+        Math.min(ESCALA_MAX, Math.max(ESCALA_MIN, +(c.escala + passo).toFixed(2))),
+        ax,
+        ay,
+      ),
+    );
   };
 
   /* ARRASTAR O CHÃO leva a câmera junto. Só o chão: começar o arrasto sobre uma
    * nota move a nota, e é o que a pessoa espera dos dois gestos. */
   const chaoDesce = (e) => {
-    if (e.target.closest(".canvas-nota")) return;
     /* O gesto tira a transição na hora: nada de o plano seguir o dedo com
      * 200ms de atraso porque um botão foi apertado meio segundo antes. */
     setSaltando(false);
@@ -576,11 +638,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
         ESCALA_MAX,
         Math.max(ESCALA_MIN, c.escala * Math.pow(0.999, Math.max(-240, Math.min(240, e.deltaY)))),
       );
-      if (nova === c.escala) return c;
-      /* Onde, no plano, está o ponto sob o cursor — antes de mudar a escala. */
-      const noPlanoX = (px - c.x) / c.escala;
-      const noPlanoY = (py - c.y) / c.escala;
-      return { x: px - noPlanoX * nova, y: py - noPlanoY * nova, escala: nova };
+      return escalarEmVolta(c, nova, px, py);
     });
   };
 
@@ -676,6 +734,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
             "--camera-x": `${camera.x}px`,
             "--camera-y": `${camera.y}px`,
             "--escala": camera.escala,
+            "--passo": `${passoDoChao(camera.escala)}px`,
           }}
           onPointerDown={chaoDesce}
           onPointerMove={chaoMove}
