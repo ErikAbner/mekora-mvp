@@ -6,7 +6,8 @@ CBR, imagens) para o Kindle e os guarda numa estante, com notas e ligações.
 A exploração vive num arquivo só: **`prototipo-mesa.html`**, HTML autocontido, sem
 build, que abre por `file://`. Publicado como Artifact a partir de
 `artefato-mekora.html`, que é **gerado** por `scripts/artefato.mjs` — nunca editado
-à mão.
+à mão, e **fora do versionamento desde 03/09** (C14): o gerador o reproduz byte a
+byte, então versioná-lo guardava 2,87 MB por vez sem guardar nada.
 
 ## O que não fazer
 

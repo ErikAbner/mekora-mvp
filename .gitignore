@@ -1,4 +1,20 @@
 
+# ── SAIDA GERADA: o artefato do prototipo (C14 da DEC-0028) ──
+#
+# `artefato-mekora.html` e GERADO por `scripts/artefato.mjs` a partir do
+# `prototipo-mesa.html`, que e versionado. Conferido em 03/09: o gerador o
+# reproduz BYTE A BYTE — mesmo sha256 —, entao versiona-lo nao guarda nada que
+# nao esteja guardado.
+#
+# E custava caro: 2,87 MB de HTML com trinta imagens embutidas, e HTML nao faz
+# delta — cada uma das 29 versoes gravou um objeto novo inteiro, num pacote de
+# 29,4 MB.
+#
+# O HISTORICO NAO E APAGADO, e nao ha reescrita: os 29 objetos continuam
+# alcancaveis pelos commits antigos. A DEC-0028 diz que historia se aposenta e
+# nao se apaga, e e isso — o arquivo sai do HEAD e continua no passado.
+artefato-mekora.html
+
 # artefato de ferramenta de moodboard
 .mooboard.json
 **/.mooboard.json
