@@ -1,7 +1,7 @@
 # Aberto — o que ainda não foi decidido
 
 **Estado:** vigente
-**Última revisão:** 2026-08-21
+**Última revisão:** 2026-09-02
 
 > **Esta é a fila, não um registro.** Um item sai daqui quando vira decisão, e a linha some.
 >
@@ -28,13 +28,28 @@ D   backlog técnico             decide-se durante a implementação, por quem i
 |---|---:|
 | **A** — antes da arquitetura | 6 |
 | **B** — antes da feature afetada | 22 |
-| **C** — antes do lançamento | 18 |
+| **C** — antes do lançamento | 16 |
 | **D** — backlog técnico | 14 |
-| | **60** |
+| | **58** |
+
+*A contagem de C caiu de 18 para 16 em 02/09: `C9` e `C16` fecharam. A regra do
+topo diz que a numeração não se reorganiza — as duas linhas continuam onde
+estavam, riscadas, porque outros documentos apontam para elas.*
 
 ### Saíram da fila em 2026-08-21
 
 `A1` → `DEC-0031` · `A3` → `DEC-0032` · `A6` e `B19` → `DEC-0033`
+
+### Saíram da fila em 2026-09-02
+
+`C9` → **medida.** A Leitura era a única tela sem medida a 390, e a razão era circular: medi-la
+exigia um livro já convertido, e o ajudante de sessão da auditoria não entregava um. Desde que ele
+passou a entregar, ela é medida em toda rodada e passa.
+
+`C16` → **respondida pelo desenho, e não por calibragem.** O risco registrado dizia que calibrar um
+limiar com onze notas seria no escuro. O `895:8545` não pede um limiar: pede três faixas nomeadas —
+"Parecem próximas", "Talvez", "Talvez um estudo" —, e errar a fronteira entre duas custa um rótulo,
+não uma sugestão escondida. As três existem, e cada uma mostra o próprio corte.
 
 ### Saíram da fila em 2026-08-31
 
@@ -126,14 +141,14 @@ Podem ser decididas durante a construção. Não podem ficar sem resposta na V1.
 | **C6** | Se há consentimento para a coleta de uso, e como é pedido | DEC-0029 |
 | **C7** | Por quanto tempo os eventos coletados são mantidos | DEC-0029 |
 | **C8** | Qual ferramenta de instrumentação é usada, e se é própria | DEC-0029 |
-| **C9** | ~~Quando as telas passam a ser efetivamente verificadas a 390px~~ — **medidas em 01/09.** Doze das treze cabem; a Leitura continua sem medida, e a razão está abaixo | DEC-0023 |
+| **C9** | ~~Quando as telas passam a ser efetivamente verificadas a 390px~~ — **fechada em 02/09.** As treze cabem, a Leitura inclusive: a auditoria a mede com um livro convertido de verdade, e ela passa com 21 nós | DEC-0023 |
 | **C10** | A migração do acervo e das notas existentes para identidade estável | DEC-0021 |
 | **C11** | Que estado cada uma das 19 DECs anteriores recebe além da normalização mecânica | DEC-0027 |
 | **C12** | O `role` literal de cada repositório existente | DEC-0026 |
 | **C13** | Quando a máquina Windows é efetivamente zerada | DEC-0028 |
 | **C14** | O destino do `artefato-mekora.html`, 2,87 MB versionados por ausência de regra | DEC-0028 |
 | **C15** | Quando a V1 é lançada | DEC-0029 |
-| **C16** | **O limiar de "talvez" em Conexões.** Uma palavra em comum pode ser generoso demais num acervo grande; calibrar com onze notas seria no escuro | DEC-0024 |
+| **C16** | ~~O limiar de "talvez" em Conexões~~ — **fechada pelo desenho.** O nó `895:8545` não pede um corte binário: pede três faixas nomeadas, e três faixas só precisam estar em ordem. O corte de cada uma aparece na tela, com as palavras em comum ao lado | DEC-0024 |
 | **C17** | **Se o Mekora terá usuários fora do Brasil, e o que isso exige.** Jurisdição-base não é restrição de público: atender pessoa de outro país pode trazer obrigação adicional | DEC-0031 |
 | **C18** | **Em que país ficam os servidores da VPS.** A hospedagem foi escolhida em 30/08 — VPS da Hostinger com Cloudflare —, e isso responde *qual serviço*, não *onde*. A Hostinger tem data centers em vários países, e a escolha da região é feita na contratação | DEC-0031 |
 | **C19** | **O catálogo de componentes.** O `DESIGN-SYSTEM.md` cobre fundamentos e composição; não existe catálogo com estados, variantes e anatomia. Sete componentes foram construídos até 31/08 — Botao, Campo, Escolha, Folha, Icone, Cabecalho, TrilhaConta — e nenhum tem página que mostre seus estados | DEC-0033 |
