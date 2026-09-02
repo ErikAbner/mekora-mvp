@@ -16,7 +16,24 @@
   display: flex;
   flex-direction: column;
   border-radius: 0;
-  background: var(--background);
+
+  /* UM DEGRAU ABAIXO DO CHÃO, e não a mesma cor dele.
+   *
+   * O Erik: "o topo da gaveta tá sem contraste ou distinção do bg, isso causa
+   * ruído visual". A borda de cima não tinha como aparecer, e o motivo é
+   * geométrico: os cinco degraus de sombra do desenho têm deslocamento Y
+   * POSITIVO — `0 10px`, `0 39px`, `0 87px` —, então a sombra cai toda ABAIXO da
+   * folha. Ela nunca ia desenhar a aresta de cima.
+   *
+   * No `895:10599` quem desenha essa aresta é a COR: o chão é branco e a folha é
+   * `surface/base`. Eu tinha posto as duas em `surface/base`, e só os pontos
+   * separavam uma da outra.
+   *
+   * Branco não é superfície do sistema, então o que se copia é a direção: o chão
+   * fica no degrau mais claro que existe e a folha desce um. Mesma relação do
+   * desenho — folha mais escura que o chão —, com dois valores que o sistema
+   * tem. */
+  background: var(--card);
 
   /* A SOMBRA É O QUE FAZ A GAVETA. Sem ela a folha e o chão viram a mesma coisa.
    * Os cinco degraus são do `895:10650`, e o primeiro tem alfa zero porque é

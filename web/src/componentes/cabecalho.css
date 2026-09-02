@@ -4,7 +4,17 @@
   justify-content: space-between;
   gap: 32px;
   padding: 16px 32px;
-  background: var(--background);
+  /* A BARRA NÃO TEM FUNDO: as duas caixas dentro dela é que têm.
+   *
+   * No `895:10599` o cabeçalho são dois cartões FLUTUANDO sobre o chão
+   * pontilhado — os pontos passam por trás e entre eles. Aqui a barra inteira
+   * estava pintada de `surface/base`, e o efeito era o chão sumir na faixa de
+   * cima: o Erik viu como "o topo da gaveta tá sem contraste ou distinção do
+   * bg".
+   *
+   * Nas telas sem chão isto não muda nada — o que aparece atrás é a mesma cor
+   * que a barra pintava. */
+  background: transparent;
 }
 
 /* Duas caixas, não uma. Navegação e ferramenta são categorias diferentes, e
