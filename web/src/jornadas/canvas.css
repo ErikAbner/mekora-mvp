@@ -41,7 +41,6 @@
 
 .canvas-acoes { display: flex; gap: 10px; flex-wrap: wrap; }
 
-.canvas-instrucao,
 .canvas-erro {
   margin: 0;
   padding: 12px 0 12px 20px;
@@ -52,6 +51,50 @@
 }
 
 .canvas-erro { border-inline-start-color: var(--destructive, var(--foreground)); }
+
+/* O AVISO FLUTUA, e nao empurra a superficie.
+ *
+ * Ele morava no fluxo, antes do mundo: aparecer ou sumir mudava a ALTURA do
+ * canvas, e o plano inteiro dava um pulo no meio do gesto. Um aviso que move o
+ * que ele comenta e pior que aviso nenhum.
+ *
+ * Ele entra de baixo, curto: e ocasional, e o manual pede animacao so onde a
+ * frequencia e baixa. */
+.canvas-recado {
+  position: absolute;
+  inset-block-end: 24px; inset-inline-start: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  margin: 0;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--popover, var(--card));
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px rgb(0 0 0 / 0.10);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--foreground);
+  white-space: nowrap;
+  animation: canvas-recado-entra 200ms var(--saida);
+}
+.canvas-recado button {
+  border: 0;
+  background: none;
+  padding: 0;
+  margin-inline-start: 8px;
+  font: inherit;
+  color: var(--foreground);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition: transform 160ms var(--saida);
+}
+.canvas-recado button:active { transform: scale(0.97); }
+
+@keyframes canvas-recado-entra {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
 
 /* O CANVAS E INFINITO, e isto e duas camadas.
  *
@@ -246,7 +289,62 @@
     0 18px 15px rgb(0 0 0 / 0.10);
 }
 /* A escolhida para ligar ganha ESPESSURA e tinta cheia. */
-.nota-canvas.escolhida { border-width: 2px; border-color: var(--foreground); }
+/* AS QUATRO PEGAS DE LIGACAO, uma em cada borda do cartao.
+ *
+ * Elas SO APARECEM no cartao sob o ponteiro ou com o foco dentro: quatro pontos
+ * em cada um de trinta cartoes seria uma constelacao, e o `CLAUDE.md` ja nomeia
+ * o que acontece — coisa repetida vira textura e some como coisa clicavel.
+ *
+ * O ALVO DO DEDO E MAIOR QUE O DESENHO. O ponto tem 8px, que e o tamanho certo
+ * para ele ser um detalhe; 8px tambem e pequeno demais para acertar com o dedo.
+ * O `::after` estende a area sensivel para 24px sem mudar o que se ve. */
+.nota-pega {
+  position: absolute;
+  inline-size: 8px; block-size: 8px;
+  border-radius: 50%;
+  background: var(--background);
+  border: 1px solid var(--foreground);
+  opacity: 0;
+  cursor: crosshair;
+  /* Entrada e saida: `ease-out`, e curto — o cartao esta sob o dedo e a pessoa
+   * ja esta olhando para ele. */
+  transition: opacity 150ms var(--saida), transform 150ms var(--saida);
+  /* Nunca de `scale(0)`: nada no mundo aparece do nada. */
+  transform: scale(0.6);
+}
+.nota-pega::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+}
+.nota-pega-cima     { inset-block-start: -4px; inset-inline-start: 50%; margin-inline-start: -4px; }
+.nota-pega-baixo    { inset-block-end: -4px;   inset-inline-start: 50%; margin-inline-start: -4px; }
+.nota-pega-esquerda { inset-inline-start: -4px; inset-block-start: 50%; margin-block-start: -4px; }
+.nota-pega-direita  { inset-inline-end: -4px;   inset-block-start: 50%; margin-block-start: -4px; }
+
+.nota-canvas:hover .nota-pega,
+.nota-canvas:focus-within .nota-pega { opacity: 1; transform: scale(1); }
+.nota-pega:hover { transform: scale(1.4); background: var(--foreground); }
+
+/* O CARTAO QUE VAI RECEBER O FIO se anuncia antes de a pessoa soltar. Sem isto,
+ * largar o fio e uma aposta: ou pegou, ou nao pegou, e so o resultado conta. */
+.nota-canvas.alvo-do-fio { border-width: 2px; border-color: var(--foreground); }
+
+/* O FIO SENDO PUXADO. Cobre a janela inteira, por cima do plano e sem receber
+ * toque nenhum — quem responde ao dedo e a nota debaixo dele. */
+.canvas-fio {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  overflow: visible;
+}
+.canvas-fio path {
+  stroke: var(--foreground);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+.canvas-fio circle { fill: var(--foreground); }
 .nota-canvas:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
 
 /* Body/Medium, do `895:7035`. Estava em Label/Small — o que a pessoa escreveu
@@ -722,3 +820,27 @@
   .canvas-ferramentas button:active,
   .canvas-zoom button:active { transform: none; }
 }
+
+/* A LISTA DE PARA-ONDE-LIGAR. Cada item mostra o texto da nota, cortado em duas
+ * linhas: o que distingue uma nota da outra esta no comeco dela. */
+.canvas-lista-de-ligar { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.canvas-lista-de-ligar button {
+  inline-size: 100%;
+  text-align: start;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  padding: 12px;
+  font: inherit;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--foreground);
+  cursor: pointer;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: background-color 160ms var(--saida), transform 160ms var(--saida);
+}
+.canvas-lista-de-ligar button:hover { background: var(--muted); }
+.canvas-lista-de-ligar button:active { transform: scale(0.99); }

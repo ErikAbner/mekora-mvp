@@ -112,7 +112,7 @@ function passoDoChao(escala) {
   return passo;
 }
 
-function Nota({ no, aoMover, aoTirar, aoLigar, ligando, escolhida, escala = 1 }) {
+function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1 }) {
   const quando = dataCurta(no.criada_em);
   const caixa = useRef(null);
   const arrasto = useRef(null);
@@ -133,7 +133,7 @@ function Nota({ no, aoMover, aoTirar, aoLigar, ligando, escolhida, escala = 1 })
   const moveu = useRef(false);
 
   const comecar = (e) => {
-    if (e.button !== 0 || ligando) return;
+    if (e.button !== 0) return;
     /* O GESTO PARA AQUI.
      *
      * O chão também escuta `pointerdown`, e ele estava roubando a captura de
@@ -201,15 +201,53 @@ function Nota({ no, aoMover, aoTirar, aoLigar, ligando, escolhida, escala = 1 })
   return (
     <article
       ref={caixa}
-      className={`nota-canvas${posicao ? " movendo" : ""}${escolhida ? " escolhida" : ""}`}
+      className={`nota-canvas${posicao ? " movendo" : ""}${alvoDoFio ? " alvo-do-fio" : ""}`}
+      /* O arrumo precisa da ALTURA REAL de cada cartão, que só o navegador sabe:
+       * ela depende do texto, da prévia e do comentário. O id no DOM é como a
+       * medida encontra de quem é cada caixa. Ver `organizar`. */
+      data-no={no.id}
+      data-nota={no.nota_id}
       style={estilo}
       onClickCapture={talvezCancelarClique}
       onPointerDown={comecar}
       onPointerMove={andar}
       onPointerUp={soltar}
       onPointerCancel={soltar}
-      onClick={() => ligando && aoLigar(no.nota_id)}
     >
+      {/* AS QUATRO PEGAS DE LIGAÇÃO, uma em cada borda.
+       *
+       * Ligar duas notas era um MODO: apertava-se um botão do dock, a superfície
+       * entrava em "escolhendo", tocava-se numa nota e depois na outra. Isso foi
+       * invenção minha. O Erik: "é possível conectar através de um ponto na
+       * parte superior, inferior, esquerda e direita que se conecta em outro
+       * item, como é visível no Figma".
+       *
+       * A diferença não é de enfeite. Um modo tira a superfície do estado normal
+       * e obriga a pessoa a lembrar em que estado ela está; a pega está EM CIMA
+       * da coisa que ela quer ligar, e o gesto é um só, do ponto até a outra
+       * nota. Sai um passo, sai um estado, e some a pergunta "o que este clique
+       * vai fazer agora".
+       *
+       * Elas só aparecem no cartão sob o ponteiro ou com o foco dentro —
+       * quatro pontos em cada um de trinta cartões seria uma constelação. */}
+      {["cima", "baixo", "esquerda", "direita"].map((lado) => (
+        <span
+          key={lado}
+          className={`nota-pega nota-pega-${lado}`}
+          /* OS TRÊS PASSOS FICAM NA PEGA, que é quem captura o ponteiro.
+           *
+           * A outra saída — tratar o movimento lá em cima, no `canvas-mundo`,
+           * deixando o evento subir — foi medida e também funciona. Fica esta
+           * porque o chão passa a tratar só do chão: sem ela, `chaoMove` começa
+           * com um desvio que não é sobre a câmera, e o próximo gesto que
+           * alguém acrescentar põe outro. */
+          onPointerDown={(e) => fio.comecar(e, no.nota_id)}
+          onPointerMove={fio.puxar}
+          onPointerUp={fio.largar}
+          onPointerCancel={fio.largar}
+          aria-hidden="true"
+        />
+      ))}
       {/* A COR DA NOTA VIRA UMA MARCA, e não o papel inteiro.
           
           O nó 895:6938 mostra cartões BRANCOS, com filete fino e uma sombra
@@ -257,6 +295,14 @@ function Nota({ no, aoMover, aoTirar, aoLigar, ligando, escolhida, escala = 1 })
               Abrir no livro
             </Link>
           )}
+          {/* LIGAR PELO TECLADO. As pegas das bordas são gesto de ponteiro e
+              nada mais: quem navega por teclado não tem como puxar um fio, e
+              sem esta porta a ligação teria virado um recurso só de quem usa
+              mouse. Ela abre uma lista das outras notas — nenhum modo, nenhum
+              estado novo na superfície. */}
+          <button type="button" onClick={(e) => { e.stopPropagation(); aoLigarDaLista(no.nota_id); }}>
+            Ligar a…
+          </button>
           {/* TIRAR não apaga: a nota continua na estante e no caderno. O rótulo
               diz "tirar" e não "apagar" por isso. */}
           <button type="button" onClick={(e) => { e.stopPropagation(); aoTirar(no.id); }}>
@@ -410,9 +456,20 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0 }) {
 }
 
 export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro, aoTrazer, aoMover, aoTirar, aoLigar, aoDesligar, aoAgrupar, aoMudarArea, aoDesagrupar }) {
-  const [ligando, setLigando] = useState(false);
-  const [primeira, setPrimeira] = useState(null);
+  /* O FIO QUE ESTÁ SENDO PUXADO, em coordenadas da JANELA e não do plano.
+   *
+   * Da janela porque ele é desenhado por cima de tudo, e não dentro do plano:
+   * assim ele não precisa saber de câmera nem de escala, e a ponta fica
+   * exatamente sob o dedo em qualquer zoom. */
+  const [fio, setFio] = useState(null);
+  /* O MESMO FIO NUM `ref`, porque o primeiro movimento chega antes do estado.
+   * O `useState` só vale a partir do próximo desenho, e o gesto começa agora. */
+  const fioVivo = useRef(null);
+  /* Qual nota está esperando a segunda ponta, quando a ligação vem do teclado. */
+  const [ligandoDaLista, setLigandoDaLista] = useState(null);
   const [escrevendo, setEscrevendo] = useState(false);
+  const [pondoMidia, setPondoMidia] = useState(false);
+  const [endereco, setEndereco] = useState("");
   const [texto, setTexto] = useState("");
   const [trazendo, setTrazendo] = useState(false);
 
@@ -475,14 +532,20 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
   /* O CENTRO DO QUE ESTÁ SENDO VISTO, em coordenadas do plano. É onde o grupo
    * novo nasce — a origem do plano pode estar a mil pixels daqui. */
   const mundo = useRef(null);
-  const criarAqui = () => {
+
+  /* ONDE, NO PLANO, ESTÁ O MEIO DA TELA — descontando metade do objeto que vai
+   * nascer, para que ele fique centrado e não com o canto no meio. */
+  const meioDaVista = (largura = 0, altura = 0) => {
     const caixa = mundo.current?.getBoundingClientRect();
-    const meio = caixa
-      ? {
-          x: (caixa.width / 2 - camera.x) / camera.escala - 240,
-          y: (caixa.height / 2 - camera.y) / camera.escala - 160,
-        }
-      : { x: 0, y: 0 };
+    if (!caixa) return { x: 0, y: 0 };
+    return {
+      x: (caixa.width / 2 - camera.x) / camera.escala - largura / 2,
+      y: (caixa.height / 2 - camera.y) / camera.escala - altura / 2,
+    };
+  };
+
+  const criarAqui = () => {
+    const meio = meioDaVista(480, 320);
     /* O GRUPO NASCE PEDINDO O NOME.
      *
      * Ele nascia sem nome nenhum, e ficava um retângulo tracejado anônimo no
@@ -504,12 +567,135 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
     return aoAgrupar?.({ nome: "", x: meio.x, y: meio.y, largura: 480, altura: 320 });
   };
 
-  const escolher = (notaId) => {
-    if (primeira === null) { setPrimeira(notaId); return; }
-    if (primeira !== notaId) aoLigar(primeira, notaId);
-    setPrimeira(null);
-    setLigando(false);
+  /* ORGANIZAR: ALINHAR E DESENCAVALAR, e não redistribuir tudo.
+   *
+   * O Erik: "o ícone de camadas é para organizar o canvas, já que são muitos
+   * itens é perigoso do usuário se perder, então isso dá uma LEVE organizada" —
+   * e ele mesmo duvidou de que fosse útil. A dúvida é justa, e ela decide o
+   * desenho: uma arrumação que joga tudo numa grade nova destrói o mapa mental
+   * que a pessoa construiu pondo cada coisa onde pôs. Aí sim ela se perde, e foi
+   * o botão que a perdeu.
+   *
+   * O que este faz é o mínimo que resolve a bagunça sem apagar o sentido:
+   * encosta cada nota na malha de 24 e empurra para baixo o que estiver por cima
+   * de outra. A ordem relativa fica de pé — o que estava à esquerda continua à
+   * esquerda —, e é o princípio do Muse que o Erik mandou: você nunca perde a
+   * orientação.
+   *
+   * As posições de antes ficam guardadas para o DESFAZER. Uma ação que mexe em
+   * trinta objetos de uma vez e não tem volta é uma armadilha. */
+  const MALHA = 24;
+  const [desfazerArrumo, setDesfazerArrumo] = useState(null);
+  const relogioDoArrumo = useRef(null);
+
+  const alturasNaTela = () => {
+    const alturas = new Map();
+    for (const el of document.querySelectorAll(".nota-canvas")) {
+      const id = Number(el.dataset.no);
+      if (id) alturas.set(id, el.getBoundingClientRect().height / camera.escala);
+    }
+    return alturas;
   };
+
+  const organizar = () => {
+    if (nos.length < 2) return;
+    const alturas = alturasNaTela();
+    const alturaDe = (n) => alturas.get(n.id) ?? 160;
+    const encaixar = (v) => Math.round(v / MALHA) * MALHA;
+
+    const antes = nos.map((n) => ({ id: n.id, x: n.x, y: n.y }));
+    const postas = [];
+    const depois = [];
+
+    for (const n of [...nos].sort((a, b) => a.y - b.y || a.x - b.x)) {
+      const largura = 375;
+      const altura = alturaDe(n);
+      let x = encaixar(n.x);
+      let y = encaixar(n.y);
+      /* Empurra para BAIXO, e nunca para os lados: mexer no x trocaria a ordem
+       * da esquerda para a direita, que costuma ser a leitura que a pessoa deu
+       * ao arranjo. */
+      let seguro = 0;
+      while (
+        seguro++ < 400 &&
+        postas.some(
+          (o) => x < o.x + o.largura + 8 && x + largura + 8 > o.x && y < o.y + o.altura + 8 && y + altura + 8 > o.y,
+        )
+      ) {
+        y += MALHA;
+      }
+      postas.push({ x, y, largura, altura });
+      if (x !== n.x || y !== n.y) depois.push({ id: n.id, x, y });
+    }
+
+    if (!depois.length) return;
+    for (const m of depois) aoMover(m.id, m.x, m.y);
+    setDesfazerArrumo(antes);
+    clearTimeout(relogioDoArrumo.current);
+    relogioDoArrumo.current = setTimeout(() => setDesfazerArrumo(null), 12000);
+  };
+
+  const desfazerOrganizar = () => {
+    if (!desfazerArrumo) return;
+    for (const m of desfazerArrumo) aoMover(m.id, m.x, m.y);
+    clearTimeout(relogioDoArrumo.current);
+    setDesfazerArrumo(null);
+  };
+
+  const comecarFio = (e, notaId) => {
+    if (e.button !== 0) return;
+    /* Como a nota e o chão: quem cuida do próprio gesto não deixa ele subir. */
+    e.stopPropagation();
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    const caixa = mundo.current.getBoundingClientRect();
+    const pega = e.currentTarget.getBoundingClientRect();
+    const novo = {
+      de: notaId,
+      x0: pega.left + pega.width / 2 - caixa.left,
+      y0: pega.top + pega.height / 2 - caixa.top,
+      x: e.clientX - caixa.left,
+      y: e.clientY - caixa.top,
+      sobre: null,
+    };
+    fioVivo.current = novo;
+    setFio(novo);
+  };
+
+  /* QUEM ESTÁ SOB O DEDO. `elementFromPoint` e não a lista de notas, porque só
+   * o navegador sabe quem ficou por cima de quem depois do zoom e do arrasto. */
+  const notaSobOPonteiro = (e) =>
+    Number(document.elementFromPoint(e.clientX, e.clientY)?.closest(".nota-canvas")?.dataset.nota) || null;
+
+  const puxarFio = (e) => {
+    if (!fioVivo.current) return;
+    const caixa = mundo.current.getBoundingClientRect();
+    const sobre = notaSobOPonteiro(e);
+    const novo = {
+      ...fioVivo.current,
+      x: e.clientX - caixa.left,
+      y: e.clientY - caixa.top,
+      sobre: sobre === fioVivo.current.de ? null : sobre,
+    };
+    fioVivo.current = novo;
+    setFio(novo);
+  };
+
+  const largarFio = (e) => {
+    const f = fioVivo.current;
+    if (!f) return;
+    const alvo = notaSobOPonteiro(e);
+    /* Soltar no vazio CANCELA, e soltar na mesma nota também. Cancelar no meio
+     * do gesto é o que o Muse chama de poder mudar de ideia sem custo. */
+    if (alvo && alvo !== f.de) aoLigar(f.de, alvo);
+    fioVivo.current = null;
+    setFio(null);
+  };
+
+  const maoDoFio = useMemo(
+    () => ({ comecar: comecarFio, puxar: puxarFio, largar: largarFio }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [aoLigar],
+  );
 
   /* A CÂMERA. O Canvas é uma superfície SEM FIM, e o que a tela mostra é um
    * recorte dela — `deslocamento` diz onde esse recorte está, `escala` diz de
@@ -679,33 +865,43 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
             a nota com "+" é escrever, e o alfinete ficou com ligar. Os dois
             primeiros são quase certos; o alfinete é o que eu chutaria de novo se
             ninguém disser. */}
+        {/* O DOCK DIZ TRÊS COISAS, E EU TINHA POSTO OUTRAS TRÊS.
+            
+            O Erik corrigiu uma a uma. A do quadro com "+" é ADICIONAR MÍDIA —
+            foto ou endereço de vídeo —, e eu a usava para "escrever uma nota";
+            o nome do arquivo já dizia `nota-imagem`, e eu o usei pelo lugar e
+            não pelo que ele desenha. A de camadas é ORGANIZAR a superfície, e eu
+            a usava para agrupar. A terceira era LIGAR DUAS NOTAS, que foi ideia
+            minha e não do desenho.
+            
+            É o mesmo erro dos ícones da Estante: escolher pelo que parece, em
+            vez de perguntar o que é. */}
         <nav className="canvas-ferramentas" aria-label="Ferramentas do Canvas">
           <button
             type="button"
-            title="Escrever uma nota"
-            aria-label="Escrever uma nota"
-            onClick={() => { setTexto(""); setEscrevendo(true); }}
+            title="Adicionar mídia"
+            aria-label="Adicionar mídia"
+            onClick={() => { setEndereco(""); setPondoMidia(true); }}
           >
             <Icone src="/icones/icone-nota-imagem.svg" />
           </button>
-          {/* CRIAR UM GRUPO. Ele nasce no meio do que está sendo visto, e não
+          <button
+            type="button"
+            title="Organizar a superfície"
+            aria-label="Organizar a superfície"
+            onClick={organizar}
+            disabled={nos.length < 2}
+          >
+            <Icone src="/icones/icone-camadas.svg" />
+          </button>
+          {/* CRIAR UMA SEÇÃO. Ela nasce no meio do que está sendo visto, e não
               na origem do plano: numa superfície sem fim, a origem pode estar
               a mil pixels de distância, e o retângulo apareceria fora da tela. */}
           <button
             type="button"
-            title="Agrupar uma área"
-            aria-label="Agrupar uma área"
+            title="Criar uma seção"
+            aria-label="Criar uma seção"
             onClick={criarAqui}
-          >
-            <Icone src="/icones/icone-camadas.svg" />
-          </button>
-          <button
-            type="button"
-            title={ligando ? "Escolhendo as notas para ligar" : "Ligar duas notas"}
-            aria-label={ligando ? "Escolhendo as notas para ligar" : "Ligar duas notas"}
-            aria-pressed={ligando ? "true" : "false"}
-            onClick={() => { setLigando((v) => !v); setPrimeira(null); }}
-            disabled={nos.length < 2}
           >
             <Icone src="/icones/icone-fixar.svg" />
           </button>
@@ -713,11 +909,18 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
 
         {erro && <p className="canvas-erro" role="alert">{erro}</p>}
 
-        {ligando && (
-          <p className="canvas-instrucao" role="status">
-            {primeira === null
-              ? "Toque na primeira nota."
-              : "Agora na segunda. Tocar na mesma cancela."}
+        {/* O DESFAZER DO ARRUMO. Ver `organizar`: mexer em trinta objetos de
+            uma vez sem volta é uma armadilha, e ele some sozinho em 12s. */}
+        {desfazerArrumo && (
+          <p className="canvas-recado" role="status">
+            Superfície organizada.{" "}
+            <button type="button" onClick={desfazerOrganizar}>Desfazer</button>
+          </p>
+        )}
+
+        {fio && (
+          <p className="canvas-recado" role="status">
+            {fio.sobre ? "Solte para ligar." : "Leve até outra nota. Soltar no vazio cancela."}
           </p>
         )}
 
@@ -735,6 +938,18 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
             "--camera-y": `${camera.y}px`,
             "--escala": camera.escala,
             "--passo": `${passoDoChao(camera.escala)}px`,
+          }}
+          /* DOIS TOQUES NO VAZIO ESCREVEM UMA NOTA.
+             
+             O dock do `900:52962` tem três ferramentas, e nenhuma delas é
+             escrever — eu tinha posto "escrever" numa delas e empurrado o resto
+             para fora. Escrever não sumiu por isso: ele é o gesto direto de toda
+             superfície deste tipo, do Figma ao Heptabase, e a mão já está no
+             lugar onde a nota vai nascer. */
+          onDoubleClick={(e) => {
+            if (e.target.closest(".nota-canvas, .canvas-grupo, .canvas-ferramentas, .canvas-zoom")) return;
+            setTexto("");
+            setEscrevendo(true);
           }}
           onPointerDown={chaoDesce}
           onPointerMove={chaoMove}
@@ -829,13 +1044,30 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
               no={no}
               aoMover={aoMover}
               aoTirar={aoTirar}
-              aoLigar={escolher}
-              ligando={ligando}
-              escolhida={primeira === no.nota_id}
+              fio={maoDoFio}
+              aoLigarDaLista={setLigandoDaLista}
+              alvoDoFio={fio?.sobre === no.nota_id}
               escala={camera.escala}
             />
           ))}
           </div>
+
+          {/* O FIO QUE ESTÁ SENDO PUXADO, por cima de tudo e sem receber toque.
+              Fica FORA do plano de propósito: em coordenadas da janela ele não
+              precisa saber de câmera nem de escala, e a ponta fica exatamente
+              sob o dedo em qualquer zoom.
+
+              A curva é a mesma dos traços já ligados — puxar um fio tem de
+              parecer com o que ele vai virar. */}
+          {fio && (
+            <svg className="canvas-fio" aria-hidden="true">
+              <path
+                d={`M ${fio.x0} ${fio.y0} C ${fio.x0} ${(fio.y0 + fio.y) / 2}, ${fio.x} ${(fio.y0 + fio.y) / 2}, ${fio.x} ${fio.y}`}
+                fill="none"
+              />
+              <circle cx={fio.x} cy={fio.y} r="4" />
+            </svg>
+          )}
 
           {/* O CONTROLE DE ZOOM, do canto do desenho. Ele mostra a porcentagem
               porque "menos" e "mais" sem número não deixam voltar ao tamanho
@@ -870,7 +1102,13 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
             tom="primaria"
             disabled={!texto.trim()}
             onClick={async () => {
-              if (await aoTrazer({ texto: texto.trim(), x: 40, y: 40 })) setEscrevendo(false);
+              /* A NOTA NASCE ONDE A PESSOA ESTÁ OLHANDO.
+               *
+               * Era `x: 40, y: 40` — fixo, no canto do PLANO. Quem tivesse
+               * andado pela superfície escrevia uma nota e ela nascia longe,
+               * fora da tela, sem nada dizendo para onde ela foi. */
+              const onde = meioDaVista(375, 120);
+              if (await aoTrazer({ texto: texto.trim(), x: onde.x, y: onde.y })) setEscrevendo(false);
             }}
           >
             Pôr na superfície
@@ -909,6 +1147,69 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
             — <span className="dado">{deFora.length}</span> ainda estão fora da superfície.
           </p>
         )}
+      </Folha>
+
+      {/* A LISTA DE PARA-ONDE-LIGAR — o caminho de teclado do fio. Só as notas
+          que ainda não estão ligadas a esta aparecem: oferecer o que já existe
+          é oferecer um clique que não faz nada. */}
+      <Folha
+        aberta={ligandoDaLista !== null}
+        titulo="Ligar a qual nota?"
+        aoFechar={() => setLigandoDaLista(null)}
+      >
+        <ul className="canvas-lista-de-ligar">
+          {nos
+            .filter((o) => o.nota_id !== ligandoDaLista)
+            .filter((o) => !ligacoes.some((l) =>
+              (l.de_id === ligandoDaLista && l.para_id === o.nota_id) ||
+              (l.para_id === ligandoDaLista && l.de_id === o.nota_id)))
+            .map((o) => (
+              <li key={o.id}>
+                <button
+                  type="button"
+                  onClick={() => { aoLigar(ligandoDaLista, o.nota_id); setLigandoDaLista(null); }}
+                >
+                  {o.texto}
+                </button>
+              </li>
+            ))}
+        </ul>
+      </Folha>
+
+      {/* ADICIONAR MÍDIA. O que entra é um ENDEREÇO, e o cartão vira a prévia
+          dele — título, descrição e capa, lidas no próprio site. O aviso não é
+          formalidade: o Mekora precisa IR ATÉ o endereço para montar a prévia, e
+          a tela de Privacidade diz isso com todas as letras. */}
+      <Folha
+        aberta={pondoMidia}
+        titulo="Adicionar mídia"
+        aoFechar={() => setPondoMidia(false)}
+        acoes={
+          <Botao
+            tom="primaria"
+            disabled={!endereco.trim()}
+            onClick={async () => {
+              const onde = meioDaVista(375, 220);
+              if (await aoTrazer({ texto: endereco.trim(), x: onde.x, y: onde.y })) setPondoMidia(false);
+            }}
+          >
+            Pôr na superfície
+          </Botao>
+        }
+      >
+        <p>
+          Cole o endereço de um vídeo ou de uma página. O cartão vira a prévia
+          dele — e para montá-la o Mekora precisa visitar esse endereço.
+        </p>
+        <Campo
+          rotulo="O endereço"
+          type="url"
+          inputMode="url"
+          placeholder="https://"
+          value={endereco}
+          onChange={(e) => setEndereco(e.target.value)}
+          autoFocus
+        />
       </Folha>
 
       <Folha

@@ -25,7 +25,22 @@ export function Folha({ aberta, titulo, aoFechar, children, acoes, ampla = false
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
-    if (aberta && !d.open) d.showModal();
+    if (aberta && !d.open) {
+      d.showModal();
+      /* O FOCO VAI PARA O QUE A FOLHA PEDE, e não para o "Fechar".
+       *
+       * O `<dialog>` põe o foco no primeiro elemento alcançável, e o primeiro é
+       * o X do canto — a folha abria com o foco no botão de desistir. Medido:
+       * dois toques na superfície abriam "Escrever uma nota" com o foco em
+       * "Fechar", e digitar não escrevia nada. O `autoFocus` do campo não
+       * ganha dessa regra, porque ela roda depois.
+       *
+       * Se não há campo nenhum, o X continua sendo a resposta certa. */
+      const campo = d.querySelector(
+        ".folha-conteudo input:not([type=hidden]), .folha-conteudo textarea, .folha-conteudo select",
+      );
+      campo?.focus();
+    }
     if (!aberta && d.open) d.close();
   }, [aberta]);
 
