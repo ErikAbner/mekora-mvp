@@ -191,13 +191,27 @@ html { -webkit-text-size-adjust: 100%; }
  * `position: fixed` e sai do fluxo, então a `.mesa` que a contém colapsava para
  * a altura do cabeçalho — 118px — e todo o resto era o fundo do `html`.
  *
- * O PONTO NÃO USA A TINTA DE MOLDURA. `--border` existe para separar duas
- * superfícies e tem peso para isso; o ponto não separa nada, ele diz que há um
- * plano embaixo. */
+ * O PONTO FICA ENTRE DOIS TOKENS, e não em cima de um deles.
+ *
+ * `--border` (#b1b1b1) é a tinta de MOLDURA: ela separa duas superfícies e tem
+ * peso para isso. O ponto não separa nada — ele diz que há um plano embaixo, e
+ * some assim que há qualquer coisa em cima. O Erik viu o primeiro como forte
+ * demais.
+ *
+ * Trocado por `--muted` (#ebebeb), ficou "muito apagado, até demais". E o
+ * sistema não tem degrau entre os dois: de #ebebeb salta direto para #b1b1b1.
+ *
+ * Então ele é DERIVADO, que é o que o próprio Design System faz quando precisa
+ * de um degrau que não existe — `--background-secondary` e `--surface-hover` são
+ * `color-mix` em cima de dois tokens. Aqui é a moldura misturada ao piso, em
+ * oklab para a mistura ser perceptualmente igual nos dois temas. */
 .chao {
   min-block-size: 100dvh;
   background-color: var(--piso);
-  background-image: radial-gradient(var(--muted) 1px, transparent 1px);
+  background-image: radial-gradient(
+    color-mix(in oklab, var(--border) 55%, var(--piso)) 1px,
+    transparent 1px
+  );
   background-size: 24px 24px;
 }
 
