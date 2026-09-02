@@ -39,4 +39,34 @@
 		Referrer-Policy strict-origin-when-cross-origin
 		-Server
 	}
+
+	# ── QUANTO TEMPO O NAVEGADOR PODE GUARDAR ──
+	#
+	# Sem isto o Caddy manda `Etag` e nada mais: o navegador volta a perguntar
+	# por CADA arquivo em cada visita, recebe 304, e paga a ida à rede assim
+	# mesmo. Numa página com trinta ícones isso é trinta idas para não baixar
+	# nada.
+	#
+	# O que pode ser guardado para sempre é o que tem o CONTEÚDO NO NOME:
+	# `index-Byykk_Fg.js` só existe com aquele conteúdo, e uma versão nova é
+	# outro nome. Guardar por um ano não deixa ninguém preso em versão velha —
+	# `immutable` diz ao navegador que nem vale a pena perguntar.
+	header /assets/* Cache-Control "public, max-age=31536000, immutable"
+
+	# A fonte não tem hash no nome, mas também nunca muda: se a Zodiak for
+	# trocada um dia, o arquivo novo entra com outro nome (é o que `ORIGEM`
+	# pede em `docs/FONTES.md`).
+	header /fontes/* Cache-Control "public, max-age=31536000, immutable"
+
+	# Ícone e capa NÃO levam hash e PODEM ser reexportados do Figma com o mesmo
+	# nome. Um ano aqui prenderia todo mundo no desenho velho até 2027. Um dia,
+	# e uma semana servindo o antigo enquanto busca o novo por trás.
+	header /icones/* Cache-Control "public, max-age=86400, stale-while-revalidate=604800"
+	header /capas/* Cache-Control "public, max-age=86400, stale-while-revalidate=604800"
+
+	# O `index.html` é o mapa: é ele que diz quais nomes de arquivo existem
+	# agora. Guardá-lo faria o navegador pedir pacotes que a subida anterior
+	# apagou — a tela em branco clássica do dia seguinte ao deploy.
+	header /index.html Cache-Control "no-cache"
+	header / Cache-Control "no-cache"
 }

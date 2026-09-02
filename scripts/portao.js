@@ -22,6 +22,12 @@
  *                         desenho prometeu.
  *   CORPO FORA DA ESCALA  tamanho que não é degrau. Um 19px entra sem doer e
  *                         só aparece quando alguém tenta gerar a escala.
+ *   FONTE QUE NÃO DESCEU  a Zodiak declarada e não SERVIDA. O `@font-face`
+ *                         tinha só `local()`: ela aparecia na máquina onde
+ *                         estava instalada, e em nenhuma outra. Vinte e duas
+ *                         telas conferidas contra o Figma, sessenta medidas
+ *                         verdes, tudo com a tipografia certa para uma pessoa
+ *                         só no mundo. Foi o verde por omissão mais caro daqui.
  *
  * O que ele NÃO julga: filete e traço decorativo. A WCAG cobra 3,0 de
  * componente de interface, não de separador, e cobrar de tudo produz uma lista
@@ -350,9 +356,39 @@
     });
   }
 
+  /* A FONTE TEM DE TER DESCIDO DO SERVIDOR.
+   *
+   * Não basta `document.fonts.check`: ele responde `true` quando a fonte está
+   * INSTALADA na máquina, que é exatamente o engano que se quer pegar. A
+   * pergunta certa é se o arquivo veio pela rede, e quem sabe disso é o
+   * `PerformanceResourceTiming` — se o navegador buscou o `.woff2`, ele buscou
+   * porque precisava.
+   *
+   * As duas conferências juntas: a face está declarada E o arquivo desceu. Uma
+   * sem a outra é meia resposta.
+   */
+  const FAMILIA = 'Zodiak Variable';
+  const baixouFonte = performance
+    .getEntriesByType('resource')
+    .some((e) => /\/fontes\/[^/]+\.woff2$/.test(e.name) && e.transferSize !== 0);
+  const declarada = [...document.fonts].some((f) => f.family.includes(FAMILIA));
+  const usaFamilia = getComputedStyle(document.body).fontFamily.includes(FAMILIA);
+  const fonteNaoDesceu =
+    usaFamilia && (!declarada || !baixouFonte)
+      ? {
+          familia: FAMILIA,
+          face_declarada: declarada,
+          arquivo_desceu: baixouFonte,
+          nota: baixouFonte
+            ? 'a família está no `font-family` mas não há `@font-face` para ela'
+            : 'nenhum `.woff2` veio pela rede — quem não tiver a fonte instalada vê outra',
+        }
+      : null;
+
   return {
     url: location.pathname,
     nos_com_texto: medidos,
+    fonte_nao_desceu: fonteNaoDesceu,
     link_com_tinta_do_navegador: unico(linkSemTinta, (x) => x.valor + x.onde),
     cor_fora_do_sistema: unico(corFora, (x) => x.valor + x.papel),
     contraste_abaixo: unico(contraste, (x) => x.tinta + x.fundo + x.corpo),
@@ -378,6 +414,7 @@
 
     passou:
       medidos >= 5 &&
+      fonteNaoDesceu === null &&
       linkSemTinta.length === 0 &&
       codigoNaTela.length === 0 &&
       corFora.length === 0 &&

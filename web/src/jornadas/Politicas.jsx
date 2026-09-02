@@ -127,6 +127,16 @@ const TERMOS = {
       ],
       onde: { rota: "/conta/privacidade", diz: "Apagar minha conta" },
     },
+    /* O CRÉDITO NÃO É CORTESIA: é o que a licença pede. O aviso dentro do
+     * arquivo da fonte diz que ela deve ser identificada pelo nome e a fundição
+     * creditada, e a única forma de cumprir isso é uma linha visível numa
+     * página do produto. Aqui, e não num README que ninguém abre. */
+    {
+      t: "Crédito",
+      p: [
+        "A tipografia do Mekora é a Zodiak, desenhada pela Indian Type Foundry e distribuída pela Fontshare.",
+      ],
+    },
   ],
 };
 

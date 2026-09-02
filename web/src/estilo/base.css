@@ -11,10 +11,37 @@
  * ordem quando a especificidade empata. */
 @import "./tema-escolhido.css";
 
+/* A FONTE VEM DO SERVIDOR, e o `local()` e so um atalho para quem ja a tem.
+ *
+ * Ate 03/09 esta regra tinha SO o `local()`. Nenhum arquivo era servido, e a
+ * Zodiak aparecia porque estava instalada na maquina de quem media. Todo
+ * visitante via `system-ui`, e nenhuma medicao pegava — porque toda medicao
+ * rodava justamente na maquina que tinha a fonte. A procedencia dos arquivos,
+ * e por que sao inteiros e nao recortados, esta em `public/fontes/ORIGEM.md`.
+ *
+ * `swap`: o texto aparece na hora na fonte de sistema e troca quando a Zodiak
+ * chega. O custo e um pulo de layout — pago de propria vontade, porque a
+ * alternativa (`block`) e ate tres segundos de texto invisivel. O `preload` no
+ * `index.html` faz a romana chegar junto do primeiro desenho, e ai a troca
+ * quase nunca chega a ser vista.
+ *
+ * O italico e uma face separada de proposito: o navegador so busca a face que a
+ * pagina usa, entao quem nunca ve texto em italico nunca baixa os 42 KB. */
 @font-face {
   font-family: "Zodiak Variable";
-  src: local("Zodiak Variable"), local("Zodiak-Variable");
+  src: url("/fontes/zodiak.woff2") format("woff2"),
+       local("Zodiak Variable"), local("Zodiak-Variable");
   font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Zodiak Variable";
+  src: url("/fontes/zodiak-italico.woff2") format("woff2"),
+       local("Zodiak Variable Italic"), local("Zodiak-VariableItalic");
+  font-weight: 100 900;
+  font-style: italic;
   font-display: swap;
 }
 

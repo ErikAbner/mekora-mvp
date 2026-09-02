@@ -12,7 +12,7 @@ export const EXEMPLO_FILA = [
 
 export const EXEMPLO_ESTANTE = [1, 2, 3, 4, 1, 2, 3, 4].map((n, i) => ({
   chave: i + 1, titulo: "Estudo de viabilidade", autor: "Ana Duarte", notas: 24,
-  capa: `/capas/exemplo-${n}.png`,
+  capa: `/capas/exemplo-${n}.webp`,
 }));
 
 export const EXEMPLO_FICHA = {

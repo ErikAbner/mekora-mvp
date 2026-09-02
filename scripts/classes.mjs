@@ -20,6 +20,19 @@
  * ===================
  * Classe definida uma vez e usada em várias telas — isso é reúso, e é o certo.
  * O problema é a mesma classe DEFINIDA em dois lugares com valores diferentes.
+ *
+ * A SEGUNDA PERGUNTA, DE 03/09
+ * ============================
+ * O `index.html` ganhou um esqueleto — a forma que aparece enquanto o pacote
+ * baixa — com estilo embutido num `<style>`. As regras eram escopadas
+ * (`#esqueleto .barra`), e escopar deveria bastar. Não bastou: `mesa-cheia.css`
+ * define `.barra` SOLTA, como a barra de progresso de 4 pixels de altura, e ela
+ * entrou por cima. O esqueleto mediu 32 pixels de altura em vez de 112.
+ *
+ * A lição é que escopar protege a SUA regra de vazar, e não protege você da
+ * regra solta de outra pessoa. Então a segunda pergunta é outra: alguma classe
+ * USADA no `index.html` está DEFINIDA solta numa folha de tela? Se está, o
+ * esqueleto vai receber estilo que ninguém escreveu para ele.
  */
 
 import { readFileSync, readdirSync } from 'node:fs';
@@ -51,12 +64,36 @@ for (const pasta of PASTAS) {
   }
 }
 
+/* AS CLASSES DO ESQUELETO, conferidas contra as folhas de tela.
+ *
+ * `onde` já tem o mapa de quem define o quê; aqui só se pergunta quais dos
+ * nomes usados no HTML aparecem lá — soltos, que é a forma que vaza. */
+const HTML = 'web/index.html';
+const html = readFileSync(join(raiz, HTML), 'utf8');
+const usadas = new Set();
+for (const m of html.matchAll(/class="([^"]+)"/g)) {
+  for (const c of m[1].split(/\s+/)) if (c) usadas.add(`.${c}`);
+}
+const invadidas = [...usadas].filter((c) => onde.has(c)).sort();
+
 const brigando = [...onde.entries()]
   .filter(([, arqs]) => arqs.size > 1)
   .sort((a, b) => a[0].localeCompare(b[0]));
 
+if (invadidas.length) {
+  console.log(`CLASSES DO ${HTML} QUE UMA FOLHA DE TELA TAMBÉM DEFINE:\n`);
+  for (const nome of invadidas) {
+    console.log(`  ${nome}`);
+    for (const a of [...onde.get(nome)].sort()) console.log(`      ${a}`);
+  }
+  console.log('\nO esqueleto do HTML vai receber estilo escrito para outra coisa,');
+  console.log('e escopar a regra dele não resolve — quem vaza é a outra.');
+  console.log('Dê um nome que só exista ali (o prefixo `esqueleto-`).');
+  process.exit(1);
+}
+
 if (!brigando.length) {
-  console.log('nenhuma classe definida em dois arquivos.');
+  console.log(`nenhuma classe definida em dois arquivos, e nenhuma do ${HTML} invadida.`);
   process.exit(0);
 }
 

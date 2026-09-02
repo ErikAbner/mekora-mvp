@@ -22,9 +22,9 @@ const marca = "/icones/marca-mekora.svg";
  * exatamente de capa montada pelo Mekora — mostrar capa de verdade é o que a
  * seção afirma. */
 const CAPAS = [
-  { arquivo: "/capas/exemplo-1.png", titulo: "Malha Urbana", autor: "Ana Duarte" },
-  { arquivo: "/capas/exemplo-2.png", titulo: "Apresentação Institucional", autor: "Ana Duarte" },
-  { arquivo: "/capas/exemplo-3.png", titulo: "Sequência Noturna", autor: "Ana Duarte" },
+  { arquivo: "/capas/exemplo-1.webp", titulo: "Malha Urbana", autor: "Ana Duarte" },
+  { arquivo: "/capas/exemplo-2.webp", titulo: "Apresentação Institucional", autor: "Ana Duarte" },
+  { arquivo: "/capas/exemplo-3.webp", titulo: "Sequência Noturna", autor: "Ana Duarte" },
 ];
 
 /* A VITRINE DA ESTANTE — a seção que eu tinha omitido.
@@ -46,10 +46,10 @@ const CAPAS = [
 const VITRINE_RECORTES = ["Tudo", "Com nota", "No Kindle", "Quadrinhos"];
 
 const VITRINE_LIVROS = [
-  { capa: "/capas/exemplo-1.png", titulo: "Malha Urbana", autor: "Ana Duarte", notas: 24 },
-  { capa: "/capas/exemplo-2.png", titulo: "Apresentação Institucional", autor: "Ana Duarte", notas: 8 },
-  { capa: "/capas/exemplo-3.png", titulo: "Sequência Noturna", autor: "Ana Duarte", notas: 12 },
-  { capa: "/capas/exemplo-4.png", titulo: "Estudo de Viabilidade", autor: "Ana Duarte", notas: 5 },
+  { capa: "/capas/exemplo-1.webp", titulo: "Malha Urbana", autor: "Ana Duarte", notas: 24 },
+  { capa: "/capas/exemplo-2.webp", titulo: "Apresentação Institucional", autor: "Ana Duarte", notas: 8 },
+  { capa: "/capas/exemplo-3.webp", titulo: "Sequência Noturna", autor: "Ana Duarte", notas: 12 },
+  { capa: "/capas/exemplo-4.webp", titulo: "Estudo de Viabilidade", autor: "Ana Duarte", notas: 5 },
 ];
 
 const PASSOS = [

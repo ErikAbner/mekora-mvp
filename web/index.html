@@ -4,9 +4,101 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Mekora</title>
+
+    <!-- O TEMA ANTES DE QUALQUER TINTA.
+
+         `estado/tema.js` diz que aplica o tema "antes do primeiro desenho", e
+         isso era verdade em relação ao React e falso em relação à PÁGINA: o
+         módulo só roda depois de o pacote inteiro baixar e ser lido. Quem
+         escolheu escuro num sistema claro via a tela branca durante todo esse
+         tempo, e só então ela escurecia.
+
+         Estas seis linhas rodam antes de o `<body>` existir. A chave é a mesma
+         de `estado/tema.js` — se um dia ela mudar lá, muda aqui, e é por isso
+         que o nome está escrito nos dois lugares e não escondido num dos dois. -->
+    <script>
+      try {
+        var t = localStorage.getItem("mekora-tema");
+        if (t === "claro" || t === "escuro" || t === "sepia") {
+          document.documentElement.setAttribute("data-tema", t);
+        }
+      } catch (e) {
+        /* Modo privado. O tema do sistema decide, que é o padrão de qualquer forma. */
+      }
+    </script>
+
+    <!-- A romana chega junto do primeiro desenho, e aí a troca de fonte quase
+         nunca é vista. O itálico NÃO é pré-carregado de propósito: a maioria das
+         telas não tem nenhum, e pré-carregar o que não se usa é peso puro. -->
+    <link rel="preload" href="/fontes/zodiak.woff2" as="font" type="font/woff2" crossorigin />
+
+    <!-- O ESQUELETO.
+
+         O `<div id="raiz">` era vazio. Entre o HTML chegar e o React montar há o
+         download do pacote inteiro, e nesse tempo a tela era branca — sem
+         cabeçalho, sem cor de tema, sem nada que dissesse que algo estava vindo.
+
+         O que está desenhado aqui é só o que é VERDADE em qualquer rota: a cor
+         de fundo e a barra de cima. Nenhum cartão falso, nenhuma lista falsa —
+         esqueleto que mostra uma forma diferente da que chega é pior que tela
+         vazia, porque a página salta quando o conteúdo real ocupa o lugar.
+
+         As cores repetem os tokens porque a folha do pacote pode não ter
+         chegado. `var(--x, #hex)` resolve isso sem escolher: se o token existe,
+         ele manda; o hexadecimal é só o que sobra quando não há token nenhum.
+
+         E TODA CLASSE AQUI COMEÇA COM `esqueleto-`. A primeira versão usava
+         `.barra`, `.acao`, `.bloco`. `.barra` já existia em `mesa-cheia.css`
+         como a barra de progresso de 4px de altura, e `.acao` já existia no
+         cabeçalho: a folha do pacote entrava por cima e achatava o esqueleto
+         para 32 pixels. Ficou 32 pixels na medida antes de alguém olhar a tela.
+         O `classes.mjs` recusa uma classe definida em dois arquivos CSS — mas
+         este `<style>` mora num HTML, que ele não lia. Agora lê. -->
+    <style>
+      #esqueleto { display: flex; flex-direction: column; min-height: 100dvh;
+        background: var(--background, #f9f9f9); }
+      #esqueleto .esqueleto-barra { display: flex; align-items: center; justify-content: space-between;
+        gap: 32px; padding: 16px 32px; }
+      #esqueleto .esqueleto-bloco { border: 1px solid var(--border, #b1b1b1);
+        background: var(--card, #f3f3f3); }
+      #esqueleto .esqueleto-lugares { width: 544px; max-width: 60vw; height: 80px; }
+      #esqueleto .esqueleto-acao { width: 56px; height: 56px; }
+      #esqueleto .esqueleto-acoes { display: flex; gap: 16px; }
+      /* O aviso só aparece depois de 600ms. Numa conexão boa o pacote chega
+         antes disso e ninguém chega a ver a palavra "carregando" piscar. */
+      #esqueleto .esqueleto-recado { margin: auto; padding-bottom: 88px; opacity: 0;
+        color: var(--muted-foreground, #6b6b6b); font-size: 16px; line-height: 24px;
+        font-family: "Zodiak Variable", system-ui, sans-serif;
+        animation: esqueleto-surge 400ms ease-out 600ms forwards; }
+      @keyframes esqueleto-surge { to { opacity: 1; } }
+      @media (max-width: 767px) {
+        #esqueleto .esqueleto-barra { padding: 8px 16px; }
+        #esqueleto .esqueleto-lugares { height: 60px; }
+        #esqueleto .esqueleto-acao { width: 44px; height: 44px; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #esqueleto .esqueleto-recado { animation: none; opacity: 1; }
+      }
+    </style>
   </head>
   <body>
-    <div id="raiz"></div>
+    <div id="raiz">
+      <div id="esqueleto" aria-hidden="true">
+        <div class="esqueleto-barra">
+          <div class="esqueleto-bloco esqueleto-lugares"></div>
+          <div class="esqueleto-acoes"><div class="esqueleto-bloco esqueleto-acao"></div><div class="esqueleto-bloco esqueleto-acao"></div></div>
+        </div>
+        <p class="esqueleto-recado">Carregando o Mekora…</p>
+      </div>
+    </div>
+    <!-- A barra some nas duas rotas que não têm cabeçalho nenhum. Desenhá-la ali
+         seria prometer uma coisa e entregar outra meio segundo depois. -->
+    <script>
+      var p = location.pathname;
+      if (p === "/entrar" || p.indexOf("/leitura/") === 0) {
+        document.querySelector("#esqueleto .esqueleto-barra").remove();
+      }
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
