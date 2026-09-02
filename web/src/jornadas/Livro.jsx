@@ -5,26 +5,11 @@ import { Botao } from "../componentes/Botao.jsx";
 import { ConfiguracoesArquivo } from "../componentes/ConfiguracoesArquivo.jsx";
 import { Campo } from "../componentes/Campo.jsx";
 import { TrilhaDaPagina } from "../componentes/TrilhaDaPagina.jsx";
-import { achatar } from "../../../contrato/texto.js";
+import { achatar, comecosDistintos } from "../../../contrato/texto.js";
 import { DESTAQUES } from "./Leitura.jsx";
 import { analisar, apagarNota, criarNota, editarNota, enviarAoKindle, lerNotas, lerProgresso } from "../../../contrato/api.js";
 import { tamanhoLegivel } from "../../../contrato/tamanho.js";
 import "./livro.css";
-
-/* O COMEÇO DE UMA NOTA, para caber na trilha.
- *
- * O desenho corta com reticências — "Isso serve para…", "Que método de…" —, e o
- * corte é por PALAVRA e não por caractere: parar no meio de uma palavra dá
- * "Que méto…", que se lê pior e não economiza nada. */
-const PALAVRAS_NA_TRILHA = 3;
-
-function primeirasPalavras(texto) {
-  const limpo = (texto ?? "").trim().replace(/\s+/g, " ");
-  if (!limpo) return "Nota sem texto";
-  const partes = limpo.split(" ");
-  if (partes.length <= PALAVRAS_NA_TRILHA) return limpo;
-  return partes.slice(0, PALAVRAS_NA_TRILHA).join(" ") + "…";
-}
 
 /* A ficha de um livro, inteira.
  *
@@ -169,13 +154,14 @@ export function Livro() {
           itens={[
             { id: "livro-inicio", rotulo: "Início" },
             { id: "livro-o-que-ficou", rotulo: "O que ficou" },
-            ...visiveis.map((n) => ({
-              id: `nota-${n.id}`,
-              /* O QUE APARECE É O QUE A PESSOA ESCREVEU, e o trecho vem antes do
-                 comentário: é ele que ela reconhece. Nota escrita sobre o livro
-                 não tem trecho, e aí o comentário é tudo o que há. */
-              rotulo: primeirasPalavras(n.trecho || n.comentario),
-            })),
+            /* O QUE APARECE É O QUE A PESSOA ESCREVEU, e o trecho vem antes do
+               comentário: é ele que ela reconhece. Nota escrita sobre o livro
+               não tem trecho, e aí o comentário é tudo o que há.
+               Os rótulos se desempatam sozinhos — ver `comecosDistintos`. */
+            ...(() => {
+              const rotulos = comecosDistintos(visiveis.map((n) => n.trecho || n.comentario));
+              return visiveis.map((n, k) => ({ id: `nota-${n.id}`, rotulo: rotulos[k] }));
+            })(),
             { id: "livro-escrever", rotulo: "Escrever sobre" },
             { id: "livro-arquivo", rotulo: "Este arquivo" },
           ]}

@@ -1,11 +1,31 @@
-/* DUAS COLUNAS: a trilha de ancoras e a pagina. A trilha some abaixo de 1024
- * (regra dela), e ai a pagina volta a ser uma coluna so. */
+/* UMA COLUNA SÓ, de 1222px — a medida do `895:8896`.
+ *
+ * A trilha ficava aqui, transformando a página inteira em duas colunas. O Erik
+ * apontou que ela foi forçada onde não cabia, e o desenho confirma: no
+ * `895:8849` ela aparece SÓ na fileira de baixo, ao lado de "Você ligou". Em
+ * cima não há o que indexar — título, busca, recortes e quadro se veem de uma
+ * olhada. */
 .estudos-com-trilha {
-  display: flex; gap: 48px; align-items: flex-start;
-  max-inline-size: 1240px; margin-inline: auto;
-  padding-block-start: 32px;
+  inline-size: 100%;
+  max-inline-size: 1222px;
+  margin-inline: auto;
 }
-.estudos { flex: 1 1 0; min-inline-size: 0; padding: 0 40px 64px; display: flex; flex-direction: column; gap: 24px; }
+
+/* `gap-128` entre as seções grandes e `pt-128 pb-64`, do `895:8896`. */
+.estudos {
+  display: flex; flex-direction: column; gap: 128px;
+  padding: 128px 0 64px;
+}
+
+/* A FILEIRA DE BAIXO — `895:8945`: a trilha e o conteúdo, com 48 entre eles. */
+.estudos-fileira-de-baixo {
+  display: flex; gap: 48px; align-items: flex-start;
+  inline-size: 100%;
+}
+.estudos-de-baixo {
+  flex: 1 1 0; min-inline-size: 0;
+  display: flex; flex-direction: column; gap: 128px;
+}
 /* A ancora nao pode encostar no topo da janela: sem isto o titulo da secao fica
  * colado na borda e parece cortado. */
 .estudos :where(.estudos-topo, .estudos-metade, .estudos-ligou, .estudos-lista, .estudos-soltas) {
@@ -13,8 +33,12 @@
 }
 
 @media (max-width: 1023px) {
-  .estudos-com-trilha { display: block; padding-block-start: 0; }
-  .estudos { padding: 32px 24px 64px; }
+  /* A trilha some sozinha abaixo de 1024, pela regra dela. A fileira volta a
+   * ser uma coluna, e o recheio encolhe: 128px de respiro num telefone é meia
+   * tela antes de qualquer coisa. */
+  .estudos-fileira-de-baixo { display: block; }
+  .estudos { gap: 64px; padding: 32px 24px 64px; }
+  .estudos-de-baixo { gap: 64px; }
 }
 
 /* O TOPO E CENTRADO, e nao uma barra com o botao puxado para a direita.

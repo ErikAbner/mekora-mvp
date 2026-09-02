@@ -4,7 +4,7 @@ import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Rodape } from "../componentes/Rodape.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
-import { achatar } from "../../../contrato/texto.js";
+import { achatar, comecosDistintos } from "../../../contrato/texto.js";
 import { Folha } from "../componentes/Folha.jsx";
 import { TrilhaDaPagina } from "../componentes/TrilhaDaPagina.jsx";
 import { criarEstudo, ignorarGrupo, lerAgrupadas, ouvirGruposDeNovo, reunirNoEstudo } from "../../../contrato/api.js";
@@ -343,17 +343,6 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
           nenhum não deve ter "Você ligou" na coluna, apontando para uma seção
           que não está lá. */}
       <div className="estudos-com-trilha">
-      <TrilhaDaPagina
-        rotulo="Nesta página"
-        itens={[
-          { id: "estudos-inicio", rotulo: "Início" },
-          ...(escritasESoltas.length ? [{ id: "estudos-metade", rotulo: "Pela metade" }] : []),
-          ...(ligou?.grupos?.length ? [{ id: "estudos-ligou", rotulo: "Você ligou" }] : []),
-          ...(estudos.length ? [{ id: "estudos-lista", rotulo: "Os estudos" }] : []),
-          ...(soltas.length ? [{ id: "estudos-soltas", rotulo: "Fora de estudo" }] : []),
-        ]}
-      />
-
       <section className="estudos">
         {/* O TOPO É CENTRADO, e não uma barra com o botão puxado para a
             direita. Nos nós 900:56142 e 895:8849 o título, a frase e a busca são
@@ -514,6 +503,38 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
             })}
           </div>
         )}
+
+        {/* A TRILHA VIVE AQUI, e não no topo da página.
+            
+            O Erik: "você decidiu por livre e espontânea vontade que iria
+            adicionar nav como uma rádio de música antiga em todo lugar, sendo
+            que existem lugares que ela é válida e outros que você SIMPLESMENTE
+            forçou". O `895:8849` a põe numa fileira só — a de baixo, ao lado de
+            "Você ligou" —, e não como coluna da página inteira. Em cima ela não
+            tem o que indexar: título, busca, recortes e quadro se veem de uma
+            olhada.
+            
+            E ela lista as NOTAS, como no Livro (`895:7631`): "Isso serve
+            para… / Que método de… / Solto no livro…" são o texto das próprias
+            notas soltas, cortado. */}
+        <div className="estudos-fileira-de-baixo">
+        <TrilhaDaPagina
+          rotulo="Nesta parte"
+          itens={[
+            ...(ligou?.grupos?.length ? [{ id: "estudos-ligou", rotulo: "Você ligou" }] : []),
+            ...(soltas.length ? [{ id: "estudos-soltas", rotulo: "Fora de estudo" }] : []),
+            /* OS RÓTULOS SE DESEMPATAM SOZINHOS. Medido antes: a trilha saía
+               com "O que separa…" quatro vezes — notas parecidas cortadas no
+               mesmo ponto. Ver `comecosDistintos`. */
+            ...(() => {
+              const oito = soltas.slice(0, 8);
+              const rotulos = comecosDistintos(oito.map((n) => n.trecho || n.comentario));
+              return oito.map((n, k) => ({ id: `solta-${n.id}`, rotulo: rotulos[k] }));
+            })(),
+          ]}
+        />
+
+        <div className="estudos-de-baixo">
 
         {/* A SEÇÃO SÓ EXISTE QUANDO HÁ GRUPO. Uma seção "Você ligou" vazia
             afirma que o acervo não tem fio nenhum — e o que ela quer dizer é
@@ -713,6 +734,8 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
             )}
           </section>
         )}
+        </div>
+        </div>
       </section>
       </div>
 
