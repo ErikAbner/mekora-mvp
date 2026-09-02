@@ -3,7 +3,8 @@ Serviço de configuração da aplicação — Fase 7.
 
 Lê e grava storage/config.json com preferências editáveis pelo usuário:
   - ocr_languages: idiomas Tesseract usados no OCR
-  - retention_days: dias antes de limpar arquivos de jobs finalizados
+  - retention_days: dias antes de limpar o arquivo original de um trabalho SEM DONO.
+    Com conta, o arquivo fica enquanto o serviço existir (decisão do Erik, 03/09).
   - polling_interval_ms: intervalo de polling no frontend (ms)
 """
 
@@ -18,7 +19,12 @@ CONFIG_PATH = STORAGE_RAIZ / "config.json"
 # Valores padrão usados quando config.json não existe ou campo está ausente
 DEFAULTS: dict = {
     "ocr_languages": ["por", "eng", "spa"],
-    "retention_days": 30,
+    # 90 DIAS, E NÃO 30. O Erik decidiu em 03/09: quem tem conta guarda os
+    # arquivos enquanto o serviço funcionar — é o que a conta passa a valer —, e
+    # quem não entrou tem 90 a 120 dias. Ficou o número de baixo da faixa, e a
+    # razão é assimétrica: subir de 90 para 120 depois não custa nada, e descer
+    # de 120 para 90 apaga arquivo de gente que contava com ele.
+    "retention_days": 90,
     "polling_interval_ms": 3000,
     "ui_language": "pt",
     "ui_theme": "light",

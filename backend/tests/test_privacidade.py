@@ -165,8 +165,11 @@ def test_privacidade_conta_o_ciclo_dos_arquivos_e_o_que_e_medido(client):
 
     titulos = [a["titulo"] for a in corpo["arquivos"]]
     assert titulos == ["O original", "O resultado", "Conteúdo"]
-    # O prazo é do `retention_days`, e o padrão é 30.
-    assert "30 dias" in corpo["arquivos"][0]["prazo"]
+    # QUEM TEM CONTA NÃO OUVE PRAZO NENHUM, e é a decisão do Erik de 03/09: a
+    # conta passa a valer que o arquivo fica enquanto o serviço existir. O
+    # `client` está logado, então é essa a frase que ele recebe.
+    assert "Enquanto o Mekora existir" in corpo["arquivos"][0]["prazo"]
+    assert "dias" not in corpo["arquivos"][0]["prazo"]
 
     medido = {u["titulo"]: u for u in corpo["uso"]}
     assert set(medido) == {"O que é medido", "O que nunca é medido"}

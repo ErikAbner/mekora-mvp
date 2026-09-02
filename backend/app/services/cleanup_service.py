@@ -20,8 +20,14 @@ estante e sai quando você remove o livro"*.
 Um defeito escondia o outro: consertar só o primeiro teria apagado o acervo de
 todo mundo na primeira subida do servidor.
 
-O QUE SAI AGORA: o arquivo que a pessoa enviou e a pasta temporária (miniaturas,
-PDF com OCR). O que fica: o EPUB, que é o livro.
+O QUE SAI: o arquivo que a pessoa enviou e a pasta temporária (miniaturas, PDF
+com OCR). O que fica: o EPUB, que é o livro.
+
+DE QUEM SAI: só de trabalho SEM DONO. O Erik decidiu em 03/09 que a conta passa a
+valer isso — *"a pessoa tem os arquivos salvos com a gente enquanto o serviço
+funcionar"*, e quem não entrou tem a janela do `retention_days`, hoje 90 dias.
+Quem tem conta e quer o espaço de volta remove o livro, que é o outro caminho
+daqui.
 
 Chamado no startup do servidor e por POST /maintenance/cleanup.
 
@@ -77,6 +83,15 @@ def cleanup_old_jobs(retention_days: int) -> dict:
             .filter(
                 ProcessingJob.updated_at < cutoff,
                 ProcessingJob.status.in_(TERMINADOS),
+                # QUEM TEM CONTA NÃO PERDE ARQUIVO POR TEMPO.
+                #
+                # Decisão do Erik, 03/09: a conta passa a valer justamente isso —
+                # "a pessoa tem os arquivos salvos com a gente enquanto o serviço
+                # funcionar". Quem não entrou tem a janela do `retention_days`.
+                #
+                # `dono_id.is_(None)` e não uma comparação: em SQL, `= NULL` não
+                # casa com nada, nem com o próprio NULL.
+                ProcessingJob.dono_id.is_(None),
             )
             .all()
         )

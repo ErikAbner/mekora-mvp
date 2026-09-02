@@ -138,14 +138,18 @@ def o_que_existe(
                     "Guardado enquanto o livro existir. É ele que permite refazer a "
                     "preparação com outras opções, sem você enviar de novo."
                 ),
-                # ESTA FRASE FOI ESCRITA ANTES DE SER VERDADE, e virou verdade
-                # em 03/09. O filtro da limpeza olhava `status in ("done",
-                # "error")`, e a conversão bem-sucedida grava `"converted"` —
-                # então de todo trabalho que deu certo o original ficava para
-                # sempre, enquanto esta linha prometia trinta dias.
+                # O PRAZO DEPENDE DE HAVER CONTA, e é a decisão do Erik de
+                # 03/09: a conta passa a valer justamente isso.
+                #
+                # A frase anterior prometia trinta dias para todo mundo, e nem
+                # isso era verdade — o filtro da limpeza olhava `status in
+                # ("done", "error")` e a conversão bem-sucedida grava
+                # `"converted"`, então nada era apagado nunca.
                 "prazo": (
-                    f"Apagado {dias} dias depois que o preparo termina — a limpeza "
-                    "roda quando o servidor sobe, então a data exata varia."
+                    "Enquanto o Mekora existir. É o que ter conta significa aqui: "
+                    "o arquivo que você enviou fica, e sai quando você remove o livro."
+                    if pessoa
+                    else f"Sem conta, ele é apagado {dias} dias depois do preparo."
                 ),
             },
             {

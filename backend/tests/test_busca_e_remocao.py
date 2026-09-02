@@ -517,8 +517,11 @@ def test_pdf_com_senha_nao_conta_nada(tmp_path):
 # A limpeza por idade: o original sai, o livro fica
 # ---------------------------------------------------------------------------
 
-def _job_velho(db, dono_id, status, dias=60):
-    """Um trabalho terminado há muito tempo, com os três arquivos em disco."""
+def _job_velho(db, dono_id, status, dias=120):
+    """Um trabalho terminado há muito tempo, com os três arquivos em disco.
+
+    `dono_id=None` é o trabalho de quem NÃO entrou — o único que a limpeza por
+    idade alcança desde 03/09."""
     from datetime import datetime, timedelta
 
     from app.core.config import STORAGE_INPUT, STORAGE_OUTPUT, STORAGE_TEMP
@@ -566,11 +569,11 @@ def test_a_limpeza_apaga_o_original_e_deixa_o_livro(db, correio, client_cru, tmp
     """
     from app.services.cleanup_service import cleanup_old_jobs
 
-    eu = entrar(client_cru, db, correio, "erik@exemplo.com")
-    j, entrada, epub, temp = _job_velho(db, eu, "converted")
+    # SEM DONO: é o caso que a limpeza por idade alcança.
+    j, entrada, epub, temp = _job_velho(db, None, "converted")
 
     assert entrada.is_file() and epub.is_file() and temp.is_dir()
-    resultado = cleanup_old_jobs(30)
+    resultado = cleanup_old_jobs(90)
     assert resultado["deleted_jobs_files"] >= 1
 
     assert not entrada.exists(), "o original tinha de sair"
@@ -584,14 +587,13 @@ def test_a_limpeza_alcanca_os_estados_terminais_de_verdade(db, correio, client_c
     from app.services.cleanup_service import TERMINADOS, cleanup_old_jobs
 
     assert "converted" in TERMINADOS
-    eu = entrar(client_cru, db, correio, "erik@exemplo.com")
 
     entradas = []
     for status in ("converted", "analyzed", "error"):
-        _, entrada, _, _ = _job_velho(db, eu, status)
+        _, entrada, _, _ = _job_velho(db, None, status)
         entradas.append(entrada)
 
-    cleanup_old_jobs(30)
+    cleanup_old_jobs(90)
     for entrada in entradas:
         assert not entrada.exists(), f"não apagou o original de um {entrada}"
 
@@ -601,11 +603,29 @@ def test_a_limpeza_nao_toca_em_trabalho_em_curso(db, correio, client_cru, tmp_st
     lendo. `uploaded` e `converting` ficam de fora por isso."""
     from app.services.cleanup_service import cleanup_old_jobs
 
-    eu = entrar(client_cru, db, correio, "erik@exemplo.com")
-    _, entrada, _, _ = _job_velho(db, eu, "converting")
+    _, entrada, _, _ = _job_velho(db, None, "converting")
 
-    cleanup_old_jobs(30)
+    cleanup_old_jobs(90)
     assert entrada.is_file()
+
+
+def test_quem_tem_conta_nao_perde_arquivo_por_tempo(db, correio, client_cru, tmp_storage):
+    """A DECISÃO DO ERIK, 03/09: a conta passa a valer isso — "a pessoa tem os
+    arquivos salvos com a gente enquanto o serviço funcionar". Quem não entrou
+    tem a janela do `retention_days`.
+
+    O mesmo trabalho, com a mesma idade e o mesmo estado: sem dono some, com dono
+    fica. É a única diferença entre os dois."""
+    from app.services.cleanup_service import cleanup_old_jobs
+
+    eu = entrar(client_cru, db, correio, "erik@exemplo.com")
+    _, meu, _, _ = _job_velho(db, eu, "converted")
+    _, de_ninguem, _, _ = _job_velho(db, None, "converted")
+
+    cleanup_old_jobs(90)
+
+    assert meu.is_file(), "arquivo de quem tem conta não sai por tempo"
+    assert not de_ninguem.exists(), "arquivo sem dono sai depois da janela"
 
 
 def test_remover_da_estante_leva_o_livro_junto(db, correio, client_cru, tmp_storage):
