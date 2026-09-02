@@ -264,17 +264,31 @@ const COLUNAS = [
  * que cabe numa rolagem sem virar uma segunda tela de Notas dentro dos Estudos. */
 const LIMITE_DAS_SOLTAS = 20;
 
+/* OS TRÊS RECORTES DO DESENHO — `895:8911`, `895:8913` e `895:8915`.
+ *
+ * Eu tinha inventado "Abertos / Respondidos / Tudo", um filtro por ESTADO do
+ * estudo. O desenho não filtra estado: ele troca o que a tela MOSTRA. E foi por
+ * cima dessa invenção que eu ainda te perguntei qual seria o significado de "Em
+ * pesquisa" — uma pergunta construída sobre uma leitura errada de captura
+ * pequena demais.
+ *
+ * Os três são vistas do mesmo acervo, e nenhuma precisa de campo novo:
+ *
+ *   Estudos          o que você reuniu, por estudo
+ *   Todas as notas   tudo o que você marcou, sem passar por estudo nenhum
+ *   Por pergunta     as notas agrupadas pela pergunta do estudo a que pertencem
+ */
 const RECORTES = [
-  { id: "abertos", rotulo: "Abertos", cabe: (e) => !e.fechado },
-  { id: "respondidos", rotulo: "Respondidos", cabe: (e) => e.fechado },
-  { id: "tudo", rotulo: "Tudo", cabe: () => true },
+  { id: "estudos", rotulo: "Estudos" },
+  { id: "notas", rotulo: "Todas as notas" },
+  { id: "pergunta", rotulo: "Por pergunta" },
 ];
 
 export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, aoMudar, aoApagar, aoReunir, aoTirar }) {
   const [criando, setCriando] = useState(false);
   const [nome, setNome] = useState("");
   const [sobre, setSobre] = useState("");
-  const [recorte, setRecorte] = useState("abertos");
+  const [recorte, setRecorte] = useState("estudos");
   /* A BUSCA DO TOPO — nós 900:56142 e 895:8849, logo abaixo do subtítulo. Ela
      procura no nome do estudo, na pergunta e no TEXTO DAS NOTAS reunidas: o
      desenho escreve "Buscar em livros, notas e contextos", e é isso que torna a
@@ -320,8 +334,20 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
   const escritasESoltas = soltas.filter((n) => n.comentario);
 
   const alvo = achatar(procura.trim());
+
+  /* O QUE CADA RECORTE CONTA. Os três olham o mesmo acervo de ângulos
+   * diferentes, e o número ao lado do rótulo é o que a pessoa vai encontrar se
+   * clicar — não um total genérico. */
+  const contaDoRecorte = {
+    estudos: estudos.length,
+    notas: notas.length,
+    /* "Por pergunta" agrupa pelas perguntas que TÊM nota reunida: uma pergunta
+     * sem nenhuma nota não é um agrupamento, é um estudo vazio, e ele já
+     * aparece no recorte de Estudos. */
+    pergunta: estudos.filter((e) => (e.notas ?? []).length > 0).length,
+  };
+
   const visiveis = estudos
-    .filter(RECORTES.find((r) => r.id === recorte)?.cabe ?? (() => true))
     .filter((e) =>
       !alvo ||
       achatar(
@@ -406,27 +432,29 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
         {/* A FILEIRA DE CONTROLE: os recortes à esquerda, a ação na ponta —
             como os dois nós a desenham. O botão saiu do cabeçalho para cá. */}
         <div className="estudos-fileira">
-          {estudos.length > 0 && (
-            <nav className="estudos-recortes" aria-label="Recortes dos estudos">
-              {RECORTES.map((r) => {
-                const quantos = estudos.filter(r.cabe).length;
-                return (
-                  <button
-                    key={r.id}
-                    type="button"
-                    aria-pressed={r.id === recorte ? "true" : "false"}
-                    disabled={quantos === 0 && r.id !== recorte}
-                    onClick={() => setRecorte(r.id)}
-                  >
-                    {r.rotulo} <span className="dado">{quantos}</span>
-                  </button>
-                );
-              })}
-            </nav>
-          )}
-          <Botao tom="primaria" onClick={() => { setNome(""); setSobre(""); setCriando(true); }}>
-            Começar um estudo
-          </Botao>
+          <nav className="estudos-recortes" aria-label="O que mostrar">
+            {RECORTES.map((r) => (
+              <button
+                key={r.id}
+                type="button"
+                aria-pressed={r.id === recorte ? "true" : "false"}
+                onClick={() => setRecorte(r.id)}
+              >
+                {r.rotulo} <span className="dado">{contaDoRecorte[r.id]}</span>
+              </button>
+            ))}
+          </nav>
+          {/* O DESENHO TEM UM QUARTO ITEM AQUI — "Escrever uma nota" — e ele
+              NÃO foi construído, de propósito.
+              
+              No modelo toda nota pertence a um livro: `criarNota` pede um
+              `jobId`, e daqui não há livro nenhum escolhido. Construir o botão
+              sem resolver isso daria exatamente o defeito que o Erik apontou na
+              Leitura — "botão que não pressiona, não muda, não dá retorno".
+              
+              O que falta é a decisão dele: a nota escrita daqui pergunta de qual
+              livro é, ou o Canvas é o lugar da nota sem livro? As duas existem
+              no produto, e escolher por conta própria seria inventar de novo. */}
         </div>
 
         {!estudos.length && (
@@ -445,7 +473,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
         {/* O ALTERNADOR LISTA / LEITURA — nós 900:56142 e 895:8849. Mesma forma
             dos outros alternadores do sistema: uma caixa, dois botões, o ativo
             em tinta cheia. */}
-        {livros.length > 0 && (
+        {recorte === "estudos" && livros.length > 0 && (
           <nav className="estudos-vistas" aria-label="Como ver os estudos">
             {[["lista", "Lista"], ["leitura", "Leitura"]].map(([id, rotulo]) => (
               <button
@@ -457,10 +485,13 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                 {rotulo}
               </button>
             ))}
+            <Botao tom="secundaria" onClick={() => { setNome(""); setSobre(""); setCriando(true); }}>
+              Criar novo estudo
+            </Botao>
           </nav>
         )}
 
-        {vista === "leitura" && (
+        {recorte === "estudos" && vista === "leitura" && (
           <div className="estudos-quadro">
             {COLUNAS.map(({ id, rotulo, cabe }) => {
               const dela = livros.filter(cabe);
@@ -687,7 +718,60 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
           </p>
         )}
 
-        <div className="estudos-lista" id="estudos-lista" hidden={vista !== "lista"}>
+        {/* TODAS AS NOTAS — o segundo recorte. Sem passar por estudo nenhum:
+            é o acervo de marcações inteiro, que a pessoa pode não ter organizado
+            em lugar nenhum. */}
+        {recorte === "notas" && (
+          <section className="estudos-todas" id="estudos-todas">
+            <h2>Todas as notas <span className="dado">{notas.length}</span></h2>
+            <ul className="estudos-notas-cruas">
+              {notas.slice(0, LIMITE_DAS_SOLTAS).map((n) => (
+                <li key={n.id}>
+                  {n.trecho && <blockquote style={{ background: DESTAQUES[n.cor] }}>{n.trecho}</blockquote>}
+                  {n.comentario && <p className="estudos-solta-comentario">{n.comentario}</p>}
+                  <p className="estudos-solta-origem">
+                    {n.origem || (n.fonte === "solta" ? "escrita no Canvas" : "de um livro seu")}
+                  </p>
+                </li>
+              ))}
+            </ul>
+            {notas.length > LIMITE_DAS_SOLTAS && (
+              <p className="estudos-sobre">
+                Mostrando {LIMITE_DAS_SOLTAS} de <span className="dado">{notas.length}</span>.
+                As outras estão em <Link to="/notas">Notas</Link>.
+              </p>
+            )}
+          </section>
+        )}
+
+        {/* POR PERGUNTA — o terceiro. As mesmas notas, reunidas debaixo da
+            pergunta do estudo a que pertencem. Pergunta sem nota nenhuma fica de
+            fora: ela não é um agrupamento, é um estudo vazio, e ele já aparece
+            no primeiro recorte. */}
+        {recorte === "pergunta" && (
+          <section className="estudos-por-pergunta" id="estudos-por-pergunta">
+            {estudos.filter((e) => (e.notas ?? []).length > 0).map((e) => (
+              <article key={e.id} className="estudos-pergunta">
+                <h2>{e.sobre || e.nome}</h2>
+                <ul className="estudos-notas-cruas">
+                  {(e.notas ?? []).map((n) => (
+                    <li key={n.id}>
+                      {n.trecho && <blockquote style={{ background: DESTAQUES[n.cor] }}>{n.trecho}</blockquote>}
+                      {n.comentario && <p className="estudos-solta-comentario">{n.comentario}</p>}
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            ))}
+            {!estudos.some((e) => (e.notas ?? []).length > 0) && (
+              <p className="estudos-vazio">
+                Nenhuma pergunta reuniu nota ainda. Um estudo com notas dentro aparece aqui.
+              </p>
+            )}
+          </section>
+        )}
+
+        <div className="estudos-lista" id="estudos-lista" hidden={recorte !== "estudos" || vista !== "lista"}>
           {visiveis.map((e) => (
             <Estudo
               key={e.id}

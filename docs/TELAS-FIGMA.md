@@ -715,3 +715,34 @@ ela pular para UMA delas lendo o começo, e num livro com dezenas de notas é a
 "Início / O que ficou / Isso serve para… / Que método de… / Solto no livro… /
 Escreva sobr…" — e lá ela ainda aparece só na parte de baixo, o que continua por
 fazer.
+
+
+## Estudos — os recortes, e o botão que ficou de fora · 03/09/2026
+
+**Os três recortes do desenho não filtram estado.** Eu tinha inventado "Abertos /
+Respondidos / Tudo", um filtro pelo estado do estudo — e foi por cima dessa
+invenção que eu ainda perguntei ao Erik o que significaria "Em pesquisa". A
+pergunta inteira nasceu de uma leitura errada de uma captura pequena demais.
+
+Lidos no `895:8911`, `895:8913` e `895:8915`, eles trocam o que a tela MOSTRA:
+
+| recorte | o que aparece | precisa de campo novo? |
+|---|---|---|
+| Estudos | o que você reuniu, por estudo | não |
+| Todas as notas | tudo o que marcou, sem passar por estudo | não |
+| Por pergunta | as notas debaixo da pergunta do estudo | não |
+
+### O quarto item NÃO foi construído, e é decisão do Erik
+
+O desenho põe **"Escrever uma nota"** como botão dessa fileira. No modelo toda
+nota pertence a um livro — `criarNota` pede um `jobId` —, e dali não há livro
+escolhido.
+
+Construir o botão sem resolver isso daria exatamente o defeito que o Erik apontou
+na Leitura: *"botão que não pressiona, não muda, não dá retorno"*. Então ele não
+existe, e a pergunta é:
+
+- a nota escrita daqui **pergunta de qual livro é**, ou
+- o **Canvas** é o lugar da nota sem livro, e o botão leva para lá?
+
+As duas existem no produto. Escolher por conta própria seria inventar de novo.
