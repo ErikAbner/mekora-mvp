@@ -13,6 +13,19 @@
  * FILETE: não entrou. Cor e sombra dão conta, e um traço aqui competiria com as
  * molduras das seções que vivem dentro do bloco. */
 .conta {
+  /* ATÉ O PRIMEIRO ITEM DO MENU — a régua que o Erik deu.
+   *
+   * "Repare que no Figma o primeiro botão fica perfeitamente alinhado com o topo
+   * do card onde tem os itens configuráveis." É uma invariante, e vale mais que
+   * qualquer número que eu pudesse tirar do `justify-end` do `895:10681`: o card
+   * começa onde o item "Conta" começa.
+   *
+   * A conta é a altura do bloco da pessoa mais o vão até a lista, e os dois
+   * moram no `menu-da-conta.css`: retrato de 80 (`900:53046`) e `gap: 24`
+   * (`900:53555`). Escrita aqui como soma para quem mexer num deles ver o que
+   * mais depende. */
+  --ate-o-primeiro-item: calc(80px + 24px);
+
   display: flex; gap: 56px; align-items: flex-start; justify-content: center;
   padding: 128px 32px;
   inline-size: 100%;
@@ -27,10 +40,12 @@
 }
 
 .conta-painel {
-  /* O VÃO TEM NOME porque a ilustração precisa desfazê-lo. Ver `.conta-desenho`. */
   --vao: 40px;
+  position: relative;
   display: flex; flex-direction: column; gap: var(--vao);
   inline-size: 100%; max-inline-size: 863px;
+  /* O card desce até a linha do primeiro item do menu. Ver `--ate-o-primeiro-item`. */
+  padding-block-start: var(--ate-o-primeiro-item);
 }
 
 .conta-secao {
@@ -58,28 +73,25 @@
  * direita e nao ocupa coluna: e ornamento, e empurrar o conteudo para baixo por
  * causa dele inverteria a ordem do que importa. */
 .conta-desenho {
-  align-self: flex-end;
-  inline-size: 272px; max-inline-size: 60%;
-  block-size: auto;
-  /* ELA ENCAVALA O CARD, e o `-26px` sozinho não fazia isso.
+  /* ELA SAI DO FLUXO, e é a única forma de a régua fechar.
    *
-   * O `934:10740` traz `mb-[-26px]`, e o contêiner dele no desenho — o
-   * `895:10682` — NÃO TEM VÃO. Aqui a ilustração é filha do `.conta-painel`, que
-   * tem `gap: 40px`, e o vão entra DEPOIS da margem: −26 + 40 = +14. Medido:
-   * a base da ilustração ficava 14px ACIMA do card, sem encostar.
+   * Em fluxo, a ilustração EMPURRA o card para baixo pela própria altura menos o
+   * encavalamento — 224 − 26 = 198px —, e aí o card nunca alinha com o primeiro
+   * item do menu, que está a 104. Eu tinha corrigido a margem duas vezes e o
+   * card continuava descendo, porque o problema não era a margem: era ela ocupar
+   * espaço.
    *
-   * O Erik viu: "ele invade levemente o card onde estão os itens da conta".
-   * Desfazer o vão é parte da conta, e por isso ele tem nome — se alguém mudar
-   * `--vao`, isto acompanha. */
-  margin-block-end: calc(-26px - var(--vao));
-
-  /* 34px DA BORDA DA SEÇÃO, e não encostada nela.
-   *
-   * O `895:10682` alinha por `items-end`, o que dá zero — e era o que eu tinha.
-   * O Erik mediu no desenho: são 34. */
-  margin-inline-end: 34px;
-
-  position: relative; z-index: 1;
+   * Fora do fluxo ela não empurra nada. A posição vira aritmética das duas
+   * medidas do desenho: a base fica 26px ABAIXO do topo do card (`934:10740`,
+   * `mb-[-26px]`), e o topo é isso menos a altura dela. Sobra para cima, sobre o
+   * recheio do bloco, que é onde o desenho a põe.
+   */
+  position: absolute;
+  inset-block-start: calc(var(--ate-o-primeiro-item) + 26px - 224px);
+  inset-inline-end: 34px;
+  z-index: 1;
+  inline-size: 272px;
+  block-size: 224px;
 }
 /* No escuro ele clareia junto com as outras ilustracoes — a regra do base.css e
  * por classe, e esta entra nela. */
