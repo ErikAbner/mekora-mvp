@@ -483,22 +483,39 @@
  * O titulo dizia "Canvas" a tres centimetros do item "Canvas" marcado no menu, e
  * o paragrafo explicava a area toda vez que alguem a abre — a milesima inclusive.
  */
+/* O DOCK — `900:52962`, e as medidas sao todas de la.
+ *
+ * 86px de largura, 16px do lado, colado no meio pela altura. Dentro: 16 de
+ * recheio, 16 entre os itens, e cada item com 16 de recheio proprio em volta de
+ * um icone de 24. Eu tinha 8 de recheio e alvos de 44 — uma barra mais apertada
+ * e mais alta que a do desenho.
+ *
+ * A sombra tem cinco degraus, como as outras do arquivo, e o primeiro com alfa
+ * zero: e assim que o Figma escreve o comeco da rampa. */
 .canvas-ferramentas {
   position: absolute;
   inset-inline-start: 16px;
   inset-block-start: 50%;
   transform: translateY(-50%);
   z-index: 3;
-  display: flex; flex-direction: column;
-  padding: 8px;
+  inline-size: 86px;
+  display: flex; flex-direction: column; gap: 16px;
+  align-items: center; justify-content: center;
+  padding: 16px;
   border: 1px solid var(--border);
-  background: var(--background);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 4%), 0 8px 24px rgb(0 0 0 / 6%);
+  background: var(--piso);
+  box-shadow:
+    0 50px 7px rgb(0 0 0 / 0),
+    0 32px 6.5px rgb(0 0 0 / 0.01),
+    0 18px 5.5px rgb(0 0 0 / 0.02),
+    0 8px 4px rgb(0 0 0 / 0.03),
+    0 2px 2px rgb(0 0 0 / 0.04);
 }
 .canvas-ferramentas button {
   position: relative;
   display: flex; align-items: center; justify-content: center;
-  inline-size: 44px; block-size: 44px;
+  inline-size: 100%;
+  padding: 16px;
   border: 0; background: transparent;
   color: var(--muted-foreground);
   cursor: pointer;
@@ -537,3 +554,58 @@
    * controles flutuantes disputando o mesmo lugar, e o de baixo inalcancavel. */
   .canvas-zoom { inset-block-end: 90px; }
 }
+
+/* O CABEÇALHO FLUTUA NO CANVAS, e só aqui.
+ *
+ * O `895:6938` põe as duas caixas dele como `absolute` a 16px dos cantos, e não
+ * como a barra de 32px das outras telas. A razão é o que a tela é: aqui a página
+ * INTEIRA é o plano, e o cabeçalho é uma coisa que paira sobre ele. Em fluxo,
+ * ele empurrava o plano para baixo — o dock ficava 59px fora do centro da
+ * janela, e o alto do plano ficava branco.
+ *
+ * `:has()` e não uma classe no cabeçalho: o componente é o mesmo em toda tela, e
+ * quem sabe que esta é diferente é ESTA tela. */
+.canvas-com-cabecalho-solto { position: relative; }
+
+.canvas-com-cabecalho-solto > .cabecalho {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  z-index: 4;
+  padding: 16px;
+  pointer-events: none;
+}
+/* A barra não recebe o ponteiro — ela é uma faixa transparente sobre o plano, e
+ * um clique nela seria um clique que não arrasta o canvas. As duas caixas
+ * recebem. */
+.canvas-com-cabecalho-solto > .cabecalho > * { pointer-events: auto; }
+
+/* Sem o cabeçalho no fluxo, o plano ocupa a janela inteira. */
+.canvas-com-cabecalho-solto > .canvas { block-size: 100dvh; }
+
+/* O segundo caminho da folha de escrever: trazer uma nota que já existe. Ele é
+ * frase, e não botão — a ação principal daquela folha é escrever, e um segundo
+ * botão do mesmo peso faria a pessoa parar para escolher. */
+.canvas-ou-trazer {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 16px; line-height: 24px;
+}
+
+/* O SEGUNDO CAMINHO É TEXTO, e por isso o botão precisa parecer texto.
+ *
+ * Eu tinha reusado uma classe que NÃO EXISTE no CSS — `canvas-ligacao-texto` —,
+ * e o botão saiu com a superfície que o navegador dá de fábrica. O portão a
+ * recusou: `#efefef` não é degrau do sistema. */
+.canvas-ou-trazer button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.canvas-ou-trazer button:hover { color: var(--muted-foreground); }
+.canvas-ou-trazer button:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }

@@ -449,7 +449,11 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
   const chaoSobe = () => { arrastandoChao.current = null; };
 
   return (
-    <div className="mesa">
+    /* `chao` E `com-cabecalho-solto`: no Canvas o chão pontilhado vai de borda a
+       borda e o cabeçalho FLUTUA sobre ele. O `895:6938` põe as duas caixas dele
+       como `absolute` a 16px dos cantos — e não como a barra de 32 das outras
+       telas —, porque aqui a página inteira é o plano. */
+    <div className="mesa chao canvas-com-cabecalho-solto">
       <Cabecalho lugar="canvas" />
 
       <section className="canvas">
@@ -469,6 +473,18 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
          * OS RÓTULOS NÃO SUMIRAM: cada botão tem `aria-label` e título, e o nome
          * aparece ao passar o ponteiro. Ícone sem nome é adivinhação, e é o
          * defeito mais comum de barra de ferramenta. */}
+        {/* OS TRÊS ÍCONES SÃO OS DO DESENHO, exportados do `900:52962`.
+            
+            Nenhum dos meus servia: o dock traz um alfinete, uma nota com "+" e
+            uma pilha de camadas, e o que eu tinha era caderno, cúpula e livro.
+            Trocar por parecidos seria a mesma coisa que aconteceu com o ícone da
+            Estante — usar pelo nome, sem olhar o desenho.
+            
+            O QUE CADA UM SIGNIFICA é leitura minha, e está aqui para o Erik
+            corrigir numa linha: a pilha de camadas é o agrupar (camada = área),
+            a nota com "+" é escrever, e o alfinete ficou com ligar. Os dois
+            primeiros são quase certos; o alfinete é o que eu chutaria de novo se
+            ninguém disser. */}
         <nav className="canvas-ferramentas" aria-label="Ferramentas do Canvas">
           <button
             type="button"
@@ -476,20 +492,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
             aria-label="Escrever uma nota"
             onClick={() => { setTexto(""); setEscrevendo(true); }}
           >
-            <Icone src="/icones/icone-nota-nova.svg" />
-          </button>
-          <button
-            type="button"
-            title={deFora.length ? `Trazer nota (${deFora.length} fora do Canvas)` : "Nenhuma nota fora do Canvas"}
-            aria-label={deFora.length ? `Trazer nota — ${deFora.length} fora do Canvas` : "Nenhuma nota fora do Canvas"}
-            onClick={() => setTrazendo(true)}
-            disabled={!deFora.length}
-          >
-            <Icone src="/icones/icone-caderno.svg" />
-            {/* O NÚMERO FICA. Ele é o que diz se vale abrir a folha — sem ele o
-                botão desabilitado e o botão com dezenove notas atrás parecem a
-                mesma coisa. */}
-            {deFora.length > 0 && <span className="canvas-conta">{deFora.length}</span>}
+            <Icone src="/icones/icone-nota-imagem.svg" />
           </button>
           {/* CRIAR UM GRUPO. Ele nasce no meio do que está sendo visto, e não
               na origem do plano: numa superfície sem fim, a origem pode estar
@@ -500,7 +503,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
             aria-label="Agrupar uma área"
             onClick={criarAqui}
           >
-            <Icone src="/icones/icone-estudos.svg" />
+            <Icone src="/icones/icone-camadas.svg" />
           </button>
           <button
             type="button"
@@ -510,7 +513,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
             onClick={() => { setLigando((v) => !v); setPrimeira(null); }}
             disabled={nos.length < 2}
           >
-            <Icone src="/icones/icone-estante.svg" />
+            <Icone src="/icones/icone-fixar.svg" />
           </button>
         </nav>
 
@@ -685,6 +688,28 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
           onChange={(e) => setTexto(e.target.value)}
           autoFocus
         />
+
+        {/* TRAZER UMA NOTA MORA AQUI AGORA, e não numa quarta ferramenta.
+            
+            O `900:52962` tem TRÊS itens no dock, e eu tinha quatro. O que saiu
+            da barra não sumiu: pôr uma nota na superfície é o mesmo gesto,
+            venha ela do teclado ou do acervo — e a escolha entre os dois cabe
+            neste passo, que é onde a pessoa já está.
+            
+            Só aparece quando há o que trazer. Um caminho para lista vazia é uma
+            porta que se abre num quarto sem nada. */}
+        {deFora.length > 0 && (
+          <p className="canvas-ou-trazer">
+            Ou{" "}
+            <button
+              type="button"
+              onClick={() => { setEscrevendo(false); setTrazendo(true); }}
+            >
+              traga uma que você já tem
+            </button>{" "}
+            — <span className="dado">{deFora.length}</span> ainda estão fora da superfície.
+          </p>
+        )}
       </Folha>
 
       <Folha
