@@ -586,6 +586,25 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
           </div>
         )}
 
+        {/* A LISTA DOS ESTUDOS FICA NA PARTE DE CIMA, e não ao lado da
+            trilha. Quando embrulhei as seções de baixo, ela foi varrida para
+            dentro da fileira e passou a medir 974px numa página de 1222 — a
+            "div central com 2 larguras sem necessidade" que o Erik viu. */}
+        <div className="estudos-lista" id="estudos-lista" hidden={recorte !== "estudos" || vista !== "lista"}>
+          {visiveis.map((e) => (
+            <Estudo
+              key={e.id}
+              estudo={e}
+              notasDisponiveis={notas}
+              aoMudar={aoMudar}
+              aoApagar={aoApagar}
+              aoReunir={aoReunir}
+              aoTirar={aoTirar}
+              resumido
+            />
+          ))}
+        </div>
+
         {/* A TRILHA VIVE AQUI, e não no topo da página.
             
             O Erik: "você decidiu por livre e espontânea vontade que iria
@@ -821,21 +840,6 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
             )}
           </section>
         )}
-
-        <div className="estudos-lista" id="estudos-lista" hidden={recorte !== "estudos" || vista !== "lista"}>
-          {visiveis.map((e) => (
-            <Estudo
-              key={e.id}
-              estudo={e}
-              notasDisponiveis={notas}
-              aoMudar={aoMudar}
-              aoApagar={aoApagar}
-              aoReunir={aoReunir}
-              aoTirar={aoTirar}
-              resumido
-            />
-          ))}
-        </div>
 
         {/* FORA DE ESTUDO — o que sobrou solto, e de onde um estudo se monta.
             O nó 966:31095 tem esta seção, e sem ela a tela mostra o que já foi
