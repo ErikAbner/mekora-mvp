@@ -175,11 +175,23 @@ quantidade essa garantia era o caminho para encher o disco da máquina.
 teste é proteção que some no próximo refactor — e ele foi provado removendo uma
 das portas, para confirmar que reprova.
 
-### O que ainda não existe
+### Quem manda na instalação
 
-**Não há papel de administrador.** Quem tem conta alcança `/config`,
-`/app-config` e `/presets`, que falam da instalação inteira. Numa instalação
-pessoal isso é correto; com várias pessoas, a primeira coisa a acrescentar.
+`/config`, `/app-config` e `/presets` falam da INSTALAÇÃO inteira — o `smtp_user`
+de onde os documentos saem, o `retention_days` que decide quanto tempo o arquivo
+de todo mundo vive, e o gatilho da limpeza. Elas exigem ser **dono**, e não só
+ter conta: a entrada é por link no e-mail, então "tem conta" é qualquer pessoa da
+internet trinta segundos depois de querer.
+
+Quem é dono sai de `DONO_EMAIL`, no `.env`:
+
+```
+DONO_EMAIL=voce@seudominio.com
+```
+
+Aceita mais de um, separados por vírgula. **Sem essa linha ninguém é dono e as
+três respondem 403 para todo mundo** — inclusive para você. Isso é de propósito:
+o contrário seria "esqueci de configurar, então está aberto".
 
 ## Ver o produto no seu computador
 

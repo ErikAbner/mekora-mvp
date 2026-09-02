@@ -36,7 +36,11 @@ mkdir -p "$PROVA/storage"
 
 (
   cd "$PROVA"
+  # `DONO_EMAIL` e a conta que o `ver.sh` cria: na prova local, quem olha e o
+  # dono. Sem isso, `/conta/preferencias` responde 403 aqui e passa na producao,
+  # que e a pior forma de diferenca entre os dois.
   MEKORA_STORAGE="$PROVA/storage" SMTP_HOST="" SMTP_USER="" SMTP_PASS="" KINDLE_EMAIL="" \
+    DONO_EMAIL="${MEKORA_EMAIL:-erik@mekora.local}" \
     "$RAIZ/.venv/bin/python" -c "
 import sys; sys.path.insert(0, '$RAIZ/backend')
 import uvicorn; uvicorn.run('main:app', host='127.0.0.1', port=8199, log_level='warning')

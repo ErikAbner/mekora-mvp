@@ -136,3 +136,50 @@ def exigir_conta(
     # logado tinha de perguntar de novo ao `acesso_service` logo abaixo. Duas
     # buscas para uma pergunta, e duas chances de uma delas mudar sozinha.
     return pessoa
+
+
+def donos():
+    """Os e-mails que mandam na instalação. Vazio quando ninguém foi nomeado."""
+    from app.core.config import settings
+
+    return {e.strip().lower() for e in settings.dono_email.split(",") if e.strip()}
+
+
+def exigir_dono(
+    db: Session = Depends(get_db),
+    mekora_sessao: Optional[str] = Cookie(default=None),
+):
+    """A terceira porta: exige ser o DONO da instalação, e não só ter conta.
+
+    A revisão de 31/08 fechou estas rotas atrás de `exigir_conta`, e o
+    `SUBIR.md` anotou o que sobrava com todas as letras: "não há papel de
+    administrador; quem tem conta alcança `/config`, `/app-config` e
+    `/presets`". Ficou anotado e não fechado, e a anotação envelheceu mal.
+
+    Porque a entrada é por link no e-mail (DEC-0039): qualquer pessoa da
+    internet tem conta em trinta segundos, com o próprio endereço. E do outro
+    lado dessas três rotas está:
+
+      `GET /config`            devolve `smtp_user` e `kindle_email` de verdade —
+                               o endereço de onde os documentos saem.
+      `PATCH /app-config`      muda `retention_days`, que é quanto tempo o
+                               arquivo de todo mundo sobrevive.
+      `POST /app-config/cleanup`  dispara a limpeza AGORA.
+
+    Ou seja: um estranho com conta lia o e-mail do Erik, e podia mandar apagar
+    arquivo alheio. Não é uma rota exposta por descuido — é a mesma frase de
+    31/08 mais um passo: o que era "o dono do computador" virou "qualquer um na
+    internet", e depois virou "qualquer um com conta".
+
+    Sem `DONO_EMAIL` configurado, ninguém passa. Fecha por falta.
+    """
+    pessoa = exigir_conta(db=db, mekora_sessao=mekora_sessao)
+    if (pessoa.email or "").strip().lower() not in donos():
+        # 403 e não 404: a rota existe e é sabido que existe — o que não é
+        # público é quem pode usá-la. Esconder isso não protegeria nada e
+        # deixaria quem É dono sem entender por que a tela não abre.
+        raise HTTPException(
+            status_code=403,
+            detail="Esta parte é de quem cuida da instalação.",
+        )
+    return pessoa

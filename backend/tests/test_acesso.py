@@ -415,3 +415,84 @@ def test_a_porta_vale_para_rota_que_ainda_nao_existe(client_cru):
 
     assert not desprotegidas, f"rotas de trabalho sem porta: {sorted(desprotegidas)}"
     assert len(protegidas) >= 40
+
+
+# ── a terceira porta: ter conta não é ser dono ──────────────────────────────
+#
+# `exigir_conta` fechou `/config`, `/app-config` e `/presets` em 31/08 e o
+# `SUBIR.md` anotou o que sobrava: "não há papel de administrador; quem tem
+# conta alcança" as três. Como a entrada é por link no e-mail, "quem tem conta"
+# é qualquer pessoa da internet trinta segundos depois de querer — e do outro
+# lado estava o `smtp_user` real, o `retention_days` de todo mundo, e o gatilho
+# da limpeza.
+#
+# Os testes usam `client_cru` porque o `client` comum é nomeado DONO no
+# conftest, e um cliente que se autoriza sozinho não prova porta nenhuma.
+
+INSTALACAO = ["/config", "/app-config", "/presets"]
+
+
+@pytest.mark.parametrize("rota", INSTALACAO)
+def test_quem_tem_conta_e_nao_e_dono_nao_entra_na_instalacao(client_cru, correio, rota, monkeypatch):
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "dono_email", "dona@exemplo.com")
+    entrar(client_cru, correio, email="estranha@exemplo.com")
+
+    r = client_cru.get(rota)
+    assert r.status_code == 403, f"{rota} respondeu {r.status_code} a quem não é dono"
+
+
+@pytest.mark.parametrize("rota", INSTALACAO)
+def test_sem_dono_configurado_ninguem_entra(client_cru, correio, rota, monkeypatch):
+    """Fecha por FALTA.
+
+    O contrário seria "esqueci de configurar, então está aberto" — que é como a
+    maioria das instalações do mundo fica aberta.
+    """
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "dono_email", "")
+    entrar(client_cru, correio, email="qualquer@exemplo.com")
+
+    r = client_cru.get(rota)
+    assert r.status_code == 403, f"{rota} respondeu {r.status_code} sem dono nomeado"
+
+
+@pytest.mark.parametrize("rota", INSTALACAO)
+def test_o_dono_entra(client_cru, correio, rota, monkeypatch):
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "dono_email", "  Dona@Exemplo.com , outra@exemplo.com ")
+    entrar(client_cru, correio, email="dona@exemplo.com")
+
+    r = client_cru.get(rota)
+    assert r.status_code == 200, f"{rota} recusou o próprio dono: {r.status_code}"
+
+
+def test_a_porta_de_dono_cobre_as_tres_familias():
+    """A lista não é escrita à mão duas vezes: é lida do app.
+
+    Uma rota nova em `/config`, `/app-config` ou `/presets` nasce coberta porque
+    a dependência está no router — e este teste falha se alguém a tirar.
+    """
+    from main import app
+
+    from app.api.porta import exigir_dono
+
+    faltando = []
+    for rota in app.routes:
+        caminho = getattr(rota, "path", "")
+        if not caminho.startswith(("/config", "/app-config", "/presets")):
+            continue
+        if caminho == "/config/formatos":
+            continue  # a exceção declarada: público antes de ter conta
+        deps = [
+            d.call
+            for d in getattr(getattr(rota, "dependant", None), "dependencies", [])
+            if getattr(d, "call", None)
+        ]
+        if exigir_dono not in deps:
+            faltando.append(caminho)
+
+    assert not faltando, f"rotas de instalação sem a porta de dono: {sorted(faltando)}"

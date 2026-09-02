@@ -26,7 +26,7 @@ from fastapi.staticfiles import StaticFiles
 from app.core.config import PROJECT_ROOT
 from app.db.database import init_db
 from app.api.acesso import router as acesso_router
-from app.api.porta import exigir_acesso, exigir_conta
+from app.api.porta import exigir_acesso, exigir_conta, exigir_dono
 from app.api.health import router as health_router
 from app.api.aparelhos import router as aparelhos_router
 from app.api.notas import router as notas_router
@@ -125,14 +125,19 @@ app.include_router(busca_router, dependencies=[Depends(exigir_conta)])
 # porta de trabalho não os cobria, e eles ficaram abertos. `/config` devolvia o
 # `kindle_email` e o `smtp_user` reais a qualquer visitante.
 #
+# Em 31/08 eles passaram a exigir CONTA, e isso resolveu metade: a entrada é por
+# link no e-mail, então "tem conta" é qualquer pessoa da internet trinta
+# segundos depois de querer. Em 03/09 passaram a exigir DONO — `exigir_dono`,
+# em `app/api/porta.py`, tem a lista do que estava do outro lado.
+#
 # `/config/formatos` é a exceção declarada: a tela de entrada precisa saber o
 # que o Mekora aceita ANTES de alguém ter conta, porque converter sem conta é
 # garantido pela DEC-0018. Ela não conta nada sobre ninguém — é uma lista de
 # extensões.
 app.include_router(config_publico)
-app.include_router(config_router, dependencies=[Depends(exigir_conta)])
+app.include_router(config_router, dependencies=[Depends(exigir_dono)])
 app.include_router(jobs_router, dependencies=[Depends(exigir_acesso)])
-app.include_router(app_config_router, dependencies=[Depends(exigir_conta)])
+app.include_router(app_config_router, dependencies=[Depends(exigir_dono)])
 app.include_router(translation_router, dependencies=[Depends(exigir_acesso), Depends(exigir_conta)])
 app.include_router(comic_review_router, dependencies=[Depends(exigir_acesso)])
 app.include_router(comic_overlay_router, dependencies=[Depends(exigir_acesso)])
@@ -140,7 +145,7 @@ app.include_router(comic_render_router, dependencies=[Depends(exigir_acesso)])
 app.include_router(comic_inpaint_router, dependencies=[Depends(exigir_acesso)])
 app.include_router(comic_finalize_router, dependencies=[Depends(exigir_acesso)])
 app.include_router(comic_suggestions_router, dependencies=[Depends(exigir_acesso)])
-app.include_router(presets_router, dependencies=[Depends(exigir_conta)])
+app.include_router(presets_router, dependencies=[Depends(exigir_dono)])
 app.include_router(batch_router, dependencies=[Depends(exigir_acesso), Depends(exigir_conta)])
 # As DUAS portas: `exigir_acesso` cobre `/metrics/jobs/{job_id}`, e
 # `exigir_conta` cobre `/metrics/summary` e `/metrics/usage`, que não têm

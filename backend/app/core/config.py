@@ -36,6 +36,17 @@ class Settings(BaseSettings):
     smtp_pass: str = ""
     kindle_email: str = ""
 
+    # QUEM É O DONO DA INSTALAÇÃO.
+    #
+    # Vazio de propósito: sem este valor NINGUÉM é dono, e as rotas que falam da
+    # instalação inteira respondem 403 para todo mundo. Fecha por falta, e não
+    # por descuido — o contrário seria "esqueci de configurar, então está
+    # aberto", que é como a maioria das instalações fica aberta.
+    #
+    # Aceita uma lista separada por vírgula, porque um dia pode ser mais de uma
+    # pessoa e mudar o formato depois obrigaria a mexer em quem já configurou.
+    dono_email: str = ""
+
     model_config = SettingsConfigDict(
         env_file=str(PROJECT_ROOT / ".env"),
         extra="ignore",

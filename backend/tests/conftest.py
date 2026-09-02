@@ -207,6 +207,18 @@ def client(test_engine, tmp_storage, monkeypatch):
     from app.api import vazao
     vazao._envios.clear()
 
+    # A CONTA DE TESTE É A DONA DA INSTALAÇÃO DE TESTE.
+    #
+    # Pela mesma razão da porta de conta, uma linha acima: `/config`,
+    # `/app-config` e `/presets` passaram a exigir DONO, e desligar a porta
+    # durante os testes seria testar um produto que não existe. Então a pessoa
+    # de teste é nomeada dona — como o Erik é dono da instalação dele.
+    #
+    # Quem prova que a porta existe é `test_acesso.py`, com `client_cru` e com
+    # uma pessoa que NÃO está nesta lista.
+    from app.core.config import settings
+    monkeypatch.setattr(settings, "dono_email", "teste@mekora.local")
+
     with _ClienteQueProvaAcesso(app, test_engine) as c:
         yield c
 
