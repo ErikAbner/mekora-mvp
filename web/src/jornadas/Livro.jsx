@@ -529,6 +529,29 @@ export function Livro() {
             <Linha rotulo="Texto reconhecido">
               {livro.ocr_used ? "Sim, por OCR" : null}
             </Linha>
+            {/* "TRÊS PÁGINAS FICARAM SEM TEXTO" — a linha do nó 895:7631. Ela só
+                aparece quando há alguma: "nenhuma página sem texto" num
+                documento de texto é ruído em toda ficha.
+                
+                E não aparece em digitalização: ali TODAS ficam sem texto antes
+                do reconhecimento, e o número diria o óbvio com cara de defeito. */}
+            <Linha rotulo="Páginas sem texto">
+              {livro.paginas_sem_texto > 0 && !livro.is_scanned
+                ? <><span className="dado">{livro.paginas_sem_texto}</span>{" "}
+                  {livro.paginas_sem_texto === 1 ? "página abriu vazia" : "páginas abriram vazias"}</>
+                : null}
+            </Linha>
+            <Linha rotulo="Páginas que não abriram">
+              {livro.paginas_ilegiveis > 0
+                ? <><span className="dado">{livro.paginas_ilegiveis}</span> de{" "}
+                  <span className="dado">{livro.page_count}</span> — o que não abre não entra no livro</>
+                : null}
+            </Linha>
+            <Linha rotulo="Capítulos no arquivo">
+              {livro.capitulos_declarados > 0
+                ? <><span className="dado">{livro.capitulos_declarados}</span> declarados no sumário do próprio arquivo</>
+                : null}
+            </Linha>
             <Linha rotulo="Traduzido">
               {livro.translation_enabled
                 ? `De ${livro.source_language || "?"} para ${livro.target_language || "?"}`

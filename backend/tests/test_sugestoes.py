@@ -288,3 +288,142 @@ def test_rascunho_fica_de_fora_de_voce_ligou(client):
     client.patch(f"/jobs/{job_id}/notas/{ids[0]}", json={"estado": "rascunho"})
     depois = client.get("/notas/agrupadas").json()["olhadas"]
     assert depois == antes - 1
+
+
+# ---------------------------------------------------------------------------
+# Ignorar um grupo (nó 895:8849)
+# ---------------------------------------------------------------------------
+
+def _tres_notas_parecidas(client):
+    """TRÊS LIVROS DIFERENTES, e não três capítulos do mesmo.
+
+    Um grupo precisa atravessar livros para existir — três notas do mesmo
+    capítulo sobre o mesmo assunto é o capítulo, não uma descoberta. Escrevi este
+    ajudante com um livro só na primeira vez, e os dois testes falharam com
+    `len([]) == 1`: o grupo nunca se formava, e a razão era a regra funcionando."""
+    jobs, ids = [], []
+    for i in range(3):
+        envio = client.post("/upload", files={"file": (f"x{i}.txt", b"texto", "text/plain")})
+        job_id = envio.json()["upload_id"]
+        jobs.append(job_id)
+        ids.append(client.post(f"/jobs/{job_id}/notas", json={
+            "capitulo": 0, "de": 0, "ate": 5,
+            "trecho": "repeticao fotografica imagem comparacao registro",
+            "cor": "amarelo",
+        }).json()["id"])
+    return jobs[0], ids
+
+
+def test_assinatura_de_um_grupo_nao_depende_da_ordem():
+    """A varredura devolve na ordem em que a união de conjuntos encontrou, e ela
+    não é estável entre execuções. Sem ordenar, o mesmo grupo teria duas
+    assinaturas e "ignorar" pararia de funcionar na segunda visita."""
+    from app.services.sugestoes_service import assinatura_de
+
+    assert assinatura_de([3, 1, 2]) == assinatura_de([1, 2, 3]) == "1,2,3"
+    # Repetido não muda: é um CONJUNTO.
+    assert assinatura_de([2, 2, 1]) == "1,2"
+
+
+def test_ignorar_um_grupo_e_lembrado(client):
+    """Um botão que esquece ao recarregar é pior que botão nenhum: ele ensina
+    que o produto não escuta."""
+    _, ids = _tres_notas_parecidas(client)
+
+    antes = client.get("/notas/agrupadas").json()
+    assert len(antes["grupos"]) == 1
+    assert antes["calados"] == 0
+
+    assert client.post("/notas/agrupadas/ignorar", json={"notas": ids}).status_code == 204
+
+    depois = client.get("/notas/agrupadas").json()
+    assert depois["grupos"] == []
+    assert depois["calados"] == 1
+
+    # DUAS VEZES NÃO ESCREVE DUAS LINHAS: dois cliques rápidos fariam a lista
+    # crescer por acidente.
+    client.post("/notas/agrupadas/ignorar", json={"notas": ids})
+    assert client.get("/notas/agrupadas").json()["calados"] == 1
+
+    # E DÁ PARA VOLTAR. Ignorar não é apagar: é dizer "já entendi", que é o tipo
+    # de coisa de que a pessoa muda de ideia.
+    assert client.delete("/notas/agrupadas/ignorados").status_code == 204
+    assert len(client.get("/notas/agrupadas").json()["grupos"]) == 1
+
+
+def test_grupo_ignorado_que_ganha_nota_nova_volta(client):
+    """A consequência é escolhida, e é a certa: a assinatura muda, e o Mekora tem
+    coisa nova a dizer sobre aquele assunto."""
+    job_id, ids = _tres_notas_parecidas(client)
+    client.post("/notas/agrupadas/ignorar", json={"notas": ids})
+    assert client.get("/notas/agrupadas").json()["grupos"] == []
+
+    client.post(f"/jobs/{job_id}/notas", json={
+        "capitulo": 9, "de": 0, "ate": 5,
+        "trecho": "repeticao fotografica imagem comparacao registro",
+        "cor": "amarelo",
+    })
+    assert len(client.get("/notas/agrupadas").json()["grupos"]) == 1
+
+
+def test_nao_da_para_calar_grupo_com_nota_de_outra_pessoa(client, client_cru):
+    """Sem conferir as notas, mandar ids alheios calaria um grupo de outra
+    pessoa — e, pior, contaria que aqueles ids existem."""
+    r = client.post("/notas/agrupadas/ignorar", json={"notas": [999_999]})
+    assert r.status_code == 404
+    assert client.post("/notas/agrupadas/ignorar", json={"notas": []}).status_code == 422
+    assert client_cru.post("/notas/agrupadas/ignorar", json={"notas": [1]}).status_code == 401
+
+
+# ---------------------------------------------------------------------------
+# Quanto costuma levar (nó 895:8029)
+# ---------------------------------------------------------------------------
+
+def test_etapa_com_poucas_medidas_nao_aparece(test_engine):
+    """Previsão sem base é invenção com cara de dado. Com uma conversão, o número
+    é aquela conversão.
+
+    O BANCO É O DO TESTE, e não o `SessionLocal` global. A primeira versão usava
+    o global, que é escrito por toda a suíte: ela esperava a tabela vazia e
+    encontrou trinta e quatro medidas de `analyze` de outros testes — e, pior,
+    passava ou falhava conforme a ordem em que a suíte rodasse."""
+    from sqlalchemy.orm import sessionmaker
+
+    from app.models.stage_metric import StageMetric
+    from app.services.metrics_service import MINIMO_PARA_ESTIMAR, quanto_costuma_levar
+
+    db = sessionmaker(bind=test_engine)()
+    try:
+        for _ in range(MINIMO_PARA_ESTIMAR - 1):
+            db.add(StageMetric(job_id=1, stage="prova_poucas", status="completed", duration_ms=900))
+        db.commit()
+        fora = quanto_costuma_levar(db)
+        assert "prova_poucas" not in fora["etapas"]
+        assert fora["minimo"] == MINIMO_PARA_ESTIMAR
+    finally:
+        db.close()
+
+
+def test_a_mediana_ignora_a_execucao_esquisita(test_engine):
+    """MEDIANA, e não média: uma conversão que travou e demorou vinte minutos
+    puxa a média para um número que nunca vai acontecer de novo."""
+    from sqlalchemy.orm import sessionmaker
+
+    from app.models.stage_metric import StageMetric
+    from app.services.metrics_service import quanto_costuma_levar
+
+    db = sessionmaker(bind=test_engine)()
+    try:
+        for ms in (1000, 1100, 1200, 1300, 1_200_000):
+            db.add(StageMetric(job_id=1, stage="prova_mediana", status="completed", duration_ms=ms))
+        # Uma que FALHOU não entra: o tempo até quebrar não descreve o normal.
+        db.add(StageMetric(job_id=1, stage="prova_mediana", status="failed", duration_ms=50))
+        db.commit()
+
+        medido = quanto_costuma_levar(db)["etapas"]["prova_mediana"]
+        # A média destes cinco seria 240 segundos — quatro minutos que nunca vão
+        # acontecer de novo. A mediana é 1,2.
+        assert medido["segundos"] == 1.2
+        assert medido["medidas"] == 5
+    finally:
+        db.close()

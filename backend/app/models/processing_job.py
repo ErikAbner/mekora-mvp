@@ -61,6 +61,24 @@ class ProcessingJob(Base):
     # responder.
     epub_bytes = Column(Integer)
 
+    # O QUE A ANÁLISE CONTOU PÁGINA POR PÁGINA.
+    #
+    # Três frases do desenho ficaram de fora por não existir onde guardá-las:
+    # "nenhuma página corrompida — 96 de 96 abriram sem erro" (nó 895:7856),
+    # "três páginas ficaram sem texto" (nó 895:7631) e "a partir dos 14 títulos
+    # de capítulo que encontrei" (nó 895:7856). O laço da análise já abria página
+    # por página e jogava as três fora.
+    #
+    # NULO E ZERO DIZEM COISAS DIFERENTES, e é por isso que as três são
+    # anuláveis: zero é "contei, e não achei nenhuma"; nulo é "ninguém contou" —
+    # um trabalho analisado antes disto existir, ou um PDF que pede senha. A tela
+    # cala no segundo caso em vez de afirmar que está tudo bem.
+    paginas_ilegiveis = Column(Integer)
+    paginas_sem_texto = Column(Integer)
+    # Os capítulos que o ARQUIVO declara, no sumário próprio dele. Zero quer
+    # dizer que ele não traz sumário — o que também é resposta.
+    capitulos_declarados = Column(Integer)
+
     # O QUE TRAVA ESTE TRABALHO, esperando uma decisão da pessoa.
     #
     # Faltava um estado. Um PDF com senha não é um PDF quebrado, e o produto

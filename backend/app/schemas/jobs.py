@@ -24,6 +24,11 @@ class JobResponse(BaseModel):
     # motivo da Mesa: um arquivo esperando senha não tem título, nem páginas,
     # nem miniatura, e a tela precisa dizer por quê em vez de mostrar tudo vazio.
     bloqueio: Optional[str] = None
+    # O que a análise contou página por página. Nulo é "ninguém contou", e não
+    # zero — a tela cala em vez de afirmar que está tudo bem.
+    paginas_ilegiveis: Optional[int] = None
+    paginas_sem_texto: Optional[int] = None
+    capitulos_declarados: Optional[int] = None
     # Por onde os arquivos deste trabalho são alcançados. Vem do backend porque
     # é ele que sabe — e porque o número ao lado não serve mais para isso.
     endereco: Optional[str] = None
@@ -168,6 +173,11 @@ class HistoryEntry(BaseModel):
     # estado de cada linha — sem este campo, um arquivo esperando senha
     # reaparece a cada recarga como "com erro".
     bloqueio: Optional[str] = None
+    # O que a análise contou página por página. Nulo é "ninguém contou", e não
+    # zero — a tela cala em vez de afirmar que está tudo bem.
+    paginas_ilegiveis: Optional[int] = None
+    paginas_sem_texto: Optional[int] = None
+    capitulos_declarados: Optional[int] = None
 
     # O que a ficha da estante mostra sobre a LEITURA. Tudo derivado — antes
     # estes quatro vinham de um exemplo escrito à mão, iguais em todo livro.
@@ -289,6 +299,11 @@ class JobStatusResponse(BaseModel):
     # `estadoDe` do contrato decide por ele ANTES de olhar o erro, e sem este
     # campo a tela volta a dizer "OCR falhou" para um PDF que só pede senha.
     bloqueio: Optional[str] = None
+    # O que a análise contou página por página. Nulo é "ninguém contou", e não
+    # zero — a tela cala em vez de afirmar que está tudo bem.
+    paginas_ilegiveis: Optional[int] = None
+    paginas_sem_texto: Optional[int] = None
+    capitulos_declarados: Optional[int] = None
 
     # Export final de quadrinhos (Estabilização v1)
     comic_export_status: str = "not_started"

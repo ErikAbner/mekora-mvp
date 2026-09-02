@@ -6,7 +6,8 @@ import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
 import { achatar } from "../../../contrato/texto.js";
 import { Folha } from "../componentes/Folha.jsx";
-import { criarEstudo, lerAgrupadas, reunirNoEstudo } from "../../../contrato/api.js";
+import { TrilhaDaPagina } from "../componentes/TrilhaDaPagina.jsx";
+import { criarEstudo, ignorarGrupo, lerAgrupadas, ouvirGruposDeNovo, reunirNoEstudo } from "../../../contrato/api.js";
 import { DESTAQUES } from "./Leitura.jsx";
 import "./estudos.css";
 
@@ -289,6 +290,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
      você marcou em livros diferentes sobre o mesmo assunto se encontra". */
   const [ligou, setLigou] = useState(null);
   const [montando, setMontando] = useState(null);
+  const [calando, setCalando] = useState(null);
   const navegar = useNavigate();
 
   useEffect(() => {
@@ -332,8 +334,28 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
     <div className="mesa">
       <Cabecalho lugar="estudos" />
 
+      {/* A TRILHA DE ÂNCORAS — nó 895:8849, a mesma coluna do livro e do estudo.
+          A lista de Estudos é a mais alta das três: o cartão do que ficou pela
+          metade, os fios que o Mekora achou, a lista dos estudos e as notas
+          soltas, cada bloco com sua própria rolagem.
+
+          Os itens são MONTADOS DO QUE EXISTE, e não fixos: uma conta sem fio
+          nenhum não deve ter "Você ligou" na coluna, apontando para uma seção
+          que não está lá. */}
+      <div className="estudos-com-trilha">
+      <TrilhaDaPagina
+        rotulo="Nesta página"
+        itens={[
+          { id: "estudos-inicio", rotulo: "Início" },
+          ...(escritasESoltas.length ? [{ id: "estudos-metade", rotulo: "Pela metade" }] : []),
+          ...(ligou?.grupos?.length ? [{ id: "estudos-ligou", rotulo: "Você ligou" }] : []),
+          ...(estudos.length ? [{ id: "estudos-lista", rotulo: "Os estudos" }] : []),
+          ...(soltas.length ? [{ id: "estudos-soltas", rotulo: "Fora de estudo" }] : []),
+        ]}
+      />
+
       <section className="estudos">
-        <header className="estudos-topo">
+        <header className="estudos-topo" id="estudos-inicio">
           <div>
             <h1>Estudos</h1>
             {/* A FRASE É A DO DESENHO (900:56142). A que estava aqui explicava a
@@ -367,7 +389,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
             aviso: é o lembrete de que escrever e arquivar são gestos
             diferentes, e que o segundo é sempre da pessoa. */}
         {escritasESoltas.length > 0 && (
-          <aside className="estudos-metade">
+          <aside className="estudos-metade" id="estudos-metade">
             <p className="estudos-metade-marca">
               O que ficou pela metade <span className="dado">{escritasESoltas.length}</span>
             </p>
@@ -485,7 +507,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
             que ainda não há notas suficientes para atravessar livros. Calar é
             mais honesto que anunciar ausência. */}
         {ligou?.grupos?.length > 0 && (
-          <section className="estudos-ligou">
+          <section className="estudos-ligou" id="estudos-ligou">
             <h2>Você ligou</h2>
             <p className="estudos-ligou-criterio">
               Grupos de <span className="dado">{ligou.criterios.notas}</span> notas
@@ -536,33 +558,102 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                         pergunta: ele monta com as notas dentro e leva até lá. A
                         pergunta do centro é o estudo inteiro, e é a única coisa
                         que ninguém pode escrever no lugar da pessoa. */}
-                    <Botao
-                      tom="secundaria"
-                      disabled={montando === chave}
-                      onClick={async () => {
-                        setMontando(chave);
-                        try {
-                          const semente = (g.palavras.slice(0, 3).join(", ") || "Notas parecidas");
-                          const novo = await criarEstudo({ nome: semente, sobre: "" });
-                          for (const n of g.notas) {
-                            await reunirNoEstudo(novo.id, n.id).catch(() => {});
+                    <div className="estudos-fio-acoes">
+                      <Botao
+                        tom="secundaria"
+                        disabled={montando === chave}
+                        onClick={async () => {
+                          setMontando(chave);
+                          try {
+                            const semente = (g.palavras.slice(0, 3).join(", ") || "Notas parecidas");
+                            const novo = await criarEstudo({ nome: semente, sobre: "" });
+                            for (const n of g.notas) {
+                              await reunirNoEstudo(novo.id, n.id).catch(() => {});
+                            }
+                            navegar(`/estudo/${novo.id}`);
+                          } catch {
+                            setMontando(null);
                           }
-                          navegar(`/estudo/${novo.id}`);
-                        } catch {
-                          setMontando(null);
-                        }
-                      }}
-                    >
-                      {montando === chave ? "Montando…" : `Juntar as ${g.quantas} num estudo`}
-                    </Botao>
+                        }}
+                      >
+                        {montando === chave ? "Montando…" : `Juntar as ${g.quantas} num estudo`}
+                      </Botao>
+
+                      {/* "IGNORAR" — o botão do desenho, e ele ficou de fora até
+                          existir onde LEMBRAR. Um botão que esquece ao
+                          recarregar é pior que botão nenhum.
+
+                          O grupo some da tela na hora, sem esperar a rede: o
+                          gesto é "não quero ver isto", e ver o bloco piscando
+                          por meio segundo é o contrário. Se a gravação falhar,
+                          ele volta na próxima visita — que é honesto. */}
+                      <Botao
+                        tom="secundaria"
+                        disabled={calando === chave}
+                        onClick={async () => {
+                          setCalando(chave);
+                          try {
+                            await ignorarGrupo(g.notas.map((n) => n.id));
+                            setLigou((x) => ({
+                              ...x,
+                              grupos: x.grupos.filter((y) => y !== g),
+                              calados: (x.calados ?? 0) + 1,
+                            }));
+                          } finally {
+                            setCalando(null);
+                          }
+                        }}
+                      >
+                        {calando === chave ? "Calando…" : "Ignorar"}
+                      </Botao>
+                    </div>
                   </li>
                 );
               })}
             </ul>
+
+            {/* O QUE FOI CALADO, e como voltar. Sem esta linha, ignorar é
+                irreversível — e ignorar não é apagar: é dizer "já entendi", que
+                é o tipo de coisa de que se muda de ideia. */}
+            {ligou.calados > 0 && (
+              <p className="estudos-ligou-calados">
+                <span className="dado">{ligou.calados}</span>{" "}
+                {ligou.calados === 1 ? "grupo está calado" : "grupos estão calados"}.{" "}
+                <button
+                  type="button"
+                  className="estudos-ligou-voltar"
+                  onClick={async () => {
+                    await ouvirGruposDeNovo();
+                    setLigou(await lerAgrupadas());
+                  }}
+                >
+                  Mostrar de novo
+                </button>
+              </p>
+            )}
           </section>
         )}
 
-        <div className="estudos-lista" hidden={vista !== "lista"}>
+        {/* A SEÇÃO SOME QUANDO NÃO SOBRA GRUPO, mas o que foi calado precisa
+            continuar alcançável — senão o gesto vira uma porta sem volta. */}
+        {ligou?.grupos?.length === 0 && ligou?.calados > 0 && (
+          <p className="estudos-ligou-calados">
+            Você calou <span className="dado">{ligou.calados}</span>{" "}
+            {ligou.calados === 1 ? "grupo" : "grupos"}, e não há outros para mostrar.{" "}
+            <button
+              type="button"
+              className="estudos-ligou-voltar"
+              onClick={async () => {
+                await ouvirGruposDeNovo();
+                setLigou(await lerAgrupadas());
+              }}
+            >
+              Mostrar de novo
+            </button>
+          </p>
+        )}
+
+        <div className="estudos-lista" id="estudos-lista" hidden={vista !== "lista"}>
           {visiveis.map((e) => (
             <Estudo
               key={e.id}
@@ -581,7 +672,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
             O nó 966:31095 tem esta seção, e sem ela a tela mostra o que já foi
             reunido e esconde o material. */}
         {soltas.length > 0 && (
-          <section className="estudos-soltas">
+          <section className="estudos-soltas" id="estudos-soltas">
             <h2>
               Fora de estudo <span className="dado">{soltas.length}</span>
             </h2>
@@ -610,6 +701,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
           </section>
         )}
       </section>
+      </div>
 
       <Folha
         aberta={criando}

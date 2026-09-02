@@ -449,3 +449,65 @@ def test_senha_em_arquivo_que_nao_espera_senha_da_409(client, sample_pdf):
     job_id = envio.json()["upload_id"]
     r = client.post(f"/jobs/{job_id}/senha", json={"senha": "qualquer"})
     assert r.status_code == 409
+
+
+# ---------------------------------------------------------------------------
+# O que a análise conta página por página (nós 895:7856 e 895:7631)
+# ---------------------------------------------------------------------------
+
+def test_analise_conta_paginas_sem_texto_e_capitulos(tmp_path):
+    """Três frases do desenho ficaram fora por não existir onde guardá-las. O
+    laço da análise já abria página por página e jogava as três fora."""
+    import fitz
+
+    from app.services.pdf_service import analyze_pdf
+
+    d = fitz.open()
+    for i in range(5):
+        p = d.new_page()
+        if i in (1, 3):
+            continue          # duas páginas abrem e não têm letra nenhuma
+        p.insert_text((72, 80), "Uma linha de texto de verdade nesta página.", fontsize=12)
+        for j in range(6):
+            p.insert_text((72, 110 + j * 20), "Mais texto para a página ter conteúdo. " * 2, fontsize=9)
+    d.set_toc([[1, "Primeiro", 1], [1, "Segundo", 3], [1, "Terceiro", 5]])
+    caminho = tmp_path / "com-vazias.pdf"
+    d.save(str(caminho))
+    d.close()
+
+    r = analyze_pdf(str(caminho), tmp_path / "mini")
+    assert r["page_count"] == 5
+    assert r["paginas_sem_texto"] == 2
+    assert r["paginas_ilegiveis"] == 0
+    # O ARQUIVO DECLARA TRÊS CAPÍTULOS no sumário dele, e agora dá para dizer o
+    # número — antes a linha existia sem ele.
+    assert r["capitulos_declarados"] == 3
+
+
+def test_arquivo_sem_sumario_devolve_zero_e_nao_nulo(tmp_path):
+    """Zero e nulo dizem coisas diferentes: zero é "o arquivo não traz sumário",
+    nulo é "ninguém contou". A tela precisa separar os dois."""
+    import fitz
+
+    from app.services.pdf_service import analyze_pdf
+
+    d = fitz.open()
+    p = d.new_page()
+    p.insert_text((72, 80), "Um documento sem sumário nenhum, com texto suficiente.", fontsize=12)
+    caminho = tmp_path / "sem-sumario.pdf"
+    d.save(str(caminho))
+    d.close()
+
+    r = analyze_pdf(str(caminho), tmp_path / "mini")
+    assert r["capitulos_declarados"] == 0
+
+
+def test_pdf_com_senha_nao_conta_nada(tmp_path):
+    """Sem a senha não dá para abrir página nenhuma — e zero afirmaria que
+    contou e não achou."""
+    from app.services.pdf_service import analyze_pdf
+
+    r = analyze_pdf(str(_pdf_com_senha(tmp_path / "t.pdf")), tmp_path / "mini")
+    assert r["paginas_sem_texto"] is None
+    assert r["paginas_ilegiveis"] is None
+    assert r["capitulos_declarados"] is None

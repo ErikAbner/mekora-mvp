@@ -462,6 +462,30 @@ export function lerAgrupadas() {
   return pede("/notas/agrupadas");
 }
 
+/**
+ * POST /notas/agrupadas/ignorar — para de sugerir este grupo.
+ *
+ * O grupo e identificado pelas NOTAS que o formam, e nao por um id: grupos nao
+ * existem como registro, nascem de uma varredura do acervo.
+ *
+ * A consequencia disso e escolhida e e a certa: um grupo ignorado que ganha uma
+ * nota nova VOLTA a aparecer. Ignorar nao e "nunca mais me fale disso"; e "com
+ * estas notas, ja entendi".
+ */
+export function ignorarGrupo(notas) {
+  return pede("/notas/agrupadas/ignorar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ notas }),
+  });
+}
+
+/** DELETE /notas/agrupadas/ignorados — volta a mostrar todos. Sem isto, ignorar
+ *  seria irreversivel — e ignorar nao e apagar. */
+export function ouvirGruposDeNovo() {
+  return pede("/notas/agrupadas/ignorados", { method: "DELETE" });
+}
+
 export function reunirNoEstudo(id, nota_id) {
   return pede(`/estudos/${id}/notas`, {
     method: "POST",
@@ -632,6 +656,20 @@ export function renomearArquivo(jobId, final_filename) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ final_filename }),
   });
+}
+
+/**
+ * GET /metrics/costuma-levar — quanto cada etapa costuma demorar, MEDIDO.
+ *
+ * E o "01:10" do no 895:8029, que ficou de fora porque era previsao: nem o
+ * Calibre nem o ocrmypdf estimam nada. O que mudou e que agora ha historico — a
+ * mediana das execucoes que terminaram nao preve, conta o que aconteceu nesta
+ * maquina, com estes arquivos.
+ *
+ * Devolve `{}` enquanto nao houver medidas suficientes, e a tela cala.
+ */
+export function quantoCostumaLevar() {
+  return pede("/metrics/costuma-levar");
 }
 
 /* ─── Traducao ──────────────────────────────────────────────────────────────

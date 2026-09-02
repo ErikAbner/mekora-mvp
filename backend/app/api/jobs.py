@@ -431,6 +431,9 @@ def _bg_analyze(job_id: int, operation_id: str | None = None) -> None:
         job.page_count = result["page_count"]
         job.is_scanned = result["is_scanned"]
         job.avg_chars_per_page = result["avg_chars_per_page"]
+        job.paginas_ilegiveis = result.get("paginas_ilegiveis")
+        job.paginas_sem_texto = result.get("paginas_sem_texto")
+        job.capitulos_declarados = result.get("capitulos_declarados")
         job.ocr_status = "needed" if result["is_scanned"] else "not_needed"
         job.status = "analyzed"
 

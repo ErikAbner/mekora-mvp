@@ -1,4 +1,21 @@
-.estudos { padding: 32px 40px 64px; display: flex; flex-direction: column; gap: 24px; }
+/* DUAS COLUNAS: a trilha de ancoras e a pagina. A trilha some abaixo de 1024
+ * (regra dela), e ai a pagina volta a ser uma coluna so. */
+.estudos-com-trilha {
+  display: flex; gap: 48px; align-items: flex-start;
+  max-inline-size: 1240px; margin-inline: auto;
+  padding-block-start: 32px;
+}
+.estudos { flex: 1 1 0; min-inline-size: 0; padding: 0 40px 64px; display: flex; flex-direction: column; gap: 24px; }
+/* A ancora nao pode encostar no topo da janela: sem isto o titulo da secao fica
+ * colado na borda e parece cortado. */
+.estudos :where(.estudos-topo, .estudos-metade, .estudos-ligou, .estudos-lista, .estudos-soltas) {
+  scroll-margin-top: 32px;
+}
+
+@media (max-width: 1023px) {
+  .estudos-com-trilha { display: block; padding-block-start: 0; }
+  .estudos { padding: 32px 24px 64px; }
+}
 
 .estudos-topo {
   display: flex;
@@ -400,3 +417,19 @@
   .estudos-fios > li { padding: 24px 16px; }
   .estudos-fio-conta { font-size: 18px; line-height: 27px; }
 }
+
+.estudos-fio-acoes { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* O que foi calado, e como voltar. Sem esta linha ignorar e irreversivel — e
+ * ignorar nao e apagar: e dizer "ja entendi", coisa de que se muda de ideia. */
+.estudos-ligou-calados {
+  margin: 0;
+  font-size: 14px; line-height: 20px;
+  color: var(--muted-foreground);
+}
+.estudos-ligou-voltar {
+  border: 0; background: none; padding: 0;
+  font: inherit; color: var(--foreground);
+  text-decoration: underline; cursor: pointer;
+}
+.estudos-ligou-voltar:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }

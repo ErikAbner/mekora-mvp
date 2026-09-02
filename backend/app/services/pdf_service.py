@@ -5,6 +5,14 @@ import fitz  # PyMuPDF
 # PDFs com média abaixo deste limiar de caracteres/página são tratados como escaneados
 SCANNED_THRESHOLD = 50
 
+# QUANTOS CARACTERES FAZEM UMA PÁGINA "TER TEXTO".
+#
+# Não é zero. Uma página de rosto com o número dela no rodapé devolve dois ou
+# três caracteres, e chamá-la de página com texto faria a contagem dizer que
+# está tudo bem num livro que veio quase todo vazio. Vinte é o tamanho de uma
+# linha curta — abaixo disso não há frase.
+LETRAS_PARA_TER_TEXTO = 20
+
 
 def analyze_pdf(pdf_path: str, thumbnails_dir: Path) -> dict:
     """
@@ -36,13 +44,41 @@ def analyze_pdf(pdf_path: str, thumbnails_dir: Path) -> dict:
             "is_scanned": False,
             "avg_chars_per_page": 0.0,
             "needs_password": True,
+            # Nada foi contado: sem a senha não dá para abrir página nenhuma.
+            "paginas_ilegiveis": None,
+            "paginas_sem_texto": None,
+            "capitulos_declarados": None,
         }
 
     metadata = doc.metadata
     page_count = doc.page_count
 
-    # Densidade de texto: baixa densidade indica PDF escaneado (imagens sem OCR)
-    total_chars = sum(len(page.get_text().strip()) for page in doc)
+    # DENSIDADE DE TEXTO, E MAIS DUAS CONTAS NA MESMA PASSADA.
+    #
+    # O laço já abria página por página e só somava caracteres — jogava fora
+    # quais falharam ao abrir e quais vieram vazias. As duas coisas são frases do
+    # desenho que ficaram de fora por não existir onde guardá-las:
+    # "nenhuma página corrompida — 96 de 96 abriram sem erro" (nó 895:7856) e
+    # "três páginas ficaram sem texto" (nó 895:7631).
+    #
+    # Contar aqui não custa uma leitura a mais: custa dois inteiros.
+    total_chars = 0
+    ilegiveis = 0
+    sem_texto = 0
+    for pagina in doc:
+        try:
+            texto = pagina.get_text().strip()
+        except Exception:
+            # PÁGINA QUE NÃO ABRE É UMA COISA, e página vazia é outra. Um PDF
+            # truncado no meio do download tem páginas que levantam ao serem
+            # lidas; uma digitalização tem páginas que abrem e não têm letra
+            # nenhuma. Somar as duas num número só esconderia qual é o problema.
+            ilegiveis += 1
+            continue
+        total_chars += len(texto)
+        if len(texto) < LETRAS_PARA_TER_TEXTO:
+            sem_texto += 1
+
     avg_chars = total_chars / page_count if page_count > 0 else 0.0
     is_scanned = avg_chars < SCANNED_THRESHOLD
 
@@ -53,6 +89,7 @@ def analyze_pdf(pdf_path: str, thumbnails_dir: Path) -> dict:
         pix = page.get_pixmap(matrix=fitz.Matrix(0.5, 0.5))
         pix.save(str(thumbnails_dir / f"page_{i}.png"))
 
+    capitulos_declarados = len(doc.get_toc() or [])
     doc.close()
 
     return {
@@ -63,6 +100,19 @@ def analyze_pdf(pdf_path: str, thumbnails_dir: Path) -> dict:
         "is_scanned": is_scanned,
         "avg_chars_per_page": round(avg_chars, 2),
         "needs_password": False,
+        "paginas_ilegiveis": ilegiveis,
+        "paginas_sem_texto": sem_texto,
+        # OS CAPÍTULOS QUE O ARQUIVO DECLARA, e não os que alguém adivinhou.
+        #
+        # "A partir dos 14 títulos de capítulo que encontrei" (nó 895:7856)
+        # ficava sem número: quem lê o sumário é o navegador, e só DEPOIS da
+        # conversão. Mas um PDF costuma trazer o próprio sumário como marcadores,
+        # e `get_toc()` os devolve — quando o arquivo tem, dá para dizer quantos.
+        #
+        # Zero e nulo dizem coisas diferentes: zero é "o arquivo não traz sumário
+        # próprio", e nulo é "ninguém contou" — um trabalho analisado antes disto
+        # existir. A tela precisa separar os dois.
+        "capitulos_declarados": capitulos_declarados,
     }
 
 

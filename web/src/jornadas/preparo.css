@@ -275,3 +275,13 @@
   margin: 24px 0 0; padding: 0; list-style: none;
   display: flex; flex-wrap: wrap; gap: 12px;
 }
+
+/* Quanto a etapa COSTUMA levar — mediana medida, e nao previsao. A frase diz em
+ * quantos preparos o numero se apoia: sem isso a tela afirma "cerca de 2
+ * minutos" e ninguem pode discordar. */
+.preparo-andando-costuma {
+  grid-column: 1;
+  margin: 8px 0 0 !important;
+  font-size: 13px; line-height: 18px;
+  color: var(--muted-foreground);
+}

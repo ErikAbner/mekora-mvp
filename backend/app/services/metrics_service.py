@@ -224,3 +224,82 @@ def get_job_timeline(db: Any, job_id: int) -> list[dict]:
         }
         for r in rows
     ]
+
+
+# ---------------------------------------------------------------------------
+# Quanto costuma demorar — o tempo por passo do nó 895:8029
+# ---------------------------------------------------------------------------
+
+# QUANTAS MEDIDAS FAZEM UMA ESTIMATIVA.
+#
+# Com uma conversão, o número é aquela conversão. Com cinco, já há alguma ideia
+# do que é normal nesta máquina, com estes arquivos. Abaixo disso a tela não
+# diz nada — que é o comportamento que ela já tinha, e por um motivo que continua
+# valendo: previsão sem base é invenção com cara de dado.
+MINIMO_PARA_ESTIMAR = 5
+
+# O que cada etapa é, em português. As chaves são as que o `record_stage` grava.
+NOME_DA_ETAPA = {
+    "upload": "receber o arquivo",
+    "analyze": "ler o arquivo",
+    "convert": "converter para EPUB",
+    "comic_convert": "converter o quadrinho",
+    "translate": "traduzir",
+    "comic_translate": "traduzir o quadrinho",
+    "send": "enviar ao Kindle",
+    "export": "exportar",
+}
+
+
+def quanto_costuma_levar(db: Any) -> dict:
+    """O tempo TÍPICO de cada etapa, medido — e não previsto.
+
+    O nó 895:8029 põe um tempo ao lado de cada passo ("01:10", "00:40"), e isso
+    ficou de fora porque era previsão: nem o Calibre nem o ocrmypdf estimam nada,
+    e um número inventado numa tela que existe para dar certeza é o contrário
+    dela.
+
+    O QUE MUDOU É QUE AGORA HÁ HISTÓRICO. `stage_metrics` grava a duração de cada
+    etapa de cada preparo desde 01/09, e a mediana de execuções passadas não é
+    previsão: é o que aconteceu, nesta máquina, com estes arquivos.
+
+    MEDIANA, E NÃO MÉDIA. Uma conversão que travou e demorou vinte minutos puxa a
+    média para um número que nunca vai acontecer de novo; a mediana ignora o caso
+    esquisito, que é exatamente o que se quer de "costuma levar".
+
+    Só etapas que TERMINARAM entram: o tempo de uma que falhou é o tempo até
+    quebrar, e ele não descreve o caminho normal.
+    """
+    from app.models.stage_metric import StageMetric
+
+    linhas = (
+        db.query(StageMetric)
+        .filter(StageMetric.status == "completed", StageMetric.duration_ms.isnot(None))
+        .all()
+    )
+
+    por_etapa: dict[str, list[float]] = {}
+    for linha in linhas:
+        por_etapa.setdefault(linha.stage, []).append(linha.duration_ms)
+
+    fora = {}
+    for etapa, tempos in por_etapa.items():
+        if len(tempos) < MINIMO_PARA_ESTIMAR:
+            continue
+        tempos.sort()
+        meio = len(tempos) // 2
+        mediana = (
+            tempos[meio]
+            if len(tempos) % 2
+            else (tempos[meio - 1] + tempos[meio]) / 2
+        )
+        fora[etapa] = {
+            "nome": NOME_DA_ETAPA.get(etapa, etapa),
+            "segundos": round(mediana / 1000, 1),
+            # QUANTAS MEDIDAS SUSTENTAM O NÚMERO. Sem isso a tela afirma "dois
+            # minutos" e ninguém pode discordar; com isso ela pode dizer "medido
+            # em 12 preparos", que é uma frase que se confere.
+            "medidas": len(tempos),
+        }
+
+    return {"etapas": fora, "minimo": MINIMO_PARA_ESTIMAR}

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from fastapi import APIRouter, Cookie, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Cookie, Depends, File, HTTPException, Response, UploadFile
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy.orm import Session
 
@@ -182,6 +182,7 @@ def agrupadas(
     como número. É o mesmo cuidado que `/notas/todas` já exigia, e ele está
     declarado três linhas acima por essa razão.
     """
+    from app.models.grupo_ignorado import GrupoIgnorado
     from app.services import sugestoes_service
 
     pessoa = _quem(db, mekora_sessao)
@@ -197,8 +198,24 @@ def agrupadas(
         .all()
     )
 
+    # OS QUE A PESSOA MANDOU PARAR. A assinatura é o conjunto de notas do grupo,
+    # e por isso um grupo ignorado que ganha nota nova VOLTA a aparecer — a
+    # assinatura muda, e o Mekora tem coisa nova a dizer sobre aquele assunto.
+    # Ignorar não é "nunca mais me fale disso"; é "com estas notas, já entendi".
+    calados = {
+        linha.assinatura
+        for linha in db.query(GrupoIgnorado).filter(GrupoIgnorado.pessoa_id == pessoa.id)
+    }
+    grupos = [
+        g for g in sugestoes_service.agrupar(minhas)
+        if sugestoes_service.assinatura_do_grupo(g) not in calados
+    ]
+
     return {
-        "grupos": sugestoes_service.agrupar(minhas),
+        "grupos": grupos,
+        # Quantos estão calados agora. A tela precisa disso para poder dizer que
+        # há fios escondidos, em vez de a seção sumir sem explicação.
+        "calados": len(calados),
         # OS CRITÉRIOS SAEM NA RESPOSTA, como os cortes das faixas: a tela diz
         # "a partir de N palavras", e sem isso o produto afirma um agrupamento
         # que ninguém pode discordar.
@@ -459,6 +476,72 @@ def apagar(
     db.delete(n)
     db.commit()
     return None
+
+
+class GrupoParaCalar(BaseModel):
+    """Os ids das notas do grupo. É o conjunto que identifica um grupo — eles não
+    existem como registro, nascem de uma varredura."""
+
+    notas: list[int]
+
+
+@router.post("/notas/agrupadas/ignorar", status_code=204)
+def ignorar_grupo(
+    qual: GrupoParaCalar,
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> Response:
+    """Para de sugerir este grupo.
+
+    O nó 895:8849 põe um "Ignorar" ao lado de cada fio, e ele ficou de fora
+    porque ignorar precisa ser LEMBRADO e não havia onde. Um botão que esquece ao
+    recarregar é pior que botão nenhum: ele ensina que o produto não escuta.
+
+    AS NOTAS SÃO CONFERIDAS. Sem isso, mandar uma lista de ids de outra pessoa
+    calaria um grupo dela — e, pior, contaria que aqueles ids existem.
+    """
+    from app.models.grupo_ignorado import GrupoIgnorado
+    from app.services.sugestoes_service import assinatura_de
+
+    pessoa = _quem(db, mekora_sessao)
+    if not qual.notas:
+        raise HTTPException(status_code=422, detail="Um grupo tem notas.")
+
+    minhas = {
+        n.id for n in
+        db.query(Nota.id).filter(Nota.pessoa_id == pessoa.id, Nota.id.in_(qual.notas))
+    }
+    if minhas != set(qual.notas):
+        raise HTTPException(status_code=404, detail="Nota não encontrada.")
+
+    assinatura = assinatura_de(qual.notas)
+    ja = (
+        db.query(GrupoIgnorado)
+        .filter(GrupoIgnorado.pessoa_id == pessoa.id, GrupoIgnorado.assinatura == assinatura)
+        .first()
+    )
+    if ja is None:
+        db.add(GrupoIgnorado(pessoa_id=pessoa.id, assinatura=assinatura))
+        db.commit()
+    return Response(status_code=204)
+
+
+@router.delete("/notas/agrupadas/ignorados", status_code=204)
+def ouvir_de_novo(
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> Response:
+    """Volta a mostrar todos os grupos calados.
+
+    Sem isto, ignorar é irreversível — e ignorar não é apagar: é dizer "já
+    entendi", que é o tipo de coisa de que a pessoa muda de ideia.
+    """
+    from app.models.grupo_ignorado import GrupoIgnorado
+
+    pessoa = _quem(db, mekora_sessao)
+    db.query(GrupoIgnorado).filter(GrupoIgnorado.pessoa_id == pessoa.id).delete()
+    db.commit()
+    return Response(status_code=204)
 
 
 @router.get("/notas/{nota_id}/sugestoes")

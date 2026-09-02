@@ -254,3 +254,22 @@ def agrupar(notas: list) -> list[dict]:
     # que um de três em dois.
     fora.sort(key=lambda g: (-g["quantas"], -g["livros"]))
     return fora
+
+
+def assinatura_de(ids) -> str:
+    """A identidade de um grupo: as notas que o formam, ordenadas.
+
+    Grupos não existem como registro — eles nascem de uma varredura, e a mesma
+    varredura amanhã pode devolver outros. O que dá para guardar é o CONJUNTO.
+
+    ORDENAR NÃO É DETALHE: a varredura devolve na ordem em que a união de
+    conjuntos os encontrou, que não é estável entre execuções. Sem ordenar, o
+    mesmo grupo teria duas assinaturas e "ignorar" pararia de funcionar na
+    segunda visita.
+    """
+    return ",".join(str(i) for i in sorted(set(int(i) for i in ids)))
+
+
+def assinatura_do_grupo(grupo: dict) -> str:
+    """A mesma coisa, a partir do grupo já montado."""
+    return assinatura_de(n["id"] for n in grupo.get("notas", []))

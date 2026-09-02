@@ -6,9 +6,10 @@ import { AvisoPreferencias } from "../componentes/AvisoPreferencias.jsx";
 import { Campo } from "../componentes/Campo.jsx";
 import {
   acompanhar, analisar, cancelarOperacao, converter, enviarAoKindle, escolherIdiomas,
-  esperarAnalise, motoresDeTraducao, paresDeTraducao, traduzir,
+  esperarAnalise, motoresDeTraducao, paresDeTraducao, quantoCostumaLevar, traduzir,
 } from "../../../contrato/api.js";
 import { nomeDoIdioma, paraOndeTraduzir } from "../../../contrato/idiomas.js";
+import { comoSeDiz } from "../../../contrato/duracao.js";
 import { Folha } from "../componentes/Folha.jsx";
 import { tamanhoLegivel } from "../../../contrato/tamanho.js";
 import "./preparo.css";
@@ -47,20 +48,48 @@ function achados(job) {
     });
   }
 
-  /* DUAS LINHAS SAÍRAM DAQUI, e cada uma por um motivo diferente.
+  /* AS PÁGINAS QUE ABRIRAM — a linha do nó 895:7856, e ela voltou.
    *
-   * "Nenhuma página corrompida — N de N abriram sem erro" é do nó 895:7856, e o
-   * backend NÃO SABE ISSO: não há campo de página corrompida no
-   * `ProcessingJob`. A frase era verdadeira por acaso, e apareceria igual num
-   * arquivo com metade das páginas quebradas. Fica de fora até haver de onde
-   * tirá-la.
+   * "Nenhuma página corrompida — 96 de 96 abriram sem erro" ficou meses fora
+   * porque não havia campo: a frase era verdadeira por acaso, e apareceria igual
+   * num arquivo com metade das páginas quebradas. Agora a análise conta na mesma
+   * passada em que soma os caracteres.
    *
-   * "N páginas" e "Idioma: X" saíram por repetição: o veredito acima já conta
-   * as páginas, e "O que vou fazer" já traz o idioma com o que importa junto —
-   * que nada será traduzido. No desenho, "O que encontrei" é a lista do que
-   * PEDE ATENÇÃO, e não o inventário do arquivo; o inventário são os selos do
-   * topo.
-   */
+   * NULO NÃO É ZERO: um trabalho analisado antes disto existir não tem contagem,
+   * e a linha não aparece — em vez de afirmar que está tudo bem. */
+  if (typeof job.paginas_ilegiveis === "number" && paginas) {
+    const abriram = paginas - job.paginas_ilegiveis;
+    fora.push(
+      job.paginas_ilegiveis === 0
+        ? {
+            titulo: "Nenhuma página corrompida",
+            diz: `${abriram} de ${paginas} abriram sem erro.`,
+          }
+        : {
+            titulo:
+              job.paginas_ilegiveis === 1
+                ? "1 página não abriu"
+                : `${job.paginas_ilegiveis} páginas não abriram`,
+            diz: `${abriram} de ${paginas} abriram. O que não abre não entra no livro — costuma ser download interrompido.`,
+          },
+    );
+  }
+
+  /* AS PÁGINAS SEM TEXTO — a linha do nó 895:7631, "três páginas ficaram sem
+   * texto". Ela só aparece quando há alguma: dizer "nenhuma página sem texto"
+   * num documento de texto é ruído, e a linha de cima já cobre o caso bom.
+   *
+   * Numa digitalização TODAS ficam sem texto antes do reconhecimento, e aí a
+   * linha não diz nada que a de cima já não tenha dito. */
+  if (job.paginas_sem_texto > 0 && !job.is_scanned) {
+    fora.push({
+      titulo:
+        job.paginas_sem_texto === 1
+          ? "1 página ficou sem texto"
+          : `${job.paginas_sem_texto} páginas ficaram sem texto`,
+      diz: "Elas abriram, e não têm letra nenhuma dentro — costumam ser folhas de imagem no meio do documento.",
+    });
+  }
 
   /* SE NADA FOI ENCONTRADO, A TELA DIZ ISSO — e não some. Uma seção vazia
    * sugere que a análise não rodou; uma frase dizendo que não achou nada
@@ -107,9 +136,23 @@ function planos(job) {
    * Então a linha entra sem o número, dizendo o que é verdade: o sumário sai
    * dos títulos que o conversor achar. Prometer catorze antes de olhar seria a
    * mesma invenção que esta tela existe para não fazer. */
+  /* O NÚMERO DOS CAPÍTULOS APARECEU. A linha existia sem ele — "a partir dos
+   * títulos que o conversor encontrar" — porque quem lê o sumário era o
+   * navegador, depois da conversão. Mas um PDF costuma trazer o próprio sumário
+   * como marcadores, e agora a análise os conta.
+   *
+   * Três casos, e os três são verdade diferente: o arquivo declara N capítulos;
+   * o arquivo não declara nenhum (zero); ou ninguém contou (nulo, num trabalho
+   * antigo). */
+  const capitulos = job.capitulos_declarados;
   fora.push({
     titulo: "Gerar um sumário navegável",
-    diz: "A partir dos títulos de capítulo que o conversor encontrar. É ele que vira o índice do livro na leitura.",
+    diz:
+      typeof capitulos !== "number"
+        ? "A partir dos títulos de capítulo que o conversor encontrar. É ele que vira o índice do livro na leitura."
+        : capitulos > 0
+          ? `A partir dos ${capitulos} títulos de capítulo que o arquivo declara. É ele que vira o índice do livro na leitura.`
+          : "O arquivo não traz sumário próprio, então o conversor monta um com os títulos que achar no texto.",
   });
 
   if (!job.final_title && !job.detected_title) {
@@ -319,6 +362,11 @@ export function Preparo() {
   const [motores, setMotores] = useState(null);
   const [traduzindo, setTraduzindo] = useState(false);
   const [escolhendoIdioma, setEscolhendoIdioma] = useState(false);
+  /* QUANTO CADA ETAPA COSTUMA LEVAR — o "01:10" do nó 895:8029, que ficou de
+     fora por ser previsão. Agora é MEDIDA: a mediana das execuções que
+     terminaram nesta máquina. Vazio enquanto não houver histórico bastante, e aí
+     a tela cala, como sempre calou. */
+  const [tempos, setTempos] = useState(null);
 
   const buscar = useCallback(async () => {
     try {
@@ -350,11 +398,16 @@ export function Preparo() {
 
   useEffect(() => {
     let vivo = true;
-    Promise.all([paresDeTraducao().catch(() => null), motoresDeTraducao().catch(() => null)])
-      .then(([p, m]) => {
+    Promise.all([
+      paresDeTraducao().catch(() => null),
+      motoresDeTraducao().catch(() => null),
+      quantoCostumaLevar().catch(() => null),
+    ])
+      .then(([p, m, t]) => {
         if (!vivo) return;
         setPares(p);
         setMotores(m);
+        setTempos(t);
       });
     return () => { vivo = false; };
   }, []);
@@ -553,10 +606,25 @@ export function Preparo() {
             <ul className="preparo-pagina-lista preparo-andando-passos">
               {passos.map((x) => {
                 const correndo = Boolean(x.passo) && p?.passo === x.passo;
+                /* QUANTO ESTA ETAPA COSTUMA LEVAR, e é medido: a mediana das
+                   vezes que ela terminou nesta máquina. O desenho põe um tempo
+                   ao lado de cada passo, e ele ficou de fora enquanto era
+                   previsão — nem o Calibre nem o ocrmypdf estimam nada.
+
+                   A frase diz em quantos preparos o número se apoia. Sem isso a
+                   tela afirma "cerca de 2 minutos" e ninguém pode discordar. */
+                const costuma = x.passo && tempos?.etapas?.[x.passo];
                 return (
                   <li key={x.titulo} aria-current={correndo ? "step" : undefined}>
                     <h3>{x.titulo}</h3>
                     <p>{correndo ? "Em andamento" : x.diz}</p>
+                    {costuma && (
+                      <p className="preparo-andando-costuma">
+                        {comoSeDiz(costuma.segundos)}, medido em{" "}
+                        <span className="dado">{costuma.medidas}</span>{" "}
+                        {costuma.medidas === 1 ? "preparo" : "preparos"}
+                      </p>
+                    )}
                   </li>
                 );
               })}
