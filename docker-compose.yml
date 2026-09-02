@@ -26,8 +26,6 @@ services:
     build:
       context: .
       dockerfile: web/Dockerfile
-      args:
-        VITE_API: /api
     restart: unless-stopped
     environment:
       # Sem domínio definido o Caddy sobe em localhost com certificado próprio,

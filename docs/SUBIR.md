@@ -33,7 +33,15 @@ git clone <o repositório> mekora && cd mekora
 cp .env.example .env
 ```
 
-Edite o `.env`: SMTP, o e-mail do Kindle, e `MEKORA_DOMINIO`.
+Edite o `.env`. Quatro coisas, e **a última é obrigatória ou você fica de fora
+da sua própria instalação**:
+
+| | o que é |
+|---|---|
+| `MEKORA_DOMINIO` | o domínio que a borda serve, sem `https://` |
+| `SMTP_HOST` `SMTP_PORT` `SMTP_USER` `SMTP_PASS` | por onde sai o link de entrada e o envio ao Kindle |
+| `KINDLE_EMAIL` | o endereço `@kindle.com` do aparelho |
+| `DONO_EMAIL` | **o seu e-mail.** Sem ele ninguém manda na instalação — nem você |
 
 **O `.env` nunca entra no git e nunca entra na imagem.** Ele existe só nesse
 servidor, e é a única cópia — se a VPS sumir, ele some junto.
@@ -64,6 +72,16 @@ que não alcança o disco continua respondendo em porta aberta.
 ```bash
 curl -fsS https://SEU-DOMINIO/health
 ```
+
+E confira a configuração da borda **antes** de confiar nela:
+
+```bash
+docker compose exec web caddy validate --config /etc/caddy/Caddyfile
+```
+
+Ele lê o arquivo e diz se entendeu. Um erro de sintaxe ali derruba o TLS junto,
+e o sintoma é o navegador recusando a conexão — que não parece um erro de
+configuração, parece o domínio estar errado.
 
 ---
 

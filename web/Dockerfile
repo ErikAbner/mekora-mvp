@@ -8,11 +8,16 @@ RUN npm ci
 COPY web/ ./
 COPY contrato/ /contrato/
 
-# Em produção o backend fica atrás do mesmo domínio, sob /api. Isso vale mais que
-# conveniência: mesma origem significa nenhum CORS para configurar e nenhum
-# cabeçalho permissivo para esquecer aberto.
-ARG VITE_API=/api
-ENV VITE_API=$VITE_API
+# NÃO HÁ BASE DE API PARA CONFIGURAR, e havia: um `ARG VITE_API=/api` aqui, e um
+# comentário dizendo que em produção o backend ficava sob `/api`. Nenhuma das
+# duas coisas era verdade. O `contrato/api.js` mora fora da raiz do Vite, então a
+# substituição de build nunca o alcançava — o valor era lido e jogado fora, e o
+# comentário mandava a próxima pessoa procurar um `/api` que não existe.
+#
+# A regra de verdade está escrita lá: o caminho da chamada é O MESMO em
+# desenvolvimento e em produção. A borda repassa `/upload` para `/upload`. Não há
+# ambiente onde seja outro, logo não há o que configurar nem como configurar
+# errado. Mesma origem, nenhum CORS.
 RUN npm run build
 
 FROM caddy:2-alpine

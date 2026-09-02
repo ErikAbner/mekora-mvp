@@ -1,3 +1,12 @@
+# ⚠ ESTE ARQUIVO NÃO É O DO PRODUTO. Ele constrói o frontend LEGADO (`legado/`),
+# e o `docker compose` não o usa: quem sobe é `backend/Dockerfile` e
+# `web/Dockerfile`. Está aqui porque o legado ainda existe, e some junto com ele.
+#
+# Se você chegou pensando em `docker build .` para subir o Mekora, o comando é
+# outro, e está em `docs/SUBIR.md`:
+#
+#     docker compose up -d --build
+#
 # --------------------------------------------------------------------------- #
 # Stage 1: Build do frontend
 # --------------------------------------------------------------------------- #
