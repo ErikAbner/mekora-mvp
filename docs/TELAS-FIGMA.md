@@ -30,12 +30,12 @@ quadro e peça — o nome e o id vêm juntos.
 | `966:28476` | M · Mesa | `/mesa` | **comparada · confere** |
 | `966:29052` | M · Livro — o que ficou | `/estante/:id` | **comparada · corrigida** |
 | `966:29395` | M · Leitura | `/leitura/:id` | **comparada · corrigida** |
-| `966:29743` | M · Estudo — página | `/estudo/:id` | **comparada · falta a seção Livros** |
+| `966:29743` | M · Estudo — página | `/estudo/:id` | **comparada · corrigida** (a seção Livros existe) |
 | `966:30269` | M · Conexões — sugestões | `/nota/:id` | **comparada · confere** |
 | `966:30771` | M · Estudos — lista | `/estudos` | **comparada · corrigida** |
 | `966:31095` | M · Estudos — lista (variação) | `/estudos` | **comparada · corrigida** |
 | `966:31504` | M · Preparo — o que encontrei | `/preparo/:id` | **comparada · corrigida** |
-| `967:31833` | M · Preparo — em andamento | `/preparo/:id` | **exige conversão rodando — ver abaixo** |
+| `967:31833` | M · Preparo — em andamento | `/preparo/:id` | **comparada · construída** (medida com conversão real) |
 | `973:32414` | M · Leitura · aparência | painel da leitura | **é o `941:23110`, já construído** |
 
 ## O que a comparação achou
@@ -128,9 +128,9 @@ livros de onde as notas vieram, e um "Ver na estante". A API já devolve os nome
 dos livros (`livros`), em texto; faltam as capas e a seção.
 
 **Preparo em andamento (`967:31833`)** — só existe enquanto uma conversão roda,
-com os passos e o tempo de cada um. Não dá para capturá-la sem uma conversão de
-verdade em curso, e o acervo semeado não converte nada. **Fica por comparar até
-haver um arquivo real passando pela fila.**
+e o acervo semeado não converte nada. **Resolvido em 02/09**: um TXT de 2,5 MB
+subido pela API leva alguns segundos no Calibre, o que dá tempo de medir. A tela
+foi construída inteira a partir do `895:8029` — ver a seção do desktop.
 
 ### Corrigido na Apresentação (`964:24178`)
 
@@ -172,7 +172,7 @@ telas você criou muito errado". A comparação está em curso.
 | `895:6938` | D · Canvas | `/canvas` | comparada · grupos e prévia construídos |
 | `895:10599` | D · Conta — visão geral | `/conta` | **comparada · ver nota abaixo** |
 | `895:10715` | D · Conta — preferências | `/conta/preferencias` | **comparada** — bate palavra por palavra |
-| `895:10909` | D · Conta — dados | `/conta/privacidade` | por comparar |
+| `895:10909` | D · Conta — dados | `/conta/privacidade` | **comparada · corrigida** |
 | `895:11060` | D · Atualizações | `/atualizacoes` | **comparada · atualizada** |
 | `895:11193` | D · Ajuda — início | `/ajuda` | **comparada · corrigida** (busca) |
 | `895:9348` | D · Mesa — cheia | `/mesa` | **comparada · corrigida** |
