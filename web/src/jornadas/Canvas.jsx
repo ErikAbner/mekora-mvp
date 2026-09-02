@@ -120,6 +120,9 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1
 
   /* O endereço vem do TEXTO da nota. A pessoa cola um link numa nota solta, e o
    * cartão vira a prévia daquele endereço — é o que o 895:6938 mostra. */
+  /* Nasceu na superfície, sem livro por trás. Ver o bloco de citação abaixo. */
+  const daCasa = no.fonte === "solta";
+
   const link = linkDe(no.texto);
   const previa = usarPrevia(link);
 
@@ -264,7 +267,25 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1
           aria-hidden="true"
         />
       )}
-      <p className="nota-texto">{no.texto}</p>
+      {/* O QUE É CITAÇÃO SE PARECE COM CITAÇÃO.
+       *
+       * O Erik: "em caso de referenciar alguma anotação, ela deixar claro que é
+       * um texto SOBRE ou relacionado a algum bloco de texto de outro arquivo".
+       *
+       * Os dois textos saíam como parágrafos iguais, e não dava para saber qual
+       * era qual: o `trecho` é o que o LIVRO diz, o `comentário` é o que a
+       * PESSOA disse sobre ele. Numa superfície onde tudo é cartão branco, essa
+       * diferença é a única que separa uma leitura de um pensamento.
+       *
+       * Quando a nota nasceu aqui, sem livro, não há citação nenhuma — o texto é
+       * dela e sai sem filete. Marcar tudo faria a marca não querer dizer nada. */}
+      {daCasa ? (
+        <p className="nota-texto">{no.texto}</p>
+      ) : (
+        <blockquote className="nota-trecho">
+          <p className="nota-texto">{no.texto}</p>
+        </blockquote>
+      )}
       {no.comentario && <p className="nota-comentario">{no.comentario}</p>}
 
       {/* A PRÉVIA DO LINK — nó 895:6938. Só aparece quando há um endereço no
@@ -285,8 +306,14 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1
           teclado dentro dele — quem chega de teclado precisa alcançá-lo, e
           `:hover` sozinho o esconderia para sempre. */}
       <footer>
+        {/* DE ONDE VEIO, e onde no arquivo. O capítulo entra porque num livro de
+            trezentas páginas "do seu livro" ainda deixa a pessoa procurando. */}
         <span className="nota-origem">
-          {no.fonte === "solta" ? "escrita aqui" : no.origem || "do seu livro"}
+          {daCasa
+            ? "escrita aqui"
+            : [no.origem || "do seu livro", no.capitulo > 0 && `cap. ${no.capitulo}`]
+                .filter(Boolean)
+                .join(" · ")}
         </span>
         {quando && <span className="nota-quando">{quando}</span>}
         <span className="nota-acoes">

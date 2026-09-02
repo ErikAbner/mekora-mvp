@@ -844,3 +844,16 @@
 }
 .canvas-lista-de-ligar button:hover { background: var(--muted); }
 .canvas-lista-de-ligar button:active { transform: scale(0.99); }
+
+/* O BLOCO CITADO. Filete na borda de inicio e a mesma tinta apagada do rodape:
+ * ele diz "isto foi outra pessoa que escreveu, noutro arquivo" sem precisar de
+ * uma palavra a mais. O comentario logo abaixo fica na tinta cheia, que e a voz
+ * de quem anotou. */
+/* ESCOPADA PELO CANVAS: `.nota-trecho` tambem existe em `nota.css`, os dois
+ * arquivos entram no mesmo pacote, e a ultima carregada venceria em silencio. */
+.nota-canvas .nota-trecho {
+  margin: 0;
+  padding-inline-start: 16px;
+  border-inline-start: 1px solid var(--border);
+}
+.nota-canvas .nota-trecho .nota-texto { color: var(--muted-foreground); }
