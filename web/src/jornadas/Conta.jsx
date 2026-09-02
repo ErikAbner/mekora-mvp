@@ -14,10 +14,7 @@
 import { useEffect, useState } from "react";
 import { gravarPreferencias, lerPreferencias } from "../../../contrato/api.js";
 import { aplicarTema } from "../estado/tema.js";
-import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Escolha } from "../componentes/Escolha.jsx";
-import { MenuDaConta } from "../componentes/MenuDaConta.jsx";
-import { GavetaDeSecao } from "../componentes/GavetaDeSecao.jsx";
 import { GRUPOS, PADROES } from "../preferencias.js";
 import "./conta.css";
 
@@ -74,13 +71,7 @@ export function Conta({ pessoa , aoSair }) {
   return (
     /* `chao` no lugar do fundo liso: a Conta se abre POR CIMA do chão
        pontilhado, e é o que o `895:10599` mostra. */
-    <div className="mesa chao">
-      <Cabecalho />
-      <GavetaDeSecao titulo="Preferências">
-      <div className="conta">
-        <MenuDaConta pessoa={pessoa} />
-
-        <main className="conta-painel">
+    <main className="conta-painel">
           {erro && <p className="conta-erro" role="alert">{erro}</p>}
           {GRUPOS.map((g) => (
             <section key={g.secao} className="conta-secao">
@@ -102,8 +93,5 @@ export function Conta({ pessoa , aoSair }) {
             </section>
           ))}
         </main>
-      </div>
-      </GavetaDeSecao>
-    </div>
   );
 }

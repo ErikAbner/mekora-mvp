@@ -10,7 +10,7 @@
  * enxuta — resposta para `react-router` existe em qualquer lugar.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams, useLocation } from "react-router-dom";
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import { MesaVazia } from "./jornadas/MesaVazia.jsx";
 import { Apresentacao } from "./jornadas/Apresentacao.jsx";
 import { ContaVisao } from "./jornadas/ContaVisao.jsx";
@@ -36,6 +36,9 @@ import { Livro } from "./jornadas/Livro.jsx";
 import { Nota } from "./jornadas/Nota.jsx";
 import { Preparo } from "./jornadas/Preparo.jsx";
 import { usarEstudos } from "./estado/usarEstudos.js";
+import { Cabecalho } from "./componentes/Cabecalho.jsx";
+import { MenuDaConta } from "./componentes/MenuDaConta.jsx";
+import { GavetaDeSecao } from "./componentes/GavetaDeSecao.jsx";
 import { Recado } from "./componentes/Recado.jsx";
 import { RECADO_PEDIDO } from "./recado.js";
 import { Consentimento } from "./componentes/Consentimento.jsx";
@@ -638,6 +641,30 @@ function MedirTrocaDeTela() {
   return null;
 }
 
+/* A ÁREA DA CONTA: a gaveta que abre uma vez e fica.
+ *
+ * O cabeçalho, o chão e a folha moram AQUI, e não em cada uma das cinco telas.
+ * Antes cada tela trazia a própria gaveta, e trocar de aba dentro da conta
+ * desmontava e remontava tudo — a folha subia de novo a cada clique, que é o
+ * que o Erik chamou de enjoativo e que a primeira pergunta do manual de animação
+ * já responde: o que a pessoa vê dezenas de vezes por dia não anima.
+ *
+ * O `Outlet` é onde a tela da vez entra. Ela troca; a gaveta não.
+ */
+function AreaDaConta({ pessoa }) {
+  return (
+    <div className="mesa chao">
+      <Cabecalho />
+      <GavetaDeSecao titulo="Sua conta">
+        <div className="conta">
+          <MenuDaConta pessoa={pessoa} />
+          <Outlet />
+        </div>
+      </GavetaDeSecao>
+    </div>
+  );
+}
+
 export function App() {
   const acesso = usePessoa();
 
@@ -711,32 +738,52 @@ export function App() {
         ))}
         {/* Conta tem quatro páginas; só Preferências existe. As outras usam a
             mesma tela de "ainda não", que nomeia o lugar em vez de dar 404. */}
-        <Route path="/conta/preferencias" element={<SoParaQuemEntrou acesso={acesso}><Conta pessoa={comoChamar(acesso.pessoa)} aoSair={acesso.sair} /></SoParaQuemEntrou>} />
-        {/* A visao geral, que ate 01/09 nao existia: `/conta` renderizava a
-            tela de Dispositivos Kindle, e a trilha da conta prometia quatro
-            destinos com dois abrindo a mesma coisa. */}
-        {/* `aoMudarPerfil` faz o `usePessoa` perguntar de novo: sem isso, trocar o
-            nome muda a tela e deixa a TRILHA AO LADO com o nome antigo, na mesma
-            página. */}
-        <Route path="/conta" element={<SoParaQuemEntrou acesso={acesso}><ContaVisao pessoa={comoChamar(acesso.pessoa)} aoSair={acesso.sair} aoMudarPerfil={acesso.conferir} /></SoParaQuemEntrou>} />
-        <Route path="/conta/seguranca" element={<SoParaQuemEntrou acesso={acesso}><ContaSeguranca pessoa={comoChamar(acesso.pessoa)} aoSair={acesso.sair} /></SoParaQuemEntrou>} />
-        <Route path="/conta/kindle" element={<SoParaQuemEntrou acesso={acesso}><ContaKindle pessoa={comoChamar(acesso.pessoa)} aoSair={acesso.sair} /></SoParaQuemEntrou>} />
+        {/* AS CINCO TELAS DA CONTA SÃO UMA GAVETA SÓ, e é por isso que elas
+            viraram rotas ANINHADAS.
+            
+            O Erik apontou: "acho legal ele no início e para sair, porém para
+            todas as telas já fica ruim — todo clique iniciando uma animação é
+            mais enjoativo que funcional". Está certo, e é a primeira pergunta
+            do manual de animação: quantas vezes por dia a pessoa vê isto?
+            Trocar de aba dentro da conta é ação de dezenas de vezes; abrir e
+            fechar a conta é de poucas.
+            
+            Cada tela renderizava a própria `GavetaDeSecao`, então navegar entre
+            elas DESMONTAVA e remontava a gaveta — e a folha subia de novo a cada
+            clique. Agora a gaveta é o `element` da rota-mãe: ela monta quando se
+            entra na conta, some quando se sai, e as cinco trocam DENTRO dela
+            sem animação nenhuma. */}
         <Route
-          path="/conta/privacidade"
+          path="/conta"
           element={
             <SoParaQuemEntrou acesso={acesso}>
+              <AreaDaConta pessoa={comoChamar(acesso.pessoa)} />
+            </SoParaQuemEntrou>
+          }
+        >
+          {/* A visao geral, que ate 01/09 nao existia: `/conta` renderizava a
+              tela de Dispositivos Kindle, e a trilha da conta prometia quatro
+              destinos com dois abrindo a mesma coisa.
+              `aoMudarPerfil` faz o `usePessoa` perguntar de novo: sem isso,
+              trocar o nome ou o retrato so aparece no proximo carregamento. */}
+          <Route index element={<ContaVisao pessoa={comoChamar(acesso.pessoa)} aoMudarPerfil={acesso.conferir} />} />
+          <Route path="preferencias" element={<Conta pessoa={comoChamar(acesso.pessoa)} />} />
+          <Route path="seguranca" element={<ContaSeguranca pessoa={comoChamar(acesso.pessoa)} />} />
+          <Route path="kindle" element={<ContaKindle pessoa={comoChamar(acesso.pessoa)} />} />
+          <Route
+            path="privacidade"
+            element={
               <Privacidade
                 pessoa={comoChamar(acesso.pessoa)}
-                aoSair={acesso.sair}
                 /* Depois de apagar, a sessão não existe mais no servidor.
                  * Reconferir em vez de mandar para uma rota fixa deixa o
                  * guarda decidir — e ele já sabe levar quem não tem conta
                  * para a tela de entrar. */
                 aoApagarConta={acesso.conferir}
               />
-            </SoParaQuemEntrou>
-          }
-        />
+            }
+          />
+        </Route>
         <Route path="*" element={<NaoEncontrada />} />
       </Routes>
     </BrowserRouter>

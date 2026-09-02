@@ -1,7 +1,4 @@
 import { useEffect, useState } from "react";
-import { Cabecalho } from "../componentes/Cabecalho.jsx";
-import { MenuDaConta } from "../componentes/MenuDaConta.jsx";
-import { GavetaDeSecao } from "../componentes/GavetaDeSecao.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
 import { Folha } from "../componentes/Folha.jsx";
@@ -62,15 +59,14 @@ export function Privacidade({ pessoa, aoSair, aoApagarConta }) {
    * serve de nada guardado.
    */
   return (
-    /* `chao` no lugar do fundo liso: a Conta se abre POR CIMA do chão
-       pontilhado, e é o que o `895:10599` mostra. */
-    <div className="mesa chao">
-      <Cabecalho />
-      <GavetaDeSecao titulo="Privacidade">
-      <div className="conta">
-        <MenuDaConta pessoa={pessoa} />
+    /* A moldura — chão, cabeçalho e gaveta — mora na `AreaDaConta`, no `App`.
+       Aqui só o painel desta seção e a folha que ela abre.
 
-        <main className="conta-painel">
+       O FRAGMENTO É NECESSÁRIO: a folha de apagar a conta é IRMÃ do painel, e
+       não filha dele. Ela precisa abrir por cima de tudo, e dentro do painel
+       ficaria presa à rolagem dele. */
+    <>
+    <main className="conta-painel">
           <section className="conta-secao">
             <h2>O que o Mekora guarda</h2>
 
@@ -170,7 +166,6 @@ export function Privacidade({ pessoa, aoSair, aoApagarConta }) {
             </Botao>
           </section>
         </main>
-      </div>
 
       <Folha
         aberta={apagando}
@@ -215,7 +210,6 @@ export function Privacidade({ pessoa, aoSair, aoApagarConta }) {
           autoComplete="off"
         />
       </Folha>
-      </GavetaDeSecao>
-    </div>
+    </>
   );
 }

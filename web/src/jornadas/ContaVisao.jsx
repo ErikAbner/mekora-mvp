@@ -29,9 +29,6 @@ import {
 } from "../../../contrato/api.js";
 import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
-import { Cabecalho } from "../componentes/Cabecalho.jsx";
-import { MenuDaConta } from "../componentes/MenuDaConta.jsx";
-import { GavetaDeSecao } from "../componentes/GavetaDeSecao.jsx";
 import "./conta-visao.css";
 
 /* O que vale mostrar em cima, e o rótulo de cada um. As chaves são as do
@@ -97,13 +94,7 @@ export function ContaVisao({ pessoa, aoSair, aoMudarPerfil }) {
        fora da tela — foi o que aconteceu na primeira medida. */
     /* `chao` no lugar do fundo liso: a Conta se abre POR CIMA do chão
        pontilhado, e é o que o `895:10599` mostra. */
-    <div className="mesa chao">
-      <Cabecalho />
-      <GavetaDeSecao titulo="Sua conta">
-      <div className="conta">
-        <MenuDaConta pessoa={pessoa} />
-
-        <main className="conta-painel">
+    <main className="conta-painel">
         {/* A ILUSTRAÇÃO DO DESENHO, que faltava. O nó traz uma acima do painel
             em cada tela de conta, e ela é ornamento — `aria-hidden`, porque um
             leitor de tela anunciando "imagem" antes do conteúdo da conta só
@@ -260,8 +251,5 @@ export function ContaVisao({ pessoa, aoSair, aoMudarPerfil }) {
         )}
 
         </main>
-      </div>
-      </GavetaDeSecao>
-    </div>
   );
 }

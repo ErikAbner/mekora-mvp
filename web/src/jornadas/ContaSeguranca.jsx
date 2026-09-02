@@ -21,9 +21,6 @@ import {
   lerSessoes,
 } from "../../../contrato/api.js";
 import { Botao } from "../componentes/Botao.jsx";
-import { Cabecalho } from "../componentes/Cabecalho.jsx";
-import { MenuDaConta } from "../componentes/MenuDaConta.jsx";
-import { GavetaDeSecao } from "../componentes/GavetaDeSecao.jsx";
 import "./conta-seguranca.css";
 
 /* "há 3 dias" diz mais que uma data para julgar se uma sessão é sua: ninguém
@@ -107,13 +104,7 @@ export function ContaSeguranca({ pessoa, aoSair }) {
        fora da tela — foi o que aconteceu na primeira medida. */
     /* `chao` no lugar do fundo liso: a Conta se abre POR CIMA do chão
        pontilhado, e é o que o `895:10599` mostra. */
-    <div className="mesa chao">
-      <Cabecalho />
-      <GavetaDeSecao titulo="Segurança">
-      <div className="conta">
-        <MenuDaConta pessoa={pessoa} />
-
-        <main className="conta-painel">
+    <main className="conta-painel">
         {erro && <p className="conta-erro" role="alert">{erro}</p>}
         {aviso && <p className="seguranca-aviso" role="status">{aviso}</p>}
 
@@ -181,8 +172,5 @@ export function ContaSeguranca({ pessoa, aoSair }) {
           )}
         </section>
         </main>
-      </div>
-      </GavetaDeSecao>
-    </div>
   );
 }

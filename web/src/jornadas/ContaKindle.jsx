@@ -11,9 +11,6 @@
  */
 import { useState } from "react";
 import { usarAparelhos } from "../estado/usarAparelhos.js";
-import { Cabecalho } from "../componentes/Cabecalho.jsx";
-import { MenuDaConta } from "../componentes/MenuDaConta.jsx";
-import { GavetaDeSecao } from "../componentes/GavetaDeSecao.jsx";
 import { AssistenteKindle } from "./AssistenteKindle.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
@@ -99,15 +96,11 @@ export function ContaKindle({ pessoa, aoSair }) {
   };
 
   return (
-    /* `chao` no lugar do fundo liso: a Conta se abre POR CIMA do chão
-       pontilhado, e é o que o `895:10599` mostra. */
-    <div className="mesa chao">
-      <Cabecalho />
-      <GavetaDeSecao titulo="Dispositivos Kindle">
-      <div className="conta">
-        <MenuDaConta pessoa={pessoa} />
-
-        <main className="conta-painel">
+    /* A moldura — chão, cabeçalho e gaveta — mora na `AreaDaConta`, no `App`:
+       ela monta uma vez quando se entra na conta, e as cinco telas trocam DENTRO
+       dela. Aqui só o painel desta seção e as folhas que ela abre. */
+    <>
+    <main className="conta-painel">
           <section className="conta-secao">
             <h2>Dispositivos Kindle</h2>
             {/* A CONDIÇÃO QUE O PRODUTO NÃO CONTROLA, dita antes de qualquer
@@ -218,7 +211,6 @@ export function ContaKindle({ pessoa, aoSair }) {
             </p>
           </section>
         </main>
-      </div>
 
       <Folha
         aberta={conectando}
@@ -309,7 +301,6 @@ export function ContaKindle({ pessoa, aoSair }) {
           aoEnviarTeste={async () => { /* o envio de teste entra quando o backend o tiver */ }}
         />
       )}
-      </GavetaDeSecao>
-    </div>
+    </>
   );
 }
