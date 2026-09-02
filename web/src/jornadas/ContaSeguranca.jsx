@@ -104,8 +104,11 @@ export function ContaSeguranca({ pessoa, aoSair }) {
     /* O cabecalho fica FORA do `.conta`, que e a linha de trilha mais painel.
        Dentro dele o cabecalho vira uma terceira coluna e empurra o painel para
        fora da tela — foi o que aconteceu na primeira medida. */
-    <div className="mesa">
+    /* `chao` no lugar do fundo liso: a Conta se abre POR CIMA do chão
+       pontilhado, e é o que o `895:10599` mostra. */
+    <div className="mesa chao">
       <Cabecalho />
+      <div className="conta-gaveta">
       <div className="conta">
         <MenuDaConta pessoa={pessoa} />
 
@@ -177,6 +180,7 @@ export function ContaSeguranca({ pessoa, aoSair }) {
           )}
         </section>
         </main>
+      </div>
       </div>
     </div>
   );

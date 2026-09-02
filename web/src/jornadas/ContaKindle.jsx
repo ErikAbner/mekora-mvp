@@ -98,8 +98,11 @@ export function ContaKindle({ pessoa, aoSair }) {
   };
 
   return (
-    <div className="mesa">
+    /* `chao` no lugar do fundo liso: a Conta se abre POR CIMA do chão
+       pontilhado, e é o que o `895:10599` mostra. */
+    <div className="mesa chao">
       <Cabecalho />
+      <div className="conta-gaveta">
       <div className="conta">
         <MenuDaConta pessoa={pessoa} />
 
@@ -305,6 +308,7 @@ export function ContaKindle({ pessoa, aoSair }) {
           aoEnviarTeste={async () => { /* o envio de teste entra quando o backend o tiver */ }}
         />
       )}
+      </div>
     </div>
   );
 }

@@ -1,4 +1,9 @@
-.mesa { display: flex; flex-direction: column; background: var(--background); }
+/* `background-color`, e NÃO o atalho `background`.
+ *
+ * O atalho zera `background-image` junto, e é o que apagava o chão pontilhado:
+ * a `.chao` da base põe os pontos, esta regra vem depois e os limpava sem que
+ * nada acusasse — o fundo continuava certo, só liso. */
+.mesa { display: flex; flex-direction: column; background-color: var(--background); }
 
 .promessa {
   display: flex; justify-content: center; align-items: center;

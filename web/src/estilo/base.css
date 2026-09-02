@@ -141,6 +141,25 @@ html { -webkit-text-size-adjust: 100%; }
   --gaveta: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
+/* O CHÃO PONTILHADO É O PISO DO PRODUTO, e não decoração do Canvas.
+ *
+ * Ele só existia em `jornadas/canvas.css`. O Erik apontou o contrário — "as
+ * telas que possuem uma espécie de contêiner atrás numa cor diferente, sobre um
+ * canvas pontilhado" — e o Figma confirma nos dois tamanhos: o `895:10599`
+ * (Conta) e o `964:24606` (Estante no telefone) mostram os pontos por baixo,
+ * com o cabeçalho flutuando em cima deles.
+ *
+ * É o piso sobre o qual as seções se abrem, e é o que dá sentido ao rastro do
+ * cabeçalho: quem abre a Conta não trocou de chão, ganhou uma folha em cima.
+ *
+ * 24px de passo e um ponto de 1px, os mesmos do Canvas. Lá eles andam com a
+ * câmera; aqui ficam parados, porque não há câmera para seguir. */
+.chao {
+  background-color: var(--background);
+  background-image: radial-gradient(var(--border) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
 /* ESCONDE DA VISTA, E NÃO DE QUEM OUVE.
  *
  * Morava em `jornadas/estante.css`, e é usada pelo `Campo`, pela `Gaveta` e por
