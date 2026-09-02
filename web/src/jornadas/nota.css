@@ -143,3 +143,8 @@
 /* As sugestoes de ligacao. Mesma lista das candidatas — e o mesmo gesto: clicar
  * liga. O que muda e a evidencia embaixo, no lugar da origem. */
 .nota-sugestoes .candidata-origem { color: var(--muted-foreground); }
+
+/* "Talvez um estudo" — a terceira faixa do no 895:8545. Ela nao propoe uma
+ * LIGACAO como as outras duas: propoe que um grupo vire uma gaveta, e por isso
+ * traz um botao em vez de uma lista clicavel. */
+.nota-talvez-estudo { display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }

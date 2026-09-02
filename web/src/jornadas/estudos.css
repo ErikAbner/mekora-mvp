@@ -340,3 +340,13 @@
   .estudos-metade { padding: 24px; }
   .estudos-metade h2 { font-size: 22px; line-height: 32px; }
 }
+
+/* "Como isso se formou" — o titulo que o no 895:8260 poe sobre as notas. A lista
+ * aparecia sem nome nenhum, e um estudo e a pergunta MAIS o que foi juntado. */
+.estudo-formou { display: flex; flex-direction: column; gap: 16px; margin-block-start: 32px; }
+.estudo-formou h3 {
+  margin: 0;
+  font-size: 20px; line-height: 30px; font-weight: 540;
+  color: var(--foreground);
+}
+.estudo-formou .campo { inline-size: 100%; max-inline-size: 520px; }

@@ -166,27 +166,27 @@ telas você criou muito errado". A comparação está em curso.
 
 | id | tela | rota do produto | estado |
 |---|---|---|---|
-| `895:7063` | D · Apresentação | `/` | por comparar |
+| `895:7063` | D · Apresentação | `/` | **comparada** — bate |
 | `895:7315` | D · Estante — grade | `/estante` | comparada · corrigida |
 | `895:7506` | D · Livro — ficha / estante 3D | `/estante` (vista 3D) | comparada · corrigida |
 | `895:6938` | D · Canvas | `/canvas` | comparada · grupos e prévia construídos |
 | `895:10599` | D · Conta — visão geral | `/conta` | **comparada · ver nota abaixo** |
-| `895:10715` | D · Conta — preferências | `/conta/preferencias` | por comparar |
+| `895:10715` | D · Conta — preferências | `/conta/preferencias` | **comparada** — bate palavra por palavra |
 | `895:10909` | D · Conta — dados | `/conta/privacidade` | por comparar |
-| `895:11060` | D · Atualizações | `/atualizacoes` | por comparar |
-| `895:11193` | D · Ajuda — início | `/ajuda` | por comparar |
-| `895:9348` | D · Mesa — cheia | `/mesa` | por comparar |
-| `895:9981` | D · Mesa — variação | `/mesa` | por comparar |
-| `895:10286` | D · Mesa — vazia | `/mesa` | por comparar |
+| `895:11060` | D · Atualizações | `/atualizacoes` | **comparada · atualizada** |
+| `895:11193` | D · Ajuda — início | `/ajuda` | **comparada · corrigida** (busca) |
+| `895:9348` | D · Mesa — cheia | `/mesa` | **comparada · corrigida** |
+| `895:9981` | D · Mesa — variação | `/mesa` | **comparada · corrigida** |
+| `895:10286` | D · Mesa — vazia | `/mesa` | **comparada** — bate |
 | `895:9736` | D · Mesa — primeira vez | `/mesa` | **comparada · corrigida** |
-| `895:7631` | D · Livro — o que ficou | `/estante/:id` | por comparar |
-| `895:10472` | D · Leitura | `/leitura/:id` | por comparar |
-| `895:8260` | D · Estudo — página | `/estudo/:id` | por comparar |
-| `895:8545` | D · Conexões — sugestões | `/nota/:id` | por comparar |
-| `895:8849` | D · Estudos — lista | `/estudos` | por comparar |
-| `900:56142` | D · Estudos — lista (variação) | `/estudos` | por comparar |
-| `895:7856` | D · Preparo — o que encontrei | `/preparo/:id` | por comparar |
-| `895:8029` | D · Preparo — em andamento | `/preparo/:id` | por comparar |
+| `895:7631` | D · Livro — o que ficou | `/estante/:id` | **comparada · corrigida** |
+| `895:10472` | D · Leitura | `/leitura/:id` | **comparada · corrigida** (epígrafe) |
+| `895:8260` | D · Estudo — página | `/estudo/:id` | **comparada · corrigida** |
+| `895:8545` | D · Conexões — sugestões | `/nota/:id` | **comparada · corrigida** (3ª faixa) |
+| `895:8849` | D · Estudos — lista | `/estudos` | **comparada · corrigida** |
+| `900:56142` | D · Estudos — lista (variação) | `/estudos` | **comparada · corrigida** |
+| `895:7856` | D · Preparo — o que encontrei | `/preparo/:id` | **comparada · corrigida** |
+| `895:8029` | D · Preparo — em andamento | `/preparo/:id` | **comparada · construída** |
 | `895:8164` | D · Preparo — pronto | `/preparo/:id` | **comparada · corrigida** |
 
 E um trecho solto, que o Erik mandou quando eu disse que não conseguia ler:
@@ -259,3 +259,94 @@ problema:** lá a seção é "Em preparo" e o estado é "Enviando". Agora aqui t
 **O que ficou:** o desenho tem a área de soltar no TOPO, com o título "Comece
 soltando um arquivo", antes da fila — na tela ela é o "Adicionar mais" do fim. E
 cada cartão da fila tem ações próprias (pausar, repetir, remover, ⋮).
+
+
+## As 22 telas de desktop, comparadas uma a uma
+
+Feito em 01–02/09/2026, depois de o Erik mandar os 22 ids. O que segue é o que
+cada comparação achou — e o que ela deixou de fora, com o motivo.
+
+### Como ler uma tela alta, de novo
+
+Duas saídas, e as duas funcionam. A captura tem teto de ~1024 no lado maior:
+numa tela de 1920×4700 sobram 418 de largura. Ou se pede o **nó de dentro**, ou
+se usa **`get_design_context`**, que devolve o texto como código e não tem teto.
+O segundo custa muito token e é o que vale quando o que importa são as palavras.
+
+### O que estava errado, por tela
+
+**`895:7856` · Preparo — o que encontrei.** Faltavam duas linhas de "O que vou
+fazer": o sumário navegável e "Idioma: X, como no original / Nada é traduzido a
+não ser que você peça". O veredito não nomeava o que tinha sido decidido sem
+perguntar. "Alterar" por linha e "Ajustar manualmente" no rodapé não existiam —
+o segundo eu tinha removido de propósito, e o desenho tem os dois.
+
+**`895:8029` · Preparo — em andamento.** A tela trocava a página inteira por uma
+linha. Construída inteira: topo mantido, o card que explica por que a barra
+existe numa etapa e não na seguinte, o relógio, a lista com a etapa marcada, e
+os botões Cancelar / Continuar navegando. Cancelar exigiu expor o
+`operation_id`, que o contrato jogava fora.
+
+**`895:9348` e `895:9981` · Mesa cheia.** A fila não sobrevivia a um
+recarregamento — e por isso a própria tela era inalcançável a não ser soltando
+um arquivo naquele instante. A área de soltar não estava no topo. Os recortes
+tinham número depois do rótulo e ordem errada. Faltavam o cartão "Continue" e as
+duas faixas de capas.
+
+**`895:7631` · Livro.** Faltavam a origem do arquivo, a barra de leitura em
+porcentagem, a última nota como citação, dois dos três botões, os recortes, a
+busca e as ações por nota.
+
+**`895:10472` · Leitura.** Faltava a epígrafe escura. Ela é declarada pelo livro
+(`epub:type="epigraph"`), e o livro de prova passou a declarar uma — sem isso o
+tratamento existiria no código sem aparecer em tela nenhuma.
+
+**`895:8849` e `900:56142` · Estudos.** O estudo na lista mostrava todas as
+notas; no desenho ele é um cartão. Faltavam a busca, o cartão "O que ficou pela
+metade" e a vista Leitura inteira.
+
+**`895:8260` · Estudo.** Faltava o título "Como isso se formou", a busca dentro
+do estudo e "Copiar com origem".
+
+**`895:8545` · Conexões.** Duas das três faixas existiam. "Talvez um estudo" era
+nomeada no cabeçalho do serviço e não existia.
+
+**`895:10909` · Privacidade.** Faltavam "Seus arquivos" e "Dados de uso"
+inteiras. E a tela afirmava que não há análise de uso, o que era falso.
+
+**`895:11193` · Ajuda.** Faltava a busca.
+
+**`895:10715` · Preferências.** Bate palavra por palavra. Nada a fazer.
+
+**`895:10286` · Mesa vazia.** Bate, filete incluído.
+
+**`895:7063` · Apresentação.** Bate. A lista de formatos é maior que a do desenho
+porque vem do servidor, que é a fonte certa.
+
+### O que continua de fora, e por quê
+
+| O que | Onde | Por quê |
+|---|---|---|
+| "Nenhuma página corrompida — 96 de 96 abriram" | `895:7856` | não há campo de página corrompida no `ProcessingJob` |
+| "42 de 96 páginas reconhecidas" | `895:8029` | o `ocrmypdf` roda como processo externo dentro da análise, sem retorno por página |
+| Tempo por passo ("01:10", "00:40") | `895:8029` | é previsão, e nada estima |
+| "A partir dos 14 títulos de capítulo" | `895:7856` | a análise não conta capítulos; quem lê o sumário é o `epub.js`, depois da conversão |
+| Botão "Traduzir" | `895:7856` | a tradução existe no backend e em tela nenhuma — botão que abre caminho sem tela é pior que botão a menos |
+| "Precisa de você" | `895:9348` | precisa de detecção de PDF com senha e de um estado de "bloqueado esperando você", que não existem |
+| Recorte "rascunho" | `895:7631` | não há estado de nota no modelo; recorte que devolve sempre zero é promessa, não filtro |
+| "Três páginas ficaram sem texto" | `895:7631` | não há detecção de página sem texto |
+| "Você ligou" | `895:8849` | o motor existe e é por nota; a vista agregada por acervo precisa de rota nova |
+| Trilha de âncoras à esquerda | `895:7631`, `895:8260` | navegação dentro da página; vale, mas não muda o que a tela afirma |
+| Modelo e resolução do aparelho | `895:10599` | o Mekora guarda nome e endereço; a Amazon não conta o resto |
+
+### Perguntas para o Erik
+
+1. **Nome e retrato na conta.** Nunca foi decidido por ninguém. A DEC-0039 só
+   fixou que não há senha nem provedor externo. Hoje a tela de privacidade diz
+   "não há nome, telefone nem foto", e isso é verdade porque não foi construído —
+   não porque alguém escolheu.
+2. **`895:10599`.** O painel mostra os dispositivos Kindle com a navegação
+   marcando "Conta". No telefone, "Conta" mostra Nome/E-mail/Senha e os
+   dispositivos têm tela própria. Os dois desenhos discordam, e no desktop não
+   existe um `D · Conta — Kindle`. Provavelmente é mock com conteúdo não trocado
+   — mas é a sua palavra, não a minha.

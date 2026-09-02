@@ -33,6 +33,46 @@ import "./atualizacoes.css";
  * a pessoa faz com a informação. */
 const MUDANCAS = [
   {
+    data: "2026-09-02",
+    itens: [
+      {
+        tipo: "corrigido",
+        titulo: "A fila da Mesa parou de sumir quando você recarrega",
+        diz: "Ela só existia na aba em que você soltou o arquivo: recarregar no meio de uma conversão de dez minutos apagava a fila da tela, enquanto o trabalho seguia no servidor. Agora ela vem do servidor, e a área de soltar subiu para o topo — dava para acrescentar um arquivo só pelo botão no fim de uma lista que pode ter trinta itens.",
+        onde: { rota: "/mesa", diz: "Ver a Mesa" },
+      },
+      {
+        tipo: "novo",
+        titulo: "A preparação diz o passo, o tempo e dá para cancelar",
+        diz: "A tela de conversão trocava a página inteira por uma linha de texto. Agora ela mantém o arquivo à vista, conta por que a barra existe numa etapa e não na seguinte, mostra o relógio do que já passou — decorrido, não previsto — e traz os botões Cancelar e Continuar navegando.",
+        onde: { rota: "/mesa", diz: "Preparar um arquivo" },
+      },
+      {
+        tipo: "novo",
+        titulo: "Os Estudos ganharam busca, e uma vista por leitura",
+        diz: "Buscar em livros, notas e contextos de uma vez; e um alternador que reparte o acervo em A ler, Lendo e Lido. Na lista, cada estudo virou cartão: as notas ficam dentro dele, e não empilhadas na lista inteira.",
+        onde: { rota: "/estudos", diz: "Ver meus estudos" },
+      },
+      {
+        tipo: "novo",
+        titulo: "O Mekora sugere quando um grupo de notas vale um estudo",
+        diz: "Quando três ou mais notas suas dividem assunto e nenhuma está guardada, a nota oferece juntá-las. Ele não escreve a pergunta do estudo — essa é a única coisa que ninguém pode escrever no seu lugar.",
+      },
+      {
+        tipo: "melhorado",
+        titulo: "A ficha do livro conta de onde ele veio e quanto você leu",
+        diz: "O nome do arquivo enviado sumia assim que o título era detectado. Voltou, junto com a barra de leitura em porcentagem, a última coisa que você marcou, e os botões de enviar ao Kindle e ver o preparo. Cada nota ganhou “Copiar com origem”, que leva o livro e o capítulo junto.",
+        onde: { rota: "/estante", diz: "Abrir a estante" },
+      },
+      {
+        tipo: "corrigido",
+        titulo: "O nome dos seus arquivos não entra mais na medição",
+        diz: "Quando uma conversão falhava, a mensagem de erro ia para a tabela de métricas com o caminho e o nome do documento dentro — enquanto a tela de privacidade prometia o contrário. Agora eles são trocados por um marcador antes de a linha ser gravada.",
+        onde: { rota: "/conta/privacidade", diz: "Ver o que está guardado" },
+      },
+    ],
+  },
+  {
     data: "2026-09-01",
     itens: [
       {
@@ -84,13 +124,23 @@ const NAO_ESTA_DE_PE = [
     diz: "Aqui o texto vive dentro da imagem: é preciso achar o balão, ler, apagar e recompor. Funciona em página simples e erra em arte densa. Não está atrás de um interruptor escondido — está fora.",
   },
   {
-    titulo: "Por quanto tempo guardamos o arquivo original — decisão pendente",
-    diz: "Ele fica enquanto o livro existir, porque é o que permite refazer a preparação sem você enviar de novo. O prazo exato ainda não foi decidido, e não vamos escrever um número antes de decidir.",
+    titulo: "A leitura ainda não foi verificada no celular",
+    diz: "Todas as outras telas foram medidas a 390 pixels e cabem. A de leitura não: verificá-la exige um livro já convertido, e isso ainda não está no caminho da medida.",
+  },
+  {
+    /* ESTE ITEM SUBSTITUIU O DO PRAZO DE RETENÇÃO, que dizia "decisão
+       pendente". O prazo deixou de ser pendente: o código já apaga o original
+       trinta dias depois, e a tela de privacidade agora diz isso. Manter o item
+       antigo aqui seria a página de atualizações desatualizada — que é o
+       defeito mais fácil de ter numa página que existe para contar o que
+       mudou. */
+    titulo: "Nome e retrato na conta — decisão pendente",
+    diz: "Hoje a conta é só o e-mail. Se ela vai ter nome e foto, ninguém decidiu — e enquanto não decidir, a tela de privacidade diz o que é verdade: não há nome, telefone nem foto.",
     onde: { rota: "/conta/privacidade", diz: "Ver o que está guardado" },
   },
   {
-    titulo: "A leitura ainda não foi verificada no celular",
-    diz: "Todas as outras telas foram medidas a 390 pixels e cabem. A de leitura não: verificá-la exige um livro já convertido, e isso ainda não está no caminho da medida.",
+    titulo: "As notas que o Mekora liga entre livros ainda não têm página própria",
+    diz: "Cada nota mostra as parecidas com ela, com as palavras em comum ao lado. A vista de todas as ligações do acervo de uma vez, que o desenho chama de “Você ligou”, ainda não existe.",
   },
 ];
 

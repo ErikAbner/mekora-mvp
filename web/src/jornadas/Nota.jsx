@@ -5,7 +5,7 @@ import { Botao } from "../componentes/Botao.jsx";
 import { Folha } from "../componentes/Folha.jsx";
 import { DESTAQUES } from "./Leitura.jsx";
 import {
-  apagarNota, desligarNotas, editarNota, lerEstudos, lerNota,
+  apagarNota, criarEstudo, desligarNotas, editarNota, lerEstudos, lerNota,
   lerSugestoes, lerTodasAsNotas, ligarNotas, reunirNoEstudo,
 } from "../../../contrato/api.js";
 import "./nota.css";
@@ -74,6 +74,7 @@ export function Nota() {
    * acervo inteiro, e prender a abertura da nota a isso faria a tela esperar por
    * um cálculo que ela mostra no fim da página. */
   const [sugestoes, setSugestoes] = useState(null);
+  const [montando, setMontando] = useState(false);
 
   const buscar = useCallback(async () => {
     try {
@@ -315,6 +316,56 @@ export function Nota() {
             Cada uma diz quantas palavras as duas notas dividem e QUAIS — é o que
             permite discordar, e é o que o CLAUDE.md exige de qualquer coisa que
             o produto proponha por conta própria. */}
+        {/* "TALVEZ UM ESTUDO" — a TERCEIRA faixa do nó 895:8545, que o cabeçalho
+            do `sugestoes_service` já nomeava e que não existia em tela nenhuma.
+            As outras duas propõem uma LIGAÇÃO entre duas notas; esta propõe algo
+            diferente: que um grupo inteiro vire uma gaveta.
+
+            A condição é aritmética, e está escrita para poder ser discordada:
+            três ou mais notas na faixa "parecem próximas", e esta nota fora de
+            qualquer estudo. Três é o menor número em que "um assunto" é mais
+            provável que "uma coincidência entre duas frases" — abaixo disso, a
+            ligação entre duas já diz tudo o que há para dizer.
+
+            O produto NÃO CRIA o estudo sozinho, e não escreve a pergunta: ele
+            leva a pessoa até o formulário com as notas já escolhidas. A pergunta
+            do centro é o estudo inteiro, e é a única coisa aqui que ninguém pode
+            escrever no lugar dela. */}
+        {sugestoes?.proximas?.length >= 3 && !nota.estudos.length && (
+          <section className="nota-secao nota-talvez-estudo">
+            <h2>Talvez um estudo</h2>
+            <p className="nota-aviso">
+              Esta nota e mais <span className="dado">{sugestoes.proximas.length}</span>{" "}
+              dividem assunto, e nenhuma delas está em estudo nenhum. Um estudo é
+              uma pergunta no centro e o que você juntou em volta — a pergunta é
+              sua, o resto já está aqui.
+            </p>
+            <Botao
+              tom="secundaria"
+              disabled={montando}
+              onClick={async () => {
+                setMontando(true);
+                try {
+                  /* O NOME NASCE DO TRECHO, e é editável na hora seguinte: um
+                     estudo sem nome não aparece na lista, e pedir o nome antes
+                     de existir alguma coisa é a pergunta na hora errada. */
+                  const semente = (nota.trecho || nota.comentario || "Notas parecidas").slice(0, 60);
+                  const novo = await criarEstudo({ nome: semente, sobre: "" });
+                  for (const n of [nota, ...sugestoes.proximas]) {
+                    await reunirNoEstudo(novo.id, n.id).catch(() => {});
+                  }
+                  navegar(`/estudo/${novo.id}`);
+                } catch (e) {
+                  setErro(e.message);
+                  setMontando(false);
+                }
+              }}
+            >
+              {montando ? "Montando…" : `Juntar as ${sugestoes.proximas.length + 1} num estudo`}
+            </Botao>
+          </section>
+        )}
+
         {sugestoes && (sugestoes.proximas?.length || sugestoes.talvez?.length) ? (
           <>
             {[

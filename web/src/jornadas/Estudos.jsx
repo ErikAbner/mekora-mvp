@@ -30,8 +30,18 @@ import "./estudos.css";
  * título virar link, e não tinha: o link foi acrescentado e as notas ficaram. */
 export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, aoTirar, semLink = false, resumido = false }) {
   const [reunindo, setReunindo] = useState(false);
+  /* A busca DENTRO do estudo — nó 895:8260, logo abaixo da faixa de livros. Um
+     estudo que cumpriu seu papel tem trinta notas de cinco livros, e é aí que
+     ele fica difícil de usar: a busca é o que o mantém utilizável depois de
+     ficar grande. */
+  const [procura, setProcura] = useState("");
+  const [copiada, setCopiada] = useState(null);
   const dentro = new Set(estudo.notas.map((n) => n.id));
   const deFora = notasDisponiveis.filter((n) => !dentro.has(n.id));
+  const alvo = achatar(procura.trim());
+  const notasVisiveis = estudo.notas.filter(
+    (n) => !alvo || achatar(`${n.trecho ?? ""} ${n.comentario ?? ""} ${n.origem ?? ""}`).includes(alvo),
+  );
 
   return (
     <article className={`estudo${estudo.fechado ? " fechado" : ""}`}>
@@ -92,9 +102,34 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, 
         </div>
       )}
 
+      {/* "COMO ISSO SE FORMOU" — o título que o nó 895:8260 põe sobre as notas.
+          A lista aparecia sem nome nenhum, e um estudo é a pergunta MAIS o que
+          foi juntado em volta: sem o título, as notas parecem o estudo inteiro
+          em vez da resposta que se acumulou. */}
+      {!resumido && estudo.notas.length > 0 && (
+        <div className="estudo-formou">
+          <h3>Como isso se formou</h3>
+          {estudo.notas.length > 3 && (
+            <Campo
+              tipo="search"
+              rotulo={`Buscar nas notas de ${estudo.nome}`}
+              rotuloOculto
+              placeholder="Buscar em livros, notas e contextos"
+              value={procura}
+              onChange={(e) => setProcura(e.target.value)}
+            />
+          )}
+          {!notasVisiveis.length && (
+            <p className="estudo-vazio" role="status">
+              Nenhuma nota deste estudo combina com o que você procurou.
+            </p>
+          )}
+        </div>
+      )}
+
       {!resumido && estudo.notas.length > 0 && (
         <ul className="estudo-notas">
-          {estudo.notas.map((n) => (
+          {notasVisiveis.map((n) => (
             <li key={n.id}>
               {/* A CAPA DO LIVRO ao lado do trecho — o nó 966:31095 a tem.
                   Numa lista de trinta trechos de quatro livros, a capa é o que
@@ -113,6 +148,26 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, 
                   {n.fonte === "kindle" ? `Kindle · ${n.origem}` : n.origem || "do seu livro"}
                 </span>
                 {n.job_id && <Link to={`/leitura/${n.job_id}`}>Abrir no livro</Link>}
+                {/* COPIAR COM ORIGEM — o desenho o põe em toda nota, aqui e na
+                    ficha do livro. É o que separa uma nota de um recorte solto:
+                    o que vai para a área de transferência leva de onde veio. */}
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const veio = n.origem || estudo.nome;
+                    const texto = [n.trecho && `“${n.trecho}”`, n.comentario, `— ${veio}`]
+                      .filter(Boolean)
+                      .join("\n");
+                    try {
+                      await navigator.clipboard.writeText(texto);
+                      setCopiada(n.id);
+                    } catch {
+                      setCopiada(null);
+                    }
+                  }}
+                >
+                  {copiada === n.id ? "Copiado" : "Copiar com origem"}
+                </button>
                 <button type="button" onClick={() => aoTirar(estudo.id, n.id)}>Tirar daqui</button>
               </div>
             </li>
