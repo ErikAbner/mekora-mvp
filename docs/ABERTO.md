@@ -28,9 +28,9 @@ D   backlog técnico             decide-se durante a implementação, por quem i
 |---|---:|
 | **A** — antes da arquitetura | 6 |
 | **B** — antes da feature afetada | 22 |
-| **C** — antes do lançamento | 9 |
+| **C** — antes do lançamento | 6 |
 | **D** — backlog técnico | 14 |
-| | **51** |
+| | **48** |
 
 *A contagem de C caiu para 12 em 03/09: `C9` e `C16` fecharam em 02/09, e `C1`, `C3`, `C4` e `C8`
 em 03/09 — as quatro últimas por leitura do código, não por decisão. A regra do
@@ -40,6 +40,19 @@ estavam, riscadas, porque outros documentos apontam para elas.*
 ### Saíram da fila em 2026-08-21
 
 `A1` → `DEC-0031` · `A3` → `DEC-0032` · `A6` e `B19` → `DEC-0033`
+
+### Saíram da fila em 2026-09-03 (noite)
+
+`C7` — 90 dias para os eventos de uso, aceito pelo Erik.
+
+`C13` — a máquina Windows foi **aposentada no registro**, e é isso que "zerar" quer dizer aqui: a
+DEC-0028 permite zerar e proíbe remover do histórico. Ela ganhou `status: retired`, data, razão e
+sucessor, e a entrada continua lá — os 100 runs dela apontam para uma máquina que o registro
+conhece. Formatar o computador físico é outra coisa, e é do Erik.
+
+`C15` — **quando estiver pronta.** Nas palavras dele, *"vai ser um mistério até que tudo esteja
+devidamente implementado"*. Não é adiamento: uma data marcada faz o resto ser cortado para caber
+nela, e o escopo aqui é o Figma inteiro.
 
 ### Saíram da fila em 2026-09-03 (tarde)
 
@@ -167,15 +180,15 @@ Podem ser decididas durante a construção. Não podem ficar sem resposta na V1.
 | **C3** | ~~Por quanto tempo o original temporário sobrevive entre a falha e o descarte~~ — **respondida em 03/09.** O mesmo prazo de todos: `retention_days`, hoje 30. `error` está na lista de estados terminais da limpeza desde sempre, e agora `converted` e `analyzed` também — ver o achado abaixo | DEC-0021 · DEC-0022 |
 | **C4** | ~~Prazo exato de retenção de sessões anônimas~~ — **respondida em 03/09.** Trabalho sem dono não é caso à parte: ele cai na mesma limpeza por idade, que olha `updated_at` e não o dono. São os mesmos 30 dias, e a tela de privacidade os diz | DEC-0018 |
 | **C6** | ~~Se há consentimento para a coleta de uso, e como é pedido~~ — **decidido em 03/09: não se pede, e se diz.** A medição não sai do servidor, não toca conteúdo nem nome de arquivo, e a tela de Privacidade a lista item por item. Um banner de consentimento para dado que não vai a lugar nenhum treina a pessoa a clicar em "aceito" sem ler | DEC-0029 |
-| **C7** | Por quanto tempo os eventos coletados são mantidos | DEC-0029 |
+| **C7** | ~~Por quanto tempo os eventos coletados são mantidos~~ — **90 dias, decidido em 03/09.** O mesmo número da janela sem conta, para não haver dois prazos a lembrar — e é o que a MEDIDA precisa: a estimativa de "costuma levar" exige cinco execuções da mesma etapa, e trinta dias apagaria a base antes de ela virar número. A limpeza roda no startup, junto da de arquivos | DEC-0029 |
 | **C8** | ~~Qual ferramenta de instrumentação é usada, e se é própria~~ — **respondida pelo código.** É própria: a tabela `stage_metrics`, escrita por `record_stage`. Não há serviço externo, e nada sai da máquina — a tela de privacidade diz isso desde 02/09 | DEC-0029 |
 | **C9** | ~~Quando as telas passam a ser efetivamente verificadas a 390px~~ — **fechada em 02/09.** As treze cabem, a Leitura inclusive: a auditoria a mede com um livro convertido de verdade, e ela passa com 21 nós | DEC-0023 |
 | **C10** | A migração do acervo e das notas existentes para identidade estável | DEC-0021 |
 | **C11** | Que estado cada uma das 19 DECs anteriores recebe além da normalização mecânica | DEC-0027 |
 | **C12** | O `role` literal de cada repositório existente | DEC-0026 |
-| **C13** | Quando a máquina Windows é efetivamente zerada | DEC-0028 |
+| **C13** | ~~Quando a máquina Windows é efetivamente zerada~~ — **aposentada em 03/09.** `status: retired` no `machines.json`, com data, razão e sucessor. A entrada FICA: a DEC-0028 permite zerar e proíbe remover do histórico, e os 100 runs dela continuam apontando para uma máquina que o registro conhece. O `role`, que estava errado desde 06/08, foi corrigido para o que ela de fato foi | DEC-0028 |
 | **C14** | O destino do `artefato-mekora.html`, 2,87 MB versionados por ausência de regra | DEC-0028 |
-| **C15** | Quando a V1 é lançada | DEC-0029 |
+| **C15** | ~~Quando a V1 é lançada~~ — **respondida em 03/09: quando estiver pronta.** Nas palavras do Erik, *"vai ser um mistério até que tudo esteja devidamente implementado"*. Não é adiamento: é a recusa de uma data que faria o resto ser cortado para caber nela | DEC-0029 |
 | **C16** | ~~O limiar de "talvez" em Conexões~~ — **fechada pelo desenho.** O nó `895:8545` não pede um corte binário: pede três faixas nomeadas, e três faixas só precisam estar em ordem. O corte de cada uma aparece na tela, com as palavras em comum ao lado | DEC-0024 |
 | **C17** | ~~Se o Mekora terá usuários fora do Brasil~~ — **decidido em 03/09: só Brasil na V1.** O produto é todo em português e a jurisdição é uma só; nada impede alguém de fora usar, e a política fala de LGPD e mais nada. Atender a Europa traria GDPR, que é trabalho de texto e de encarregado — quando houver público para isso | DEC-0031 |
 | **C18** | ~~Em que país ficam os servidores da VPS~~ — **decidido em 03/09: Brasil.** A Hostinger tem região aqui. Dado de brasileiro em servidor no Brasil é a resposta mais simples para a LGPD, e a leitura fica mais rápida para quem está aqui | DEC-0031 |

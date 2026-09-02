@@ -59,6 +59,63 @@ from pathlib import Path
 # lendo.
 TERMINADOS = ("converted", "analyzed", "done", "error")
 
+# POR QUANTO TEMPO OS EVENTOS DE USO FICAM.
+#
+# Eles não eram apagados nunca, por ausência de regra — e "para sempre" é o
+# prazo que ninguém escolhe e todo mundo acaba tendo. O Erik aceitou 90 dias em
+# 03/09, o mesmo número da janela sem conta, para não haver dois prazos a
+# lembrar.
+#
+# NOVENTA DIAS É O QUE A MEDIDA PRECISA, e não uma escolha de conforto: a
+# estimativa de "costuma levar" exige cinco execuções da mesma etapa, e num uso
+# de fim de semana isso leva semanas para acumular. Trinta dias apagaria a base
+# antes de ela virar número.
+DIAS_DOS_EVENTOS = 90
+
+
+def limpar_eventos_antigos(dias: int = DIAS_DOS_EVENTOS) -> int:
+    """Apaga as medições de uso mais velhas que `dias`. Devolve quantas saíram.
+
+    O que se perde com elas é o "costuma levar 2 minutos" ficar menos preciso
+    para o que aconteceu há muito tempo — e isso é o que se quer: uma máquina
+    trocada ou um conversor atualizado tornam a medida antiga uma mentira sobre
+    o presente.
+
+    NUNCA LEVANTA. É chamada no startup, junto da limpeza de arquivos, e uma
+    falha aqui não pode impedir o servidor de subir — pelo mesmo motivo que o
+    `record_stage` não levanta ao escrever.
+    """
+    from datetime import datetime, timedelta
+
+    from app.db.database import SessionLocal
+    from app.models.stage_metric import StageMetric
+
+    # A ABERTURA DA SESSÃO FICA DENTRO DO `try`, e não antes dele.
+    #
+    # Escrevi assim na primeira versão — `db = SessionLocal()` na linha de cima —
+    # e a função levantava quando o banco não abria, exatamente o que a frase
+    # acima promete que não acontece. O `finally` piorava: fechar uma sessão que
+    # nunca existiu é um segundo erro por cima do primeiro. O teste pegou.
+    db = None
+    try:
+        db = SessionLocal()
+        corte = datetime.utcnow() - timedelta(days=dias)
+        quantas = (
+            db.query(StageMetric)
+            .filter(StageMetric.created_at < corte)
+            .delete(synchronize_session=False)
+        )
+        db.commit()
+        return quantas
+    except Exception:
+        return 0
+    finally:
+        if db is not None:
+            try:
+                db.close()
+            except Exception:
+                pass
+
 
 def cleanup_old_jobs(retention_days: int) -> dict:
     """

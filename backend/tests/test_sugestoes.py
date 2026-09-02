@@ -427,3 +427,57 @@ def test_a_mediana_ignora_a_execucao_esquisita(test_engine):
         assert medido["medidas"] == 5
     finally:
         db.close()
+
+
+def test_eventos_de_uso_sao_apagados_depois_de_noventa_dias(test_engine, monkeypatch):
+    """Eles não eram apagados nunca, por ausência de regra — e "para sempre" é o
+    prazo que ninguém escolhe e todo mundo acaba tendo.
+
+    Noventa dias é o que a MEDIDA precisa: a estimativa de "costuma levar" exige
+    cinco execuções da mesma etapa, e num uso de fim de semana isso leva semanas
+    para acumular. Trinta apagaria a base antes de ela virar número.
+    """
+    from datetime import datetime, timedelta
+
+    from sqlalchemy.orm import sessionmaker
+
+    import app.db.database as db_mod
+    from app.models.stage_metric import StageMetric
+    from app.services.cleanup_service import DIAS_DOS_EVENTOS, limpar_eventos_antigos
+
+    assert DIAS_DOS_EVENTOS == 90
+
+    Sessao = sessionmaker(bind=test_engine)
+    monkeypatch.setattr(db_mod, "SessionLocal", Sessao)
+
+    db = Sessao()
+    agora = datetime.utcnow()
+    db.add(StageMetric(job_id=1, stage="prova_prazo", status="completed",
+                       duration_ms=100, created_at=agora - timedelta(days=91)))
+    db.add(StageMetric(job_id=2, stage="prova_prazo", status="completed",
+                       duration_ms=100, created_at=agora - timedelta(days=89)))
+    db.commit()
+    db.close()
+
+    saíram = limpar_eventos_antigos()
+    assert saíram == 1
+
+    db = Sessao()
+    try:
+        ficaram = db.query(StageMetric).filter(StageMetric.stage == "prova_prazo").all()
+        assert len(ficaram) == 1, "só o de 91 dias tinha de sair"
+    finally:
+        db.close()
+
+
+def test_a_limpeza_de_eventos_nunca_levanta(monkeypatch):
+    """Ela roda no startup, e uma falha aqui não pode impedir o servidor de
+    subir — pelo mesmo motivo que o `record_stage` não levanta ao escrever."""
+    import app.db.database as db_mod
+    from app.services.cleanup_service import limpar_eventos_antigos
+
+    def quebrado():
+        raise RuntimeError("banco fora do ar")
+
+    monkeypatch.setattr(db_mod, "SessionLocal", quebrado)
+    assert limpar_eventos_antigos() == 0

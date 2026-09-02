@@ -45,6 +45,7 @@ from app.models.preferencia import Preferencia
 from app.models.processing_job import ProcessingJob
 from app.models.progresso import Progresso
 from app.services import acesso_service
+from app.services.cleanup_service import DIAS_DOS_EVENTOS
 
 router = APIRouter()
 
@@ -184,7 +185,8 @@ def o_que_existe(
                 "explicacao": (
                     "De cada etapa do preparo: qual foi, se terminou ou falhou, quanto "
                     "tempo levou, o formato do arquivo, o modo e o motor de tradução. "
-                    "Fica ligado ao número do trabalho, e não à sua conta."
+                    "Fica ligado ao número do trabalho, e não à sua conta, e é apagado "
+                    f"depois de {DIAS_DOS_EVENTOS} dias."
                 ),
                 "marca": "Sem interruptor ainda",
             },

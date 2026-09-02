@@ -203,6 +203,11 @@ def run_startup_cleanup() -> None:
 
     cfg = load_app_config()
     cleanup_old_jobs(cfg["retention_days"])
+    # As medições de uso saem junto, e pelo mesmo gesto: a limpeza do servidor é
+    # um lugar só. Deixá-las crescendo para sempre era o prazo que ninguém
+    # escolhe e todo mundo acaba tendo.
+    from app.services.cleanup_service import limpar_eventos_antigos
+    limpar_eventos_antigos()
     ensure_system_presets()
 
 
