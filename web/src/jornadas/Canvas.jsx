@@ -945,7 +945,7 @@ const Livro = memo(LivroCrua);
  * área move a NOTA, ou o chão, e nunca o retângulo por baixo. O que pega o
  * retângulo é a barra do título — a mesma regra de uma janela.
  */
-function Secao({ secao, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoEscolher, aoEscolherSozinho, aoInscrever, escolhido, pedindoNome, aoTerminarNome }) {
+function Secao({ secao, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoEscolher, aoEscolherSozinho, aoInscrever, escolhido, pedindoNome, aoTerminarNome, noChrome = false }) {
   contarDesenho("secao");
   const arrasto = useRef(null);
   const [desloca, setDesloca] = useState(null);
@@ -1121,7 +1121,7 @@ function Secao({ secao, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
       aria-label={secao.nome || "Seção sem nome"}
     >
       <header
-        className="canvas-secao-faixa"
+        className={`canvas-secao-faixa${noChrome ? " sob-o-chrome" : ""}`}
         onPointerDown={(e) => pegar(e, "mover")}
         /* DOIS TOQUES NA FAIXA RENOMEIAM. É o gesto que a mão tenta primeiro em
            qualquer título, e ele não acrescenta nenhum controle permanente. */
@@ -2452,6 +2452,8 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
   );
 
   const podeDuplicar = [...escolha].some((c) => c.startsWith("nota:") || c.startsWith("secao:"));
+  /* As NOTAS escolhidas, para o "Organizar" contextual arrumar só o cluster. */
+  const notasEscolhidas = nos.filter((n) => escolha.has(`nota:${n.id}`));
   duplicarRef.current = duplicarComHistoria;
   copiarRef.current = copiar;
   colarRef.current = colar;
@@ -2696,17 +2698,27 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
     return alturas;
   };
 
-  const organizar = () => {
-    if (nos.length < 2) return;
+  /* ARRUMAR — desemaranha notas que se sobrepõem, encostando na malha e
+   * empurrando SÓ PARA BAIXO (nunca para os lados, para não trocar a leitura da
+   * esquerda para a direita). Reversível por 12s.
+   *
+   * `alvos` OPCIONAL: sem ele, arruma a superfície inteira; com ele, arruma só
+   * aquele conjunto. Deixou de morar na Doca — arrumar tudo é ação rara, e uma
+   * que mexe na posição que a pessoa deu de propósito ("posição significa
+   * alguma coisa"). Vive agora na barra da escolha, opt-in e escopada ao
+   * cluster que a pessoa juntou, o que respeita melhor esse princípio. */
+  const organizar = (alvos) => {
+    const conjunto = alvos && alvos.length ? alvos : nos;
+    if (conjunto.length < 2) return;
     const alturas = alturasNaTela();
     const alturaDe = (n) => alturas.get(n.id) ?? 160;
     const encaixar = (v) => Math.round(v / MALHA_DO_PLANO) * MALHA_DO_PLANO;
 
-    const antes = nos.map((n) => ({ id: n.id, x: n.x, y: n.y }));
+    const antes = conjunto.map((n) => ({ id: n.id, x: n.x, y: n.y }));
     const postas = [];
     const depois = [];
 
-    for (const n of [...nos].sort((a, b) => a.y - b.y || a.x - b.x)) {
+    for (const n of [...conjunto].sort((a, b) => a.y - b.y || a.x - b.x)) {
       const largura = 375;
       const altura = alturaDe(n);
       let x = encaixar(n.x);
@@ -3273,6 +3285,12 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
               Livro e nota antiga só se alcançavam por uma linha de texto dentro
               da folha de escrever. Um livro é recurso central de um Estudo; ele
               não pode depender de alguém abrir outra coisa primeiro. */}
+          {/* A DOCA SÃO TRÊS ENTRADAS DE CRIAÇÃO — nota, mídia, livro —, e nada
+              mais. "Organizar" saiu daqui: era a única ação da Doca que não
+              PÕE algo na superfície, era rara, e não tinha símbolo honesto na
+              biblioteca (o de camadas lia como z-order). Virou contextual, na
+              barra da escolha, escopada ao que a pessoa juntou. A Doca não
+              precisa de quatro para ter simetria. */}
           <button
             type="button"
             title="Trazer da estante"
@@ -3281,24 +3299,23 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
           >
             <Icone src="/icones/icone-estante.svg" />
           </button>
-          <button
-            type="button"
-            title="Organizar a superfície"
-            aria-label="Organizar a superfície"
-            onClick={organizar}
-            disabled={nos.length < 2}
-          >
-            <Icone src="/icones/icone-camadas.svg" />
-          </button>
         </nav>
 
         {/* A BARRA DA ESCOLHA — o único lugar em que as ações sobre VÁRIOS
             objetos existem. Ela não empurra a superfície: flutua, como o recado. */}
         {escolha.size > 0 && !laco?.mexeu && (
           <div className="canvas-barra-escolha" role="toolbar" aria-label="O que está escolhido">
-            <span className="conta">
+            {/* CONTAGEM E AÇÕES, uma estrutura só, com um filete entre elas.
+                Antes a contagem morava num `<span class="conta">`, e `conta` é
+                também a classe do LAYOUT da tela de Conta — 128px de recheio de
+                cada lado. A barra herdava isso e virava um bloco de 292px, o
+                "slab" gigante. A classe agora é do Canvas, e a hierarquia é
+                filete, não caixa. */}
+            <span className="canvas-escolha-conta">
               {escolha.size === 1 ? "1 escolhido" : `${escolha.size} escolhidos`}
             </span>
+            <span className="canvas-escolha-filete" aria-hidden="true" />
+            <div className="canvas-escolha-acoes">
             {/* A PARTIR DE UM. Uma composição começa com um objeto e cresce; exigir
                 dois obrigaria a pessoa a juntar antes de poder organizar. */}
             {temObjetoEscolhido && (
@@ -3307,6 +3324,14 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
             {podeDuplicar && (
               <button type="button" onClick={duplicarComHistoria} title="Livro não duplica — ele é um arquivo só">
                 Duplicar
+              </button>
+            )}
+            {/* ARRUMAR O CLUSTER — a antiga ação da Doca, agora contextual.
+                Só a partir de TRÊS notas escolhidas: é onde desemaranhar tem
+                serventia, e mantém a barra curta no caso comum de um ou dois. */}
+            {notasEscolhidas.length >= 3 && (
+              <button type="button" onClick={() => organizar(notasEscolhidas)} title="Encosta na malha e desfaz sobreposições, empurrando para baixo">
+                Organizar
               </button>
             )}
             {/* AS AÇÕES DA SEÇÃO aparecem quando ela é a única escolhida. Antes
@@ -3339,6 +3364,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
               Enquadrar
             </button>
             <button type="button" onClick={limparEscolha}>Largar</button>
+            </div>
           </div>
         )}
 
@@ -3459,6 +3485,13 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
               aoMudar={aoMudarSecao}
               aoApagar={dissolver}
               escala={camera.escala}
+              /* A FAIXA ENTROU NA FAIXA DO CABEÇALHO? O cabeçalho é `fixed` e
+                 transparente, e a superfície corre por baixo dele: uma seção que
+                 sobe além do topo deixava a faixa — nome e "Dissolver" — flutuando
+                 sozinha na moldura do app, o "Dissolver seção" órfão. A tela da
+                 faixa é `câmera.y + g.y*escala`; abaixo de ~110 ela está atrás do
+                 cabeçalho, e os controles se escondem com ela. */
+              noChrome={camera.y + g.y * camera.escala < 110}
               /* A seção cujo id NÃO existia antes da última criação abre já
                  pedindo o nome. Ver `idsDeAntes`. */
               nasceuAgora={idsDeAntes.current && !idsDeAntes.current.has(g.id) ? g.id : 0}

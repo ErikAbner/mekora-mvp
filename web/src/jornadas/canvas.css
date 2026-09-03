@@ -67,15 +67,19 @@
   z-index: 5;
   margin: 0;
   padding: 10px 16px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--popover, var(--card));
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px rgb(0 0 0 / 0.10);
+  /* Mesma família da barra da escolha: filete fino, sombra sussurrada, reto. */
+  border: 1px solid var(--border);
+  border-radius: var(--radius, 0);
+  background: var(--piso);
+  box-shadow:
+    0 10px 4px rgb(0 0 0 / 0.02),
+    0 4px 3px rgb(0 0 0 / 0.04),
+    0 1px 2px rgb(0 0 0 / 0.06);
   font-size: 14px;
   line-height: 20px;
   color: var(--foreground);
   white-space: nowrap;
-  animation: canvas-recado-entra 200ms var(--saida);
+  animation: canvas-recado-entra 160ms var(--saida);
 }
 .canvas-recado button {
   border: 0;
@@ -267,12 +271,15 @@
    * fica guardado. Ver `largura` em canvas_nos. Este `375` e so o fallback de
    * quem chegar sem valor. */
   inline-size: 375px;
-  padding: 40px;
-  border: 0;
+  /* MAIS LEVE, na passada de fecho. Antes: 40px de recheio e uma sombra dupla
+   * forte (0.13 + 0.07) que fazia o cartão ler como bloco flutuante, não como
+   * artefato de estudo. Agora: recheio na grade (24px, o passo da malha), um
+   * filete fino — a "borda fina" da identidade — e uma sombra sussurrada. O
+   * cartão fica preciso em vez de pesado, e continua distinto do chão. */
+  padding: 24px;
+  border: 1px solid var(--border);
   background: var(--piso);
-  box-shadow:
-    0 2px 2.5px rgb(0 0 0 / 0.13),
-    0 9px 7.55px rgb(0 0 0 / 0.07);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
   color: var(--foreground);
   cursor: grab;
   touch-action: none;
@@ -291,9 +298,11 @@
  * na mao. Os mesmos dois degraus, mais longos. */
 .nota-canvas.movendo {
   cursor: grabbing;
+  /* Ao mover, a sombra cresce — a única pista de que o cartão saiu do plano e
+   * está na mão. Mais leve que antes, coerente com o novo repouso. */
   box-shadow:
-    0 4px 5px rgb(0 0 0 / 0.13),
-    0 18px 15px rgb(0 0 0 / 0.10);
+    0 2px 4px rgb(0 0 0 / 0.08),
+    0 12px 20px rgb(0 0 0 / 0.10);
 }
 /* A escolhida para ligar ganha ESPESSURA e tinta cheia. */
 /* AS QUATRO PEGAS DE LIGACAO, uma em cada borda do cartao.
@@ -454,7 +463,7 @@
 .nota-menu-botao {
   padding: 0 6px;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--radius, 0);
   background: transparent;
   color: var(--muted-foreground);
   font: inherit;
@@ -478,7 +487,7 @@
   min-inline-size: 168px;
   display: flex; flex-direction: column;
   padding: 4px;
-  border-radius: 10px;
+  border-radius: var(--radius, 0);
   background: var(--popover, var(--card));
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 10px 28px rgb(0 0 0 / 0.14);
   transform-origin: 100% 0;
@@ -495,7 +504,7 @@
 .nota-menu-lista > * {
   padding: 8px 10px;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--radius, 0);
   background: none;
   font: inherit;
   font-size: 14px;
@@ -604,6 +613,23 @@
 }
 .canvas-secao-faixa:active { cursor: grabbing; }
 
+/* A FAIXA ATRÁS DO CABEÇALHO NÃO DEIXA CONTROLE ÓRFÃO.
+ *
+ * O cabeçalho é `fixed` e transparente, e a superfície corre por baixo dele.
+ * Uma seção que sobe além do topo deixava a faixa — nome e "Dissolver seção" —
+ * flutuando sozinha na moldura do app, sem o corpo da seção por perto. O Erik
+ * chamou de defeito de interação, e é: um controle de objeto do Canvas não pode
+ * se descolar do dono e boiar na moldura fixa.
+ *
+ * `.sob-o-chrome` entra quando a tela da faixa está na faixa do cabeçalho (ver
+ * `noChrome` no JSX). A faixa some — moldura fixa vence moldura de objeto — e o
+ * clique atravessa para o que houver por baixo, sem controle boiando. Basta
+ * descer um pouco a vista para a seção e seus controles voltarem inteiros. */
+.canvas-secao-faixa.sob-o-chrome {
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* Body/Medium, do `895:7024`. Estava em Label/Medium — o nome da área tinha
  * menos presença que o texto de uma nota. */
 .canvas-secao-nome {
@@ -664,7 +690,10 @@
   overflow: hidden;
   margin-block-start: 10px;
   padding: 8px;
-  border: 1px solid color-mix(in srgb, var(--foreground) 20%, transparent);
+  /* Filete fino de moldura, e não 20% da tinta do texto: aquele competia com o
+   * conteúdo. A prévia é um objeto de mídia mais rico, e mantém a identidade
+   * pela própria composição — miniatura + título —, não por uma borda grossa. */
+  border: 1px solid var(--border);
   background: color-mix(in srgb, var(--background) 70%, transparent);
   color: inherit;
   text-decoration: none;
@@ -933,7 +962,7 @@
   inline-size: 100%;
   text-align: start;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius, 0);
   background: none;
   padding: 12px;
   font: inherit;
@@ -1012,7 +1041,7 @@
   display: block;
   inline-size: 100%;
   block-size: auto;
-  border-radius: 4px;
+  border-radius: var(--radius, 0);
 }
 .nota-canvas .nota-legenda {
   margin: 12px 0 0;
@@ -1114,33 +1143,64 @@
 /* A BARRA DA ESCOLHA. Mesma caixa do recado — flutua, nao empurra a superficie.
  * Ela aparece quando ha algo escolhido e some quando nao ha: e o unico lugar em
  * que as acoes sobre VARIOS objetos existem. */
+/* A BARRA DA ESCOLHA — recomposta na passada de fecho.
+ *
+ * Antes era uma cápsula `border-radius: 999px` com sombra pesada de 24px, e a
+ * contagem herdava `.conta` da tela de Conta (128px de recheio): dava um bloco
+ * de 292px, o "slab" gigante que o Erik chamou de blob. Agora ela é da mesma
+ * família da Doca e do zoom — retângulo reto, filete de 1px, sombra discreta —,
+ * compacta, e com a contagem separada das ações por um traço, não por uma caixa.
+ *
+ * `--radius`, e não `999px`: o Design System diz raio zero, e a Doca e o zoom já
+ * obedecem. Estas superfícies de comando são retas como o resto do produto. */
 .canvas-barra-escolha {
   position: absolute;
-  inset-block-end: 24px; inset-inline-start: 50%;
+  inset-block-end: 20px; inset-inline-start: 50%;
   transform: translateX(-50%);
   z-index: 6;
-  display: flex; align-items: center; gap: 12px;
-  padding: 8px 12px 8px 16px;
-  border-radius: 999px;
-  background: var(--popover, var(--card));
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px rgb(0 0 0 / 0.12);
+  display: flex; align-items: stretch; gap: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius, 0);
+  background: var(--piso);
+  box-shadow:
+    0 18px 5.5px rgb(0 0 0 / 0),
+    0 10px 4px rgb(0 0 0 / 0.02),
+    0 4px 3px rgb(0 0 0 / 0.04),
+    0 1px 2px rgb(0 0 0 / 0.06);
   font-size: 14px; line-height: 20px;
   color: var(--foreground);
   white-space: nowrap;
-  animation: canvas-recado-entra 200ms var(--saida);
+  animation: canvas-recado-entra 160ms var(--saida);
+}
+/* A CONTAGEM é rótulo, não botão: mais apagada, à esquerda, com um filete a
+ * separando das ações. */
+.canvas-escolha-conta {
+  display: flex; align-items: center;
+  padding: 0 14px;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.canvas-escolha-filete {
+  inline-size: 1px; align-self: stretch;
+  margin-block: 6px;
+  background: var(--border);
+}
+.canvas-escolha-acoes {
+  display: flex; align-items: center; gap: 2px;
+  padding: 6px;
 }
 .canvas-barra-escolha button {
-  border: 0; border-radius: 999px;
-  padding: 6px 12px;
-  background: var(--muted);
+  border: 0; border-radius: var(--radius, 0);
+  padding: 7px 12px;
+  background: none;
   font: inherit; font-size: 14px; line-height: 20px;
   color: var(--foreground);
   cursor: pointer;
-  transition: background-color 160ms var(--saida), transform 160ms var(--saida);
+  transition: background-color 120ms var(--saida);
 }
-.canvas-barra-escolha button:hover { background: var(--secondary, var(--muted)); }
-.canvas-barra-escolha button:active { transform: scale(0.97); }
-.canvas-barra-escolha .conta { color: var(--muted-foreground); }
+.canvas-barra-escolha button:hover { background: var(--muted); }
+.canvas-barra-escolha button:active { background: var(--secondary, var(--muted)); }
 @media (prefers-reduced-motion: reduce) {
   .canvas-barra-escolha { animation: none; }
 }
@@ -1158,10 +1218,13 @@
   position: absolute;
   display: flex; flex-direction: column;
   padding: 12px;
+  border: 1px solid var(--border);
   background: var(--piso);
+  /* Um pouco mais de sombra que a nota — o livro é um objeto físico, e vale que
+   * ele assente com um degrau a mais —, mas ainda leve. */
   box-shadow:
-    0 2px 2.5px rgb(0 0 0 / 0.13),
-    0 9px 7.55px rgb(0 0 0 / 0.07);
+    0 1px 2px rgb(0 0 0 / 0.05),
+    0 6px 12px rgb(0 0 0 / 0.06);
   color: var(--foreground);
   cursor: grab;
   touch-action: none;
@@ -1431,7 +1494,7 @@
   inline-size: 44px; block-size: 44px;
   display: grid; place-items: center;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: var(--radius, 0);
   background: var(--popover, var(--card));
   color: var(--foreground);
   cursor: pointer;
@@ -1445,7 +1508,7 @@
   inline-size: 100%;
   padding: 12px 16px;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: var(--radius, 0);
   background: var(--popover, var(--card));
   font: inherit; font-size: 16px; line-height: 24px;
   color: var(--foreground);
@@ -1455,7 +1518,7 @@
 .canvas-achados {
   list-style: none; margin: 8px 0 0; padding: 4px;
   max-block-size: 320px; overflow-y: auto;
-  border-radius: 12px;
+  border-radius: var(--radius, 0);
   background: var(--popover, var(--card));
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 10px 28px rgb(0 0 0 / 0.14);
 }
@@ -1463,7 +1526,7 @@
   inline-size: 100%; text-align: start;
   display: flex; flex-direction: column; gap: 2px;
   padding: 10px 12px;
-  border: 0; border-radius: 8px; background: none;
+  border: 0; border-radius: var(--radius, 0); background: none;
   font: inherit; color: var(--foreground);
   cursor: pointer;
   transition: background-color 160ms var(--saida);
@@ -1480,7 +1543,7 @@
 }
 .canvas-achados-vazio {
   margin: 8px 0 0; padding: 12px;
-  border-radius: 12px;
+  border-radius: var(--radius, 0);
   background: var(--popover, var(--card));
   font-size: 14px; line-height: 20px;
   color: var(--muted-foreground);

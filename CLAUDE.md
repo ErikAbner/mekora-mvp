@@ -86,6 +86,19 @@ byte, então versioná-lo guardava 2,87 MB por vez sem guardar nada.
   confiável: o `PerformanceObserver({type:'event'})` devolve lista vazia e a
   leitura vira "nada demorou". Para separar manipulador de apresentação é
   preciso mouse de verdade — `--gesto`.
+- **Classe curta e genérica em JSX herda o layout de outra tela.** `<span
+  class="conta">` da barra da escolha do Canvas casava `.conta` do `conta.css` —
+  o layout da tela de Conta, com `padding: 128px`. A barra virava um bloco de
+  292px de altura, o "slab gigante". O `scripts/classes.mjs` NÃO pega isto: ele
+  recusa uma classe definida em DOIS arquivos CSS, e aqui `.conta` está definida
+  em um só; a colisão é entre a definição CSS e o USO no JSX de outro módulo. A
+  regra que sobrou: classe de componente leva prefixo do componente
+  (`canvas-escolha-conta`), nunca um substantivo solto que outra tela possa ter.
+- **Raio mora no token, e o token é zero.** O Design System declara `--radius:
+  0` (e `--radius-field: 0`). Cápsulas `border-radius: 999px` e cantos de 6–12px
+  soltos no `canvas.css` eram fora da identidade por definição — a Doca e o zoom
+  já usavam `--radius`. Superfície de comando do Canvas usa `var(--radius, 0)`;
+  só ponto redondo de verdade (pega de ligação) fica em `50%`.
 - **Manipulador na PEGA não recebe evento despachado na janela.** As quatro
   pegas de ligação tratam `pointermove`/`pointerup` nelas mesmas, com captura de
   ponteiro. Um teste que despacha na `window` nunca as alcança, e o fio parece
