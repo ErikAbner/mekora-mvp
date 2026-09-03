@@ -543,10 +543,16 @@ function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, aoE
       onPointerDown={comecar}
       /* O movimento é ouvido na JANELA — ver `comecar`. Aqui fica só o cursor,
          que precisa do ponteiro sobre o cartão para ter o que dizer. */
+      /* O CURSOR VIRA CLASSE, e não estilo em linha.
+       *
+       * Em linha, nada vence: com o espaço apertado, passar sobre um cartão
+       * trocava o cursor de volta para o de arrastar objeto, e a mão via uma
+       * promessa que o roteador não ia cumprir. Como classe, a regra do modo de
+       * deslocar ganha por especificidade, sem `!important`. */
       onPointerMove={(e) => {
         if (arrasto.current) return;
         const borda = ondeEncostou(e, e.currentTarget);
-        e.currentTarget.style.cursor = borda === "o" || borda === "l" ? "ew-resize" : "grab";
+        e.currentTarget.classList.toggle("na-lateral", borda === "o" || borda === "l");
       }}
     >
       {/* AS QUATRO PEGAS DE LIGAÇÃO, uma em cada borda.
@@ -1203,6 +1209,9 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
   const nosRef = useRef(nos);
   const livrosRef = useRef(livros);
   const ligacoesRef = useRef(ligacoes);
+  /* O espaço vive num `ref` porque quem o lê é o roteador de gesto, que roda na
+   * fase de captura — antes de qualquer desenho ter acontecido. */
+  const espacoRef = useRef(false);
   nosRef.current = nos;
   livrosRef.current = livros;
   ligacoesRef.current = ligacoes;
@@ -2088,6 +2097,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
    * apertada volta com a superfície presa em modo de arrasto e nenhum jeito
    * óbvio de sair: o `keyup` acontece na outra janela e nunca chega aqui. */
   const [espaco, setEspaco] = useState(false);
+  espacoRef.current = espaco;
   useEffect(() => {
     const desce = (e) => {
       if (e.code !== "Space" || e.repeat) return;
@@ -2097,14 +2107,26 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
       setEspaco(true);
     };
     const sobe = (e) => { if (e.code === "Space") setEspaco(false); };
+    /* O ESPAÇO SOLTA POR TODOS OS CAMINHOS EM QUE O `keyup` SE PERDE.
+     *
+     * `blur` cobre trocar de janela; `visibilitychange` cobre trocar de aba, que
+     * em alguns navegadores não dispara `blur`; e `pointercancel` cobre o
+     * sistema tomando o gesto. Sem os três, `⌘Tab` volta com a superfície presa
+     * em modo de deslocar e nenhum jeito óbvio de sair — porque o `keyup`
+     * aconteceu na outra janela e nunca chegou aqui. */
     const larga = () => setEspaco(false);
+    const escondeu = () => { if (document.hidden) setEspaco(false); };
     window.addEventListener("keydown", desce);
     window.addEventListener("keyup", sobe);
     window.addEventListener("blur", larga);
+    window.addEventListener("pointercancel", larga);
+    document.addEventListener("visibilitychange", escondeu);
     return () => {
       window.removeEventListener("keydown", desce);
       window.removeEventListener("keyup", sobe);
       window.removeEventListener("blur", larga);
+      window.removeEventListener("pointercancel", larga);
+      document.removeEventListener("visibilitychange", escondeu);
     };
   }, []);
 
@@ -2179,20 +2201,65 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
     setEscolha((atual) => (e.shiftKey ? new Set([...atual, ...pega]) : pega));
   };
 
-  const chaoDesce = (e) => {
-    if (!espaco && e.button !== 1) return;
-    /* O gesto tira a transição na hora: nada de o plano seguir o dedo com
-     * 200ms de atraso porque um botão foi apertado meio segundo antes. */
-    setSaltando(false);
-    arrastandoChao.current = { x0: e.clientX, y0: e.clientY, cx: camera.x, cy: camera.y };
-    e.currentTarget.setPointerCapture?.(e.pointerId);
+  /* O ROTEADOR DE GESTO — quem decide o que o ponteiro significa.
+   *
+   * ESTE É O CONSERTO DO DEFEITO DO ESPAÇO, e ele não é um `if` a mais.
+   *
+   * Antes, cada objeto decidia sozinho: a nota parava o `pointerdown` na origem,
+   * e o chão — que é quem sabe do espaço — nunca via o evento. Segurar espaço
+   * deslocava a superfície, até o ponteiro cruzar um cartão; aí o cartão roubava
+   * o gesto. "Mover pela superfície, a não ser que meu ponteiro passe sem querer
+   * por cima de uma nota."
+   *
+   * A ordem certa é a inversa da que estava:
+   *
+   *     estado da entrada  ->  escolher o dono do gesto  ->  executar
+   *                        ->  só então o comportamento do alvo
+   *
+   * Por isso ele mora na FASE DE CAPTURA. A captura desce do mundo até o alvo,
+   * então este tratador roda ANTES de qualquer `pointerdown` de objeto — e se o
+   * modo de deslocar estiver ligado, ele fica com o gesto e para o evento ali.
+   * Nenhum objeto se mexe, nenhuma escolha muda, nenhum vínculo muda.
+   *
+   * A POSSE É ESTÁVEL PELA VIDA DO GESTO. Soltar o espaço no meio não devolve o
+   * gesto ao objeto — quem começou como deslocamento termina como deslocamento,
+   * e o modo só volta a valer no próximo `pointerdown`. É por isso que o
+   * deslocamento tem os próprios ouvintes de janela em vez de olhar `espaco` a
+   * cada movimento. */
+  const arrastandoChaoVivo = useRef(null);
+
+  const largarOChao = () => {
+    window.removeEventListener("pointermove", chaoMove);
+    window.removeEventListener("pointerup", chaoSobe);
+    window.removeEventListener("pointercancel", chaoSobe);
   };
+
+  const rotearGesto = (e) => {
+    const querDeslocar = espacoRef.current || e.button === 1;
+    if (!querDeslocar) return;
+    /* PARA AQUI. Nem o objeto sob o ponteiro nem o laço veem este gesto. */
+    e.stopPropagation();
+    e.preventDefault();
+    setSaltando(false);
+    const estado = { x0: e.clientX, y0: e.clientY, cx: camera.x, cy: camera.y };
+    arrastandoChao.current = estado;
+    arrastandoChaoVivo.current = estado;
+    window.addEventListener("pointermove", chaoMove);
+    window.addEventListener("pointerup", chaoSobe);
+    window.addEventListener("pointercancel", chaoSobe);
+  };
+
+  const chaoDesce = () => {};
   const chaoMove = (e) => {
-    const a = arrastandoChao.current;
+    const a = arrastandoChaoVivo.current;
     if (!a) return;
     setCamera((c) => ({ ...c, x: a.cx + (e.clientX - a.x0), y: a.cy + (e.clientY - a.y0) }));
   };
-  const chaoSobe = () => { arrastandoChao.current = null; };
+  const chaoSobe = () => {
+    largarOChao();
+    arrastandoChao.current = null;
+    arrastandoChaoVivo.current = null;
+  };
 
   /* DOIS DEDOS ANDAM, E A PINÇA APROXIMA — e isto é o que faltava.
    *
@@ -2423,11 +2490,14 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
             marcarMembros(null);
           }}
           onPointerLeave={() => { revelar(null); marcarMembros(null); }}
+          /* NA CAPTURA, e não no borbulho: ver `rotearGesto`. É o que faz o
+             espaço valer mesmo com o ponteiro sobre um cartão. */
+          onPointerDownCapture={rotearGesto}
           onPointerDown={(e) => {
-            chaoDesce(e);
             /* Sem espaço e sem botão do meio, o gesto no vazio é o LAÇO. Se o
-               toque caiu num objeto, ele já parou o evento antes de chegar aqui. */
-            if (!espaco && e.button === 0) lacoDesce(e);
+               toque caiu num objeto, ele já parou o evento antes de chegar aqui;
+               se o roteador ficou com ele, também. */
+            if (e.button === 0) lacoDesce(e);
           }}
           onPointerMove={chaoMove}
           onPointerUp={chaoSobe}

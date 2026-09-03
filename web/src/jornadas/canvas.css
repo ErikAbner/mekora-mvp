@@ -1354,3 +1354,24 @@
   outline: calc(1px / var(--escala, 1)) solid color-mix(in oklab, var(--escolha) 45%, transparent);
   outline-offset: calc(3px / var(--escala, 1));
 }
+
+/* O CURSOR DO MODO DE DESLOCAR GANHA DE TODOS.
+ *
+ * Com o espaco apertado, o gesto e do chao — venha o ponteiro a passar sobre o
+ * que for. O cursor tem de dizer isso em cima de qualquer objeto, senao a mao ve
+ * uma promessa que o roteador nao vai cumprir.
+ *
+ * Sem `!important`: quem perde e uma CLASSE (`.na-lateral`), e nao um estilo em
+ * linha. Foi por isso que o cursor da nota deixou de ser escrito em linha. */
+.canvas-mundo.de-mao,
+.canvas-mundo.de-mao .nota-canvas,
+.canvas-mundo.de-mao .nota-canvas.na-lateral,
+.canvas-mundo.de-mao .livro-canvas,
+.canvas-mundo.de-mao .canvas-grupo-titulo,
+.canvas-mundo.de-mao .canvas-grupo-area,
+.canvas-mundo.de-mao .nota-pega { cursor: grab; }
+.canvas-mundo.de-mao:active,
+.canvas-mundo.de-mao:active * { cursor: grabbing; }
+
+/* Fora do modo, a lateral do cartao estica. */
+.nota-canvas.na-lateral { cursor: ew-resize; }
