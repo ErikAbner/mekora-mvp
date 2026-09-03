@@ -113,6 +113,34 @@ Base **4px**, com os degraus operacionais de 20 e 40.
 --s5 30   --s6 40   --s7 60   --s8 80
 ```
 
+### Espaço copiado de desenho sem `text-box-trim` precisa ser reconferido · REGRA
+
+O produto liga `text-box-trim: trim-both` com `text-box-edge: cap alphabetic` —
+foi escolha do Erik em 02/09, "caixa abraça as letras, como no Figma", e está
+certa.
+
+**A consequência que ninguém tinha escrito: com a caixa aparada, o espaço entre
+duas linhas é SÓ o que a regra declara.** Não sobra meia entrelinha para
+disfarçar um valor curto.
+
+Um valor tirado de um desenho — ou de uma tela antiga do próprio produto — que
+pressupunha caixa de linha normal chega aqui menor do que parecia. Ele não pode
+ser copiado: tem de ser reconferido na tela, com o trim ligado.
+
+Já cobrou duas vezes, e as duas com a mesma cara — dois textos encostados que
+liam como um parágrafo só:
+
+| onde | valor | o que acontecia |
+|---|---|---|
+| Ajuda | `margin-block-end: 0` no `h1` | o título encostava no campo de busca |
+| Preparo | `margin: 0 0 4px` no `h3` | o título do item colava na explicação |
+
+Nos dois casos o valor estava escrito e parecia deliberado. Não estava: era
+sobra de entrelinha que tinha sumido.
+
+**Como aplicar:** ao trazer espaçamento de fora, medir o resultado antes de
+aceitá-lo. E ao ver dois textos que "quase" se tocam, suspeitar disto primeiro.
+
 ## Geometria · REGRA
 
 **Estrutura é reta.**
