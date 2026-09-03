@@ -891,6 +891,15 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
     /* Mesma razão da nota: o chão não pode roubar este gesto. */
     e.stopPropagation();
     aoEscolher?.(`secao:${grupo.id}`, { juntando: e.shiftKey || e.metaKey || e.ctrlKey });
+    /* QUEM VAI JUNTO SE MARCA AO APERTAR, e não depois do limiar.
+     *
+     * As marcas nasciam no primeiro movimento que passasse de 4px: a resposta
+     * chegava DEPOIS de a área já ter começado a andar. Medido na sessão de
+     * volta — `avisou_quem_vai_junto: 0` no instante do `pointerdown`.
+     *
+     * A pergunta é "o que vem comigo se eu arrastar isto?", e ela se faz com o
+     * dedo apertado e parado. */
+    if (qual === "mover") aoLevar?.(grupo.id, { dx: 0, dy: 0 });
     /* Mesma razão da nota: captura mataria o botão do nome e o "Desfazer grupo",
      * porque o clique vai para quem capturou. O movimento é ouvido na janela. */
     arrasto.current = { qual, x0: e.clientX, y0: e.clientY, mexeu: false };
@@ -937,7 +946,6 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
     const dx = (e.clientX - a.x0) / escala;
     const dy = (e.clientY - a.y0) / escala;
     if (!a.mexeu && Math.hypot(e.clientX - a.x0, e.clientY - a.y0) < LIMIAR) return;
-    if (!a.mexeu && a.qual === "mover") aoLevar?.(grupo.id, { dx: 0, dy: 0 });
     a.mexeu = true;
     if (a.qual === "mover") {
       setDesloca({ dx, dy });
