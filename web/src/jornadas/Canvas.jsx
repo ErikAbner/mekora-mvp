@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
+import { usarHistoria } from "../estado/usarHistoria.js";
 import { Botao } from "../componentes/Botao.jsx";
 import { Icone } from "../componentes/Icone.jsx";
 import { Campo } from "../componentes/Campo.jsx";
@@ -402,7 +403,13 @@ function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, aoE
       if (a.lado) {
         const fim = esticar(a.lado, dx);
         aoMover(no.id, no.x + fim.dx, no.y, fim.largura);
-        aoSeguir?.(no.id, null);
+        /* O confirmar do esticar leva o antes e o depois: é o que a história
+         * precisa, e ela mora no Canvas porque um gesto pode mexer em vários. */
+        aoSeguir?.(no.id, {
+          soltou: true, esticou: true,
+          antes: { x: no.x, y: no.y, largura },
+          depois: { x: no.x + fim.dx, y: no.y, largura: fim.largura },
+        });
       } else {
         aoMover(no.id, no.x + dx, no.y + dy);
         /* `soltou` leva os acompanhantes ao servidor com o mesmo passo. */
@@ -909,7 +916,41 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
    *
    * `Set` e não array: as três perguntas que se faz o tempo todo são "está
    * escolhido?", "entra" e "sai", e as três são O(1) nele. */
+  /* A HISTÓRIA. Um gesto inteiro é um passo; ver `usarHistoria`. Os passos são
+   * registrados no CONFIRMAR de cada gesto — nunca durante a previsão. */
+  /* AS DUAS LISTAS VIVAS, para funções estáveis lerem sem virar dependência.
+   * Ver a razão medida em `seguirArrasto`. */
+  const escolhaRef = useRef(null);
+  const nosRef = useRef(nos);
+  nosRef.current = nos;
+
+  const historia = usarHistoria();
+
+  /* O QUE MUDOU, dito em uma linha, quando se desfaz ou refaz. Sem isto,
+   * `⌘Z` mexe em coisa que pode estar fora da tela e nada avisa que mexeu. */
+  const [recadoDaHistoria, setRecadoDaHistoria] = useState(null);
+  const relogioDoRecado = useRef(null);
+  const avisar = useCallback((texto) => {
+    setRecadoDaHistoria(texto);
+    clearTimeout(relogioDoRecado.current);
+    relogioDoRecado.current = setTimeout(() => setRecadoDaHistoria(null), 3000);
+  }, []);
+
+  /* MOVER É O PASSO MAIS COMUM, e todos os gestos que mexem em posição ou
+   * largura cabem nesta forma: uma lista de "este nó estava assim, ficou
+   * assado". Multi-arrasto, carregar uma seção e esticar um cartão são todos
+   * ela, com listas de tamanhos diferentes. */
+  const registrarMovimento = useCallback((rotulo, mudancas) => {
+    if (!mudancas.length) return;
+    historia.registrar({
+      rotulo,
+      desfazer: () => mudancas.forEach((m) => aoMover(m.id, m.antes.x, m.antes.y, m.antes.largura)),
+      refazer: () => mudancas.forEach((m) => aoMover(m.id, m.depois.x, m.depois.y, m.depois.largura)),
+    });
+  }, [historia, aoMover]);
+
   const [escolha, setEscolha] = useState(() => new Set());
+  escolhaRef.current = escolha;
 
   const escolher = useCallback((chave, { juntando = false } = {}) => {
     setEscolha((atual) => {
@@ -930,13 +971,36 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
   }, []);
 
   const tirarEscolhidos = useCallback(() => {
+    /* O QUE ESTAVA LÁ, guardado antes de sumir: sem a posição e o `nota_id`, não
+     * há como trazer de volta. É a diferença entre desfazer e "criar de novo". */
+    const notas = [];
+    const secoes = [];
     for (const chave of escolha) {
       const [tipo, id] = chave.split(":");
-      if (tipo === "nota") aoTirar(Number(id));
-      if (tipo === "secao") aoDesagrupar(Number(id));
+      if (tipo === "nota") {
+        const n = nosRef.current.find((x) => x.id === Number(id));
+        if (n) { notas.push({ nota_id: n.nota_id, x: n.x, y: n.y }); aoTirar(n.id); }
+      }
+      if (tipo === "secao") {
+        const g = grupos.find((x) => x.id === Number(id));
+        if (g) { secoes.push({ nome: g.nome, x: g.x, y: g.y, largura: g.largura, altura: g.altura }); aoDesagrupar(g.id); }
+      }
     }
     limparEscolha();
-  }, [escolha, aoTirar, aoDesagrupar, limparEscolha]);
+    if (!notas.length && !secoes.length) return;
+    historia.registrar({
+      rotulo: notas.length + secoes.length > 1 ? `${notas.length + secoes.length} tirados` : "Tirado da superfície",
+      /* DESFAZER TRAZ DE VOLTA COM ID NOVO. A nota é a mesma — o que se recria é
+       * a POSIÇÃO dela na superfície, que é o que "tirar" apagou. Para a seção,
+       * o objeto em si é recriado, e o id muda: um refazer encadeado depois disso
+       * não encontraria a seção antiga. Está anotado em docs/CANVAS.md. */
+      desfazer: async () => {
+        for (const n of notas) await aoTrazer(n);
+        for (const g of secoes) await aoAgrupar(g);
+      },
+      refazer: () => {},
+    });
+  }, [escolha, aoTirar, aoDesagrupar, limparEscolha, grupos, historia, aoTrazer, aoAgrupar]);
 
   /* O TECLADO CHEGA NA ESCOLHA. `Esc` larga tudo; `Delete` e `Backspace` tiram
    * da superfície o que estiver escolhido.
@@ -950,6 +1014,16 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
   useEffect(() => {
     const aoTeclar = (e) => {
       if (e.target.closest?.("input, textarea, [contenteditable=true]")) return;
+      /* `⌘Z` desfaz, `⌘⇧Z` refaz. `metaKey` no Mac e `ctrlKey` no resto — os dois
+       * aceitos, porque quem usa teclado externo troca de máquina sem trocar de
+       * dedo. */
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        (e.shiftKey ? historia.refazer() : historia.desfazer()).then((rotulo) => {
+          if (rotulo) avisar(`${e.shiftKey ? "Refeito" : "Desfeito"}: ${rotulo.toLowerCase()}`);
+        });
+        return;
+      }
       if (e.key === "Escape") { limparEscolha(); return; }
       if (e.key !== "Delete" && e.key !== "Backspace") return;
       if (!escolha.size) return;
@@ -958,7 +1032,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
     };
     window.addEventListener("keydown", aoTeclar);
     return () => window.removeEventListener("keydown", aoTeclar);
-  }, [escolha, limparEscolha, tirarEscolhidos]);
+  }, [escolha, limparEscolha, tirarEscolhidos, historia, avisar]);
 
 
   const [vivo, setVivo] = useState(null);
@@ -986,11 +1060,6 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
    * MEDIDO: com as dependências, o pior quadro de um arrasto com 123 cartões
    * voltou de 17,4ms para 83,9ms. Com `ref`, a função é a mesma para sempre e o
    * conteúdo dela continua atual. */
-  const escolhaRef = useRef(escolha);
-  const nosRef = useRef(nos);
-  escolhaRef.current = escolha;
-  nosRef.current = nos;
-
   const seguirArrasto = useCallback((id, desloca) => {
     setVivo(desloca ? { id, ...desloca } : null);
 
@@ -1008,19 +1077,53 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
             .map((c) => Number(c.split(":")[1]))
         : [];
     }
-    if (!acompanhantes.current.length) return;
-
+    /* A GUARDA DOS ACOMPANHANTES NÃO PODE VIR ANTES DO CONFIRMAR — e vinha.
+     *
+     * Arrastando um cartão sozinho, a lista de acompanhantes é vazia, a função
+     * saía aqui, e o passo NUNCA era registrado: `⌘Z` não devolvia o cartão.
+     * Medido — arrasto de 160 para 304, desfazer deixou em 304.
+     *
+     * Confirmar é sobre o gesto, e não sobre quem foi junto. */
     if (desloca.soltou) {
+      const mudancas = [];
+      if (desloca.esticou) {
+        mudancas.push({ id, antes: desloca.antes, depois: desloca.depois });
+      } else {
+        /* `nosRef` AINDA TEM O VALOR DE ANTES.
+         *
+         * O cartão chama `aoMover` e só depois confirma aqui, e `setNos` é
+         * assíncrono — então o que se lê agora é a posição de origem. É o que a
+         * história quer para o `antes`; o `depois` sai da soma, e não da leitura. */
+        const eu = nosRef.current.find((x) => x.id === id);
+        if (eu) {
+          mudancas.push({
+            id,
+            antes: { x: eu.x, y: eu.y, largura: eu.largura },
+            depois: { x: eu.x + desloca.dx, y: eu.y + desloca.dy, largura: eu.largura },
+          });
+        }
+      }
       for (const outro of acompanhantes.current) {
         const n = nosRef.current.find((x) => x.id === outro);
-        if (n) aoMover(outro, n.x + desloca.dx, n.y + desloca.dy);
+        if (!n) continue;
+        aoMover(outro, n.x + desloca.dx, n.y + desloca.dy);
+        mudancas.push({
+          id: outro,
+          antes: { x: n.x, y: n.y, largura: n.largura },
+          depois: { x: n.x + desloca.dx, y: n.y + desloca.dy, largura: n.largura },
+        });
       }
+      registrarMovimento(
+        desloca.esticou ? "Cartão esticado" : mudancas.length > 1 ? `${mudancas.length} movidos` : "Cartão movido",
+        mudancas,
+      );
       acompanhantes.current = [];
       setLevando(null);
       return;
     }
+    if (!acompanhantes.current.length) return;
     setLevando({ id: `escolha:${id}`, dx: desloca.dx, dy: desloca.dy, filhos: acompanhantes.current });
-  }, [aoMover]);
+  }, [aoMover, registrarMovimento]);
 
   /* A ÁREA LEVA O QUE ESTÁ DENTRO DELA — e antes ela não levava nada.
    *
@@ -1061,16 +1164,39 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
       const filhos = atual?.id === grupoId ? atual.filhos : filhosDe(grupos.find((g) => g.id === grupoId) ?? {});
       if (desloca.soltou) {
         /* No fim do gesto, cada nota vai para o servidor com o mesmo passo que a
-         * área deu. */
+         * área deu — e a área mais tudo que ela levou viram UM passo da história.
+         * Desfazer um arrasto de seção tem de devolver a seção E o conteúdo. */
+        const g = grupos.find((x) => x.id === grupoId);
+        const mudancas = [];
         for (const id of filhos) {
           const n = nos.find((x) => x.id === id);
-          if (n) aoMover(id, n.x + desloca.dx, n.y + desloca.dy);
+          if (!n) continue;
+          aoMover(id, n.x + desloca.dx, n.y + desloca.dy);
+          mudancas.push({
+            id, antes: { x: n.x, y: n.y, largura: n.largura },
+            depois: { x: n.x + desloca.dx, y: n.y + desloca.dy, largura: n.largura },
+          });
+        }
+        if (g) {
+          const antes = { x: g.x, y: g.y };
+          const depois = { x: g.x + desloca.dx, y: g.y + desloca.dy };
+          historia.registrar({
+            rotulo: filhos.length ? `Seção e ${filhos.length} movidos` : "Seção movida",
+            desfazer: () => {
+              aoMudarArea(grupoId, antes);
+              mudancas.forEach((m) => aoMover(m.id, m.antes.x, m.antes.y, m.antes.largura));
+            },
+            refazer: () => {
+              aoMudarArea(grupoId, depois);
+              mudancas.forEach((m) => aoMover(m.id, m.depois.x, m.depois.y, m.depois.largura));
+            },
+          });
         }
         return null;
       }
       return { id: grupoId, dx: desloca.dx, dy: desloca.dy, filhos };
     });
-  }, [filhosDe, grupos, nos, aoMover]);
+  }, [filhosDe, grupos, nos, aoMover, aoMudarArea, historia]);
 
   const tracos = useMemo(() => {
     const linhas = [];
@@ -1688,6 +1814,10 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
 
         {/* O DESFAZER DO ARRUMO. Ver `organizar`: mexer em trinta objetos de
             uma vez sem volta é uma armadilha, e ele some sozinho em 12s. */}
+        {recadoDaHistoria && (
+          <p className="canvas-recado" role="status">{recadoDaHistoria}</p>
+        )}
+
         {desfazerArrumo && (
           <p className="canvas-recado" role="status">
             Superfície organizada.{" "}
