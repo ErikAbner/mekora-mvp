@@ -53,7 +53,7 @@ function Previa({ link, previa }) {
 
   return (
     <a
-      className="nota-previa"
+      className={`nota-previa${previa?.video ? " de-video" : ""}`}
       href={link}
       target="_blank"
       rel="noreferrer noopener"
@@ -68,7 +68,42 @@ function Previa({ link, previa }) {
        * `onClickCapture` dela: ela sabe se o dedo andou, e a captura chega
        * antes de o link agir. */
     >
-      {previa?.imagem && <img src={previa.imagem} alt="" loading="lazy" />}
+      {/* A CAPA, e o selo de play quando é vídeo.
+       *
+       * `onError` troca pela menor: o `maxresdefault` do YouTube não existe para
+       * todo vídeo — os antigos e os de baixa resolução só têm a média —, e sem
+       * a troca o cartão fica com o quadrado vazio de imagem quebrada. Uma vez
+       * só, senão um endereço morto dos dois lados vira laço. */}
+      {previa?.imagem && (
+        <span className={`nota-previa-capa${previa.video ? " de-video" : ""}`}>
+          <img
+            src={previa.imagem}
+            alt=""
+            loading="lazy"
+            /* `onLoad` E `onError`, e o `onLoad` é o que importa.
+             *
+             * Quando um vídeo não tem `maxresdefault`, o YouTube não responde
+             * 404: responde **200** com um retângulo cinza de 120×90 — o
+             * "video unavailable". O `onError` nunca dispara, e a capa vira uma
+             * mancha cinza esticada. Foi o que apareceu na primeira captura.
+             *
+             * Quem denuncia é o TAMANHO: uma capa de verdade tem 1280 de
+             * largura. Abaixo de 200 é o substituto, e aí vale a menor, que
+             * sempre existe. */
+            onLoad={(e) => {
+              if (previa.imagem_menor && e.currentTarget.naturalWidth < 200) {
+                e.currentTarget.src = previa.imagem_menor;
+              }
+            }}
+            onError={(e) => {
+              if (previa.imagem_menor && e.currentTarget.src !== previa.imagem_menor) {
+                e.currentTarget.src = previa.imagem_menor;
+              }
+            }}
+          />
+          {previa.video && <span className="nota-previa-play" aria-hidden="true" />}
+        </span>
+      )}
       <span className="nota-previa-texto">
         <span className="nota-previa-titulo">{previa?.titulo || anfitriao}</span>
         {/* O PRODUTO DIZ O QUE NÃO SABE. Sem esta linha, um endereço que recusou
@@ -209,12 +244,18 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1
 
   /* O endereço vem do TEXTO da nota. A pessoa cola um link numa nota solta, e o
    * cartão vira a prévia daquele endereço — é o que o 895:6938 mostra. */
-  /* Nasceu na superfície, sem livro por trás. Ver o bloco de citação abaixo. */
-  const daCasa = no.fonte === "solta";
+  /* NASCEU NA SUPERFÍCIE, sem livro por trás — e são DUAS fontes, não uma.
+   *
+   * Era só `"solta"`, e a foto entrava com `fonte="midia"`: o rodapé do cartão
+   * de foto dizia "do seu livro", que é falso, e a foto ainda ganhava o filete
+   * de citação como se fosse trecho de outra pessoa. */
+  const daCasa = no.fonte === "solta" || no.fonte === "midia";
 
   const largura = no.largura || 375;
 
   const link = linkDe(no.texto);
+  /* A nota é só um endereço, e nada mais. */
+  const soLink = Boolean(link) && no.texto?.trim() === link;
   const previa = usarPrevia(link);
 
   /* O NÓ NÃO SAI DO LUGAR NO DOM DURANTE O ARRASTO.
@@ -398,7 +439,29 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1
        *
        * Quando a nota nasceu aqui, sem livro, não há citação nenhuma — o texto é
        * dela e sai sem filete. Marcar tudo faria a marca não querer dizer nada. */}
-      {daCasa ? (
+      {/* A IMAGEM QUE A PESSOA SUBIU. Vem antes do texto porque, num cartão de
+          mídia, o texto é a legenda dela — e legenda embaixo é onde se procura.
+          A proporção sai do tamanho guardado no servidor, então o cartão já
+          nasce com a altura certa e a superfície não dá um pulo quando a imagem
+          chega. */}
+      {no.midia && (
+        <img
+          className="nota-imagem"
+          src={`/canvas/midia/${no.midia.token}`}
+          alt={no.texto || "Imagem sem legenda"}
+          width={no.midia.largura}
+          height={no.midia.altura}
+          draggable="false"
+          loading="lazy"
+        />
+      )}
+      {/* O TEXTO NAO REPETE O ENDERECO. Quando a nota inteira é um link, a prévia
+          logo abaixo já mostra título, canal e capa — deixar a URL crua acima
+          dela é o mesmo endereço duas vezes, e a versão crua é a pior das duas.
+          Nota com texto E link continua mostrando o texto. */}
+      {no.midia ? (
+        no.texto && <p className="nota-legenda">{no.texto}</p>
+      ) : soLink ? null : daCasa ? (
         <p className="nota-texto">{no.texto}</p>
       ) : (
         <blockquote className="nota-trecho">
@@ -428,7 +491,9 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1
         {/* DE ONDE VEIO, e onde no arquivo. O capítulo entra porque num livro de
             trezentas páginas "do seu livro" ainda deixa a pessoa procurando. */}
         <span className="nota-origem">
-          {daCasa
+          {no.fonte === "midia"
+            ? "posta aqui"
+            : daCasa
             ? "escrita aqui"
             : [no.origem || "do seu livro", no.capitulo > 0 && `cap. ${no.capitulo}`]
                 .filter(Boolean)
@@ -661,7 +726,7 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0 }) {
   );
 }
 
-export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro, aoTrazer, aoMover, aoTirar, aoLigar, aoDesligar, aoAgrupar, aoMudarArea, aoDesagrupar }) {
+export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro, aoTrazer, aoTrazerMidia, aoMover, aoTirar, aoLigar, aoDesligar, aoAgrupar, aoMudarArea, aoDesagrupar }) {
   /* O FIO QUE ESTÁ SENDO PUXADO, em coordenadas da JANELA e não do plano.
    *
    * Da janela porque ele é desenhado por cima de tudo, e não dentro do plano:
@@ -676,6 +741,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
   const [escrevendo, setEscrevendo] = useState(false);
   const [pondoMidia, setPondoMidia] = useState(false);
   const [endereco, setEndereco] = useState("");
+  const [foto, setFoto] = useState(null);
   const [texto, setTexto] = useState("");
   const [trazendo, setTrazendo] = useState(false);
 
@@ -1432,10 +1498,16 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
         acoes={
           <Botao
             tom="primaria"
-            disabled={!endereco.trim()}
+            disabled={!endereco.trim() && !foto}
             onClick={async () => {
               const onde = meioDaVista(375, 220);
-              if (await aoTrazer({ texto: endereco.trim(), x: onde.x, y: onde.y })) setPondoMidia(false);
+              /* A FOTO GANHA do endereço quando os dois estão preenchidos: ela é
+               * a escolha mais recente e a mais deliberada — escolher um arquivo
+               * dá mais trabalho que colar um endereço. */
+              const feito = foto
+                ? await aoTrazerMidia(foto, onde.x, onde.y, endereco.trim().startsWith("http") ? "" : endereco.trim())
+                : await aoTrazer({ texto: endereco.trim(), x: onde.x, y: onde.y });
+              if (feito) { setPondoMidia(false); setFoto(null); }
             }}
           >
             Pôr na superfície
@@ -1443,8 +1515,9 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
         }
       >
         <p>
-          Cole o endereço de um vídeo ou de uma página. O cartão vira a prévia
-          dele — e para montá-la o Mekora precisa visitar esse endereço.
+          Cole o endereço de um vídeo ou de uma página, ou escolha uma foto. Para
+          montar a prévia de um endereço, o Mekora precisa visitar esse endereço;
+          a foto fica só aqui.
         </p>
         <Campo
           rotulo="O endereço"
@@ -1455,6 +1528,30 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
           onChange={(e) => setEndereco(e.target.value)}
           autoFocus
         />
+
+        {/* A FOTO É O OUTRO CAMINHO DA MESMA FOLHA, e não uma quarta ferramenta
+            no dock: "adicionar mídia" é um gesto só, e o que muda é de onde a
+            mídia vem. Quem escolhe uma foto não precisa mais do endereço, e o
+            rótulo passa a dizer o nome do arquivo — sem isso a pessoa escolhe e
+            a tela não dá sinal nenhum de que recebeu. */}
+        <p className="canvas-ou-foto">
+          Ou{" "}
+          <label className="canvas-escolher-foto">
+            <span>{foto ? foto.name : "escolha uma foto"}</span>
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="visualmente-oculto"
+              onChange={(e) => setFoto(e.target.files?.[0] ?? null)}
+            />
+          </label>
+          {foto && (
+            <>
+              {" — "}
+              <button type="button" onClick={() => setFoto(null)}>trocar</button>
+            </>
+          )}
+        </p>
       </Folha>
 
       <Folha

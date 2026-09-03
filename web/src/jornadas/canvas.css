@@ -661,6 +661,7 @@
  */
 .nota-previa {
   display: flex; align-items: center; gap: 10px;
+  overflow: hidden;
   margin-block-start: 10px;
   padding: 8px;
   border: 1px solid color-mix(in srgb, var(--foreground) 20%, transparent);
@@ -677,6 +678,21 @@
   object-fit: cover;
   display: block;
 }
+
+/* O CARTAO DE VIDEO VIRA COLUNA, e a capa ocupa a largura inteira.
+ *
+ * De lado, a capa cabia em 48px — um selo de play do tamanho de um favicon, ao
+ * lado de um titulo cortado. O Erik pediu "uma boa qualidade na capa", e a
+ * qualidade nao esta so no arquivo: esta em ele ser grande o bastante para se
+ * reconhecer o video. Miniatura de pagina continua de lado; video vira capa. */
+.nota-previa.de-video {
+  display: block;
+  padding: 0;
+}
+.nota-previa.de-video .nota-previa-texto { padding: 8px 10px; }
+.nota-previa .nota-previa-capa { flex: 0 0 auto; inline-size: 48px; block-size: 48px; aspect-ratio: auto; }
+.nota-previa.de-video .nota-previa-capa { inline-size: 100%; block-size: auto; aspect-ratio: 16 / 9; }
+.nota-previa.de-video .nota-previa-capa img { inline-size: 100%; block-size: 100%; }
 
 .nota-previa-texto { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 
@@ -931,3 +947,76 @@
   border-inline-start: 1px solid var(--border);
 }
 .nota-canvas .nota-trecho .nota-texto { color: var(--muted-foreground); }
+
+/* A CAPA DO LINK, e o selo de play quando e video.
+ *
+ * `aspect-ratio` de 16/9 com `object-fit: cover`: a miniatura do YouTube vem
+ * nessa proporcao, e as outras capas nao vem em nenhuma — sem a proporcao fixa,
+ * cada cartao com link tinha uma altura diferente e a superficie ficava serrada.
+ */
+.nota-previa-capa {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--muted);
+}
+.nota-previa-capa img {
+  inline-size: 100%; block-size: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* O TRIANGULO E DESENHADO NA BORDA, e nao um arquivo: tres linhas de CSS contra
+ * um pedido de rede a mais em cada cartao de video. */
+.nota-previa-play {
+  position: absolute;
+  inset-block-start: 50%; inset-inline-start: 50%;
+  translate: -50% -50%;
+  inline-size: 48px; block-size: 48px;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.55);
+  transition: background-color 160ms var(--saida), scale 160ms var(--saida);
+}
+.nota-previa-play::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 50%; inset-inline-start: 50%;
+  translate: -40% -50%;
+  border-style: solid;
+  border-width: 8px 0 8px 13px;
+  border-color: transparent transparent transparent #fff;
+}
+.nota-previa:hover .nota-previa-play { background: rgb(0 0 0 / 0.75); scale: 1.06; }
+
+/* A IMAGEM QUE A PESSOA SUBIU. `height: auto` com `width`/`height` no HTML: os
+ * dois atributos dao a proporcao ao navegador antes de o arquivo chegar, e o
+ * cartao ja nasce com a altura certa. Sem isso a superficie da um pulo a cada
+ * imagem que carrega, e num plano onde se arrasta o pulo move o alvo. */
+.nota-canvas .nota-imagem {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  border-radius: 4px;
+}
+.nota-canvas .nota-legenda {
+  margin: 12px 0 0;
+  color: var(--muted-foreground);
+  font-size: 16px;
+  line-height: 24px;
+  text-wrap: pretty;
+}
+
+/* ESCOLHER UMA FOTO e um `<label>` com o `<input type=file>` escondido dentro:
+ * o botao nativo de arquivo nao aceita estilo, e um `<button>` que chama o
+ * `<input>` por codigo perde o teclado. O rotulo tem os dois — aparencia e a
+ * ligacao nativa com o campo. */
+.canvas-ou-foto { margin: 12px 0 0; font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
+.canvas-escolher-foto,
+.canvas-ou-foto button {
+  border: 0; padding: 0; background: none;
+  font: inherit; color: var(--foreground);
+  text-decoration: underline; text-underline-offset: 3px;
+  cursor: pointer;
+}
+.canvas-escolher-foto:focus-within { outline: 2px solid var(--foreground); outline-offset: 2px; }

@@ -522,6 +522,19 @@ export function moverNoCanvas(id, x, y, largura) {
   });
 }
 
+/* A FOTO VAI COMO `FormData`, e nao como JSON com base64: base64 cresce um terco
+ * e obriga o servidor a decodificar uma string enorme na memoria antes de saber
+ * se aquilo e imagem. O `Content-Type` fica por conta do navegador — escrito a
+ * mao, falta o `boundary` e o servidor nao consegue separar os campos. */
+export function porMidiaNoCanvas(arquivo, x, y, legenda = "") {
+  const pacote = new FormData();
+  pacote.append("arquivo", arquivo);
+  pacote.append("x", String(x));
+  pacote.append("y", String(y));
+  pacote.append("legenda", legenda);
+  return pede("/canvas/midia", { method: "POST", body: pacote });
+}
+
 /** Tira da superficie SEM apagar a nota — o item 5 do contrato. */
 export function tirarDoCanvas(id) {
   return pede(`/canvas/nos/${id}`, { method: "DELETE" });

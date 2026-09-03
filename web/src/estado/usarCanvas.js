@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   apagarGrupo, criarGrupo, desligarNotas, lerCanvas, ligarNotas, moverNoCanvas,
-  mudarGrupo, porNoCanvas, tirarDoCanvas,
+  mudarGrupo, porMidiaNoCanvas, porNoCanvas, tirarDoCanvas,
 } from "../../../contrato/api.js";
 
 /* A superfície do Canvas.
@@ -44,6 +44,18 @@ export function usarCanvas() {
       /* Recarrega em vez de remendar: trazer uma nota que já estava na
        * superfície não cria nada, e remendar a lista duplicaria o retângulo na
        * tela até a próxima visita. */
+      await recarregar();
+      return true;
+    } catch (e) {
+      setErro(e.message);
+      return false;
+    }
+  }, [recarregar]);
+
+  const trazerMidia = useCallback(async (arquivo, x, y, legenda) => {
+    setErro(null);
+    try {
+      await porMidiaNoCanvas(arquivo, x, y, legenda);
       await recarregar();
       return true;
     } catch (e) {
@@ -138,7 +150,7 @@ export function usarCanvas() {
 
   return {
     nos, ligacoes, grupos, erro, carregando,
-    trazer, mover, tirar, ligar, desligar, recarregar,
+    trazer, trazerMidia, mover, tirar, ligar, desligar, recarregar,
     agrupar, mudarArea, desagrupar,
   };
 }

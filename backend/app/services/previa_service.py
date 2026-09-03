@@ -147,8 +147,67 @@ def _ler(html: str, base: str) -> dict:
     }
 
 
+# O VÍDEO DO YOUTUBE TEM CAMINHO PRÓPRIO, e não por capricho.
+#
+# Raspar a página do YouTube com um agente honesto devolve a tela de consentimento
+# de cookies, e não o vídeo: sem `og:image`, o cartão saía só com "youtube.com"
+# escrito duas vezes — foi o que apareceu na captura do Erik.
+#
+# O oEmbed é a porta que o próprio YouTube publica para isto. Ele devolve título
+# e autor sem raspagem, sem chave e sem termos a violar, e a capa vem do endereço
+# determinístico da miniatura: `i.ytimg.com/vi/<id>/maxresdefault.jpg`.
+#
+# MAXRES, e não a média. O Erik pediu "uma boa qualidade na capa", e o
+# `maxresdefault` é 1280×720 contra os 480×360 do `hqdefault`. Nem todo vídeo tem
+# a versão grande — vídeos antigos ou de baixa resolução não têm —, e por isso a
+# menor vai junto, para a tela cair nela quando a grande responder 404.
+_YOUTUBE = re.compile(
+    r"^(?:https?://)?(?:www\.|m\.)?(?:youtube\.com/(?:watch\?(?:.*&)?v=|shorts/|embed/|live/)"
+    r"|youtu\.be/)([A-Za-z0-9_-]{11})"
+)
+
+
+def _video_do_youtube(endereco: str):
+    achado = _YOUTUBE.match(endereco.strip())
+    return achado.group(1) if achado else None
+
+
+def _previa_do_youtube(video: str) -> dict:
+    titulo = ""
+    autor = ""
+    try:
+        with httpx.Client(timeout=SEGUNDOS, headers={"User-Agent": AGENTE}) as cliente:
+            r = cliente.get(
+                "https://www.youtube.com/oembed",
+                params={"url": f"https://www.youtube.com/watch?v={video}", "format": "json"},
+            )
+            if r.status_code == 200:
+                dados = r.json()
+                titulo = str(dados.get("title", ""))[:300]
+                autor = str(dados.get("author_name", ""))[:120]
+    except (httpx.HTTPError, ValueError):
+        # SEM TÍTULO AINDA É PRÉVIA. A capa é o que importa no cartão, e ela não
+        # depende desta chamada — deixar a prévia inteira cair porque o oEmbed
+        # não respondeu trocaria um cartão bom por nenhum.
+        pass
+
+    return {
+        "endereco": f"https://www.youtube.com/watch?v={video}",
+        "titulo": titulo,
+        "descricao": "",
+        "imagem": f"https://i.ytimg.com/vi/{video}/maxresdefault.jpg",
+        "imagem_menor": f"https://i.ytimg.com/vi/{video}/hqdefault.jpg",
+        "site": autor or "YouTube",
+        "video": True,
+    }
+
+
 def buscar(endereco: str) -> dict:
     """Vai até o endereço e volta com a prévia. Levanta `PreviaRecusada`."""
+    video = _video_do_youtube(endereco)
+    if video:
+        return _previa_do_youtube(video)
+
     atual = _conferir(endereco.strip())
 
     with httpx.Client(
