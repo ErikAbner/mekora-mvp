@@ -19,7 +19,7 @@
  * é que o futuro deixou de existir: refazer depois de ter feito outra coisa
  * aplicaria uma mudança sobre um mundo que não é mais aquele.
  */
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 /* Teto da pilha. Sessenta passos é mais do que qualquer sessão de arrumação
  * alcança, e o que passa disso é memória parada — cada passo segura referências
@@ -67,13 +67,29 @@ export function usarHistoria() {
     marcar();
   }, []);
 
-  return {
-    registrar,
-    desfazer,
-    refazer,
-    esquecer,
-    temDesfazer: feitos.current.length > 0,
-    temRefazer: desfeitos.current.length > 0,
-    versao,
-  };
+  /* O RETORNO É MEMOIZADO, e não é preciosismo.
+   *
+   * Um objeto literal novo a cada desenho vaza para quem depende dele: aqui,
+   * `registrarMovimento` tinha `historia` nas dependências, `seguirArrasto`
+   * tinha `registrarMovimento`, e `seguirArrasto` vai como propriedade para
+   * TODAS as notas. Uma linha de estado no Canvas redesenhava as 123 — o `memo`
+   * delas nunca chegava a comparar nada, porque a propriedade era outra.
+   *
+   * Medido: o primeiro quadro de um arrasto com 123 cartões custava 66ms por
+   * causa disto.
+   *
+   * `versao` está nas dependências de propósito: ela é o único campo que muda de
+   * valor, e é ela que diz à tela que há o que desfazer. */
+  return useMemo(
+    () => ({
+      registrar,
+      desfazer,
+      refazer,
+      esquecer,
+      temDesfazer: feitos.current.length > 0,
+      temRefazer: desfeitos.current.length > 0,
+      versao,
+    }),
+    [registrar, desfazer, refazer, esquecer, versao],
+  );
 }

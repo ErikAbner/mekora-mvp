@@ -25,7 +25,7 @@ const LIMIAR = 4;
 
 /* Folga em volta da caixa dos traços. Sem ela, uma linha na borda exata do SVG
  * perde metade da espessura no recorte. */
-const FOLGA = 8;
+const FOLGA_DOS_TRACOS = 8;
 
 /* O menor lado de um grupo. O mesmo número que o backend usa — um retângulo
  * menor que uma nota não agrupa nada, e um de um pixel some da tela sem deixar
@@ -163,6 +163,50 @@ const BORDA = 10;
  * que encosta na malha fica alinhada com o que a pessoa VÊ atrás dela. */
 const MALHA_DO_PLANO = 24;
 
+/* A CURVA ENTRE DOIS CARTOES — geometria pura, fora do componente.
+ *
+ * Ela precisa existir em dois lugares: no desenho do React, e no repinte
+ * IMPERATIVO durante o arrasto. Duas copias da mesma conta divergiriam no
+ * primeiro ajuste, e o sintoma seria a linha pulando ao soltar. */
+function caminhoDaLigacao(ca, cb) {
+  const cxA = ca.x + ca.largura / 2;
+  const cyA = ca.y + ca.altura / 2;
+  const cxB = cb.x + cb.largura / 2;
+  const cyB = cb.y + cb.altura / 2;
+  const vaoX = Math.max(cb.x - (ca.x + ca.largura), ca.x - (cb.x + cb.largura));
+  const vaoY = Math.max(cb.y - (ca.y + ca.altura), ca.y - (cb.y + cb.altura));
+  const deitado = vaoX >= vaoY;
+  const vao = Math.hypot(cxB - cxA, cyB - cyA);
+  const peso = Math.min(72, Math.max(14, vao * 0.16));
+
+  let x1, y1, x2, y2, c1x, c1y, c2x, c2y;
+  if (deitado) {
+    const paraDireita = cxA <= cxB;
+    x1 = paraDireita ? ca.x + ca.largura : ca.x;
+    x2 = paraDireita ? cb.x : cb.x + cb.largura;
+    y1 = cyA; y2 = cyB;
+    const alca = Math.min(160, Math.max(16, Math.abs(x2 - x1) / 2));
+    c1x = x1 + (paraDireita ? alca : -alca);
+    c2x = x2 + (paraDireita ? -alca : alca);
+    c1y = y1 + peso; c2y = y2 + peso;
+  } else {
+    const paraBaixo = cyA <= cyB;
+    y1 = paraBaixo ? ca.y + ca.altura : ca.y;
+    y2 = paraBaixo ? cb.y : cb.y + cb.altura;
+    x1 = cxA; x2 = cxB;
+    const alca = Math.min(160, Math.max(16, Math.abs(y2 - y1) / 2));
+    c1x = x1; c2x = x2;
+    c1y = y1 + (paraBaixo ? alca : -alca) + peso;
+    c2y = y2 + (paraBaixo ? -alca : alca) + peso;
+  }
+  return {
+    d: `M ${x1} ${y1} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${x2} ${y2}`,
+    mx: (x1 + 3 * c1x + 3 * c2x + x2) / 8,
+    my: (y1 + 3 * c1y + 3 * c2y + y2) / 8,
+    pontas: [[x1, y1], [x2, y2], [c1x, c1y], [c2x, c2y]],
+  };
+}
+
 /* O DETALHE QUE CABE EM CADA DISTÂNCIA.
  *
  * Escalar a mesma interface até o texto ficar ilegível não é um sistema de zoom
@@ -270,7 +314,7 @@ function MenuDoCartao({ children, rotulo = "Ações da nota" }) {
  * Com `memo`, só o cartão que mudou redesenha. As funções que chegam por
  * propriedade são todas `useCallback` no pai, senão a comparação nunca casaria
  * e a memoização não valeria nada. */
-function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, aoEscolher, fio, alvoDoFio, carregada, escolhido, entreVarios, escala = 1 }) {
+function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, aoEscolher, aoInscrever, fio, alvoDoFio, carregada, escolhido, entreVarios, escala = 1 }) {
   const quando = dataCurta(no.criada_em);
   const caixa = useRef(null);
   const arrasto = useRef(null);
@@ -304,6 +348,24 @@ function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, aoE
   /* O CARTÃO DIZ O TAMANHO QUE TEM. Só o navegador sabe: a altura vem do texto,
    * da prévia e da legenda, e a largura pode ter sido esticada. Quem desenha os
    * traços precisa da caixa de verdade — ver `medidas` no Canvas. */
+  /* A FICHA DESTE CARTÃO NA CENA. `ler` fecha sobre as propriedades atuais, e o
+   * efeito reinscreve quando elas mudam — inscrever é um `Map.set`, e acontece
+   * quando o dado muda, nunca por quadro. */
+  useEffect(() => {
+    if (!aoInscrever) return undefined;
+    return aoInscrever(`nota:${no.id}`, {
+      tipo: "nota",
+      pega: true,
+      no: caixa.current,
+      ler: () => ({
+        x: no.x, y: no.y,
+        largura: caixa.current?.offsetWidth ?? largura,
+        altura: caixa.current?.offsetHeight ?? 200,
+      }),
+      mover: (x, y, l) => aoMover(no.id, x, y, l),
+    });
+  }, [aoInscrever, no.id, no.x, no.y, largura, aoMover]);
+
   useEffect(() => {
     const el = caixa.current;
     if (!el || !aoMedir) return undefined;
@@ -650,7 +712,7 @@ const Nota = memo(NotaCrua);
  * isolated special-case implementation", e a prova é esta: escolher, arrastar
  * junto, entrar numa seção e desfazer não sabem que existe um tipo novo.
  */
-function LivroCrua({ livro, aoMover, aoTirar, aoEscolher, aoSeguir, carregada, escolhido, entreVarios, escala = 1 }) {
+function LivroCrua({ livro, aoMover, aoTirar, aoEscolher, aoSeguir, aoInscrever, carregada, escolhido, entreVarios, escala = 1 }) {
   const caixa = useRef(null);
   const arrasto = useRef(null);
   const [posicao, setPosicao] = useState(null);
@@ -661,6 +723,21 @@ function LivroCrua({ livro, aoMover, aoTirar, aoEscolher, aoSeguir, carregada, e
     window.removeEventListener("pointerup", soltar);
     window.removeEventListener("pointercancel", abortar);
   };
+
+  useEffect(() => {
+    if (!aoInscrever) return undefined;
+    return aoInscrever(`livro:${livro.id}`, {
+      tipo: "livro",
+      pega: true,
+      no: caixa.current,
+      ler: () => ({
+        x: livro.x, y: livro.y,
+        largura: caixa.current?.offsetWidth ?? (livro.largura || 280),
+        altura: caixa.current?.offsetHeight ?? 420,
+      }),
+      mover: (x, y, l) => aoMover(livro.id, x, y, l),
+    });
+  }, [aoInscrever, livro.id, livro.x, livro.y, livro.largura, aoMover]);
 
   const comecar = (e) => {
     if (e.button !== 0) return;
@@ -760,7 +837,7 @@ const Livro = memo(LivroCrua);
  * área move a NOTA, ou o chão, e nunca o retângulo por baixo. O que pega o
  * retângulo é a barra do título — a mesma regra de uma janela.
  */
-function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoEscolher, escolhido }) {
+function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoEscolher, aoInscrever, escolhido }) {
   const arrasto = useRef(null);
   const [desloca, setDesloca] = useState(null);
   const [medindo, setMedindo] = useState(null);
@@ -774,6 +851,19 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
   /* O CLIQUE MORRE SE HOUVE ARRASTO — o mesmo truque da nota. Sem isto, arrastar
    * o grupo pelo nome abriria o campo de edição ao soltar. */
   const moveu = useRef(false);
+
+  const corpo = useRef(null);
+
+  useEffect(() => {
+    if (!aoInscrever) return undefined;
+    return aoInscrever(`secao:${grupo.id}`, {
+      tipo: "secao",
+      pega: true,
+      no: corpo.current,
+      ler: () => ({ x: grupo.x, y: grupo.y, largura: grupo.largura, altura: grupo.altura }),
+      mover: (x, y) => aoMudar(grupo.id, { x, y }),
+    });
+  }, [aoInscrever, grupo.id, grupo.x, grupo.y, grupo.largura, grupo.altura, aoMudar]);
 
   const focarUmaVez = useCallback((el) => {
     if (el) { el.focus(); el.select(); }
@@ -896,6 +986,7 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
      * o espaço com as notas do grupo e cobre a de cima. Acima, ele nomeia a área
      * sem ocupar nada dela. */
     <section
+      ref={corpo}
       className={`canvas-grupo${escolhido ? " escolhido" : ""}`}
       style={estilo}
       aria-label={grupo.nome || "Grupo sem nome"}
@@ -1031,6 +1122,8 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
    * cartão e o ponto do meio ficava boiando: é a "bola que descola do item" que
    * o Erik viu, e ela transmitia bug porque ERA bug. */
   const [medidas, setMedidas] = useState({});
+  const medidasRef = useRef(null);
+  medidasRef.current = medidas;
   const anotarMedida = useCallback((id, caixa) => {
     setMedidas((m) => {
       const antes = m[id];
@@ -1056,13 +1149,60 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
    * escolhido?", "entra" e "sai", e as três são O(1) nele. */
   /* A HISTÓRIA. Um gesto inteiro é um passo; ver `usarHistoria`. Os passos são
    * registrados no CONFIRMAR de cada gesto — nunca durante a previsão. */
+  /* A CENA — o registro de tudo que existe na superfície.
+   *
+   * O Erik: "the next Canvas object type should not require us to remember: add
+   * it to click selection, add it to lasso, add it to multi-move, add it to
+   * undo, add it to Section bounds". O Livro provou metade disso — entrou sem
+   * tocar em clique, arrasto e desfazer — e reprovou a outra metade: o laço
+   * percorria `nos` e `grupos` À MÃO, e o livro ficou de fora.
+   *
+   * Aqui cada objeto se inscreve com uma FICHA, e quem precisa de "todos os
+   * objetos" pergunta à cena em vez de listar tipos:
+   *
+   *   chave      `nota:12` — identidade, já usada pela escolha
+   *   tipo       para quem precisa distinguir (poucos precisam)
+   *   no         o elemento, para o desenho imperativo do arrasto
+   *   ler()      a caixa em coordenadas do plano
+   *   mover()    aplica posição e largura
+   *   pega       se ele pode ser escolhido
+   *
+   * A ficha é um `ref` por objeto: ela muda de conteúdo sem trocar de
+   * identidade, então inscrever não redesenha nada e ler é sempre atual. */
+  const cena = useRef(new Map());
+  const inscrever = useCallback((chave, ficha) => {
+    cena.current.set(chave, ficha);
+    return () => { cena.current.delete(chave); };
+  }, []);
+
+  /* O QUE ESTÁ DENTRO DE UM RETÂNGULO DO PLANO. Uma pergunta, uma resposta, e
+   * nenhum tipo citado — é isto que faz o laço, a seção e o próximo tipo de
+   * objeto usarem a mesma regra sem combinarem nada. */
+  const oQueEstaEm = useCallback((a, b, { encostar = true, so = null } = {}) => {
+    const achados = [];
+    for (const [chave, ficha] of cena.current) {
+      if (!ficha.pega) continue;
+      if (so && !so.includes(ficha.tipo)) continue;
+      const c = ficha.ler();
+      if (!c) continue;
+      const cruza = c.x < b.x && c.x + c.largura > a.x && c.y < b.y && c.y + c.altura > a.y;
+      const centroDentro =
+        c.x + c.largura / 2 >= a.x && c.x + c.largura / 2 <= b.x
+        && c.y + c.altura / 2 >= a.y && c.y + c.altura / 2 <= b.y;
+      if (encostar ? cruza : centroDentro) achados.push(chave);
+    }
+    return achados;
+  }, []);
+
   /* AS DUAS LISTAS VIVAS, para funções estáveis lerem sem virar dependência.
    * Ver a razão medida em `seguirArrasto`. */
   const escolhaRef = useRef(null);
   const nosRef = useRef(nos);
   const livrosRef = useRef(livros);
+  const ligacoesRef = useRef(ligacoes);
   nosRef.current = nos;
   livrosRef.current = livros;
+  ligacoesRef.current = ligacoes;
 
   const historia = usarHistoria();
 
@@ -1202,6 +1342,63 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
    * mesma coisa. */
   const acompanhantes = useRef([]);
 
+  /* O ARRASTO NÃO REDESENHA O CANVAS — e esta é a mudança de arquitetura.
+   *
+   * Antes, cada quadro escrevia estado no Canvas para a linha seguir o cartão e
+   * para os acompanhantes andarem. Isso obrigava o React a reconciliar a
+   * superfície inteira sessenta vezes por segundo. Medido:
+   *
+   *   com 3 cartões    pior quadro 23,8ms, nenhuma tarefa longa
+   *   com 123 cartões  pior quadro 83,2ms, três tarefas longas de ~55ms
+   *
+   * O custo escalava com o número de objetos — que é a assinatura de um
+   * redesenho global, não de um gesto caro. E o pico estava no PRIMEIRO quadro
+   * do arrasto, não no soltar: eu havia lido isso errado antes, e o registro
+   * está corrigido.
+   *
+   * `begin → preview → commit` continua valendo. O que muda é que a PREVIEW
+   * deixou de passar pelo React: ela escreve `transform` nos elementos e `d` nos
+   * traços, direto. O `commit`, no soltar, continua sendo uma atualização de
+   * estado — uma só, e nada mais. */
+  const tracosNoDom = useRef(new Map());
+  const inscreverTraco = useCallback((id, el) => {
+    if (el) tracosNoDom.current.set(id, el);
+    else tracosNoDom.current.delete(id);
+  }, []);
+
+  const pintarArrasto = useCallback((deslocamentos) => {
+    /* Os acompanhantes andam por `transform`, que é a mesma propriedade que o
+     * cartão arrastado já usa — e que não custa layout. */
+    for (const [chave, d] of deslocamentos) {
+      const ficha = cena.current.get(chave);
+      if (ficha?.no && !d.souEu) {
+        ficha.no.style.transform = d ? `translate(${d.dx}px, ${d.dy}px)` : "";
+      }
+    }
+    /* E as linhas são recalculadas com a MESMA conta do desenho — ver
+     * `caminhoDaLigacao`. Duas cópias divergiriam, e o sintoma seria a linha
+     * pulando ao soltar. */
+    for (const [id, el] of tracosNoDom.current) {
+      const l = ligacoesRef.current.find((x) => x.id === id);
+      if (!l) continue;
+      const a = nosRef.current.find((n) => n.nota_id === l.de_id);
+      const b = nosRef.current.find((n) => n.nota_id === l.para_id);
+      if (!a || !b) continue;
+      const cx = (n) => {
+        const m = medidasRef.current[n.id] ?? { largura: n.largura || 375, altura: 200 };
+        const d = deslocamentos.get(`nota:${n.id}`);
+        return { x: n.x + (d?.dx ?? 0), y: n.y + (d?.dy ?? 0), largura: d?.largura ?? m.largura, altura: m.altura };
+      };
+      el.setAttribute("d", caminhoDaLigacao(cx(a), cx(b)).d);
+    }
+  }, []);
+
+  const limparPintura = useCallback(() => {
+    for (const [, ficha] of cena.current) {
+      if (ficha.no) ficha.no.style.transform = "";
+    }
+  }, []);
+
   /* A ESCOLHA E A LISTA DE NÓS CHEGAM POR `ref`, e não por dependência.
    *
    * `seguirArrasto` vai como propriedade para as 123 notas memoizadas. Com
@@ -1214,11 +1411,9 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
    * voltou de 17,4ms para 83,9ms. Com `ref`, a função é a mesma para sempre e o
    * conteúdo dela continua atual. */
   const seguirArrasto = useCallback((id, desloca) => {
-    setVivo(desloca ? { id, ...desloca } : null);
-
     if (!desloca) {
       acompanhantes.current = [];
-      setLevando(null);
+      limparPintura();
       return;
     }
     /* A lista é fixada no primeiro quadro do gesto: recalcular a cada quadro
@@ -1228,23 +1423,12 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
         ? [...escolhaRef.current].filter((c) => c !== id && !c.startsWith("secao:"))
         : [];
     }
-    /* A GUARDA DOS ACOMPANHANTES NÃO PODE VIR ANTES DO CONFIRMAR — e vinha.
-     *
-     * Arrastando um cartão sozinho, a lista de acompanhantes é vazia, a função
-     * saía aqui, e o passo NUNCA era registrado: `⌘Z` não devolvia o cartão.
-     * Medido — arrasto de 160 para 304, desfazer deixou em 304.
-     *
-     * Confirmar é sobre o gesto, e não sobre quem foi junto. */
+
     if (desloca.soltou) {
       const mudancas = [];
       if (desloca.esticou) {
         mudancas.push({ chave: id, antes: desloca.antes, depois: desloca.depois });
       } else {
-        /* `nosRef` AINDA TEM O VALOR DE ANTES.
-         *
-         * O cartão chama `aoMover` e só depois confirma aqui, e `setNos` é
-         * assíncrono — então o que se lê agora é a posição de origem. É o que a
-         * história quer para o `antes`; o `depois` sai da soma, e não da leitura. */
         const eu = ondeEstaRef.current(id);
         if (eu) {
           mudancas.push({
@@ -1269,12 +1453,17 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
         mudancas,
       );
       acompanhantes.current = [];
-      setLevando(null);
+      limparPintura();
       return;
     }
-    if (!acompanhantes.current.length) return;
-    setLevando({ id: `escolha:${id}`, dx: desloca.dx, dy: desloca.dy, filhos: acompanhantes.current });
-  }, [registrarMovimento]);
+
+    /* PREVIEW SEM REACT. O cartão arrastado já se move sozinho, com estado
+     * local; daqui saem só os acompanhantes e as linhas. */
+    const passo = new Map();
+    passo.set(id, { ...desloca, souEu: true });
+    for (const outro of acompanhantes.current) passo.set(outro, desloca);
+    pintarArrasto(passo);
+  }, [registrarMovimento, pintarArrasto, limparPintura]);
 
   /* A ÁREA LEVA O QUE ESTÁ DENTRO DELA — e antes ela não levava nada.
    *
@@ -1347,27 +1536,20 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
    * mudou. Arrastar a seção leva livro e nota juntos, e desfazer devolve os
    * dois. */
   const filhosDe = useCallback(
-    (grupo) => {
-      const dentro = [];
-      const cabe = (x, y, largura, altura) => {
-        const cx = x + largura / 2;
-        const cy = y + altura / 2;
-        /* O CENTRO decide, e não a caixa inteira. Exigir o objeto todo dentro
-         * deixaria de fora qualquer um que encoste na borda — e é justamente ali
-         * que as pessoas encostam. */
-        return cx >= grupo.x && cx <= grupo.x + grupo.largura
-          && cy >= grupo.y && cy <= grupo.y + grupo.altura;
-      };
-      for (const n of nos) {
-        const m = medidas[n.id] ?? { largura: n.largura || 375, altura: 200 };
-        if (cabe(n.x, n.y, m.largura, m.altura)) dentro.push(`nota:${n.id}`);
-      }
-      for (const l of livros) {
-        if (cabe(l.x, l.y, l.largura || 280, 200)) dentro.push(`livro:${l.id}`);
-      }
-      return dentro;
-    },
-    [nos, livros, medidas],
+    (grupo) =>
+      /* O CENTRO decide — `encostar: false`. Exigir o objeto todo dentro
+       * deixaria de fora qualquer um que encoste na borda, e é justamente ali
+       * que as pessoas encostam.
+       *
+       * SEÇÃO NÃO LEVA SEÇÃO. Uma área dentro da outra criaria recursão sem
+       * ninguém ter pedido aninhamento, e o modelo de contenção deste Canvas é
+       * de um nível só — está escrito em docs/CANVAS.md. */
+      oQueEstaEm(
+        { x: grupo.x, y: grupo.y },
+        { x: grupo.x + grupo.largura, y: grupo.y + grupo.altura },
+        { encostar: false, so: ["nota", "livro"] },
+      ),
+    [oQueEstaEm],
   );
 
   /* MOVER UMA CHAVE, seja ela do tipo que for. É o único lugar do Canvas que
@@ -1391,10 +1573,11 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
   ondeEstaRef.current = ondeEsta;
 
   const levarGrupo = useCallback((grupoId, desloca) => {
-    if (!desloca) { setLevando(null); return; }
+    if (!desloca) { limparPintura(); setLevando(null); return; }
     setLevando((atual) => {
       const filhos = atual?.id === grupoId ? atual.filhos : filhosDe(grupos.find((g) => g.id === grupoId) ?? {});
       if (desloca.soltou) {
+        limparPintura();
         /* No fim do gesto, cada nota vai para o servidor com o mesmo passo que a
          * área deu — e a área mais tudo que ela levou viram UM passo da história.
          * Desfazer um arrasto de seção tem de devolver a seção E o conteúdo. */
@@ -1426,128 +1609,47 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
         }
         return null;
       }
+      const passo = new Map();
+      for (const chave of filhos) passo.set(chave, desloca);
+      pintarArrasto(passo);
       return { id: grupoId, dx: desloca.dx, dy: desloca.dy, filhos };
     });
-  }, [filhosDe, grupos, moverChave, ondeEsta, aoMudarArea, historia]);
+  }, [filhosDe, grupos, moverChave, ondeEsta, aoMudarArea, historia, pintarArrasto, limparPintura]);
 
   const tracos = useMemo(() => {
     const linhas = [];
     const pontas = [];
     const caixaDe = (n) => {
       const m = medidas[n.id] ?? { largura: n.largura || 375, altura: 200 };
-      const desloca = vivo?.id === n.id ? vivo : null;
-      return {
-        x: n.x + (desloca?.dx ?? 0),
-        y: n.y + (desloca?.dy ?? 0),
-        largura: desloca?.largura ?? m.largura,
-        altura: m.altura,
-      };
+      return { x: n.x, y: n.y, largura: m.largura, altura: m.altura };
     };
 
     for (const l of ligacoes) {
       const a = nos.find((n) => n.nota_id === l.de_id);
       const b = nos.find((n) => n.nota_id === l.para_id);
       if (!a || !b) continue;
-      const ca = caixaDe(a);
-      const cb = caixaDe(b);
-
-      /* A LINHA SAI DA BORDA VOLTADA PARA A OUTRA NOTA, e não do centro.
-       *
-       * Do centro, ela nasce debaixo do cartão e só aparece depois de atravessá-lo
-       * — parece que o traço vem de dentro do papel. Da borda, ela encosta onde
-       * a pega de ligação está, que é de onde a pessoa a puxou.
-       *
-       * E O EIXO É ESCOLHIDO, não fixo. Só com alças horizontais, duas notas
-       * empilhadas ganhavam uma curva que voltava por cima de si mesma — medido,
-       * um laço. As pegas são quatro; a linha usa o par que a geometria pede:
-       * lado a lado sai pelas laterais, uma sobre a outra sai por cima e por
-       * baixo. */
-      const cxA = ca.x + ca.largura / 2;
-      const cyA = ca.y + ca.altura / 2;
-      const cxB = cb.x + cb.largura / 2;
-      const cyB = cb.y + cb.altura / 2;
-      /* O EIXO SAI DO VÃO ENTRE AS CAIXAS, e não da distância entre os centros.
-       *
-       * Pelos centros, dois cartões quase empilhados davam `deitado` por uma
-       * margem de sete pixels — porque metade da largura de cada um entra na
-       * conta — e a curva saía pelas laterais com alças de 40px que se cruzavam:
-       * um laço. Medido: `C 575 …, 520 …` com a linha começando em 535.
-       *
-       * O vão é a distância entre as BORDAS. Ele responde a pergunta certa: por
-       * onde estes dois cartões se olham? */
-      const vaoX = Math.max(cb.x - (ca.x + ca.largura), ca.x - (cb.x + cb.largura));
-      const vaoY = Math.max(cb.y - (ca.y + ca.altura), ca.y - (cb.y + cb.altura));
-      const deitado = vaoX >= vaoY;
-
-      let x1, y1, x2, y2, c1x, c1y, c2x, c2y;
-      /* A CORDA PESA. O Erik: "elas deveriam ter gravidade e pender".
-       *
-       * A alça reta sozinha desenha o cabo de diagrama de nós — correto e sem
-       * peso. Somando uma queda às duas alças, a curva afunda no meio como um
-       * fio pendurado entre dois pontos: quanto mais longe as notas, mais ele
-       * cede, com teto para não virar um U.
-       *
-       * Não é uma catenária de verdade. Uma Bézier cúbica com as duas alças
-       * baixadas na mesma medida é indistinguível dela nesta escala, e custa uma
-       * conta em vez de um integrador. */
-      const vao = Math.hypot(cxB - cxA, cyB - cyA);
-      const peso = Math.min(72, Math.max(14, vao * 0.16));
-
-      if (deitado) {
-        const paraDireita = cxA <= cxB;
-        x1 = paraDireita ? ca.x + ca.largura : ca.x;
-        x2 = paraDireita ? cb.x : cb.x + cb.largura;
-        y1 = cyA;
-        y2 = cyB;
-        /* A alça nunca passa da metade do vão: passando, os dois pontos de
-         * controle se cruzam e a curva volta por cima de si mesma. */
-        const alca = Math.min(160, Math.max(16, Math.abs(x2 - x1) / 2));
-        c1x = x1 + (paraDireita ? alca : -alca);
-        c2x = x2 + (paraDireita ? -alca : alca);
-        c1y = y1 + peso;
-        c2y = y2 + peso;
-      } else {
-        const paraBaixo = cyA <= cyB;
-        y1 = paraBaixo ? ca.y + ca.altura : ca.y;
-        y2 = paraBaixo ? cb.y : cb.y + cb.altura;
-        x1 = cxA;
-        x2 = cxB;
-        const alca = Math.min(160, Math.max(16, Math.abs(y2 - y1) / 2));
-        c1x = x1;
-        c2x = x2;
-        /* De cima para baixo o peso ACOMPANHA o sentido; de baixo para cima ele
-         * encurta a alça em vez de esticá-la, senão a corda subiria — e corda
-         * não sobe. */
-        c1y = y1 + (paraBaixo ? alca : -alca) + peso;
-        c2y = y2 + (paraBaixo ? -alca : alca) + peso;
-      }
-
-      linhas.push({
-        id: l.id,
-        d: `M ${x1} ${y1} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${x2} ${y2}`,
-        /* O meio da curva, para o alvo de desfazer. Numa Bézier cúbica, t=0,5 é
-         * a média ponderada 1-3-3-1 dos quatro pontos. */
-        mx: (x1 + 3 * c1x + 3 * c2x + x2) / 8,
-        my: (y1 + 3 * c1y + 3 * c2y + y2) / 8,
-      });
-      pontas.push([x1, y1], [x2, y2], [c1x, c1y], [c2x, c2y]);
+      const forma = caminhoDaLigacao(caixaDe(a), caixaDe(b));
+      linhas.push({ id: l.id, de: a.id, para: b.id, ...forma });
+      pontas.push(...forma.pontas);
     }
     if (!linhas.length) return null;
 
-    /* A CAIXA DO SVG saía com `NaN`: ela era montada a partir de `l.x1`/`l.x2`,
-     * que nunca foram guardados no objeto da linha. O navegador descartava a
-     * regra inteira e o SVG ficava do tamanho que desse — funcionava por sorte. */
+    /* A CAIXA DO SVG é justa, e quem resolve o arrasto é `overflow: visible` no
+     * CSS: durante o gesto as linhas são repintadas sem o React e o `viewBox`
+     * não acompanha, então elas precisam poder desenhar fora dele. Uma folga
+     * enorme resolveria também, e criaria um SVG de milhares de pixels por cima
+     * da superfície inteira. */
     const xs = pontas.map((p) => p[0]);
     const ys = pontas.map((p) => p[1]);
-    const x = Math.min(...xs) - FOLGA;
-    const y = Math.min(...ys) - FOLGA;
+    const x = Math.min(...xs) - FOLGA_DOS_TRACOS;
+    const y = Math.min(...ys) - FOLGA_DOS_TRACOS;
     return {
       x, y,
-      largura: Math.max(...xs) - x + FOLGA,
-      altura: Math.max(...ys) - y + FOLGA,
+      largura: Math.max(...xs) - x + FOLGA_DOS_TRACOS,
+      altura: Math.max(...ys) - y + FOLGA_DOS_TRACOS,
       linhas,
     };
-  }, [ligacoes, nos, medidas, vivo]);
+  }, [ligacoes, nos, medidas]);
 
   /* O CENTRO DO QUE ESTÁ SENDO VISTO, em coordenadas do plano. É onde o grupo
    * novo nasce — a origem do plano pode estar a mil pixels daqui. */
@@ -1876,22 +1978,16 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
     const a = paraOPlano(Math.min(l.x0, l.x), Math.min(l.y0, l.y));
     const b = paraOPlano(Math.max(l.x0, l.x), Math.max(l.y0, l.y));
 
-    /* TOCOU, ESTÁ DENTRO. Exigir o objeto INTEIRO dentro do laço obriga a pessoa
-     * a cercar tudo com folga, e num plano onde os cartões têm 375px de largura
-     * isso vira um gesto enorme. Interseção é o que todo editor faz, e é o que a
-     * mão espera. */
-    const pega = new Set();
-    for (const n of nos) {
-      const m = medidas[n.id] ?? { largura: n.largura || 375, altura: 200 };
-      if (n.x < b.x && n.x + m.largura > a.x && n.y < b.y && n.y + m.altura > a.y) {
-        pega.add(`nota:${n.id}`);
-      }
-    }
-    for (const g of grupos) {
-      if (g.x < b.x && g.x + g.largura > a.x && g.y < b.y && g.y + g.altura > a.y) {
-        pega.add(`secao:${g.id}`);
-      }
-    }
+    /* TOCOU, ESTÁ DENTRO. Exigir o objeto INTEIRO dentro do laço obriga a
+     * pessoa a cercar tudo com folga, e com cartões de 375px isso vira um gesto
+     * enorme. Interseção é o que todo editor faz, e é o que a mão espera.
+     *
+     * E A PERGUNTA VAI PARA A CENA, sem citar tipo nenhum. A versão anterior
+     * percorria `nos` e `grupos` à mão — e o Livro, que não precisou de nada
+     * para clicar, arrastar e desfazer, ficou de fora do laço em silêncio.
+     * Foi o defeito que provou que faltava este registro. */
+    const pega = new Set(oQueEstaEm(a, b));
+
     /* Com Shift o laço SOMA ao que já estava escolhido, em vez de trocar. */
     setEscolha((atual) => (e.shiftKey ? new Set([...atual, ...pega]) : pega));
   };
@@ -2141,6 +2237,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
             <Grupo
               aoLevar={levarGrupo}
               aoEscolher={escolher}
+              aoInscrever={inscrever}
               escolhido={escolha.has(`secao:${g.id}`)}
               key={g.id}
               grupo={g}
@@ -2172,7 +2269,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
             >
               {tracos.linhas.map((l) => (
                 <g key={l.id} className="traco-grupo">
-                  <path d={l.d} className="traco" fill="none" />
+                  <path ref={(el) => inscreverTraco(l.id, el)} d={l.d} className="traco" fill="none" />
                   {/* A LINHA INTEIRA É O ALVO, e ela é invisível: uma curva de
                       1px é impossível de acertar com o dedo. */}
                   <path d={l.d} className="traco-pegada" fill="none" />
@@ -2221,9 +2318,9 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
               aoTirar={aoTirarLivro}
               aoEscolher={escolher}
               aoSeguir={seguirArrasto}
+              aoInscrever={inscrever}
               escolhido={escolha.has(`livro:${l.id}`)}
               entreVarios={escolha.size > 1}
-              carregada={levando?.filhos?.includes(`livro:${l.id}`) ? levando : null}
               escala={camera.escala}
             />
           ))}
@@ -2239,9 +2336,9 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
               aoMedir={anotarMedida}
               aoSeguir={seguirArrasto}
               aoEscolher={escolher}
+              aoInscrever={inscrever}
               escolhido={escolha.has(`nota:${no.id}`)}
               entreVarios={escolha.size > 1}
-              carregada={levando?.filhos?.includes(`nota:${no.id}`) ? levando : null}
               alvoDoFio={fio?.sobre === no.nota_id}
               escala={camera.escala}
             />
