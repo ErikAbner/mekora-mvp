@@ -90,10 +90,20 @@ desenho: o Figma mostra seis, o backend aceita oito.
    se monta a partir do que sobrou solto, e a tela mostrava o que já foi reunido
    e escondia o material. Vinte por vez, e o teto é DITO.
 
-**Conta (`966:25321`)** — o desenho tem **retrato**, **Nome** e **Senha**. O
-produto não tem nenhum dos três: a conta é um e-mail e mais nada, sem senha, por
-DEC-0039. O desenho é anterior a essa decisão. **Decisão do Erik:** o desenho
-muda, ou a decisão muda.
+**Conta (`966:25321`) — dois dos três foram construídos; sobra a senha.** O
+desenho tem **retrato**, **Nome** e **Senha**.
+
+- **Retrato e Nome existem** desde 02/09, quando o Erik decidiu que a conta os
+  tem: `PATCH /eu`, `PUT /eu/retrato` e a tela em `ContaVisao.jsx`. Os dois são
+  **opcionais**, e entrar nunca pede nenhum deles.
+- **Senha não existe, e é decisão, não falta.** A `DEC-0039` faz a entrada por
+  link no e-mail, e a tela de Segurança diz isso com todas as letras: *"Não há
+  senha. Você pede um link, ele chega por e-mail, vale quinze minutos."* O
+  desenho é anterior à decisão.
+
+**O que sobra para o Erik** é só o desenho: o `966:25321` continua mostrando um
+campo de senha que o produto não vai ter. Ou o quadro muda, ou ele fica como
+registro de uma versão anterior da conta.
 
 ~~**Dispositivos Kindle (`966:25554`)** — cada cartão tem **"Editar"**.~~
 Construído. E a rota NÃO servia: ela aceitava nome, principal e autorizado, e

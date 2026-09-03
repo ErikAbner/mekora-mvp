@@ -288,7 +288,7 @@ Podem ser decididas durante a implementação, por quem implementa.
 | **D10** | O destino das ~60 MB de transcrições de sessão | DEC-0028 |
 | **D11** | Que número, em qualquer medida, conta como sucesso — depende de linha de base que ainda não existe | DEC-0029 |
 | **D12** | O que entra no escopo da V1 — matéria da DEC-0018, não da DEC-0029 | DEC-0029 |
-| **D13** | **O Sumário continua sendo folha**, e folha cobre o texto. Próximo candidato à tese da fita | DEC-0023 |
+| **D13** | ~~**O Sumário continua sendo folha**, e folha cobre o texto~~ — **falso desde que o índice virou gaveta.** A leitura não tem `<Folha>` nenhuma: o sumário é o painel `.indice`, à esquerda, como a busca no livro e os marcadores. Conferido no código em 03/09 | DEC-0023 |
 | **D14** | **Canvas em toque, e regra de escala acima de ~50 itens.** Desktop-only no V1, então não bloqueia | DEC-0023 |
 
 ---
@@ -402,7 +402,12 @@ cujo corpo lista três razões para ter uma. Implementei o primário como
 **"Criar conta" → `/entrar`**, que é onde a conta nasce, e mantive o secundário
 do desenho. **Decisão do Erik:** o rótulo do primário.
 
-**A-23 · Os vãos de ícone do `941:23118` estão vazios no Figma.** Cada uma das
+**A-23 · RESOLVIDA.** Os cinco ícones do `941:23118` — renomear, páginas, baixar,
+refazer, remover — foram exportados e estão ligados em
+`ConfiguracoesArquivo.jsx:34-40`, cada um na linha dele. Conferido no código em
+03/09.
+
+**A-23 (registro do que era) · Os vãos de ícone do `941:23118` estão vazios no Figma.** Cada uma das
 cinco linhas tem um quadrado de 40px com borda e nada dentro. Ficaram vazios na
 implementação — desenhar cinco ícones à mão produziria ícones que não passaram
 pelo efeito handmade e não seriam do sistema. Faltam: renomear, páginas, baixar,
@@ -472,7 +477,14 @@ que não foi feito, e por quê:
   tela eles têm rótulo, e a razão está no `cabecalho.css`: ícone sozinho obriga
   a adivinhar. É divergência deliberada.
 
-**A-29 · Um símbolo que apareceu e não foi construído: `941:23113`
+**A-29 · RESOLVIDA — decidida pela construção.** O `941:23113` é o popup onde se
+escreve a nota, e ele abre **logo depois de marcar um trecho, pelo "Adicionar
+nota" da barra de seleção** (`Leitura.jsx:482`). A alternativa que existia antes
+era abrir o caderno inteiro — a coluna com todas as notas do livro — para
+escrever uma linha sobre a que acabou de nascer, que é abrir um arquivo para
+anotar um papel.
+
+**A-29 (registro do que era) · Um símbolo que apareceu e não foi construído: `941:23113`
 "Nota · cartão".** Um cartão com o trecho citado, um campo "Escreva aqui..." e um
 botão "Salvar". Ele estava selecionado no Figma quando a ferramenta leu a
 seleção. Parece ser a edição de uma nota — sobreposto ao texto, provavelmente.
