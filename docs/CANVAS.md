@@ -381,6 +381,175 @@ O que o código faz hoje: **o CENTRO do objeto decide**, e a lista de quem vai
 junto é lida **uma vez, no começo do gesto** (senão a área ia catando gente pelo
 caminho). Isso já responde a alguns dos casos, mas não a todos, e não foi provado.
 
+---
+
+## A regra de contenção, escrita com precisão
+
+O Erik pediu isto antes dos testes, e com razão: sem a regra escrita, os cenários
+não têm o que julgar.
+
+**Mover uma Seção**
+
+1. No `pointerdown`, calcula-se quais objetos têm o **centro** dentro da caixa da
+   Seção. Centro, e não interseção: exigir o objeto inteiro dentro deixaria de
+   fora todo cartão que encosta na borda, e é ali que as pessoas encostam.
+2. Esse conjunto é **fotografado**.
+3. Seção e fotografia andam juntas.
+4. **A pertinência não é recalculada durante o gesto.** Sem isso, a área iria
+   catando objetos pelo caminho ao passar por cima deles.
+5. Ao soltar, cada um vai ao servidor com o mesmo passo. Nada é reparentado: não
+   existe pertencimento persistido.
+
+**Seções não contêm Seções.** `filhosDe` só olha notas e livros.
+
+**O laço** usa a mesma função com uma diferença: ele pega por **interseção**, e
+não por centro. Cercar tudo com folga seria um gesto grande demais.
+
+---
+
+## Os oito cenários — o que foi medido
+
+### 3 · Sobreposição parcial · **a regra do centro se sustenta**
+
+Movendo a Seção A 120px:
+
+| objeto | centro | andou |
+|---|---|---|
+| só a ponta entra | fora | **0** |
+| centro fora por pouco | fora | **0** |
+| bem dentro | dentro | **120** |
+
+A regra é previsível. **O que ela não dá é visibilidade**: em repouso, nada diz
+quem está dentro. O feedback novo cobre o momento do arrasto — não o repouso.
+
+### 4 · Seções sobrepostas · **defeito confirmado**
+
+Objeto no meio da sobreposição de A e B:
+
+- movi A → **ele andou com A** (+120)
+- movi B → **ele andou com B** (+128)
+
+**Ele pertence às duas.** Arrastar qualquer uma o leva. É previsível num sentido
+estreito — "a área que você pegou leva o que está nela" — mas o objeto tem dois
+donos e nada na tela diz isso.
+
+### 5 · Seção crescendo por cima de objetos · **adoção silenciosa**
+
+1. Objeto fora de A.
+2. Estiquei A até cobri-lo → o centro dele passou a estar dentro.
+3. **No gesto seguinte, ele veio junto (+96).**
+
+O modelo é coerente consigo mesmo — a fotografia é tirada no começo de *cada*
+gesto. Mas **nada acontece no momento do redimensionamento**: a adoção é
+silenciosa, e só se descobre na próxima vez que a área for movida.
+
+### 6 · Objeto atravessando uma Seção · **coerente**
+
+Nada é persistido. Durante o arrasto, a seção que o receberia acende; ao soltar,
+só a posição mudou. O modelo e o que se vê batem.
+
+### 7 · Seção dentro de Seção · **o achado mais forte**
+
+Seção C inteiramente dentro da Seção A. Movi A:
+
+- **C não andou** (ficou em x=100) — seções são excluídas da pertinência
+- **uma nota que estava dentro de C andou** (+120), porque o centro dela está
+  dentro de A
+
+Resultado: **A andou, o conteúdo de C saiu de C, e o retângulo de C ficou.** A
+caixa fica; o que estava nela vai embora.
+
+**Aninhamento visual NÃO vem de graça.** Ele produz um estado incoerente, e
+ninguém precisou pedir aninhamento para chegar nele — basta desenhar uma área
+dentro da outra.
+
+---
+
+## O conserto que a evidência pede
+
+Os cenários 4 e 7 são **a mesma pergunta**: quando duas áreas cobrem o mesmo
+ponto, de quem é o objeto?
+
+Uma regra resolve os dois:
+
+> **A menor Seção que contém o centro do objeto é a dona dele.**
+
+- Sobreposição: o objeto fica com a área mais apertada, que é a mais específica.
+- Aninhamento: a nota dentro de C é de C, e não de A. Mover A deixa de arrancar o
+  conteúdo de C — e, por consequência, mover A deveria levar C inteira, que é o
+  que se vê.
+
+**Isto ainda não foi implementado.** Está recomendado, não feito.
+
+---
+
+## A recomendação: **A — só a Seção**
+
+Com duas condições, e uma ressalva honesta.
+
+### Por que não B (Seção + Grupo leve)
+
+O cenário 1 — imagem + nota de interpretação, que devem continuar acopladas
+amanhã — é o caso que justificaria o Grupo. E ele tem uma resposta melhor:
+
+**Acoplamento mecânico invisível é uma armadilha.** Se dois objetos andam juntos
+e não há nada na tela dizendo por quê, a pessoa arrasta um, o outro se mexe, e
+ela não tem como descobrir a causa nem como desfazer o vínculo. Um Grupo sem
+região visível é exatamente o comportamento surpreendente que o resto deste
+documento passou o dia removendo.
+
+A área visível não é o custo do acoplamento: **é a explicação dele.**
+
+### As duas condições
+
+1. **A regra da menor Seção**, acima. Sem ela, A herda os defeitos 4 e 7.
+2. **Seção sem nome precisa ser QUIETA.** É a única coisa verdadeira que o
+   cenário 1 expõe: uma área em volta de dois objetos hoje desenha filete, faixa
+   de título e "Desfazer grupo" — burocracia visual para uma composição de dois.
+   Uma seção sem nome deveria ser quase invisível em repouso, e aparecer no
+   gesto. Isso é presença visual, não um conceito novo.
+
+### Como cada opção se sai
+
+| | A — só Seção | B — Seção + Grupo | C — um primitivo, dois modos |
+|---|---|---|---|
+| clareza conceitual | **alta**: uma coisa | baixa: decidir qual antes de saber | média: dois nomes, uma tabela |
+| custo de interação | um gesto | escolher entre dois | idem B |
+| complexidade | menor | dois ciclos de vida | um modelo, dois desenhos |
+| geometria ambígua | resolvida pela regra da menor | Grupo escaparia dela por não ter geometria | idem A |
+| Livros / Artefatos futuros | entram pela cena, sem saber de nada | dois contêineres a ensinar | idem A |
+| descoberta | "cerque e crie" | Grupo é invisível — não se descobre | idem |
+
+### A ressalva
+
+**Isto vem de geometria medida e de raciocínio, não de uso ao longo de sessões.**
+Os cenários 1, 2 e 8 pedem semanas de trabalho real, e nenhum deles foi vivido —
+foram julgados. A decisão é do Erik, e o Grupo continua no lugar.
+
+---
+
+## Desempenho, por fase, com 123 objetos
+
+Perfil isolado, três corridas:
+
+| fase | mediana | pior |
+|---|---|---|
+| `pointerdown` | 16,7ms | 16,7–18,5ms |
+| **quadro 0 do arrasto** | — | **29–44ms** |
+| resto do arrasto | 16,7ms | ≤ 18,7ms |
+| soltar (síncrono) | — | **1,3ms** |
+| arrastar três | 16,7ms | 17,5–18,8ms |
+| laço | 16,7ms | 33–34ms |
+
+Contra o início desta rodada: quadro 0 em **83ms**, picos de até **55ms** no meio
+do gesto, três tarefas longas por arrasto. O corpo do gesto agora fica inteiro em
+60fps.
+
+**Um número que eu não consegui atribuir.** Numa bateria por fases, o arrasto de
+UM cartão aparece com pior quadro de 50 a 83ms, enquanto o de TRÊS aparece com
+18 — e os dois fazem o mesmo caminho. O perfil isolado não reproduz. Fica aberto
+em vez de explicado errado: já errei a atribuição deste pico uma vez.
+
 ## O que continua fraco, sem enfeitar
 
 - **Sem feedback de estado na área.** Ela não diz quando está sob o ponteiro, nem
@@ -389,8 +558,12 @@ caminho). Isso já responde a alguns dos casos, mas não a todos, e não foi pro
   otimista mais o recálculo dos traços, e não foi atacado.
 - **Os casos ambíguos de contenção não foram testados.** Ver acima.
 - **Refazer uma seção apagada a recria com id novo.**
-- **O laço não escolhe livros por interseção** — ele percorre notas e seções, e o
-  livro ficou de fora dessa varredura. Clicar e shift-clicar funcionam.
+- **A regra da menor Seção não foi implementada** — os defeitos dos cenários 4 e
+  7 continuam de pé no código.
+- **Seção sem nome ainda é barulhenta** — filete, faixa e botão para uma
+  composição de dois objetos.
+- **Em repouso, nada diz quem pertence a uma Seção.** O feedback é de gesto.
+- **Os cenários 1, 2 e 8 foram julgados, não vividos.**
 - **Não há guias de alinhamento** entre objetos, e a malha só encosta a Seção.
 - **O ícone de "criar seção" ainda é o alfinete**, que não desenha uma seção.
   Depende de o arquivo de design estar na aba da frente no Figma.
