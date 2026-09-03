@@ -32,6 +32,7 @@ from app.api.recados import router as recados_router
 from app.api.health import router as health_router
 from app.api.aparelhos import router as aparelhos_router
 from app.api.notas import router as notas_router
+from app.api.marcadores import router as marcadores_router
 from app.api.preferencias import router as preferencias_router
 from app.api.canvas import router as canvas_router
 from app.api.estudos import router as estudos_router
@@ -112,6 +113,10 @@ app.include_router(health_router)
 # Atrás da mesma porta: as rotas falam de um trabalho específico.
 app.include_router(progresso_router, dependencies=[Depends(exigir_acesso)])
 app.include_router(notas_router, dependencies=[Depends(exigir_acesso), Depends(exigir_conta)])
+# Os marcadores ficam atrás das mesmas duas portas das notas, e pela mesma
+# razão: são de uma PESSOA dentro de um TRABALHO. A chave do trabalho sozinha
+# prova acesso ao livro, e não a quem são as dobras dele.
+app.include_router(marcadores_router, dependencies=[Depends(exigir_acesso), Depends(exigir_conta)])
 # Sem porta de trabalho: as rotas de aparelho falam da CONTA, e a sessão é a
 # única credencial possível — não há chave de trabalho que dê acesso a elas.
 app.include_router(aparelhos_router)

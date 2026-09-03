@@ -51,6 +51,7 @@ import { abrirLivro, blocosDoCapitulo } from "./leitor/abrir.js";
 import { gravarProgresso, lerProgresso } from "../../contrato/api.js";
 import { fracaoLida } from "../../contrato/progresso.js";
 import { usarNotas } from "./leitor/usarNotas.js";
+import { usarMarcadores } from "./leitor/usarMarcadores.js";
 import { analisar, apagarNota, chaveDe, importarClippings, lerTodasAsNotas } from "../../contrato/api.js";
 import { EXEMPLO_FILA, EXEMPLO_ESTANTE, EXEMPLO_LEITURA } from "./exemplos.js";
 
@@ -167,6 +168,9 @@ function PaginaLeitura() {
 
   const [progresso, setProgresso] = useState(null);
   const { notas, erro: erroDeNota, marcar, comentar, trocarCor, remover } = usarNotas(id);
+  /* As dobras deste livro. Separadas das notas de propósito: uma nota é o que
+   * se marcou e escreveu, e um marcador é o lugar para onde voltar. */
+  const { marcadores, erro: erroDeMarcador, dobrar, desdobrar } = usarMarcadores(id);
 
   useEffect(() => {
     let vivo = true;
@@ -398,6 +402,10 @@ function PaginaLeitura() {
       progresso={progresso}
       notas={notas}
       erroDeNota={erroDeNota}
+      marcadores={marcadores}
+      erroDeMarcador={erroDeMarcador}
+      aoDobrar={dobrar}
+      aoDesdobrar={desdobrar}
       /* O capítulo vem daqui, e não da seleção: quem marca um trecho está no
        * capítulo aberto, e pedir isso à tela seria pedir que ela repita algo que
        * já se sabe — e que pode discordar. */

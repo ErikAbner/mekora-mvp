@@ -38,6 +38,7 @@ from app.db.database import get_db
 from app.models.aparelho import Aparelho
 from app.models.canvas import GrupoCanvas, Ligacao, LivroCanvas, MidiaCanvas, NoCanvas
 from app.models.grupo_ignorado import GrupoIgnorado
+from app.models.marcador import Marcador
 from app.models.estudo import Estudo, EstudoNota
 from app.models.nota import Nota
 from app.models.pessoa import Chave, Pessoa, Sessao
@@ -79,6 +80,7 @@ O_QUE_GUARDAMOS = [
     ("livros", "livros", ProcessingJob, "Os arquivos que você enviou e o que foi convertido a partir deles."),
     ("notas", "notas", Nota, "O que você marcou lendo, e o que trouxe do Kindle."),
     ("leituras", "leituras", Progresso, "Onde você parou em cada livro."),
+    ("marcadores", "marcadores", Marcador, "Os lugares que você marcou para voltar, e o trecho que estava em cada um."),
     ("aparelhos", "aparelhos", Aparelho, "Os endereços de Kindle que você ligou à conta."),
     ("preferencias", "preferências", Preferencia, "As escolhas que você fez em Preferências."),
     ("estudos", "estudos", Estudo, "Os estudos que você montou, com a pergunta de cada um."),
@@ -312,6 +314,19 @@ def levar(
                 "criada_em": n.criada_em,
             }
             for n in db.query(Nota).filter(Nota.pessoa_id == pessoa.id).order_by(Nota.criada_em).all()
+        ],
+        # OS MARCADORES SÃO ATO DELIBERADO, como a nota: alguém escolheu aquele
+        # lugar. Vão inteiros — capítulo, deslocamento e o trecho guardado —,
+        # porque sem o trecho a linha exportada seria um par de números que não
+        # diz que lugar era.
+        "marcadores": [
+            {
+                "livro": m.job_id,
+                "capitulo": m.capitulo, "deslocamento": m.deslocamento,
+                "trecho": m.trecho, "criado_em": m.criado_em,
+            }
+            for m in db.query(Marcador).filter(Marcador.pessoa_id == pessoa.id)
+            .order_by(Marcador.capitulo, Marcador.deslocamento).all()
         ],
         "livros": [
             {

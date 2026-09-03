@@ -148,6 +148,15 @@ Agrupa **itens**, na Estante. É da biblioteca, não do conhecimento.
 **Nem destaque nem nota: um lugar para voltar.** É a terceira coisa, e existe porque as outras duas
 carregam significado que um simples "parei aqui" não tem.
 
+**Construído em 03/09/2026**, na tabela própria `marcadores` — e a tabela própria é a consequência
+direta da frase acima: guardado em `notas`, cada dobra de página viraria uma linha no Canvas, nos
+Estudos e em `/notas`, telas cujo assunto é o que se escreveu. Ele guarda **capítulo + deslocamento**,
+a mesma âncora do progresso, e o **trecho** daquele ponto — que é o que torna a lista legível e o que
+denuncia uma âncora escorregada. Não tem cor nem comentário: quem quer dizer alguma coisa sobre o
+trecho está fazendo uma nota. Marcar o mesmo lugar duas vezes é uma dobra só, e a unicidade está no
+banco. **Ele não implementa os cinco degraus da resolução de âncora** descritos abaixo — isso é da
+nota, cuja perda é mais cara.
+
 ---
 
 ## O ciclo de vida do conteúdo

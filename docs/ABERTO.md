@@ -425,7 +425,19 @@ assunto dos estudos — tudo que o banco sabe. O texto do livro está dentro do
 EPUB, não no banco, e indexá-lo é trabalho de outra ordem. A tela diz isso
 quando não acha nada.
 
-**A-26 · METADE RESOLVIDA.** A **busca dentro do livro** foi construída: ela não
+**A-26 · RESOLVIDA.** Os **marcadores** foram construídos em 03/09, e a decisão
+que faltava — desenhar os dois painéis ou tirar os ícones do cromo — foi
+respondida construindo: o marcador veste a mesma gaveta do índice e da busca,
+porque os três são formas de ir a um lugar do livro, e uma terceira forma de
+gaveta seriam três desenhos para uma ideia. Tabela própria (`marcadores`), e não
+uma coluna em `notas`: a nota aparece no Canvas, nos Estudos e em `/notas`, e uma
+dobra de página não pertence a nenhuma dessas telas. Provado por jornada contra
+o produto rodando: 12 de 12 — dobrar guarda capítulo, deslocamento e trecho;
+dobrar o mesmo lugar de novo devolve `ja_estava` sem duplicar; a lista leva de
+volta ao ponto; tirar limpa servidor e tela. **Não há mais botão desligado no
+produto.**
+
+**A-26 (registro do que era) · METADE RESOLVIDA.** A **busca dentro do livro** foi construída: ela não
 tem painel desenhado, então veste a gaveta do índice — é o mesmo tipo de coisa,
 um jeito de ir a um lugar do livro, e uma terceira forma de gaveta seria três
 desenhos para uma ideia. Ela procura no LIVRO INTEIRO e não só no que está

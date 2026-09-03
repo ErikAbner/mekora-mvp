@@ -121,11 +121,13 @@ saída — o id do trecho.
 subiu para o topo, e o botão do fim saiu. O **tamanho do arquivo** passou a
 existir: era o único selo do desenho sem dado por trás.
 
-**Estudo (`966:29743`)** — os nomes que eu tinha posto nesta lista estavam
-errados em quatro linhas, e a ferramenta os deu certos quando perguntei um a um.
-Este é o **estudo aberto**, e ele tem uma seção **"Livros"** com as CAPAS dos
-livros de onde as notas vieram, e um "Ver na estante". A API já devolve os nomes
-dos livros (`livros`), em texto; faltam as capas e a seção.
+~~**Estudo (`966:29743`)**~~ — fechada. Os nomes que eu tinha posto nesta lista
+estavam errados em quatro linhas, e a ferramenta os deu certos quando perguntei
+um a um. Este é o **estudo aberto**, e ele tem uma seção **"Livros"** com as
+CAPAS dos livros de onde as notas vieram, e um "Ver na estante". **A seção e as
+capas foram construídas** (`Estudos.jsx`): a capa leva para `/estante/:id`, e o
+livro sem arquivo — nota trazida do Kindle, que guarda só o título — entra com a
+caixa vazia e o nome dentro.
 
 **Preparo em andamento (`967:31833`)** — só existe enquanto uma conversão roda,
 e o acervo semeado não converte nada. **Resolvido em 02/09**: um TXT de 2,5 MB

@@ -17,7 +17,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Icone } from "../componentes/Icone.jsx";
 import { Botao } from "../componentes/Botao.jsx";
-import { comDeslocamentos, irPara, ondeEstouNoLivro } from "../leitor/onde-parei.js";
+import { comDeslocamentos, irPara, irParaOComeco, ondeEstouNoLivro, trechoEm } from "../leitor/onde-parei.js";
 import { GRUPOS, aplicarAparencia, gravarAparencia, lerAparencia } from "../leitor/aparencia.js";
 import { aplicarTema, temaEspelhado } from "../estado/tema.js";
 import { lerSelecao, notasDoBloco } from "../leitor/selecao.js";
@@ -382,6 +382,102 @@ function BuscaNoLivro({ livro, aoIr, aoFechar }) {
   );
 }
 
+/* MARCADORES — o outro botão que estava `disabled` desde sempre (A-26).
+ *
+ * Ele também não tem painel desenhado no Figma, e veste a mesma gaveta do
+ * índice e da busca pela mesma razão: os três são jeitos de IR A UM LUGAR do
+ * livro. Uma terceira forma de gaveta seriam três desenhos para uma ideia.
+ *
+ * O QUE É UM MARCADOR, e por que ele não é uma nota: a nota é o que a pessoa
+ * marcou e escreveu — tem trecho selecionado, cor, comentário, e aparece no
+ * Canvas, nos Estudos e em `/notas`. O marcador não é sobre o texto, é sobre a
+ * VOLTA. Guardá-lo em `notas` faria cada dobra de página virar uma linha nas
+ * telas cujo assunto inteiro é o que se escreveu.
+ *
+ * DOBRAR É UM CLIQUE, e não uma seleção. Marcar um trecho exige escolher o
+ * trecho; dobrar é o gesto de quem vai fechar o livro. Por isso a ação mora no
+ * topo da gaveta, e não na barra de seleção.
+ *
+ * A LISTA MOSTRA O TEXTO daquele ponto, e não o número: "capítulo 4, caractere
+ * 8112" não diz nada sobre o lugar que se quis guardar.
+ */
+function Marcadores({ livro, marcadores, aqui, erro, aoDobrar, aoDesdobrar, aoIr, aoFechar }) {
+  /* O sumário vem daqui, como na busca: é ele que dá nome ao capítulo, e o
+   * nome é o que situa o trecho. */
+  const { itens } = usarSumario(livro);
+
+  /* JÁ DOBRADO É "IR", E NÃO "DOBRAR DE NOVO". A rota é idempotente e não
+   * duplicaria nada, mas um botão que diz "marcar" e não acrescenta linha
+   * nenhuma parece quebrado. */
+  const jaDobrado = aqui
+    ? marcadores.find((m) => m.capitulo === aqui.capitulo && m.deslocamento === aqui.deslocamento)
+    : null;
+
+  return (
+    <aside className="indice marcadores" aria-label="Marcadores">
+      <header>
+        <h2>Marcadores</h2>
+        <button type="button" onClick={aoFechar} aria-label="Fechar os marcadores">Fechar</button>
+      </header>
+
+      {/* O BOTÃO DO SISTEMA, e não uma caixa desenhada aqui.
+          A primeira versão era um `<button>` de largura cheia com filete de 1px
+          e tinta apagada — e isso é o desenho de um CAMPO, não de uma ação. É a
+          mesma armadilha que a lista de "Trazer para a superfície" pagou. O
+          `Botao` secundário tem 58px de altura, rótulo centrado e a BORDA DE
+          CONTROLE, que é o token que a WCAG cobra em componente de interface. */}
+      <div className="marcadores-acao">
+        <Botao
+          tom="secundaria"
+          onClick={aoDobrar}
+          disabled={Boolean(jaDobrado)}
+          title={jaDobrado ? "Este lugar já está marcado." : undefined}
+        >
+          {jaDobrado ? "Este lugar já está marcado" : "Marcar onde estou"}
+        </Botao>
+      </div>
+
+      {erro && <p className="indice-aviso" role="alert">{erro}</p>}
+
+      {!marcadores.length && !erro && (
+        <p className="indice-aviso">
+          Nenhum marcador neste livro. Marque o lugar antes de fechar, e ele
+          espera aqui — em qualquer aparelho onde você entrar.
+        </p>
+      )}
+
+      {!!marcadores.length && (
+        <ul className="marcadores-lista">
+          {marcadores.map((m) => (
+            <li key={m.id}>
+              <button type="button" onClick={() => aoIr?.(m)}>
+                {/* O TRECHO PRIMEIRO, e o capítulo embaixo: é o texto que
+                    identifica o lugar, e o número que o situa. */}
+                <span className="marcadores-trecho">
+                  {m.trecho ? `${m.trecho}…` : "Um lugar sem texto guardado"}
+                </span>
+                <span className="marcadores-onde">
+                  Capítulo {m.capitulo + 1}
+                  {tituloDoCapitulo(itens, m.capitulo) ? ` — ${tituloDoCapitulo(itens, m.capitulo)}` : ""}
+                </span>
+              </button>
+              <button
+                type="button"
+                className="marcadores-tirar"
+                onClick={() => aoDesdobrar?.(m.id)}
+                aria-label={`Tirar o marcador do capítulo ${m.capitulo + 1}`}
+                title="Tirar este marcador"
+              >
+                Tirar
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </aside>
+  );
+}
+
 /* NOTA · CARTÃO — nó 941:23113.
  *
  * O popup onde se escreve a nota. Ele abre logo depois de marcar um trecho pelo
@@ -591,7 +687,7 @@ function Caderno({ livro, notas, capitulo, aoComentar, aoTrocarCor, aoApagar, ao
 }
 
 
-export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirAntes, temMais = false, temAntes = false, progresso, aoMarcar, notas = [], aoAnotar, aoComentar, aoTrocarCor, aoApagarNota, erroDeNota, aoIrParaCapitulo }) {
+export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirAntes, temMais = false, temAntes = false, progresso, aoMarcar, notas = [], aoAnotar, aoComentar, aoTrocarCor, aoApagarNota, erroDeNota, aoIrParaCapitulo, marcadores = [], aoDobrar, aoDesdobrar, erroDeMarcador }) {
   const [cromoVisivel, setCromo] = useState(true);
   const [paleta, setPaleta] = useState(null);
 
@@ -698,6 +794,12 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
   /* A nota que o cartão do 941:23113 está mostrando. `null` é "não há cartão". */
   const [cartao, setCartao] = useState(null);
   const [procurando, setProcurando] = useState(false);
+  const [dobras, setDobras] = useState(false);
+  /* ONDE O MARCADOR CLICADO QUER LEVAR, quando o capítulo dele ainda não está
+   * na tela. O salto é do pai — ele é quem replanta a janela —, e só depois de
+   * os blocos chegarem é que dá para rolar até o deslocamento. `null` é "não há
+   * viagem pendente". */
+  const [destino, setDestino] = useState(null);
 
   /* UM PAINEL DE CADA VEZ.
    *
@@ -713,7 +815,69 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
     setCaderno(qual === "caderno" ? (v) => !v : false);
     setPainel(qual === "painel" ? (v) => !v : false);
     setProcurando(qual === "procurando" ? (v) => !v : false);
+    setDobras(qual === "dobras" ? (v) => !v : false);
   };
+
+  /* ONDE A PESSOA ESTÁ, para a gaveta de marcadores saber se este lugar já está
+   * dobrado. Lido ao ABRIR, e não a cada rolagem: um estado que muda dezenas de
+   * vezes por segundo re-renderizaria a leitura inteira para responder uma
+   * pergunta que só interessa com a gaveta aberta. */
+  const [aqui, setAqui] = useState(null);
+
+  const abrirDobras = () => {
+    setAqui(dobras ? null : ondeEstouNoLivro(prosa.current));
+    abrirSo("dobras");
+  };
+
+  /* DOBRAR AQUI. O lugar sai do MESMO cálculo do progresso — o último bloco que
+   * começa acima da linha de leitura —, e o trecho sai do DOM naquele ponto. Os
+   * dois juntos, e da mesma fonte: um marcador que mostra um texto e leva a
+   * outro é pior que nenhum. */
+  const dobrarAqui = async () => {
+    const onde = ondeEstouNoLivro(prosa.current);
+    const secao = prosa.current?.querySelector(`[data-capitulo="${onde.capitulo}"]`) ?? prosa.current;
+    await aoDobrar?.({ ...onde, trecho: trechoEm(secao, onde.deslocamento) });
+    setAqui(onde);
+  };
+
+  /* IR ATÉ UM MARCADOR.
+   *
+   * Se o capítulo já está na janela, é rolagem — ele pode estar dois capítulos
+   * acima, e trocar de capítulo ali jogaria fora o que já está carregado. Se não
+   * está, o pai replanta a janela e a viagem fica pendente até os blocos
+   * chegarem. */
+  const irAoMarcador = (m) => {
+    const secao = prosa.current?.querySelector(`[data-capitulo="${m.capitulo}"]`);
+    if (secao) {
+      /* O começo do capítulo é o caso do marcador com deslocamento zero — e
+         rolar até ele é rolar até o primeiro BLOCO, porque a seção não tem
+         caixa (`display: contents`). */
+      irPara(secao, m.deslocamento) || irParaOComeco(secao);
+      setDobras(false);
+      return;
+    }
+    setDestino({ capitulo: m.capitulo, deslocamento: m.deslocamento });
+    aoIrParaCapitulo?.(m.capitulo);
+    setDobras(false);
+  };
+
+  /* A VIAGEM PENDENTE, quando os blocos chegam.
+   *
+   * A condição olha `capitulos[0].indice`, e não `livro.capitulo`: quem replanta
+   * a janela é o pai, e o objeto do livro continua dizendo o capítulo em que ele
+   * foi ABERTO. Usar o do livro faria a viagem nunca acontecer — ou acontecer no
+   * capítulo errado.
+   *
+   * E este efeito é declarado DEPOIS do que restaura o progresso, de propósito:
+   * os dois rolam a página no mesmo commit, e quem roda por último é quem
+   * decide. Se a pessoa pediu um marcador, é ao marcador que ela vai. */
+  useEffect(() => {
+    if (!destino || !blocos.length) return;
+    if (capitulos[0]?.indice !== destino.capitulo) return;
+    const secao = prosa.current?.querySelector(`[data-capitulo="${destino.capitulo}"]`) ?? prosa.current;
+    irPara(secao, destino.deslocamento);
+    setDestino(null);
+  }, [destino, blocos, capitulos]);
   useEffect(() => { aplicarAparencia(aparencia); gravarAparencia(aparencia); }, [aparencia]);
 
   /* O TEMA FICA NO PAINEL TAMBÉM, como o desenho põe — e continua sendo o mesmo
@@ -817,7 +981,18 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
           >
             <Icone src={iconeCaderno} />
           </button>
-          <button type="button" aria-label="Marcadores" disabled title="Os marcadores ainda não existem.">
+          {/* OS MARCADORES EXISTEM AGORA (A-26). O botão estava no cromo desde o
+              começo e ficava `disabled`, porque o painel não estava desenhado em
+              lugar nenhum. Ele veste a gaveta do índice e da busca: os três são
+              formas de ir a um lugar do livro. */}
+          <button
+            type="button"
+            aria-label={`Marcadores (${marcadores.length})`}
+            aria-pressed={dobras ? "true" : "false"}
+            disabled={!aoDobrar}
+            title={aoDobrar ? undefined : "Sem livro aberto, não há lugar para marcar."}
+            onClick={abrirDobras}
+          >
             <Icone src={iconeMarcador} />
           </button>
           {/* APARÊNCIA. O nó 973:32215 põe este painel na leitura, e é ele que
@@ -1019,6 +1194,19 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
         />
       )}
 
+      {dobras && (
+        <Marcadores
+          livro={livro}
+          marcadores={marcadores}
+          aqui={aqui}
+          erro={erroDeMarcador}
+          aoDobrar={dobrarAqui}
+          aoDesdobrar={aoDesdobrar}
+          aoIr={irAoMarcador}
+          aoFechar={() => setDobras(false)}
+        />
+      )}
+
       {indice && (
         <Indice
           livro={livro}
@@ -1111,7 +1299,10 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
           /* IR A UMA NOTA DE OUTRO CAPÍTULO agora é rolar até ela, e não trocar
              de capítulo — ela pode já estar na tela, alguns capítulos acima. */
           aoIr={(cap) => {
-            const alvo = prosa.current?.querySelector(`[data-capitulo="${cap}"]`);
+            /* O ALVO É O PRIMEIRO BLOCO, e não a `<section>`: ela é
+               `display: contents` e não tem caixa para rolar até — o
+               `scrollIntoView` nela não fazia nada. */
+            const alvo = prosa.current?.querySelector(`[data-capitulo="${cap}"] [data-de]`);
             if (alvo) alvo.scrollIntoView({ behavior: "smooth", block: "start" });
           }}
           aoFechar={() => setCaderno(false)}

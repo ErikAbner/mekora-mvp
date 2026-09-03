@@ -393,6 +393,38 @@ export function apagarNota(jobId, notaId) {
   return pede(`/jobs/${jobId}/notas/${notaId}`, { method: "DELETE" });
 }
 
+/* ─── Os marcadores ─────────────────────────────────────────────────────────
+ *
+ * A dobra de pagina: o lugar para onde se quer voltar. Mesma ancora das notas e
+ * do progresso — capitulo e deslocamento —, e nada mais: sem cor, sem
+ * comentario, sem trecho selecionado. O que a lista mostra e o texto que estava
+ * naquele ponto, guardado junto, porque "capitulo 4, caractere 8112" nao diz
+ * nada sobre o lugar que se quis guardar.
+ *
+ * Nao e uma nota com um campo a mais, e a razao esta em
+ * `backend/app/models/marcador.py`: a nota aparece no Canvas, nos Estudos e em
+ * /notas, e uma dobra de pagina nao pertence a nenhuma dessas telas.
+ */
+
+/** GET /jobs/{id}/marcadores — lista vazia sem conta, e nao erro. */
+export function lerMarcadores(jobId) {
+  return pede(`/jobs/${jobId}/marcadores`);
+}
+
+/** POST /jobs/{id}/marcadores — idempotente: dobrar o mesmo lugar duas vezes
+ *  devolve a dobra que ja existe, com `ja_estava`, em vez de 409. */
+export function marcarLugar(jobId, { capitulo, deslocamento, trecho = "" }) {
+  return pede(`/jobs/${jobId}/marcadores`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ capitulo, deslocamento, trecho }),
+  });
+}
+
+export function apagarMarcador(jobId, marcadorId) {
+  return pede(`/jobs/${jobId}/marcadores/${marcadorId}`, { method: "DELETE" });
+}
+
 /* ─── Os Kindles da pessoa ──────────────────────────────────────────────────
  *
  * O destino de um envio era `KINDLE_EMAIL`, uma variável do servidor — portanto

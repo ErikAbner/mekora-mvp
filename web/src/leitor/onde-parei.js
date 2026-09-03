@@ -38,6 +38,31 @@ export function ondeEstou(raiz) {
   return atual;
 }
 
+/* ONDE UM CAPÍTULO COMEÇA NA TELA — e por que não se pergunta isso a ele.
+ *
+ * A `<section class="capitulo">` é `display: contents`: ela não ocupa caixa
+ * nenhuma, para que os blocos herdem a grade de três larguras direto. A
+ * consequência é que `getBoundingClientRect()` dela devolve **zero em tudo**, o
+ * tempo todo.
+ *
+ * Isso quebrava em silêncio quem perguntasse a posição da seção: o laço que
+ * procura "a última que começa acima da linha de leitura" nunca encontrava uma
+ * abaixo — `0 > linha` é sempre falso —, e por isso devolvia SEMPRE a última
+ * carregada. Com três capítulos na janela, o progresso era gravado no terceiro
+ * mesmo com a pessoa lendo o primeiro, e reabrir o livro caía adiante do que
+ * ela tinha lido.
+ *
+ * Medido em 03/09, com o texto rolado a 20%, 35%, 50%, 65% e 80%: capítulo 5 nas
+ * cinco vezes, e deslocamento zero em todas — que é o que uma seção sem caixa
+ * produz.
+ *
+ * O primeiro BLOCO tem caixa, e é ele quem responde.
+ */
+function topoDe(secao) {
+  const primeiro = secao.querySelector("[data-de]");
+  return (primeiro ?? secao).getBoundingClientRect().top;
+}
+
 /* EM QUE CAPÍTULO A PESSOA ESTÁ, com vários na tela.
  *
  * Com a rolagem contínua, a tela tem uma pilha de capítulos e "o capítulo
@@ -58,7 +83,7 @@ export function ondeEstouNoLivro(raiz) {
 
   let secao = null;
   for (const s of raiz.querySelectorAll("[data-capitulo]")) {
-    if (s.getBoundingClientRect().top > linha) break;
+    if (topoDe(s) > linha) break;
     secao = s;
   }
   /* Nenhuma seção começou acima da linha: a pessoa está no topo do primeiro
@@ -74,6 +99,32 @@ export function ondeEstouNoLivro(raiz) {
   };
 }
 
+/* O TEXTO QUE ESTÁ NAQUELE PONTO — o que faz um marcador ser legível.
+ *
+ * Uma lista de "capítulo 4, caractere 8112" não diz nada sobre o lugar que se
+ * quis guardar. O que a gaveta mostra é a frase que estava ali, e é ela também
+ * que denuncia uma âncora escorregada: se a extração mudar, o deslocamento anda
+ * alguns caracteres, e o texto guardado deixa de bater com o que se lê.
+ *
+ * O bloco é achado pela MESMA regra do `irPara` — o último que começa em ou
+ * antes do deslocamento. Ter duas regras faria o marcador mostrar um trecho e
+ * levar a outro.
+ */
+export function trechoEm(raiz, deslocamento, quanto = 200) {
+  if (!raiz) return "";
+  let alvo = null;
+  for (const el of raiz.querySelectorAll("[data-de]")) {
+    if ((Number(el.dataset.de) || 0) <= deslocamento) alvo = el;
+    else break;
+  }
+  if (!alvo) return "";
+  /* Do ponto exato em diante, e não do começo do bloco: quem dobra no meio de
+   * um parágrafo longo guardou aquele meio, e mostrar o começo dele apontaria
+   * um lugar que a pessoa já tinha passado. */
+  const dentro = Math.max(0, deslocamento - (Number(alvo.dataset.de) || 0));
+  return (alvo.textContent ?? "").slice(dentro, dentro + quanto).trim();
+}
+
 /* Levar a tela até um deslocamento.
  *
  * Vai para o bloco que CONTÉM o deslocamento, e não para o que começa nele:
@@ -83,6 +134,18 @@ export function ondeEstouNoLivro(raiz) {
  * `auto` e não `smooth`: rolagem animada ao ABRIR uma página é a tela se mexendo
  * sozinha antes de a pessoa ter feito nada, e num leitor isso é desorientador.
  */
+/* Levar a tela até o COMEÇO de um capítulo.
+ *
+ * `secao.scrollIntoView()` não serve, pela mesma razão de `topoDe`: uma seção
+ * `display: contents` não tem caixa para rolar até. Quem tem é o primeiro bloco.
+ */
+export function irParaOComeco(secao) {
+  const primeiro = secao?.querySelector("[data-de]");
+  if (!primeiro) return false;
+  primeiro.scrollIntoView({ behavior: "auto", block: "start" });
+  return true;
+}
+
 export function irPara(raiz, deslocamento) {
   if (!raiz || !deslocamento) return false;
   let alvo = null;
