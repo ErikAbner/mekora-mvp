@@ -1439,6 +1439,45 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
     return true;
   }, [aoTrazer, aoTrazerMidia, avisar]);
 
+  /* PROCURAR NA SUPERFÍCIE — e isto é NAVEGAÇÃO, e não busca.
+   *
+   * Num Estudo grande, um cartão pode estar a três mil pixels do enquadramento,
+   * e a única forma de achá-lo era lembrar onde ele estava. Enquadrar tudo dá o
+   * mapa; isto dá o endereço.
+   *
+   * Não é um produto de busca. Não há ranking, não há aproximação, não há
+   * histórico: é `includes`, sem acento e sem caixa. O cabeçalho do Mekora já
+   * busca no acervo inteiro; aqui a pergunta é outra — *onde nesta superfície*.
+   *
+   * O resultado ESCOLHE e ENQUADRA: achar sem levar até lá seria responder
+   * "existe" a quem perguntou "onde". */
+  const [procurando, setProcurando] = useState(false);
+  const [oQueProcuro, setOQueProcuro] = useState("");
+
+  const semAcento = (t) =>
+    (t ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+  const achados = useMemo(() => {
+    const q = semAcento(oQueProcuro.trim());
+    if (q.length < 2) return [];
+    const cabe = (t) => semAcento(t).includes(q);
+    return [
+      ...nos.filter((n) => cabe(n.texto)).map((n) => ({ chave: `nota:${n.id}`, tipo: "nota", texto: n.texto })),
+      ...livros.filter((l) => cabe(l.titulo) || cabe(l.autor))
+        .map((l) => ({ chave: `livro:${l.id}`, tipo: "livro", texto: l.titulo })),
+      ...secoes.filter((g) => cabe(g.nome))
+        .map((g) => ({ chave: `secao:${g.id}`, tipo: "seção", texto: g.nome })),
+    ].slice(0, 12);
+  }, [oQueProcuro, nos, livros, secoes]);
+
+  const irAte = useCallback((chave) => {
+    setEscolha(new Set([chave]));
+    setProcurando(false);
+    setOQueProcuro("");
+    /* Depois do desenho: o enquadramento lê a cena, e a escolha acabou de mudar. */
+    setTimeout(() => enquadrarRef.current(new Set([chave])), 0);
+  }, []);
+
   const tirarEscolhidos = useCallback(() => {
     /* O QUE ESTAVA LÁ, guardado antes de sumir: sem a posição e o `nota_id`, não
      * há como trazer de volta. É a diferença entre desfazer e "criar de novo". */
@@ -1555,6 +1594,11 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "d") {
         e.preventDefault();
         duplicarRef.current();
+        return;
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "f") {
+        e.preventDefault();
+        setProcurando(true);
         return;
       }
       if (e.key === "Escape") { limparEscolha(); return; }
@@ -2135,6 +2179,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
   const [renomeando, setRenomeando] = useState(null);
   const secaoSozinhaRef = useRef(null);
   const enquadrarTudoRef = useRef(null);
+  const enquadrarRef = useRef(null);
   const duplicarRef = useRef(null);
   const copiarRef = useRef(null);
   const colarRef = useRef(null);
@@ -2714,6 +2759,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
   const enquadrarTudo = () => enquadrar(null);
   const enquadrarEscolha = () => enquadrar(escolhaRef.current);
   enquadrarTudoRef.current = enquadrarTudo;
+  enquadrarRef.current = enquadrar;
   enquadrarEscolhaRef.current = enquadrarEscolha;
 
   const aproximar = (passo) => {
@@ -3390,6 +3436,47 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
               <circle cx={fio.x} cy={fio.y} r="4" />
             </svg>
           )}
+
+          {/* PROCURAR. Ele mora junto do zoom porque é da mesma família: as duas
+              coisas movem a VISTA, e não o conteúdo. Fechado é um botão; aberto,
+              um campo com os achados embaixo. */}
+          <div className={`canvas-procura${procurando ? " aberta" : ""}`}>
+            {procurando ? (
+              <>
+                <input
+                  type="search"
+                  aria-label="Procurar na superfície"
+                  placeholder="Procurar na superfície"
+                  value={oQueProcuro}
+                  autoFocus
+                  onChange={(e) => setOQueProcuro(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") { setProcurando(false); setOQueProcuro(""); }
+                    if (e.key === "Enter" && achados[0]) irAte(achados[0].chave);
+                  }}
+                />
+                {achados.length > 0 && (
+                  <ul className="canvas-achados">
+                    {achados.map((a) => (
+                      <li key={a.chave}>
+                        <button type="button" onClick={() => irAte(a.chave)}>
+                          <span className="canvas-achado-tipo">{a.tipo}</span>
+                          <span className="canvas-achado-texto">{a.texto}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {oQueProcuro.trim().length >= 2 && !achados.length && (
+                  <p className="canvas-achados-vazio">Nada com isso na superfície.</p>
+                )}
+              </>
+            ) : (
+              <button type="button" aria-label="Procurar na superfície" onClick={() => setProcurando(true)}>
+                <Icone src="/icones/icone-buscar.svg" />
+              </button>
+            )}
+          </div>
 
           {/* O CONTROLE DE ZOOM, do canto do desenho. Ele mostra a porcentagem
               porque "menos" e "mais" sem número não deixam voltar ao tamanho
