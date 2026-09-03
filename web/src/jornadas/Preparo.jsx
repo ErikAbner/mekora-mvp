@@ -233,6 +233,7 @@ function planos(job) {
  */
 function Topo({ job, titulo, ajustando, aoTrocar, inerte = false }) {
   const capa = (job.thumbnails ?? [])[0];
+  const [capaFalhou, setCapaFalhou] = useState(false);
   const marcas = [
     job.input_format && job.input_format.toUpperCase(),
     /* O TAMANHO DO ARQUIVO — o selo "11.5 MB" do nó 966:31504. Ele não existia
@@ -247,8 +248,23 @@ function Topo({ job, titulo, ajustando, aoTrocar, inerte = false }) {
   return (
     <>
       <header className="preparo-pagina-pagina-topo">
+        {/* A CAPA CAI PARA O TÍTULO QUANDO A IMAGEM NÃO VEM.
+            
+            O `<img>` era condicionado só à EXISTÊNCIA do endereço, e endereço
+            existir não é a imagem existir: a miniatura mora em
+            `/storage/temp/…`, que é apagado por idade, e um `page_0.png` que
+            sumiu deixa o quadrado do navegador com o ícone de imagem quebrada.
+            Medido: 404, e a tela mostrando o defeito para a pessoa.
+            
+            O título no lugar da capa é o que já acontece quando não há
+            miniatura nenhuma — a falha volta a ser o caso que a tela já sabe
+            tratar. */}
         <div className="preparo-pagina-capa">
-          {capa ? <img src={capa} alt="" /> : <span>{titulo}</span>}
+          {capa && !capaFalhou ? (
+            <img src={capa} alt="" onError={() => setCapaFalhou(true)} />
+          ) : (
+            <span>{titulo}</span>
+          )}
         </div>
         <div>
           <h1>{titulo}</h1>

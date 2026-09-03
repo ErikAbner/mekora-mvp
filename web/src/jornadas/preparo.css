@@ -75,7 +75,11 @@
 .preparo-pagina-lista li > h3,
 .preparo-pagina-lista li > p { grid-column: 1; }
 .preparo-pagina-lista li > .botao { grid-column: 2; grid-row: 1 / -1; align-self: center; }
-.preparo-pagina-lista h3 { margin: 0 0 4px; font-size: 16px; line-height: 24px; font-weight: 540; color: var(--foreground); }
+/* 8, E NAO 4. Com a caixa aparada — `text-box-trim`, que o Erik escolheu —, o
+ * espaco entre o titulo e a explicacao e SO o que a regra declara: nao ha mais
+ * meia entrelinha sobrando para disfarcar um valor curto. A 4px os dois se
+ * encostavam, e o item lia como um paragrafo so. */
+.preparo-pagina-lista h3 { margin: 0 0 8px; font-size: 16px; line-height: 24px; font-weight: 540; color: var(--foreground); }
 .preparo-pagina-lista p { margin: 0; font-size: 14px; line-height: 20px; color: var(--muted-foreground); text-wrap: pretty; }
 
 .preparo-pagina-ajuste { display: flex; flex-direction: column; gap: 16px; }
