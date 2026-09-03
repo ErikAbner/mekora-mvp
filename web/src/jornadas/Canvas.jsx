@@ -1289,6 +1289,10 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
     setEscolha((atual) => (atual.size ? new Set() : atual));
   }, []);
 
+  /* Há algo que possa virar seção? Seção não entra em seção, então uma escolha
+   * só de áreas não oferece o comando. */
+  const temObjetoEscolhido = [...escolha].some((c) => !c.startsWith("secao:"));
+
   const tirarEscolhidos = useCallback(() => {
     /* O QUE ESTAVA LÁ, guardado antes de sumir: sem a posição e o `nota_id`, não
      * há como trazer de volta. É a diferença entre desfazer e "criar de novo". */
@@ -2448,7 +2452,26 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
             
             É o mesmo erro dos ícones da Estante: escolher pelo que parece, em
             vez de perguntar o que é. */}
+        {/* O DOCK SÓ TEM AÇÕES GLOBAIS E FREQUENTES.
+            
+            A auditoria achou a hierarquia invertida: a ação mais frequente de
+            todas — escrever uma nota — só existia como duplo toque, um gesto que
+            nada anuncia; e "criar seção", que só faz sentido com coisas
+            escolhidas, ocupava uma fatia permanente.
+            
+            Agora o permanente é o que se usa sempre e vale para a superfície
+            inteira. "Criar seção" foi para a barra da escolha, onde ela tem
+            sujeito. O duplo toque continua, como atalho — e não como a única
+            porta. */}
         <nav className="canvas-ferramentas" aria-label="Ferramentas do Canvas">
+          <button
+            type="button"
+            title="Nova nota"
+            aria-label="Nova nota"
+            onClick={() => { setTexto(""); setEscrevendo(true); }}
+          >
+            <Icone src="/icones/icone-nota-nova.svg" />
+          </button>
           <button
             type="button"
             title="Adicionar mídia"
@@ -2456,6 +2479,18 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
             onClick={() => { setEndereco(""); setPondoMidia(true); }}
           >
             <Icone src="/icones/icone-nota-imagem.svg" />
+          </button>
+          {/* TRAZER O QUE JÁ EXISTE — e era a porta mais escondida do Canvas.
+              Livro e nota antiga só se alcançavam por uma linha de texto dentro
+              da folha de escrever. Um livro é recurso central de um Estudo; ele
+              não pode depender de alguém abrir outra coisa primeiro. */}
+          <button
+            type="button"
+            title="Trazer da estante"
+            aria-label="Trazer da estante"
+            onClick={() => setTrazendo(true)}
+          >
+            <Icone src="/icones/icone-estante.svg" />
           </button>
           <button
             type="button"
@@ -2466,37 +2501,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
           >
             <Icone src="/icones/icone-camadas.svg" />
           </button>
-          {/* CRIAR UMA SEÇÃO. Ela nasce no meio do que está sendo visto, e não
-              na origem do plano: numa superfície sem fim, a origem pode estar
-              a mil pixels de distância, e o retângulo apareceria fora da tela. */}
-          <button
-            type="button"
-            title="Criar uma seção"
-            aria-label="Criar uma seção"
-            onClick={criarAqui}
-          >
-            {/* `paginas` — quatro peças arrumadas numa área, que é o que uma
-                seção é. Estava em `fixar`, que desenha uma BANDEIRINHA: um
-                marcador, não um contêiner. Conferi abrindo os arquivos, e não
-                pelo nome — já errei isso com os ícones da Estante. */}
-            <Icone src="/icones/icone-paginas.svg" />
-          </button>
         </nav>
-
-        {erro && <p className="canvas-erro" role="alert">{erro}</p>}
-
-        {/* O DESFAZER DO ARRUMO. Ver `organizar`: mexer em trinta objetos de
-            uma vez sem volta é uma armadilha, e ele some sozinho em 12s. */}
-        {recadoDaHistoria && (
-          <p className="canvas-recado" role="status">{recadoDaHistoria}</p>
-        )}
-
-        {desfazerArrumo && (
-          <p className="canvas-recado" role="status">
-            Superfície organizada.{" "}
-            <button type="button" onClick={desfazerOrganizar}>Desfazer</button>
-          </p>
-        )}
 
         {/* A BARRA DA ESCOLHA — o único lugar em que as ações sobre VÁRIOS
             objetos existem. Ela não empurra a superfície: flutua, como o recado. */}
@@ -2505,7 +2510,9 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
             <span className="conta">
               {escolha.size === 1 ? "1 escolhido" : `${escolha.size} escolhidos`}
             </span>
-            {escolha.size > 1 && (
+            {/* A PARTIR DE UM. Uma composição começa com um objeto e cresce; exigir
+                dois obrigaria a pessoa a juntar antes de poder organizar. */}
+            {temObjetoEscolhido && (
               <button type="button" onClick={criarSecaoDaEscolha}>Criar seção</button>
             )}
             <button type="button" onClick={tirarEscolhidos}>Tirar</button>
