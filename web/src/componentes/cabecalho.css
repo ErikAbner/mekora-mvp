@@ -194,7 +194,45 @@ a.acao.active { background: var(--muted); color: var(--foreground); }
 
   /* A busca ocupa a linha, e os dois atalhos ficam do lado dela: sao alvos de
      toque, e alvo de toque nao encolhe. */
-  .cabecalho-acoes { flex: 1 1 auto; gap: 8px; }
+  /* E A LARGURA FIXA TEM DE SAIR AQUI, junto — foi ela que transbordou.
+   *
+   * A caixa do computador mede `inline-size: 476px`, que e o numero do
+   * `900:53900`, e cresce para 626 com o painel da busca aberto. Esta consulta
+   * trocava o `flex` e deixava as duas larguras de pe: `flex: 1 1 auto` usa a
+   * largura declarada como base, entao a caixa continuava com 476px dentro de
+   * uma janela de 390.
+   *
+   * Medido antes: `scrollWidth` 492 contra 390 de janela — 102px de transbordo,
+   * em TODA rota, porque o cabecalho e de todas. O `.cabecalho-acoes` era o
+   * primeiro elemento a passar da borda, e `.cabecalho-atalhos` e os dois botoes
+   * iam junto por estarem dentro dele.
+   *
+   * Passou despercebido porque a medida de transbordo olha o `body` e o
+   * cabecalho e `position: fixed` em parte — e porque o C9 do ABERTO.md deu a
+   * conferencia de 390 por fechada. */
+  .cabecalho-acoes,
+  .cabecalho-acoes:has(.busca-painel) { flex: 1 1 auto; gap: 8px; inline-size: auto; }
+  /* E O CAMPO VOLTA A CRESCER. No computador ele tem largura propria — sobram
+   * 264px dentro da caixa de 476, e por isso `flex: 0 1 auto` la em cima. Sem
+   * a caixa fixa, esse mesmo `0 1 auto` deixava o campo com a largura do
+   * conteudo: medido, 70px num telefone de 390. Um campo de busca de 70px nao
+   * e "a busca ocupa a linha", e era o que esta consulta dizia fazer. */
+  .cabecalho-acoes > .busca-caixa { flex: 1 1 0; min-inline-size: 0; }
+
+  /* OS DOIS ATALHOS SAEM, e quem os substitui e o hamburguer — e isto e o que o
+   * `964:24606` desenha e o que o comentario do `Cabecalho.jsx` ja dizia com
+   * todas as letras: "os dois icones nao cabem junto da busca".
+   *
+   * A regra que os escondia era `.cabecalho-acoes > .acao:not(.cabecalho-menu)`,
+   * e ela nao os alcancava: os dois moram dentro de `.cabecalho-atalhos`, entao
+   * sao NETOS da caixa, e o `>` so pega filho. Resultado medido a 390: a busca
+   * ficava com 144px de caixa e 70px de campo, espremida entre 120px de atalhos
+   * e 52 de hamburguer — com o menu ao lado oferecendo exatamente os mesmos
+   * lugares que os atalhos.
+   *
+   * Nada se perde: Notas, Conta e suas quatro telas, Ajuda, Atualizacoes e os
+   * documentos estao todos dentro do hamburguer. */
+  .cabecalho-atalhos { display: none; }
   .acao { padding: 13px; }
 }
 
