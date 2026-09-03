@@ -1339,3 +1339,18 @@
 /* A seçao COM NOME ja e uma area sobre um assunto, e mantem a presenca que
  * tinha. */
 .canvas-grupo.revelada.com-nome .canvas-grupo-area { border-color: var(--escolha); }
+
+/* QUEM E DESTA SEÇAO, dito ao passar sobre ela. E o outro sentido da mesma
+ * pergunta: de um membro se acende a area, e da area se acendem os membros.
+ *
+ * Sem este lado, um objeto VISUALMENTE dentro sem ser membro fica identico a um
+ * que e — e a unica forma de descobrir seria arrastando. E a fraqueza que o
+ * pertencimento explicito cria, e ela se paga aqui.
+ *
+ * Mais fraco que `vai-junto`: aquele e consequencia de um gesto em curso, este e
+ * so uma resposta a uma pergunta. */
+.nota-canvas.membro,
+.livro-canvas.membro {
+  outline: calc(1px / var(--escala, 1)) solid color-mix(in oklab, var(--escolha) 45%, transparent);
+  outline-offset: calc(3px / var(--escala, 1));
+}

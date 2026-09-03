@@ -361,10 +361,11 @@ function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, aoE
         x: no.x, y: no.y,
         largura: caixa.current?.offsetWidth ?? largura,
         altura: caixa.current?.offsetHeight ?? 200,
+        grupo_id: no.grupo_id ?? null,
       }),
       mover: (x, y, l) => aoMover(no.id, x, y, l),
     });
-  }, [aoInscrever, no.id, no.x, no.y, largura, aoMover]);
+  }, [aoInscrever, no.id, no.x, no.y, no.grupo_id, largura, aoMover]);
 
   useEffect(() => {
     const el = caixa.current;
@@ -735,10 +736,11 @@ function LivroCrua({ livro, aoMover, aoTirar, aoEscolher, aoSeguir, aoInscrever,
         x: livro.x, y: livro.y,
         largura: caixa.current?.offsetWidth ?? (livro.largura || 280),
         altura: caixa.current?.offsetHeight ?? 420,
+        grupo_id: livro.grupo_id ?? null,
       }),
       mover: (x, y, l) => aoMover(livro.id, x, y, l),
     });
-  }, [aoInscrever, livro.id, livro.x, livro.y, livro.largura, aoMover]);
+  }, [aoInscrever, livro.id, livro.x, livro.y, livro.largura, livro.grupo_id, aoMover]);
 
   const comecar = (e) => {
     if (e.button !== 0) return;
@@ -1511,6 +1513,24 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
     if (revelado.current) cena.current.get(revelado.current)?.no?.classList.remove("revelada");
     revelado.current = chave;
     if (chave) cena.current.get(chave)?.no?.classList.add("revelada");
+  }, []);
+
+  /* Quem é membro da seção sob o ponteiro. Imperativo, como o resto do feedback:
+   * é hover, e redesenhar a superfície por isso seria caro à toa. */
+  const membrosMarcados = useRef([]);
+  const marcarMembros = useCallback((chaveSecao) => {
+    for (const c of membrosMarcados.current) cena.current.get(c)?.no?.classList.remove("membro");
+    membrosMarcados.current = [];
+    if (!chaveSecao) return;
+    const id = Number(chaveSecao.split(":")[1]);
+    for (const [chave, f] of cena.current) {
+      if (f.tipo === "secao") continue;
+      const o = f.ler();
+      if (o?.grupo_id === id) {
+        f.no?.classList.add("membro");
+        membrosMarcados.current.push(chave);
+      }
+    }
   }, []);
 
   const limparPintura = useCallback(() => {
@@ -2378,13 +2398,31 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
            * Por delegação, e não um ouvinte por cartão: com 123 objetos são 123
            * inscrições para responder a uma pergunta que se faz uma vez. */
           onPointerOver={(e) => {
+            /* A PERGUNTA TEM DOIS SENTIDOS, e os dois precisam de resposta.
+             *
+             * De um membro para a área: "por que estes andam juntos?" — passar
+             * sobre um deles acende a área.
+             *
+             * Da área para os membros: "o que é desta seção?" — passar sobre ela
+             * marca quem é dela. Sem este lado, um objeto que está VISUALMENTE
+             * dentro sem ser membro fica idêntico a um que é, e a única forma de
+             * descobrir seria arrastando. É a fraqueza que o pertencimento
+             * explícito cria, e ela se paga aqui. */
+            const secao = e.target.closest?.(".canvas-grupo");
+            if (secao) {
+              const chaveSecao = [...cena.current].find(([, f]) => f.no === secao)?.[0];
+              revelar(chaveSecao ?? null);
+              marcarMembros(chaveSecao);
+              return;
+            }
             const alvo = e.target.closest?.("[data-nota], [data-livro]");
-            if (!alvo) { revelar(null); return; }
+            if (!alvo) { revelar(null); marcarMembros(null); return; }
             const chave = alvo.dataset.nota ? `nota:${alvo.dataset.no}` : `livro:${alvo.dataset.livro}`;
             const o = ondeEstaRef.current(chave);
             revelar(o?.grupo_id ? `secao:${o.grupo_id}` : null);
+            marcarMembros(null);
           }}
-          onPointerLeave={() => revelar(null)}
+          onPointerLeave={() => { revelar(null); marcarMembros(null); }}
           onPointerDown={(e) => {
             chaoDesce(e);
             /* Sem espaço e sem botão do meio, o gesto no vazio é o LAÇO. Se o
