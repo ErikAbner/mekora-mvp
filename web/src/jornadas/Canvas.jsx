@@ -1356,6 +1356,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
   const escolhaRef = useRef(null);
   const nosRef = useRef(nos);
   const livrosRef = useRef(livros);
+  const secoesRef = useRef(secoes);
   const ligacoesRef = useRef(ligacoes);
   /* O espaço vive num `ref` porque quem o lê é o roteador de gesto, que roda na
    * fase de captura — antes de qualquer desenho ter acontecido. */
@@ -1363,6 +1364,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
   const cameraRef = useRef(null);
   nosRef.current = nos;
   livrosRef.current = livros;
+  secoesRef.current = secoes;
   ligacoesRef.current = ligacoes;
 
   const historia = usarHistoria();
@@ -1381,14 +1383,57 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
    * largura cabem nesta forma: uma lista de "este nó estava assim, ficou
    * assado". Multi-arrasto, carregar uma seção e esticar um cartão são todos
    * ela, com listas de tamanhos diferentes. */
+  /* CRIAR TAMBÉM DESFAZ.
+   *
+   * A matriz de desfazer mediu quatro criações sem volta — nota nova, duplicar,
+   * ligação e colar —, todas registrando nada. `⌘Z` depois de criar não fazia
+   * nada, e era o único lugar da superfície onde a pessoa não podia mudar de
+   * ideia. Mover, esticar, tirar, dissolver e criar seção já voltavam.
+   *
+   * `criar` roda e devolve o que nasceu, em chaves de POSIÇÃO (`nota:12`,
+   * `secao:5`) ou de ligação (`liga:9`). Desfazer apaga essas; refazer roda
+   * `criar` de novo — e o que nasce da segunda vez tem ids novos, então a lista
+   * é REESCRITA. Sem isso, um segundo `⌘Z` tentaria apagar ids que já não
+   * existem. */
+  const apagarChaveRef = useRef(null);
+  const criarComHistoria = useCallback(async (rotulo, criar) => {
+    const feitos = await criar();
+    if (!feitos || !feitos.length) return feitos;
+    const atual = { lista: feitos };
+    historia.registrar({
+      rotulo,
+      desfazer: async () => { for (const chave of atual.lista) await apagarChaveRef.current(chave); },
+      refazer: async () => { atual.lista = (await criar()) || []; },
+    });
+    return feitos;
+  }, [historia]);
+
   const registrarMovimento = useCallback((rotulo, mudancas) => {
     if (!mudancas.length) return;
+    /* A SEÇÃO GUARDADA NO PASSO PODE TER SUMIDO ATÉ A HORA DE VOLTAR.
+     *
+     * Desfazer devolve o vínculo de antes — e "antes" pode ser uma seção que a
+     * pessoa dissolveu depois. O servidor recusa `grupo_id` de seção dissolvida,
+     * e a recusa chega como 404 do PATCH INTEIRO: o desfazer perde também a
+     * posição, porque é uma chamada só. Medido: `PATCH nos/16821
+     * {"x":560,"y":300,"largura":375,"grupo_id":1756} [404]`, com a nota parada
+     * onde estava.
+     *
+     * Voltar solto é a leitura honesta: a área não existe mais, e a coisa volta
+     * para onde estava, sem seção.
+     *
+     * E a conferência mora AQUI, e não em `moverChave`. Posta lá, ela também
+     * pegava a seção RECÉM-CRIADA — que existe no servidor e ainda não entrou na
+     * lista do desenho —, e "Criar seção" nascia sem membro nenhum. Medido: 0
+     * membros onde a jornada esperava 2. Aqui ela olha só para o passado, que é
+     * o único lugar onde uma seção pode ter deixado de existir. */
+    const aindaExiste = (g) => (typeof g === "number" && !secoesRef.current.some((x) => x.id === g) ? null : g);
     historia.registrar({
       rotulo,
       /* O vínculo entra no passo: desfazer um arrasto que tirou algo de uma
        * seção tem de devolvê-lo à seção, e não só à posição. */
-      desfazer: () => mudancas.forEach((m) => moverChaveRef.current(m.chave, m.antes.x, m.antes.y, m.antes.largura, m.antes.grupo)),
-      refazer: () => mudancas.forEach((m) => moverChaveRef.current(m.chave, m.depois.x, m.depois.y, m.depois.largura, m.depois.grupo)),
+      desfazer: () => mudancas.forEach((m) => moverChaveRef.current(m.chave, m.antes.x, m.antes.y, m.antes.largura, aindaExiste(m.antes.grupo))),
+      refazer: () => mudancas.forEach((m) => moverChaveRef.current(m.chave, m.depois.x, m.depois.y, m.depois.largura, aindaExiste(m.depois.grupo))),
     });
   }, [historia]);
   /* `moverChave` nasce depois desta função e é usada por ela só quando alguém
@@ -1492,10 +1537,13 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
     }
     const texto = evento?.clipboardData?.getData("text/plain")?.trim();
     if (!texto) return false;
-    await aoTrazer({ texto: texto.slice(0, 2000), x: onde.x, y: onde.y });
+    await criarComHistoria("Nota colada", async () => {
+      const n = await aoTrazer({ texto: texto.slice(0, 2000), x: onde.x, y: onde.y });
+      return n?.id ? [`nota:${n.id}`] : [];
+    });
     avisar("Colado como nota");
     return true;
-  }, [aoTrazer, aoTrazerMidia, avisar]);
+  }, [aoTrazer, aoTrazerMidia, avisar, criarComHistoria]);
 
   /* PROCURAR NA SUPERFÍCIE — e isto é NAVEGAÇÃO, e não busca.
    *
@@ -2359,9 +2407,14 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
       return aoTrazer({ texto: n.texto, cor: n.cor, x: n.x + dx, y: n.y + dy });
     };
 
+    const nascidos = [];
     for (const chave of escolhaRef.current) {
       const [tipo, id] = chave.split(":");
-      if (tipo === "nota") { await copiarObjeto(chave, PASSO_DA_COPIA, PASSO_DA_COPIA); feitos.push(chave); }
+      if (tipo === "nota") {
+        const nova = await copiarObjeto(chave, PASSO_DA_COPIA, PASSO_DA_COPIA);
+        if (nova?.id) nascidos.push(`nota:${nova.id}`);
+        feitos.push(chave);
+      }
       if (tipo === "secao") {
         const g = secoes.find((x) => x.id === Number(id));
         if (!g) continue;
@@ -2370,8 +2423,10 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
           largura: g.largura, altura: g.altura,
         });
         if (!nova) continue;
+        nascidos.push(`secao:${nova.id}`);
         for (const membro of membrosDe(g)) {
-          await copiarObjeto(membro, PASSO_DA_COPIA, PASSO_DA_COPIA);
+          const copia = await copiarObjeto(membro, PASSO_DA_COPIA, PASSO_DA_COPIA);
+          if (copia?.id) nascidos.push(`nota:${copia.id}`);
         }
         /* Os membros novos entram na área nova pela geometria do drop? Não —
          * pertencer é explícito, e aqui a intenção é clara: eles são a
@@ -2386,10 +2441,18 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
       }
     }
     if (feitos.length) avisar(feitos.length > 1 ? `${feitos.length} duplicados` : "Duplicado");
+    return nascidos;
   }, [secoes, membrosDe, aoTrazer, aoCriarSecao, aoMover, avisar]);
 
+  /* A duplicação inteira é UM passo: duplicar uma seção com cinco notas dentro
+   * e precisar de seis `⌘Z` para voltar seria contar quadros, e não operações. */
+  const duplicarComHistoria = useCallback(
+    () => criarComHistoria("Duplicado", duplicar),
+    [criarComHistoria, duplicar],
+  );
+
   const podeDuplicar = [...escolha].some((c) => c.startsWith("nota:") || c.startsWith("secao:"));
-  duplicarRef.current = duplicar;
+  duplicarRef.current = duplicarComHistoria;
   copiarRef.current = copiar;
   colarRef.current = colar;
 
@@ -2443,6 +2506,17 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
   }, [aoMover, aoMoverLivro]);
 
   moverChaveRef.current = moverChave;
+
+  /* O AVESSO DE CRIAR, por chave. Um só lugar sabe traduzir chave em remoção —
+   * a mesma razão de `moverChave` existir. */
+  const apagarChave = useCallback(async (chave) => {
+    const [tipo, id] = chave.split(":");
+    if (tipo === "nota") await aoTirar(Number(id));
+    if (tipo === "livro") await aoTirarLivro(Number(id));
+    if (tipo === "secao") await aoDissolverSecao(Number(id));
+    if (tipo === "liga") await aoDesligar(Number(id));
+  }, [aoTirar, aoTirarLivro, aoDissolverSecao, aoDesligar]);
+  apagarChaveRef.current = apagarChave;
 
   const ondeEstaRef = useRef(null);
   const ondeEsta = useCallback((chave) => {
@@ -2722,7 +2796,15 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
     if (alvo && alvo !== f.de) {
       const a = chaveDaEntidade(f.de);
       const b = chaveDaEntidade(alvo);
-      if (a && b && a !== b) aoLigar(a, b);
+      if (a && b && a !== b) {
+        /* `ja_existia` vem da rota, que é idempotente. Sem essa conferência,
+         * puxar um fio entre duas notas JÁ ligadas registraria um passo, e o
+         * `⌘Z` seguinte apagaria uma ligação antiga que ninguém tocou. */
+        criarComHistoria("Ligação feita", async () => {
+          const feita = await aoLigar(a, b);
+          return feita?.id && !feita.ja_existia ? [`liga:${feita.id}`] : [];
+        });
+      }
     }
     fioVivo.current = null;
     setFio(null);
@@ -3223,7 +3305,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
               <button type="button" onClick={criarSecaoDaEscolha}>Criar seção</button>
             )}
             {podeDuplicar && (
-              <button type="button" onClick={duplicar} title="Livro não duplica — ele é um arquivo só">
+              <button type="button" onClick={duplicarComHistoria} title="Livro não duplica — ele é um arquivo só">
                 Duplicar
               </button>
             )}
@@ -3623,7 +3705,11 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
                * andado pela superfície escrevia uma nota e ela nascia longe,
                * fora da tela, sem nada dizendo para onde ela foi. */
               const onde = meioDaVista(375, 120);
-              if (await aoTrazer({ texto: texto.trim(), x: onde.x, y: onde.y })) setEscrevendo(false);
+              const feito = await criarComHistoria("Nota criada", async () => {
+                const n = await aoTrazer({ texto: texto.trim(), x: onde.x, y: onde.y });
+                return n?.id ? [`nota:${n.id}`] : [];
+              });
+              if (feito?.length) setEscrevendo(false);
             }}
           >
             Pôr na superfície
@@ -3689,7 +3775,13 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
               <li key={o.chave}>
                 <button
                   type="button"
-                  onClick={() => { aoLigar(ligandoDaLista, o.chave); setLigandoDaLista(null); }}
+                  onClick={() => {
+                    criarComHistoria("Ligação feita", async () => {
+                      const feita = await aoLigar(ligandoDaLista, o.chave);
+                      return feita?.id && !feita.ja_existia ? [`liga:${feita.id}`] : [];
+                    });
+                    setLigandoDaLista(null);
+                  }}
                 >
                   {o.texto}
                 </button>

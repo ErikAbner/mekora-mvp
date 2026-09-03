@@ -849,3 +849,53 @@ flag `--teclas`, que digita por `Input.dispatchKeyEvent`.
 `backend/tests/test_canvas.py`, onze casos. As quatro guardas — ponta de ligação
 nota, ponta livro, seção de outra pessoa, livro de outra pessoa — foram
 afrouxadas uma a uma, e o teste correspondente ficou vermelho nas quatro.
+
+## A matriz de desfazer, e os cinco buracos que ela achou
+
+O §32 pedia cobertura de desfazer para toda mutação tocada nesta passada.
+`scripts/bancada/desfazer.js` executa cada operação, desfaz, e lê o SERVIDOR —
+não a tela. A primeira corrida:
+
+| operação | desfazia? |
+|---|---|
+| mover, esticar, mover vários | sim |
+| tirar nota, tirar livro | sim |
+| criar seção, sair de uma seção | sim |
+| **criar nota** | **não** |
+| **duplicar** | **não** |
+| **criar ligação** | **não** |
+| **colar** | **não** |
+| **trocar de seção (A → B)** | **não** |
+
+As quatro primeiras eram a mesma falta: **criar não registrava nada**. `⌘Z`
+depois de criar não fazia coisa alguma, e era o único lugar da superfície onde a
+pessoa não podia mudar de ideia. A saída foi `criarComHistoria(rotulo, criar)`:
+`criar` devolve o que nasceu em chaves, desfazer apaga essas chaves, e refazer
+roda `criar` de novo **reescrevendo a lista** — o que nasce da segunda vez tem
+ids novos, e sem reescrever um segundo `⌘Z` tentaria apagar ids que já não
+existem. Duplicar uma seção com cinco notas dentro continua sendo **um** passo.
+
+`usarCanvas.trazer` passou a devolver o nó criado em vez de `true`, e
+`usarCanvas.ligar` devolve `{id, ja_existia}`. O `ja_existia` importa: a rota é
+idempotente, e sem essa conferência puxar um fio entre duas notas JÁ ligadas
+registraria um passo, e o `⌘Z` seguinte apagaria uma ligação antiga que ninguém
+tocou.
+
+A quinta era outra coisa, e o rastro de rede a nomeou:
+
+    PATCH nos/16821 {"x":560,"y":300,"largura":375,"grupo_id":1756} [404]
+
+Desfazer devolve o vínculo de antes — e "antes" pode ser uma seção **dissolvida
+depois**. O servidor recusa `grupo_id` de seção dissolvida, e a recusa vem como
+404 do PATCH inteiro: o desfazer perdia também a POSIÇÃO, porque é uma chamada
+só. Agora o passo confere, na hora de voltar, se a seção ainda existe; se não,
+a coisa volta para onde estava, solta.
+
+**Essa conferência mora em `registrarMovimento`, e não em `moverChave`.** Posta
+em `moverChave`, ela também pegava a seção RECÉM-CRIADA — que existe no servidor
+e ainda não entrou na lista do desenho — e "Criar seção" passou a nascer sem
+membro nenhum. A jornada mediu na corrida seguinte: 0 membros onde ela espera 2.
+No passo da história a conferência olha só para o passado, que é o único lugar
+onde uma seção pode ter deixado de existir.
+
+Doze de doze desfazem.

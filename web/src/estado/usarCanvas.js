@@ -66,15 +66,21 @@ export function usarCanvas() {
   const trazer = useCallback(async (o) => {
     setErro(null);
     try {
-      await porNoCanvas(o);
+      /* DEVOLVE O NÓ CRIADO, e não `true`.
+       *
+       * Quem chama precisa do id para poder DESFAZER: sem ele, criar uma nota
+       * era a única ação da superfície sem volta — medido na matriz de
+       * desfazer, 106 → 107 → 107. Objeto continua sendo verdadeiro, então
+       * `if (await aoTrazer(...))` segue valendo. */
+      const criado = await porNoCanvas(o);
       /* Recarrega em vez de remendar: trazer uma nota que já estava na
        * superfície não cria nada, e remendar a lista duplicaria o retângulo na
        * tela até a próxima visita. */
       await recarregar();
-      return true;
+      return criado ?? true;
     } catch (e) {
       setErro(e.message);
-      return false;
+      return null;
     }
   }, [recarregar]);
 
@@ -177,10 +183,16 @@ export function usarCanvas() {
   const ligar = useCallback(async (a, b) => {
     setErro(null);
     try {
-      await ligarNoServidor(a, b);
+      /* Devolve `{id, ja_existia}`: o id para desfazer, e `ja_existia` porque a
+       * rota é idempotente — repetir um par existente responde 201 sem criar
+       * nada, e registrar um passo de história ali faria `⌘Z` apagar uma
+       * ligação que a pessoa não acabou de fazer. */
+      const feita = await ligarNoServidor(a, b);
       await recarregar();
+      return feita ?? null;
     } catch (e) {
       setErro(e.message);
+      return null;
     }
   }, [recarregar]);
 

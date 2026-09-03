@@ -12,8 +12,15 @@
   }
   const secoes = [];
   for (let i = 0; i < 6; i++) {
-    const perto = i === 0;
-    secoes.push(await P('/canvas/grupos', { nome: `Se\u00e7\u00e3o de carga ${i}`, x: perto ? 800 : 2600 + i * 700, y: perto ? 140 : 1400, largura: 600, altura: 420 }));
+    /* DUAS seções à vista, e não uma: a matriz de desfazer precisa provar a
+       TROCA de seção (A -> B), e com uma só o caso não tem para onde ir. */
+    const perto = i < 2;
+    secoes.push(await P('/canvas/grupos', {
+      nome: `Se\u00e7\u00e3o de carga ${i}`,
+      x: perto ? 800 : 2600 + i * 700,
+      y: perto ? 140 + i * 480 : 1900,
+      largura: 600, altura: 420,
+    }));
   }
   const notas = [];
   for (let i = 0; i < 100; i++) {
