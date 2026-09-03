@@ -1,13 +1,114 @@
-# O Canvas — diagnóstico, decisões e o que fica de fora
+# O Canvas — estado atual, e como se chegou nele
 
-Escrito em 02/09/2026, a pedido do Erik, antes de mexer na estrutura. Ele pediu
-opinião de produto e não uma lista de tarefas: o que segue diz o que eu confirmo,
-o que eu recuso, e por quê.
+Este arquivo foi escrito em camadas, ao longo de 02–03/09/2026, e as camadas
+**discordam entre si de propósito**: cada uma registra o que era verdade quando
+foi escrita. Um modelo de posse foi medido e reprovado, outro tomou o lugar; o
+Grupo foi diagnosticado, defendido, recusado e removido — tudo aqui dentro.
+
+**A regra de leitura é uma só:**
+
+> **O [Estado atual](#estado-atual) manda. Todo o resto é registro histórico**,
+> preservado porque explica POR QUE o modelo atual é assim — e não porque
+> descreve o que o código faz hoje.
+
+Seções superadas trazem um aviso no começo. Não confie em nenhum parágrafo deste
+arquivo que esteja abaixo de um aviso desses para saber o que existe hoje.
 
 Tudo que está marcado como **medido** foi medido no produto rodando, por CDP, e o
 número está aqui.
 
 ---
+
+## Estado atual
+
+**Vigente em 03/09/2026, commit `78a7aac`.** É a única descrição autoritativa do
+Canvas neste repositório. Conferido contra o código, não contra a memória.
+
+### O modelo
+
+| decisão | o que vale hoje | onde vive |
+|---|---|---|
+| **Escolha** | estado **temporário**, nunca persistido. Chaves compostas — `nota:12`, `secao:3`, `livro:7`, `liga:9` | `escolha` em `Canvas.jsx`; nada no banco |
+| **Seção** | **único primitivo organizacional persistente** do produto | `Secao` em `Canvas.jsx`, `canvas_grupos` no banco |
+| **Grupo** | **fora do produto.** Não existe como conceito, nem na tela nem no vocabulário do código | removido em `94ebd4b` |
+| **Pertencimento** | **explícito — Modelo E.** A geometria acende a candidata; o **gesto** decide; `grupo_id` guarda | `grupo_id` em `canvas_nos` e `canvas_livros` |
+| **Esticar** | **não muda pertencimento.** Cobrir um objeto com a área não o adota; só soltar dentro adota | `esticar`, `membrosDe` |
+| **Aninhamento** | impossível por construção: Seção não tem `grupo_id` | — |
+| **Livros** | objetos de primeira classe na superfície, **por referência**: tirar apaga a posição, não o livro | `Livro`, `canvas_livros`, `POST /canvas/livros` |
+| **Ligações** | **pontas polimórficas** (`de_tipo`/`para_tipo`). Nota↔nota e nota↔livro. A ligação é **objeto escolhível** (`liga:`) | `ligacoes`, `POST /canvas/ligacoes` |
+| **Desfazer/refazer** | **por operação**, registrado no **confirmar** — um arrasto de cem quadros é um passo. Criar também desfaz | `usarHistoria.js`, `criarComHistoria` |
+| **Roteador de gesto** | fonte única de precedência, na **fase de captura**. Objeto novo implementa comportamento; não decide precedência | `rotearGesto`, `onPointerDownCapture` |
+| **Deslocar** | temporário por **Espaço** apertado ou botão do meio, resolvido antes de qualquer alvo | `espacoRef`, `querDeslocar` |
+| **Zoom semântico** | três níveis: `tudo` ≥ 0,6 · `menos` ≥ 0,35 · `silhueta` abaixo. Capa e marca de cor são as últimas a sumir | `detalheDoZoom` |
+| **Câmera** | guardada em `sessionStorage`, chave `mekora-canvas-camera`. Voltar da leitura volta ao mesmo lugar, e uma aba nova nasce limpa | `ONDE_EU_ESTAVA` |
+
+### A ordem de precedência do gesto
+
+Quem decide o que o ponteiro significa é o **estado da entrada**, e não o alvo
+embaixo dele.
+
+| ordem | quem | quando |
+|---|---|---|
+| 1 | **gesto em curso** | uma vez começado, ele termina — a posse é estável pela vida do gesto |
+| 2 | **deslocar temporário** | Espaço apertado, ou botão do meio, no `pointerdown` — resolvido na **fase de captura**, antes de qualquer alvo |
+| 3 | **esticar** | ponteiro na moldura de 10px do objeto |
+| 4 | **ligar** | ponteiro numa pega de borda |
+| 5 | **mover objeto** | ponteiro no corpo do objeto |
+| 6 | **laço** | ponteiro no vazio |
+| 7 | **chão** | o que sobrou |
+
+### O que existe para navegar e agir
+
+- **Enquadrar tudo** (`⌘1`) e **enquadrar a escolha** (`⌘2`, e botão na barra).
+- **Procurar na superfície** (`⌘F`) — sem acento, sobre notas, livros e seções.
+  É **navegação**, não busca: ela leva a vista até o objeto.
+- **Guias de alinhamento** entre objetos, com ímã, e elas **ganham da malha**
+  quando as duas discordam. Valem para qualquer tipo, num objeto por vez:
+  arrastar vários ou esticar não alinha. Ao soltar, **todo** objeto encosta na
+  malha de 24.
+- **Doca** — três entradas de criação, todas globais e frequentes: **nova nota**,
+  mídia, trazer da estante. Duplo toque no vazio continua como atalho.
+- **Barra da escolha** — o único lugar das ações sobre vários: criar seção,
+  duplicar, organizar (a partir de três notas), as ações da seção quando ela é a
+  única escolhida (renomear/nomear, ajustar ao conteúdo, dissolver), tirar,
+  enquadrar, largar.
+- **Copiar, colar e duplicar**, com desfazer.
+- Cartões no idioma **Editorial Utility**: raio pelo token (`var(--radius, 0)`),
+  filete fino; só a pega de ligação é redonda.
+
+### O nome legado, declarado
+
+A tabela `canvas_grupos` e as rotas `/canvas/grupos` **ficam com o nome antigo**,
+de propósito: renomear é migração de verdade (SQLite recria a tabela, duas outras
+apontam para ela) e o ganho para quem usa o produto é zero. O vocabulário que uma
+pessoa lê — na tela e no código do Canvas — é **seção**. Isto é um nome antigo no
+disco, e não uma segunda arquitetura.
+
+### O que continua fraco
+
+- **Objeto visualmente dentro sem ser membro** fica idêntico a um que é, quando
+  parado. O hover responde nos dois sentidos; a fraqueza é do repouso.
+- **Refazer uma seção apagada a recria com id novo.**
+- **`pointerleave` saindo do Canvas** não foi provado limpar as marcas.
+- **Nada foi testado com dedo de verdade** — os gestos são medidos por CDP, que é
+  mouse. Toque e trackpad continuam sem prova.
+- **Os cenários de uso longo foram julgados, não vividos**: nenhum Estudo real
+  atravessou semanas dentro deste modelo.
+
+---
+
+# Registro histórico
+
+**Daqui para baixo é como se chegou ao estado acima.** Nada nesta parte descreve
+o código de hoje sem que o Estado atual concorde.
+
+---
+
+> **Investigação histórica — 02/09/2026, antes de mexer na estrutura.** O
+> diagnóstico A–G abaixo descreve o Canvas COMO ELE ERA. As oito lacunas que ele
+> nomeia — contenção, faixa de pegada, seleção, desfazer, livro, zoom, câmera e
+> desempenho — foram todas fechadas depois, e o contêiner duplo (Grupo × Seção)
+> virou um só. Leia como motivação, nunca como estado.
 
 ## A. Os problemas que eu confirmo
 
@@ -268,6 +369,12 @@ copiados. Está anotado aqui e no `DESIGN-SYSTEM.md`.
 
 ## O que foi construído em 02/09, e o que cada coisa provou
 
+> **Diário de construção.** As capacidades continuam existindo, e algumas
+> mudaram depois: o desfazer passou a cobrir também **criar, duplicar, colar e
+> ligar**, e a posse deixou de ser geométrica. As medidas de desempenho desta
+> seção foram tiradas no **servidor de desenvolvimento** e por isso não valem —
+> ver "A passada de convergência", no fim do arquivo.
+
 A ordem foi a que o Erik aprovou: **Escolha → Desfazer → Livros → Seção da
 escolha → Detalhe por zoom.** Cada camada foi medida, e a medida está aqui.
 
@@ -364,6 +471,11 @@ quadro em que a mão espera resposta. Os dois passaram a chegar por `ref`.
 
 ## As duas perguntas que o Erik mandou validar antes de apagar o Grupo
 
+> **Superado.** As duas foram respondidas: a posse passou a ser **explícita**
+> (Modelo E), o que resolve a pergunta 2 sem depender de geometria, e o Grupo foi
+> removido em `94ebd4b`. O parágrafo abaixo — "o Grupo não foi apagado" — era
+> verdade quando foi escrito, e não é mais.
+
 **Elas continuam abertas, e de propósito.** O Grupo não foi apagado, nenhuma
 migração destrutiva foi feita, e a recomendação final só vem depois de rodar
 cenários de uso de verdade. O que já dá para dizer:
@@ -384,6 +496,12 @@ caminho). Isso já responde a alguns dos casos, mas não a todos, e não foi pro
 ---
 
 ## A regra de contenção, escrita com precisão
+
+> **Superado — este é o Modelo G, que foi reprovado.** A regra do CENTRO e a
+> fotografia no `pointerdown` descrevem a **posse geométrica**, que os cenários
+> abaixo derrubaram. Hoje a posse é **explícita** (`grupo_id`): a geometria só
+> sugere, e o gesto decide. Mover uma seção leva **os membros**, e não quem está
+> por cima.
 
 O Erik pediu isto antes dos testes, e com razão: sem a regra escrita, os cenários
 não têm o que julgar.
@@ -408,6 +526,12 @@ não por centro. Cercar tudo com folga seria um gesto grande demais.
 ---
 
 ## Os oito cenários — o que foi medido
+
+> **Histórico — medido sob a posse geométrica.** Os defeitos que estes cenários
+> acharam (dois donos, conteúdo arrancado da seção de dentro, adoção silenciosa
+> ao esticar) foram o que motivou a troca de modelo. **Nenhum deles se reproduz
+> hoje**: sem geometria decidindo posse, não há dono ambíguo, e esticar não
+> adota.
 
 ### 3 · Sobreposição parcial · **a regra do centro se sustenta**
 
@@ -467,6 +591,12 @@ dentro da outra.
 
 ## O conserto que a evidência pede
 
+> **Superado, e nunca implementado — de propósito.** A regra da **menor Seção**
+> era o conserto do modelo geométrico. Ela ficou sem objeto quando a posse passou
+> a ser explícita: com `grupo_id`, cada objeto tem **um dono declarado**, e não
+> há empate a desempatar. Se um agente futuro encontrar esta seção, ela **não é
+> trabalho pendente**.
+
 Os cenários 4 e 7 são **a mesma pergunta**: quando duas áreas cobrem o mesmo
 ponto, de quem é o objeto?
 
@@ -484,6 +614,10 @@ Uma regra resolve os dois:
 ---
 
 ## A recomendação: **A — só a Seção**
+
+> **Versão intermediária, superada pela [recomendação final](#a-recomendação-final-a--só-a-seção)
+> mais abaixo.** A conclusão é a mesma; a base mudou. Aqui ela ainda se apoiava
+> na regra da menor Seção, que não foi feita.
 
 Com duas condições, e uma ressalva honesta.
 
@@ -554,6 +688,10 @@ em vez de explicado errado: já errei a atribuição deste pico uma vez.
 
 # Os dois modelos de posse, medidos
 
+> **A comparação que decidiu a arquitetura. O Modelo E venceu e está no código;
+> o Modelo G é histórico.** Esta é a seção histórica mais útil do arquivo: ela
+> explica por que o pertencimento é uma coluna, e não uma conta de geometria.
+
 ## Modelo G — posse geométrica
 
 *A menor Seção que contém o centro é a dona, recalculada a cada gesto.*
@@ -606,6 +744,10 @@ sentidos**: passar sobre um membro acende a área; passar sobre a área marca qu
 
 # A recomendação final: **A — só a Seção**
 
+> **Aceita e executada.** A remoção do Grupo aconteceu em `94ebd4b`. O parágrafo
+> "O Grupo continua no lugar", no fim desta seção, é o estado de **antes** da
+> execução.
+
 O que mudou desde a última vez não é a conclusão, é a **base dela**. Antes eu
 recomendava A com um modelo de contenção que os cenários tinham reprovado. Agora
 A vem com posse explícita, e ela sustenta o que o Grupo existiria para fazer.
@@ -650,6 +792,10 @@ aconteceu, e a decisão de removê-lo é do Erik.
 ---
 
 # O plano de remoção do Grupo — escrito antes de executar
+
+> **Executado em `94ebd4b`.** O plano está aqui como está — inclusive o tempo
+> futuro — porque ele registra a decisão de **manter o nome legado no disco**,
+> que continua valendo. O que ele previa está no Estado atual.
 
 ## O achado que decide tudo: não há dois modelos
 
@@ -710,24 +856,25 @@ Não há migração de dados, logo não há o que reverter. O passo é reversív
 
 ## O roteador de gesto — a ordem de precedência
 
+> **Vigente, e a tabela mora no [Estado atual](#a-ordem-de-precedência-do-gesto).**
+> Ela não é repetida aqui para não haver duas versões da mesma ordem.
+
 Fonte única. Objeto novo **não** decide precedência por conta própria: ele
 implementa comportamento, e a precedência é resolvida antes dele.
-
-| ordem | quem | quando |
-|---|---|---|
-| 1 | **gesto em curso** | uma vez começado, ele termina — a posse é estável pela vida do gesto |
-| 2 | **deslocar temporário** | espaço apertado, ou botão do meio, no `pointerdown` — resolvido na **fase de captura**, antes de qualquer alvo |
-| 3 | **esticar** | ponteiro na moldura de 10px do objeto |
-| 4 | **ligar** | ponteiro numa pega de borda |
-| 5 | **mover objeto** | ponteiro no corpo do objeto |
-| 6 | **laço** | ponteiro no vazio |
-| 7 | **chão** | o que sobrou |
 
 **A regra que sustenta a ordem**: quem decide o que o ponteiro significa é o
 ESTADO DA ENTRADA, e não o alvo embaixo dele. Foi invertê-la que causou o defeito
 do espaço.
 
 ## O que continua fraco, sem enfeitar
+
+> **Lista de 02/09 — quase toda fechada, e por isso histórica.** Foram resolvidos
+> depois: o feedback nos dois sentidos (passar sobre um membro acende a área,
+> passar sobre a área marca quem é dela), o pico do soltar (era o servidor de
+> desenvolvimento), os casos ambíguos de contenção (medidos, e derrubaram o
+> modelo geométrico), as guias de alinhamento com ímã, e o ícone da seção.
+> **O que continua fraco de verdade está no [Estado atual](#o-que-continua-fraco)** —
+> esta lista fica como registro do que era.
 
 - **Sem feedback de estado na área.** Ela não diz quando está sob o ponteiro, nem
   quem vai junto se você soltar. É o próximo passo do Grupo.
@@ -753,6 +900,10 @@ do espaço.
 ---
 
 # A passada de convergência — o que foi medido no fim
+
+> **Vigente.** É o registro de medida mais recente do Canvas (03/09/2026,
+> `78a7aac`), e o único cujos números foram tirados contra o **build**. Onde
+> outra seção deste arquivo der um número de desempenho diferente, vale este.
 
 ## O pico de 50–83ms era o servidor de desenvolvimento
 

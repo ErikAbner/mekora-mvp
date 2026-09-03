@@ -9,10 +9,25 @@ build, que abre por `file://`. Publicado como Artifact a partir de
 à mão, e **fora do versionamento desde 03/09** (C14): o gerador o reproduz byte a
 byte, então versioná-lo guardava 2,87 MB por vez sem guardar nada.
 
+## Duas frentes, e as regras não são as mesmas
+
+Este repositório carrega **duas coisas com regras diferentes**, e confundi-las já
+custou trabalho nos dois sentidos:
+
+| frente | o que é | regra |
+|---|---|---|
+| **Exploração visual** — `prototipo-mesa.html`, `artefato-mekora.html` | HTML autocontido, sem build, para decidir desenho | **não toca em backend, DB, API nem infraestrutura**: ali nada disso é o produto, e mexer é trabalho jogado fora |
+| **Produto** — `web/`, `backend/`, `contrato/`, `docs/` | o Mekora que roda, com conta, banco e migrações | backend, API, modelo e migração são **trabalho legítimo**, quando o produto pede |
+
+As regras de idioma visual e de honestidade da interface valem para as **duas**.
+
 ## O que não fazer
 
 - Não criar projeto novo, não criar outro index, não apagar exploração anterior.
-- Não mexer em backend, DB, API nem infraestrutura. Isto não é o produto real.
+- **Não mexer em backend, DB, API nem infraestrutura por causa do protótipo.** O
+  `prototipo-mesa.html` não é o produto real; o que ele precisa, ele finge. No
+  produto (`web/` + `backend/`), a regra que vale é outra: mudança de modelo ou
+  de rota é normal, e migração destrutiva continua pedindo aprovação explícita.
 - Não voltar para linguagem de SaaS arredondado. O idioma é **Editorial Utility**:
   preto, off-white, cinzas, raio quase zero, bordas finas, poucas sombras, serifa
   na narrativa, sans na interface, grade rígida, interface silenciosa.
@@ -113,9 +128,19 @@ byte, então versioná-lo guardava 2,87 MB por vez sem guardar nada.
     node scripts/medir.mjs <url> <larg> <alt> [setup.js] <medida.js> [--png=] [--gesto=]
     node scripts/medir.mjs .../prototipo-mesa.html 1440 900 scripts/medidas/smoke.js
     node scripts/artefato.mjs                          # gera E verifica a saída
+    .venv/bin/python -m pytest -q                      # a suíte do backend
 
 `--gesto=arq.js` roda na página, devolve pontos, e o Chrome anda por eles com o
 botão apertado — é como se testa arrasto de verdade.
+
+O portão da interface não tem atalho de `npm`: ele roda da **raiz** do
+repositório, por `scripts/medir.mjs … scripts/portao.js`. Existe um caminho só —
+ver `docs/PLAYBOOK.md`.
+
+**O critério do backend é "a suíte inteira passa", e não um número.** Contagem de
+teste muda a cada rodada, e número escrito à mão em documento vira mentira
+sozinho — inclusive por confundir *coletados* com *passaram*, que já aconteceu.
+Quem quiser o número roda `pytest -q` e lê o rodapé.
 
 **Verde por omissão é pior que vermelho.** Já aconteceu três vezes: `CAPS` lido
 cedo demais, `S.terr` semeado depois de um renome, e `S.conta` nunca setada, que
@@ -126,6 +151,18 @@ reler os casos.
 fundo competindo"*, e não *"cores demais"*. Sem hedge, sem elogio de enchimento,
 sem prescrição sem justificativa. O método está em
 `Projeto-os/erik-project-os/docs/references/interface-craft-2026-08-12.md`.
+
+## Documentação
+
+O mapa está em `docs/README.md`, e ele diz qual documento é **vigente**, qual é
+**ferramenta** e qual é **histórico**. Onboarding começa por ele.
+
+**Quando uma decisão de arquitetura mudar:** atualizar o documento de estado
+vigente, marcar o raciocínio superado como histórico — com aviso no começo da
+seção, sem apagar a medição que o derrubou —, e **não deixar duas verdades
+"atuais" no mesmo arquivo**. A regra inteira está em `docs/README.md`. Isto não é
+capricho: as próximas sessões fazem onboarding por estes arquivos, e a versão
+errada é tão citável quanto a certa.
 
 ## Project OS
 
@@ -145,11 +182,14 @@ Workflows: `audit` (somente leitura), `bugfix`, `feature`, `visual-exploration`.
 
 ## Skills
 
-Parte das skills de desenho do Erik vive **só no Mac** (`emil-design-eng`,
-`interface-craft`, `apple-design`, as de animação, as do GSAP). Nesta máquina elas
-não existem, e pedir por elas aqui não resolve.
+**Confira o que existe no ambiente da sessão antes de supor presença ou
+ausência.** As skills variam por máquina: as de desenho do Erik
+(`emil-design-eng`, `interface-craft`, `apple-design`, as de animação, as do
+GSAP) estão em algumas e não em outras. Esta linha já dizia que elas não existiam
+"nesta máquina" — e estava errada na máquina seguinte, porque foi escrita de uma
+só.
 
 A regra que funciona, e que já se provou uma vez: **skill que carrega método tem o
-método extraído para `docs/references/` do registro**, que é sincronizado. Foi
-assim que o método de crítica sobreviveu à troca de máquina. Ver
-`docs/references/skills-2026-08-24.md`.
+método extraído para `docs/references/` do registro**, que é sincronizado. Assim o
+método vale mesmo onde a skill não existe — foi assim que o método de crítica
+sobreviveu à troca de máquina. Ver `docs/references/skills-2026-08-24.md`.

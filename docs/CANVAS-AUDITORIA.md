@@ -1,5 +1,40 @@
 # Auditoria do Canvas — capacidades, gestos, barra, ícones e teclado
 
+> # Auditoria histórica — superada pela passada de convergência
+>
+> **Escrita em 03/09/2026, ANTES de implementar. Fechada no mesmo dia, em
+> `78a7aac`.** A matriz abaixo é uma fotografia do Canvas **antes** do
+> fechamento: ela existe para registrar o que faltava e por que a ordem de
+> trabalho foi aquela.
+>
+> **Não use esta matriz para saber o que o Canvas faz hoje.** O estado vigente
+> vive em **[`docs/CANVAS.md` § Estado atual](CANVAS.md#estado-atual)**, e é a
+> única matriz de capacidades mantida — duas seriam duas verdades.
+>
+> ## O que a auditoria pediu, e o que foi feito
+>
+> Estas linhas aparecem abaixo como **ausente**, **escondida** ou **limitada**, e
+> **todas existem hoje**:
+>
+> | § | pedido | onde está hoje |
+> |---|---|---|
+> | 1 · 2 | voltar da leitura no mesmo lugar | câmera em `sessionStorage` |
+> | 1 · 2 | enquadrar tudo · enquadrar a escolha | `⌘1` · `⌘2`, e botão na barra |
+> | 1 · 2 | buscar na superfície | `⌘F`, sem acento, como navegação |
+> | 1 · 2 | livro participa de ligação | pontas polimórficas `de_tipo`/`para_tipo` |
+> | 1 · 2 | livro estica | as laterais do livro esticam |
+> | 1 · 2 | escrever nota é invisível | **Nova nota** é a primeira ferramenta da Doca |
+> | 1 · 2 | "Desfazer grupo" mente | virou **Dissolver**, e "grupo" saiu do produto |
+> | 1 · 2 | renomear seção sem affordance | ação nomeada na barra da escolha |
+> | 1 · 2 | ajustar a área ao conteúdo | ação na barra, desabilitada quando não há membros |
+> | 1 · 2 | ligação não é objeto | ligação é escolhível (`liga:`) e some pela barra |
+> | 1 · 2 | duplicar · copiar/colar | `⌘D` · `⌘C`/`⌘V`, com desfazer |
+> | 1 | alinhar · encostar na malha | a malha encosta **todo** objeto ao soltar, e as guias com ímã valem para qualquer tipo (num objeto por vez — arrastar vários ou esticar não alinha) |
+> | 1 | transferir entre seções (A → B) | provado, e desfazível |
+>
+> **Continuam ausentes de propósito**: `⌘A` (a própria auditoria não recomendou),
+> reconectar a ponta de uma ligação, e significado/semântica de ligação.
+
 Escrita em 03/09/2026, antes de implementar. O Erik pediu o inventário primeiro,
 e a razão é boa: o Canvas hoje é tecnicamente forte e funcionalmente incompleto,
 e as duas coisas se confundem quando se olha só para o que funciona.

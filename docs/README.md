@@ -1,7 +1,7 @@
 # Mekora — documentação canônica
 
 **Estado:** vigente
-**Última revisão:** 2026-08-21
+**Última revisão:** 2026-09-03
 
 Quatro documentos, e a ordem entre eles é a ordem de leitura:
 
@@ -37,6 +37,51 @@ protótipos antigos       material com história. Não é norma — DEC-0028
 ```
 
 **Existir no repositório ou num protótipo não torna algo automaticamente uma decisão vigente.**
+
+## Os outros documentos, e o papel de cada um
+
+Os quatro do topo são o núcleo. Estes governam trabalho de verdade e não estavam
+listados aqui — quem chegava tinha de descobri-los por `ls`, e um deles é uma
+auditoria vencida, que se lê como estado se ninguém avisar.
+
+**Referência corrente** — descrevem o que existe hoje:
+
+| | |
+|---|---|
+| `CANVAS.md` | O Canvas. **A seção "Estado atual" é a única descrição autoritativa** do modelo: escolha temporária, Seção como único primitivo persistente, pertencimento explícito, ligações polimórficas, roteador de gesto. O resto do arquivo é registro histórico, marcado como tal |
+| `TELAS-FIGMA.md` | O mapa entre os quadros do Figma e as telas construídas |
+| `FONTES.md` | As fontes, e por que cada uma |
+
+**Operacional e ferramenta** — como se faz, e como se mede:
+
+| | |
+|---|---|
+| `PLAYBOOK.md` | Como acrescentar uma tela: portão, ícones, tokens, rotas, os dois temas. Escrito a partir das telas que existem |
+| `SUBIR.md` | Subir, conferir e voltar atrás em produção; `alembic`, backup, rotas |
+
+**Histórico** — registro de como se chegou aqui. **Não é estado vigente:**
+
+| | |
+|---|---|
+| `CANVAS-AUDITORIA.md` | A auditoria de capacidades do Canvas, de 03/09/2026, **antes** do fechamento. A matriz lista como ausente uma dúzia de coisas que hoje existem. Superada por `CANVAS.md § Estado atual` |
+| `operacional/` | Documentação do app operacional (Kindle Local Tool), preservada da fusão dos repositórios. Descreve uma árvore (`frontend/`, Vitest) que este repositório não tem |
+
+## Quando uma decisão de arquitetura muda
+
+Três passos, e o terceiro é o que costuma faltar:
+
+1. **Atualizar a documentação de estado vigente** — o documento que descreve
+   como a coisa funciona hoje.
+2. **Marcar o raciocínio superado como histórico**, com um aviso no começo da
+   seção. Investigação que foi medida e reprovada **fica**: ela explica por que o
+   modelo atual é assim, e apagá-la faz a mesma medição ser paga de novo.
+3. **Não deixar duas verdades "atuais" no mesmo arquivo.** Uma matriz de
+   capacidades, uma tabela de precedência, um número de desempenho — um de cada,
+   e o resto aponta para ele.
+
+A razão é concreta: **as próximas sessões do Claude Code fazem onboarding por
+estes arquivos.** Num documento com duas verdades, a superada é tão citável
+quanto a vigente — nada no texto diz qual é qual, e o aviso é o que diz.
 
 ## Onde está o resto
 
