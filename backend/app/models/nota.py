@@ -82,6 +82,21 @@ class Nota(Base):
     # é o que permite descobrir que a âncora escorregou.
     trecho = Column(Text, nullable=False, default="")
 
+    # O TEXTO EM VOLTA — e é ele que transforma "percebi que escorregou" em
+    # "achei de novo".
+    #
+    # A `DEC-0016` diz que a âncora é a citação MAIS o texto em volta. A razão é
+    # que a citação sozinha é ambígua: "ele disse que não" aparece quatro vezes
+    # num capítulo, e reancorar pela citação pode grudar a nota na ocorrência
+    # errada com toda a confiança. Com o que vinha antes e depois, a ocorrência
+    # certa se distingue das outras três.
+    #
+    # Vazio é legítimo, e não é falta: a nota escrita antes destas colunas não
+    # tem contexto, e a escada de degraus foi feita para isso — ela cai para o
+    # degrau seguinte em vez de falhar.
+    antes = Column(Text, nullable=False, default="")
+    depois = Column(Text, nullable=False, default="")
+
     # O que a pessoa escreveu. Vazio é o caso comum — marcar sem comentar é a
     # forma mais frequente de anotar, e exigir texto transformaria um gesto de
     # um clique num formulário.

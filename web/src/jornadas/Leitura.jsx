@@ -21,6 +21,7 @@ import { comDeslocamentos, irPara, irParaOComeco, ondeEstouNoLivro, trechoEm } f
 import { GRUPOS, aplicarAparencia, gravarAparencia, lerAparencia } from "../leitor/aparencia.js";
 import { aplicarTema, temaEspelhado } from "../estado/tema.js";
 import { lerSelecao, notasDoBloco } from "../leitor/selecao.js";
+import { EXPLICACAO, procurarNoLivro, reancorar } from "../leitor/ancora.js";
 import { ondeComeca, tituloDoCapitulo, usarSumario } from "../leitor/sumario.js";
 import { blocosDoCapitulo } from "../leitor/abrir.js";
 import "./leitura.css";
@@ -576,7 +577,7 @@ function quando(iso) {
   return d.toLocaleDateString("pt-BR", { day: "numeric", month: "long" });
 }
 
-function Caderno({ livro, notas, capitulo, aoComentar, aoTrocarCor, aoApagar, aoIr, aoFechar }) {
+function Caderno({ livro, notas, capitulo, aoComentar, aoTrocarCor, aoApagar, aoIr, aoFechar, aoProcurarNoLivro, procurando, semParadeiro }) {
   const { itens } = usarSumario(livro);
   const [procura, setProcura] = useState("");
 
@@ -641,8 +642,44 @@ function Caderno({ livro, notas, capitulo, aoComentar, aoTrocarCor, aoApagar, ao
               </p>
 
               {/* O trecho marcado. É por ele que se reconhece a nota — a data e o
-                  número do capítulo não dizem nada sobre o que foi marcado. */}
+                  número do capítulo não dizem nada sobre o que foi marcado.
+
+                  E ELE É O QUE SOBRA quando a âncora se perde: a `DEC-0016`
+                  manda mostrar a citação guardada em vez de apontar para o lugar
+                  errado. */}
               <blockquote>{n.trecho}</blockquote>
+
+              {/* O DEGRAU, quando não foi o primeiro.
+                  A norma pede que a tela DIGA como reencontrou — silêncio aqui
+                  faz uma nota reancorada por semelhança parecer tão certa quanto
+                  uma que nunca se moveu. */}
+              {n.degrau && n.degrau !== "exata" && (
+                <p className={`nota-degrau${n.degrau === "perdida" ? " perdida" : ""}`} role="status">
+                  {EXPLICACAO[n.degrau]}
+                  {n.degrau === "perdida" && (
+                    /* O DEGRAU 5 É UM CONVITE, e depois um fato. Antes de
+                       procurar, "não está neste capítulo" é tudo que se sabe;
+                       depois de varrer o livro e não achar, a frase muda — e
+                       oferecer de novo o mesmo botão faria a pessoa repetir uma
+                       varredura cuja resposta já se tem. */
+                    semParadeiro?.has(n.id) ? (
+                      <> Procurado no livro inteiro: o trecho não está mais lá.</>
+                    ) : (
+                      <>
+                        {" "}
+                        <button
+                          type="button"
+                          className="nota-procurar"
+                          disabled={procurando === n.id}
+                          onClick={() => aoProcurarNoLivro?.(n)}
+                        >
+                          {procurando === n.id ? "Procurando no livro…" : "Procurar no livro inteiro"}
+                        </button>
+                      </>
+                    )
+                  )}
+                </p>
+              )}
 
               <textarea
                 defaultValue={n.comentario}
@@ -696,7 +733,10 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
    * pessoa poder escrever ao lado do que acabou de marcar. */
   const marcar = async (cor, { escrever = false } = {}) => {
     if (!paleta) return;
-    const nova = await aoAnotar?.({ de: paleta.de, ate: paleta.ate, cor, trecho: paleta.trecho });
+    const nova = await aoAnotar?.({
+      de: paleta.de, ate: paleta.ate, cor, trecho: paleta.trecho,
+      antes: paleta.antes, depois: paleta.depois,
+    });
     setPaleta(null);
     /* Limpa a seleção: deixá-la azul por cima do destaque recém-feito esconde
        exatamente o que a pessoa acabou de marcar. */
@@ -728,14 +768,43 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
     [capitulos],
   );
 
+  /* A JANELA JÁ CONTADA, e as notas dela JÁ REANCORADAS.
+   *
+   * A `DEC-0016` diz que o deslocamento guardado é dica de busca, e não
+   * endereço: a nota resolve pela citação mais o texto em volta, em cinco
+   * degraus. Isso acontece aqui, uma vez por capítulo carregado, e não a cada
+   * bloco — a escada varre o texto do capítulo inteiro, e chamá-la por parágrafo
+   * multiplicaria a varredura pelo número de parágrafos.
+   *
+   * A contagem dos blocos vem junto porque ela já era feita duas vezes: uma para
+   * a restauração da marca e outra dentro do `map` do desenho. */
+  const janelaResolvida = useMemo(
+    () =>
+      capitulos.map(({ indice, blocos: b }) => {
+        const comDe = comDeslocamentos(b);
+        return {
+          indice,
+          blocos: comDe,
+          notas: notas
+            .filter((n) => n.capitulo === indice)
+            .map((n) => ({ ...n, ...reancorar(n, comDe) })),
+        };
+      }),
+    [capitulos, notas],
+  );
+
+  /* AS NOTAS COM DEGRAU, para o caderno. A nota de um capítulo que não está
+   * carregado continua como veio: dizer "perdida" sobre um texto que ninguém
+   * abriu seria afirmar o que não se procurou. */
+  const notasComDegrau = useMemo(() => {
+    const porId = new Map();
+    for (const c of janelaResolvida) for (const n of c.notas) porId.set(n.id, n);
+    return notas.map((n) => porId.get(n.id) ?? n);
+  }, [notas, janelaResolvida]);
+
   /* Só as notas deste capítulo. As outras continuam carregadas — virar o
    * capítulo com elas em mãos é imediato, contra um pedido a cada virada que
    * faria o destaque aparecer um instante depois do texto. */
-  const daqui = useMemo(
-    () => notas.filter((n) => n.capitulo === (livro?.capitulo ?? 0)),
-    [notas, livro?.capitulo],
-  );
-
   /* A PALETA APARECE AO SOLTAR O DEDO, e não a cada movimento da seleção.
    * Durante o arrasto a seleção muda continuamente, e uma paleta que segue o
    * cursor atrapalha justamente o gesto de escolher o trecho. */
@@ -800,6 +869,38 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
    * os blocos chegarem é que dá para rolar até o deslocamento. `null` é "não há
    * viagem pendente". */
   const [destino, setDestino] = useState(null);
+
+  /* O DEGRAU 5, sob demanda: procurar a citação no livro inteiro.
+   *
+   * Ele não roda sozinho, e a razão é de custo: abrir oitenta capítulos para
+   * desenhar UMA nota travaria a leitura de todo livro por causa de uma
+   * marcação em cem. A pessoa pede, e a tela diz que está procurando.
+   *
+   * Achou: leva até lá pelo mesmo caminho do marcador — o pai replanta a janela,
+   * e a viagem fica pendente até os blocos chegarem. Ao chegar, a escada resolve
+   * a nota naquele capítulo sozinha, e o caderno passa a dizer "reencontrado no
+   * livro" sem que ninguém precise guardar isso à mão.
+   *
+   * Não achou: a nota continua perdida, e o `null` é dito na tela. */
+  const [procurandoNota, setProcurandoNota] = useState(null);
+  const [semParadeiro, setSemParadeiro] = useState(() => new Set());
+
+  const procurarACitacao = async (nota) => {
+    if (!livro?.capitulos) return;
+    setProcurandoNota(nota.id);
+    try {
+      const achada = await procurarNoLivro(nota, livro.capitulos, (i) => blocosDoCapitulo(livro, i));
+      if (!achada) {
+        setSemParadeiro((antes) => new Set(antes).add(nota.id));
+        return;
+      }
+      setDestino({ capitulo: achada.capitulo, deslocamento: achada.de });
+      aoIrParaCapitulo?.(achada.capitulo);
+      setCaderno(false);
+    } finally {
+      setProcurandoNota(null);
+    }
+  };
 
   /* UM PAINEL DE CADA VEZ.
    *
@@ -1076,14 +1177,19 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
             contínua tirou os botões de virar e, com eles, a única forma de
             voltar que existia. */}
         {temAntes && <div ref={sentinelaAcima} className="sentinela" aria-hidden="true" />}
-        {capitulos.map(({ indice, blocos: b }) => (
+        {janelaResolvida.map(({ indice, blocos: b, notas: daqui_ }) => (
           <section key={indice} className="capitulo" data-capitulo={indice}>
-            {comDeslocamentos(b).map((bloco, i) => (
+            {b.map((bloco, i) => (
               <Bloco
                 key={i}
                 {...bloco}
+                /* A NOTA PERDIDA NÃO PINTA NADA. Ela não tem onde: o trecho não
+                   existe mais neste texto, e pintar no deslocamento guardado é
+                   exatamente o defeito que a escada existe para acabar —
+                   destacar a palavra errada com toda a confiança. Ela continua
+                   no caderno, com a citação guardada e o estado dito. */
                 destaques={notasDoBloco(
-                  notas.filter((n) => n.capitulo === indice),
+                  daqui_.filter((n) => n.degrau !== "perdida"),
                   bloco.de,
                   (bloco.texto ?? "").length,
                 )}
@@ -1291,7 +1397,7 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
       {caderno && (
         <Caderno
           livro={livro}
-          notas={notas}
+          notas={notasComDegrau}
           capitulo={livro.capitulo ?? 0}
           aoComentar={aoComentar}
           aoTrocarCor={aoTrocarCor}
@@ -1305,6 +1411,9 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
             const alvo = prosa.current?.querySelector(`[data-capitulo="${cap}"] [data-de]`);
             if (alvo) alvo.scrollIntoView({ behavior: "smooth", block: "start" });
           }}
+          aoProcurarNoLivro={procurarACitacao}
+          procurando={procurandoNota}
+          semParadeiro={semParadeiro}
           aoFechar={() => setCaderno(false)}
         />
       )}

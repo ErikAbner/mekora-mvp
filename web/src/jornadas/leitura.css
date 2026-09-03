@@ -964,3 +964,36 @@
 }
 .marcadores-tirar:hover { color: var(--foreground); background: var(--muted); }
 .marcadores-tirar:focus-visible { outline: 1px solid var(--foreground); outline-offset: -1px; }
+
+/* ---- O degrau da âncora ----------------------------------------------------
+ *
+ * A `DEC-0016` manda a tela DIZER como a nota foi reencontrada, e dizer quando
+ * perdeu. Sem esta linha, uma nota reancorada por semelhança parece tão certa
+ * quanto uma que nunca se moveu — e a diferença entre as duas é a razão de a
+ * escada existir.
+ *
+ * Ela é um aviso, não um rótulo: tinta secundária, corpo menor que o da nota, e
+ * filete só na perdida, que é a única que pede atenção.
+ */
+.nota-degrau {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 14px; line-height: 22px;
+  text-wrap: pretty;
+}
+.nota-degrau.perdida {
+  padding-inline-start: 12px;
+  border-inline-start: 1px solid var(--border);
+}
+/* O botão é TEXTO com sublinhado, e não caixa: ele mora dentro de uma frase, e
+   uma caixa no meio de um parágrafo quebra a leitura da própria frase. */
+.nota-procurar {
+  padding: 0;
+  border: 0; background: none;
+  color: var(--foreground);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.nota-procurar:disabled { color: var(--muted-foreground); cursor: default; text-decoration: none; }
+.nota-procurar:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }

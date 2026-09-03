@@ -17,6 +17,12 @@ from app.services import acesso_service
 
 router = APIRouter()
 
+# Quantos caracteres de cada lado da citação entram na âncora. Cento e vinte é
+# perto de duas linhas de leitura: o bastante para distinguir uma ocorrência das
+# outras três iguais num capítulo, e pouco o bastante para não virar cópia do
+# parágrafo dentro do banco.
+CONTEXTO = 120
+
 
 class NotaNova(BaseModel):
     # A FONTE VEM PRIMEIRO, e a ordem não é estilo: o Pydantic valida na ordem
@@ -37,6 +43,12 @@ class NotaNova(BaseModel):
     cor: str = "amarelo"
     trecho: str = ""
     comentario: str = ""
+    # O TEXTO EM VOLTA — a outra metade da âncora, pela `DEC-0016`. Vem da tela,
+    # que é quem tem o texto do capítulo em mãos: o servidor nunca abriu o EPUB.
+    # Opcionais, porque a nota do livro inteiro não tem trecho e portanto não tem
+    # volta, e porque um cliente antigo continua podendo gravar sem eles.
+    antes: str = ""
+    depois: str = ""
 
     @field_validator("fonte")
     @classmethod
@@ -121,6 +133,10 @@ def _fora(n: Nota) -> dict:
     return {
         "id": n.id, "job_id": n.job_id, "capitulo": n.capitulo, "de": n.de, "ate": n.ate,
         "cor": n.cor, "trecho": n.trecho, "comentario": n.comentario,
+        # A ÂNCORA VAI INTEIRA PARA A TELA. É ela quem resolve os cinco degraus
+        # da `DEC-0016`, porque é ela quem tem o texto do livro — o servidor
+        # guarda e devolve, não procura.
+        "antes": n.antes, "depois": n.depois,
         # De onde a nota veio. A tela precisa disto para dizer "do Kindle" em
         # vez de oferecer "abrir no livro" numa nota que não tem livro aqui.
         "origem": n.origem, "fonte": n.fonte,
@@ -427,6 +443,10 @@ def criar(
         pessoa_id=pessoa.id, job_id=job_id, capitulo=nova.capitulo,
         de=nova.de, ate=nova.ate, cor=nova.cor,
         trecho=nova.trecho[:2000], comentario=nova.comentario,
+        # O CONTEXTO TEM TETO PRÓPRIO, e ele é curto de propósito: o que
+        # desambigua uma citação é a frase ao redor, não a página. Guardar mais
+        # engorda cada linha sem tornar o degrau 2 mais certeiro.
+        antes=nova.antes[:CONTEXTO], depois=nova.depois[:CONTEXTO],
         fonte=nova.fonte,
     )
     db.add(n)

@@ -52,6 +52,11 @@ function blocoDe(no) {
  * seleção de tamanho zero), seleção fora do texto do livro, e seleção que só
  * pegou espaço em branco. Nenhum dos três deve virar nota.
  */
+/* Quantos caracteres de cada lado entram na âncora. O mesmo número do servidor
+ * (`CONTEXTO`, em `api/notas.py`), e ele corta lá também — o cliente escolhe,
+ * e o servidor não confia. */
+const CONTEXTO = 120;
+
 export function lerSelecao(raiz) {
   const sel = window.getSelection?.();
   if (!sel || sel.isCollapsed || sel.rangeCount === 0) return null;
@@ -73,6 +78,22 @@ export function lerSelecao(raiz) {
   const trecho = faixa.toString();
   if (ate <= de || !trecho.trim()) return null;
 
+  /* O TEXTO EM VOLTA — a outra metade da âncora, pela `DEC-0016`.
+   *
+   * Sem ele, reancorar uma nota só pode casar a citação, e a citação sozinha é
+   * ambígua: "ele disse que não" aparece quatro vezes num capítulo, e casar a
+   * primeira gruda a nota na ocorrência errada com toda a confiança. Com o que
+   * vinha antes e depois, a ocorrência certa se distingue das outras três.
+   *
+   * Lido do PARÁGRAFO, e não do capítulo, e nos dois blocos das pontas quando a
+   * seleção atravessa mais de um: é o texto colado ao trecho que desambigua.
+   * Uma seleção no começo do parágrafo tem `antes` vazio, e está certo — não há
+   * o que guardar ali. */
+  const inicio = Number(blocoInicio.dataset.de || 0);
+  const fim = Number(blocoFim.dataset.de || 0);
+  const antes = (blocoInicio.textContent || "").slice(Math.max(0, de - inicio - CONTEXTO), de - inicio);
+  const depois = (blocoFim.textContent || "").slice(ate - fim, ate - fim + CONTEXTO);
+
   /* A posição na tela, para a paleta aparecer JUNTO do que foi marcado. Uma
    * paleta em canto fixo obriga a olhar para longe do texto e voltar. */
   const caixa = faixa.getBoundingClientRect();
@@ -81,6 +102,8 @@ export function lerSelecao(raiz) {
     de,
     ate,
     trecho,
+    antes,
+    depois,
     onde: { x: caixa.left + caixa.width / 2, y: caixa.top },
   };
 }

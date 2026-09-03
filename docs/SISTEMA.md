@@ -264,6 +264,24 @@ rebaixado a dica de busca. Ela resolve em cinco degraus, nesta ordem:
    perdida      o trecho não existe mais neste texto
 ```
 
+**Construído em 03/09/2026.** A escada vive em `web/src/leitor/ancora.js`, e ela roda no NAVEGADOR
+porque é lá que o texto do livro existe — o servidor nunca abriu o EPUB, e por isso ele guarda e
+devolve a âncora sem procurar nada. O banco ganhou as colunas `antes` e `depois` em `notas`: sem o
+texto em volta, o degrau 2 não tem com o que casar, e a citação sozinha é ambígua justamente quando
+importa — *"ele disse que não"* aparece quatro vezes num capítulo.
+
+Os degraus 1 a 4 resolvem no capítulo carregado, uma vez por capítulo, e não por parágrafo. **O
+degrau 5 é pedido, e não automático**: varrer o livro inteiro para desenhar uma nota travaria a
+leitura de todo livro por causa de uma marcação em cem. A nota perdida oferece *"Procurar no livro
+inteiro"*, e depois de procurar ela diz que não achou em vez de oferecer de novo.
+
+**A resolução não é gravada de volta.** O deslocamento guardado é dica de busca, e uma dica que se
+reescreve sozinha a cada abertura passa a afirmar o que só suspeitava — o erro de uma corrida viraria
+o dado da próxima.
+
+**Nota sem trecho não é nota perdida:** a do "Escrever sobre o livro" não aponta para lugar nenhum de
+propósito.
+
 **"Perdida" é um estado que a nota pode ter, e a tela precisa poder dizê-lo.** Quando o trecho some,
 o produto **diz que perdeu** e mostra a citação guardada — em vez de apontar para o lugar errado. E
 quando reencontra por um degrau que não o primeiro, **diz por qual**: *"O parágrafo mudou; o trecho

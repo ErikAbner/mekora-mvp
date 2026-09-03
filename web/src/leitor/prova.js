@@ -286,5 +286,97 @@
   }));
   caso("sumario: livro sem indice devolve lista vazia", await semNada.sumario(), []);
 
-  return { total: 22, falhas: falhas.length, detalhe: falhas };
+  /* ── A ESCADA DA ÂNCORA — `DEC-0016` ──────────────────────────────────────
+   *
+   * Cinco degraus e um estado. Cada caso aqui é uma forma diferente de o texto
+   * ter mudado desde que a nota foi feita, e o que se afirma não é "não
+   * estourou": é POR QUAL degrau ela resolveu. Um teste que só olhasse a posição
+   * daria verde com a nota certa achada pelo motivo errado — e o motivo é o que
+   * a tela mostra para a pessoa.
+   */
+  const { reancorar, procurarNoLivro } = await import("/src/leitor/ancora.js");
+
+  const A = "O verme que primeiro roeu as frias carnes.";
+  const B = "Ele disse que nao, e depois disse que nao de novo.";
+  const capitulo = (...textos) => textos.map((t) => ({ tipo: "paragrafo", texto: t }));
+
+  /* 1 · exata — o texto nao mudou. */
+  caso(
+    "ancora: degrau 1, o texto no lugar",
+    reancorar({ de: 2, ate: 7, trecho: "verme", antes: "O ", depois: " que" }, capitulo(A)),
+    { de: 2, ate: 7, degrau: "exata" },
+  );
+
+  /* 2 · contexto — o paragrafo cresceu na frente, e a citacao aparece DUAS
+     vezes. So o texto em volta separa a certa da errada: sem ele, o degrau 3
+     casaria a primeira ocorrencia, que nao e a marcada. */
+  caso(
+    "ancora: degrau 2, o texto em volta desempata",
+    reancorar(
+      { de: 4, ate: 7, trecho: "nao", antes: "disse que ", depois: " de novo" },
+      capitulo(`Uma frase nova antes. ${B}`),
+    ),
+    /* 60 e nao 62: o prefixo tem 22 caracteres e a segunda ocorrencia de "nao"
+       comeca em 38 dentro de B. Conferido a mao — a primeira versao deste caso
+       esperava 62 e o codigo estava certo. */
+    { de: 60, ate: 63, degrau: "contexto" },
+  );
+
+  /* 3 · citacao — o paragrafo mudou e nao ha contexto guardado (nota antiga,
+     de antes das colunas `antes`/`depois`). Ela resolve pela citacao dentro do
+     mesmo paragrafo. */
+  caso(
+    "ancora: degrau 3, so a citacao, no mesmo paragrafo",
+    reancorar({ de: 0, ate: 5, trecho: "verme", antes: "", depois: "" }, capitulo(`Vinte anos antes. ${A}`)),
+    { de: 20, ate: 25, degrau: "citacao" },
+  );
+
+  /* 4 · capitulo — o trecho mudou de paragrafo. */
+  caso(
+    "ancora: degrau 4, o trecho mudou de paragrafo",
+    reancorar({ de: 3, ate: 8, trecho: "verme", antes: "", depois: "" }, capitulo("Um paragrafo curto.", A)),
+    { de: 21, ate: 26, degrau: "capitulo" },
+  );
+
+  /* perdida — o trecho nao existe mais neste texto, e a posicao devolvida e a
+     GUARDADA: quem desenha nao deve usa-la, e quem depura merece ve-la. */
+  caso(
+    "ancora: perdida quando o trecho sumiu",
+    reancorar({ de: 10, ate: 20, trecho: "uma frase que nao esta la", antes: "", depois: "" }, capitulo(A)),
+    { de: 10, ate: 20, degrau: "perdida" },
+  );
+
+  /* A NOTA SEM TRECHO nao e uma nota perdida: e a nota do livro inteiro, que
+     nao aponta para lugar nenhum de proposito. */
+  caso(
+    "ancora: nota sem trecho nao vira perdida",
+    reancorar({ de: 0, ate: 0, trecho: "", antes: "", depois: "" }, capitulo(A)),
+    { de: 0, ate: 0, degrau: "exata" },
+  );
+
+  /* A ocorrencia mais PERTO da dica, e nao a primeira do texto: o deslocamento
+     guardado deixou de mandar, mas continua sabendo por onde a nota andava. */
+  caso(
+    "ancora: entre duas iguais, ganha a mais perto da dica",
+    reancorar({ de: 40, ate: 43, trecho: "nao", antes: "", depois: "" }, capitulo(B)),
+    /* As duas ocorrencias de "nao" estao em 14 e 38, e a dica e 40: ganha a de
+       38, por dois caracteres de distancia contra vinte e seis. */
+    { de: 38, ate: 41, degrau: "citacao" },
+  );
+
+  /* 5 · livro — sob demanda, e ele pula o capitulo da propria nota, que os
+     degraus de cima ja tentaram. */
+  const paginas = [capitulo("Nada aqui."), capitulo("Nem aqui."), capitulo(A)];
+  caso(
+    "ancora: degrau 5 acha no livro inteiro",
+    await procurarNoLivro({ capitulo: 0, trecho: "verme" }, 3, async (i) => paginas[i]),
+    { capitulo: 2, de: 2, ate: 7 },
+  );
+  caso(
+    "ancora: degrau 5 devolve null quando nao ha",
+    await procurarNoLivro({ capitulo: 0, trecho: "girafa" }, 3, async (i) => paginas[i]),
+    null,
+  );
+
+  return { total: 31, falhas: falhas.length, detalhe: falhas };
 })()

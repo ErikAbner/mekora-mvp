@@ -24,10 +24,14 @@ export function usarNotas(jobId) {
 
   useEffect(() => { recarregar(); }, [recarregar]);
 
-  const marcar = useCallback(async ({ capitulo, de, ate, cor, trecho }) => {
+  const marcar = useCallback(async ({ capitulo, de, ate, cor, trecho, antes = "", depois = "" }) => {
     setErro(null);
     try {
-      const nova = await criarNota(jobId, { capitulo, de, ate, cor, trecho, comentario: "" });
+      /* O TEXTO EM VOLTA VAI JUNTO. É a outra metade da âncora da `DEC-0016`, e
+       * ele só existe no instante da marcação: depois, o parágrafo pode ter
+       * mudado, e reconstruir o contexto a partir do texto de hoje guardaria o
+       * texto errado com data de ontem. */
+      const nova = await criarNota(jobId, { capitulo, de, ate, cor, trecho, antes, depois, comentario: "" });
       /* A nota entra na lista com o que o SERVIDOR devolveu, e não com o que
        * foi enviado: o `id` vem de lá, e sem ele apagar e comentar não teriam
        * em que pegar. */
