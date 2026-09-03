@@ -60,6 +60,16 @@ byte, então versioná-lo guardava 2,87 MB por vez sem guardar nada.
   exceção vencer a regra.
 - **Editar por linha exige âncora de conteúdo, não deslocamento.** Splice por
   limite de bloco já engoliu 14 rotas e duas regras de CSS.
+- **`useCallback` com dependência declarada depois deixa a tela branca.** O array
+  de dependências é avaliado NA HORA, e não quando a função roda — um `const`
+  citado ali antes de existir dá `Cannot access X before initialization`. Custou
+  três rodadas no `Canvas.jsx` (`escolha`, `medidasRef`, `espacoRef`,
+  `membrosDe`). O portão pega, mas só depois do build: a tela monta com 4 nós.
+- **Função que vai como propriedade para muitos filhos não pode depender de
+  lista.** Ela troca de identidade a cada mudança da lista e quebra o `memo` de
+  todos de uma vez. Já custou 66ms num quadro de arrasto com 123 objetos, duas
+  vezes: em `usarHistoria` e nos `useCallback` de `usarCanvas`. A saída é ler a
+  lista por `ref`.
 - Heredoc de python com acento literal falha contra fonte JS que tem `\uXXXX`.
   Usar edição por linha: `split("\n")`, achar por prefixo, emendar.
 

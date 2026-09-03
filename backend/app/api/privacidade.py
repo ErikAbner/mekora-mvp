@@ -84,7 +84,7 @@ O_QUE_GUARDAMOS = [
     ("estudos", "estudos", Estudo, "Os estudos que você montou, com a pergunta de cada um."),
     ("no_canvas", "notas no Canvas", NoCanvas, "As notas que você pôs no Canvas, e onde cada uma está."),
     ("grupos_do_canvas", "grupos no Canvas", GrupoCanvas, "As áreas que você nomeou no Canvas, e o tamanho de cada uma."),
-    ("ligacoes", "ligações", Ligacao, "As ligações que você fez entre notas."),
+    ("ligacoes", "ligações", Ligacao, "As ligações que você fez entre notas e livros."),
     ("midias_do_canvas", "imagens no Canvas", MidiaCanvas, "As fotos que você pôs no Canvas."),
     ("livros_do_canvas", "livros no Canvas", LivroCanvas, "Quais livros você pôs no Canvas, e onde cada um está. O livro em si está acima, com os arquivos."),
     ("grupos_calados", "grupos que você mandou parar", GrupoIgnorado, "Os grupos de notas parecidas que você pediu para o Mekora não sugerir mais."),
@@ -341,7 +341,7 @@ def levar(
             for n in db.query(NoCanvas).filter(NoCanvas.pessoa_id == pessoa.id).all()
         ],
         "ligacoes": [
-            {"de": l.de_id, "para": l.para_id, "como": l.como}
+            {"de": f"{l.de_tipo}:{l.de_id}", "para": f"{l.para_tipo}:{l.para_id}", "como": l.como}
             for l in db.query(Ligacao).filter(Ligacao.pessoa_id == pessoa.id).all()
         ],
         # O NOME DO GRUPO É COISA ESCRITA PELA PESSOA, como o comentário da

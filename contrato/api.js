@@ -578,11 +578,23 @@ export function tirarDoCanvas(id) {
   return pede(`/canvas/nos/${id}`, { method: "DELETE" });
 }
 
-export function ligarNotas(de_id, para_id) {
+/* A PONTA E `(tipo, id)`, e a chave composta do Canvas ja e exatamente isso —
+ * `nota:12`, `livro:3`. Por isso a funcao recebe as chaves inteiras: quem chama
+ * nao precisa desmontar nada, e nao ha como trocar o tipo de lugar. */
+/* A tela de Nota liga NOTA a NOTA, e continua falando em ids — ela nao conhece o
+ * Canvas nem chaves compostas. Este atalho traduz, e e o unico lugar que precisa
+ * saber que a ponta tem tipo. */
+export function ligarNotas(a, b) {
+  return ligar(`nota:${a}`, `nota:${b}`);
+}
+
+export function ligar(chaveA, chaveB) {
+  const [de_tipo, de_id] = chaveA.split(":");
+  const [para_tipo, para_id] = chaveB.split(":");
   return pede("/canvas/ligacoes", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ de_id, para_id }),
+    body: JSON.stringify({ de_tipo, de_id: Number(de_id), para_tipo, para_id: Number(para_id) }),
   });
 }
 

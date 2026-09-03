@@ -56,6 +56,11 @@ class Movimento(BaseModel):
 class LigacaoNova(BaseModel):
     de_id: int
     para_id: int
+    # O tipo de cada ponta. `"nota"` por padrão porque toda ligação que existia
+    # antes desta mudança era nota→nota, e quem não mandar o campo continua
+    # falando a mesma língua.
+    de_tipo: str = "nota"
+    para_tipo: str = "nota"
 
 
 class GrupoNovo(BaseModel):
@@ -83,15 +88,47 @@ def _quem(db: Session, biscoito: Optional[str]) -> Pessoa:
     return pessoa
 
 
-def _normalizar(a: int, b: int) -> tuple:
-    """Sempre o menor primeiro.
+TIPOS_DE_PONTA = {"nota", "livro"}
+
+
+def _normalizar(a: tuple, b: tuple) -> tuple:
+    """Sempre a menor ponta primeiro.
 
     A ligação é MÚTUA: ligar A a B é o mesmo que ligar B a A. Sem normalizar, a
     restrição de unicidade não impede as duas linhas, e a superfície mostraria
-    dois traços sobrepostos entre as mesmas notas — e apagar um deixaria o
+    dois traços sobrepostos entre as mesmas coisas — e apagar um deixaria o
     outro.
+
+    A ponta agora é `(tipo, id)`, e a ordem é a da tupla: o tipo desempata quando
+    os ids coincidem, o que passou a ser possível — a nota 7 e o livro 7 existem
+    ao mesmo tempo.
     """
-    return (a, b) if a < b else (b, a)
+    return (a, b) if a <= b else (b, a)
+
+
+def _ponta_existe(db: Session, pessoa: Pessoa, tipo: str, ident: int) -> bool:
+    """A ponta existe e é desta pessoa.
+
+    Sem chave estrangeira, esta função é a guarda — e o `pessoa_id` está no
+    FILTRO. Sem ele, um pedido escrito à mão ligaria a nota de outra pessoa à
+    sua, e a superfície desenharia um traço para dentro do acervo alheio.
+    """
+    if tipo == "nota":
+        return db.query(Nota).filter(Nota.id == ident, Nota.pessoa_id == pessoa.id).count() == 1
+    if tipo == "livro":
+        # O LIVRO, e não a posição dele na superfície.
+        #
+        # A ligação pertence ao conhecimento, e não ao layout: ela é entre a NOTA
+        # e o LIVRO, e continua verdadeira depois de o cartão sair do Canvas — é
+        # exatamente o que já vale para nota→nota, onde a ponta é `notas.id` e
+        # não `canvas_nos.id`.
+        return (
+            db.query(ProcessingJob)
+            .filter(ProcessingJob.id == ident, ProcessingJob.dono_id == pessoa.id)
+            .count()
+            == 1
+        )
+    return False
 
 
 # `/canvas/superficie` e nao `/canvas`, porque `/canvas` e uma TELA — a mesma
@@ -152,7 +189,11 @@ def superficie(
             for n, nota in nos
         ],
         "ligacoes": [
-            {"id": l.id, "de_id": l.de_id, "para_id": l.para_id, "como": l.como}
+            {
+                "id": l.id, "como": l.como,
+                "de_tipo": l.de_tipo, "de_id": l.de_id,
+                "para_tipo": l.para_tipo, "para_id": l.para_id,
+            }
             for l in db.query(Ligacao).filter(Ligacao.pessoa_id == pessoa.id).all()
         ],
         # OS LIVROS VÊM NO MESMO PEDIDO, pela mesma razão dos grupos. E vêm
@@ -292,32 +333,37 @@ def ligar(
 ) -> dict:
     pessoa = _quem(db, mekora_sessao)
 
-    if nova.de_id == nova.para_id:
-        raise HTTPException(status_code=400, detail="Uma nota não se liga a ela mesma.")
+    if nova.de_tipo not in TIPOS_DE_PONTA or nova.para_tipo not in TIPOS_DE_PONTA:
+        raise HTTPException(status_code=400, detail="Tipo de ponta desconhecido.")
 
-    de_id, para_id = _normalizar(nova.de_id, nova.para_id)
+    a = (nova.de_tipo, nova.de_id)
+    b = (nova.para_tipo, nova.para_id)
+    if a == b:
+        raise HTTPException(status_code=400, detail="Uma coisa não se liga a ela mesma.")
 
-    donas = (
-        db.query(Nota)
-        .filter(Nota.id.in_([de_id, para_id]), Nota.pessoa_id == pessoa.id)
-        .count()
-    )
-    if donas != 2:
-        raise HTTPException(status_code=404, detail="Nota não encontrada.")
+    (de_tipo, de_id), (para_tipo, para_id) = _normalizar(a, b)
+
+    if not _ponta_existe(db, pessoa, de_tipo, de_id) or not _ponta_existe(db, pessoa, para_tipo, para_id):
+        raise HTTPException(status_code=404, detail="Não encontrado.")
 
     ja = (
         db.query(Ligacao)
-        .filter(Ligacao.pessoa_id == pessoa.id, Ligacao.de_id == de_id, Ligacao.para_id == para_id)
+        .filter(
+            Ligacao.pessoa_id == pessoa.id,
+            Ligacao.de_tipo == de_tipo, Ligacao.de_id == de_id,
+            Ligacao.para_tipo == para_tipo, Ligacao.para_id == para_id,
+        )
         .first()
     )
+    fora = {"de_tipo": de_tipo, "de_id": de_id, "para_tipo": para_tipo, "para_id": para_id}
     if ja is not None:
-        return {"id": ja.id, "de_id": de_id, "para_id": para_id, "ja_existia": True}
+        return {"id": ja.id, **fora, "ja_existia": True}
 
-    l = Ligacao(pessoa_id=pessoa.id, de_id=de_id, para_id=para_id, como="mao")
+    l = Ligacao(pessoa_id=pessoa.id, **fora, como="mao")
     db.add(l)
     db.commit()
     db.refresh(l)
-    return {"id": l.id, "de_id": de_id, "para_id": para_id, "ja_existia": False}
+    return {"id": l.id, **fora, "ja_existia": False}
 
 
 @router.delete("/canvas/ligacoes/{ligacao_id}", status_code=204)

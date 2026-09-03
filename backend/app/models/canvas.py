@@ -79,15 +79,33 @@ class Ligacao(Base):
     __tablename__ = "ligacoes"
 
     # A mesma dupla não se liga duas vezes. A ordem importa para a restrição,
-    # mas não para o sentido: a ligação é MÚTUA — ver `normalizar` na API, que
-    # guarda sempre o menor id primeiro para que A→B e B→A sejam a mesma linha.
-    __table_args__ = (UniqueConstraint("pessoa_id", "de_id", "para_id", name="uq_ligacoes_pessoa_id"),)
+    # mas não para o sentido: a ligação é MÚTUA — ver `_normalizar` na API, que
+    # guarda sempre a menor ponta primeiro para que A→B e B→A sejam a mesma linha.
+    __table_args__ = (
+        UniqueConstraint(
+            "pessoa_id", "de_tipo", "de_id", "para_tipo", "para_id", name="uq_ligacoes_pontas"
+        ),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     pessoa_id = Column(Integer, ForeignKey("pessoas.id", ondelete="CASCADE"), nullable=False, index=True)
 
-    de_id = Column(Integer, ForeignKey("notas.id", ondelete="CASCADE"), nullable=False, index=True)
-    para_id = Column(Integer, ForeignKey("notas.id", ondelete="CASCADE"), nullable=False, index=True)
+    # AS PONTAS SÃO (TIPO, ID), e não mais dois ids de nota.
+    #
+    # Enquanto elas eram `nota_id → nota_id`, o Livro era objeto de segunda
+    # classe: ele entra na superfície, é escolhido, arrastado, vira membro de
+    # seção e é desfeito como qualquer outro — mas não podia dizer a única coisa
+    # que ele naturalmente diz, que é "esta nota veio daqui".
+    #
+    # NÃO HÁ CHAVE ESTRANGEIRA nas pontas, e não pode haver: uma coluna não
+    # aponta para duas tabelas. O que a substitui já existia e continua sendo a
+    # resposta — a rota que apaga uma nota apaga as ligações dela, e a superfície
+    # simplesmente não desenha ligação cuja ponta não encontra. Os dois caminhos
+    # estão cobertos por teste.
+    de_tipo = Column(String, nullable=False, default="nota", server_default="nota")
+    de_id = Column(Integer, nullable=False, index=True)
+    para_tipo = Column(String, nullable=False, default="nota", server_default="nota")
+    para_id = Column(Integer, nullable=False, index=True)
 
     # `mao` quando a pessoa ligou; deixa espaço para `sugerida` quando Conexões
     # existir. Guardado porque a tela precisa distinguir: uma ligação sugerida

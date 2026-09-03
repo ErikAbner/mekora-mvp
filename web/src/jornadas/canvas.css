@@ -1375,3 +1375,12 @@
 
 /* Fora do modo, a lateral do cartao estica. */
 .nota-canvas.na-lateral { cursor: ew-resize; }
+
+/* A LIGACAO ESCOLHIDA. Ela e a unica coisa da superficie que nao tem area — o
+ * traco fica na tinta da escolha e engrossa, que e o equivalente do contorno nos
+ * objetos. Dividido pela escala pela mesma razao deles: de longe, um traco de
+ * escolha some junto com o resto. */
+.traco.escolhido {
+  stroke: var(--escolha);
+  stroke-width: calc(3px / var(--escala, 1));
+}

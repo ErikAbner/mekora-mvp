@@ -262,11 +262,23 @@ def uma(
     # A ligação é mútua: ela pode estar guardada em qualquer um dos dois lados,
     # e a nota do "outro lado" é a que não é esta.
     ligadas = []
+    # AS PONTAS TÊM TIPO, e o filtro precisa dele: sem `de_tipo == "nota"`, apagar
+    # a nota 7 levaria junto uma ligação que aponta para o LIVRO 7. Esta rota é o
+    # que substitui a chave estrangeira que as pontas perderam ao virarem
+    # polimórficas — ela precisa estar certa.
     for l in db.query(Ligacao).filter(
         Ligacao.pessoa_id == pessoa.id,
-        (Ligacao.de_id == n.id) | (Ligacao.para_id == n.id),
+        ((Ligacao.de_tipo == "nota") & (Ligacao.de_id == n.id))
+        | ((Ligacao.para_tipo == "nota") & (Ligacao.para_id == n.id)),
     ).all():
-        outro = l.para_id if l.de_id == n.id else l.de_id
+        # O "outro lado" pode ser um LIVRO agora, e aí ele não entra nesta lista:
+        # ela é de notas ligadas, e um livro não é uma nota. A ligação continua
+        # existindo e sendo desenhada no Canvas.
+        desteLado = l.de_tipo == "nota" and l.de_id == n.id
+        outro_tipo = l.para_tipo if desteLado else l.de_tipo
+        outro = l.para_id if desteLado else l.de_id
+        if outro_tipo != "nota":
+            continue
         vizinha = db.query(Nota).filter(Nota.id == outro).first()
         if vizinha is not None:
             ligadas.append({
@@ -567,9 +579,14 @@ def sugestoes(
     if n is None:
         raise HTTPException(status_code=404, detail="Nota não encontrada.")
 
+    # SÓ AS PONTAS QUE SÃO NOTA. A sugestão é sobre notas; um livro ligado a esta
+    # não é candidato a ser sugerido, e sem o filtro de tipo o id de um livro
+    # excluiria a nota de mesmo número da lista.
     ligadas = set()
     for a, b in db.query(Ligacao.de_id, Ligacao.para_id).filter(
-        (Ligacao.de_id == nota_id) | (Ligacao.para_id == nota_id)
+        Ligacao.de_tipo == "nota",
+        Ligacao.para_tipo == "nota",
+        (Ligacao.de_id == nota_id) | (Ligacao.para_id == nota_id),
     ):
         ligadas.add(a)
         ligadas.add(b)

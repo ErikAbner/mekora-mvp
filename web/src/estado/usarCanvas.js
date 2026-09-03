@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  apagarGrupo, criarGrupo, desligarNotas, lerCanvas, ligarNotas, moverNoCanvas,
+  apagarGrupo, criarGrupo, desligarNotas, lerCanvas, ligar as ligarNoServidor, moverNoCanvas,
   moverLivroNoCanvas, mudarGrupo, porLivroNoCanvas, voltarGrupo, porMidiaNoCanvas, porNoCanvas,
   tirarDoCanvas, tirarLivroDoCanvas,
 } from "../../../contrato/api.js";
@@ -177,7 +177,7 @@ export function usarCanvas() {
   const ligar = useCallback(async (a, b) => {
     setErro(null);
     try {
-      await ligarNotas(a, b);
+      await ligarNoServidor(a, b);
       await recarregar();
     } catch (e) {
       setErro(e.message);

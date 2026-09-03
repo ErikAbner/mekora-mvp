@@ -384,7 +384,7 @@ function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, aoE
     const el = caixa.current;
     if (!el || !aoMedir) return undefined;
     const olho = new ResizeObserver(() => {
-      aoMedir(no.id, { largura: el.offsetWidth, altura: el.offsetHeight });
+      aoMedir(`nota:${no.id}`, { largura: el.offsetWidth, altura: el.offsetHeight });
     });
     olho.observe(el);
     return () => olho.disconnect();
@@ -595,7 +595,7 @@ function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, aoE
            * porque o chão passa a tratar só do chão: sem ela, `chaoMove` começa
            * com um desvio que não é sobre a câmera, e o próximo gesto que
            * alguém acrescentar põe outro. */
-          onPointerDown={(e) => fio.comecar(e, no.nota_id)}
+          onPointerDown={(e) => fio.comecar(e, `nota:${no.id}`)}
           onPointerMove={fio.puxar}
           onPointerUp={fio.largar}
           onPointerCancel={fio.largar}
@@ -703,7 +703,7 @@ function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, aoE
                 sem esta porta a ligação teria virado um recurso só de quem usa
                 mouse. Ela abre uma lista das outras notas — nenhum modo, nenhum
                 estado novo na superfície. */}
-            <button type="button" role="menuitem" onClick={() => aoLigarDaLista(no.nota_id)}>
+            <button type="button" role="menuitem" onClick={() => aoLigarDaLista(`nota:${no.nota_id}`)}>
               Ligar a…
             </button>
             {/* TIRAR não apaga: a nota continua na estante e no caderno. O rótulo
@@ -733,7 +733,7 @@ const Nota = memo(NotaCrua);
  * isolated special-case implementation", e a prova é esta: escolher, arrastar
  * junto, entrar numa seção e desfazer não sabem que existe um tipo novo.
  */
-function LivroCrua({ livro, aoMover, aoTirar, aoEscolher, aoSeguir, aoInscrever, carregada, escolhido, entreVarios, escala = 1 }) {
+function LivroCrua({ livro, aoMover, aoTirar, aoLigarDaLista, aoEscolher, aoSeguir, aoInscrever, aoMedir, fio, alvoDoFio, carregada, escolhido, entreVarios, escala = 1 }) {
   const caixa = useRef(null);
   const arrasto = useRef(null);
   const [posicao, setPosicao] = useState(null);
@@ -744,6 +744,19 @@ function LivroCrua({ livro, aoMover, aoTirar, aoEscolher, aoSeguir, aoInscrever,
     window.removeEventListener("pointerup", soltar);
     window.removeEventListener("pointercancel", abortar);
   };
+
+  /* O LIVRO TAMBÉM SE MEDE. Sem isso, quem desenha os traços não sabia a altura
+   * dele e a ligação de um livro nunca aparecia — o valor era calculado uma vez,
+   * quando ainda não havia livro na cena, e nada mandava recalcular. */
+  useEffect(() => {
+    const el = caixa.current;
+    if (!el || !aoMedir) return undefined;
+    const olho = new ResizeObserver(() => {
+      aoMedir(`livro:${livro.id}`, { largura: el.offsetWidth, altura: el.offsetHeight });
+    });
+    olho.observe(el);
+    return () => olho.disconnect();
+  }, [aoMedir, livro.id]);
 
   useEffect(() => {
     if (!aoInscrever) return undefined;
@@ -804,7 +817,7 @@ function LivroCrua({ livro, aoMover, aoTirar, aoEscolher, aoSeguir, aoInscrever,
   return (
     <article
       ref={caixa}
-      className={`livro-canvas${posicao ? " movendo" : ""}${escolhido ? " escolhido" : ""}${escolhido && entreVarios ? " entre-varios" : ""}`}
+      className={`livro-canvas${posicao ? " movendo" : ""}${alvoDoFio ? " alvo-do-fio" : ""}${escolhido ? " escolhido" : ""}${escolhido && entreVarios ? " entre-varios" : ""}`}
       data-livro={livro.id}
       style={{
         left: livro.x,
@@ -821,6 +834,20 @@ function LivroCrua({ livro, aoMover, aoTirar, aoEscolher, aoSeguir, aoInscrever,
       {/* A CAPA CAI PARA O TÍTULO quando não há imagem — o mesmo caminho do
           Preparo. Endereço existir não é a imagem existir: `/storage/temp` é
           apagado por idade. */}
+      {/* AS QUATRO PEGAS, iguais às da nota. O livro é a ORIGEM das notas, e até
+          agora ele não podia dizer isso na superfície — era a última assimetria
+          sem razão semântica entre os dois. */}
+      {["cima", "baixo", "esquerda", "direita"].map((lado) => (
+        <span
+          key={lado}
+          className={`nota-pega nota-pega-${lado}`}
+          onPointerDown={(e) => fio.comecar(e, `livro:${livro.id}`)}
+          onPointerMove={fio.puxar}
+          onPointerUp={fio.largar}
+          onPointerCancel={fio.largar}
+          aria-hidden="true"
+        />
+      ))}
       <span className="livro-capa">
         {livro.capa && !semCapa ? (
           <img src={livro.capa} alt="" draggable="false" loading="lazy" onError={() => setSemCapa(true)} />
@@ -835,6 +862,9 @@ function LivroCrua({ livro, aoMover, aoTirar, aoEscolher, aoSeguir, aoInscrever,
       <span className="nota-acoes">
         <MenuDoCartao rotulo="Ações do livro">
           <Link to={`/leitura/${livro.job_id}`} role="menuitem">Abrir no livro</Link>
+          <button type="button" role="menuitem" onClick={() => aoLigarDaLista(`livro:${livro.job_id}`)}>
+            Ligar a…
+          </button>
           {/* TIRAR NÃO APAGA — e aqui a distinção é mais importante do que na
               nota: o livro é um arquivo, e some do Canvas sem sair da estante. */}
           <button type="button" role="menuitem" onClick={() => aoTirar(livro.id)}>
@@ -1174,11 +1204,11 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
   const [medidas, setMedidas] = useState({});
   const medidasRef = useRef(null);
   medidasRef.current = medidas;
-  const anotarMedida = useCallback((id, caixa) => {
+  const anotarMedida = useCallback((chave, caixa) => {
     setMedidas((m) => {
-      const antes = m[id];
+      const antes = m[chave];
       if (antes && antes.largura === caixa.largura && antes.altura === caixa.altura) return m;
-      return { ...m, [id]: caixa };
+      return { ...m, [chave]: caixa };
     });
   }, []);
 
@@ -1310,19 +1340,29 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
 
   /* Há algo que possa virar seção? Seção não entra em seção, então uma escolha
    * só de áreas não oferece o comando. */
-  const temObjetoEscolhido = [...escolha].some((c) => !c.startsWith("secao:"));
+  const temObjetoEscolhido = [...escolha].some((c) => !c.startsWith("secao:") && !c.startsWith("liga:"));
+  /* SÓ LIGAÇÕES ESCOLHIDAS. Uma ligação não vira seção e não se "tira da
+   * superfície" — ela se desfaz, e o rótulo tem de dizer isso. */
+  const soLigacoes = escolha.size > 0 && [...escolha].every((c) => c.startsWith("liga:"));
 
   const tirarEscolhidos = useCallback(() => {
     /* O QUE ESTAVA LÁ, guardado antes de sumir: sem a posição e o `nota_id`, não
      * há como trazer de volta. É a diferença entre desfazer e "criar de novo". */
     const notas = [];
     const deVolta = [];
+    const fios = [];
     const secoes = [];
     for (const chave of escolha) {
       const [tipo, id] = chave.split(":");
       if (tipo === "nota") {
         const n = nosRef.current.find((x) => x.id === Number(id));
         if (n) { notas.push({ nota_id: n.nota_id, x: n.x, y: n.y }); aoTirar(n.id); }
+      }
+      if (tipo === "liga") {
+        const l = ligacoesRef.current.find((x) => x.id === Number(id));
+        /* Desfazer uma ligação apaga A RELAÇÃO, e nunca as pontas. Por isso o que
+         * se guarda para o desfazer são as duas chaves de entidade. */
+        if (l) { fios.push({ a: `${l.de_tipo}:${l.de_id}`, b: `${l.para_tipo}:${l.para_id}` }); aoDesligar(l.id); }
       }
       if (tipo === "livro") {
         const l = livrosRef.current.find((x) => x.id === Number(id));
@@ -1337,16 +1377,20 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
       }
     }
     limparEscolha();
-    if (!notas.length && !secoes.length && !deVolta.length) return;
+    if (!notas.length && !secoes.length && !deVolta.length && !fios.length) return;
     historia.registrar({
-      rotulo: notas.length + secoes.length + deVolta.length > 1
-        ? `${notas.length + secoes.length + deVolta.length} tirados`
-        : "Tirado da superfície",
+      rotulo:
+        fios.length && !notas.length && !secoes.length && !deVolta.length
+          ? (fios.length > 1 ? `${fios.length} ligações desfeitas` : "Ligação desfeita")
+          : notas.length + secoes.length + deVolta.length + fios.length > 1
+            ? `${notas.length + secoes.length + deVolta.length + fios.length} tirados`
+            : "Tirado da superfície",
       /* DESFAZER TRAZ DE VOLTA COM ID NOVO. A nota é a mesma — o que se recria é
        * a POSIÇÃO dela na superfície, que é o que "tirar" apagou. Para a seção,
        * o objeto em si é recriado, e o id muda: um refazer encadeado depois disso
        * não encontraria a seção antiga. Está anotado em docs/CANVAS.md. */
       desfazer: async () => {
+        for (const f of fios) await aoLigar(f.a, f.b);
         for (const n of notas) await aoTrazer(n);
         for (const l of deVolta) await aoTrazerLivro(l.job_id, l.x, l.y);
         for (const id of secoes) await aoDevolverSecao(id);
@@ -1361,6 +1405,12 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
        * Sem isto, `⌘Z ⌘⇧Z` devolvia a nota e não a tirava de volta: medido, o
        * refazer deixava três cartões onde deviam ficar dois. */
       refazer: async () => {
+        for (const f of fios) {
+          const atual = ligacoesRef.current.find(
+            (x) => `${x.de_tipo}:${x.de_id}` === f.a && `${x.para_tipo}:${x.para_id}` === f.b,
+          );
+          if (atual) aoDesligar(atual.id);
+        }
         for (const n of notas) {
           const atual = nosRef.current.find((x) => x.nota_id === n.nota_id);
           if (atual) aoTirar(atual.id);
@@ -1372,7 +1422,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
         for (const id of secoes) await aoDissolverSecao(id);
       },
     });
-  }, [escolha, aoTirar, aoTirarLivro, aoDissolverSecao, aoDevolverSecao, limparEscolha, secoes, historia, aoTrazer, aoTrazerLivro]);
+  }, [escolha, aoTirar, aoTirarLivro, aoDesligar, aoLigar, aoDissolverSecao, aoDevolverSecao, limparEscolha, secoes, historia, aoTrazer, aoTrazerLivro]);
 
   /* O TECLADO CHEGA NA ESCOLHA. `Esc` larga tudo; `Delete` e `Backspace` tiram
    * da superfície o que estiver escolhido.
@@ -1454,6 +1504,28 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
 
   const pintados = useRef(new Set());
 
+  /* A PONTA COM O DESLOCAMENTO VIVO SOMADO — a mesma conta do desenho, só que com
+   * o passo do gesto em curso. Ela vive num `ref` porque o repinte imperativo
+   * roda fora do React e precisa dos dados atuais sem virar dependência. */
+  const pontaVivaRef = useRef(null);
+  pontaVivaRef.current = (tipo, id, deslocamentos) => {
+    if (tipo === "nota") {
+      const n = nosRef.current.find((x) => x.nota_id === id);
+      if (!n) return null;
+      const m = medidasRef.current?.[`nota:${n.id}`] ?? { largura: n.largura || 375, altura: 200 };
+      const d = deslocamentos.get(`nota:${n.id}`);
+      return { x: n.x + (d?.dx ?? 0), y: n.y + (d?.dy ?? 0), largura: d?.largura ?? m.largura, altura: m.altura };
+    }
+    if (tipo === "livro") {
+      const l = livrosRef.current.find((x) => x.job_id === id);
+      if (!l) return null;
+      const m = medidasRef.current?.[`livro:${l.id}`] ?? { largura: l.largura || 280, altura: 420 };
+      const d = deslocamentos.get(`livro:${l.id}`);
+      return { x: l.x + (d?.dx ?? 0), y: l.y + (d?.dy ?? 0), largura: m.largura, altura: m.altura };
+    }
+    return null;
+  };
+
   const pintarArrasto = useCallback((deslocamentos) => {
     /* Os acompanhantes andam por `transform`, que é a mesma propriedade que o
      * cartão arrastado já usa — e que não custa layout. */
@@ -1470,15 +1542,10 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
     for (const [id, el] of tracosNoDom.current) {
       const l = ligacoesRef.current.find((x) => x.id === id);
       if (!l) continue;
-      const a = nosRef.current.find((n) => n.nota_id === l.de_id);
-      const b = nosRef.current.find((n) => n.nota_id === l.para_id);
+      const a = pontaVivaRef.current(l.de_tipo, l.de_id, deslocamentos);
+      const b = pontaVivaRef.current(l.para_tipo, l.para_id, deslocamentos);
       if (!a || !b) continue;
-      const cx = (n) => {
-        const m = medidasRef.current[n.id] ?? { largura: n.largura || 375, altura: 200 };
-        const d = deslocamentos.get(`nota:${n.id}`);
-        return { x: n.x + (d?.dx ?? 0), y: n.y + (d?.dy ?? 0), largura: d?.largura ?? m.largura, altura: m.altura };
-      };
-      el.setAttribute("d", caminhoDaLigacao(cx(a), cx(b)).d);
+      el.setAttribute("d", caminhoDaLigacao(a, b).d);
     }
   }, []);
 
@@ -1858,6 +1925,46 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
   /* MOVER UMA CHAVE, seja ela do tipo que for. É o único lugar do Canvas que
    * sabe traduzir chave em ação, e por isso é o único que precisa mudar quando
    * um tipo novo entra. */
+  /* DUAS CHAVES, E ELAS NÃO SÃO A MESMA.
+   *
+   *   chave da POSIÇÃO   `nota:12`  — a linha em `canvas_nos`, que é onde o
+   *                                   cartão está. É a que a escolha, o arrasto
+   *                                   e a cena usam.
+   *   chave da ENTIDADE  `nota:340` — a nota em si, ou o livro na estante. É a
+   *                                   que a LIGAÇÃO usa.
+   *
+   * A diferença importa: a ligação pertence ao conhecimento, e não ao layout.
+   * Ela continua verdadeira depois de o cartão sair da superfície — é o que já
+   * valia para nota→nota, e é o que passa a valer para livro→nota.
+   *
+   * Confundi-las gravaria a ligação apontando para uma posição, e tirar o cartão
+   * do Canvas apagaria uma afirmação sobre duas ideias. */
+  const chaveDaEntidade = useCallback((chaveDePosicao) => {
+    const [tipo, id] = chaveDePosicao.split(":");
+    if (tipo === "nota") {
+      const n = nosRef.current.find((x) => x.id === Number(id));
+      return n ? `nota:${n.nota_id}` : null;
+    }
+    if (tipo === "livro") {
+      const l = livrosRef.current.find((x) => x.id === Number(id));
+      return l ? `livro:${l.job_id}` : null;
+    }
+    return null;
+  }, []);
+
+  /* E o caminho de volta: da entidade para o que está na superfície. */
+  const posicaoDaEntidade = useCallback((tipo, id) => {
+    if (tipo === "nota") {
+      const n = nosRef.current.find((x) => x.nota_id === id);
+      return n ? `nota:${n.id}` : null;
+    }
+    if (tipo === "livro") {
+      const l = livrosRef.current.find((x) => x.job_id === id);
+      return l ? `livro:${l.id}` : null;
+    }
+    return null;
+  }, []);
+
   const moverChave = useCallback((chave, x, y, largura, secao) => {
     const [tipo, id] = chave.split(":");
     if (tipo === "nota") aoMover(Number(id), x, y, largura, secao);
@@ -1923,17 +2030,37 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
   const tracos = useMemo(() => {
     const linhas = [];
     const pontas = [];
-    const caixaDe = (n) => {
-      const m = medidas[n.id] ?? { largura: n.largura || 375, altura: 200 };
-      return { x: n.x, y: n.y, largura: m.largura, altura: m.altura };
+    /* DOS DADOS, E NÃO DA CENA. A cena é preenchida por `useEffect`, depois do
+     * desenho: lê-la aqui dava a caixa de quem já estava inscrito e nada para
+     * quem acabou de entrar — e como o livro não mandava medida, o traço dele
+     * nunca era recalculado. Foi assim que a ligação livro→nota existia no
+     * servidor e não aparecia na tela. */
+    const caixaDaPonta = (tipo, id) => {
+      if (tipo === "nota") {
+        const n = nos.find((x) => x.nota_id === id);
+        if (!n) return null;
+        const m = medidas[`nota:${n.id}`] ?? { largura: n.largura || 375, altura: 200 };
+        return { x: n.x, y: n.y, largura: m.largura, altura: m.altura };
+      }
+      if (tipo === "livro") {
+        const l = livros.find((x) => x.job_id === id);
+        if (!l) return null;
+        const m = medidas[`livro:${l.id}`] ?? { largura: l.largura || 280, altura: 420 };
+        return { x: l.x, y: l.y, largura: m.largura, altura: m.altura };
+      }
+      return null;
     };
 
     for (const l of ligacoes) {
-      const a = nos.find((n) => n.nota_id === l.de_id);
-      const b = nos.find((n) => n.nota_id === l.para_id);
-      if (!a || !b) continue;
-      const forma = caminhoDaLigacao(caixaDe(a), caixaDe(b));
-      linhas.push({ id: l.id, de: a.id, para: b.id, ...forma });
+      /* AS PONTAS SÃO RESOLVIDAS PELA CENA, e não pela lista de notas. É o que
+       * torna o traço agnóstico de tipo: ele não sabe que existe livro. E uma
+       * ligação cuja ponta não está na superfície simplesmente não é desenhada —
+       * é o que substitui a chave estrangeira que as pontas perderam. */
+      const ca = caixaDaPonta(l.de_tipo, l.de_id);
+      const cb = caixaDaPonta(l.para_tipo, l.para_id);
+      if (!ca || !cb) continue;
+      const forma = caminhoDaLigacao(ca, cb);
+      linhas.push({ id: l.id, ...forma });
       pontas.push(...forma.pontas);
     }
     if (!linhas.length) return null;
@@ -1953,7 +2080,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
       altura: Math.max(...ys) - y + FOLGA_DOS_TRACOS,
       linhas,
     };
-  }, [ligacoes, nos, medidas]);
+  }, [ligacoes, nos, livros, medidas]);
 
   /* O CENTRO DO QUE ESTÁ SENDO VISTO, em coordenadas do plano. É onde a seção
    * nova nasce — a origem do plano pode estar a mil pixels daqui. */
@@ -2067,7 +2194,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
     setDesfazerArrumo(null);
   };
 
-  const comecarFio = (e, notaId) => {
+  const comecarFio = (e, chave) => {
     if (e.button !== 0) return;
     /* Como a nota e o chão: quem cuida do próprio gesto não deixa ele subir. */
     e.stopPropagation();
@@ -2075,7 +2202,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
     const caixa = mundo.current.getBoundingClientRect();
     const pega = e.currentTarget.getBoundingClientRect();
     const novo = {
-      de: notaId,
+      de: chave,
       x0: pega.left + pega.width / 2 - caixa.left,
       y0: pega.top + pega.height / 2 - caixa.top,
       x: e.clientX - caixa.left,
@@ -2088,13 +2215,21 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
 
   /* QUEM ESTÁ SOB O DEDO. `elementFromPoint` e não a lista de notas, porque só
    * o navegador sabe quem ficou por cima de quem depois do zoom e do arrasto. */
-  const notaSobOPonteiro = (e) =>
-    Number(document.elementFromPoint(e.clientX, e.clientY)?.closest(".nota-canvas")?.dataset.nota) || null;
+  /* QUEM ESTÁ SOB O DEDO — qualquer objeto ligável, e não só nota.
+   * `elementFromPoint` e não a lista, porque só o navegador sabe quem ficou por
+   * cima de quem depois do zoom e do arrasto. Devolve a chave de POSIÇÃO. */
+  const objetoSobOPonteiro = (e) => {
+    const el = document.elementFromPoint(e.clientX, e.clientY)?.closest(".nota-canvas, .livro-canvas");
+    if (!el) return null;
+    if (el.dataset.no) return `nota:${el.dataset.no}`;
+    if (el.dataset.livro) return `livro:${el.dataset.livro}`;
+    return null;
+  };
 
   const puxarFio = (e) => {
     if (!fioVivo.current) return;
     const caixa = mundo.current.getBoundingClientRect();
-    const sobre = notaSobOPonteiro(e);
+    const sobre = objetoSobOPonteiro(e);
     const novo = {
       ...fioVivo.current,
       x: e.clientX - caixa.left,
@@ -2108,10 +2243,14 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
   const largarFio = (e) => {
     const f = fioVivo.current;
     if (!f) return;
-    const alvo = notaSobOPonteiro(e);
+    const alvo = objetoSobOPonteiro(e);
     /* Soltar no vazio CANCELA, e soltar na mesma nota também. Cancelar no meio
      * do gesto é o que o Muse chama de poder mudar de ideia sem custo. */
-    if (alvo && alvo !== f.de) aoLigar(f.de, alvo);
+    if (alvo && alvo !== f.de) {
+      const a = chaveDaEntidade(f.de);
+      const b = chaveDaEntidade(alvo);
+      if (a && b && a !== b) aoLigar(a, b);
+    }
     fioVivo.current = null;
     setFio(null);
   };
@@ -2618,7 +2757,11 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
                 </button>
               </>
             )}
-            {!secaoSozinha && <button type="button" onClick={tirarEscolhidos}>Tirar</button>}
+            {!secaoSozinha && (
+              <button type="button" onClick={tirarEscolhidos}>
+                {soLigacoes ? (escolha.size > 1 ? "Desfazer ligações" : "Desfazer ligação") : "Tirar"}
+              </button>
+            )}
             <button type="button" onClick={limparEscolha}>Largar</button>
           </div>
         )}
@@ -2763,11 +2906,29 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
               viewBox={`${tracos.x} ${tracos.y} ${tracos.largura} ${tracos.altura}`}
             >
               {tracos.linhas.map((l) => (
-                <g key={l.id} className="traco-todo">
-                  <path ref={(el) => inscreverTraco(l.id, el)} d={l.d} className="traco" fill="none" />
+                <g key={l.id} data-liga={l.id} className="traco-todo">
+                  <path
+                    ref={(el) => inscreverTraco(l.id, el)}
+                    d={l.d}
+                    className={`traco${escolha.has(`liga:${l.id}`) ? " escolhido" : ""}`}
+                    fill="none"
+                  />
                   {/* A LINHA INTEIRA É O ALVO, e ela é invisível: uma curva de
-                      1px é impossível de acertar com o dedo. */}
-                  <path d={l.d} className="traco-pegada" fill="none" />
+                      1px é impossível de acertar com o dedo.
+                      
+                      E ela ESCOLHE. Até agora a ligação era a única coisa da
+                      superfície que não podia ser escolhida: dava para desfazer
+                      pela junta, e mais nada. Agora ela responde a `Delete`, ao
+                      desfazer, e à barra — como qualquer objeto. */}
+                  <path
+                    d={l.d}
+                    className="traco-pegada"
+                    fill="none"
+                    onPointerDown={(e) => {
+                      e.stopPropagation();
+                      escolher(`liga:${l.id}`, { juntando: e.shiftKey || e.metaKey || e.ctrlKey });
+                    }}
+                  />
                   {/* DESFAZER MORA NA PRÓPRIA LIGAÇÃO.
                   
                       Havia uma lista "Ligações N" abaixo do canvas, com um
@@ -2811,9 +2972,13 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
               livro={l}
               aoMover={aoMoverLivro}
               aoTirar={aoTirarLivro}
+              aoLigarDaLista={setLigandoDaLista}
               aoEscolher={escolher}
               aoSeguir={seguirArrasto}
               aoInscrever={inscrever}
+              aoMedir={anotarMedida}
+              fio={maoDoFio}
+              alvoDoFio={fio?.sobre === `livro:${l.id}`}
               escolhido={escolha.has(`livro:${l.id}`)}
               entreVarios={escolha.size > 1}
               escala={camera.escala}
@@ -2834,7 +2999,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
               aoInscrever={inscrever}
               escolhido={escolha.has(`nota:${no.id}`)}
               entreVarios={escolha.size > 1}
-              alvoDoFio={fio?.sobre === no.nota_id}
+              alvoDoFio={fio?.sobre === `nota:${no.id}`}
               escala={camera.escala}
             />
           ))}
@@ -2959,22 +3124,29 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
       {/* A LISTA DE PARA-ONDE-LIGAR — o caminho de teclado do fio. Só as notas
           que ainda não estão ligadas a esta aparecem: oferecer o que já existe
           é oferecer um clique que não faz nada. */}
+      {/* A LISTA DE PARA-ONDE-LIGAR — o caminho de teclado do fio. Ela oferece
+          notas E livros, porque a ponta deixou de ser só nota. Só o que ainda
+          não está ligado a esta aparece: oferecer o que já existe é oferecer um
+          clique que não faz nada. */}
       <Folha
         aberta={ligandoDaLista !== null}
-        titulo="Ligar a qual nota?"
+        titulo="Ligar a quê?"
         aoFechar={() => setLigandoDaLista(null)}
       >
         <ul className="canvas-lista-de-ligar">
-          {nos
-            .filter((o) => o.nota_id !== ligandoDaLista)
+          {[
+            ...nos.map((o) => ({ chave: `nota:${o.nota_id}`, texto: o.texto })),
+            ...livros.map((l) => ({ chave: `livro:${l.job_id}`, texto: l.titulo })),
+          ]
+            .filter((o) => o.chave !== ligandoDaLista)
             .filter((o) => !ligacoes.some((l) =>
-              (l.de_id === ligandoDaLista && l.para_id === o.nota_id) ||
-              (l.para_id === ligandoDaLista && l.de_id === o.nota_id)))
+              (`${l.de_tipo}:${l.de_id}` === ligandoDaLista && `${l.para_tipo}:${l.para_id}` === o.chave) ||
+              (`${l.para_tipo}:${l.para_id}` === ligandoDaLista && `${l.de_tipo}:${l.de_id}` === o.chave)))
             .map((o) => (
-              <li key={o.id}>
+              <li key={o.chave}>
                 <button
                   type="button"
-                  onClick={() => { aoLigar(ligandoDaLista, o.nota_id); setLigandoDaLista(null); }}
+                  onClick={() => { aoLigar(ligandoDaLista, o.chave); setLigandoDaLista(null); }}
                 >
                   {o.texto}
                 </button>
