@@ -230,3 +230,42 @@
   font-size: 14px; line-height: 20px;
   color: var(--muted-foreground);
 }
+
+/* ---- O aviso de páginas sem texto — nós 895:7716 e 966:29091 --------------
+ *
+ * O desenho tem os dois: no computador o aviso à esquerda e o botão à direita;
+ * no telefone, empilhados e o botão de largura cheia. É o mesmo bloco, então é
+ * uma regra só que muda de direção.
+ *
+ * A superfície é `surface/base` sobre a página, e o filete marca o limite: sem
+ * um dos dois a faixa flutuaria no meio do texto sem dizer onde começa.
+ *
+ * O ÍCONE NÃO É DECORAÇÃO: ele é o que faz a faixa ser lida como aviso antes de
+ * a frase ser lida. Vem do arquivo de desenho, com a tinta trocada por
+ * `currentColor` — o `Icone` o põe como máscara, e assim ele segue a tinta do
+ * texto ao lado em vez de trazer preto cozido de dentro do SVG.
+ */
+.livro-pagina-aviso {
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  flex-wrap: wrap;
+  padding: 24px;
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+.livro-pagina-aviso p {
+  display: flex; align-items: center; gap: 12px;
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 16px; line-height: 24px;
+  text-wrap: pretty;
+}
+/* O ícone do desenho tem 32px. Aqui ele acompanha o corpo do texto ao lado: um
+ * ícone maior que a linha que ele anuncia inverte a hierarquia da frase. */
+.livro-pagina-aviso .icone { inline-size: 24px; block-size: 24px; flex: none; }
+.livro-pagina-aviso .dado { color: var(--foreground); font-variant-numeric: tabular-nums; }
+.livro-pagina-aviso .botao { flex: none; }
+
+@media (max-width: 767px) {
+  .livro-pagina-aviso { flex-direction: column; align-items: stretch; gap: 20px; }
+  .livro-pagina-aviso .botao { inline-size: 100%; justify-content: center; }
+}

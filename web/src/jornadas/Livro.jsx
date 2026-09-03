@@ -4,6 +4,7 @@ import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { ConfiguracoesArquivo } from "../componentes/ConfiguracoesArquivo.jsx";
 import { Campo } from "../componentes/Campo.jsx";
+import { Icone } from "../componentes/Icone.jsx";
 import { TrilhaDaPagina } from "../componentes/TrilhaDaPagina.jsx";
 import { achatar, comecosDistintos } from "../../../contrato/texto.js";
 import { DESTAQUES } from "./Leitura.jsx";
@@ -312,6 +313,38 @@ export function Livro() {
           </div>
         </header>
 
+        {/* "TRÊS PÁGINAS FICARAM SEM TEXTO." — nós `895:7716` e `966:29091`.
+            
+            O desenho tem os dois: no computador é uma faixa com o aviso à
+            esquerda e o botão à direita; no telefone, os dois empilhados. É o
+            mesmo bloco, e por isso é um componente só que muda de direção.
+            
+            ELE SÓ APARECE QUANDO HÁ ALGUMA. "Nenhuma página sem texto" num
+            documento de texto é ruído em toda ficha — e não aparece em
+            digitalização, onde TODAS ficam sem texto antes do reconhecimento e o
+            número diria o óbvio com cara de defeito. A mesma guarda que o
+            Preparo já usava.
+            
+            O AVISO PRECISA DE SAÍDA. Antes este fato existia como linha da lista
+            "Este arquivo", sem ação nenhuma: a tela dizia que três páginas
+            abriram vazias e deixava a pessoa procurar o que fazer. O desenho põe
+            "Ver as páginas" ao lado, e é o Preparo — onde se confere o
+            reconhecimento página a página. */}
+        {livro.paginas_sem_texto > 0 && !livro.is_scanned && (
+          <aside className="livro-pagina-aviso">
+            <p>
+              <Icone src="/icones/icone-defeito.svg" />
+              <span>
+                <span className="dado">{livro.paginas_sem_texto}</span>{" "}
+                {livro.paginas_sem_texto === 1
+                  ? "página ficou sem texto."
+                  : "páginas ficaram sem texto."}
+              </span>
+            </p>
+            <Link to={`/preparo/${id}`} className="botao secundaria">Ver as páginas</Link>
+          </aside>
+        )}
+
         <section className="livro-pagina-secao" id="livro-o-que-ficou">
           <h2>
             O que ficou <span className="dado">{notas.length}</span>
@@ -549,18 +582,11 @@ export function Livro() {
             <Linha rotulo="Texto reconhecido">
               {livro.ocr_used ? "Sim, por OCR" : null}
             </Linha>
-            {/* "TRÊS PÁGINAS FICARAM SEM TEXTO" — a linha do nó 895:7631. Ela só
-                aparece quando há alguma: "nenhuma página sem texto" num
-                documento de texto é ruído em toda ficha.
-                
-                E não aparece em digitalização: ali TODAS ficam sem texto antes
-                do reconhecimento, e o número diria o óbvio com cara de defeito. */}
-            <Linha rotulo="Páginas sem texto">
-              {livro.paginas_sem_texto > 0 && !livro.is_scanned
-                ? <><span className="dado">{livro.paginas_sem_texto}</span>{" "}
-                  {livro.paginas_sem_texto === 1 ? "página abriu vazia" : "páginas abriram vazias"}</>
-                : null}
-            </Linha>
+            {/* "Páginas sem texto" SAIU DAQUI. O mesmo fato agora é a faixa de
+                aviso, lá em cima, com "Ver as páginas" ao lado — e o desenho
+                (`895:7631`) tem só a faixa, nunca as duas. Dizer o mesmo número
+                duas vezes na mesma tela é o que faz uma delas envelhecer sozinha.
+                "Páginas que não abriram", abaixo, é outro fato e continua. */}
             <Linha rotulo="Páginas que não abriram">
               {livro.paginas_ilegiveis > 0
                 ? <><span className="dado">{livro.paginas_ilegiveis}</span> de{" "}

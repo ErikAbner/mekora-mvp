@@ -1290,3 +1290,26 @@ Então o que se copia é a RELAÇÃO, e não o valor: as linhas ficam um degrau
 distintas da folha do painel. O painel usa `surface/base` e a linha usa o degrau
 seguinte. A hierarquia que o desenho pede — "a linha se destaca da folha" —
 continua de pé; o par de valores é outro.
+
+## O aviso de páginas sem texto — `895:7716` e `966:29091` · 03/09/2026
+
+O desenho tem a faixa nos dois tamanhos, e o produto tinha o fato sem a faixa:
+"Páginas sem texto" era uma linha da lista "Este arquivo", sem ação nenhuma. A
+tela dizia que três páginas abriram vazias e deixava a pessoa procurar o que
+fazer com isso.
+
+Três desvios, e os três são o de sempre — valor solto contra token:
+
+| no desenho | virou | por quê |
+|---|---|---|
+| `#585858` no texto do aviso | `text/secondary` `#6a6a6a` | `#585858` não existe no sistema; é o mesmo desvio já registrado na Apresentação |
+| ícone de 32px | 24px | 32 é maior que a linha de 24 que ele anuncia, e ícone maior que a frase inverte a hierarquia dela |
+| `surface/base` na faixa, sobre `surface/base` na página | `surface/sunken` (`--card`) com filete | duas superfícies do mesmo valor não se separam: a faixa flutuaria no meio do texto sem dizer onde começa |
+
+**A linha da lista saiu.** O desenho não tem as duas — só a faixa — e dizer o
+mesmo número duas vezes na mesma tela é o que faz uma delas envelhecer sozinha.
+"Páginas que não abriram", logo abaixo na lista, é outro fato e continua.
+
+**O botão leva ao Preparo**, que é onde se confere o reconhecimento página a
+página. É o mesmo destino de "Ver todas as N páginas", na folha do arquivo — e
+não uma segunda tela de páginas.

@@ -113,9 +113,25 @@ foi ao Kindle, e cada um só aparece quando há o que dizer.
 pixels de largura. É a lição prática: numa tela de 4673 de altura, o caminho é
 pedir o NÓ DE DENTRO, e não a tela inteira.
 
-**Ainda ilegíveis nesta tela:** o bloco escuro com a citação e dois botões, e o
-cartão "três páginas ficaram sem texto · Ver o original". Mesmo problema, mesma
-saída — o id do trecho.
+~~**Ainda ilegíveis nesta tela:** o bloco escuro com a citação e dois botões, e o
+cartão "três páginas ficaram sem texto · Ver o original".~~ **Lidos em 03/09**,
+com o conector do Figma ligado — e os dois eram outra coisa:
+
+- **O "bloco escuro com a citação e dois botões"** é a leitura de uma captura de
+  38px de largura. No arquivo são três coisas separadas e todas já construídas: a
+  citação com **filete à esquerda** (`966:29082`), o botão **Ler** em
+  `surface/inverse` (`966:29085` — o "escuro" é ele), **Enviar ao Kindle**
+  secundário e **Ver o preparo** em texto.
+- **O cartão diz "Ver as páginas"**, e não "Ver o original" — o que dissolve o
+  conflito aparente com a decisão do A-21. Ele é `895:7716` no computador e
+  `966:29091` no telefone: ícone `solar:bug-minimalistic-outline`, a frase
+  "Três páginas ficaram sem texto." e um botão secundário. **Construído em
+  03/09**, com a linha equivalente saindo da lista "Este arquivo".
+
+**Com a chave do topo deste arquivo e o id da tela, `get_metadata` e
+`get_design_context` respondem sem depender de o Erik selecionar nada no Figma.**
+O A-27 e o A-30 do `ABERTO.md` descrevem o problema de ACHAR um id que não está
+escrito; com o id em mãos — e eles estão todos aqui — não há bloqueio nenhum.
 
 ~~**Preparo (`966:31504`)**~~ — fechada. O alternador **Guiado / Personalizado**
 subiu para o topo, e o botão do fim saiu. O **tamanho do arquivo** passou a
