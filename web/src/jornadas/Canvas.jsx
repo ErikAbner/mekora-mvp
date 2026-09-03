@@ -57,6 +57,11 @@ function Previa({ link, previa }) {
       href={link}
       target="_blank"
       rel="noreferrer noopener"
+      /* O NAVEGADOR NÃO ARRASTA ISTO. Link e imagem são arrastáveis por padrão:
+       * puxar a prévia começava um arrasto NATIVO, que rouba a captura de
+       * ponteiro e mata o arrasto da nota no meio. Era a causa do cartão de
+       * vídeo se desmanchar e reaparecer em outro lugar. */
+      draggable="false"
       /* NEM `pointerdown` NEM `click` PARAM AQUI.
        *
        * Os dois paravam, e o `pointerdown` era o defeito que o Erik descreveu
@@ -80,6 +85,7 @@ function Previa({ link, previa }) {
             src={previa.imagem}
             alt=""
             loading="lazy"
+            draggable="false"
             /* `onLoad` E `onError`, e o `onLoad` é o que importa.
              *
              * Quando um vídeo não tem `maxresdefault`, o YouTube não responde
@@ -312,6 +318,22 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1
     return { dx: largura - nova, dy: 0, largura: nova };
   };
 
+  /* CANCELAR NÃO É SOLTAR, e essa diferença era um teleporte.
+   *
+   * `pointercancel` dizia "o gesto foi interrompido" e eu tratava como se a
+   * pessoa tivesse largado a nota — inclusive lendo `clientX` do evento de
+   * cancelamento, que chega ZERADO. Medido: dedo andou +168/+112 e o cartão foi
+   * parar em −388/−613, do outro lado da tela.
+   *
+   * Interrompido volta para onde estava. Nada vai para o servidor. */
+  const abortar = (e) => {
+    arrasto.current = null;
+    if (caixa.current?.hasPointerCapture?.(e.pointerId)) {
+      caixa.current.releasePointerCapture(e.pointerId);
+    }
+    setPosicao(null);
+  };
+
   const soltar = (e) => {
     const a = arrasto.current;
     /* `moveu` sobrevive ao fim do arrasto por um instante: o `click` chega
@@ -375,7 +397,11 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1
         }
       }}
       onPointerUp={soltar}
-      onPointerCancel={soltar}
+      onPointerCancel={abortar}
+      /* A CAPTURA PERDIDA TAMBÉM ABORTA. Um arrasto nativo do navegador tira a
+         captura sem mandar `pointercancel` em todos os casos, e sem isto a nota
+         ficaria presa ao ponteiro para sempre. */
+      onLostPointerCapture={abortar}
     >
       {/* AS QUATRO PEGAS DE LIGAÇÃO, uma em cada borda.
        *
@@ -603,6 +629,16 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0 }) {
     else setMedindo(esticar(a.qual, dx, dy));
   };
 
+  /* Mesma razão da nota: interrompido volta, e não confirma. */
+  const abortar = (e) => {
+    arrasto.current = null;
+    if (e.currentTarget?.hasPointerCapture?.(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
+    setDesloca(null);
+    setMedindo(null);
+  };
+
   const soltar = (e) => {
     const a = arrasto.current;
     moveu.current = Boolean(a?.mexeu);
@@ -644,7 +680,8 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0 }) {
         onPointerDown={(e) => pegar(e, "mover")}
         onPointerMove={andar}
         onPointerUp={soltar}
-        onPointerCancel={soltar}
+        onPointerCancel={abortar}
+        onLostPointerCapture={abortar}
       >
         {editando ? (
           <input
@@ -720,7 +757,8 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0 }) {
           }
         }}
         onPointerUp={soltar}
-        onPointerCancel={soltar}
+        onPointerCancel={abortar}
+        onLostPointerCapture={abortar}
       />
     </section>
   );

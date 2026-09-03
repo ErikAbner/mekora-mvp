@@ -1020,3 +1020,14 @@
   cursor: pointer;
 }
 .canvas-escolher-foto:focus-within { outline: 2px solid var(--foreground); outline-offset: 2px; }
+
+/* NADA DENTRO DO CARTAO E ARRASTAVEL PELO NAVEGADOR.
+ *
+ * `draggable="false"` resolve link e imagem no HTML; o `-webkit-user-drag` cobre
+ * o resto no WebKit, onde texto selecionado tambem inicia arrasto nativo. Um
+ * arrasto nativo rouba a captura de ponteiro no meio do gesto — era o que fazia
+ * o cartao de video se desmanchar e reaparecer longe. */
+.nota-canvas,
+.nota-canvas * {
+  -webkit-user-drag: none;
+}
