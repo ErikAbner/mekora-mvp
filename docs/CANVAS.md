@@ -749,3 +749,103 @@ do espaço.
   entre objetos.
 - **Nada disso foi testado com dedo de verdade** — os gestos são medidos por CDP,
   que é mouse. Toque e trackpad continuam sem prova.
+
+---
+
+# A passada de convergência — o que foi medido no fim
+
+## O pico de 50–83ms era o servidor de desenvolvimento
+
+O arrasto de um cartão com 123 objetos produzia, de forma reprodutível, **uma
+tarefa longa de 66–84ms por gesto** — 5 corridas em 5. A causa não estava no
+Canvas: estava no instrumento.
+
+Em `vite` o React roda em StrictMode e o corpo do componente desenha **duas
+vezes**, sobre um pacote não minificado. O mesmo gesto, no build servido por
+`vite preview`:
+
+| onde | tarefas longas por arrasto | pior quadro |
+|---|---|---|
+| `:5180` — servidor de desenvolvimento | 1 (66–84ms) | 83,4ms |
+| `:5181` — build | 0 | 18,5ms |
+
+A separação foi feita com Event Timing e mouse de verdade, que dá o único corte
+honesto entre trabalho e apresentação:
+
+| evento | manipulador | apresentação |
+|---|---|---|
+| `pointerdown` (dev) | 42,7ms | 42,8ms |
+| `pointerup` (dev) | 95,2ms | 32,3ms |
+| `pointerdown` (build) | 2,5ms | 67,3ms |
+| `pointerup` (build) | 11,7ms | 36,0ms |
+
+**Veredito: não se reproduz no build.** O instrumento foi provado vermelho com
+um bloqueio plantado de 120ms, que apareceu como tarefa longa de 121ms.
+
+## A bancada, com 119 objetos e 1806 nós
+
+`scripts/bancada/` — cena e fases. Todas as fases, no build:
+
+    arrastar nota      mediana 16,7   p90 17,4   pior 18,6   2 desenhos
+    arrastar livro     mediana 16,7   p90 18,1   pior 18,6   2 desenhos
+    arrastar secao     mediana 16,7   p90 16,9   pior 18,6   2 desenhos
+    arrastar tres      mediana 16,7   p90 17,9   pior 18,6   2 desenhos
+    puxar fio          mediana 16,7   p90 18,1   pior 18,5  32 desenhos
+    laco               mediana 16,7   p90 18,3   pior 18,5  31 desenhos
+    espaco deslocando  mediana 16,7   p90 16,8   pior 18,7  30 desenhos
+    busca              mediana 16,7   p90 17,8   pior 17,9   5 desenhos
+    zoom por degraus   mediana 16,7   p90 16,8   pior 18,3  10 desenhos
+
+Nenhuma tarefa longa em nenhuma fase.
+
+Os três gestos de arrastar custam **2 desenhos por gesto inteiro**: a pintura é
+imperativa e o React só entra no commit. Laço, deslocamento e fio desenham por
+quadro porque o que muda ali É estado da superfície — o retângulo do laço, a
+câmera, a ponta do fio.
+
+## Os dois defeitos que a bancada encontrou
+
+**Apertar o que já está escolhido derrubava a escolha.** `escolher` só
+preservava a escolha de tamanho 1. Com três cartões escolhidos, apertar um deles
+para arrastar o grupo devolvia `new Set([chave])`: o gesto "mover estes três"
+virava "mover este". Reduzir a um passou a ser gesto de **clique** —
+`pointerup` sem arrasto —, em `escolherSozinho`.
+
+**`animation: canvas-entra 200ms both` vencia o estilo inline, para sempre.** O
+modo `both` mantém o último quadro aplicado depois que a animação acaba, e
+animação ganha de `style`. Como o quadro final é `transform: scale(1)`, todo
+cartão que `pintarArrasto` movia por `transform` ficava parado: o valor inline
+chegava, o computado voltava a `matrix(1,0,0,1,0,0)`. Só o cartão sob o dedo
+escapava, porque `.movendo` desliga a animação.
+
+Medido nos dois sentidos, com os três membros de uma seção:
+
+| modo | andaram durante o gesto | andaram no total |
+|---|---|---|
+| `both` | 0, 0, 0 | 156, 156, 156 |
+| `backwards` | 144, 144, 144 | 156, 156, 156 |
+
+Com `both`, o conteúdo de uma seção ficava parado e **teletransportava ao
+soltar** — a mesma leitura de defeito que o Erik já tinha apontado nas linhas.
+
+**Dissolver pela faixa da seção não era desfazível.** O botão chamava
+`aoDissolverSecao` direto, pulando `dissolver`, que é quem registra o passo e
+revincula os membros. A porta mais óbvia da ação mais destrutiva era a que não
+voltava.
+
+## A jornada de 31 passos
+
+`scripts/bancada/jornada.js` — 31 passos verdes, três corridas seguidas, contra
+o build. Cada passo afirma o EFEITO, e não a ausência de erro: contagens antes e
+depois, `grupo_id` no servidor, posição dos companheiros, nome gravado.
+
+O que ela **não** alcança: confirmar o nome de uma seção. `blur` só acontece
+depois de um foco de verdade, e `dispatchEvent` não dá foco. O caminho inteiro
+— clicar, digitar, Enter, gravar — está provado à parte com `--gesto` e a nova
+flag `--teclas`, que digita por `Input.dispatchKeyEvent`.
+
+## As guardas de dono, provadas nos dois sentidos
+
+`backend/tests/test_canvas.py`, onze casos. As quatro guardas — ponta de ligação
+nota, ponta livro, seção de outra pessoa, livro de outra pessoa — foram
+afrouxadas uma a uma, e o teste correspondente ficou vermelho nas quatro.

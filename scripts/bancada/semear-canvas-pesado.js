@@ -7,22 +7,22 @@
   const livrosVisiveis = [];
   const historico = await fetch('/history', { credentials: 'include' }).then(r => r.json());
   for (const [k, e] of historico.slice(0, 6).entries()) {
-    const l = await P('/canvas/livros', { job_id: e.upload_id, x: k < 3 ? k * 240 : 3000 + k * 300, y: k < 3 ? 20 : 20 });
+    const l = await P('/canvas/livros', { job_id: e.upload_id, x: k < 3 ? k * 250 : 1500 + (k - 3) * 300, y: 140 });
     if (l) livrosVisiveis.push(l);
   }
   const secoes = [];
   for (let i = 0; i < 6; i++) {
     const perto = i === 0;
-    secoes.push(await P('/canvas/grupos', { nome: `Se\u00e7\u00e3o de carga ${i}`, x: perto ? 780 : 2200 + i * 700, y: perto ? 20 : 900, largura: 600, altura: 420 }));
+    secoes.push(await P('/canvas/grupos', { nome: `Se\u00e7\u00e3o de carga ${i}`, x: perto ? 800 : 2600 + i * 700, y: perto ? 140 : 1400, largura: 600, altura: 420 }));
   }
   const notas = [];
   for (let i = 0; i < 100; i++) {
-    notas.push(await P('/canvas/nos', { texto: `Anota\u00e7\u00e3o de carga n\u00famero ${i}, com texto suficiente para o cart\u00e3o ter altura de verdade e o layout custar o que custa.`, x: (i % 10) * 430, y: 520 + Math.floor(i / 10) * 320 }));
+    notas.push(await P('/canvas/nos', { texto: `Anota\u00e7\u00e3o de carga n\u00famero ${i}, com texto suficiente para o cart\u00e3o ter altura de verdade e o layout custar o que custa.`, x: (i % 10) * 430, y: 700 + Math.floor(i / 10) * 320 }));
   }
   /* Tres notas DENTRO da secao visivel: sem elas, a fase que mede "a secao leva
      o conteudo" arrasta um retangulo vazio e passa. */
   const dentroDaSecao = [];
-  for (const [k, pos] of [[0, { x: 820, y: 80 }], [1, { x: 820, y: 250 }], [2, { x: 1120, y: 80 }]]) {
+  for (const [k, pos] of [[0, { x: 840, y: 210 }], [1, { x: 840, y: 380 }], [2, { x: 1140, y: 210 }]]) {
     const n = await P('/canvas/nos', { texto: `Anota\u00e7\u00e3o dentro da se\u00e7\u00e3o ${k}.`, ...pos });
     notas.push(n); dentroDaSecao.push(n);
   }

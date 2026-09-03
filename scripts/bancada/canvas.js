@@ -16,10 +16,13 @@
     return { fase: nome, mediana: +s[Math.floor(s.length / 2)].toFixed(1), p90: +s[Math.floor(s.length * 0.9)].toFixed(1),
              pior: +s[s.length - 1].toFixed(1), desenhos: window.__canvas.desenhos - d0, longas: longas.length - l0 };
   };
-  const arrastar = async (el, x0, y0, dx, dy, passos = 30, extra = {}) => {
+  /* `ondeOuve` existe por causa da PEGA de ligacao: ela trata `pointermove` e
+     `pointerup` nela mesma, com captura de ponteiro. Um arrasto despachado na
+     janela nunca a alcanca, e o fio parece quebrado estando inteiro. */
+  const arrastar = async (el, x0, y0, dx, dy, passos = 30, extra = {}, ondeOuve = window) => {
     el.dispatchEvent(new PointerEvent('pointerdown', o(x0, y0, extra)));
-    for (let i = 1; i <= passos; i++) { window.dispatchEvent(new PointerEvent('pointermove', o(x0 + dx * i / passos, y0 + dy * i / passos))); await new Promise(k => requestAnimationFrame(k)); }
-    window.dispatchEvent(new PointerEvent('pointerup', o(x0 + dx, y0 + dy)));
+    for (let i = 1; i <= passos; i++) { ondeOuve.dispatchEvent(new PointerEvent('pointermove', o(x0 + dx * i / passos, y0 + dy * i / passos))); await new Promise(k => requestAnimationFrame(k)); }
+    ondeOuve.dispatchEvent(new PointerEvent('pointerup', o(x0 + dx, y0 + dy)));
   };
   const esc = () => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
   /* UMA FASE SO VALE SE ACERTAR O QUE ELA DIZ QUE PEGA. A primeira versao pegou
@@ -66,6 +69,32 @@
     r.push(m);
   }
   esc(); await esperar(500);
+  {
+    /* UM PAR AINDA NAO LIGADO. O endpoint e idempotente: repetir um par que ja
+       existe devolve 201 sem criar nada, e a fase relataria `tracos_novos 0`
+       como se puxar fio nao funcionasse. */
+    const estado = await fetch('/canvas/superficie', { credentials: 'include' }).then(x => x.json());
+    const ligados = new Set(estado.ligacoes.filter(l => l.de_tipo === 'nota' && l.para_tipo === 'nota').flatMap(l => [`${l.de_id}|${l.para_id}`, `${l.para_id}|${l.de_id}`]));
+    const cartoes = [...document.querySelectorAll('.nota-canvas')].filter(e => { const c = e.getBoundingClientRect(); return c.top > 8 && c.left > 8 && c.right < innerWidth - 8 && c.bottom < innerHeight - 8; });
+    let de = null, para = null;
+    for (const a of cartoes) { for (const b of cartoes) {
+      if (a === b || ligados.has(`${a.dataset.nota}|${b.dataset.nota}`)) continue;
+      const ca = a.getBoundingClientRect(), cb = b.getBoundingClientRect();
+      if (Math.abs(ca.left - cb.left) < 220) continue;
+      const pega = a.querySelector('.nota-pega-direita') || a.querySelector('.nota-pega');
+      const cp = pega?.getBoundingClientRect();
+      if (!cp || !acerta(pega, cp.left + cp.width / 2, cp.top + cp.height / 2)) continue;
+      de = { el: pega, x: cp.left + cp.width / 2, y: cp.top + cp.height / 2 }; para = cb; break;
+    } if (de) break; }
+    if (!de) r.push({ fase: 'puxar fio', erro: 'nenhum par visivel ainda nao ligado, com pega ao alcance' });
+    else {
+      const t0 = window.__canvas.tracos;
+      const m = await medir('puxar fio', () => arrastar(de.el, de.x, de.y, para.left + 80 - de.x, para.top + 40 - de.y, 30, {}, de.el));
+      await esperar(700); m.tracos_novos = window.__canvas.tracos - t0; r.push(m);
+    }
+  }
+  esc(); await esperar(400);
+  esc(); await esperar(400);
   { const m = document.querySelector('.canvas-mundo').getBoundingClientRect();
     r.push(await medir('laco', () => arrastar(document.querySelector('.canvas-mundo'), m.left + 30, m.top + 180, m.width - 90, 460))); }
   esc(); await esperar(500);
@@ -75,16 +104,6 @@
     r.push(await medir('espaco deslocando', () => arrastar(document.querySelector('.canvas-mundo'), m.left + 400, m.top + 300, 420, 210))); }
   window.dispatchEvent(new KeyboardEvent('keyup', { code: 'Space', key: ' ', bubbles: true })); await esperar(400);
   // criar ligacao: pegar a alca de fio de um cartao e soltar em outro
-  const pa = primeiroVisivel('.nota-canvas .nota-pega', (c) => c.width / 2, (c) => c.height / 2);
-  if (pa) {
-    const alvo = [...document.querySelectorAll('.nota-canvas')].map(e => e.getBoundingClientRect())
-      .find(c => c.left > 8 && c.top > 8 && c.right < innerWidth - 8 && Math.abs(c.left - pa.x) > 200);
-    if (!alvo) r.push({ fase: 'puxar fio', erro: 'nenhum alvo de destino visivel' });
-    else { const t0 = window.__canvas.tracos;
-      const m = await medir('puxar fio', () => arrastar(pa.el, pa.x, pa.y, alvo.left + 80 - pa.x, alvo.top + 40 - pa.y));
-      await esperar(500); m.tracos_novos = window.__canvas.tracos - t0; r.push(m); }
-  } else r.push({ fase: 'puxar fio', erro: 'pega de borda nao alcancavel (.nota-pega)' });
-  esc(); await esperar(400);
   const abrirBusca = document.querySelector('.canvas-procura button');
   if (!abrirBusca) r.push({ fase: 'busca', erro: 'botao de procurar nao encontrado' });
   else {

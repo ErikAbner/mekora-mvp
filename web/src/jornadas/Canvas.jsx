@@ -1113,6 +1113,10 @@ function Secao({ secao, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
     <section
       ref={corpo}
       className={`canvas-secao${escolhido ? " escolhido" : ""}${secao.nome ? " com-nome" : " sem-nome"}`}
+      /* O id no DOM, como a nota (`data-no`) e o livro (`data-livro`) já têm. A
+       * seção era a única dos três sem ele: de fora, não havia como apontar uma
+       * seção específica — nem para medir, nem para levar alguém a ela. */
+      data-secao={secao.id}
       style={estilo}
       aria-label={secao.nome || "Seção sem nome"}
     >
@@ -1183,7 +1187,15 @@ function Secao({ secao, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
           title="A área some; o que estava nela fica"
           className="canvas-secao-dissolver"
           onPointerDown={(e) => e.stopPropagation()}
-          onClick={() => aoApagar(secao.id)}
+          /* A SEÇÃO INTEIRA, e não o id.
+           *
+           * Este botão chamava `aoDissolverSecao` direto — o pedido ao servidor
+           * —, e com isso pulava `dissolver`, que é quem registra o passo da
+           * história e revincula os membros ao desfazer. Resultado medido:
+           * dissolver pela barra da seção não voltava com ⌘Z, e dissolver era a
+           * ação mais destrutiva da superfície. Quem recebe agora é `dissolver`,
+           * que precisa do objeto para saber quem era membro ANTES. */
+          onClick={() => aoApagar(secao)}
         >
           Dissolver seção
         </button>
@@ -3363,7 +3375,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
               pedindoNome={renomeando === g.id ? g.id : 0}
               aoTerminarNome={() => setRenomeando(null)}
               aoMudar={aoMudarSecao}
-              aoApagar={aoDissolverSecao}
+              aoApagar={dissolver}
               escala={camera.escala}
               /* A seção cujo id NÃO existia antes da última criação abre já
                  pedindo o nome. Ver `idsDeAntes`. */

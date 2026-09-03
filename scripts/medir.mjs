@@ -79,6 +79,18 @@ const depois = (bruto.find(x => x.startsWith('--depois=')) || '').slice(9) || nu
    porque arrasto nao se mede com expressao: dispatchEvent sintetico nao gera
    captura de ponteiro, e captura e exatamente onde o arrasto quebra. */
 const gesto = (bruto.find(x => x.startsWith('--gesto=')) || '').slice(8) || null;
+
+/* --teclas=<texto> DIGITA, depois do gesto. `\n` vale por Enter e `\t` por Tab.
+ *
+ * Existe porque `dispatchEvent(new KeyboardEvent(...))` nao escreve nada: o
+ * React ate recebe o `keydown`, mas o campo nao muda de valor e o `blur` que
+ * confirma nunca acontece. Foi assim que renomear uma secao "falhou" tres
+ * medidas seguidas com o produto inteiro: o clique sintetico nao dava foco, e o
+ * Enter sintetico nao disparava o blur. Com `Input.dispatchKeyEvent` o texto
+ * entra como se alguem tivesse batido nas teclas. */
+const teclas = bruto.find(x => x.startsWith('--teclas=')) !== undefined
+  ? (bruto.find(x => x.startsWith('--teclas=')) || '').slice(9)
+  : null;
 const [url, larg = '1440', alt = '900', a4, a5] = bruto.filter(x => !x.startsWith('--'));
 const arqMedida = a5 || a4;
 const arqSetup = a5 ? a4 : null;
@@ -202,6 +214,30 @@ try {
     for (let i = 1; i < pts.length; i++) { await bota('mouseMoved', pts[i]); await espera(24); }
     await bota('mouseReleased', pts[pts.length - 1]);
     await espera(260);
+  }
+
+  if (teclas) {
+    /* `keyDown` com `text` escreve; `keyUp` fecha. Sem `text`, o campo recebe a
+       tecla e nao recebe o caractere, e a medida diz que digitar nao escreve. */
+    const especiais = {
+      '\n': { key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, text: '\r' },
+      '\t': { key: 'Tab', code: 'Tab', windowsVirtualKeyCode: 9, text: '\t' },
+    };
+    for (const ch of teclas) {
+      const e = especiais[ch];
+      if (e) {
+        await manda('Input.dispatchKeyEvent', { type: 'keyDown', ...e });
+        await manda('Input.dispatchKeyEvent', { type: 'keyUp', key: e.key, code: e.code, windowsVirtualKeyCode: e.windowsVirtualKeyCode });
+      } else {
+        /* `keyDown` COM `text` JA INSERE o caractere. Mandar `char` depois
+           insere de novo: a primeira medida saiu "EEssttuuddoo ddaa jjoorrnnaaddaa"
+           e o defeito era do instrumento, nao do campo. */
+        await manda('Input.dispatchKeyEvent', { type: 'keyDown', text: ch, unmodifiedText: ch, key: ch });
+        await manda('Input.dispatchKeyEvent', { type: 'keyUp', key: ch });
+      }
+      await espera(24);
+    }
+    await espera(400);
   }
   console.log(JSON.stringify(await avalia(readFileSync(arqMedida, 'utf8')), null, 2));
   if (png) {
