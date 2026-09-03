@@ -32,6 +32,11 @@ const FOLGA_DOS_TRACOS = 8;
  * como pegá-lo de volta. */
 const LADO_MINIMO = 120;
 
+/* A faixa do nome fica ACIMA do retângulo, e a caixa da seção a inclui. Quem
+ * calcula geometria de seção precisa reservá-la, senão o nome cai por cima do
+ * primeiro membro. */
+const ALTURA_DA_FAIXA = 54;
+
 /* O cartão da prévia. Ele fica DENTRO da nota, e não ao lado: o link é parte do
  * que foi escrito ali, e um cartão solto viraria um segundo objeto na
  * superfície que ninguém pôs.
@@ -854,7 +859,7 @@ const Livro = memo(LivroCrua);
  * área move a NOTA, ou o chão, e nunca o retângulo por baixo. O que pega o
  * retângulo é a barra do título — a mesma regra de uma janela.
  */
-function Secao({ secao, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoEscolher, aoInscrever, escolhido }) {
+function Secao({ secao, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoEscolher, aoInscrever, escolhido, pedindoNome, aoTerminarNome }) {
   const arrasto = useRef(null);
   const [desloca, setDesloca] = useState(null);
   const [medindo, setMedindo] = useState(null);
@@ -864,6 +869,10 @@ function Secao({ secao, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
    * para que duas seções seguidas disparem duas vezes — um booleano já ligado
    * não dispara. */
   useEffect(() => { if (nasceuAgora) setEditando(true); }, [nasceuAgora]);
+
+  /* RENOMEAR PEDIDO DE FORA — pela barra da escolha ou pelo `Enter`. O campo é
+   * daqui, então quem manda é uma propriedade e não uma chamada. */
+  useEffect(() => { if (pedindoNome) setEditando(true); }, [pedindoNome]);
 
   /* O CLIQUE MORRE SE HOUVE ARRASTO — o mesmo truque da nota. Sem isto, arrastar
    * a seção pelo nome abriria o campo de edição ao soltar. */
@@ -1019,6 +1028,9 @@ function Secao({ secao, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
       <header
         className="canvas-secao-faixa"
         onPointerDown={(e) => pegar(e, "mover")}
+        /* DOIS TOQUES NA FAIXA RENOMEIAM. É o gesto que a mão tenta primeiro em
+           qualquer título, e ele não acrescenta nenhum controle permanente. */
+        onDoubleClick={() => setEditando(true)}
       >
         {editando ? (
           <input
@@ -1040,8 +1052,15 @@ function Secao({ secao, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
             ref={focarUmaVez}
             maxLength={120}
             onPointerDown={(e) => e.stopPropagation()}
-            onBlur={(e) => { setEditando(false); if (e.target.value !== secao.nome) aoMudar(secao.id, { nome: e.target.value }); }}
-            onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") setEditando(false); }}
+            onBlur={(e) => {
+              setEditando(false);
+              aoTerminarNome?.();
+              if (e.target.value !== secao.nome) aoMudar(secao.id, { nome: e.target.value });
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") e.currentTarget.blur();
+              if (e.key === "Escape") { setEditando(false); aoTerminarNome?.(); }
+            }}
           />
         ) : (
           /* SEM `stopPropagation` AQUI, e essa foi a razão de a seção não se
@@ -1378,6 +1397,13 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
         return;
       }
       if (e.key === "Escape") { limparEscolha(); return; }
+      /* `Enter` com uma seção escolhida abre o nome — o mesmo que renomear um
+       * arquivo em qualquer lugar do sistema. */
+      if (e.key === "Enter" && secaoSozinhaRef.current) {
+        e.preventDefault();
+        setRenomeando(secaoSozinhaRef.current.id);
+        return;
+      }
       if (e.key !== "Delete" && e.key !== "Backspace") return;
       if (!escolha.size) return;
       e.preventDefault();
@@ -1698,7 +1724,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
       .filter(Boolean);
     if (!caixas.length) return;
     const x = Math.min(...caixas.map((c) => c.x)) - FOLGA_DA_SECAO;
-    const y = Math.min(...caixas.map((c) => c.y)) - FOLGA_DA_SECAO - 54;
+    const y = Math.min(...caixas.map((c) => c.y)) - FOLGA_DA_SECAO - ALTURA_DA_FAIXA;
     const direita = Math.max(...caixas.map((c) => c.x + c.largura)) + FOLGA_DA_SECAO;
     const baixo = Math.max(...caixas.map((c) => c.y + c.altura)) + FOLGA_DA_SECAO;
 
@@ -1772,6 +1798,62 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
     ],
     [nos, livros],
   );
+
+  /* A ÚNICA seção escolhida, quando é só ela. As ações de seção não fazem
+   * sentido sobre um punhado — "ajustar ao conteúdo" de cinco áreas de uma vez é
+   * cinco operações fingindo ser uma. */
+  const secaoSozinha =
+    escolha.size === 1 && [...escolha][0].startsWith("secao:")
+      ? secoes.find((g) => g.id === Number([...escolha][0].split(":")[1]))
+      : null;
+
+  const [renomeando, setRenomeando] = useState(null);
+  const secaoSozinhaRef = useRef(null);
+  secaoSozinhaRef.current = secaoSozinha;
+
+  /* AJUSTAR AO CONTEÚDO — e ele só existe porque redimensionar deixou de mexer em
+   * pertencimento. Antes, encolher a área teria expulsado gente; agora encolher é
+   * só encolher, e "caber nos membros" vira uma operação com significado exato.
+   *
+   * NÃO MOVE NINGUÉM. A área se ajusta ao conteúdo, e não o contrário. */
+  const ajustarAoConteudo = useCallback((secao) => {
+    const membros = membrosDe(secao);
+    if (!membros.length) return;
+    const caixas = membros.map((c) => cena.current.get(c)?.ler()).filter(Boolean);
+    if (!caixas.length) return;
+    const FOLGA = 40;
+    const x = Math.min(...caixas.map((c) => c.x)) - FOLGA;
+    const y = Math.min(...caixas.map((c) => c.y)) - FOLGA - ALTURA_DA_FAIXA;
+    const largura = Math.max(...caixas.map((c) => c.x + c.largura)) + FOLGA - x;
+    const altura = Math.max(...caixas.map((c) => c.y + c.altura)) + FOLGA - y;
+    const antes = { x: secao.x, y: secao.y, largura: secao.largura, altura: secao.altura };
+    aoMudarSecao(secao.id, { x, y, largura, altura });
+    historia.registrar({
+      rotulo: "Seção ajustada",
+      desfazer: () => aoMudarSecao(secao.id, antes),
+      refazer: () => aoMudarSecao(secao.id, { x, y, largura, altura }),
+    });
+  }, [membrosDe, aoMudarSecao, historia]);
+
+  const dissolver = useCallback((secao) => {
+    /* DISSOLVER TIRA A ÁREA E DEIXA O CONTEÚDO. O `SET NULL` do banco solta os
+     * membros; as posições não são tocadas. Desfazer devolve a MESMA seção — ela
+     * sai por marca, não por exclusão — e revincula quem era dela. */
+    const eram = membrosDe(secao);
+    aoDissolverSecao(secao.id);
+    limparEscolha();
+    historia.registrar({
+      rotulo: "Seção dissolvida",
+      desfazer: async () => {
+        await aoDevolverSecao(secao.id);
+        for (const chave of eram) {
+          const o = ondeEstaRef.current(chave);
+          if (o) moverChaveRef.current(chave, o.x, o.y, undefined, secao.id);
+        }
+      },
+      refazer: () => aoDissolverSecao(secao.id),
+    });
+  }, [membrosDe, aoDissolverSecao, aoDevolverSecao, limparEscolha, historia]);
 
   /* MOVER UMA CHAVE, seja ela do tipo que for. É o único lugar do Canvas que
    * sabe traduzir chave em ação, e por isso é o único que precisa mudar quando
@@ -2515,7 +2597,28 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
             {temObjetoEscolhido && (
               <button type="button" onClick={criarSecaoDaEscolha}>Criar seção</button>
             )}
-            <button type="button" onClick={tirarEscolhidos}>Tirar</button>
+            {/* AS AÇÕES DA SEÇÃO aparecem quando ela é a única escolhida. Antes
+                elas não existiam em lugar nenhum: renomear era um clique
+                adivinhado no nome, e ajustar não existia. */}
+            {secaoSozinha && (
+              <>
+                <button type="button" onClick={() => setRenomeando(secaoSozinha.id)}>
+                  {secaoSozinha.nome ? "Renomear" : "Nomear seção"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => ajustarAoConteudo(secaoSozinha)}
+                  disabled={!membrosDe(secaoSozinha).length}
+                  title={membrosDe(secaoSozinha).length ? "A área encolhe até os membros" : "Esta seção não tem membros"}
+                >
+                  Ajustar ao conteúdo
+                </button>
+                <button type="button" onClick={() => dissolver(secaoSozinha)} title="A área some; o que estava nela fica">
+                  Dissolver
+                </button>
+              </>
+            )}
+            {!secaoSozinha && <button type="button" onClick={tirarEscolhidos}>Tirar</button>}
             <button type="button" onClick={limparEscolha}>Largar</button>
           </div>
         )}
@@ -2631,6 +2734,8 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
               escolhido={escolha.has(`secao:${g.id}`)}
               key={g.id}
               secao={g}
+              pedindoNome={renomeando === g.id ? g.id : 0}
+              aoTerminarNome={() => setRenomeando(null)}
               aoMudar={aoMudarSecao}
               aoApagar={aoDissolverSecao}
               escala={camera.escala}
