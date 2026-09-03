@@ -129,9 +129,27 @@ As regras de idioma visual e de honestidade da interface valem para as **duas**.
     node scripts/medir.mjs .../prototipo-mesa.html 1440 900 scripts/medidas/smoke.js
     node scripts/artefato.mjs                          # gera E verifica a saída
     .venv/bin/python -m pytest -q                      # a suíte do backend
+    node scripts/classes.mjs                           # classe de dois donos, e classe de fora
+    node scripts/medir.mjs <url> 1440 1000 scripts/coluna.js   # coluna estrangulada
+    node scripts/seletores.mjs                         # seletor que não casa em rota nenhuma
 
 `--gesto=arq.js` roda na página, devolve pontos, e o Chrome anda por eles com o
 botão apertado — é como se testa arrasto de verdade.
+
+**O portão de seletor e escopo, de 03/09.** Três defeitos da mesma semana tinham
+a mesma forma — o seletor com um modelo errado do DOM, e a tela parecendo certa:
+`.conta` do `conta.css` caindo no `<span>` da barra do Canvas; o grid `14px 1fr`
+da lista de Trazer recebendo um filho sem marca; e
+`.cabecalho-acoes > .acao:not(.cabecalho-menu)` mirando neto. Nenhum dos três é
+visível no CSS lido sozinho, e nenhum é cor, contraste ou corpo — então o portão
+não os via.
+
+    classes.mjs   classe usada num módulo e definida só na folha de outro
+    coluna.js     texto com 3+ palavras quebrando uma palavra por linha
+    seletores.mjs regra que não casa em rota nenhuma  (RELATÓRIO, não portão)
+
+Os três foram aceitos reproduzindo o defeito e ficando vermelhos: verde sem essa
+prova não conta.
 
 O portão da interface não tem atalho de `npm`: ele roda da **raiz** do
 repositório, por `scripts/medir.mjs … scripts/portao.js`. Existe um caminho só —

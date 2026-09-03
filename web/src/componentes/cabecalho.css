@@ -287,8 +287,17 @@ a.acao.active { background: var(--muted); color: var(--foreground); }
 
 @media (max-width: 767px) {
   .cabecalho-menu { display: flex; }
-  /* E OS DOIS ATALHOS SOMEM: os dois destinos deles estao dentro do menu, e
-   * tres icones ao lado da busca numa tela de 390 deixam a busca com metade da
-   * largura. O no traz UM icone ao lado dela. */
-  .cabecalho-acoes > .acao:not(.cabecalho-menu) { display: none; }
+  /* AQUI MORAVA `.cabecalho-acoes > .acao:not(.cabecalho-menu)`, e ela nunca
+   * escondeu nada.
+   *
+   * A intencao estava certa e escrita: os dois atalhos somem no telefone, porque
+   * os destinos deles estao dentro do menu e tres icones ao lado da busca numa
+   * tela de 390 deixam a busca com metade da largura. O SELETOR e que tinha um
+   * modelo errado do DOM — os dois moram dentro de `.cabecalho-atalhos`, entao
+   * sao netos, e `>` so pega filho.
+   *
+   * Quem faz o trabalho agora e `.cabecalho-atalhos { display: none }`, mais
+   * acima nesta mesma consulta. A regra morta saiu depois de o
+   * `scripts/seletores.mjs` a listar como "nao casa em estado nenhum" — foi o
+   * primeiro achado dele. */
 }

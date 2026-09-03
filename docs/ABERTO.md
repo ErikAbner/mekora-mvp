@@ -291,6 +291,7 @@ Podem ser decididas durante a implementação, por quem implementa.
 | **D11** | Que número, em qualquer medida, conta como sucesso — depende de linha de base que ainda não existe | DEC-0029 |
 | **D12** | O que entra no escopo da V1 — matéria da DEC-0018, não da DEC-0029 | DEC-0029 |
 | **D13** | ~~**O Sumário continua sendo folha**, e folha cobre o texto~~ — **falso desde que o índice virou gaveta.** A leitura não tem `<Folha>` nenhuma: o sumário é o painel `.indice`, à esquerda, como a busca no livro e os marcadores. Conferido no código em 03/09 | DEC-0023 |
+| **D15** | **O `seletores.mjs` virar portão.** Hoje é relatório: ele mede 8 rotas em 2 larguras e lista 1211 seletores que não casaram, e a maioria é "rota que ninguém visitou", não "regra morta" — `/leitura`, `/preparo`, `/ajuda` e a apresentação ficam de fora, e estados como a busca aberta também (`.cabecalho-acoes:has(.busca-painel)` aparece na lista por isso). Para cobrar, faltam duas coisas: cobrir a mesma lista de rotas da `auditoria.sh` mais os estados de folha aberta, e triar o resto uma vez, guardando o que sobrar como dívida conhecida — igual ao `classes.mjs`. **O critério já se provou:** o primeiro achado dele foi a regra do cabeçalho que mirava neto | DEC-0029 |
 | **D14** | **Canvas em toque, e regra de escala acima de ~50 itens.** Desktop-only no V1, então não bloqueia | DEC-0023 |
 
 ---
