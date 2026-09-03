@@ -293,7 +293,15 @@ function MenuDoCartao({ children, rotulo = "Ações da nota" }) {
         onPointerDown={(e) => e.stopPropagation()}
         onClick={(e) => { e.stopPropagation(); setAberto((v) => !v); }}
       >
-        <span aria-hidden="true">···</span>
+        {/* ÍCONE, E NÃO TRÊS PONTOS DE TEXTO.
+            
+            O glifo `···` herda a fonte, a entrelinha e o `letter-spacing` do
+            corpo — ele desalinha do resto dos controles e muda de tamanho com o
+            tipo. E a biblioteca do produto NÃO tinha "mais ações": conferi as
+            trinta e duas peças uma a uma. Ela ganhou uma, no mesmo formato das
+            outras — caixa de 24, e a única da família que é preenchida porque um
+            ponto não tem contorno. */}
+        <Icone src="/icones/icone-mais-acoes.svg" />
       </button>
       {aberto && (
         <div className="nota-menu-lista" role="menu" onClick={() => setAberto(false)}>
@@ -2388,7 +2396,11 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
             aria-label="Criar uma seção"
             onClick={criarAqui}
           >
-            <Icone src="/icones/icone-fixar.svg" />
+            {/* `paginas` — quatro peças arrumadas numa área, que é o que uma
+                seção é. Estava em `fixar`, que desenha uma BANDEIRINHA: um
+                marcador, não um contêiner. Conferi abrindo os arquivos, e não
+                pelo nome — já errei isso com os ícones da Estante. */}
+            <Icone src="/icones/icone-paginas.svg" />
           </button>
         </nav>
 
