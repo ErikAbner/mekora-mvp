@@ -264,13 +264,134 @@ copiados. Está anotado aqui e no `DESIGN-SYSTEM.md`.
 
 ---
 
+---
+
+## O que foi construído em 02/09, e o que cada coisa provou
+
+A ordem foi a que o Erik aprovou: **Escolha → Desfazer → Livros → Seção da
+escolha → Detalhe por zoom.** Cada camada foi medida, e a medida está aqui.
+
+### A escolha
+
+| gesto | resultado |
+|---|---|
+| clicar | 1 escolhido |
+| shift-clicar | 2 |
+| cmd-clicar | 3 |
+| shift de novo no mesmo | 2 — tirou |
+| `Esc` | 0 |
+| clicar no vazio | 0 |
+| laço no vazio | 3 notas + 1 seção, barra dizendo "4 escolhidos" |
+| arrastar um de dois | **os dois andaram 120** |
+| `Delete` | tira da superfície, sem apagar |
+
+Ela guarda **chaves compostas** — `nota:12`, `secao:3`, `livro:7`. Foi essa
+decisão que fez o Livro entrar depois sem tocar em nada.
+
+O laço ocupou o gesto que ficou vago quando o deslocamento saiu do clique
+simples. Numa superfície espacial, arrastar no vazio é *selecionar*.
+
+### O desfazer
+
+Por operação, no **confirmar** — nunca durante a previsão. Um arrasto de cem
+quadros é um passo. Cobre mover, mover vários, esticar, mover uma seção com o
+que ela leva, tirar, e criar seção.
+
+**Limite conhecido:** desfazer uma seção apagada a recria com **id novo**. A nota
+não tem esse problema — o que se recria é a posição dela, e a nota é a mesma.
+Para a seção, um refazer encadeado depois disso não encontra a antiga.
+
+### Os livros
+
+Referência, nunca cópia. `canvas_livros` guarda `job_id`.
+
+| prova | resultado |
+|---|---|
+| trazer | 201 |
+| trazer o mesmo de novo | `ja_estava: true`, **sem duplicar entidade** |
+| cartão resolvido | título, autor e capa |
+| tirar da superfície | 0 na superfície |
+| **continua na estante** | **6** |
+| livro + nota escolhidos | "2 escolhidos" |
+| arrastar o livro | **os dois andaram 120** |
+| `⌘Z` | os dois voltaram — "Desfeito: 2 movidos" |
+
+O que mudou no sistema para o Livro caber: **uma linha em `filhosDe` e uma função
+`moverChave`**. Nada mais. É a prova de que escolha e contenção não sabem que
+tipos existem.
+
+### A seção a partir da escolha
+
+Escolher, apertar, pronto — nenhum passo de configuração. Com escolha mista de
+duas notas e um livro: 1 → 2 seções, abraçando os escolhidos, escolha limpa,
+`⌘Z` desfaz.
+
+Ela **não mexe em nada**: nenhum objeto é movido nem reparentado. A seção pousa
+em volta do que já estava lá.
+
+### O detalhe por distância
+
+| zoom | nível | texto | rodapé | marca de cor | capa do livro |
+|---|---|---|---|---|---|
+| 100% | tudo | ✓ | ✓ | ✓ | ✓ |
+| 50% | menos | ✓ | — | ✓ | ✓ |
+| 25% | silhueta | — | — | **✓** | **✓** |
+
+A diferença entre os tipos é a última coisa a sumir. É ela que permite achar algo
+num plano cheio.
+
+### Desempenho, com 123 cartões
+
+| momento | mediana | p90 | pior |
+|---|---|---|---|
+| antes de tudo | 16,7ms | 17,3ms | 66,6ms |
+| depois do `memo` | 16,7ms | 17,2ms | 17,4ms *(corrida sortuda)* |
+| com escolha, sem `ref` | 16,7ms | 17,5ms | **83,9ms** — regressão |
+| hoje | 16,7ms | 17,6ms | 50,1ms |
+
+**Duas coisas honestas sobre estes números.** A primeira: o 17,4ms foi uma
+corrida que não se repete — medindo três vezes, o valor se firma perto de 50–67ms.
+A segunda, e mais importante: **o pior quadro é o 54 de 58 — o SOLTAR, e não o
+arrastar.** Durante o gesto a mediana é 16,7ms. O engasgo está no fim, quando o
+objeto já está onde deveria.
+
+A regressão para 83,9ms teve causa achada e consertada: `seguirArrasto` tinha
+`escolha` e `nos` nas dependências, trocava de identidade a cada escolha, e
+quebrava o `memo` das 123 notas de uma vez — no `pointerdown`, que é justamente o
+quadro em que a mão espera resposta. Os dois passaram a chegar por `ref`.
+
+---
+
+## As duas perguntas que o Erik mandou validar antes de apagar o Grupo
+
+**Elas continuam abertas, e de propósito.** O Grupo não foi apagado, nenhuma
+migração destrutiva foi feita, e a recomendação final só vem depois de rodar
+cenários de uso de verdade. O que já dá para dizer:
+
+**1. Seleção temporária × relação persistente.** A escolha resolve "estes se
+comportam juntos agora". Ela **não** resolve "isto continua acoplado amanhã" —
+imagem + nota de interpretação, citação + anotação. Hoje a única resposta para
+isso é uma Seção, e uma Seção nomeada em volta de dois objetos pode mesmo ser
+burocracia. Fica aberto.
+
+**2. Geometria não é necessariamente pertencimento.** Os casos ambíguos que o
+Erik listou **não foram testados** — duas seções sobrepostas, objeto maior que a
+seção, redimensionar por cima de objetos, mover objeto entre seções sobrepostas.
+O que o código faz hoje: **o CENTRO do objeto decide**, e a lista de quem vai
+junto é lida **uma vez, no começo do gesto** (senão a área ia catando gente pelo
+caminho). Isso já responde a alguns dos casos, mas não a todos, e não foi provado.
+
 ## O que continua fraco, sem enfeitar
 
 - **Sem feedback de estado na área.** Ela não diz quando está sob o ponteiro, nem
   quem vai junto se você soltar. É o próximo passo do Grupo.
-- **Sem seleção, sem desfazer, sem Livros.** Os três estão recomendados acima e
-  nenhum foi feito.
-- **Sem detalhe por zoom.** A 25% a superfície continua ilegível.
+- **O pior quadro do soltar continua em 50ms**, com 123 objetos. É o `setNos`
+  otimista mais o recálculo dos traços, e não foi atacado.
+- **Os casos ambíguos de contenção não foram testados.** Ver acima.
+- **Refazer uma seção apagada a recria com id novo.**
+- **O laço não escolhe livros por interseção** — ele percorre notas e seções, e o
+  livro ficou de fora dessa varredura. Clicar e shift-clicar funcionam.
+- **Não há guias de alinhamento** entre objetos, e a malha só encosta a Seção.
 - **O ícone de "criar seção" ainda é o alfinete**, que não desenha uma seção.
   Depende de o arquivo de design estar na aba da frente no Figma.
 - **A malha só encosta a Seção**, não as notas, e não há guias de alinhamento
