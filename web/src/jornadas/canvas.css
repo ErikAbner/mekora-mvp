@@ -1031,3 +1031,29 @@
 .nota-canvas * {
   -webkit-user-drag: none;
 }
+
+/* A LINHA INTEIRA E O ALVO — uma curva de 1px nao se acerta com o dedo. Este
+ * tracado e invisivel e grosso, e so serve para receber o ponteiro. */
+.traco-pegada {
+  stroke: transparent;
+  stroke-width: 18;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+/* A JUNTA SO APARECE SOB O PONTEIRO. Desenhada o tempo todo, ela era uma bolinha
+ * solta no meio do vao — que nao se parece com nada do produto e le como
+ * defeito. A ligacao parada e so a linha. */
+.traco-grupo .traco-junta {
+  opacity: 0;
+  transition: opacity 150ms var(--saida);
+}
+.traco-grupo:hover .traco-junta,
+.traco-grupo:focus-within .traco-junta { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .traco-grupo .traco-junta { transition: none; }
+}
+/* Sem ponteiro nao ha `:hover`, e desfazer ficaria inalcancavel. */
+@media (hover: none) {
+  .traco-grupo .traco-junta { opacity: 1; }
+}

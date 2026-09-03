@@ -22,13 +22,6 @@ import "./canvas.css";
  * numa nota para lê-la a arrastaria alguns pixels e o clique nunca chegaria. */
 const LIMIAR = 4;
 
-/* O TAMANHO DA NOTA, para o traço saber onde é o meio dela. A largura é fixa em
- * CSS; a altura varia com o texto, e 100 é a altura de uma nota de duas linhas
- * com rodapé — a ligação sai perto do centro em vez de exato, e é o suficiente
- * para o olho ler que as duas se falam. */
-const NOTA_LARGURA = 220;
-const NOTA_ALTURA = 100;
-
 /* Folga em volta da caixa dos traços. Sem ela, uma linha na borda exata do SVG
  * perde metade da espessura no recorte. */
 const FOLGA = 8;
@@ -242,7 +235,7 @@ function MenuDoCartao({ children, rotulo = "Ações da nota" }) {
   );
 }
 
-function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1 }) {
+function Nota({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, fio, alvoDoFio, escala = 1 }) {
   const quando = dataCurta(no.criada_em);
   const caixa = useRef(null);
   const arrasto = useRef(null);
@@ -273,6 +266,19 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1
    * A posição só vai para o servidor ao SOLTAR. */
   const moveu = useRef(false);
 
+  /* O CARTÃO DIZ O TAMANHO QUE TEM. Só o navegador sabe: a altura vem do texto,
+   * da prévia e da legenda, e a largura pode ter sido esticada. Quem desenha os
+   * traços precisa da caixa de verdade — ver `medidas` no Canvas. */
+  useEffect(() => {
+    const el = caixa.current;
+    if (!el || !aoMedir) return undefined;
+    const olho = new ResizeObserver(() => {
+      aoMedir(no.id, { largura: el.offsetWidth, altura: el.offsetHeight });
+    });
+    olho.observe(el);
+    return () => olho.disconnect();
+  }, [aoMedir, no.id]);
+
   const comecar = (e) => {
     if (e.button !== 0) return;
     /* PERTO DA BORDA, ESTICA; no meio, anda. Ver `ondeEncostou`. Só as laterais:
@@ -292,8 +298,30 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1
      * escrita à mão erra em silêncio; parar o evento na origem não erra: quem
      * cuida do próprio arrasto não deixa o gesto subir. */
     e.stopPropagation();
-    caixa.current?.setPointerCapture(e.pointerId);
+    /* SEM CAPTURA DE PONTEIRO. O ARRASTO OUVE A JANELA.
+     *
+     * Enquanto um elemento tem a captura, o `click` é entregue A ELE e não ao
+     * alvo real — então todo botão DENTRO do cartão ficava morto. Medido: o
+     * clique em "Tirar" chegava no `article.nota-canvas`, e o `onClick` do botão
+     * nunca rodava. Era o "botões não funcionam em nenhum item do canvas".
+     *
+     * Capturar só depois do limiar tambem nao serve: um arrasto que comeca na
+     * BORDA para esticar tira o dedo do cartão nos primeiros pixels, e aí não
+     * chega `pointermove` nenhum para cruzar limiar algum. Medido também —
+     * esticar parou de funcionar.
+     *
+     * Ouvir a janela resolve os dois: o movimento chega venha de onde vier, e
+     * como não há captura, o clique vai para quem foi clicado. */
     arrasto.current = { x0: e.clientX, y0: e.clientY, mexeu: false, lado };
+    window.addEventListener("pointermove", andar);
+    window.addEventListener("pointerup", soltar);
+    window.addEventListener("pointercancel", abortar);
+  };
+
+  const largarOuvintes = () => {
+    window.removeEventListener("pointermove", andar);
+    window.removeEventListener("pointerup", soltar);
+    window.removeEventListener("pointercancel", abortar);
   };
 
   const andar = (e) => {
@@ -307,7 +335,11 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1
     const dy = (e.clientY - a.y0) / escala;
     if (!a.mexeu && Math.hypot(e.clientX - a.x0, e.clientY - a.y0) < LIMIAR) return;
     a.mexeu = true;
-    setPosicao(a.lado ? { ...esticar(a.lado, dx), esticando: true } : { dx, dy });
+    const agora = a.lado ? { ...esticar(a.lado, dx), esticando: true } : { dx, dy };
+    setPosicao(agora);
+    /* O TRAÇO ANDA JUNTO. Sem isto a linha fica parada enquanto a nota anda, e
+     * as duas se reencontram com um salto ao soltar. */
+    aoSeguir?.(no.id, agora);
   };
 
   /* Puxar a borda ESQUERDA cresce para a esquerda: a largura aumenta e a
@@ -326,12 +358,11 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1
    * parar em −388/−613, do outro lado da tela.
    *
    * Interrompido volta para onde estava. Nada vai para o servidor. */
-  const abortar = (e) => {
+  const abortar = () => {
+    largarOuvintes();
     arrasto.current = null;
-    if (caixa.current?.hasPointerCapture?.(e.pointerId)) {
-      caixa.current.releasePointerCapture(e.pointerId);
-    }
     setPosicao(null);
+    aoSeguir?.(no.id, null);
   };
 
   const soltar = (e) => {
@@ -341,8 +372,8 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1
      * acabou de haver um gesto. */
     moveu.current = Boolean(a?.mexeu);
     if (moveu.current) setTimeout(() => { moveu.current = false; }, 0);
+    largarOuvintes();
     arrasto.current = null;
-    caixa.current?.releasePointerCapture?.(e.pointerId);
     if (!a) return;
     if (a.mexeu) {
       const dx = (e.clientX - a.x0) / escala;
@@ -355,6 +386,7 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1
       }
     }
     setPosicao(null);
+    aoSeguir?.(no.id, null);
   };
 
   /* O CLIQUE MORRE SE HOUVE ARRASTO, e a nota é quem sabe disso.
@@ -388,20 +420,13 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1
       style={estilo}
       onClickCapture={talvezCancelarClique}
       onPointerDown={comecar}
+      /* O movimento é ouvido na JANELA — ver `comecar`. Aqui fica só o cursor,
+         que precisa do ponteiro sobre o cartão para ter o que dizer. */
       onPointerMove={(e) => {
-        andar(e);
-        if (!arrasto.current) {
-          const borda = ondeEncostou(e, e.currentTarget);
-          e.currentTarget.style.cursor =
-            borda === "o" || borda === "l" ? "ew-resize" : "grab";
-        }
+        if (arrasto.current) return;
+        const borda = ondeEncostou(e, e.currentTarget);
+        e.currentTarget.style.cursor = borda === "o" || borda === "l" ? "ew-resize" : "grab";
       }}
-      onPointerUp={soltar}
-      onPointerCancel={abortar}
-      /* A CAPTURA PERDIDA TAMBÉM ABORTA. Um arrasto nativo do navegador tira a
-         captura sem mandar `pointercancel` em todos os casos, e sem isto a nota
-         ficaria presa ao ponteiro para sempre. */
-      onLostPointerCapture={abortar}
     >
       {/* AS QUATRO PEGAS DE LIGAÇÃO, uma em cada borda.
        *
@@ -588,8 +613,18 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0 }) {
     if (e.button !== 0) return;
     /* Mesma razão da nota: o chão não pode roubar este gesto. */
     e.stopPropagation();
-    e.currentTarget.setPointerCapture?.(e.pointerId);
+    /* Mesma razão da nota: captura mataria o botão do nome e o "Desfazer grupo",
+     * porque o clique vai para quem capturou. O movimento é ouvido na janela. */
     arrasto.current = { qual, x0: e.clientX, y0: e.clientY, mexeu: false };
+    window.addEventListener("pointermove", andar);
+    window.addEventListener("pointerup", soltar);
+    window.addEventListener("pointercancel", abortar);
+  };
+
+  const largarOuvintes = () => {
+    window.removeEventListener("pointermove", andar);
+    window.removeEventListener("pointerup", soltar);
+    window.removeEventListener("pointercancel", abortar);
   };
 
   /* AS QUATRO BORDAS ESTICAM, e não só o canto.
@@ -630,11 +665,9 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0 }) {
   };
 
   /* Mesma razão da nota: interrompido volta, e não confirma. */
-  const abortar = (e) => {
+  const abortar = () => {
+    largarOuvintes();
     arrasto.current = null;
-    if (e.currentTarget?.hasPointerCapture?.(e.pointerId)) {
-      e.currentTarget.releasePointerCapture(e.pointerId);
-    }
     setDesloca(null);
     setMedindo(null);
   };
@@ -643,8 +676,8 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0 }) {
     const a = arrasto.current;
     moveu.current = Boolean(a?.mexeu);
     if (moveu.current) setTimeout(() => { moveu.current = false; }, 0);
+    largarOuvintes();
     arrasto.current = null;
-    e.currentTarget.releasePointerCapture?.(e.pointerId);
     setDesloca(null);
     setMedindo(null);
     if (!a || !a.mexeu) return;
@@ -678,10 +711,6 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0 }) {
       <header
         className="canvas-grupo-titulo"
         onPointerDown={(e) => pegar(e, "mover")}
-        onPointerMove={andar}
-        onPointerUp={soltar}
-        onPointerCancel={abortar}
-        onLostPointerCapture={abortar}
       >
         {editando ? (
           <input
@@ -749,16 +778,12 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0 }) {
           const borda = ondeEncostou(e, e.currentTarget);
           if (borda) pegar(e, borda);
         }}
+        /* Só o cursor mora aqui: o movimento é ouvido na janela. */
         onPointerMove={(e) => {
-          andar(e);
-          if (!arrasto.current) {
-            const borda = ondeEncostou(e, e.currentTarget);
-            e.currentTarget.style.cursor = borda ? CURSOR_DA_BORDA[borda] : "";
-          }
+          if (arrasto.current) return;
+          const borda = ondeEncostou(e, e.currentTarget);
+          e.currentTarget.style.cursor = borda ? CURSOR_DA_BORDA[borda] : "";
         }}
-        onPointerUp={soltar}
-        onPointerCancel={abortar}
-        onLostPointerCapture={abortar}
       />
     </section>
   );
@@ -794,41 +819,141 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
   /* A CAIXA DOS TRAÇOS: onde cada linha começa e acaba, e o retângulo que
    * contém todas. `null` quando não há nenhuma ligação desenhável — e aí não há
    * SVG na árvore, em vez de um elemento vazio de tamanho indefinido. */
+  /* O TAMANHO REAL DE CADA CARTÃO, medido no navegador.
+   *
+   * As pontas do traço saíam de duas CONSTANTES — 375 por uma altura fixa —, e
+   * nenhuma das duas é verdade: a largura agora é esticável e a altura vem do
+   * texto, da prévia e da legenda. Com a caixa errada, a linha nascia longe do
+   * cartão e o ponto do meio ficava boiando: é a "bola que descola do item" que
+   * o Erik viu, e ela transmitia bug porque ERA bug. */
+  const [medidas, setMedidas] = useState({});
+  const anotarMedida = useCallback((id, caixa) => {
+    setMedidas((m) => {
+      const antes = m[id];
+      if (antes && antes.largura === caixa.largura && antes.altura === caixa.altura) return m;
+      return { ...m, [id]: caixa };
+    });
+  }, []);
+
+  /* ONDE A NOTA ESTÁ AGORA, e não onde o servidor acha que ela está.
+   *
+   * "Linhas duras que não acompanham movimento": as pontas vinham de `nos`, que
+   * só muda ao SOLTAR. Enquanto o dedo arrastava, a nota andava e a linha ficava
+   * parada — e as duas se reencontravam com um salto no fim. */
+  const [vivo, setVivo] = useState(null);
+  const seguirArrasto = useCallback((id, desloca) => {
+    setVivo(desloca ? { id, ...desloca } : null);
+  }, []);
+
   const tracos = useMemo(() => {
     const linhas = [];
+    const pontas = [];
+    const caixaDe = (n) => {
+      const m = medidas[n.id] ?? { largura: n.largura || 375, altura: 200 };
+      const desloca = vivo?.id === n.id ? vivo : null;
+      return {
+        x: n.x + (desloca?.dx ?? 0),
+        y: n.y + (desloca?.dy ?? 0),
+        largura: desloca?.largura ?? m.largura,
+        altura: m.altura,
+      };
+    };
+
     for (const l of ligacoes) {
       const a = nos.find((n) => n.nota_id === l.de_id);
       const b = nos.find((n) => n.nota_id === l.para_id);
       if (!a || !b) continue;
-      const x1 = a.x + NOTA_LARGURA / 2;
-      const y1 = a.y + NOTA_ALTURA / 2;
-      const x2 = b.x + NOTA_LARGURA / 2;
-      const y2 = b.y + NOTA_ALTURA / 2;
-      /* A CURVA DO DESENHO, e não um segmento reto.
+      const ca = caixaDe(a);
+      const cb = caixaDe(b);
+
+      /* A LINHA SAI DA BORDA VOLTADA PARA A OUTRA NOTA, e não do centro.
        *
-       * O nó 895:6938 liga os cartões com uma curva que SAI E CHEGA NA
-       * HORIZONTAL, e isso não é enfeite: com reta, duas notas quase alinhadas
-       * produzem uma diagonal de um grau que parece um erro de renderização, e
-       * quatro ligações saindo de uma nota viram um leque ilegível.
+       * Do centro, ela nasce debaixo do cartão e só aparece depois de atravessá-lo
+       * — parece que o traço vem de dentro do papel. Da borda, ela encosta onde
+       * a pega de ligação está, que é de onde a pessoa a puxou.
        *
-       * A curva é uma Bézier cúbica com as duas alças horizontais, a metade da
-       * distância — a mesma forma dos diagramas de nó de todo editor visual,
-       * pela mesma razão. */
-      const alca = Math.max(40, Math.abs(x2 - x1) / 2);
+       * E O EIXO É ESCOLHIDO, não fixo. Só com alças horizontais, duas notas
+       * empilhadas ganhavam uma curva que voltava por cima de si mesma — medido,
+       * um laço. As pegas são quatro; a linha usa o par que a geometria pede:
+       * lado a lado sai pelas laterais, uma sobre a outra sai por cima e por
+       * baixo. */
+      const cxA = ca.x + ca.largura / 2;
+      const cyA = ca.y + ca.altura / 2;
+      const cxB = cb.x + cb.largura / 2;
+      const cyB = cb.y + cb.altura / 2;
+      /* O EIXO SAI DO VÃO ENTRE AS CAIXAS, e não da distância entre os centros.
+       *
+       * Pelos centros, dois cartões quase empilhados davam `deitado` por uma
+       * margem de sete pixels — porque metade da largura de cada um entra na
+       * conta — e a curva saía pelas laterais com alças de 40px que se cruzavam:
+       * um laço. Medido: `C 575 …, 520 …` com a linha começando em 535.
+       *
+       * O vão é a distância entre as BORDAS. Ele responde a pergunta certa: por
+       * onde estes dois cartões se olham? */
+      const vaoX = Math.max(cb.x - (ca.x + ca.largura), ca.x - (cb.x + cb.largura));
+      const vaoY = Math.max(cb.y - (ca.y + ca.altura), ca.y - (cb.y + cb.altura));
+      const deitado = vaoX >= vaoY;
+
+      let x1, y1, x2, y2, c1x, c1y, c2x, c2y;
+      /* A CORDA PESA. O Erik: "elas deveriam ter gravidade e pender".
+       *
+       * A alça reta sozinha desenha o cabo de diagrama de nós — correto e sem
+       * peso. Somando uma queda às duas alças, a curva afunda no meio como um
+       * fio pendurado entre dois pontos: quanto mais longe as notas, mais ele
+       * cede, com teto para não virar um U.
+       *
+       * Não é uma catenária de verdade. Uma Bézier cúbica com as duas alças
+       * baixadas na mesma medida é indistinguível dela nesta escala, e custa uma
+       * conta em vez de um integrador. */
+      const vao = Math.hypot(cxB - cxA, cyB - cyA);
+      const peso = Math.min(72, Math.max(14, vao * 0.16));
+
+      if (deitado) {
+        const paraDireita = cxA <= cxB;
+        x1 = paraDireita ? ca.x + ca.largura : ca.x;
+        x2 = paraDireita ? cb.x : cb.x + cb.largura;
+        y1 = cyA;
+        y2 = cyB;
+        /* A alça nunca passa da metade do vão: passando, os dois pontos de
+         * controle se cruzam e a curva volta por cima de si mesma. */
+        const alca = Math.min(160, Math.max(16, Math.abs(x2 - x1) / 2));
+        c1x = x1 + (paraDireita ? alca : -alca);
+        c2x = x2 + (paraDireita ? -alca : alca);
+        c1y = y1 + peso;
+        c2y = y2 + peso;
+      } else {
+        const paraBaixo = cyA <= cyB;
+        y1 = paraBaixo ? ca.y + ca.altura : ca.y;
+        y2 = paraBaixo ? cb.y : cb.y + cb.altura;
+        x1 = cxA;
+        x2 = cxB;
+        const alca = Math.min(160, Math.max(16, Math.abs(y2 - y1) / 2));
+        c1x = x1;
+        c2x = x2;
+        /* De cima para baixo o peso ACOMPANHA o sentido; de baixo para cima ele
+         * encurta a alça em vez de esticá-la, senão a corda subiria — e corda
+         * não sobe. */
+        c1y = y1 + (paraBaixo ? alca : -alca) + peso;
+        c2y = y2 + (paraBaixo ? -alca : alca) + peso;
+      }
+
       linhas.push({
         id: l.id,
-        d: `M ${x1} ${y1} C ${x1 + alca} ${y1}, ${x2 - alca} ${y2}, ${x2} ${y2}`,
-        /* O MEIO DA CURVA, e não o meio da reta: é onde o ponto de desfazer
-           mora, e ele tem de cair EM CIMA do traço. Numa Bézier com alças
-           horizontais, t=0,5 dá exatamente isto. */
-        mx: (x1 + 3 * (x1 + alca) + 3 * (x2 - alca) + x2) / 8,
-        my: (y1 + 3 * y1 + 3 * y2 + y2) / 8,
+        d: `M ${x1} ${y1} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${x2} ${y2}`,
+        /* O meio da curva, para o alvo de desfazer. Numa Bézier cúbica, t=0,5 é
+         * a média ponderada 1-3-3-1 dos quatro pontos. */
+        mx: (x1 + 3 * c1x + 3 * c2x + x2) / 8,
+        my: (y1 + 3 * c1y + 3 * c2y + y2) / 8,
       });
+      pontas.push([x1, y1], [x2, y2], [c1x, c1y], [c2x, c2y]);
     }
     if (!linhas.length) return null;
 
-    const xs = linhas.flatMap((l) => [l.x1, l.x2]);
-    const ys = linhas.flatMap((l) => [l.y1, l.y2]);
+    /* A CAIXA DO SVG saía com `NaN`: ela era montada a partir de `l.x1`/`l.x2`,
+     * que nunca foram guardados no objeto da linha. O navegador descartava a
+     * regra inteira e o SVG ficava do tamanho que desse — funcionava por sorte. */
+    const xs = pontas.map((p) => p[0]);
+    const ys = pontas.map((p) => p[1]);
     const x = Math.min(...xs) - FOLGA;
     const y = Math.min(...ys) - FOLGA;
     return {
@@ -837,7 +962,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
       altura: Math.max(...ys) - y + FOLGA,
       linhas,
     };
-  }, [ligacoes, nos]);
+  }, [ligacoes, nos, medidas, vivo]);
 
   /* O CENTRO DO QUE ESTÁ SENDO VISTO, em coordenadas do plano. É onde o grupo
    * novo nasce — a origem do plano pode estar a mil pixels daqui. */
@@ -1353,8 +1478,11 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
               viewBox={`${tracos.x} ${tracos.y} ${tracos.largura} ${tracos.altura}`}
             >
               {tracos.linhas.map((l) => (
-                <g key={l.id}>
+                <g key={l.id} className="traco-grupo">
                   <path d={l.d} className="traco" fill="none" />
+                  {/* A LINHA INTEIRA É O ALVO, e ela é invisível: uma curva de
+                      1px é impossível de acertar com o dedo. */}
+                  <path d={l.d} className="traco-pegada" fill="none" />
                   {/* DESFAZER MORA NA PRÓPRIA LIGAÇÃO.
                   
                       Havia uma lista "Ligações N" abaixo do canvas, com um
@@ -1365,8 +1493,13 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
                       ("A expedição partiu de manhã, c… — Uma foto é obser…") e
                       clicava. A ligação está ali, desenhada.
                       
-                      O ponto é o círculo que o desenho põe na junta. Ele só
-                      ganha o × sob o ponteiro; parado, é a junta. */}
+                      A JUNTA SÓ EXISTE SOB O PONTEIRO. Ela ficava desenhada
+                      o tempo todo, no meio do vão — o Erik: "uma bola que
+                      descola do item e fica no meio da linha, isso transmite
+                      justamente a ideia de bug". E transmitia: uma bolinha
+                      solta no meio do nada não se parece com nada do produto.
+                      Escondida, a linha volta a ser uma linha; sob o dedo, ela
+                      oferece o × onde a ligação está. */}
                   <g
                     className="traco-junta"
                     transform={`translate(${l.mx} ${l.my})`}
@@ -1395,6 +1528,8 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
               aoTirar={aoTirar}
               fio={maoDoFio}
               aoLigarDaLista={setLigandoDaLista}
+              aoMedir={anotarMedida}
+              aoSeguir={seguirArrasto}
               alvoDoFio={fio?.sobre === no.nota_id}
               escala={camera.escala}
             />
