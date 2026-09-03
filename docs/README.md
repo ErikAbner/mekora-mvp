@@ -79,6 +79,19 @@ Três passos, e o terceiro é o que costuma faltar:
    capacidades, uma tabela de precedência, um número de desempenho — um de cada,
    e o resto aponta para ele.
 
+**E uma quarta, que vale para medição contra registro:** quando uma medida
+contradiz um fechamento documentado, **o registro é corrigido ANTES do código**.
+Um item marcado "fechado" contra um número que diz o contrário é pior que um item
+aberto: o aberto convida a olhar, e o fechado falso desliga a pergunta para todo
+mundo que vier depois — inclusive para quem escreveu.
+
+Isto foi violado em 03/09, e a violação fica escrita: o C9 do `ABERTO.md` dava a
+conferência de 390px por fechada, a auditoria mediu 102px de transbordo em toda
+rota, e eu corrigi o registro **no mesmo commit** do conserto. Se o conserto
+tivesse falhado ou demorado três dias, o documento teria continuado mentindo
+nesse intervalo — e ninguém saberia, porque o commit que consertaria os dois
+ainda não existia.
+
 A razão é concreta: **as próximas sessões do Claude Code fazem onboarding por
 estes arquivos.** Num documento com duas verdades, a superada é tão citável
 quanto a vigente — nada no texto diz qual é qual, e o aviso é o que diz.

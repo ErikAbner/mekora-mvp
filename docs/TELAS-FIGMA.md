@@ -221,6 +221,29 @@ E um trecho solto, que o Erik mandou quando eu disse que não conseguia ler:
 
 | `895:7839` | "Escrever sobre o livro" — trecho do `895:7631` | `/estante/:id` | **construído** |
 
+## O dado do nó vence a captura — e isto custou uma pendência de dois dias
+
+**Do lado do ORÁCULO — o Figma —, `get_design_context` e `get_variable_defs` são
+a fonte, e o PNG é render com perda.** Julgar uma região por imagem só vale
+depois de conferir a **resolução efetiva daquela região**, e ela quase nunca é a
+que se imagina.
+
+O caso, medido: `get_screenshot` do `966:29052` devolve **117 × 1400** para um
+quadro de **390 × 4674** — o teto do lado maior é ~1024–1400, e a largura desce
+junto. Um bloco de 100px de altura no arquivo sai com **30 de altura e 117 de
+largura** na imagem inteira. Foi assim que nasceu "o bloco escuro com a citação e
+dois botões": não existe. São a citação com filete (`966:29082`), o botão **Ler**
+em `surface/inverse` (`966:29085` — o "escuro" é só ele) e mais dois botões, e os
+quatro já estavam construídos. A pendência ficou aberta desde 01/09 descrevendo
+uma coisa que o arquivo não tem.
+
+**Do lado da IMPLEMENTAÇÃO a regra é a inversa, e continua valendo:**
+comportamento renderizado vence inferência de código. Ler o CSS e concluir que a
+faixa cabe não é medir a faixa; foi medindo que apareceram os 102px de transbordo
+do cabeçalho e os 70px do campo de busca.
+
+Em uma linha: **no Figma, dado estrutural manda; no produto, pixel medido manda.**
+
 ## Como ler uma tela alta
 
 A captura tem teto de cerca de 1024 no lado MAIOR. Numa tela de 1920 × 4700 isso

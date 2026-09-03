@@ -1313,3 +1313,36 @@ mesmo número duas vezes na mesma tela é o que faz uma delas envelhecer sozinha
 **O botão leva ao Preparo**, que é onde se confere o reconhecimento página a
 página. É o mesmo destino de "Ver todas as N páginas", na folha do arquivo — e
 não uma segunda tela de páginas.
+
+---
+
+# Quando o desenho venceu uma escolha do produto
+
+Este arquivo registra o caminho de sempre — o produto se afasta do desenho, e a
+razão fica escrita. **O caminho inverso precisa do mesmo registro, e por um
+motivo mais forte:** quando o frame manda tirar algo que já existia, e aquilo
+tinha sido uma escolha de alguém, a escolha é derrubada sem que ninguém perceba
+que houve discordância. Some do código, some da tela, e nunca vira decisão — vira
+"fidelidade", que é uma palavra que não pede justificativa.
+
+Cada linha aqui é uma decisão, não um ajuste.
+
+## A linha "Páginas sem texto" saiu da lista "Este arquivo" · 03/09/2026
+
+**O que existia:** uma linha do `<dl>` de "Este arquivo", dizendo
+*"3 páginas abriram vazias"*. Ela não foi pedida por nenhum quadro do Figma: a
+lista inteira é uma extensão do produto, mais rica que o desenho, e essa linha
+foi escrita junto com as outras.
+
+**O que o frame tem:** os nós `895:7716` e `966:29091` põem o mesmo fato como
+FAIXA, com ícone e com um botão — *"Ver as páginas"* —, e **não têm a linha**.
+
+**A decisão, e não a fidelidade:** ficaram as duas por um momento, e duas
+afirmações do mesmo número na mesma tela é o que faz uma delas envelhecer
+sozinha. A faixa venceu porque ela tem SAÍDA: a linha dizia que três páginas
+abriram vazias e deixava a pessoa procurar o que fazer: a faixa leva ao Preparo,
+que é onde se confere o reconhecimento página a página.
+
+**O que continua:** *"Páginas que não abriram"*, logo abaixo na mesma lista. É
+outro fato — o que não abre não entra no livro —, e o desenho não fala dele nem
+para tirar nem para pôr.
