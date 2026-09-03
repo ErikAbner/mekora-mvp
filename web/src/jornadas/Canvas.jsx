@@ -112,6 +112,95 @@ function passoDoChao(escala) {
   return passo;
 }
 
+/* ONDE O DEDO ENCOSTOU: no miolo, ou numa borda?
+ *
+ * O Erik: "click em itens deveria redimensionar quando o click é nas laterais do
+ * objeto, ou então é para mover itens". É o comportamento de toda janela e de
+ * todo objeto de canvas, e a mao ja sabe: perto da borda, estica; no meio, anda.
+ *
+ * A MARGEM É EM PIXELS DE TELA, e por isso ela é dividida pela escala antes de
+ * comparar com a caixa — a caixa vem do `getBoundingClientRect`, que já está em
+ * pixels de tela. Uma margem em coordenadas do plano encolheria com o zoom até
+ * ficar impossível de acertar. */
+const BORDA = 10;
+
+/* Os mesmos limites que o servidor aplica. Aqui para o cartão não passar deles
+ * enquanto o dedo ainda está em cima; lá porque um pedido escrito à mão não
+ * passa por aqui. */
+const limitarLargura = (v) => Math.max(200, Math.min(1200, v));
+
+function ondeEncostou(e, elemento) {
+  const c = elemento.getBoundingClientRect();
+  const x = e.clientX - c.left;
+  const y = e.clientY - c.top;
+  const perto = Math.min(BORDA, c.width / 3, c.height / 3);
+  const oeste = x < perto;
+  const leste = x > c.width - perto;
+  const norte = y < perto;
+  const sul = y > c.height - perto;
+  if (!oeste && !leste && !norte && !sul) return null;
+  return `${norte ? "n" : sul ? "s" : ""}${oeste ? "o" : leste ? "l" : ""}`;
+}
+
+/* O cursor que cada borda pede. Sem ele a borda estica em silêncio: a pessoa só
+ * descobre que dá para esticar depois de esticar sem querer. */
+const CURSOR_DA_BORDA = {
+  n: "ns-resize", s: "ns-resize", o: "ew-resize", l: "ew-resize",
+  no: "nwse-resize", sl: "nwse-resize", nl: "nesw-resize", so: "nesw-resize",
+};
+
+/* O MENU DO CARTÃO — três ações num botão só.
+ *
+ * O Erik: "os itens / botões das notas é horrível". Estava: "Abrir no livro",
+ * "Ligar a…" e "Tirar", os três em caixa, na mesma linha de um cartão de 375px.
+ * Não cabiam: quebravam em duas linhas e empurravam o rodapé. Três botões
+ * competindo pelo mesmo canto do mesmo cartão, vinte vezes na superfície.
+ *
+ * Um ponto de entrada só, e as ações dentro dele. O cartão volta a ser o texto.
+ *
+ * ELE ABRE DO LADO DO BOTÃO, e não do lado contrário — o Erik já tinha apontado
+ * esse defeito no menu de Leitura. O canto de cima à direita do menu encosta no
+ * botão, e a escala parte dali: um popover que cresce do meio parece ter vindo
+ * de outro lugar. */
+function MenuDoCartao({ children, rotulo = "Ações da nota" }) {
+  const [aberto, setAberto] = useState(false);
+  const caixa = useRef(null);
+
+  useEffect(() => {
+    if (!aberto) return undefined;
+    const tecla = (e) => { if (e.key === "Escape") setAberto(false); };
+    /* `pointerdown` e não `click`: o clique do próprio botão chegaria aqui na
+     * mesma volta e fecharia o menu no instante em que ele abre. */
+    const fora = (e) => { if (!caixa.current?.contains(e.target)) setAberto(false); };
+    document.addEventListener("keydown", tecla);
+    document.addEventListener("pointerdown", fora);
+    return () => {
+      document.removeEventListener("keydown", tecla);
+      document.removeEventListener("pointerdown", fora);
+    };
+  }, [aberto]);
+
+  return (
+    <span className="nota-menu" ref={caixa}>
+      <button
+        type="button"
+        className="nota-menu-botao"
+        aria-label={rotulo}
+        aria-expanded={aberto}
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => { e.stopPropagation(); setAberto((v) => !v); }}
+      >
+        <span aria-hidden="true">···</span>
+      </button>
+      {aberto && (
+        <div className="nota-menu-lista" role="menu" onClick={() => setAberto(false)}>
+          {children}
+        </div>
+      )}
+    </span>
+  );
+}
+
 function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1 }) {
   const quando = dataCurta(no.criada_em);
   const caixa = useRef(null);
@@ -122,6 +211,8 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1
    * cartão vira a prévia daquele endereço — é o que o 895:6938 mostra. */
   /* Nasceu na superfície, sem livro por trás. Ver o bloco de citação abaixo. */
   const daCasa = no.fonte === "solta";
+
+  const largura = no.largura || 375;
 
   const link = linkDe(no.texto);
   const previa = usarPrevia(link);
@@ -137,6 +228,11 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1
 
   const comecar = (e) => {
     if (e.button !== 0) return;
+    /* PERTO DA BORDA, ESTICA; no meio, anda. Ver `ondeEncostou`. Só as laterais:
+     * a altura do cartão vem do texto, e uma altura fixa cortaria o que a pessoa
+     * escreveu. */
+    const borda = ondeEncostou(e, e.currentTarget);
+    const lado = borda === "o" || borda === "l" ? borda : null;
     /* O GESTO PARA AQUI.
      *
      * O chão também escuta `pointerdown`, e ele estava roubando a captura de
@@ -150,7 +246,7 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1
      * cuida do próprio arrasto não deixa o gesto subir. */
     e.stopPropagation();
     caixa.current?.setPointerCapture(e.pointerId);
-    arrasto.current = { x0: e.clientX, y0: e.clientY, mexeu: false };
+    arrasto.current = { x0: e.clientX, y0: e.clientY, mexeu: false, lado };
   };
 
   const andar = (e) => {
@@ -164,7 +260,15 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1
     const dy = (e.clientY - a.y0) / escala;
     if (!a.mexeu && Math.hypot(e.clientX - a.x0, e.clientY - a.y0) < LIMIAR) return;
     a.mexeu = true;
-    setPosicao({ dx, dy });
+    setPosicao(a.lado ? { ...esticar(a.lado, dx), esticando: true } : { dx, dy });
+  };
+
+  /* Puxar a borda ESQUERDA cresce para a esquerda: a largura aumenta e a
+   * posição recua na mesma medida. Sem o recuo, o cartão inteiro andaria. */
+  const esticar = (lado, dx) => {
+    if (lado === "l") return { dx: 0, dy: 0, largura: limitarLargura(largura + dx) };
+    const nova = limitarLargura(largura - dx);
+    return { dx: largura - nova, dy: 0, largura: nova };
   };
 
   const soltar = (e) => {
@@ -178,7 +282,14 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1
     caixa.current?.releasePointerCapture?.(e.pointerId);
     if (!a) return;
     if (a.mexeu) {
-      aoMover(no.id, no.x + (e.clientX - a.x0) / escala, no.y + (e.clientY - a.y0) / escala);
+      const dx = (e.clientX - a.x0) / escala;
+      const dy = (e.clientY - a.y0) / escala;
+      if (a.lado) {
+        const fim = esticar(a.lado, dx);
+        aoMover(no.id, no.x + fim.dx, no.y, fim.largura);
+      } else {
+        aoMover(no.id, no.x + dx, no.y + dy);
+      }
     }
     setPosicao(null);
   };
@@ -195,6 +306,7 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1
   const estilo = {
     left: no.x,
     top: no.y,
+    inlineSize: posicao?.largura ?? largura,
     transform: posicao ? `translate(${posicao.dx}px, ${posicao.dy}px)` : undefined,
     /* Enquanto arrasta, a nota sobe: passar por baixo de outra faria parecer
        que ela sumiu. */
@@ -213,7 +325,14 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1
       style={estilo}
       onClickCapture={talvezCancelarClique}
       onPointerDown={comecar}
-      onPointerMove={andar}
+      onPointerMove={(e) => {
+        andar(e);
+        if (!arrasto.current) {
+          const borda = ondeEncostou(e, e.currentTarget);
+          e.currentTarget.style.cursor =
+            borda === "o" || borda === "l" ? "ew-resize" : "grab";
+        }
+      }}
       onPointerUp={soltar}
       onPointerCancel={soltar}
     >
@@ -317,24 +436,26 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, fio, alvoDoFio, escala = 1
         </span>
         {quando && <span className="nota-quando">{quando}</span>}
         <span className="nota-acoes">
-          {no.job_id && (
-            <Link to={`/leitura/${no.job_id}`} className="nota-abrir">
-              Abrir no livro
-            </Link>
-          )}
-          {/* LIGAR PELO TECLADO. As pegas das bordas são gesto de ponteiro e
-              nada mais: quem navega por teclado não tem como puxar um fio, e
-              sem esta porta a ligação teria virado um recurso só de quem usa
-              mouse. Ela abre uma lista das outras notas — nenhum modo, nenhum
-              estado novo na superfície. */}
-          <button type="button" onClick={(e) => { e.stopPropagation(); aoLigarDaLista(no.nota_id); }}>
-            Ligar a…
-          </button>
-          {/* TIRAR não apaga: a nota continua na estante e no caderno. O rótulo
-              diz "tirar" e não "apagar" por isso. */}
-          <button type="button" onClick={(e) => { e.stopPropagation(); aoTirar(no.id); }}>
-            Tirar
-          </button>
+          <MenuDoCartao>
+            {no.job_id && (
+              <Link to={`/leitura/${no.job_id}`} role="menuitem">
+                Abrir no livro
+              </Link>
+            )}
+            {/* LIGAR PELO TECLADO. As pegas das bordas são gesto de ponteiro e
+                nada mais: quem navega por teclado não tem como puxar um fio, e
+                sem esta porta a ligação teria virado um recurso só de quem usa
+                mouse. Ela abre uma lista das outras notas — nenhum modo, nenhum
+                estado novo na superfície. */}
+            <button type="button" role="menuitem" onClick={() => aoLigarDaLista(no.nota_id)}>
+              Ligar a…
+            </button>
+            {/* TIRAR não apaga: a nota continua na estante e no caderno. O rótulo
+                diz "tirar" e não "apagar" por isso. */}
+            <button type="button" role="menuitem" onClick={() => aoTirar(no.id)}>
+              Tirar
+            </button>
+          </MenuDoCartao>
         </span>
       </footer>
     </article>
@@ -364,13 +485,44 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0 }) {
    * não dispara. */
   useEffect(() => { if (nasceuAgora) setEditando(true); }, [nasceuAgora]);
 
+  /* O CLIQUE MORRE SE HOUVE ARRASTO — o mesmo truque da nota. Sem isto, arrastar
+   * o grupo pelo nome abriria o campo de edição ao soltar. */
+  const moveu = useRef(false);
+
+  const focarUmaVez = useCallback((el) => {
+    if (el) { el.focus(); el.select(); }
+  }, []);
+
   const pegar = (e, qual) => {
     if (e.button !== 0) return;
-    e.stopPropagation();
     /* Mesma razão da nota: o chão não pode roubar este gesto. */
     e.stopPropagation();
     e.currentTarget.setPointerCapture?.(e.pointerId);
-    arrasto.current = { qual, x0: e.clientX, y0: e.clientY };
+    arrasto.current = { qual, x0: e.clientX, y0: e.clientY, mexeu: false };
+  };
+
+  /* AS QUATRO BORDAS ESTICAM, e não só o canto.
+   *
+   * A área tinha um triângulo no canto inferior direito e mais nada: para
+   * alargar sem alterar a altura era preciso esticar as duas e corrigir. Cada
+   * borda mexe no que ela toca, e as de cima e da esquerda mexem TAMBÉM na
+   * posição — puxar a borda esquerda para a esquerda cresce para aquele lado, e
+   * não faz o retângulo inteiro andar. */
+  const esticar = (borda, dx, dy) => {
+    const mudanca = {};
+    if (borda.includes("l")) mudanca.largura = Math.max(LADO_MINIMO, grupo.largura + dx);
+    if (borda.includes("o")) {
+      const largura = Math.max(LADO_MINIMO, grupo.largura - dx);
+      mudanca.largura = largura;
+      mudanca.x = grupo.x + (grupo.largura - largura);
+    }
+    if (borda.includes("s")) mudanca.altura = Math.max(LADO_MINIMO, grupo.altura + dy);
+    if (borda.includes("n")) {
+      const altura = Math.max(LADO_MINIMO, grupo.altura - dy);
+      mudanca.altura = altura;
+      mudanca.y = grupo.y + (grupo.altura - altura);
+    }
+    return mudanca;
   };
 
   const andar = (e) => {
@@ -380,32 +532,36 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0 }) {
      * tela, e a área vive em coordenadas do plano. */
     const dx = (e.clientX - a.x0) / escala;
     const dy = (e.clientY - a.y0) / escala;
+    if (!a.mexeu && Math.hypot(e.clientX - a.x0, e.clientY - a.y0) < LIMIAR) return;
+    a.mexeu = true;
     if (a.qual === "mover") setDesloca({ dx, dy });
-    else setMedindo({ dx, dy });
+    else setMedindo(esticar(a.qual, dx, dy));
   };
 
   const soltar = (e) => {
     const a = arrasto.current;
+    moveu.current = Boolean(a?.mexeu);
+    if (moveu.current) setTimeout(() => { moveu.current = false; }, 0);
     arrasto.current = null;
     e.currentTarget.releasePointerCapture?.(e.pointerId);
     setDesloca(null);
     setMedindo(null);
-    if (!a) return;
+    if (!a || !a.mexeu) return;
     const dx = (e.clientX - a.x0) / escala;
     const dy = (e.clientY - a.y0) / escala;
-    if (Math.hypot(dx, dy) < LIMIAR) return;
     if (a.qual === "mover") aoMudar(grupo.id, { x: grupo.x + dx, y: grupo.y + dy });
-    else aoMudar(grupo.id, {
-      largura: Math.max(LADO_MINIMO, grupo.largura + dx),
-      altura: Math.max(LADO_MINIMO, grupo.altura + dy),
-    });
+    else aoMudar(grupo.id, esticar(a.qual, dx, dy));
+  };
+
+  const talvezCancelarClique = (e) => {
+    if (moveu.current) { e.preventDefault(); e.stopPropagation(); }
   };
 
   const estilo = {
-    left: grupo.x,
-    top: grupo.y,
-    width: Math.max(LADO_MINIMO, grupo.largura + (medindo?.dx ?? 0)),
-    height: Math.max(LADO_MINIMO, grupo.altura + (medindo?.dy ?? 0)),
+    left: medindo?.x ?? grupo.x,
+    top: medindo?.y ?? grupo.y,
+    width: medindo?.largura ?? grupo.largura,
+    height: medindo?.altura ?? grupo.altura,
     transform: desloca ? `translate(${desloca.dx}px, ${desloca.dy}px)` : undefined,
   };
 
@@ -435,18 +591,32 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0 }) {
              * O `autoFocus` do React age no monte, e aqui o campo monta no mesmo
              * quadro em que o botão de agrupar ainda tem o foco — medido: o
              * campo abria e o foco continuava no botão, então digitar não escrevia
-             * nada. O callback roda com o nó já no documento. */
-            ref={(el) => { if (el) { el.focus(); el.select(); } }}
+             * nada. O callback roda com o nó já no documento.
+             *
+             * E ELE SÓ FOCA UMA VEZ. Escrito solto, o callback roda a CADA
+             * desenho: mover a câmera com o campo aberto devolvia o foco e dava
+             * `select()` de novo, e a próxima tecla apagava o nome inteiro.
+             * `useCallback` sem dependências faz a função ser a mesma entre
+             * desenhos, e o React só a chama quando o nó entra ou sai. */
+            ref={focarUmaVez}
             maxLength={120}
             onPointerDown={(e) => e.stopPropagation()}
             onBlur={(e) => { setEditando(false); if (e.target.value !== grupo.nome) aoMudar(grupo.id, { nome: e.target.value }); }}
             onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") setEditando(false); }}
           />
         ) : (
+          /* SEM `stopPropagation` AQUI, e essa foi a razão de o grupo não se
+             mover. O nome ocupa a ponta esquerda da faixa e "Desfazer grupo" a
+             direita, e os dois barravam o gesto: sobrava o vazio do meio. O Erik
+             pegou pelo nome, como qualquer um pegaria, e o que aconteceu foi o
+             navegador SELECIONAR o texto — dá para ver na captura dele.
+             
+             Agora arrastar pelo nome move o grupo, e o clique parado abre a
+             edição. `onClickCapture` cancela o clique quando houve arrasto. */
           <button
             type="button"
             className="canvas-grupo-nome"
-            onPointerDown={(e) => e.stopPropagation()}
+            onClickCapture={talvezCancelarClique}
             onClick={() => setEditando(true)}
           >
             {/* Grupo sem nome DIZ que não tem nome, e o rótulo é o convite para
@@ -468,16 +638,25 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0 }) {
           o tamanho por teclado não existe ainda, e fingir um alvo focável que
           não responde é pior que não oferecer. */}
       {/* A CAIXA TRACEJADA — `895:7025`. Ela é irmã do nome, e não a mãe dele. */}
-      <div className="canvas-grupo-area">
-        <span
-          className="canvas-grupo-canto"
-          aria-hidden="true"
-          onPointerDown={(e) => pegar(e, "medir")}
-          onPointerMove={andar}
-          onPointerUp={soltar}
-          onPointerCancel={soltar}
-        />
-      </div>
+      {/* A MOLDURA QUE ESTICA — uma faixa de 10px em volta da área, e nada no
+          meio. O meio continua sem receber o ponteiro: arrastar ali move a NOTA
+          que está por cima, que é o que a pessoa espera. */}
+      <div
+        className="canvas-grupo-area"
+        onPointerDown={(e) => {
+          const borda = ondeEncostou(e, e.currentTarget);
+          if (borda) pegar(e, borda);
+        }}
+        onPointerMove={(e) => {
+          andar(e);
+          if (!arrasto.current) {
+            const borda = ondeEncostou(e, e.currentTarget);
+            e.currentTarget.style.cursor = borda ? CURSOR_DA_BORDA[borda] : "";
+          }
+        }}
+        onPointerUp={soltar}
+        onPointerCancel={soltar}
+      />
     </section>
   );
 }
@@ -791,9 +970,44 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
     );
   };
 
-  /* ARRASTAR O CHÃO leva a câmera junto. Só o chão: começar o arrasto sobre uma
-   * nota move a nota, e é o que a pessoa espera dos dois gestos. */
+  /* O ESPAÇO É QUEM ARRASTA A SUPERFÍCIE, e não o clique.
+   *
+   * Antes, arrastar em qualquer lugar vazio deslocava a câmera. O Erik: "click
+   * na tela desloca... pra mim esses padrões não estão certos; pra deslocar na
+   * tela, segurando espaço". Ele tem razão, e a razão não é gosto: o clique
+   * arrastado no vazio é o gesto de SELECIONAR uma área em toda ferramenta deste
+   * tipo, e gastá-lo com deslocamento fecha essa porta. Segurar espaço é o que o
+   * Figma, o Miro e o Sketch fazem, e é o que a mão já sabe.
+   *
+   * O botão do meio também arrasta, que é o outro padrão da casa — quem tem
+   * mouse de três botões não precisa da outra mão.
+   *
+   * A JANELA PERDENDO O FOCO SOLTA O ESPAÇO. Sem isso, trocar de aba com a tecla
+   * apertada volta com a superfície presa em modo de arrasto e nenhum jeito
+   * óbvio de sair: o `keyup` acontece na outra janela e nunca chega aqui. */
+  const [espaco, setEspaco] = useState(false);
+  useEffect(() => {
+    const desce = (e) => {
+      if (e.code !== "Space" || e.repeat) return;
+      /* Escrevendo, espaço é espaço. */
+      if (e.target.closest?.("input, textarea, [contenteditable=true]")) return;
+      e.preventDefault();
+      setEspaco(true);
+    };
+    const sobe = (e) => { if (e.code === "Space") setEspaco(false); };
+    const larga = () => setEspaco(false);
+    window.addEventListener("keydown", desce);
+    window.addEventListener("keyup", sobe);
+    window.addEventListener("blur", larga);
+    return () => {
+      window.removeEventListener("keydown", desce);
+      window.removeEventListener("keyup", sobe);
+      window.removeEventListener("blur", larga);
+    };
+  }, []);
+
   const chaoDesce = (e) => {
+    if (!espaco && e.button !== 1) return;
     /* O gesto tira a transição na hora: nada de o plano seguir o dedo com
      * 200ms de atraso porque um botão foi apertado meio segundo antes. */
     setSaltando(false);
@@ -835,7 +1049,11 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
     const py = e.clientY - caixa.top;
 
     setCamera((c) => {
-      if (!e.ctrlKey) {
+      /* CTRL OU CMD. O navegador manda a pinça do trackpad como roda com
+       * `ctrlKey`, e é assim que ela chega; `metaKey` é o que a pessoa aperta de
+       * propósito no Mac quando quer aproximar com a roda. Aceitar só o primeiro
+       * deixava metade do gesto de fora — o Erik apontou isso. */
+      if (!e.ctrlKey && !e.metaKey) {
         /* Dois dedos: anda. O sinal é invertido porque rolar para baixo leva a
          * vista para baixo, e a vista é a câmera ao contrário. */
         return { ...c, x: c.x - e.deltaX, y: c.y - e.deltaY };
@@ -956,7 +1174,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
             está dentro sem cada nota precisar saber da câmera. */}
         <div
           ref={mundo}
-          className="canvas-mundo"
+          className={`canvas-mundo${espaco ? " de-mao" : ""}`}
           onWheel={rodar}
           /* O chão pontilhado anda com a câmera: as duas variáveis são lidas
              pelo `background-position` e pelo `background-size` em canvas.css. */

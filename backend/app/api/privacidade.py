@@ -36,7 +36,7 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.models.aparelho import Aparelho
-from app.models.canvas import GrupoCanvas, Ligacao, NoCanvas
+from app.models.canvas import GrupoCanvas, Ligacao, MidiaCanvas, NoCanvas
 from app.models.grupo_ignorado import GrupoIgnorado
 from app.models.estudo import Estudo, EstudoNota
 from app.models.nota import Nota
@@ -85,6 +85,7 @@ O_QUE_GUARDAMOS = [
     ("no_canvas", "notas no Canvas", NoCanvas, "As notas que você pôs no Canvas, e onde cada uma está."),
     ("grupos_do_canvas", "grupos no Canvas", GrupoCanvas, "As áreas que você nomeou no Canvas, e o tamanho de cada uma."),
     ("ligacoes", "ligações", Ligacao, "As ligações que você fez entre notas."),
+    ("midias_do_canvas", "imagens no Canvas", MidiaCanvas, "As fotos que você pôs no Canvas."),
     ("grupos_calados", "grupos que você mandou parar", GrupoIgnorado, "Os grupos de notas parecidas que você pediu para o Mekora não sugerir mais."),
     ("sessoes", "sessões", Sessao, "Os navegadores em que você entrou."),
     ("links", "links de entrada", Chave, "Links de entrada pedidos e ainda não vencidos. Guardados como resumo, nunca em texto."),
@@ -345,6 +346,14 @@ def levar(
         # O NOME DO GRUPO É COISA ESCRITA PELA PESSOA, como o comentário da
         # nota — e leva junto o retângulo, porque sem ele o nome não diz sobre o
         # que era. Levar o nome sem a geometria seria levar metade.
+        # A IMAGEM VAI COMO ARQUIVO, e aqui só o endereço dela. Pôr os bytes num
+        # JSON os transformaria em base64 — um terço maior, e ilegível para quem
+        # abrir o arquivo para conferir o que o Mekora tem sobre ela.
+        "midias_do_canvas": [
+            {"nota": m.nota_id, "endereco": f"/canvas/midia/{m.token}",
+             "largura": m.largura, "altura": m.altura}
+            for m in db.query(MidiaCanvas).filter(MidiaCanvas.pessoa_id == pessoa.id).all()
+        ],
         "grupos_do_canvas": [
             {"nome": g.nome, "x": g.x, "y": g.y, "largura": g.largura, "altura": g.altura}
             for g in db.query(GrupoCanvas).filter(GrupoCanvas.pessoa_id == pessoa.id).all()
@@ -394,6 +403,14 @@ def apagar(
     # mesma distinção que esta tela faz sobre a conta inteira.
     if pessoa.retrato:
         Path(pessoa.retrato).unlink(missing_ok=True)
+
+    # AS IMAGENS DO CANVAS, pela mesma razão: o CASCADE apaga a linha e deixa o
+    # arquivo. Aqui elas são muitas, e uma foto esquecida no disco é pior que um
+    # retrato esquecido — pode ser qualquer coisa que a pessoa fotografou.
+    from app.core.config import STORAGE_RAIZ
+
+    for m in db.query(MidiaCanvas).filter(MidiaCanvas.pessoa_id == pessoa.id).all():
+        (STORAGE_RAIZ / "midia" / f"{m.token}.webp").unlink(missing_ok=True)
 
     # E a pessoa por último: o CASCADE leva sessões, chaves, notas, progresso,
     # aparelhos e preferências.

@@ -511,11 +511,14 @@ export function porNoCanvas(o) {
   });
 }
 
-export function moverNoCanvas(id, x, y) {
+/* `largura` e opcional: arrastar manda so x e y, esticar manda os tres. A rota e
+ * a mesma porque do ponto de vista de quem usa e o mesmo gesto — mexer no
+ * cartao. */
+export function moverNoCanvas(id, x, y, largura) {
   return pede(`/canvas/nos/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ x, y }),
+    body: JSON.stringify(largura === undefined ? { x, y } : { x, y, largura }),
   });
 }
 

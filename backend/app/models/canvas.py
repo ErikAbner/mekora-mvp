@@ -47,6 +47,10 @@ class NoCanvas(Base):
     x = Column(Float, nullable=False, default=0)
     y = Column(Float, nullable=False, default=0)
 
+    # SÓ A LARGURA. A altura vem do conteúdo: uma altura fixa corta o texto, e um
+    # cartão que esconde o que a pessoa escreveu erra o propósito do Canvas.
+    largura = Column(Float, nullable=False, default=375, server_default="375")
+
     movido_em = Column(DateTime, default=agora, onupdate=agora, nullable=False)
 
 
@@ -111,3 +115,45 @@ class GrupoCanvas(Base):
 
     criado_em = Column(DateTime, default=agora, nullable=False)
     movido_em = Column(DateTime, default=agora, onupdate=agora, nullable=False)
+
+
+class MidiaCanvas(Base):
+    """A imagem de uma nota de mídia — a primeira ferramenta do dock.
+
+    POR QUE UMA TABELA, E NÃO UMA COLUNA EM `Nota`
+    ==============================================
+    A `Nota` é a entidade compartilhada por leitura, estudos, caderno e Canvas.
+    Pendurar `imagem` nela faria toda nota do produto carregar um campo que só
+    uma minoria usa, e faria a pergunta "esta nota tem imagem?" existir em
+    lugares onde ela não faz sentido. Aqui a relação é a resposta: existe linha,
+    tem imagem.
+
+    O TOKEN NÃO É O `id`
+    ====================
+    O arquivo é servido por `/canvas/midia/{token}`, e o token é aleatório. Com
+    o `id` sequencial no endereço, qualquer pessoa entrando com um número
+    descobre quantas imagens existem no sistema e tenta as vizinhas — é o mesmo
+    defeito que o `token_publico` dos jobs já resolveu neste repositório.
+
+    A propriedade é conferida no banco de qualquer jeito. O token aleatório é a
+    segunda tranca, e não a primeira.
+    """
+
+    __tablename__ = "canvas_midias"
+
+    id = Column(Integer, primary_key=True, index=True)
+    pessoa_id = Column(Integer, ForeignKey("pessoas.id", ondelete="CASCADE"), nullable=False, index=True)
+    nota_id = Column(
+        Integer, ForeignKey("notas.id", ondelete="CASCADE"), nullable=False, unique=True, index=True
+    )
+
+    token = Column(String, nullable=False, unique=True, index=True)
+
+    # O TAMANHO FICA GUARDADO para a tela poder reservar o espaço do cartão antes
+    # de a imagem chegar. Sem isso o Canvas dá um pulo quando cada imagem carrega
+    # — e num plano onde a pessoa está arrastando coisas, o pulo move o alvo
+    # debaixo do dedo.
+    largura = Column(Integer, nullable=False, default=0)
+    altura = Column(Integer, nullable=False, default=0)
+
+    criada_em = Column(DateTime, default=agora, nullable=False)

@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from fastapi import APIRouter, Cookie, Depends, HTTPException
+from fastapi import APIRouter, Cookie, Depends, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-from app.models.canvas import GrupoCanvas, Ligacao, NoCanvas
+from app.models.canvas import GrupoCanvas, Ligacao, MidiaCanvas, NoCanvas
 from app.models.nota import CORES, Nota
 from app.models.pessoa import Pessoa
 from app.services import acesso_service
@@ -35,6 +35,10 @@ class NoNovo(BaseModel):
 class Movimento(BaseModel):
     x: float
     y: float
+    # A largura vem OPCIONAL: arrastar manda só x e y, esticar manda os três, e
+    # a rota é a mesma porque do ponto de vista de quem usa é o mesmo gesto —
+    # mexer no cartão.
+    largura: Optional[float] = None
 
 
 class LigacaoNova(BaseModel):
@@ -106,10 +110,15 @@ def superficie(
         .all()
     )
 
+    midias = {
+        m.nota_id: {"token": m.token, "largura": m.largura, "altura": m.altura}
+        for m in db.query(MidiaCanvas).filter(MidiaCanvas.pessoa_id == pessoa.id).all()
+    }
+
     return {
         "nos": [
             {
-                "id": n.id, "nota_id": nota.id, "x": n.x, "y": n.y,
+                "id": n.id, "nota_id": nota.id, "x": n.x, "y": n.y, "largura": n.largura,
                 "texto": nota.trecho, "comentario": nota.comentario, "cor": nota.cor,
                 # A ORIGEM VAI JUNTO. O item 6 do contrato pede "manter a origem
                 # da nota, e abri-la" — sem isto, uma nota no Canvas vira texto
@@ -121,6 +130,11 @@ def superficie(
                 # Num canvas que cresce por meses, ela é o que separa o que se
                 # pensou ontem do que se pensou em março.
                 "criada_em": nota.criada_em,
+                # A IMAGEM VAI JUNTO, com o tamanho. Sem o tamanho a tela não tem
+                # como reservar o espaço do cartão antes de a imagem chegar, e o
+                # Canvas dá um pulo a cada uma que carrega — num plano onde a
+                # pessoa está arrastando, o pulo move o alvo debaixo do dedo.
+                "midia": midias.get(nota.id),
             }
             for n, nota in nos
         ],
@@ -201,6 +215,11 @@ def mover(
     if no is None:
         raise HTTPException(status_code=404, detail="Não encontrado.")
     no.x, no.y = onde.x, onde.y
+    if onde.largura is not None:
+        # TETO E PISO NO SERVIDOR, e não só na tela. A largura vem de um arrasto,
+        # e um arrasto que escapa — ou um pedido escrito à mão — poria um cartão
+        # de um pixel, ou de cem mil, que ninguém consegue mais pegar de volta.
+        no.largura = max(200.0, min(1200.0, onde.largura))
     db.commit()
     return None
 
@@ -426,3 +445,140 @@ def previa(
         _PREVIAS.clear()
     _PREVIAS[url] = (agora_, fora)
     return fora
+
+
+# A IMAGEM QUE A PESSOA PÕE NA SUPERFÍCIE
+# =======================================
+# A primeira ferramenta do dock é "adicionar mídia", e mídia é endereço OU foto.
+# O endereço já tinha caminho — vira uma nota com link, e a prévia acima monta o
+# cartão. A foto não tinha nenhum: não havia onde guardá-la.
+#
+# O QUE ENTRA NÃO É O QUE FICA, e isto é a mesma regra do retrato da conta. A
+# imagem é aberta, decodificada e gravada de novo: o EXIF vai embora com ela —
+# marca da câmera, data, e em foto de celular a COORDENADA DE GPS. Guardar os
+# bytes que chegaram seria guardar tudo isso e servir de volta.
+#
+# E ela sai menor do que entrou. WebP a 82, lado máximo de 1600: uma foto de
+# celular chega com 4 MB e fica com algumas centenas de KB. O Erik pediu cuidado
+# com peso — "fontes, imagens e svgs são as maiores causas de peso em website" —
+# e o lugar de cortar peso é na entrada, uma vez, e não em toda visita.
+MIDIA_TIPOS = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+MIDIA_BYTES = 12 * 1024 * 1024
+MIDIA_LADO = 1600
+
+
+@router.post("/canvas/midia", status_code=201)
+async def por_midia(
+    arquivo: UploadFile = File(...),
+    x: float = Form(0),
+    y: float = Form(0),
+    legenda: str = Form(""),
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> dict:
+    import secrets
+    from io import BytesIO
+
+    from PIL import Image, ImageOps, UnidentifiedImageError
+
+    from app.core.config import STORAGE_RAIZ
+
+    pessoa = _quem(db, mekora_sessao)
+
+    if arquivo.content_type not in MIDIA_TIPOS:
+        raise HTTPException(
+            status_code=400, detail="Formato não aceito. Mande JPEG, PNG, WebP ou GIF."
+        )
+
+    # LIDO COM TETO, e não `read()` sem limite: o `content-length` é dito pelo
+    # cliente, e acreditar nele é deixar a memória do servidor na mão de quem
+    # envia.
+    bruto = await arquivo.read(MIDIA_BYTES + 1)
+    if len(bruto) > MIDIA_BYTES:
+        raise HTTPException(
+            status_code=413, detail=f"A imagem passa de {MIDIA_BYTES // (1024 * 1024)} MB."
+        )
+    if not bruto:
+        raise HTTPException(status_code=400, detail="O arquivo chegou vazio.")
+
+    try:
+        imagem = Image.open(BytesIO(bruto))
+        imagem.load()
+    except (UnidentifiedImageError, OSError) as exc:
+        # O TIPO DECLARADO NÃO É PROVA. `content_type` vem do cliente; quem diz
+        # se aquilo é imagem é o decodificador.
+        raise HTTPException(status_code=400, detail="Não consegui abrir essa imagem.") from exc
+
+    # `exif_transpose` ANTES de descartar o EXIF: a orientação mora lá, e jogar
+    # os dados fora sem aplicá-la deixa a foto de celular deitada.
+    imagem = ImageOps.exif_transpose(imagem)
+    imagem = imagem.convert("RGB")
+    imagem.thumbnail((MIDIA_LADO, MIDIA_LADO), Image.LANCZOS)
+
+    pasta = STORAGE_RAIZ / "midia"
+    pasta.mkdir(parents=True, exist_ok=True)
+    token = secrets.token_urlsafe(24)
+    imagem.save(pasta / f"{token}.webp", format="WEBP", quality=82, method=6)
+
+    # A NOTA EXISTE MESMO ASSIM, e a imagem se pendura nela. Criar uma entidade
+    # só para foto abriria a ontologia paralela que a DEC-0030 proíbe: no Canvas
+    # tudo é nota, e uma foto é uma nota cujo corpo é uma imagem.
+    nota = Nota(
+        pessoa_id=pessoa.id, job_id=None, origem="", fonte="midia",
+        capitulo=0, de=0, ate=0, cor="amarelo",
+        trecho=(legenda or "").strip()[:2000], comentario="",
+    )
+    db.add(nota)
+    db.flush()
+
+    db.add(
+        MidiaCanvas(
+            pessoa_id=pessoa.id, nota_id=nota.id, token=token,
+            largura=imagem.width, altura=imagem.height,
+        )
+    )
+    no = NoCanvas(pessoa_id=pessoa.id, nota_id=nota.id, x=x, y=y)
+    db.add(no)
+    db.commit()
+    db.refresh(no)
+    return {
+        "id": no.id, "nota_id": nota.id, "x": no.x, "y": no.y,
+        "midia": {"token": token, "largura": imagem.width, "altura": imagem.height},
+    }
+
+
+@router.get("/canvas/midia/{token}")
+def ver_midia(
+    token: str,
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+):
+    """A imagem, e só para quem é dono dela.
+
+    O token aleatório no endereço é a SEGUNDA tranca. A primeira é esta consulta:
+    `pessoa_id` está no FILTRO, e não numa conferência depois — a diferença é que
+    um filtro não tem como ser esquecido num `if` que alguém edite amanhã.
+    """
+    from fastapi.responses import FileResponse
+
+    from app.core.config import STORAGE_RAIZ
+
+    pessoa = _quem(db, mekora_sessao)
+    midia = (
+        db.query(MidiaCanvas)
+        .filter(MidiaCanvas.token == token, MidiaCanvas.pessoa_id == pessoa.id)
+        .first()
+    )
+    if midia is None:
+        raise HTTPException(status_code=404, detail="Não encontrado.")
+
+    caminho = STORAGE_RAIZ / "midia" / f"{token}.webp"
+    if not caminho.exists():
+        raise HTTPException(status_code=404, detail="Não encontrado.")
+    # `immutable`: o arquivo nunca muda depois de escrito — o token é novo a cada
+    # imagem. Sem isto o navegador reconfere a cada visita uma coisa que não tem
+    # como ter mudado.
+    return FileResponse(
+        caminho, media_type="image/webp",
+        headers={"Cache-Control": "private, max-age=31536000, immutable"},
+    )

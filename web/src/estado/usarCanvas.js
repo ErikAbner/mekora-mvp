@@ -52,10 +52,12 @@ export function usarCanvas() {
     }
   }, [recarregar]);
 
-  const mover = useCallback(async (id, x, y) => {
-    setNos((atual) => atual.map((n) => (n.id === id ? { ...n, x, y } : n)));
+  const mover = useCallback(async (id, x, y, largura) => {
+    setNos((atual) =>
+      atual.map((n) => (n.id === id ? { ...n, x, y, ...(largura === undefined ? {} : { largura }) } : n)),
+    );
     try {
-      await moverNoCanvas(id, x, y);
+      await moverNoCanvas(id, x, y, largura);
     } catch (e) {
       setErro(e.message);
       await recarregar();
