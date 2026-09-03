@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
@@ -158,6 +158,10 @@ function passoDoChao(escala) {
  * ficar impossível de acertar. */
 const BORDA = 10;
 
+/* A malha do plano, em unidades do plano. É a mesma do chão pontilhado: uma área
+ * que encosta na malha fica alinhada com o que a pessoa VÊ atrás dela. */
+const MALHA_DO_PLANO = 24;
+
 /* Os mesmos limites que o servidor aplica. Aqui para o cartão não passar deles
  * enquanto o dedo ainda está em cima; lá porque um pedido escrito à mão não
  * passa por aqui. */
@@ -235,7 +239,17 @@ function MenuDoCartao({ children, rotulo = "Ações da nota" }) {
   );
 }
 
-function Nota({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, fio, alvoDoFio, escala = 1 }) {
+/* MEMOIZADA, e a razão é medida.
+ *
+ * Arrastar uma nota escreve estado no Canvas a cada quadro — a linha precisa
+ * seguir o cartão. Sem `memo`, esse estado redesenha TODAS as notas: com 123
+ * cartões na superfície, o pior quadro de um arrasto foi de 66ms, quatro
+ * quadros perdidos de uma vez.
+ *
+ * Com `memo`, só o cartão que mudou redesenha. As funções que chegam por
+ * propriedade são todas `useCallback` no pai, senão a comparação nunca casaria
+ * e a memoização não valeria nada. */
+function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, fio, alvoDoFio, carregada, escala = 1 }) {
   const quando = dataCurta(no.criada_em);
   const caixa = useRef(null);
   const arrasto = useRef(null);
@@ -402,7 +416,12 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, fio, al
     left: no.x,
     top: no.y,
     inlineSize: posicao?.largura ?? largura,
-    transform: posicao ? `translate(${posicao.dx}px, ${posicao.dy}px)` : undefined,
+    /* `carregada` é o passo que a ÁREA está dando com a nota dentro dela. Soma
+     * com o arrasto próprio porque os dois são deslocamentos do mesmo cartão. */
+    transform:
+      posicao || carregada
+        ? `translate(${(posicao?.dx ?? 0) + (carregada?.dx ?? 0)}px, ${(posicao?.dy ?? 0) + (carregada?.dy ?? 0)}px)`
+        : undefined,
     /* Enquanto arrasta, a nota sobe: passar por baixo de outra faria parecer
        que ela sumiu. */
     zIndex: posicao ? 10 : undefined,
@@ -579,6 +598,8 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, fio, al
 }
 
 
+const Nota = memo(NotaCrua);
+
 /* UM GRUPO — nó 895:6938.
  *
  * O desenho mostra cartões dentro de uma área tracejada com título: *"Design &
@@ -590,7 +611,7 @@ function Nota({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, fio, al
  * área move a NOTA, ou o chão, e nunca o retângulo por baixo. O que pega o
  * retângulo é a barra do título — a mesma regra de uma janela.
  */
-function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0 }) {
+function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar }) {
   const arrasto = useRef(null);
   const [desloca, setDesloca] = useState(null);
   const [medindo, setMedindo] = useState(null);
@@ -659,9 +680,15 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0 }) {
     const dx = (e.clientX - a.x0) / escala;
     const dy = (e.clientY - a.y0) / escala;
     if (!a.mexeu && Math.hypot(e.clientX - a.x0, e.clientY - a.y0) < LIMIAR) return;
+    if (!a.mexeu && a.qual === "mover") aoLevar?.(grupo.id, { dx: 0, dy: 0 });
     a.mexeu = true;
-    if (a.qual === "mover") setDesloca({ dx, dy });
-    else setMedindo(esticar(a.qual, dx, dy));
+    if (a.qual === "mover") {
+      setDesloca({ dx, dy });
+      /* A ÁREA LEVA O QUE ESTÁ DENTRO DELA. Ver `grupoVivo` no Canvas: quem
+       * decide de quem é cada nota é a geometria, e ela é lida uma vez, no
+       * começo do gesto. */
+      aoLevar?.(grupo.id, { dx, dy });
+    } else setMedindo(esticar(a.qual, dx, dy));
   };
 
   /* Mesma razão da nota: interrompido volta, e não confirma. */
@@ -670,6 +697,7 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0 }) {
     arrasto.current = null;
     setDesloca(null);
     setMedindo(null);
+    aoLevar?.(grupo.id, null);
   };
 
   const soltar = (e) => {
@@ -680,11 +708,21 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0 }) {
     arrasto.current = null;
     setDesloca(null);
     setMedindo(null);
-    if (!a || !a.mexeu) return;
+    if (!a || !a.mexeu) { aoLevar?.(grupo.id, null); return; }
     const dx = (e.clientX - a.x0) / escala;
     const dy = (e.clientY - a.y0) / escala;
-    if (a.qual === "mover") aoMudar(grupo.id, { x: grupo.x + dx, y: grupo.y + dy });
-    else aoMudar(grupo.id, esticar(a.qual, dx, dy));
+    if (a.qual === "mover") {
+      /* ENCOSTA NA MALHA AO SOLTAR, e não durante o gesto: um imã que age
+       * enquanto o dedo anda faz a área grudar e escapar, e a mão sente que
+       * perdeu o controle. No fim, ele só arruma o resto. */
+      const px = Math.round((grupo.x + dx) / MALHA_DO_PLANO) * MALHA_DO_PLANO;
+      const py = Math.round((grupo.y + dy) / MALHA_DO_PLANO) * MALHA_DO_PLANO;
+      aoLevar?.(grupo.id, { dx: px - grupo.x, dy: py - grupo.y, soltou: true });
+      aoMudar(grupo.id, { x: px, y: py });
+    } else {
+      aoLevar?.(grupo.id, null);
+      aoMudar(grupo.id, esticar(a.qual, dx, dy));
+    }
   };
 
   const talvezCancelarClique = (e) => {
@@ -774,15 +812,20 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0 }) {
           que está por cima, que é o que a pessoa espera. */}
       <div
         className="canvas-grupo-area"
-        onPointerDown={(e) => {
-          const borda = ondeEncostou(e, e.currentTarget);
-          if (borda) pegar(e, borda);
-        }}
+        /* O MIOLO DA ÁREA ARRASTA, e não só a faixa do nome.
+         *
+         * Antes, a única pegada era uma faixa de 30px no topo — o corpo da área
+         * era `pointer-events: none` e não fazia nada. Mover um retângulo de
+         * 480×320 exigindo acertar 30px dele é o que fazia o gesto parecer duro.
+         *
+         * As notas continuam ganhando: elas são desenhadas por cima, então um
+         * toque sobre um cartão vai para o cartão. O miolo vazio é da área. */
+        onPointerDown={(e) => pegar(e, ondeEncostou(e, e.currentTarget) || "mover")}
         /* Só o cursor mora aqui: o movimento é ouvido na janela. */
         onPointerMove={(e) => {
           if (arrasto.current) return;
           const borda = ondeEncostou(e, e.currentTarget);
-          e.currentTarget.style.cursor = borda ? CURSOR_DA_BORDA[borda] : "";
+          e.currentTarget.style.cursor = borda ? CURSOR_DA_BORDA[borda] : "grab";
         }}
       />
     </section>
@@ -844,6 +887,56 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
   const seguirArrasto = useCallback((id, desloca) => {
     setVivo(desloca ? { id, ...desloca } : null);
   }, []);
+
+  /* A ÁREA LEVA O QUE ESTÁ DENTRO DELA — e antes ela não levava nada.
+   *
+   * Medido: arrastar o grupo 144px deixou a nota de dentro parada em 0. Um
+   * retângulo que desliza por baixo do próprio conteúdo não é um contêiner; é
+   * um desenho. Era o defeito de fundo do "mover grupo é ruim", e nenhuma
+   * animação o consertaria.
+   *
+   * QUEM É DE QUEM SAI DA GEOMETRIA, e não de uma coluna no banco. É a decisão
+   * que já estava no modelo (`GrupoCanvas` não guarda a lista de notas), e ela
+   * está certa: com a lista guardada, arrastar uma nota para dentro da área
+   * deixaria duas verdades — dentro na tela, fora na tabela.
+   *
+   * A lista é lida UMA VEZ, no começo do gesto, e não a cada quadro: durante o
+   * arrasto a área passa por cima de outras notas, e recalcular faria a área ir
+   * catando gente pelo caminho. */
+  const [levando, setLevando] = useState(null);
+  const filhosDe = useCallback(
+    (grupo) =>
+      nos
+        .filter((n) => {
+          const m = medidas[n.id] ?? { largura: n.largura || 375, altura: 200 };
+          const cx = n.x + m.largura / 2;
+          const cy = n.y + m.altura / 2;
+          /* O CENTRO decide, e não a caixa inteira. Exigir a nota toda dentro
+           * deixaria de fora qualquer cartão que encoste na borda — e é
+           * justamente ali que as pessoas encostam. */
+          return cx >= grupo.x && cx <= grupo.x + grupo.largura
+            && cy >= grupo.y && cy <= grupo.y + grupo.altura;
+        })
+        .map((n) => n.id),
+    [nos, medidas],
+  );
+
+  const levarGrupo = useCallback((grupoId, desloca) => {
+    if (!desloca) { setLevando(null); return; }
+    setLevando((atual) => {
+      const filhos = atual?.id === grupoId ? atual.filhos : filhosDe(grupos.find((g) => g.id === grupoId) ?? {});
+      if (desloca.soltou) {
+        /* No fim do gesto, cada nota vai para o servidor com o mesmo passo que a
+         * área deu. */
+        for (const id of filhos) {
+          const n = nos.find((x) => x.id === id);
+          if (n) aoMover(id, n.x + desloca.dx, n.y + desloca.dy);
+        }
+        return null;
+      }
+      return { id: grupoId, dx: desloca.dx, dy: desloca.dy, filhos };
+    });
+  }, [filhosDe, grupos, nos, aoMover]);
 
   const tracos = useMemo(() => {
     const linhas = [];
@@ -1019,7 +1112,6 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
    *
    * As posições de antes ficam guardadas para o DESFAZER. Uma ação que mexe em
    * trinta objetos de uma vez e não tem volta é uma armadilha. */
-  const MALHA = 24;
   const [desfazerArrumo, setDesfazerArrumo] = useState(null);
   const relogioDoArrumo = useRef(null);
 
@@ -1036,7 +1128,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
     if (nos.length < 2) return;
     const alturas = alturasNaTela();
     const alturaDe = (n) => alturas.get(n.id) ?? 160;
-    const encaixar = (v) => Math.round(v / MALHA) * MALHA;
+    const encaixar = (v) => Math.round(v / MALHA_DO_PLANO) * MALHA_DO_PLANO;
 
     const antes = nos.map((n) => ({ id: n.id, x: n.x, y: n.y }));
     const postas = [];
@@ -1057,7 +1149,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
           (o) => x < o.x + o.largura + 8 && x + largura + 8 > o.x && y < o.y + o.altura + 8 && y + altura + 8 > o.y,
         )
       ) {
-        y += MALHA;
+        y += MALHA_DO_PLANO;
       }
       postas.push({ x, y, largura, altura });
       if (x !== n.x || y !== n.y) depois.push({ id: n.id, x, y });
@@ -1449,6 +1541,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
               cima. Vêm antes no DOM, e é isso que os põe atrás. */}
           {grupos.map((g) => (
             <Grupo
+              aoLevar={levarGrupo}
               key={g.id}
               grupo={g}
               aoMudar={aoMudarArea}
@@ -1530,6 +1623,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
               aoLigarDaLista={setLigandoDaLista}
               aoMedir={anotarMedida}
               aoSeguir={seguirArrasto}
+              carregada={levando?.filhos?.includes(no.id) ? levando : null}
               alvoDoFio={fio?.sobre === no.nota_id}
               escala={camera.escala}
             />
