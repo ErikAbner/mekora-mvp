@@ -36,7 +36,7 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.models.aparelho import Aparelho
-from app.models.canvas import GrupoCanvas, Ligacao, MidiaCanvas, NoCanvas
+from app.models.canvas import GrupoCanvas, Ligacao, LivroCanvas, MidiaCanvas, NoCanvas
 from app.models.grupo_ignorado import GrupoIgnorado
 from app.models.estudo import Estudo, EstudoNota
 from app.models.nota import Nota
@@ -86,6 +86,7 @@ O_QUE_GUARDAMOS = [
     ("grupos_do_canvas", "grupos no Canvas", GrupoCanvas, "As áreas que você nomeou no Canvas, e o tamanho de cada uma."),
     ("ligacoes", "ligações", Ligacao, "As ligações que você fez entre notas."),
     ("midias_do_canvas", "imagens no Canvas", MidiaCanvas, "As fotos que você pôs no Canvas."),
+    ("livros_do_canvas", "livros no Canvas", LivroCanvas, "Quais livros você pôs no Canvas, e onde cada um está. O livro em si está acima, com os arquivos."),
     ("grupos_calados", "grupos que você mandou parar", GrupoIgnorado, "Os grupos de notas parecidas que você pediu para o Mekora não sugerir mais."),
     ("sessoes", "sessões", Sessao, "Os navegadores em que você entrou."),
     ("links", "links de entrada", Chave, "Links de entrada pedidos e ainda não vencidos. Guardados como resumo, nunca em texto."),
@@ -353,6 +354,13 @@ def levar(
             {"nota": m.nota_id, "endereco": f"/canvas/midia/{m.token}",
              "largura": m.largura, "altura": m.altura}
             for m in db.query(MidiaCanvas).filter(MidiaCanvas.pessoa_id == pessoa.id).all()
+        ],
+        # O LIVRO NO CANVAS É SÓ A POSIÇÃO. O arquivo, o título e o autor já
+        # saem junto dos trabalhos, acima — repeti-los aqui seria dizer duas
+        # vezes a mesma coisa e sugerir que há duas cópias.
+        "livros_do_canvas": [
+            {"livro": lc.job_id, "x": lc.x, "y": lc.y}
+            for lc in db.query(LivroCanvas).filter(LivroCanvas.pessoa_id == pessoa.id).all()
         ],
         "grupos_do_canvas": [
             {"nome": g.nome, "x": g.x, "y": g.y, "largura": g.largura, "altura": g.altura}

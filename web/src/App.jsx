@@ -455,8 +455,11 @@ function SoParaQuemEntrou({ acesso, lugar, children }) {
 }
 
 function PaginaCanvas() {
-  const { nos, ligacoes, grupos, erro, trazer, trazerMidia, mover, tirar, ligar, desligar, agrupar, mudarArea, desagrupar } = usarCanvas();
+  const { nos, ligacoes, grupos, livros, erro, trazer, trazerMidia, trazerLivro, mover, moverLivro, tirar, tirarLivro, ligar, desligar, agrupar, mudarArea, desagrupar } = usarCanvas();
   const [notas, setNotas] = useState([]);
+  /* A ESTANTE INTEIRA, para a folha de "trazer" poder oferecer livros. É a
+   * mesma lista da tela de Estante — o Canvas não tem acervo próprio. */
+  const { livros: acervo, carregarEstante } = useJornada();
 
   /* TODAS as notas, para a folha de "trazer" saber o que existe. O Canvas
    * mostra só as que estão na superfície; escolher entre as outras exige
@@ -467,6 +470,8 @@ function PaginaCanvas() {
     return () => { vivo = false; };
   }, [nos.length]);
 
+  useEffect(() => { carregarEstante?.(); }, [carregarEstante]);
+
   return (
     <Canvas
       nos={nos}
@@ -476,6 +481,11 @@ function PaginaCanvas() {
       erro={erro}
       aoTrazer={trazer}
       aoTrazerMidia={trazerMidia}
+      livros={livros}
+      acervo={acervo}
+      aoTrazerLivro={trazerLivro}
+      aoMoverLivro={moverLivro}
+      aoTirarLivro={tirarLivro}
       aoMover={mover}
       aoTirar={tirar}
       aoLigar={ligar}

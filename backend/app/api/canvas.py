@@ -9,8 +9,9 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-from app.models.canvas import GrupoCanvas, Ligacao, MidiaCanvas, NoCanvas
+from app.models.canvas import GrupoCanvas, Ligacao, LivroCanvas, MidiaCanvas, NoCanvas
 from app.models.nota import CORES, Nota
+from app.models.processing_job import ProcessingJob
 from app.models.pessoa import Pessoa
 from app.services import acesso_service
 
@@ -101,7 +102,7 @@ def superficie(
     """
     pessoa = acesso_service.quem_e(db, mekora_sessao)
     if pessoa is None:
-        return {"nos": [], "ligacoes": [], "grupos": []}
+        return {"nos": [], "ligacoes": [], "grupos": [], "livros": []}
 
     nos = (
         db.query(NoCanvas, Nota)
@@ -141,6 +142,29 @@ def superficie(
         "ligacoes": [
             {"id": l.id, "de_id": l.de_id, "para_id": l.para_id, "como": l.como}
             for l in db.query(Ligacao).filter(Ligacao.pessoa_id == pessoa.id).all()
+        ],
+        # OS LIVROS VÊM NO MESMO PEDIDO, pela mesma razão dos grupos. E vêm
+        # como REFERÊNCIA resolvida: o cartão precisa de capa, título e autor
+        # para se parecer com um livro, e buscá-los depois faria a superfície
+        # aparecer com retângulos vazios que viram livros um instante depois.
+        "livros": [
+            {
+                "id": lc.id, "job_id": j.id,
+                "x": lc.x, "y": lc.y, "largura": lc.largura,
+                "titulo": j.final_title or j.detected_title or j.original_filename,
+                "autor": j.final_author or j.detected_author or "",
+                "paginas": j.page_count,
+                # A CAPA VEM POR TOKEN, e não por id — a mesma regra do resto do
+                # storage. Sem `token_publico` não há endereço, e o cartão cai no
+                # título, como o Preparo já faz.
+                "capa": f"/storage/temp/{j.token_publico}/page_0.png" if j.token_publico else None,
+            }
+            for lc, j in (
+                db.query(LivroCanvas, ProcessingJob)
+                .join(ProcessingJob, ProcessingJob.id == LivroCanvas.job_id)
+                .filter(LivroCanvas.pessoa_id == pessoa.id)
+                .all()
+            )
         ],
         # Os grupos vêm no MESMO pedido que os nós: eles são o chão em que os
         # nós estão, e chegar depois faria as notas aparecerem soltas e o
@@ -582,3 +606,95 @@ def ver_midia(
         caminho, media_type="image/webp",
         headers={"Cache-Control": "private, max-age=31536000, immutable"},
     )
+
+
+# O LIVRO NA SUPERFÍCIE
+# =====================
+# `job_id` e não uma cópia: o livro continua sendo da estante, e o que existe
+# aqui é a POSIÇÃO dele. É a mesma regra que a nota já segue.
+class LivroNovo(BaseModel):
+    job_id: int
+    x: float = 0
+    y: float = 0
+
+
+@router.post("/canvas/livros", status_code=201)
+def por_livro(
+    novo: LivroNovo,
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> dict:
+    pessoa = _quem(db, mekora_sessao)
+
+    # O `dono_id` está no FILTRO. Sem ele, qualquer id de livro entraria na
+    # superfície de qualquer pessoa, e o cartão traria título e autor junto.
+    job = (
+        db.query(ProcessingJob)
+        .filter(ProcessingJob.id == novo.job_id, ProcessingJob.dono_id == pessoa.id)
+        .first()
+    )
+    if job is None:
+        raise HTTPException(status_code=404, detail="Livro não encontrado.")
+
+    ja = (
+        db.query(LivroCanvas)
+        .filter(LivroCanvas.pessoa_id == pessoa.id, LivroCanvas.job_id == job.id)
+        .first()
+    )
+    if ja is not None:
+        # Não é erro: pedir para trazer o que já está aqui tem como resposta certa
+        # mostrar onde está — não recusar.
+        return {"id": ja.id, "job_id": job.id, "x": ja.x, "y": ja.y, "ja_estava": True}
+
+    lc = LivroCanvas(pessoa_id=pessoa.id, job_id=job.id, x=novo.x, y=novo.y)
+    db.add(lc)
+    db.commit()
+    db.refresh(lc)
+    return {"id": lc.id, "job_id": job.id, "x": lc.x, "y": lc.y, "ja_estava": False}
+
+
+@router.patch("/canvas/livros/{livro_id}", status_code=204)
+def mover_livro(
+    livro_id: int,
+    onde: Movimento,
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> None:
+    pessoa = _quem(db, mekora_sessao)
+    lc = (
+        db.query(LivroCanvas)
+        .filter(LivroCanvas.id == livro_id, LivroCanvas.pessoa_id == pessoa.id)
+        .first()
+    )
+    if lc is None:
+        raise HTTPException(status_code=404, detail="Não encontrado.")
+    lc.x, lc.y = onde.x, onde.y
+    if onde.largura is not None:
+        lc.largura = max(160.0, min(600.0, onde.largura))
+    db.commit()
+    return None
+
+
+@router.delete("/canvas/livros/{livro_id}", status_code=204)
+def tirar_livro(
+    livro_id: int,
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> None:
+    """Tira da superfície. NÃO apaga o livro.
+
+    A rota apaga uma linha de `canvas_livros` e nada mais: o arquivo, as notas, os
+    destaques e o lugar na estante continuam exatamente onde estavam. Apagar o
+    livro de verdade é outra rota, em outra tela, e com outra pergunta.
+    """
+    pessoa = _quem(db, mekora_sessao)
+    lc = (
+        db.query(LivroCanvas)
+        .filter(LivroCanvas.id == livro_id, LivroCanvas.pessoa_id == pessoa.id)
+        .first()
+    )
+    if lc is None:
+        raise HTTPException(status_code=404, detail="Não encontrado.")
+    db.delete(lc)
+    db.commit()
+    return None

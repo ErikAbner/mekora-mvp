@@ -1121,3 +1121,89 @@
 @media (prefers-reduced-motion: reduce) {
   .canvas-barra-escolha { animation: none; }
 }
+
+/* ---- O LIVRO NA SUPERFICIE -------------------------------------------------
+ *
+ * Ele nao e um cartao de texto com o titulo dentro. A 25% de zoom, texto de 20px
+ * e ilegivel e a CAPA e a unica coisa que continua se reconhecendo — e por isso
+ * a capa e o corpo do cartao, e nao um selo ao lado do nome.
+ *
+ * A proporcao e 2/3, que e a de livro. Ela vale mesmo sem imagem: o quadro com o
+ * titulo dentro ainda le como livro pela FORMA.
+ */
+.livro-canvas {
+  position: absolute;
+  display: flex; flex-direction: column;
+  padding: 12px;
+  background: var(--piso);
+  box-shadow:
+    0 2px 2.5px rgb(0 0 0 / 0.13),
+    0 9px 7.55px rgb(0 0 0 / 0.07);
+  color: var(--foreground);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.livro-canvas * { -webkit-user-drag: none; }
+.livro-canvas.movendo { cursor: grabbing; }
+
+.livro-canvas .livro-capa {
+  display: block;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  background: var(--muted);
+  border: 1px solid var(--border);
+}
+.livro-canvas .livro-capa img { inline-size: 100%; block-size: 100%; object-fit: cover; display: block; }
+
+/* Sem capa, o titulo ocupa o quadro — e continua tendo forma de livro. */
+.livro-canvas .livro-capa-vazia {
+  display: flex; align-items: center; justify-content: center;
+  inline-size: 100%; block-size: 100%;
+  padding: 16px;
+  font-size: 16px; line-height: 24px;
+  color: var(--muted-foreground);
+  text-align: center;
+  text-wrap: balance;
+}
+
+/* ESCOPADA PELO CARTAO: `.livro-texto` tambem existe em `estante.css`, os dois
+ * arquivos entram no mesmo pacote, e a ultima carregada venceria em silencio. */
+.livro-canvas .livro-texto {
+  display: flex; flex-direction: column; gap: 4px;
+  margin-block-start: 12px;
+}
+.livro-canvas .livro-titulo {
+  font-size: 18px; line-height: 28px;
+  /* Duas linhas e corta: um titulo de sete linhas empurraria o cartao inteiro. */
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.livro-canvas .livro-autor { font-size: 14px; line-height: 20px; color: var(--muted-foreground); }
+
+.livro-canvas .nota-acoes {
+  display: flex; justify-content: flex-end;
+  margin-block-start: 8px;
+  opacity: 0;
+  transition: opacity 160ms var(--saida);
+}
+.livro-canvas:hover .nota-acoes,
+.livro-canvas:focus-within .nota-acoes { opacity: 1; }
+@media (hover: none) { .livro-canvas .nota-acoes { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .livro-canvas .nota-acoes { transition: none; } }
+
+/* A escolha fala a MESMA lingua em qualquer objeto — e e essa a prova de que ela
+ * e agnostica de tipo. */
+.livro-canvas.escolhido { outline: 2px solid var(--escolha); outline-offset: 2px; }
+.livro-canvas.escolhido.entre-varios { background-image: linear-gradient(var(--escolha-veu), var(--escolha-veu)); }
+
+/* O rotulo de cada lista dentro da folha de trazer. Duas listas na mesma folha
+ * precisam dizer qual e qual — sem isso, livro e nota viram uma pilha so. */
+.trazer-titulo {
+  margin: 20px 0 8px;
+  font-size: 14px; line-height: 20px;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.trazer-titulo:first-child { margin-block-start: 0; }

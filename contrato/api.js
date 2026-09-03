@@ -535,6 +535,28 @@ export function porMidiaNoCanvas(arquivo, x, y, legenda = "") {
   return pede("/canvas/midia", { method: "POST", body: pacote });
 }
 
+/* O LIVRO NA SUPERFICIE. Referencia e nao copia: o que vai e volta e a POSICAO,
+ * e o livro continua sendo da estante. Tirar daqui nao apaga nada. */
+export function porLivroNoCanvas(job_id, x, y) {
+  return pede("/canvas/livros", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ job_id, x, y }),
+  });
+}
+
+export function moverLivroNoCanvas(id, x, y, largura) {
+  return pede(`/canvas/livros/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(largura === undefined ? { x, y } : { x, y, largura }),
+  });
+}
+
+export function tirarLivroDoCanvas(id) {
+  return pede(`/canvas/livros/${id}`, { method: "DELETE" });
+}
+
 /** Tira da superficie SEM apagar a nota — o item 5 do contrato. */
 export function tirarDoCanvas(id) {
   return pede(`/canvas/nos/${id}`, { method: "DELETE" });

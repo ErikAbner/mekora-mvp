@@ -361,7 +361,7 @@ function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, aoE
     setPosicao(agora);
     /* O TRAÇO ANDA JUNTO. Sem isto a linha fica parada enquanto a nota anda, e
      * as duas se reencontram com um salto ao soltar. */
-    aoSeguir?.(no.id, agora);
+    aoSeguir?.(`nota:${no.id}`, agora);
   };
 
   /* Puxar a borda ESQUERDA cresce para a esquerda: a largura aumenta e a
@@ -384,7 +384,7 @@ function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, aoE
     largarOuvintes();
     arrasto.current = null;
     setPosicao(null);
-    aoSeguir?.(no.id, null);
+    aoSeguir?.(`nota:${no.id}`, null);
   };
 
   const soltar = (e) => {
@@ -405,7 +405,7 @@ function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, aoE
         aoMover(no.id, no.x + fim.dx, no.y, fim.largura);
         /* O confirmar do esticar leva o antes e o depois: é o que a história
          * precisa, e ela mora no Canvas porque um gesto pode mexer em vários. */
-        aoSeguir?.(no.id, {
+        aoSeguir?.(`nota:${no.id}`, {
           soltou: true, esticou: true,
           antes: { x: no.x, y: no.y, largura },
           depois: { x: no.x + fim.dx, y: no.y, largura: fim.largura },
@@ -413,10 +413,10 @@ function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, aoE
       } else {
         aoMover(no.id, no.x + dx, no.y + dy);
         /* `soltou` leva os acompanhantes ao servidor com o mesmo passo. */
-        aoSeguir?.(no.id, { dx, dy, soltou: true });
+        aoSeguir?.(`nota:${no.id}`, { dx, dy, soltou: true });
       }
     } else {
-      aoSeguir?.(no.id, null);
+      aoSeguir?.(`nota:${no.id}`, null);
     }
     setPosicao(null);
   };
@@ -617,6 +617,117 @@ function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, aoE
 
 
 const Nota = memo(NotaCrua);
+
+/* UM LIVRO NA SUPERFÍCIE.
+ *
+ * Ele não é um cartão de texto com o título dentro. O Erik: "a Book should not
+ * simply become a generic card containing text. It should remain recognizable as
+ * a Book" — e há uma razão medida por trás disso: a 25% de zoom, texto de 20px é
+ * ilegível, e a CAPA é a única coisa que continua se reconhecendo. O livro é o
+ * primeiro objeto da superfície que justifica níveis de detalhe por zoom.
+ *
+ * ELE USA O MESMO ARRASTO DA NOTA, de propósito. O pedido diz "do not create an
+ * isolated special-case implementation", e a prova é esta: escolher, arrastar
+ * junto, entrar numa seção e desfazer não sabem que existe um tipo novo.
+ */
+function LivroCrua({ livro, aoMover, aoTirar, aoEscolher, aoSeguir, carregada, escolhido, entreVarios, escala = 1 }) {
+  const caixa = useRef(null);
+  const arrasto = useRef(null);
+  const [posicao, setPosicao] = useState(null);
+  const [semCapa, setSemCapa] = useState(false);
+
+  const largarOuvintes = () => {
+    window.removeEventListener("pointermove", andar);
+    window.removeEventListener("pointerup", soltar);
+    window.removeEventListener("pointercancel", abortar);
+  };
+
+  const comecar = (e) => {
+    if (e.button !== 0) return;
+    e.stopPropagation();
+    aoEscolher?.(`livro:${livro.id}`, { juntando: e.shiftKey || e.metaKey || e.ctrlKey });
+    arrasto.current = { x0: e.clientX, y0: e.clientY, mexeu: false };
+    window.addEventListener("pointermove", andar);
+    window.addEventListener("pointerup", soltar);
+    window.addEventListener("pointercancel", abortar);
+  };
+
+  const andar = (e) => {
+    const a = arrasto.current;
+    if (!a) return;
+    const dx = (e.clientX - a.x0) / escala;
+    const dy = (e.clientY - a.y0) / escala;
+    if (!a.mexeu && Math.hypot(e.clientX - a.x0, e.clientY - a.y0) < LIMIAR) return;
+    a.mexeu = true;
+    setPosicao({ dx, dy });
+    aoSeguir?.(`livro:${livro.id}`, { dx, dy });
+  };
+
+  const abortar = () => {
+    largarOuvintes();
+    arrasto.current = null;
+    setPosicao(null);
+    aoSeguir?.(`livro:${livro.id}`, null);
+  };
+
+  const soltar = (e) => {
+    const a = arrasto.current;
+    largarOuvintes();
+    arrasto.current = null;
+    setPosicao(null);
+    if (!a?.mexeu) { aoSeguir?.(`livro:${livro.id}`, null); return; }
+    const dx = (e.clientX - a.x0) / escala;
+    const dy = (e.clientY - a.y0) / escala;
+    aoMover(livro.id, livro.x + dx, livro.y + dy);
+    aoSeguir?.(`livro:${livro.id}`, { dx, dy, soltou: true });
+  };
+
+  return (
+    <article
+      ref={caixa}
+      className={`livro-canvas${posicao ? " movendo" : ""}${escolhido ? " escolhido" : ""}${escolhido && entreVarios ? " entre-varios" : ""}`}
+      data-livro={livro.id}
+      style={{
+        left: livro.x,
+        top: livro.y,
+        inlineSize: livro.largura || 280,
+        transform:
+          posicao || carregada
+            ? `translate(${(posicao?.dx ?? 0) + (carregada?.dx ?? 0)}px, ${(posicao?.dy ?? 0) + (carregada?.dy ?? 0)}px)`
+            : undefined,
+        zIndex: posicao ? 10 : undefined,
+      }}
+      onPointerDown={comecar}
+    >
+      {/* A CAPA CAI PARA O TÍTULO quando não há imagem — o mesmo caminho do
+          Preparo. Endereço existir não é a imagem existir: `/storage/temp` é
+          apagado por idade. */}
+      <span className="livro-capa">
+        {livro.capa && !semCapa ? (
+          <img src={livro.capa} alt="" draggable="false" loading="lazy" onError={() => setSemCapa(true)} />
+        ) : (
+          <span className="livro-capa-vazia">{livro.titulo}</span>
+        )}
+      </span>
+      <span className="livro-texto">
+        <span className="livro-titulo">{livro.titulo}</span>
+        {livro.autor && <span className="livro-autor">{livro.autor}</span>}
+      </span>
+      <span className="nota-acoes">
+        <MenuDoCartao rotulo="Ações do livro">
+          <Link to={`/leitura/${livro.job_id}`} role="menuitem">Abrir no livro</Link>
+          {/* TIRAR NÃO APAGA — e aqui a distinção é mais importante do que na
+              nota: o livro é um arquivo, e some do Canvas sem sair da estante. */}
+          <button type="button" role="menuitem" onClick={() => aoTirar(livro.id)}>
+            Tirar da superfície
+          </button>
+        </MenuDoCartao>
+      </span>
+    </article>
+  );
+}
+
+const Livro = memo(LivroCrua);
 
 /* UM GRUPO — nó 895:6938.
  *
@@ -855,7 +966,7 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
   );
 }
 
-export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro, aoTrazer, aoTrazerMidia, aoMover, aoTirar, aoLigar, aoDesligar, aoAgrupar, aoMudarArea, aoDesagrupar }) {
+export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acervo = [], notas = [], erro, aoTrazer, aoTrazerMidia, aoTrazerLivro, aoMoverLivro, aoTirarLivro, aoMover, aoTirar, aoLigar, aoDesligar, aoAgrupar, aoMudarArea, aoDesagrupar }) {
   /* O FIO QUE ESTÁ SENDO PUXADO, em coordenadas da JANELA e não do plano.
    *
    * Da janela porque ele é desenhado por cima de tudo, e não dentro do plano:
@@ -876,6 +987,13 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
 
   const naSuperficie = new Set(nos.map((n) => n.nota_id));
   const deFora = notas.filter((n) => !naSuperficie.has(n.id));
+
+  /* Os livros da estante que ainda não estão na superfície. */
+  /* `chave` É O ID DO LIVRO na lista da estante — ela vem de `upload_id`, e não
+   * de um campo `id`, que a lista não tem. Usar `l.id` fazia o pedido sair sem
+   * `job_id` e o servidor recusar com 422. */
+  const jaNaMesa = new Set(livros.map((l) => l.job_id));
+  const foraDaSuperficie = acervo.filter((l) => !jaNaMesa.has(l.chave));
 
   const posicaoDe = useCallback(
     (notaId) => nos.find((n) => n.nota_id === notaId),
@@ -922,7 +1040,9 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
    * Ver a razão medida em `seguirArrasto`. */
   const escolhaRef = useRef(null);
   const nosRef = useRef(nos);
+  const livrosRef = useRef(livros);
   nosRef.current = nos;
+  livrosRef.current = livros;
 
   const historia = usarHistoria();
 
@@ -944,10 +1064,13 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
     if (!mudancas.length) return;
     historia.registrar({
       rotulo,
-      desfazer: () => mudancas.forEach((m) => aoMover(m.id, m.antes.x, m.antes.y, m.antes.largura)),
-      refazer: () => mudancas.forEach((m) => aoMover(m.id, m.depois.x, m.depois.y, m.depois.largura)),
+      desfazer: () => mudancas.forEach((m) => moverChaveRef.current(m.chave, m.antes.x, m.antes.y, m.antes.largura)),
+      refazer: () => mudancas.forEach((m) => moverChaveRef.current(m.chave, m.depois.x, m.depois.y, m.depois.largura)),
     });
-  }, [historia, aoMover]);
+  }, [historia]);
+  /* `moverChave` nasce depois desta função e é usada por ela só quando alguém
+   * desfaz — por `ref`, para a ordem de declaração não virar dependência. */
+  const moverChaveRef = useRef(null);
 
   const [escolha, setEscolha] = useState(() => new Set());
   escolhaRef.current = escolha;
@@ -974,6 +1097,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
     /* O QUE ESTAVA LÁ, guardado antes de sumir: sem a posição e o `nota_id`, não
      * há como trazer de volta. É a diferença entre desfazer e "criar de novo". */
     const notas = [];
+    const deVolta = [];
     const secoes = [];
     for (const chave of escolha) {
       const [tipo, id] = chave.split(":");
@@ -981,26 +1105,35 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
         const n = nosRef.current.find((x) => x.id === Number(id));
         if (n) { notas.push({ nota_id: n.nota_id, x: n.x, y: n.y }); aoTirar(n.id); }
       }
+      if (tipo === "livro") {
+        const l = livrosRef.current.find((x) => x.id === Number(id));
+        /* TIRAR O LIVRO NÃO APAGA O LIVRO — só a posição. Desfazer o traz de
+         * volta pelo `job_id`, que é o livro de verdade e nunca saiu da estante. */
+        if (l) { deVolta.push({ job_id: l.job_id, x: l.x, y: l.y }); aoTirarLivro(l.id); }
+      }
       if (tipo === "secao") {
         const g = grupos.find((x) => x.id === Number(id));
         if (g) { secoes.push({ nome: g.nome, x: g.x, y: g.y, largura: g.largura, altura: g.altura }); aoDesagrupar(g.id); }
       }
     }
     limparEscolha();
-    if (!notas.length && !secoes.length) return;
+    if (!notas.length && !secoes.length && !deVolta.length) return;
     historia.registrar({
-      rotulo: notas.length + secoes.length > 1 ? `${notas.length + secoes.length} tirados` : "Tirado da superfície",
+      rotulo: notas.length + secoes.length + deVolta.length > 1
+        ? `${notas.length + secoes.length + deVolta.length} tirados`
+        : "Tirado da superfície",
       /* DESFAZER TRAZ DE VOLTA COM ID NOVO. A nota é a mesma — o que se recria é
        * a POSIÇÃO dela na superfície, que é o que "tirar" apagou. Para a seção,
        * o objeto em si é recriado, e o id muda: um refazer encadeado depois disso
        * não encontraria a seção antiga. Está anotado em docs/CANVAS.md. */
       desfazer: async () => {
         for (const n of notas) await aoTrazer(n);
+        for (const l of deVolta) await aoTrazerLivro(l.job_id, l.x, l.y);
         for (const g of secoes) await aoAgrupar(g);
       },
       refazer: () => {},
     });
-  }, [escolha, aoTirar, aoDesagrupar, limparEscolha, grupos, historia, aoTrazer, aoAgrupar]);
+  }, [escolha, aoTirar, aoTirarLivro, aoDesagrupar, limparEscolha, grupos, historia, aoTrazer, aoTrazerLivro, aoAgrupar]);
 
   /* O TECLADO CHEGA NA ESCOLHA. `Esc` larga tudo; `Delete` e `Backspace` tiram
    * da superfície o que estiver escolhido.
@@ -1071,10 +1204,8 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
     /* A lista é fixada no primeiro quadro do gesto: recalcular a cada quadro
      * faria a escolha mudar de tamanho enquanto o dedo anda. */
     if (!acompanhantes.current.length) {
-      acompanhantes.current = escolhaRef.current.has(`nota:${id}`)
-        ? [...escolhaRef.current]
-            .filter((c) => c.startsWith("nota:") && c !== `nota:${id}`)
-            .map((c) => Number(c.split(":")[1]))
+      acompanhantes.current = escolhaRef.current.has(id)
+        ? [...escolhaRef.current].filter((c) => c !== id && !c.startsWith("secao:"))
         : [];
     }
     /* A GUARDA DOS ACOMPANHANTES NÃO PODE VIR ANTES DO CONFIRMAR — e vinha.
@@ -1087,30 +1218,30 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
     if (desloca.soltou) {
       const mudancas = [];
       if (desloca.esticou) {
-        mudancas.push({ id, antes: desloca.antes, depois: desloca.depois });
+        mudancas.push({ chave: id, antes: desloca.antes, depois: desloca.depois });
       } else {
         /* `nosRef` AINDA TEM O VALOR DE ANTES.
          *
          * O cartão chama `aoMover` e só depois confirma aqui, e `setNos` é
          * assíncrono — então o que se lê agora é a posição de origem. É o que a
          * história quer para o `antes`; o `depois` sai da soma, e não da leitura. */
-        const eu = nosRef.current.find((x) => x.id === id);
+        const eu = ondeEstaRef.current(id);
         if (eu) {
           mudancas.push({
-            id,
+            chave: id,
             antes: { x: eu.x, y: eu.y, largura: eu.largura },
             depois: { x: eu.x + desloca.dx, y: eu.y + desloca.dy, largura: eu.largura },
           });
         }
       }
       for (const outro of acompanhantes.current) {
-        const n = nosRef.current.find((x) => x.id === outro);
-        if (!n) continue;
-        aoMover(outro, n.x + desloca.dx, n.y + desloca.dy);
+        const o = ondeEstaRef.current(outro);
+        if (!o) continue;
+        moverChaveRef.current(outro, o.x + desloca.dx, o.y + desloca.dy);
         mudancas.push({
-          id: outro,
-          antes: { x: n.x, y: n.y, largura: n.largura },
-          depois: { x: n.x + desloca.dx, y: n.y + desloca.dy, largura: n.largura },
+          chave: outro,
+          antes: { x: o.x, y: o.y, largura: o.largura },
+          depois: { x: o.x + desloca.dx, y: o.y + desloca.dy, largura: o.largura },
         });
       }
       registrarMovimento(
@@ -1123,7 +1254,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
     }
     if (!acompanhantes.current.length) return;
     setLevando({ id: `escolha:${id}`, dx: desloca.dx, dy: desloca.dy, filhos: acompanhantes.current });
-  }, [aoMover, registrarMovimento]);
+  }, [registrarMovimento]);
 
   /* A ÁREA LEVA O QUE ESTÁ DENTRO DELA — e antes ela não levava nada.
    *
@@ -1141,22 +1272,55 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
    * arrasto a área passa por cima de outras notas, e recalcular faria a área ir
    * catando gente pelo caminho. */
   const [levando, setLevando] = useState(null);
+  /* QUEM ESTÁ DENTRO DA ÁREA — em CHAVES, e não em ids de nota.
+   *
+   * Foi aqui que o Livro provou que a contenção é agnóstica de tipo: a função
+   * ganhou uma linha para percorrer os livros também, e mais nada do sistema
+   * mudou. Arrastar a seção leva livro e nota juntos, e desfazer devolve os
+   * dois. */
   const filhosDe = useCallback(
-    (grupo) =>
-      nos
-        .filter((n) => {
-          const m = medidas[n.id] ?? { largura: n.largura || 375, altura: 200 };
-          const cx = n.x + m.largura / 2;
-          const cy = n.y + m.altura / 2;
-          /* O CENTRO decide, e não a caixa inteira. Exigir a nota toda dentro
-           * deixaria de fora qualquer cartão que encoste na borda — e é
-           * justamente ali que as pessoas encostam. */
-          return cx >= grupo.x && cx <= grupo.x + grupo.largura
-            && cy >= grupo.y && cy <= grupo.y + grupo.altura;
-        })
-        .map((n) => n.id),
-    [nos, medidas],
+    (grupo) => {
+      const dentro = [];
+      const cabe = (x, y, largura, altura) => {
+        const cx = x + largura / 2;
+        const cy = y + altura / 2;
+        /* O CENTRO decide, e não a caixa inteira. Exigir o objeto todo dentro
+         * deixaria de fora qualquer um que encoste na borda — e é justamente ali
+         * que as pessoas encostam. */
+        return cx >= grupo.x && cx <= grupo.x + grupo.largura
+          && cy >= grupo.y && cy <= grupo.y + grupo.altura;
+      };
+      for (const n of nos) {
+        const m = medidas[n.id] ?? { largura: n.largura || 375, altura: 200 };
+        if (cabe(n.x, n.y, m.largura, m.altura)) dentro.push(`nota:${n.id}`);
+      }
+      for (const l of livros) {
+        if (cabe(l.x, l.y, l.largura || 280, 200)) dentro.push(`livro:${l.id}`);
+      }
+      return dentro;
+    },
+    [nos, livros, medidas],
   );
+
+  /* MOVER UMA CHAVE, seja ela do tipo que for. É o único lugar do Canvas que
+   * sabe traduzir chave em ação, e por isso é o único que precisa mudar quando
+   * um tipo novo entra. */
+  const moverChave = useCallback((chave, x, y, largura) => {
+    const [tipo, id] = chave.split(":");
+    if (tipo === "nota") aoMover(Number(id), x, y, largura);
+    if (tipo === "livro") aoMoverLivro(Number(id), x, y, largura);
+  }, [aoMover, aoMoverLivro]);
+
+  moverChaveRef.current = moverChave;
+
+  const ondeEstaRef = useRef(null);
+  const ondeEsta = useCallback((chave) => {
+    const [tipo, id] = chave.split(":");
+    if (tipo === "nota") return nosRef.current.find((n) => n.id === Number(id));
+    if (tipo === "livro") return livrosRef.current.find((l) => l.id === Number(id));
+    return null;
+  }, []);
+  ondeEstaRef.current = ondeEsta;
 
   const levarGrupo = useCallback((grupoId, desloca) => {
     if (!desloca) { setLevando(null); return; }
@@ -1168,13 +1332,13 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
          * Desfazer um arrasto de seção tem de devolver a seção E o conteúdo. */
         const g = grupos.find((x) => x.id === grupoId);
         const mudancas = [];
-        for (const id of filhos) {
-          const n = nos.find((x) => x.id === id);
-          if (!n) continue;
-          aoMover(id, n.x + desloca.dx, n.y + desloca.dy);
+        for (const chave of filhos) {
+          const o = ondeEsta(chave);
+          if (!o) continue;
+          moverChave(chave, o.x + desloca.dx, o.y + desloca.dy);
           mudancas.push({
-            id, antes: { x: n.x, y: n.y, largura: n.largura },
-            depois: { x: n.x + desloca.dx, y: n.y + desloca.dy, largura: n.largura },
+            chave, antes: { x: o.x, y: o.y, largura: o.largura },
+            depois: { x: o.x + desloca.dx, y: o.y + desloca.dy, largura: o.largura },
           });
         }
         if (g) {
@@ -1184,11 +1348,11 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
             rotulo: filhos.length ? `Seção e ${filhos.length} movidos` : "Seção movida",
             desfazer: () => {
               aoMudarArea(grupoId, antes);
-              mudancas.forEach((m) => aoMover(m.id, m.antes.x, m.antes.y, m.antes.largura));
+              mudancas.forEach((m) => moverChave(m.chave, m.antes.x, m.antes.y, m.antes.largura));
             },
             refazer: () => {
               aoMudarArea(grupoId, depois);
-              mudancas.forEach((m) => aoMover(m.id, m.depois.x, m.depois.y, m.depois.largura));
+              mudancas.forEach((m) => moverChave(m.chave, m.depois.x, m.depois.y, m.depois.largura));
             },
           });
         }
@@ -1196,7 +1360,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
       }
       return { id: grupoId, dx: desloca.dx, dy: desloca.dy, filhos };
     });
-  }, [filhosDe, grupos, nos, aoMover, aoMudarArea, historia]);
+  }, [filhosDe, grupos, moverChave, ondeEsta, aoMudarArea, historia]);
 
   const tracos = useMemo(() => {
     const linhas = [];
@@ -1973,6 +2137,21 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
             </svg>
           )}
 
+          {livros.map((l) => (
+            <Livro
+              key={l.id}
+              livro={l}
+              aoMover={aoMoverLivro}
+              aoTirar={aoTirarLivro}
+              aoEscolher={escolher}
+              aoSeguir={seguirArrasto}
+              escolhido={escolha.has(`livro:${l.id}`)}
+              entreVarios={escolha.size > 1}
+              carregada={levando?.filhos?.includes(`livro:${l.id}`) ? levando : null}
+              escala={camera.escala}
+            />
+          ))}
+
           {nos.map((no) => (
             <Nota
               key={no.id}
@@ -1986,7 +2165,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
               aoEscolher={escolher}
               escolhido={escolha.has(`nota:${no.id}`)}
               entreVarios={escolha.size > 1}
-              carregada={levando?.filhos?.includes(no.id) ? levando : null}
+              carregada={levando?.filhos?.includes(`nota:${no.id}`) ? levando : null}
               alvoDoFio={fio?.sobre === no.nota_id}
               escala={camera.escala}
             />
@@ -2099,7 +2278,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
               type="button"
               onClick={() => { setEscrevendo(false); setTrazendo(true); }}
             >
-              traga uma que você já tem
+              traga uma nota ou um livro que você já tem
             </button>{" "}
             — <span className="dado">{deFora.length}</span> ainda estão fora da superfície.
           </p>
@@ -2202,9 +2381,44 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
 
       <Folha
         aberta={trazendo}
-        titulo="Trazer uma nota"
+        titulo="Trazer para a superfície"
         aoFechar={() => setTrazendo(false)}
       >
+        {/* LIVRO E NOTA MORAM NA MESMA PORTA.
+            
+            O Erik listou nove formas possíveis de um livro entrar no Canvas. A
+            que eu escolhi não acrescenta nenhuma ferramenta ao dock — que tem
+            três, e o desenho manda que tenha três: "trazer o que já existe" é UM
+            gesto, e o que muda é o que se traz. Uma quarta ferramenta só para
+            livro diria que livro é outra categoria de coisa, e o resto do
+            trabalho de hoje foi provar que não é.
+            
+            Só o que ainda NÃO está na superfície aparece: oferecer o que já está
+            lá é oferecer um clique que não faz nada. */}
+        {foraDaSuperficie.length > 0 && (
+          <>
+            <p className="trazer-titulo">Livros</p>
+            <ul className="trazer-lista">
+              {foraDaSuperficie.map((l, i) => (
+                <li key={l.chave}>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const onde = meioDaVista(280, 420);
+                      await aoTrazerLivro(l.chave, onde.x + (i % 4) * 40, onde.y + (i % 4) * 30);
+                      setTrazendo(false);
+                    }}
+                  >
+                    <span className="trazer-texto">{l.titulo}</span>
+                    <span className="trazer-origem">{l.autor || "livro da sua estante"}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        <p className="trazer-titulo">Notas</p>
         <p>As notas que você já tem e que ainda não estão na superfície.</p>
         <ul className="trazer-lista">
           {deFora.map((n, i) => (

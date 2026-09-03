@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   apagarGrupo, criarGrupo, desligarNotas, lerCanvas, ligarNotas, moverNoCanvas,
-  mudarGrupo, porMidiaNoCanvas, porNoCanvas, tirarDoCanvas,
+  moverLivroNoCanvas, mudarGrupo, porLivroNoCanvas, porMidiaNoCanvas, porNoCanvas,
+  tirarDoCanvas, tirarLivroDoCanvas,
 } from "../../../contrato/api.js";
 
 /* A superfície do Canvas.
@@ -17,6 +18,7 @@ export function usarCanvas() {
   const [nos, setNos] = useState([]);
   const [ligacoes, setLigacoes] = useState([]);
   const [grupos, setGrupos] = useState([]);
+  const [livros, setLivros] = useState([]);
   const [erro, setErro] = useState(null);
   const [carregando, setCarregando] = useState(true);
 
@@ -26,9 +28,11 @@ export function usarCanvas() {
       setNos(d.nos ?? []);
       setLigacoes(d.ligacoes ?? []);
       setGrupos(d.grupos ?? []);
+      setLivros(d.livros ?? []);
     } catch {
       setNos([]);
       setLigacoes([]);
+      setLivros([]);
       setGrupos([]);
     } finally {
       setCarregando(false);
@@ -63,6 +67,47 @@ export function usarCanvas() {
       return false;
     }
   }, [recarregar]);
+
+  /* O LIVRO ENTRA POR REFERÊNCIA. `recarregar` em vez de remendar porque o
+   * servidor devolve título, autor e capa resolvidos — o cartão precisa deles
+   * para se parecer com um livro, e a tela não os tem. */
+  const trazerLivro = useCallback(async (jobId, x, y) => {
+    setErro(null);
+    try {
+      await porLivroNoCanvas(jobId, x, y);
+      await recarregar();
+      return true;
+    } catch (e) {
+      setErro(e.message);
+      return false;
+    }
+  }, [recarregar]);
+
+  const moverLivro = useCallback(async (id, x, y, largura) => {
+    setLivros((atual) =>
+      atual.map((l) => (l.id === id ? { ...l, x, y, ...(largura === undefined ? {} : { largura }) } : l)),
+    );
+    try {
+      await moverLivroNoCanvas(id, x, y, largura);
+    } catch (e) {
+      setErro(e.message);
+      await recarregar();
+    }
+  }, [recarregar]);
+
+  /* TIRAR O LIVRO DA SUPERFÍCIE NÃO APAGA O LIVRO. Some a posição; o arquivo, as
+   * notas e o lugar na estante ficam. É a mesma distinção que "tirar" já faz com
+   * a nota, e ela precisa continuar valendo para qualquer objeto. */
+  const tirarLivro = useCallback(async (id) => {
+    const antes = livros;
+    setLivros((atual) => atual.filter((l) => l.id !== id));
+    try {
+      await tirarLivroDoCanvas(id);
+    } catch (e) {
+      setLivros(antes);
+      setErro(e.message);
+    }
+  }, [livros]);
 
   const mover = useCallback(async (id, x, y, largura) => {
     setNos((atual) =>
@@ -149,8 +194,8 @@ export function usarCanvas() {
   }, [grupos]);
 
   return {
-    nos, ligacoes, grupos, erro, carregando,
-    trazer, trazerMidia, mover, tirar, ligar, desligar, recarregar,
+    nos, ligacoes, grupos, livros, erro, carregando,
+    trazer, trazerMidia, trazerLivro, mover, moverLivro, tirar, tirarLivro, ligar, desligar, recarregar,
     agrupar, mudarArea, desagrupar,
   };
 }

@@ -157,3 +157,43 @@ class MidiaCanvas(Base):
     altura = Column(Integer, nullable=False, default=0)
 
     criada_em = Column(DateTime, default=agora, nullable=False)
+
+
+class LivroCanvas(Base):
+    """Um livro posto na superfície — e ele é uma REFERÊNCIA, não uma cópia.
+
+    O modelo já fazia isso certo com a nota: `NoCanvas` guarda `nota_id` e a nota
+    continua sendo da estante. O livro segue a mesma regra, e a razão é a mesma —
+    o Canvas é onde as coisas ESTÃO, não onde elas vivem.
+
+    Disso saem as três remoções, que precisam ser diferentes e ditas com todas as
+    letras:
+
+      tirar do Canvas    apaga esta linha, e nada mais
+      tirar do Estudo    desfaz o vínculo com aquele Estudo
+      apagar o livro     apaga o arquivo, e isso NÃO pertence ao Canvas
+
+    Só a terceira destrói alguma coisa.
+
+    POR QUE UMA TABELA E NÃO UM `canvas_itens(tipo, ref_id)`: polimorfismo com
+    dois tipos é abstração antes da segunda dor. As duas tabelas têm o mesmo
+    formato de propósito — se um terceiro tipo aparecer, a migração é pequena.
+    """
+
+    __tablename__ = "canvas_livros"
+
+    # Um livro aparece uma vez só na superfície, pela mesma razão da nota: dois
+    # cliques em "trazer" fariam dois cartões do mesmo livro, e mover um deixaria
+    # o outro para trás.
+    __table_args__ = (UniqueConstraint("pessoa_id", "job_id", name="uq_canvas_livros_pessoa_job"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    pessoa_id = Column(Integer, ForeignKey("pessoas.id", ondelete="CASCADE"), nullable=False, index=True)
+    job_id = Column(Integer, ForeignKey("processing_jobs.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    x = Column(Float, nullable=False, default=0)
+    y = Column(Float, nullable=False, default=0)
+    largura = Column(Float, nullable=False, default=280, server_default="280")
+
+    criado_em = Column(DateTime, default=agora, nullable=False)
+    movido_em = Column(DateTime, default=agora, onupdate=agora, nullable=False)
