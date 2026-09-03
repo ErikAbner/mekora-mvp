@@ -70,6 +70,26 @@ byte, então versioná-lo guardava 2,87 MB por vez sem guardar nada.
   todos de uma vez. Já custou 66ms num quadro de arrasto com 123 objetos, duas
   vezes: em `usarHistoria` e nos `useCallback` de `usarCanvas`. A saída é ler a
   lista por `ref`.
+- **`animation: ... both` vence estilo inline PARA SEMPRE.** O modo `both` mantém
+  o último quadro aplicado depois que a animação acaba, e animação ganha de
+  `style`. `canvas-entra` terminava em `transform: scale(1)`, e por isso todo
+  cartão que o arrasto pintava por `transform` ficava parado: o valor inline
+  chegava, o computado voltava a `matrix(1,0,0,1,0,0)`. Só o cartão sob o dedo
+  escapava, porque `.movendo` desliga a animação. Custou o arrasto de vários e o
+  conteúdo levado pela seção. Entrada usa **`backwards`**.
+- **Medir desempenho no servidor de desenvolvimento mede o StrictMode.** Em
+  `vite`, o corpo do componente roda DUAS vezes e o pacote não é minificado: o
+  mesmo arrasto que dá 66–84ms de tarefa longa em `:5180` dá **zero** tarefa
+  longa no build. O `vite preview` (porta 5181, com `preview.proxy` igual ao de
+  desenvolvimento) é o único lugar onde o número é do produto.
+- **Evento sintético não entra no Event Timing.** `dispatchEvent` não é evento
+  confiável: o `PerformanceObserver({type:'event'})` devolve lista vazia e a
+  leitura vira "nada demorou". Para separar manipulador de apresentação é
+  preciso mouse de verdade — `--gesto`.
+- **Manipulador na PEGA não recebe evento despachado na janela.** As quatro
+  pegas de ligação tratam `pointermove`/`pointerup` nelas mesmas, com captura de
+  ponteiro. Um teste que despacha na `window` nunca as alcança, e o fio parece
+  quebrado quando está inteiro.
 - Heredoc de python com acento literal falha contra fonte JS que tem `\uXXXX`.
   Usar edição por linha: `split("\n")`, achar por prefixo, emendar.
 

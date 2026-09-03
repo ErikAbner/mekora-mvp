@@ -873,11 +873,26 @@
   to   { opacity: 1; transform: scale(1); }
 }
 
+/* `backwards`, E NUNCA `both`. A diferenca custou o arrasto de varios.
+ *
+ * Com `both`, o quadro final da animacao continua valendo DEPOIS que ela acaba —
+ * e `to { transform: scale(1) }` e uma animacao, que vence estilo inline. O
+ * cartao arrastado escapava porque `.movendo` desliga a animacao; os
+ * companheiros de uma escolha multipla, e o conteudo levado por uma secao, nao
+ * tem essa classe: `pintarArrasto` escrevia `translate(144px, 48px)` neles, o
+ * navegador computava `matrix(1,0,0,1,0,0)`, e eles ficavam parados ate o
+ * commit. Medido: estilo inline com o passo certo, valor computado zerado, e a
+ * caixa sem sair do lugar.
+ *
+ * `backwards` aplica o primeiro quadro ANTES de a animacao comecar — que e a
+ * unica coisa que uma entrada precisa — e devolve o elemento aos estilos dele
+ * quando termina. O ultimo quadro ja e o estado normal (`opacity: 1`,
+ * `scale(1)`), entao nada muda visualmente na entrada. */
 .nota-canvas, .canvas-secao {
-  animation: canvas-entra 200ms var(--saida) both;
+  animation: canvas-entra 200ms var(--saida) backwards;
 }
-/* A nota em movimento NÃO reanima: o `transform` dela é o arrasto, e a animação
- * o sobrescreveria a cada quadro. */
+/* A nota em movimento tambem nao reanima: sem isto, um cartao que volta a
+ * desenhar durante o gesto piscaria a entrada de novo. */
 .nota-canvas.movendo { animation: none; }
 
 /* O PLANO SÓ ANIMA QUANDO O SALTO É DISCRETO.

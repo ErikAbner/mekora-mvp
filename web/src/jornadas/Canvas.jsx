@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { usarHistoria } from "../estado/usarHistoria.js";
@@ -331,7 +331,18 @@ function MenuDoCartao({ children, rotulo = "Ações da nota" }) {
  * Com `memo`, só o cartão que mudou redesenha. As funções que chegam por
  * propriedade são todas `useCallback` no pai, senão a comparação nunca casaria
  * e a memoização não valeria nada. */
-function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, aoEscolher, aoInscrever, fio, alvoDoFio, carregada, escolhido, entreVarios, escala = 1 }) {
+/* CONTADOR DE DESENHO POR TIPO — diagnostico, nao otimizacao.
+ *
+ * `window.__canvas.desenhos` diz quantas vezes o Canvas desenhou. Nao diz
+ * quantos FILHOS desenharam junto, e e essa a diferenca entre "gesto caro" e
+ * "memo quebrado". Um contador por tipo responde isso sem perfilador. */
+const contas = { nota: 0, livro: 0, secao: 0 };
+function contarDesenho(tipo) {
+  contas[tipo] += 1;
+}
+
+function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, aoEscolher, aoEscolherSozinho, aoInscrever, fio, alvoDoFio, carregada, escolhido, entreVarios, escala = 1 }) {
+  contarDesenho("nota");
   const quando = dataCurta(no.criada_em);
   const caixa = useRef(null);
   const arrasto = useRef(null);
@@ -434,7 +445,7 @@ function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, aoE
      *
      * Ouvir a janela resolve os dois: o movimento chega venha de onde vier, e
      * como não há captura, o clique vai para quem foi clicado. */
-    arrasto.current = { x0: e.clientX, y0: e.clientY, mexeu: false, lado };
+    arrasto.current = { x0: e.clientX, y0: e.clientY, mexeu: false, lado, juntando: e.shiftKey || e.metaKey || e.ctrlKey };
     window.addEventListener("pointermove", andar);
     window.addEventListener("pointerup", soltar);
     window.addEventListener("pointercancel", abortar);
@@ -519,6 +530,10 @@ function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, aoE
       }
     } else {
       aoSeguir?.(`nota:${no.id}`, null);
+      /* CLIQUE SEM ARRASTO REDUZ A ESCOLHA A ESTE. O aperto não reduz mais — ver
+       * `escolher` —, então é aqui que "clicar num cartão escolhe só ele"
+       * continua valendo. */
+      if (!a.juntando) aoEscolherSozinho?.(`nota:${no.id}`);
     }
     setPosicao(null);
   };
@@ -738,7 +753,8 @@ const Nota = memo(NotaCrua);
  * isolated special-case implementation", e a prova é esta: escolher, arrastar
  * junto, entrar numa seção e desfazer não sabem que existe um tipo novo.
  */
-function LivroCrua({ livro, aoMover, aoTirar, aoLigarDaLista, aoEscolher, aoSeguir, aoInscrever, aoMedir, fio, alvoDoFio, carregada, escolhido, entreVarios, escala = 1 }) {
+function LivroCrua({ livro, aoMover, aoTirar, aoLigarDaLista, aoEscolher, aoEscolherSozinho, aoSeguir, aoInscrever, aoMedir, fio, alvoDoFio, carregada, escolhido, entreVarios, escala = 1 }) {
+  contarDesenho("livro");
   const caixa = useRef(null);
   const arrasto = useRef(null);
   const [posicao, setPosicao] = useState(null);
@@ -803,7 +819,7 @@ function LivroCrua({ livro, aoMover, aoTirar, aoLigarDaLista, aoEscolher, aoSegu
      * que um que está ali de passagem. */
     const borda = ondeEncostou(e, e.currentTarget);
     const lado = borda === "o" || borda === "l" ? borda : null;
-    arrasto.current = { x0: e.clientX, y0: e.clientY, mexeu: false, lado };
+    arrasto.current = { x0: e.clientX, y0: e.clientY, mexeu: false, lado, juntando: e.shiftKey || e.metaKey || e.ctrlKey };
     window.addEventListener("pointermove", andar);
     window.addEventListener("pointerup", soltar);
     window.addEventListener("pointercancel", abortar);
@@ -833,7 +849,11 @@ function LivroCrua({ livro, aoMover, aoTirar, aoLigarDaLista, aoEscolher, aoSegu
     largarOuvintes();
     arrasto.current = null;
     setPosicao(null);
-    if (!a?.mexeu) { aoSeguir?.(`livro:${livro.id}`, null); return; }
+    if (!a?.mexeu) {
+      aoSeguir?.(`livro:${livro.id}`, null);
+      if (a && !a.juntando) aoEscolherSozinho?.(`livro:${livro.id}`);
+      return;
+    }
     const dx = (e.clientX - a.x0) / escala;
     const dy = (e.clientY - a.y0) / escala;
     if (a.lado) {
@@ -925,7 +945,8 @@ const Livro = memo(LivroCrua);
  * área move a NOTA, ou o chão, e nunca o retângulo por baixo. O que pega o
  * retângulo é a barra do título — a mesma regra de uma janela.
  */
-function Secao({ secao, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoEscolher, aoInscrever, escolhido, pedindoNome, aoTerminarNome }) {
+function Secao({ secao, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoEscolher, aoEscolherSozinho, aoInscrever, escolhido, pedindoNome, aoTerminarNome }) {
+  contarDesenho("secao");
   const arrasto = useRef(null);
   const [desloca, setDesloca] = useState(null);
   const [medindo, setMedindo] = useState(null);
@@ -977,7 +998,7 @@ function Secao({ secao, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
     if (qual === "mover") aoLevar?.(secao.id, { dx: 0, dy: 0 });
     /* Mesma razão da nota: captura mataria o botão do nome e o "Dissolver seção",
      * porque o clique vai para quem capturou. O movimento é ouvido na janela. */
-    arrasto.current = { qual, x0: e.clientX, y0: e.clientY, mexeu: false };
+    arrasto.current = { qual, x0: e.clientX, y0: e.clientY, mexeu: false, juntando: e.shiftKey || e.metaKey || e.ctrlKey };
     window.addEventListener("pointermove", andar);
     window.addEventListener("pointerup", soltar);
     window.addEventListener("pointercancel", abortar);
@@ -1048,7 +1069,11 @@ function Secao({ secao, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
     arrasto.current = null;
     setDesloca(null);
     setMedindo(null);
-    if (!a || !a.mexeu) { aoLevar?.(secao.id, null); return; }
+    if (!a || !a.mexeu) {
+      aoLevar?.(secao.id, null);
+      if (a && !a.juntando) aoEscolherSozinho?.(`secao:${secao.id}`);
+      return;
+    }
     const dx = (e.clientX - a.x0) / escala;
     const dy = (e.clientY - a.y0) / escala;
     if (a.qual === "mover") {
@@ -1194,6 +1219,10 @@ function Secao({ secao, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
 }
 
 export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acervo = [], notas = [], erro, aoTrazer, aoTrazerMidia, aoTrazerLivro, aoMoverLivro, aoTirarLivro, aoMover, aoTirar, aoLigar, aoDesligar, aoCriarSecao, aoMudarSecao, aoDissolverSecao, aoDevolverSecao }) {
+  /* PERFIL SOB DEMANDA. Ligado por `window.__canvasPerfil = true`, mede o corpo
+   * do desenho ate o commit — que e onde o custo de um gesto com 123 objetos
+   * aparece, e nao dentro do meu manipulador. Desligado, custa uma comparacao. */
+  if (typeof window !== "undefined" && window.__canvasPerfil) performance.mark("cv-i");
   /* O FIO QUE ESTÁ SENDO PUXADO, em coordenadas da JANELA e não do plano.
    *
    * Da janela porque ele é desenhado por cima de tudo, e não dentro do plano:
@@ -1360,9 +1389,19 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
   const escolher = useCallback((chave, { juntando = false } = {}) => {
     setEscolha((atual) => {
       if (!juntando) {
-        /* Já escolhido e sozinho: o clique não faz nada, e é o certo — clicar
-         * de novo no que já está escolhido não deveria desescolher. */
-        if (atual.size === 1 && atual.has(chave)) return atual;
+        /* APERTAR O QUE JÁ ESTÁ ESCOLHIDO NÃO DESFAZ A ESCOLHA — nem quando ela
+         * tem três coisas dentro.
+         *
+         * A regra anterior só preservava a escolha de UM: com três cartões
+         * escolhidos, apertar um deles para arrastar o grupo devolvia
+         * `new Set([chave])`, e o gesto que a pessoa começou como "mover estes
+         * três" virava "mover este". Medido: escolhidos 3 no `pointerdown`,
+         * 1 no quadro seguinte, e os dois companheiros parados enquanto o
+         * terceiro andava 160px.
+         *
+         * Reduzir para um é gesto de CLIQUE, não de aperto — e por isso ele
+         * mora no `pointerup` sem arrasto, em `escolherSozinho`. */
+        if (atual.has(chave)) return atual;
         return new Set([chave]);
       }
       const nova = new Set(atual);
@@ -1373,6 +1412,13 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
 
   const limparEscolha = useCallback(() => {
     setEscolha((atual) => (atual.size ? new Set() : atual));
+  }, []);
+
+  /* REDUZIR A ESCOLHA A UM. É o clique — apertar e soltar sem arrastar — e não
+   * o aperto: quem aperta pode estar começando a mover o grupo inteiro, e só no
+   * `pointerup` se sabe que não moveu. */
+  const escolherSozinho = useCallback((chave) => {
+    setEscolha((atual) => (atual.size === 1 && atual.has(chave) ? atual : new Set([chave])));
   }, []);
 
   /* Há algo que possa virar seção? Seção não entra em seção, então uma escolha
@@ -1883,8 +1929,38 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
       naCena: cena.current.size,
       tracos: ligacoes.length,
       nosNoDom: () => document.querySelectorAll(".canvas-mundo *").length,
+      porTipo: { ...contas },
     };
   }
+
+  /* Fecha o perfil no commit: sem array de dependencias, roda a cada desenho.
+   * `useLayoutEffect` e nao `useEffect` porque o que interessa e o trabalho
+   * sincrono do React, antes de o navegador pintar. */
+  useLayoutEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.__canvasPerfil) {
+      try { performance.measure("cv", "cv-i"); } catch { /* sem marca */ }
+    }
+    /* O ESTADO QUE PODE ACORDAR O DESENHO, em valores rasos — a resposta a
+     * "quem redesenhou?" sem perfilador: a bancada amostra isto a cada quadro e
+     * diz qual chave mudou.
+     *
+     * ELE MORA NO EFEITO, e não no corpo. No corpo, o objeto cita `laco`,
+     * `camera` e `espaco`, que são declarados centenas de linhas ABAIXO: o
+     * `const` é lido na hora, dá `Cannot access before initialization`, e a
+     * tela monta com 3 nós. É a mesma armadilha que o CLAUDE.md já registra
+     * para o array de dependências — aqui ela apareceu no corpo do componente.
+     * Dentro do efeito, sem array de dependências, tudo já existe. */
+    window.__canvas.estado = {
+      fio: fio ? 1 : 0, medidas: Object.keys(medidas).length, escolha: escolha.size,
+      vivo: vivo ? 1 : 0, laco: laco ? 1 : 0, camera: `${camera.x}|${camera.y}|${camera.escala}`,
+      saltando: saltando ? 1 : 0, espaco: espaco ? 1 : 0, renomeando: renomeando ? 1 : 0,
+      trazendo: trazendo ? 1 : 0, procurando: procurando ? 1 : 0, oQueProcuro,
+      escrevendo: escrevendo ? 1 : 0, pondoMidia: pondoMidia ? 1 : 0,
+      ligandoDaLista: ligandoDaLista ? 1 : 0, recado: recadoDaHistoria ? 1 : 0,
+      desfazerArrumo: desfazerArrumo ? 1 : 0,
+    };
+  });
 
   /* LIMPAR SÓ O QUE FOI PINTADO.
    *
@@ -2140,7 +2216,17 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
     });
   }, [escolha, secoes, aoCriarSecao, aoDissolverSecao, aoDevolverSecao, limparEscolha, historia]);
 
-  const [levando, setLevando] = useState(null);
+  /* QUEM A SEÇÃO ESTÁ LEVANDO — em `ref`, e não em estado.
+   *
+   * Era `useState`, e ninguém lia o valor: `levando` aparecia uma vez no
+   * arquivo, na própria declaração. O efeito colateral era caro e invisível —
+   * arrastar uma seção redesenhava o Canvas UMA VEZ POR QUADRO, 31 desenhos num
+   * gesto, enquanto arrastar nota, livro ou vários desenhava 2. A pintura do
+   * arrasto já é imperativa; o estado só existia para guardar o passo até o
+   * `soltou`, e isso um `ref` faz sem acordar o React.
+   *
+   * Medido depois: 2 desenhos, como os outros gestos. */
+  const levando = useRef(null);
   /* QUEM ESTÁ DENTRO DA ÁREA — em CHAVES, e não em ids de nota.
    *
    * Foi aqui que o Livro provou que a contenção é agnóstica de tipo: a função
@@ -2356,8 +2442,9 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
   ondeEstaRef.current = ondeEsta;
 
   const levarSecao = useCallback((secaoId, desloca) => {
-    if (!desloca) { limparPintura(); setLevando(null); return; }
-    setLevando((atual) => {
+    if (!desloca) { limparPintura(); levando.current = null; return; }
+    {
+      const atual = levando.current;
       const filhos = atual?.id === secaoId ? atual.filhos : membrosDe(secoes.find((g) => g.id === secaoId) ?? {});
       if (desloca.soltou) {
         limparPintura();
@@ -2390,14 +2477,15 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
             },
           });
         }
-        return null;
+        levando.current = null;
+        return;
       }
       const passo = new Map();
       for (const chave of filhos) passo.set(chave, desloca);
       pintarArrasto(passo);
       marcar(filhos, "vai-junto");
-      return { id: secaoId, dx: desloca.dx, dy: desloca.dy, filhos };
-    });
+      levando.current = { id: secaoId, dx: desloca.dx, dy: desloca.dy, filhos };
+    }
   }, [membrosDe, secoes, moverChave, ondeEsta, aoMudarSecao, historia, pintarArrasto, limparPintura, marcar]);
 
   const tracos = useMemo(() => {
@@ -3267,6 +3355,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
             <Secao
               aoLevar={levarSecao}
               aoEscolher={escolher}
+              aoEscolherSozinho={escolherSozinho}
               aoInscrever={inscrever}
               escolhido={escolha.has(`secao:${g.id}`)}
               key={g.id}
@@ -3368,6 +3457,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
               aoTirar={aoTirarLivro}
               aoLigarDaLista={setLigandoDaLista}
               aoEscolher={escolher}
+              aoEscolherSozinho={escolherSozinho}
               aoSeguir={seguirArrasto}
               aoInscrever={inscrever}
               aoMedir={anotarMedida}
@@ -3390,6 +3480,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
               aoMedir={anotarMedida}
               aoSeguir={seguirArrasto}
               aoEscolher={escolher}
+              aoEscolherSozinho={escolherSozinho}
               aoInscrever={inscrever}
               escolhido={escolha.has(`nota:${no.id}`)}
               entreVarios={escolha.size > 1}

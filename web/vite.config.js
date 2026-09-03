@@ -16,6 +16,20 @@ function alvo() {
   return { target: process.env.MEKORA_API ?? "http://127.0.0.1:8000", changeOrigin: true };
 }
 
+/* A MESMA tabela de proxy para o servidor de desenvolvimento e para o de
+ * pre-visualizacao. Duas copias divergiriam, e a divergencia so apareceria
+ * depois do build. */
+function PROXY() {
+  return Object.fromEntries(
+    [...new Set([...COM_SUBCAMINHO, ...EXATAS])].map((r) => {
+      const exata = EXATAS.includes(r);
+      const abaixo = COM_SUBCAMINHO.includes(r);
+      const forma = exata && abaixo ? "($|[/?])" : exata ? "($|\\?)" : "/";
+      return [`^${r}${forma}`, alvo()];
+    }),
+  );
+}
+
 export default defineConfig({
   plugins: [react()],
   // A pasta publica se chama publico, como o resto do repositorio.
@@ -65,13 +79,13 @@ export default defineConfig({
      *
      * Ninguem tinha visto porque nenhuma rota exata usava query ate agora —
      * `/eu`, `/health`, `/upload` sao chamadas secas. A busca e a primeira. */
-    proxy: Object.fromEntries(
-      [...new Set([...COM_SUBCAMINHO, ...EXATAS])].map((r) => {
-        const exata = EXATAS.includes(r);
-        const abaixo = COM_SUBCAMINHO.includes(r);
-        const forma = exata && abaixo ? "($|[/?])" : exata ? "($|\\?)" : "/";
-        return [`^${r}${forma}`, alvo()];
-      }),
-    ),
+    proxy: PROXY(),
+  },
+  /* `vite preview` serve o BUILD, e e a unica forma de medir o produto sem o
+   * StrictMode desenhando duas vezes. Sem proxy proprio ele devolvia o SPA para
+   * `/eu` e a tela media uma sessao que nao existia — verde por omissao. */
+  preview: {
+    port: 5181,
+    proxy: PROXY(),
   },
 });
