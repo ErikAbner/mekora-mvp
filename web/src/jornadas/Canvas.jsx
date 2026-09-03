@@ -1386,6 +1386,8 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
     else tracosNoDom.current.delete(id);
   }, []);
 
+  const pintados = useRef(new Set());
+
   const pintarArrasto = useCallback((deslocamentos) => {
     /* Os acompanhantes andam por `transform`, que é a mesma propriedade que o
      * cartão arrastado já usa — e que não custa layout. */
@@ -1393,6 +1395,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
       const ficha = cena.current.get(chave);
       if (ficha?.no && !d.souEu) {
         ficha.no.style.transform = d ? `translate(${d.dx}px, ${d.dy}px)` : "";
+        pintados.current.add(chave);
       }
     }
     /* E as linhas são recalculadas com a MESMA conta do desenho — ver
@@ -1457,10 +1460,17 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
     return null;
   }, []);
 
+  /* LIMPAR SÓ O QUE FOI PINTADO.
+   *
+   * A primeira versão percorria a cena INTEIRA zerando `transform` — 123 escritas
+   * de estilo no último quadro do gesto, para desfazer no máximo três. Guardar
+   * quem foi pintado troca isso por três escritas. */
   const limparPintura = useCallback(() => {
-    for (const [, ficha] of cena.current) {
-      if (ficha.no) ficha.no.style.transform = "";
+    for (const chave of pintados.current) {
+      const ficha = cena.current.get(chave);
+      if (ficha?.no) ficha.no.style.transform = "";
     }
+    pintados.current.clear();
     marcar([], "");
   }, [marcar]);
 

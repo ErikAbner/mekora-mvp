@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   apagarGrupo, criarGrupo, desligarNotas, lerCanvas, ligarNotas, moverNoCanvas,
   moverLivroNoCanvas, mudarGrupo, porLivroNoCanvas, voltarGrupo, porMidiaNoCanvas, porNoCanvas,
@@ -19,6 +19,24 @@ export function usarCanvas() {
   const [ligacoes, setLigacoes] = useState([]);
   const [grupos, setGrupos] = useState([]);
   const [livros, setLivros] = useState([]);
+
+  /* AS LISTAS TAMBÉM CHEGAM POR `ref`, e a razão é de desempenho — medida.
+   *
+   * `tirar`, `tirarLivro`, `mudarArea` e `desagrupar` guardavam a lista de antes
+   * para poder desfazer a mudança otimista se o servidor recusasse. Isso as
+   * punha nas dependências, e elas trocavam de identidade a cada mudança de
+   * lista — indo como propriedade para as 123 notas memoizadas, que redesenhavam
+   * todas a cada commit.
+   *
+   * Medido, com 123 cartões: o quadro do commit custava 66ms. É a mesma classe
+   * de defeito que `usarHistoria` tinha, e vale registrar como padrão: função
+   * que vai como propriedade para muitos filhos não pode depender de lista. */
+  const nosVivos = useRef([]);
+  const grupasVivos = useRef([]);
+  const livrosVivos = useRef([]);
+  nosVivos.current = nos;
+  grupasVivos.current = grupos;
+  livrosVivos.current = livros;
   const [erro, setErro] = useState(null);
   const [carregando, setCarregando] = useState(true);
 
@@ -112,7 +130,7 @@ export function usarCanvas() {
    * notas e o lugar na estante ficam. É a mesma distinção que "tirar" já faz com
    * a nota, e ela precisa continuar valendo para qualquer objeto. */
   const tirarLivro = useCallback(async (id) => {
-    const antes = livros;
+    const antes = livrosVivos.current;
     setLivros((atual) => atual.filter((l) => l.id !== id));
     try {
       await tirarLivroDoCanvas(id);
@@ -120,7 +138,7 @@ export function usarCanvas() {
       setLivros(antes);
       setErro(e.message);
     }
-  }, [livros]);
+  }, []);
 
   const mover = useCallback(async (id, x, y, largura) => {
     setNos((atual) =>
@@ -135,7 +153,7 @@ export function usarCanvas() {
   }, [recarregar]);
 
   const tirar = useCallback(async (id) => {
-    const antes = nos;
+    const antes = nosVivos.current;
     setNos((atual) => atual.filter((n) => n.id !== id));
     try {
       await tirarDoCanvas(id);
@@ -146,7 +164,7 @@ export function usarCanvas() {
       setNos(antes);
       setErro(e.message);
     }
-  }, [nos, recarregar]);
+  }, [recarregar]);
 
   const ligar = useCallback(async (a, b) => {
     setErro(null);
@@ -185,7 +203,7 @@ export function usarCanvas() {
   }, []);
 
   const mudarArea = useCallback(async (id, troca) => {
-    const antes = grupos;
+    const antes = grupasVivos.current;
     setGrupos((atual) => atual.map((g) => (g.id === id ? { ...g, ...troca } : g)));
     try {
       await mudarGrupo(id, troca);
@@ -193,10 +211,10 @@ export function usarCanvas() {
       setGrupos(antes);
       setErro(e.message);
     }
-  }, [grupos]);
+  }, []);
 
   const desagrupar = useCallback(async (id) => {
-    const antes = grupos;
+    const antes = grupasVivos.current;
     setGrupos((atual) => atual.filter((g) => g.id !== id));
     try {
       await apagarGrupo(id);
@@ -204,7 +222,7 @@ export function usarCanvas() {
       setGrupos(antes);
       setErro(e.message);
     }
-  }, [grupos]);
+  }, []);
 
   return {
     nos, ligacoes, grupos, livros, erro, carregando,
