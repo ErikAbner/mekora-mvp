@@ -327,6 +327,23 @@ button, input, textarea, select { border-radius: 0; font: inherit; color: inheri
   --nota-amarelo: #fff8bf;
   --nota-rosa: #ffbfc0;
   --nota-azul: #bfdfff;
+
+  /* A TINTA DA ESCOLHA — e ela não é nenhuma das quatro acima, de propósito.
+   *
+   * O Erik: "selection should not reuse the semantic highlight colors of Notes".
+   * As quatro cores de nota são pastéis de PREENCHIMENTO e querem dizer o que a
+   * pessoa marcou na leitura; escolher é outra coisa, e é passageiro. Reusar uma
+   * delas faria "esta nota está escolhida" e "esta nota é azul" competirem pelo
+   * mesmo sinal.
+   *
+   * A escolha é um TRAÇO, não um preenchimento, e usa a tinta do texto — o que
+   * já está na tela, no valor mais forte que ela tem. Fica distinta do filete de
+   * moldura (`--border`, que é cinza médio) e do destaque (que é fundo).
+   *
+   * `--escolha-veu` é a mesma tinta rarefeita, para a área da seleção múltipla.
+   * Uma cor nova só para isso entraria no sistema sem pagar por si. */
+  --escolha: var(--foreground);
+  --escolha-veu: color-mix(in oklab, var(--foreground) 8%, transparent);
 }
 
 /* Os valores escuros vivem numa lista só, e os dois seletores a usam: o

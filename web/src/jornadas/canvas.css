@@ -1057,3 +1057,67 @@
 @media (hover: none) {
   .traco-grupo .traco-junta { opacity: 1; }
 }
+
+/* ---- A ESCOLHA -------------------------------------------------------------
+ *
+ * TRACO, E NAO PREENCHIMENTO. As quatro cores de nota sao pasteis de fundo e
+ * querem dizer o que a pessoa marcou na leitura; escolher e outra coisa, e e
+ * passageiro. Reusar uma delas faria "esta nota esta escolhida" e "esta nota e
+ * azul" competirem pelo mesmo sinal — o Erik pediu explicitamente que nao.
+ *
+ * `outline` e nao `border`: borda muda o tamanho da caixa, e um cartao que
+ * encolhe ao ser escolhido empurra o texto. `outline` fica por fora e nao mexe
+ * em layout nenhum.
+ */
+.nota-canvas.escolhido,
+.canvas-grupo.escolhido > .canvas-grupo-area {
+  outline: 2px solid var(--escolha);
+  outline-offset: 2px;
+}
+/* O veu diz "este e um dos varios", sem competir com o texto. So aparece quando
+ * ha mais de um: com um so, o traco ja diz tudo. */
+.nota-canvas.escolhido.entre-varios { background-image: linear-gradient(var(--escolha-veu), var(--escolha-veu)); }
+
+/* O LACO. Tinta do texto num fio fino, com o veu por dentro — a mesma dupla da
+ * escolha, para o gesto e o resultado dele falarem a mesma lingua. */
+.canvas-laco {
+  position: absolute;
+  z-index: 5;
+  pointer-events: none;
+  border: 1px solid var(--escolha);
+  background: var(--escolha-veu);
+}
+
+/* A BARRA DA ESCOLHA. Mesma caixa do recado — flutua, nao empurra a superficie.
+ * Ela aparece quando ha algo escolhido e some quando nao ha: e o unico lugar em
+ * que as acoes sobre VARIOS objetos existem. */
+.canvas-barra-escolha {
+  position: absolute;
+  inset-block-end: 24px; inset-inline-start: 50%;
+  transform: translateX(-50%);
+  z-index: 6;
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 12px 8px 16px;
+  border-radius: 999px;
+  background: var(--popover, var(--card));
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px rgb(0 0 0 / 0.12);
+  font-size: 14px; line-height: 20px;
+  color: var(--foreground);
+  white-space: nowrap;
+  animation: canvas-recado-entra 200ms var(--saida);
+}
+.canvas-barra-escolha button {
+  border: 0; border-radius: 999px;
+  padding: 6px 12px;
+  background: var(--muted);
+  font: inherit; font-size: 14px; line-height: 20px;
+  color: var(--foreground);
+  cursor: pointer;
+  transition: background-color 160ms var(--saida), transform 160ms var(--saida);
+}
+.canvas-barra-escolha button:hover { background: var(--secondary, var(--muted)); }
+.canvas-barra-escolha button:active { transform: scale(0.97); }
+.canvas-barra-escolha .conta { color: var(--muted-foreground); }
+@media (prefers-reduced-motion: reduce) {
+  .canvas-barra-escolha { animation: none; }
+}

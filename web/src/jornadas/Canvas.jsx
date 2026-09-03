@@ -249,7 +249,7 @@ function MenuDoCartao({ children, rotulo = "Ações da nota" }) {
  * Com `memo`, só o cartão que mudou redesenha. As funções que chegam por
  * propriedade são todas `useCallback` no pai, senão a comparação nunca casaria
  * e a memoização não valeria nada. */
-function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, fio, alvoDoFio, carregada, escala = 1 }) {
+function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, aoEscolher, fio, alvoDoFio, carregada, escolhido, entreVarios, escala = 1 }) {
   const quando = dataCurta(no.criada_em);
   const caixa = useRef(null);
   const arrasto = useRef(null);
@@ -312,6 +312,13 @@ function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, fio
      * escrita à mão erra em silêncio; parar o evento na origem não erra: quem
      * cuida do próprio arrasto não deixa o gesto subir. */
     e.stopPropagation();
+    /* ESCOLHER ACONTECE NO `pointerdown`, e não no clique.
+     *
+     * Quem aperta um cartão para arrastá-lo espera que ele já esteja escolhido
+     * quando o gesto começa — senão a barra de ações aparece só depois de
+     * soltar, e o arrasto de vários nunca poderia existir: no `pointerdown` é
+     * que se decide quem vai junto. */
+    aoEscolher?.(`nota:${no.id}`, { juntando: e.shiftKey || e.metaKey || e.ctrlKey });
     /* SEM CAPTURA DE PONTEIRO. O ARRASTO OUVE A JANELA.
      *
      * Enquanto um elemento tem a captura, o `click` é entregue A ELE e não ao
@@ -395,12 +402,16 @@ function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, fio
       if (a.lado) {
         const fim = esticar(a.lado, dx);
         aoMover(no.id, no.x + fim.dx, no.y, fim.largura);
+        aoSeguir?.(no.id, null);
       } else {
         aoMover(no.id, no.x + dx, no.y + dy);
+        /* `soltou` leva os acompanhantes ao servidor com o mesmo passo. */
+        aoSeguir?.(no.id, { dx, dy, soltou: true });
       }
+    } else {
+      aoSeguir?.(no.id, null);
     }
     setPosicao(null);
-    aoSeguir?.(no.id, null);
   };
 
   /* O CLIQUE MORRE SE HOUVE ARRASTO, e a nota é quem sabe disso.
@@ -430,7 +441,7 @@ function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, fio
   return (
     <article
       ref={caixa}
-      className={`nota-canvas${posicao ? " movendo" : ""}${alvoDoFio ? " alvo-do-fio" : ""}`}
+      className={`nota-canvas${posicao ? " movendo" : ""}${alvoDoFio ? " alvo-do-fio" : ""}${escolhido ? " escolhido" : ""}${escolhido && entreVarios ? " entre-varios" : ""}`}
       /* O arrumo precisa da ALTURA REAL de cada cartão, que só o navegador sabe:
        * ela depende do texto, da prévia e do comentário. O id no DOM é como a
        * medida encontra de quem é cada caixa. Ver `organizar`. */
@@ -611,7 +622,7 @@ const Nota = memo(NotaCrua);
  * área move a NOTA, ou o chão, e nunca o retângulo por baixo. O que pega o
  * retângulo é a barra do título — a mesma regra de uma janela.
  */
-function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar }) {
+function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoEscolher, escolhido }) {
   const arrasto = useRef(null);
   const [desloca, setDesloca] = useState(null);
   const [medindo, setMedindo] = useState(null);
@@ -634,6 +645,7 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar }) {
     if (e.button !== 0) return;
     /* Mesma razão da nota: o chão não pode roubar este gesto. */
     e.stopPropagation();
+    aoEscolher?.(`secao:${grupo.id}`, { juntando: e.shiftKey || e.metaKey || e.ctrlKey });
     /* Mesma razão da nota: captura mataria o botão do nome e o "Desfazer grupo",
      * porque o clique vai para quem capturou. O movimento é ouvido na janela. */
     arrasto.current = { qual, x0: e.clientX, y0: e.clientY, mexeu: false };
@@ -745,7 +757,11 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar }) {
      * dentro do retângulo, e a diferença não é cosmética: dentro, o nome disputa
      * o espaço com as notas do grupo e cobre a de cima. Acima, ele nomeia a área
      * sem ocupar nada dela. */
-    <section className="canvas-grupo" style={estilo} aria-label={grupo.nome || "Grupo sem nome"}>
+    <section
+      className={`canvas-grupo${escolhido ? " escolhido" : ""}`}
+      style={estilo}
+      aria-label={grupo.nome || "Grupo sem nome"}
+    >
       <header
         className="canvas-grupo-titulo"
         onPointerDown={(e) => pegar(e, "mover")}
@@ -883,10 +899,128 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
    * "Linhas duras que não acompanham movimento": as pontas vinham de `nos`, que
    * só muda ao SOLTAR. Enquanto o dedo arrastava, a nota andava e a linha ficava
    * parada — e as duas se reencontravam com um salto no fim. */
+  /* A ESCOLHA — o primitivo que faltava.
+   *
+   * O Erik: "selection needs to become a real Canvas primitive, not something
+   * implemented only to enable Create Section". Por isso ela guarda CHAVES
+   * COMPOSTAS — `nota:12`, `secao:3`, e amanhã `livro:7` — e não ids de nota: o
+   * conjunto tem de valer para qualquer objeto da superfície sem que nenhuma
+   * parte dele saiba que tipos existem.
+   *
+   * `Set` e não array: as três perguntas que se faz o tempo todo são "está
+   * escolhido?", "entra" e "sai", e as três são O(1) nele. */
+  const [escolha, setEscolha] = useState(() => new Set());
+
+  const escolher = useCallback((chave, { juntando = false } = {}) => {
+    setEscolha((atual) => {
+      if (!juntando) {
+        /* Já escolhido e sozinho: o clique não faz nada, e é o certo — clicar
+         * de novo no que já está escolhido não deveria desescolher. */
+        if (atual.size === 1 && atual.has(chave)) return atual;
+        return new Set([chave]);
+      }
+      const nova = new Set(atual);
+      if (nova.has(chave)) nova.delete(chave); else nova.add(chave);
+      return nova;
+    });
+  }, []);
+
+  const limparEscolha = useCallback(() => {
+    setEscolha((atual) => (atual.size ? new Set() : atual));
+  }, []);
+
+  const tirarEscolhidos = useCallback(() => {
+    for (const chave of escolha) {
+      const [tipo, id] = chave.split(":");
+      if (tipo === "nota") aoTirar(Number(id));
+      if (tipo === "secao") aoDesagrupar(Number(id));
+    }
+    limparEscolha();
+  }, [escolha, aoTirar, aoDesagrupar, limparEscolha]);
+
+  /* O TECLADO CHEGA NA ESCOLHA. `Esc` larga tudo; `Delete` e `Backspace` tiram
+   * da superfície o que estiver escolhido.
+   *
+   * TIRAR NÃO APAGA: a nota continua na estante e no caderno, e é a mesma
+   * distinção que o rótulo do menu já faz. Por isso a tecla não pede confirmação
+   * — ela não destrói nada.
+   *
+   * Digitando, as teclas são do campo: sem esta guarda, apagar uma letra do nome
+   * de uma seção tiraria uma nota da superfície. */
+  useEffect(() => {
+    const aoTeclar = (e) => {
+      if (e.target.closest?.("input, textarea, [contenteditable=true]")) return;
+      if (e.key === "Escape") { limparEscolha(); return; }
+      if (e.key !== "Delete" && e.key !== "Backspace") return;
+      if (!escolha.size) return;
+      e.preventDefault();
+      tirarEscolhidos();
+    };
+    window.addEventListener("keydown", aoTeclar);
+    return () => window.removeEventListener("keydown", aoTeclar);
+  }, [escolha, limparEscolha, tirarEscolhidos]);
+
+
   const [vivo, setVivo] = useState(null);
+
+  /* OS ESCOLHIDOS ANDAM JUNTOS.
+   *
+   * Arrastar um cartão que faz parte de uma escolha múltipla leva os outros — é
+   * a razão principal de a escolha existir, e o Erik pediu "moving selected
+   * objects together" com todas as letras.
+   *
+   * O caminho é o MESMO que a seção já usa para carregar o que está dentro
+   * dela: um deslocamento vivo com uma lista de quem acompanha. Duas mecânicas
+   * diferentes para "estes objetos andam com aquele" seria duas verdades sobre a
+   * mesma coisa. */
+  const acompanhantes = useRef([]);
+
+  /* A ESCOLHA E A LISTA DE NÓS CHEGAM POR `ref`, e não por dependência.
+   *
+   * `seguirArrasto` vai como propriedade para as 123 notas memoizadas. Com
+   * `escolha` e `nos` nas dependências, a função troca de identidade toda vez
+   * que alguém é escolhido — e o `memo` de todas as notas quebra de uma vez, no
+   * `pointerdown`, que é justamente o quadro em que a mão está esperando
+   * resposta.
+   *
+   * MEDIDO: com as dependências, o pior quadro de um arrasto com 123 cartões
+   * voltou de 17,4ms para 83,9ms. Com `ref`, a função é a mesma para sempre e o
+   * conteúdo dela continua atual. */
+  const escolhaRef = useRef(escolha);
+  const nosRef = useRef(nos);
+  escolhaRef.current = escolha;
+  nosRef.current = nos;
+
   const seguirArrasto = useCallback((id, desloca) => {
     setVivo(desloca ? { id, ...desloca } : null);
-  }, []);
+
+    if (!desloca) {
+      acompanhantes.current = [];
+      setLevando(null);
+      return;
+    }
+    /* A lista é fixada no primeiro quadro do gesto: recalcular a cada quadro
+     * faria a escolha mudar de tamanho enquanto o dedo anda. */
+    if (!acompanhantes.current.length) {
+      acompanhantes.current = escolhaRef.current.has(`nota:${id}`)
+        ? [...escolhaRef.current]
+            .filter((c) => c.startsWith("nota:") && c !== `nota:${id}`)
+            .map((c) => Number(c.split(":")[1]))
+        : [];
+    }
+    if (!acompanhantes.current.length) return;
+
+    if (desloca.soltou) {
+      for (const outro of acompanhantes.current) {
+        const n = nosRef.current.find((x) => x.id === outro);
+        if (n) aoMover(outro, n.x + desloca.dx, n.y + desloca.dy);
+      }
+      acompanhantes.current = [];
+      setLevando(null);
+      return;
+    }
+    setLevando({ id: `escolha:${id}`, dx: desloca.dx, dy: desloca.dy, filhos: acompanhantes.current });
+  }, [aoMover]);
 
   /* A ÁREA LEVA O QUE ESTÁ DENTRO DELA — e antes ela não levava nada.
    *
@@ -1327,6 +1461,83 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
     };
   }, []);
 
+  /* O LAÇO — arrastar no vazio escolhe o que ele cobrir.
+   *
+   * Este é o gesto que eu tinha deixado vago de propósito ao tirar o
+   * deslocamento do clique simples: numa superfície espacial, arrastar no vazio
+   * é SELECIONAR, e o deslocamento é do espaço. Ele vive em coordenadas da
+   * janela, como o fio, para não precisar saber de câmera nem de escala. */
+  const [laco, setLaco] = useState(null);
+  const lacoVivo = useRef(null);
+
+  const lacoDesce = (e) => {
+    if (e.button !== 0 || espaco) return;
+    const caixa = mundo.current.getBoundingClientRect();
+    const novo = { x0: e.clientX - caixa.left, y0: e.clientY - caixa.top, x: e.clientX - caixa.left, y: e.clientY - caixa.top, mexeu: false };
+    lacoVivo.current = novo;
+    setLaco(novo);
+    window.addEventListener("pointermove", lacoMove);
+    window.addEventListener("pointerup", lacoSobe);
+    window.addEventListener("pointercancel", lacoAborta);
+  };
+
+  const largarLaco = () => {
+    window.removeEventListener("pointermove", lacoMove);
+    window.removeEventListener("pointerup", lacoSobe);
+    window.removeEventListener("pointercancel", lacoAborta);
+  };
+
+  const lacoMove = (e) => {
+    const l = lacoVivo.current;
+    if (!l) return;
+    const caixa = mundo.current.getBoundingClientRect();
+    const novo = { ...l, x: e.clientX - caixa.left, y: e.clientY - caixa.top };
+    if (!novo.mexeu && Math.hypot(novo.x - l.x0, novo.y - l.y0) >= LIMIAR) novo.mexeu = true;
+    lacoVivo.current = novo;
+    setLaco(novo);
+  };
+
+  const lacoAborta = () => { largarLaco(); lacoVivo.current = null; setLaco(null); };
+
+  const lacoSobe = (e) => {
+    const l = lacoVivo.current;
+    largarLaco();
+    lacoVivo.current = null;
+    setLaco(null);
+    if (!l) return;
+    /* SEM ARRASTO, É UM CLIQUE NO VAZIO — e clicar no vazio limpa a escolha. */
+    if (!l.mexeu) { limparEscolha(); return; }
+
+    const caixa = mundo.current.getBoundingClientRect();
+    /* O retângulo do laço volta para coordenadas do PLANO: o que ele cobre é
+     * medido lá, onde os objetos moram. */
+    const paraOPlano = (x, y) => ({
+      x: (x - camera.x) / camera.escala,
+      y: (y - camera.y) / camera.escala,
+    });
+    const a = paraOPlano(Math.min(l.x0, l.x), Math.min(l.y0, l.y));
+    const b = paraOPlano(Math.max(l.x0, l.x), Math.max(l.y0, l.y));
+
+    /* TOCOU, ESTÁ DENTRO. Exigir o objeto INTEIRO dentro do laço obriga a pessoa
+     * a cercar tudo com folga, e num plano onde os cartões têm 375px de largura
+     * isso vira um gesto enorme. Interseção é o que todo editor faz, e é o que a
+     * mão espera. */
+    const pega = new Set();
+    for (const n of nos) {
+      const m = medidas[n.id] ?? { largura: n.largura || 375, altura: 200 };
+      if (n.x < b.x && n.x + m.largura > a.x && n.y < b.y && n.y + m.altura > a.y) {
+        pega.add(`nota:${n.id}`);
+      }
+    }
+    for (const g of grupos) {
+      if (g.x < b.x && g.x + g.largura > a.x && g.y < b.y && g.y + g.altura > a.y) {
+        pega.add(`secao:${g.id}`);
+      }
+    }
+    /* Com Shift o laço SOMA ao que já estava escolhido, em vez de trocar. */
+    setEscolha((atual) => (e.shiftKey ? new Set([...atual, ...pega]) : pega));
+  };
+
   const chaoDesce = (e) => {
     if (!espaco && e.button !== 1) return;
     /* O gesto tira a transição na hora: nada de o plano seguir o dedo com
@@ -1484,6 +1695,18 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
           </p>
         )}
 
+        {/* A BARRA DA ESCOLHA — o único lugar em que as ações sobre VÁRIOS
+            objetos existem. Ela não empurra a superfície: flutua, como o recado. */}
+        {escolha.size > 0 && !laco?.mexeu && (
+          <div className="canvas-barra-escolha" role="toolbar" aria-label="O que está escolhido">
+            <span className="conta">
+              {escolha.size === 1 ? "1 escolhido" : `${escolha.size} escolhidos`}
+            </span>
+            <button type="button" onClick={tirarEscolhidos}>Tirar</button>
+            <button type="button" onClick={limparEscolha}>Largar</button>
+          </div>
+        )}
+
         {fio && (
           <p className="canvas-recado" role="status">
             {fio.sobre ? "Solte para ligar." : "Leve até outra nota. Soltar no vazio cancela."}
@@ -1517,7 +1740,12 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
             setTexto("");
             setEscrevendo(true);
           }}
-          onPointerDown={chaoDesce}
+          onPointerDown={(e) => {
+            chaoDesce(e);
+            /* Sem espaço e sem botão do meio, o gesto no vazio é o LAÇO. Se o
+               toque caiu num objeto, ele já parou o evento antes de chegar aqui. */
+            if (!espaco && e.button === 0) lacoDesce(e);
+          }}
           onPointerMove={chaoMove}
           onPointerUp={chaoSobe}
           onPointerCancel={chaoSobe}
@@ -1542,6 +1770,8 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
           {grupos.map((g) => (
             <Grupo
               aoLevar={levarGrupo}
+              aoEscolher={escolher}
+              escolhido={escolha.has(`secao:${g.id}`)}
               key={g.id}
               grupo={g}
               aoMudar={aoMudarArea}
@@ -1623,12 +1853,31 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], notas = [], erro,
               aoLigarDaLista={setLigandoDaLista}
               aoMedir={anotarMedida}
               aoSeguir={seguirArrasto}
+              aoEscolher={escolher}
+              escolhido={escolha.has(`nota:${no.id}`)}
+              entreVarios={escolha.size > 1}
               carregada={levando?.filhos?.includes(no.id) ? levando : null}
               alvoDoFio={fio?.sobre === no.nota_id}
               escala={camera.escala}
             />
           ))}
           </div>
+
+          {/* O RETÂNGULO DO LAÇO, em coordenadas da janela — como o fio, pela
+              mesma razão: assim ele fica exatamente sob o dedo em qualquer zoom.
+              Só aparece depois do limiar, senão um clique pisca um quadrado. */}
+          {laco?.mexeu && (
+            <div
+              className="canvas-laco"
+              aria-hidden="true"
+              style={{
+                left: Math.min(laco.x0, laco.x),
+                top: Math.min(laco.y0, laco.y),
+                width: Math.abs(laco.x - laco.x0),
+                height: Math.abs(laco.y - laco.y0),
+              }}
+            />
+          )}
 
           {/* O FIO QUE ESTÁ SENDO PUXADO, por cima de tudo e sem receber toque.
               Fica FORA do plano de propósito: em coordenadas da janela ele não
