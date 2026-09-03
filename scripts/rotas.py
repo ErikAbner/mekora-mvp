@@ -153,7 +153,20 @@ def conferir_colisao(lista):
     import re
 
     app_jsx = (RAIZ / "web" / "src" / "App.jsx").read_text(encoding="utf-8")
-    telas = set(re.findall(r'path="([^"]*)"', app_jsx))
+
+    # SÓ AS ABSOLUTAS. No `react-router`, uma `<Route>` aninhada escreve o
+    # caminho RELATIVO ao pai: `path="preferencias"` dentro de `path="/conta"` é
+    # a tela `/conta/preferencias`, e não `/preferencias`.
+    #
+    # Lendo todas por igual, esta conferência acusava colisão entre a tela
+    # `/conta/preferencias` e a rota `/preferencias` do backend — duas telas que
+    # nunca dividiram caminho nenhum. E o falso vermelho não é inofensivo: ele
+    # devolvia 1, parava a geração do Caddyfile, e o único jeito de seguir era
+    # ignorar o aviso — que é como um aviso deixa de ser lido.
+    #
+    # Ignorar a relativa não abre buraco: o caminho inteiro dela começa pelo
+    # caminho do pai, que É absoluto e já está sendo conferido aqui.
+    telas = {t for t in re.findall(r'path="([^"]*)"', app_jsx) if t.startswith("/")}
     topo = {"/" + t.strip("/").split("/")[0] for t in telas if t.strip("/")}
     return sorted(set(lista) & topo)
 
