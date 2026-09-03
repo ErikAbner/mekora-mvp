@@ -424,7 +424,21 @@
   perspective: 1600px;
   perspective-origin: 50% 0%;
 }
-.pilha li { inline-size: 100%; max-inline-size: 680px; }
+/* A PERSPECTIVA SO ALCANCA O FILHO DIRETO, e o livro e NETO.
+ *
+ * `perspective` na `.pilha` vale para os `<li>`; o `.livro-deitado` esta dentro
+ * de um deles, e sem `preserve-3d` no meio o `<li>` achata o filho antes de
+ * qualquer profundidade existir. O `rotateX(74deg)` da face de cima virava um
+ * ESMAGAMENTO — a fatia encolhia de 72px para 20 e ficava reta, sem topo
+ * nenhum.
+ *
+ * Foi por isso que o Erik viu "estante 3d completamente bugada": nao havia 3D.
+ * Eram barras cinzas empilhadas, e o `translateZ` dos vizinhos tambem nao fazia
+ * nada, porque `translateZ` sem perspectiva nao muda um pixel. */
+.pilha li {
+  inline-size: 100%; max-inline-size: 680px;
+  transform-style: preserve-3d;
+}
 
 /* Cada livro e uma fatia: a face de cima inclinada, e a lombada de frente.
  * `--espessura` vem de contrato/lombada.js, em pixels derivados de milimetros de
@@ -463,11 +477,14 @@
 .deitado-topo {
   display: block;
   block-size: 72px;
+  /* AS FOLHAS. `--background` e `--card` sao quase a mesma tinta no tema claro —
+   * as listras existiam no codigo e nao na tela. A borda misturada com o piso da
+   * o risco fino de papel, que e o unico detalhe que essa superficie tem. */
   background:
     repeating-linear-gradient(
       to bottom,
-      var(--background) 0 2px,
-      var(--card) 2px 3px
+      var(--piso) 0 2px,
+      color-mix(in oklab, var(--border) 45%, var(--piso)) 2px 3px
     );
   border: 1px solid var(--border);
   transform-origin: bottom center;
@@ -486,19 +503,48 @@
   background: var(--card);
   border: 1px solid var(--border);
   border-block-start: 0;
-  overflow: hidden;
+  /* SEM `overflow: hidden` AQUI. O titulo do escolhido e absoluto dentro desta
+   * caixa e mede 96px de altura para o nome caber de pe — com o corte, ele saia
+   * fatiado pela propria fatia. Na captura do Erik o que se lia era "DE CAMPO",
+   * com "CADERNOS" cortado fora. */
 }
 
 /* O TÍTULO DO ESCOLHIDO, DE PÉ NA BORDA ESQUERDA — como no 895:7506. Ele fica
  * fora da fatia, à esquerda dela, e por isso não depende da altura dela: uma
  * fatia de 18px não caberia uma linha de texto deitada, e era exatamente esse o
  * defeito da versão anterior. */
+/* O TITULO DE PE, NA BORDA DE INICIO DA FATIA ESCOLHIDA.
+ *
+ * A versao anterior tinha `inset-block: 0` E `block-size: 96px` ao mesmo tempo,
+ * numa caixa absoluta: a altura ganha, o `inset` nao segura, e a etiqueta descia
+ * por cima de DOIS livros de baixo. E `align-self` num absoluto nao faz nada.
+ *
+ * Agora ela e ancorada pelo meio da fatia e cortada no proprio tamanho: um
+ * titulo longo ganha reticencias em vez de invadir a pilha. O nome inteiro esta
+ * na trilha ao lado e no painel a direita — aqui ele e etiqueta, nao leitura. */
 .deitado-titulo {
+  /* PROPRIEDADE FISICA AQUI, e nao logica — e a unica regra do projeto que faz
+   * isso de proposito.
+   *
+   * `writing-mode: vertical-rl` troca os eixos LOGICOS do proprio elemento, e as
+   * insets de uma caixa absoluta resolvem no writing-mode DELA: medido,
+   * `inset-inline-start: 0` computou como topo e a etiqueta foi parar no meio da
+   * fatia, a 231px da borda. `max-block-size: 96px` tambem nao cortava nada,
+   * porque ali "block" e a horizontal — a etiqueta media 202px de altura numa
+   * fatia de 99.
+   *
+   * `left` e `top` querem dizer esquerda e topo em qualquer writing-mode. */
+  /* ELA CRESCE PARA CIMA, ancorada no pe da fatia.
+   *
+   * Centrada e cortada em 96px, "CADERNOS DE CAMPO" virava "CADER…" — o nome
+   * cortado nao serve de nada. Para baixo ela invadiria os livros seguintes, que
+   * foi o defeito anterior; para cima ha o proprio corte de paginas do livro
+   * escolhido, que e espaco dele. 168px e a fatia mais a face de cima. */
   position: absolute;
-  inset-block: 0;
-  inset-inline-start: 0;
-  display: flex; align-items: center;
-  padding-inline: 8px;
+  bottom: 0;
+  left: 0;
+  display: block;
+  padding: 8px;
   background: var(--foreground);
   color: var(--primary-foreground);
   font-size: 14px; line-height: 22px;   /* Label/Small */
@@ -506,12 +552,13 @@
   text-transform: uppercase;
   white-space: nowrap;
   writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  /* Ela sobe além da fatia para o nome caber, como o desenho mostra. */
-  block-size: 96px;
-  align-self: center;
-  transform-origin: center;
+  rotate: 180deg;
+  max-height: 168px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
+.deitado-titulo { z-index: 2; }
 
 /* O bloco escuro na ponta direita — o marcador do desenho. */
 .deitado-marca {
