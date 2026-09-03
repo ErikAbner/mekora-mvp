@@ -550,6 +550,103 @@ UM cartão aparece com pior quadro de 50 a 83ms, enquanto o de TRÊS aparece com
 18 — e os dois fazem o mesmo caminho. O perfil isolado não reproduz. Fica aberto
 em vez de explicado errado: já errei a atribuição deste pico uma vez.
 
+---
+
+# Os dois modelos de posse, medidos
+
+## Modelo G — posse geométrica
+
+*A menor Seção que contém o centro é a dona, recalculada a cada gesto.*
+
+**O que ele acerta**
+- Nada a manter: desenhar uma área em volta das coisas já organiza.
+- Nenhuma migração, nenhum estado novo.
+- "Criar seção em volta do conteúdo" não é recurso — é o modelo.
+
+**Onde ele falha — medido**
+
+| cenário | o que aconteceu |
+|---|---|
+| seções sobrepostas | o objeto do meio **andou com as duas** |
+| seção dentro de seção | **A andou, o conteúdo de C saiu de C, e C ficou** |
+| esticar por cima | adotou em silêncio, sem gesto nenhum |
+
+E o defeito de fundo, que o desempate não resolve: **a relação muda sem que
+ninguém a tenha mudado.** Determinístico não é o mesmo que compreensível.
+
+## Modelo E — posse explícita, sugerida pela geometria
+
+*A geometria acende a candidata; o gesto decide; `grupo_id` guarda.*
+
+**O que ele acerta — medido**
+
+| prova | resultado |
+|---|---|
+| criar seção da escolha | os 2 escolhidos viraram **membros** |
+| esticar por cima de um terceiro | membros continuaram **2** — e o terceiro está **visualmente dentro** |
+| mover a seção | andaram **só os membros**; o não-membro visualmente dentro ficou |
+| soltar dentro | **virou membro** |
+| soltar fora | **saiu** |
+| `⌘Z` | devolveu **o vínculo**, e não só a posição |
+| aninhamento | impossível por construção — Seção não tem `grupo_id` |
+
+**O que ele cobra**
+- Uma conversão de dados, sem a qual toda organização existente morre em
+  silêncio. Feita — e medida antes: a seção andava 140 e a nota de dentro andava
+  0.
+- Uma semente que mentia teve de ser corrigida.
+- **Uma fraqueza nova**: um objeto pode estar visualmente dentro sem ser membro,
+  e parado ele fica idêntico a um que é.
+
+Essa última se paga com feedback, e por isso ele foi construído nos **dois
+sentidos**: passar sobre um membro acende a área; passar sobre a área marca quem
+é dela. Medido: 1 e 2 membros marcados, seção revelada, marcas limpas ao trocar.
+
+---
+
+# A recomendação final: **A — só a Seção**
+
+O que mudou desde a última vez não é a conclusão, é a **base dela**. Antes eu
+recomendava A com um modelo de contenção que os cenários tinham reprovado. Agora
+A vem com posse explícita, e ela sustenta o que o Grupo existiria para fazer.
+
+## Como cada opção se sai
+
+| | **A — só Seção** | B — Seção + Grupo | C — um primitivo, dois modos | D — outro |
+|---|---|---|---|---|
+| clareza conceitual | **alta** — uma coisa, dois trajes | baixa — decidir qual antes de saber | média — dois nomes, uma tabela | — |
+| custo de interação | um gesto: cercar e criar | escolher entre dois toda vez | idem B | — |
+| persistência | `grupo_id`, um nível | dois ciclos de vida | um, com modo | — |
+| geometria ambígua | **resolvida** — só o gesto muda posse | Grupo escaparia por não ter geometria | idem A | — |
+| escala | membro é uma coluna indexada | duas relações a conciliar | idem A | — |
+| Livros, Artefatos, Outputs | entram pela cena sem saber de nada | dois contêineres a ensinar | idem A | — |
+| descoberta | cercar e criar; hover explica | **Grupo é invisível — não se descobre** | idem | — |
+
+## Os três casos que o Grupo existiria para resolver, e o que aconteceu
+
+**Composição pequena e persistente** — imagem + nota de interpretação. Hoje:
+escolher os dois, um botão, e eles são membros de uma seção **sem nome, quieta**
+— filete rarefeito, sem faixa de título, sem controles parados. Passar por cima
+revela. É o Grupo, com uma diferença: **dá para ver que existe.**
+
+**Área conceitual maior** — dar nome promove a mesma seção. Nenhum tipo novo.
+
+**Acoplamento sem área visível** — este o Grupo faria e a Seção não faz. E é
+justamente o que eu recuso: **acoplamento mecânico invisível é uma armadilha.**
+Se dois objetos andam juntos e nada explica por quê, a pessoa não descobre a
+causa nem desfaz o vínculo. A área visível não é o custo do acoplamento — é a
+explicação dele. E agora ela é barata: quieta parada, clara quando perguntada.
+
+## A ressalva, que continua de pé
+
+**Os cenários 1, 2 e 8 foram medidos como mecânica, não vividos como trabalho.**
+Nenhum Estudo real atravessou sessões dentro deste modelo. O que os testes
+provam é que o mecanismo faz o que diz; não que ele é agradável de usar por
+semanas.
+
+**O Grupo continua no lugar.** Nada foi apagado, nenhuma migração destrutiva
+aconteceu, e a decisão de removê-lo é do Erik.
+
 ## O que continua fraco, sem enfeitar
 
 - **Sem feedback de estado na área.** Ela não diz quando está sob o ponteiro, nem
@@ -558,11 +655,12 @@ em vez de explicado errado: já errei a atribuição deste pico uma vez.
   otimista mais o recálculo dos traços, e não foi atacado.
 - **Os casos ambíguos de contenção não foram testados.** Ver acima.
 - **Refazer uma seção apagada a recria com id novo.**
-- **A regra da menor Seção não foi implementada** — os defeitos dos cenários 4 e
-  7 continuam de pé no código.
-- **Seção sem nome ainda é barulhenta** — filete, faixa e botão para uma
-  composição de dois objetos.
-- **Em repouso, nada diz quem pertence a uma Seção.** O feedback é de gesto.
+- **Objeto visualmente dentro sem ser membro** é a fraqueza que a posse explícita
+  cria. O hover responde, mas parado os dois são idênticos.
+- **O pico de 50–83ms no arrasto de UM cartão continua sem causa reproduzida.**
+  Há instrumentação (`window.__canvas`) para quando ele voltar.
+- **`pointerleave` saindo do Canvas** não foi provado limpar as marcas — o teste
+  sintético não dispara o evento do React. Mover o ponteiro para o chão limpa.
 - **Os cenários 1, 2 e 8 foram julgados, não vividos.**
 - **Não há guias de alinhamento** entre objetos, e a malha só encosta a Seção.
 - **O ícone de "criar seção" ainda é o alfinete**, que não desenha uma seção.
