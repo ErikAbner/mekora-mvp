@@ -1366,6 +1366,7 @@
 .canvas-mundo.de-mao,
 .canvas-mundo.de-mao .nota-canvas,
 .canvas-mundo.de-mao .nota-canvas.na-lateral,
+.canvas-mundo.de-mao .livro-canvas.na-lateral,
 .canvas-mundo.de-mao .livro-canvas,
 .canvas-mundo.de-mao .canvas-secao-faixa,
 .canvas-mundo.de-mao .canvas-secao-area,
@@ -1374,7 +1375,8 @@
 .canvas-mundo.de-mao:active * { cursor: grabbing; }
 
 /* Fora do modo, a lateral do cartao estica. */
-.nota-canvas.na-lateral { cursor: ew-resize; }
+.nota-canvas.na-lateral,
+.livro-canvas.na-lateral { cursor: ew-resize; }
 
 /* A LIGACAO ESCOLHIDA. Ela e a unica coisa da superficie que nao tem area — o
  * traco fica na tinta da escolha e engrossa, que e o equivalente do contorno nos

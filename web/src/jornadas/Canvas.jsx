@@ -168,6 +168,10 @@ const BORDA = 10;
  * que encosta na malha fica alinhada com o que a pessoa VÊ atrás dela. */
 const MALHA_DO_PLANO = 24;
 
+/* Encostar na malha. A mesma para seção, nota e livro: uma superfície em que só
+ * um tipo se alinha com o chão pontilhado fica meio arrumada. */
+const encostar = (v) => Math.round(v / MALHA_DO_PLANO) * MALHA_DO_PLANO;
+
 /* A CURVA ENTRE DOIS CARTOES — geometria pura, fora do componente.
  *
  * Ela precisa existir em dois lugares: no desenho do React, e no repinte
@@ -738,6 +742,16 @@ function LivroCrua({ livro, aoMover, aoTirar, aoLigarDaLista, aoEscolher, aoSegu
   const arrasto = useRef(null);
   const [posicao, setPosicao] = useState(null);
   const [semCapa, setSemCapa] = useState(false);
+  const largura = livro.largura || 280;
+
+  /* A mesma conta da nota: puxar a borda esquerda cresce para a esquerda. Os
+   * limites são outros porque um livro menor que 160 deixa de mostrar capa. */
+  const esticar = (lado, dx) => {
+    const limitar = (v) => Math.max(160, Math.min(600, v));
+    if (lado === "l") return { dx: 0, dy: 0, largura: limitar(largura + dx) };
+    const nova = limitar(largura - dx);
+    return { dx: largura - nova, dy: 0, largura: nova };
+  };
 
   const largarOuvintes = () => {
     window.removeEventListener("pointermove", andar);
@@ -778,7 +792,17 @@ function LivroCrua({ livro, aoMover, aoTirar, aoLigarDaLista, aoEscolher, aoSegu
     if (e.button !== 0) return;
     e.stopPropagation();
     aoEscolher?.(`livro:${livro.id}`, { juntando: e.shiftKey || e.metaKey || e.ctrlKey });
-    arrasto.current = { x0: e.clientX, y0: e.clientY, mexeu: false };
+    /* O LIVRO ESTICA PELAS LATERAIS, como a nota — e a capa não distorce por
+     * construção: ela tem `aspect-ratio: 2/3`, então mudar a largura muda a
+     * altura junto e o livro continua com forma de livro.
+     *
+     * Era a última assimetria sem razão semântica entre nota e livro. Largura
+     * livre aqui não é "paridade por paridade": densidade de informação é
+     * escolha de quem organiza, e um livro que importa merece ocupar mais chão
+     * que um que está ali de passagem. */
+    const borda = ondeEncostou(e, e.currentTarget);
+    const lado = borda === "o" || borda === "l" ? borda : null;
+    arrasto.current = { x0: e.clientX, y0: e.clientY, mexeu: false, lado };
     window.addEventListener("pointermove", andar);
     window.addEventListener("pointerup", soltar);
     window.addEventListener("pointercancel", abortar);
@@ -791,8 +815,9 @@ function LivroCrua({ livro, aoMover, aoTirar, aoLigarDaLista, aoEscolher, aoSegu
     const dy = (e.clientY - a.y0) / escala;
     if (!a.mexeu && Math.hypot(e.clientX - a.x0, e.clientY - a.y0) < LIMIAR) return;
     a.mexeu = true;
-    setPosicao({ dx, dy });
-    aoSeguir?.(`livro:${livro.id}`, { dx, dy });
+    const agora = a.lado ? esticar(a.lado, dx) : { dx, dy };
+    setPosicao(agora);
+    aoSeguir?.(`livro:${livro.id}`, agora);
   };
 
   const abortar = () => {
@@ -810,6 +835,16 @@ function LivroCrua({ livro, aoMover, aoTirar, aoLigarDaLista, aoEscolher, aoSegu
     if (!a?.mexeu) { aoSeguir?.(`livro:${livro.id}`, null); return; }
     const dx = (e.clientX - a.x0) / escala;
     const dy = (e.clientY - a.y0) / escala;
+    if (a.lado) {
+      const fim = esticar(a.lado, dx);
+      aoMover(livro.id, livro.x + fim.dx, livro.y, fim.largura);
+      aoSeguir?.(`livro:${livro.id}`, {
+        soltou: true, esticou: true,
+        antes: { x: livro.x, y: livro.y, largura, grupo: livro.grupo_id ?? null },
+        depois: { x: livro.x + fim.dx, y: livro.y, largura: fim.largura, grupo: livro.grupo_id ?? null },
+      });
+      return;
+    }
     /* Idem à nota: quem confirma é o Canvas. */
     aoSeguir?.(`livro:${livro.id}`, { dx, dy, soltou: true });
   };
@@ -822,7 +857,7 @@ function LivroCrua({ livro, aoMover, aoTirar, aoLigarDaLista, aoEscolher, aoSegu
       style={{
         left: livro.x,
         top: livro.y,
-        inlineSize: livro.largura || 280,
+        inlineSize: posicao?.largura ?? largura,
         transform:
           posicao || carregada
             ? `translate(${(posicao?.dx ?? 0) + (carregada?.dx ?? 0)}px, ${(posicao?.dy ?? 0) + (carregada?.dy ?? 0)}px)`
@@ -1446,6 +1481,14 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
         });
         return;
       }
+      /* `⌘1` enquadra tudo, `⌘2` enquadra a escolha — os dois números que a mão
+       * já usa para "vista" em qualquer editor. */
+      if ((e.metaKey || e.ctrlKey) && (e.key === "1" || e.key === "2")) {
+        e.preventDefault();
+        if (e.key === "1") enquadrarTudoRef.current();
+        else enquadrarEscolhaRef.current();
+        return;
+      }
       if (e.key === "Escape") { limparEscolha(); return; }
       /* `Enter` com uma seção escolhida abre o nome — o mesmo que renomear um
        * arquivo em qualquer lugar do sistema. */
@@ -1702,15 +1745,22 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
       } else {
         const eu = ondeEstaRef.current(id);
         if (eu) {
+          /* ENCOSTA NA MALHA AO SOLTAR — e agora para TODO objeto, não só para a
+           * seção. Uma superfície em que a área encosta e o cartão não fica meio
+           * arrumada: as duas coisas se alinham com o chão pontilhado, ou
+           * nenhuma. No fim do gesto, e nunca durante: ímã que age com o dedo
+           * andando faz o objeto grudar e escapar. */
           /* O VÍNCULO COMEÇA E TERMINA AQUI. Soltar dentro de uma área entra
            * nela; soltar fora sai. É o único momento em que a relação muda, e
            * ela tem uma causa visível: o gesto que a pessoa acabou de fazer. */
           const secao = idDaSecao(secaoSobRef.current(id, desloca.dx, desloca.dy));
-          moverChaveRef.current(id, eu.x + desloca.dx, eu.y + desloca.dy, undefined, secao);
+          const px = encostar(eu.x + desloca.dx);
+          const py = encostar(eu.y + desloca.dy);
+          moverChaveRef.current(id, px, py, undefined, secao);
           mudancas.push({
             chave: id,
             antes: { x: eu.x, y: eu.y, largura: eu.largura, grupo: eu.grupo_id ?? null },
-            depois: { x: eu.x + desloca.dx, y: eu.y + desloca.dy, largura: eu.largura, grupo: secao },
+            depois: { x: px, y: py, largura: eu.largura, grupo: secao },
           });
         }
       }
@@ -1718,6 +1768,9 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
         const o = ondeEstaRef.current(outro);
         if (!o) continue;
         const secaoOutro = idDaSecao(secaoSobRef.current(outro, desloca.dx, desloca.dy));
+        /* O ACOMPANHANTE NÃO ENCOSTA SOZINHO: ele anda o mesmo passo de quem foi
+         * arrastado, senão a distância entre os dois muda no ato de soltar — e
+         * mover cinco cartões juntos os desarrumaria em vez de arrumar. */
         moverChaveRef.current(outro, o.x + desloca.dx, o.y + desloca.dy, undefined, secaoOutro);
         mudancas.push({
           chave: outro,
@@ -1876,6 +1929,8 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
 
   const [renomeando, setRenomeando] = useState(null);
   const secaoSozinhaRef = useRef(null);
+  const enquadrarTudoRef = useRef(null);
+  const enquadrarEscolhaRef = useRef(null);
   secaoSozinhaRef.current = secaoSozinha;
 
   /* AJUSTAR AO CONTEÚDO — e ele só existe porque redimensionar deixou de mexer em
@@ -2348,11 +2403,12 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
    * A conta é a caixa de tudo que existe, com folga, cabendo na janela — e nunca
    * ampliando além de 100%: um Estudo de três cartões não deve dar um zoom de
    * lupa, ele deve caber. */
-  const enquadrarTudo = () => {
+  const enquadrar = (chaves) => {
     const caixa = mundo.current?.getBoundingClientRect();
     if (!caixa) return;
     const tudo = [];
-    for (const [, ficha] of cena.current) {
+    for (const [chave, ficha] of cena.current) {
+      if (chaves && !chaves.has(chave)) continue;
       const c = ficha.ler();
       if (c) tudo.push(c);
     }
@@ -2375,6 +2431,15 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
       y: caixa.height / 2 - ((y0 + y1) / 2) * escala,
     });
   };
+
+  /* ENQUADRAR TUDO e ENQUADRAR A ESCOLHA são a MESMA conta com uma lista
+   * diferente. Duas implementações divergiriam na primeira folga que alguém
+   * ajustasse, e o sintoma seria a escolha ficando com uma margem e o todo com
+   * outra. */
+  const enquadrarTudo = () => enquadrar(null);
+  const enquadrarEscolha = () => enquadrar(escolhaRef.current);
+  enquadrarTudoRef.current = enquadrarTudo;
+  enquadrarEscolhaRef.current = enquadrarEscolha;
 
   const aproximar = (passo) => {
     setSaltando(true);
@@ -2762,6 +2827,9 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
                 {soLigacoes ? (escolha.size > 1 ? "Desfazer ligações" : "Desfazer ligação") : "Tirar"}
               </button>
             )}
+            <button type="button" onClick={enquadrarEscolha} title="Trazer a vista até o que está escolhido">
+              Enquadrar
+            </button>
             <button type="button" onClick={limparEscolha}>Largar</button>
           </div>
         )}
