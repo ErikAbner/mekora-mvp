@@ -152,6 +152,29 @@ fundo competindo"*, e não *"cores demais"*. Sem hedge, sem elogio de enchimento
 sem prescrição sem justificativa. O método está em
 `Projeto-os/erik-project-os/docs/references/interface-craft-2026-08-12.md`.
 
+## O Figma é somente leitura
+
+**Nunca escrever, criar ou editar nó.** `get_design_context`, `get_metadata`,
+`get_screenshot` e `download_assets` — e nada mais. `use_figma`,
+`generate_figma_design` e companhia ficam fora, mesmo quando o quadro está errado
+e a correção parece de um clique.
+
+A razão não é de permissão, é de método: **oráculo que dá para reescrever não
+reprova ninguém.** No momento em que a implementação pode ajustar o desenho, a
+divergência entre os dois deixa de ser informação — e a decisão de 03/09 sobre a
+senha da Conta (`966:25321`) só vale porque o quadro continua lá, dizendo o que
+dizia. Quadro não se corrige: se data, e a data mora em `docs/TELAS-FIGMA.md`.
+
+## Decisões vão em lote
+
+Pergunta de decisão **não interrompe implementação**. Elas se juntam e vão de uma
+vez, com o material de cada uma levantado — o que o quadro mostra, o que o código
+faz, o que a norma diz. Uma por vez, no meio do trabalho, troca o custo de decidir
+pelo custo de ser interrompido, e quem decide paga os dois.
+
+O que não tiver quadro nem regra **vira pendência para o Erik**, e não escolha de
+quem implementa.
+
 ## Documentação
 
 O mapa está em `docs/README.md`, e ele diz qual documento é **vigente**, qual é

@@ -1346,3 +1346,20 @@ que é onde se confere o reconhecimento página a página.
 **O que continua:** *"Páginas que não abriram"*, logo abaixo na mesma lista. É
 outro fato — o que não abre não entra no livro —, e o desenho não fala dele nem
 para tirar nem para pôr.
+
+## A senha do `966:25321` não foi construída, e não vai ser · 03/09/2026
+
+**O que o frame tem:** a tela de Conta do telefone mostra **retrato**, **Nome** e
+**Senha**.
+
+**O que existe:** retrato e Nome, construídos em 02/09 e os dois opcionais —
+entrar nunca pede nenhum deles. Senha, não.
+
+**A decisão, e ela é anterior ao quadro na ordem de autoridade:** a `DEC-0039` faz
+a entrada por **link no e-mail**. Não há senha para guardar, para esquecer, para
+vazar ou para redefinir, e a tela de Segurança afirma isso: *"Não há senha. Você
+pede um link, ele chega por e-mail, vale quinze minutos."*
+
+**O quadro não foi corrigido, foi datado** — a política está em
+`docs/TELAS-FIGMA.md`. Ele registra que o produto já planejou senha, que é o
+contexto de por que a tela de Segurança precisa dizer o contrário em voz alta.

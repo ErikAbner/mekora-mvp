@@ -186,14 +186,16 @@ Não impedem outras frentes. Impedem aquela.
 | **B5** | Se "falhou" oferece retry automático, manual ou nenhum, e quantas vezes | conversão | DEC-0021 |
 | **B6** | O que acontece com uma nota órfã depois da exclusão da origem — **é a mesma pergunta que B16**, vista do outro lado | Notas + exclusão | DEC-0021 |
 | **B7** | O que acontece com o trabalho feito antes de a conta existir | primeiro uso + conta | DEC-0022 |
-| **B8** | Como Relacionadas, Trilhas e Assuntos se apresentam | Conexões no telefone | DEC-0023 |
-| **B9** | **Se o Mapa continua existindo.** A decisão de 20/08 o pôs como "vista opcional, talvez nunca" — e a ordem já foi executada: Conexões abre por trilha, depois território, e o mapa é o terceiro. **Reordenar cumpriu a decisão; aposentar é outra** | Conexões | DEC-0023 |
+| **B8** | ~~Como Relacionadas, Trilhas e Assuntos se apresentam~~ — **decidido em 03/09: hierarquia é PROFUNDIDADE, não abas.** No computador Conexões já abre por trilha e depois território, e isso é hierarquia; aba a 390 mentiria, porque aba afirma que as três são irmãs. Uma vista por vez, nível nomeado, as outras alcançáveis. **Premissa conferida contra os dois quadros antes de valer** — nem o `895:8545` nem o `966:30269` têm aba ou `tablist`: os dois empilham Estudos, Relacionadas e as três faixas. E a tela a 390 já se comporta assim hoje (medido: 0 abas, 390 de 390, seções empilhadas). **Sobra uma pendência de vocabulário — ver B8-b** | Conexões | DEC-0023 |
+| **B8-b** | **"Trilhas" e "Assuntos" não existem em quadro nenhum.** A pergunta original nomeia três coisas; os dois quadros de Conexões nomeiam **Estudos**, **Relacionadas** e as três faixas de sugestão (`Parecem próximas`, `Talvez`, `Talvez um estudo`), e não trazem "Trilhas" nem "Assuntos" em lugar algum. O vocabulário vem da `DEC-0023`, não do desenho — então construir "as três" seria inventar duas. **Pergunta para o Erik:** são nomes de outra coisa que já existe (Estudos? Território?), ou telas que ninguém desenhou? | Conexões | DEC-0023 |
+| **B8-c** | **O produto diz "Ligadas" e os dois quadros dizem "Relacionadas".** Diferença de palavra, na mesma seção. Não troquei sozinho: rótulo é decisão de produto, e o `DESVIOS.md` existe justamente para isto não acontecer em silêncio | Conexões | DEC-0023 |
+| ~~**B9**~~ | ~~Se o Mapa continua existindo~~ — **aposentado em 03/09: não planejado.** O `CLAUDE.md` põe "grafo futurista" entre as coisas a evitar e exige que arranjo espacial só valha quando a posição significa alguma coisa. **O Canvas É essa superfície**, existe e funciona; um segundo espaço competiria com o que já ganhou o lugar. **Reabrir só com evidência de uso real que peça vista espacial que não seja o Canvas.** Conferido antes de aposentar: não há código nem UI de Mapa — a palavra só aparece no repositório com outros sentidos (o mapa do EPUB, o mapa mental do arranjo) | — | DEC-0023 |
 | **B10** | Como a escolha de modo de leitura é lembrada — conta, aparelho ou livro | Reader | DEC-0023 |
 | **B11** | O tablet, feature a feature | tudo no tablet | DEC-0023 |
 | **B12** | Quais breakpoints existem além de 390px, e o que "tablet" significa em números — a regra `@container` de 18/08 sugere que parte do problema não se resolve por breakpoint | design system | DEC-0023 |
 | **B13** | Como os cinco lugares se apresentam no telefone | navegação mobile | DEC-0024 |
 | **B14** | Se Mesa é um lugar como os outros, ou a casa que a marca abre — a DEC-0019 a trata das duas formas na mesma frase, e a ambiguidade pode ser deliberada | navegação | DEC-0024 |
-| **B15** | Que vistas Notas tem, e como se chama a partição hoje rotulada "Soltas" | Notas | DEC-0024 |
+| **B15** | ~~Que vistas Notas tem, e como se chama a partição hoje rotulada "Soltas"~~ — **decidido em 03/09.** "Solta" nomeia a nota pelo que ela NÃO tem, e uma nota escrita no Canvas não é deficiente: é um pensamento que não veio de livro. A partição fica em **dois positivos e paralelos, os dois por origem — "Escritas aqui" × "Do livro"** —, e "escrita aqui" já é palavra que o produto fala, no rodapé do cartão. Mais **um corte só, noutro eixo: "sem ligação"** — o pensamento que ainda não encostou em nada, que é lista acionável. **"Por livro" fica de fora de propósito:** a Estante já é a vista centrada em livro. Falta implementar, junto da frente de Notas | Notas | DEC-0024 |
 | **B16** | Como a visão filtrada do livro se comporta quando a origem foi excluída | Notas dentro do livro | DEC-0024 |
 | **B17** | O destino do `mekora-canvas-motion` daqui em diante. Ele contém o Canvas de cinco tipos, a implementação mais avançada das cinco | frente de implementação | DEC-0025 · DEC-0030 |
 | **B18** | O destino do `mekora-experience` — o conflito DEC-0011 §4 × DEC-0017 | reconciliação | DEC-0025 |
@@ -477,9 +479,26 @@ que não foi feito, e por quê:
   tela eles têm rótulo, e a razão está no `cabecalho.css`: ícone sozinho obriga
   a adivinhar. É divergência deliberada.
 
-**A-29 · RESOLVIDA — decidida pela construção.** O `941:23113` é o popup onde se
-escreve a nota, e ele abre **logo depois de marcar um trecho, pelo "Adicionar
-nota" da barra de seleção** (`Leitura.jsx:482`). A alternativa que existia antes
+**A-29 · RESOLVIDA — gatilho confirmado, e a CARGA medida.** O `941:23113` é o
+popup onde se escreve a nota, e ele abre **logo depois de marcar um trecho, pelo
+"Adicionar nota" da barra de seleção** (`Leitura.jsx:482`).
+
+O gatilho segue o mesmo padrão do Canvas, onde "Criar seção" nasce da escolha: a
+nota é sobre o trecho, então nasce onde o trecho está.
+
+**E o que faltava não era decidir, era medir:** a nota chega com o trecho preso
+ou em branco? Medido em 03/09, com seleção de verdade e leitura do servidor:
+
+    marcado na tela   "ue primeiro roeu as frias carn"
+    trecho da nota    "ue primeiro roeu as frias carn"   ✓ bate
+    de / ate          19 / 49
+    antes / depois    "Ao verme q" / "es do meu cadáver dedico como…"
+    o cartão mostra   Nota · 21:40 · “ue primeiro roeu as frias carn” · Salvar
+
+A carga está certa: trecho preso, âncora com contexto dos dois lados, e o cartão
+mostrando a citação em vez de um campo vazio. **`origem` vem vazia, e isso não é
+falta:** ela só se preenche para nota que NÃO vem de um trabalho daqui — a do
+Kindle. Esta tem `job_id`, e é o trabalho que diz de onde ela veio. A alternativa que existia antes
 era abrir o caderno inteiro — a coluna com todas as notas do livro — para
 escrever uma linha sobre a que acabou de nascer, que é abrir um arquivo para
 anotar um papel.

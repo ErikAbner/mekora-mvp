@@ -131,7 +131,7 @@ Disso decorre que **uma feature ausente num aparelho não é, por si só, defeit
 | **A 390px** | uma dessas indisponível ou inoperante **é falha de V1** `DEC-0023 §4` |
 | **Canvas** | desktop-only no V1 — forçá-lo a 390px produziria experiência pior que a ausência `DEC-0023 §5` |
 | **Conexões** | existe em todo aparelho; no telefone como **Relacionadas · Trilhas · Assuntos**, em listas, sem grafo `DEC-0023 §6` |
-| **O Mapa** | pode permanecer desktop-only, e a ausência não conta como feature faltando `DEC-0023 §7` |
+| ~~**O Mapa**~~ | **aposentado em 03/09: não planejado.** A `DEC-0023 §7` já o dava como opcional; a decisão fecha a porta. O Canvas é a superfície espacial do produto, e um segundo espaço competiria com o que já ganhou o lugar. Reabrir só com evidência de uso real que peça vista espacial que não seja o Canvas |
 | **Tablet** | não é terceira especificação rígida; decide-se feature a feature, sem herança automática `DEC-0023 §8` |
 
 ### O Reader

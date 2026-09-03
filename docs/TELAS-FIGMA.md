@@ -221,6 +221,31 @@ E um trecho solto, que o Erik mandou quando eu disse que não conseguia ler:
 
 | `895:7839` | "Escrever sobre o livro" — trecho do `895:7631` | `/estante/:id` | **construído** |
 
+## Quadro não se corrige: se data
+
+**Um quadro do Figma nunca fica errado. Ele fica VELHO** — e as duas coisas
+pedem tratamentos opostos.
+
+Apagar do arquivo o que uma decisão superou destrói a evidência de que o produto
+já planejou aquilo, que é justamente o contexto de por que hoje ele faz o
+contrário. O problema nunca é o quadro existir: é ele estar **alcançável como
+oráculo sem aviso** — alguém abre, lê, implementa, e ninguém sabe que a coisa foi
+decidida em outro lugar.
+
+Então a política, e ela vale para todos os casos que vierem:
+
+1. **O quadro fica no arquivo, como está.**
+2. **A data e a decisão que o superam ficam AQUI**, na linha dele.
+3. **A divergência entra no `DESVIOS.md`**, na seção de decisões que superam
+   frame — porque implementar contra um quadro é uma decisão, e decisão sem
+   registro vira "fidelidade", que é palavra que não pede justificativa.
+
+### Os quadros datados
+
+| quadro | o que ele mostra | o que o supera |
+|---|---|---|
+| `966:25321` · M · Conta | um campo de **Senha** | **`DEC-0039`** — a entrada é por link no e-mail, e não há senha. A tela de Segurança diz isso com todas as letras. Retrato e Nome, do mesmo quadro, **foram construídos** em 02/09 |
+
 ## O dado do nó vence a captura — e isto custou uma pendência de dois dias
 
 **Do lado do ORÁCULO — o Figma —, `get_design_context` e `get_variable_defs` são
