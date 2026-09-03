@@ -1063,13 +1063,19 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
             {grupo.nome || "Dar um nome"}
           </button>
         )}
+        {/* "DESFAZER GRUPO" MENTIA EM DUAS FRENTES. Ele não desfaz vínculo
+            nenhum: ele apaga a ÁREA, e o conteúdo fica onde está. E "grupo" é a
+            palavra que o produto abandonou.
+            
+            "Dissolver" diz o que acontece: a área some, as coisas ficam. */}
         <button
           type="button"
+          title="A área some; o que estava nela fica"
           className="canvas-grupo-tirar"
           onPointerDown={(e) => e.stopPropagation()}
           onClick={() => aoApagar(grupo.id)}
         >
-          Desfazer grupo
+          Dissolver seção
         </button>
       </header>
 
@@ -2041,7 +2047,35 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
    *
    * O PLANO É QUE SE MOVE, e não a rolagem: `transform` não mexe na árvore, roda
    * na placa de vídeo, e é o que permite arrastar mil notas sem engasgo. */
-  const [camera, setCamera] = useState({ x: 0, y: 0, escala: 1 });
+  /* A CÂMERA SOBREVIVE A SAIR E VOLTAR.
+   *
+   * Ela nascia em `{0, 0, 1}` toda vez: abrir um livro e voltar jogava a pessoa
+   * na origem do plano, que pode estar a mil pixels do que ela estava olhando. É
+   * o fluxo central do produto — ler, pensar, voltar — e ele quebrava no meio.
+   *
+   * `sessionStorage` e não `localStorage`, pela mesma razão que o `lugares.js`
+   * dá: o rastro é DESTA aba. Duas abas no mesmo Canvas são duas vistas, e uma
+   * não deve arrastar a outra.
+   *
+   * Ler com `try`: aba anônima e site com dados bloqueados fazem o acesso
+   * LANÇAR, e não devolver nulo. */
+  const ONDE_EU_ESTAVA = "mekora-canvas-camera";
+  const [camera, setCamera] = useState(() => {
+    try {
+      const guardado = JSON.parse(sessionStorage.getItem(ONDE_EU_ESTAVA) || "null");
+      if (guardado && Number.isFinite(guardado.x) && Number.isFinite(guardado.escala)) return guardado;
+    } catch { /* sem memória: começa do começo, e é um começo válido */ }
+    return { x: 0, y: 0, escala: 1 };
+  });
+
+  useEffect(() => {
+    /* Escrito num relógio: a câmera muda a cada quadro de um deslocamento, e
+     * gravar sessenta vezes por segundo custa mais que o passeio inteiro. */
+    const relogio = setTimeout(() => {
+      try { sessionStorage.setItem(ONDE_EU_ESTAVA, JSON.stringify(camera)); } catch { /* sem memória */ }
+    }, 300);
+    return () => clearTimeout(relogio);
+  }, [camera]);
   const arrastandoChao = useRef(null);
 
   const ESCALA_MIN = 0.25;
@@ -2078,6 +2112,43 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
     const noPlanoX = (ax - c.x) / c.escala;
     const noPlanoY = (ay - c.y) / c.escala;
     return { x: ax - noPlanoX * nova, y: ay - noPlanoY * nova, escala: nova };
+  };
+
+  /* ENQUADRAR TUDO — o caminho de volta.
+   *
+   * Numa superfície sem fim, deslocar longe não tem desfazer: sem isto, a única
+   * saída é arrastar até achar. É o botão de "estou perdido", e é a lacuna que
+   * mais custa depois de a superfície crescer.
+   *
+   * A conta é a caixa de tudo que existe, com folga, cabendo na janela — e nunca
+   * ampliando além de 100%: um Estudo de três cartões não deve dar um zoom de
+   * lupa, ele deve caber. */
+  const enquadrarTudo = () => {
+    const caixa = mundo.current?.getBoundingClientRect();
+    if (!caixa) return;
+    const tudo = [];
+    for (const [, ficha] of cena.current) {
+      const c = ficha.ler();
+      if (c) tudo.push(c);
+    }
+    if (!tudo.length) return;
+    const FOLGA = 80;
+    const x0 = Math.min(...tudo.map((c) => c.x)) - FOLGA;
+    const y0 = Math.min(...tudo.map((c) => c.y)) - FOLGA;
+    const x1 = Math.max(...tudo.map((c) => c.x + c.largura)) + FOLGA;
+    const y1 = Math.max(...tudo.map((c) => c.y + c.altura)) + FOLGA;
+    const escala = Math.max(
+      ESCALA_MIN,
+      Math.min(1, Math.min(caixa.width / (x1 - x0), caixa.height / (y1 - y0))),
+    );
+    setSaltando(true);
+    clearTimeout(relogioDoSalto.current);
+    relogioDoSalto.current = setTimeout(() => setSaltando(false), 260);
+    setCamera({
+      escala,
+      x: caixa.width / 2 - ((x0 + x1) / 2) * escala,
+      y: caixa.height / 2 - ((y0 + y1) / 2) * escala,
+    });
   };
 
   const aproximar = (passo) => {
@@ -2695,11 +2766,14 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
               original — e voltar é a coisa mais pedida depois de se perder. */}
           <div className="canvas-zoom">
             <button type="button" aria-label="Aproximar" onClick={() => aproximar(0.1)}>+</button>
+            {/* ENQUADRAR TUDO, e não "voltar à origem" — mesma fatia, promessa
+                melhor. A origem do plano pode estar vazia: quem se perdeu e
+                aperta ali não quer as coordenadas 0,0, quer VER O QUE TEM. */}
             <button
               type="button"
               className="canvas-zoom-valor"
-              onClick={() => setCamera({ x: 0, y: 0, escala: 1 })}
-              title="Voltar ao começo"
+              onClick={enquadrarTudo}
+              title="Enquadrar tudo"
             >
               {Math.round(camera.escala * 100)}%
             </button>
