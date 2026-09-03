@@ -647,6 +647,86 @@ semanas.
 **O Grupo continua no lugar.** Nada foi apagado, nenhuma migração destrutiva
 aconteceu, e a decisão de removê-lo é do Erik.
 
+---
+
+# O plano de remoção do Grupo — escrito antes de executar
+
+## O achado que decide tudo: não há dois modelos
+
+Levantei o que existe antes de planejar, e o resultado muda a natureza do
+trabalho:
+
+**Existe UMA entidade.** `GrupoCanvas`, tabela `canvas_grupos`. A tela já a chama
+de **seção** em 61 lugares; "grupo" sobrevive em **um** `aria-label` e no
+vocabulário interno do código.
+
+Ou seja: **não há Grupo para migrar.** Não há registros de um tipo a converter em
+outro, não há duas árvores de renderização, não há dois caminhos de contenção. O
+que existe é um nome morto sobre a coisa certa.
+
+Isso torna a remoção **sem risco de dados** — e é por isso que ela pode acontecer
+nesta passagem em vez de virar um projeto.
+
+## O que muda, e o que não muda
+
+| camada | decisão |
+|---|---|
+| dados | **nada muda.** Nenhuma linha é lida, escrita ou apagada |
+| tabela `canvas_grupos` | **fica com o nome** — ver abaixo |
+| rotas `/canvas/grupos` | **ficam** — mesma razão |
+| vocabulário do código | **renomeado** para seção |
+| strings de tela | **renomeadas** |
+| classes de CSS | **renomeadas** |
+
+### Por que a tabela e as rotas ficam
+
+Renomear `canvas_grupos` é uma migração de verdade: no SQLite a tabela é
+recriada, e duas outras tabelas apontam para ela com chave estrangeira. O
+benefício para quem usa o produto é **zero** — ninguém vê o nome de uma tabela.
+
+Trocar risco real por nenhum ganho não é consolidação, é arrumação. As duas ficam
+com o nome legado, **documentado aqui como legado**, e o vocabulário que uma
+pessoa lê — na tela e no código do Canvas — passa a ser um só.
+
+Isso não deixa "duas arquiteturas para compatibilidade": deixa **um nome antigo
+no disco**, que é outra coisa.
+
+## Recuperação
+
+Não há migração de dados, logo não há o que reverter. O passo é reversível por
+`git revert` como qualquer mudança de código.
+
+## O que a remoção precisa provar
+
+1. Nenhum Estudo existente perde organização — **medido antes e depois**.
+2. Membros continuam andando juntos.
+3. Seção sem nome continua quieta.
+4. Desfazer/refazer continuam.
+5. Livros continuam membros.
+6. Ligações intactas.
+7. Nenhum objeto salta de lugar.
+
+---
+
+## O roteador de gesto — a ordem de precedência
+
+Fonte única. Objeto novo **não** decide precedência por conta própria: ele
+implementa comportamento, e a precedência é resolvida antes dele.
+
+| ordem | quem | quando |
+|---|---|---|
+| 1 | **gesto em curso** | uma vez começado, ele termina — a posse é estável pela vida do gesto |
+| 2 | **deslocar temporário** | espaço apertado, ou botão do meio, no `pointerdown` — resolvido na **fase de captura**, antes de qualquer alvo |
+| 3 | **esticar** | ponteiro na moldura de 10px do objeto |
+| 4 | **ligar** | ponteiro numa pega de borda |
+| 5 | **mover objeto** | ponteiro no corpo do objeto |
+| 6 | **laço** | ponteiro no vazio |
+| 7 | **chão** | o que sobrou |
+
+**A regra que sustenta a ordem**: quem decide o que o ponteiro significa é o
+ESTADO DA ENTRADA, e não o alvo embaixo dele. Foi invertê-la que causou o defeito
+do espaço.
+
 ## O que continua fraco, sem enfeitar
 
 - **Sem feedback de estado na área.** Ela não diz quando está sob o ponteiro, nem
