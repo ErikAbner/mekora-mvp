@@ -1380,6 +1380,63 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
    * superfície" — ela se desfaz, e o rótulo tem de dizer isso. */
   const soLigacoes = escolha.size > 0 && [...escolha].every((c) => c.startsWith("liga:"));
 
+  /* COPIAR E COLAR — o mínimo previsível de uma área de trabalho.
+   *
+   * `⌘C` põe o TEXTO do que está escolhido na área de transferência do sistema,
+   * e não um formato interno: assim ele sai do Mekora e serve para qualquer
+   * lugar, que é o que se espera de copiar. Colar de volta cria notas.
+   *
+   * `⌘V` lê o que houver: texto vira nota, imagem vira mídia. É o mesmo caminho
+   * das duas portas que já existiam — só que sem folha nenhuma no meio.
+   *
+   * NÃO HÁ FORMATO PRÓPRIO, e é decisão. Um `application/x-mekora` levaria
+   * ligações, vínculos e ids entre Estudos — e isso é uma semântica de
+   * transferência que ainda não foi decidida. Copiar texto não promete nada que
+   * não cumpra. */
+  const copiar = useCallback(async () => {
+    const textos = [];
+    for (const chave of escolhaRef.current) {
+      const [tipo, id] = chave.split(":");
+      if (tipo === "nota") {
+        const n = nosRef.current.find((x) => x.id === Number(id));
+        if (n?.texto) textos.push(n.texto);
+      }
+      if (tipo === "livro") {
+        const l = livrosRef.current.find((x) => x.id === Number(id));
+        if (l) textos.push(`${l.titulo}${l.autor ? ` — ${l.autor}` : ""}`);
+      }
+    }
+    if (!textos.length) return;
+    try {
+      await navigator.clipboard.writeText(textos.join("\n\n"));
+      avisar(textos.length > 1 ? `${textos.length} copiados` : "Copiado");
+    } catch {
+      /* Sem permissão de área de transferência não há como copiar, e mentir que
+       * copiou é pior que não copiar. */
+      avisar("O navegador não deixou copiar");
+    }
+  }, [avisar]);
+
+  const colar = useCallback(async (evento) => {
+    const onde = meioDaVista(375, 160);
+    const itens = evento?.clipboardData?.items ?? [];
+    for (const item of itens) {
+      if (item.type.startsWith("image/")) {
+        const arquivo = item.getAsFile();
+        if (arquivo) {
+          await aoTrazerMidia(arquivo, onde.x, onde.y, "");
+          avisar("Imagem colada");
+          return true;
+        }
+      }
+    }
+    const texto = evento?.clipboardData?.getData("text/plain")?.trim();
+    if (!texto) return false;
+    await aoTrazer({ texto: texto.slice(0, 2000), x: onde.x, y: onde.y });
+    avisar("Colado como nota");
+    return true;
+  }, [aoTrazer, aoTrazerMidia, avisar]);
+
   const tirarEscolhidos = useCallback(() => {
     /* O QUE ESTAVA LÁ, guardado antes de sumir: sem a posição e o `nota_id`, não
      * há como trazer de volta. É a diferença entre desfazer e "criar de novo". */
@@ -1489,6 +1546,15 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
         else enquadrarEscolhaRef.current();
         return;
       }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "c") {
+        copiarRef.current();
+        return;
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "d") {
+        e.preventDefault();
+        duplicarRef.current();
+        return;
+      }
       if (e.key === "Escape") { limparEscolha(); return; }
       /* `Enter` com uma seção escolhida abre o nome — o mesmo que renomear um
        * arquivo em qualquer lugar do sistema. */
@@ -1502,8 +1568,22 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
       e.preventDefault();
       tirarEscolhidos();
     };
+    /* COLAR VEM DO EVENTO `paste`, e não de `⌘V` no teclado: só ele traz o
+     * conteúdo da área de transferência. Interceptar a tecla daria a intenção
+     * sem os dados.
+     *
+     * E ele também respeita o campo de texto: colar dentro de um campo é colar
+     * no campo. */
+    const aoColar = (e) => {
+      if (e.target.closest?.("input, textarea, [contenteditable=true]")) return;
+      colarRef.current(e);
+    };
     window.addEventListener("keydown", aoTeclar);
-    return () => window.removeEventListener("keydown", aoTeclar);
+    window.addEventListener("paste", aoColar);
+    return () => {
+      window.removeEventListener("keydown", aoTeclar);
+      window.removeEventListener("paste", aoColar);
+    };
   }, [escolha, limparEscolha, tirarEscolhidos, historia, avisar]);
 
 
@@ -1930,6 +2010,9 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
   const [renomeando, setRenomeando] = useState(null);
   const secaoSozinhaRef = useRef(null);
   const enquadrarTudoRef = useRef(null);
+  const duplicarRef = useRef(null);
+  const copiarRef = useRef(null);
+  const colarRef = useRef(null);
   const enquadrarEscolhaRef = useRef(null);
   secaoSozinhaRef.current = secaoSozinha;
 
@@ -1976,6 +2059,71 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
       refazer: () => aoDissolverSecao(secao.id),
     });
   }, [membrosDe, aoDissolverSecao, aoDevolverSecao, limparEscolha, historia]);
+
+  /* DUPLICAR — e a semântica foi decidida antes de o comando existir.
+   *
+   *   NOTA    vira uma nota NOVA e independente, com o mesmo texto. Duplicar não
+   *           é referenciar: a segunda serve para divergir da primeira, e é
+   *           justamente isso que se quer ao duplicar um pensamento.
+   *
+   *   LIVRO   NÃO duplica, e a recusa é deliberada. Duplicar o livro da estante
+   *           seria absurdo — ele é um arquivo — e duas representações do mesmo
+   *           livro na mesma superfície não querem dizer nada. A restrição de
+   *           unicidade no banco já dizia isso; aqui o produto diz junto.
+   *
+   *   SEÇÃO   duplica a COMPOSIÇÃO: a área e cópias novas dos membros que podem
+   *           ser copiados, deslocadas em bloco. Duplicar só a moldura daria uma
+   *           caixa vazia, que não é o que ninguém quer dizer com "duplicar
+   *           isto".
+   *
+   * O deslocamento é de uma malha e meia: coincidir com o original esconderia a
+   * cópia embaixo dele, e longe demais quebraria a relação entre as duas.
+   */
+  const PASSO_DA_COPIA = MALHA_DO_PLANO * 1.5;
+
+  const duplicar = useCallback(async () => {
+    const feitos = [];
+    const copiarObjeto = async (chave, dx, dy) => {
+      const [tipo, id] = chave.split(":");
+      if (tipo !== "nota") return null;
+      const n = nosRef.current.find((x) => x.id === Number(id));
+      if (!n) return null;
+      return aoTrazer({ texto: n.texto, cor: n.cor, x: n.x + dx, y: n.y + dy });
+    };
+
+    for (const chave of escolhaRef.current) {
+      const [tipo, id] = chave.split(":");
+      if (tipo === "nota") { await copiarObjeto(chave, PASSO_DA_COPIA, PASSO_DA_COPIA); feitos.push(chave); }
+      if (tipo === "secao") {
+        const g = secoes.find((x) => x.id === Number(id));
+        if (!g) continue;
+        const nova = await aoCriarSecao({
+          nome: g.nome, x: g.x + PASSO_DA_COPIA, y: g.y + PASSO_DA_COPIA,
+          largura: g.largura, altura: g.altura,
+        });
+        if (!nova) continue;
+        for (const membro of membrosDe(g)) {
+          await copiarObjeto(membro, PASSO_DA_COPIA, PASSO_DA_COPIA);
+        }
+        /* Os membros novos entram na área nova pela geometria do drop? Não —
+         * pertencer é explícito, e aqui a intenção é clara: eles são a
+         * composição copiada. */
+        for (const n of nosRef.current) {
+          if (n.grupo_id) continue;
+          const dentro =
+            n.x >= nova.x && n.x <= nova.x + nova.largura && n.y >= nova.y && n.y <= nova.y + nova.altura;
+          if (dentro) aoMover(n.id, n.x, n.y, undefined, nova.id);
+        }
+        feitos.push(chave);
+      }
+    }
+    if (feitos.length) avisar(feitos.length > 1 ? `${feitos.length} duplicados` : "Duplicado");
+  }, [secoes, membrosDe, aoTrazer, aoCriarSecao, aoMover, avisar]);
+
+  const podeDuplicar = [...escolha].some((c) => c.startsWith("nota:") || c.startsWith("secao:"));
+  duplicarRef.current = duplicar;
+  copiarRef.current = copiar;
+  colarRef.current = colar;
 
   /* MOVER UMA CHAVE, seja ela do tipo que for. É o único lugar do Canvas que
    * sabe traduzir chave em ação, e por isso é o único que precisa mudar quando
@@ -2800,6 +2948,11 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
                 dois obrigaria a pessoa a juntar antes de poder organizar. */}
             {temObjetoEscolhido && (
               <button type="button" onClick={criarSecaoDaEscolha}>Criar seção</button>
+            )}
+            {podeDuplicar && (
+              <button type="button" onClick={duplicar} title="Livro não duplica — ele é um arquivo só">
+                Duplicar
+              </button>
             )}
             {/* AS AÇÕES DA SEÇÃO aparecem quando ela é a única escolhida. Antes
                 elas não existiam em lugar nenhum: renomear era um clique
