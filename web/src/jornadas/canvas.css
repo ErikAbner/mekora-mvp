@@ -1386,3 +1386,20 @@
   stroke: var(--escolha);
   stroke-width: calc(3px / var(--escala, 1));
 }
+
+/* AS GUIAS. Fio de um pixel na tinta do texto, sem receber toque — elas existem
+ * durante o gesto e somem depois. Nao ha regua, nao ha numero, nao ha
+ * distribuicao: o Canvas e de pensamento, e nao de layout. */
+.canvas-guias {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  overflow: visible;
+}
+.canvas-guias line {
+  stroke: var(--escolha);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: 0.7;
+}

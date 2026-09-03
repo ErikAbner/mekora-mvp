@@ -458,10 +458,11 @@ function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, aoE
     if (!a.mexeu && Math.hypot(e.clientX - a.x0, e.clientY - a.y0) < LIMIAR) return;
     a.mexeu = true;
     const agora = a.lado ? { ...esticar(a.lado, dx), esticando: true } : { dx, dy };
-    setPosicao(agora);
-    /* O TRAÇO ANDA JUNTO. Sem isto a linha fica parada enquanto a nota anda, e
-     * as duas se reencontram com um salto ao soltar. */
-    aoSeguir?.(`nota:${no.id}`, agora);
+    /* O TRAÇO ANDA JUNTO, e o Canvas devolve o passo já ALINHADO — só ele conhece
+     * os outros objetos. Sem usar o retorno, o cartão iria para um lugar e a
+     * guia apontaria outro. */
+    const ajustado = aoSeguir?.(`nota:${no.id}`, agora) ?? agora;
+    setPosicao(a.lado ? agora : ajustado);
   };
 
   /* Puxar a borda ESQUERDA cresce para a esquerda: a largura aumenta e a
@@ -1318,6 +1319,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
   /* O espaço vive num `ref` porque quem o lê é o roteador de gesto, que roda na
    * fase de captura — antes de qualquer desenho ter acontecido. */
   const espacoRef = useRef(false);
+  const cameraRef = useRef(null);
   nosRef.current = nos;
   livrosRef.current = livros;
   ligacoesRef.current = ligacoes;
@@ -1649,6 +1651,95 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
     return null;
   };
 
+  /* AS GUIAS DE ALINHAMENTO.
+   *
+   * Elas existem para uma coisa só: deixar o arranjo LEGÍVEL. Três cartões
+   * alinhados leem como uma coluna; três quase alinhados leem como bagunça, e a
+   * diferença são seis pixels que ninguém consegue acertar no olho.
+   *
+   * O que NÃO são: um sistema de layout. Não há distribuição, não há espaçamento
+   * igual, não há régua. Isso é trabalho de design, e o Canvas é de pensamento.
+   *
+   * O ÍMÃ É FRACO E CURTO — 6px de tela, e não do plano: o que importa é o quanto
+   * a mão erra, e a mão erra em pixels de tela. Dividir pela escala mantém a
+   * força igual de perto e de longe.
+   */
+  const IMA = 6;
+  const guiasNoDom = useRef(null);
+
+  const eixosAlinhados = useRef({ x: false, y: false });
+  const ultimoAjuste = useRef(null);
+  const alinharRef = useRef(null);
+  const pintarGuiasRef = useRef(null);
+
+  const alinhar = useCallback((chave, dx, dy) => {
+    const eu = cena.current.get(chave)?.ler();
+    if (!eu) return { dx, dy, guias: [] };
+    const escala = cameraRef.current.escala;
+    const perto = IMA / escala;
+
+    const x = eu.x + dx;
+    const y = eu.y + dy;
+    const meus = {
+      x: [x, x + eu.largura / 2, x + eu.largura],
+      y: [y, y + eu.altura / 2, y + eu.altura],
+    };
+    const melhor = { x: null, y: null };
+
+    for (const [outra, ficha] of cena.current) {
+      if (outra === chave || ficha.tipo === "secao") continue;
+      const o = ficha.ler();
+      if (!o) continue;
+      const deles = {
+        x: [o.x, o.x + o.largura / 2, o.x + o.largura],
+        y: [o.y, o.y + o.altura / 2, o.y + o.altura],
+      };
+      for (const eixo of ["x", "y"]) {
+        for (let i = 0; i < 3; i++) {
+          for (let j = 0; j < 3; j++) {
+            const d = deles[eixo][j] - meus[eixo][i];
+            if (Math.abs(d) > perto) continue;
+            if (!melhor[eixo] || Math.abs(d) < Math.abs(melhor[eixo].d)) {
+              melhor[eixo] = { d, em: deles[eixo][j] };
+            }
+          }
+        }
+      }
+    }
+    return {
+      dx: dx + (melhor.x?.d ?? 0),
+      dy: dy + (melhor.y?.d ?? 0),
+      guias: [
+        melhor.x && { eixo: "x", em: melhor.x.em },
+        melhor.y && { eixo: "y", em: melhor.y.em },
+      ].filter(Boolean),
+    };
+  }, []);
+
+  /* As guias são desenhadas direto no DOM, como o resto da previsão: elas
+   * aparecem e somem dezenas de vezes por segundo, e passar isso pelo React
+   * redesenharia a superfície a cada uma. */
+  const pintarGuias = useCallback((guias) => {
+    const svg = guiasNoDom.current;
+    if (!svg) return;
+    const caixa = mundo.current?.getBoundingClientRect();
+    if (!caixa) return;
+    const c = cameraRef.current;
+    svg.innerHTML = guias
+      .map((g) => {
+        if (g.eixo === "x") {
+          const px = g.em * c.escala + c.x;
+          return `<line x1="${px}" y1="0" x2="${px}" y2="${caixa.height}" />`;
+        }
+        const py = g.em * c.escala + c.y;
+        return `<line x1="0" y1="${py}" x2="${caixa.width}" y2="${py}" />`;
+      })
+      .join("");
+  }, []);
+
+  alinharRef.current = alinhar;
+  pintarGuiasRef.current = pintarGuias;
+
   const pintarArrasto = useCallback((deslocamentos) => {
     /* Os acompanhantes andam por `transform`, que é a mesma propriedade que o
      * cartão arrastado já usa — e que não custa layout. */
@@ -1804,10 +1895,12 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
    * MEDIDO: com as dependências, o pior quadro de um arrasto com 123 cartões
    * voltou de 17,4ms para 83,9ms. Com `ref`, a função é a mesma para sempre e o
    * conteúdo dela continua atual. */
-  const seguirArrasto = useCallback((id, desloca) => {
+  const seguirArrasto = useCallback((id, deslocaOriginal) => {
+    let desloca = deslocaOriginal;
     if (!desloca) {
       acompanhantes.current = [];
       limparPintura();
+      pintarGuiasRef.current([]);
       return;
     }
     /* A lista é fixada no primeiro quadro do gesto: recalcular a cada quadro
@@ -1823,6 +1916,8 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
       if (desloca.esticou) {
         mudancas.push({ chave: id, antes: desloca.antes, depois: desloca.depois });
       } else {
+        /* O passo que a guia ajustou, e não o cru do ponteiro. */
+        if (ultimoAjuste.current) desloca = { ...desloca, ...ultimoAjuste.current };
         const eu = ondeEstaRef.current(id);
         if (eu) {
           /* ENCOSTA NA MALHA AO SOLTAR — e agora para TODO objeto, não só para a
@@ -1834,8 +1929,11 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
            * nela; soltar fora sai. É o único momento em que a relação muda, e
            * ela tem uma causa visível: o gesto que a pessoa acabou de fazer. */
           const secao = idDaSecao(secaoSobRef.current(id, desloca.dx, desloca.dy));
-          const px = encostar(eu.x + desloca.dx);
-          const py = encostar(eu.y + desloca.dy);
+          /* ARREDONDADO: a conta da guia deixa poeira de ponto flutuante, e
+           * `2000.0000000000002` guardado no banco é uma coordenada que nunca
+           * mais bate com outra por igualdade. */
+          const px = Math.round(eixosAlinhados.current.x ? eu.x + desloca.dx : encostar(eu.x + desloca.dx));
+          const py = Math.round(eixosAlinhados.current.y ? eu.y + desloca.dy : encostar(eu.y + desloca.dy));
           moverChaveRef.current(id, px, py, undefined, secao);
           mudancas.push({
             chave: id,
@@ -1863,12 +1961,38 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
         mudancas,
       );
       acompanhantes.current = [];
+      eixosAlinhados.current = { x: false, y: false };
+      ultimoAjuste.current = null;
+      pintarGuiasRef.current([]);
       limparPintura();
       return;
     }
 
     /* PREVIEW SEM REACT. O cartão arrastado já se move sozinho, com estado
-     * local; daqui saem só os acompanhantes e as linhas. */
+     * local; daqui saem só os acompanhantes e as linhas.
+     *
+     * E O ALINHAMENTO ENTRA AQUI, e não no cartão: só o Canvas conhece os
+     * outros objetos. O ajuste volta para o cartão pelo retorno. */
+    const ajuste = desloca.esticou || acompanhantes.current.length
+      ? { dx: desloca.dx, dy: desloca.dy, guias: [] }
+      : alinharRef.current(id, desloca.dx, desloca.dy);
+    pintarGuiasRef.current(ajuste.guias);
+    /* QUAL EIXO ESTÁ ALINHADO, guardado para o commit. Alinhamento GANHA da
+     * malha: encostar em 2000 porque outro cartão está lá e depois a malha puxar
+     * para 1992 desfaria exatamente o que a guia acabou de prometer. */
+    eixosAlinhados.current = {
+      x: ajuste.guias.some((g) => g.eixo === "x"),
+      y: ajuste.guias.some((g) => g.eixo === "y"),
+    };
+    desloca = { ...desloca, dx: ajuste.dx, dy: ajuste.dy };
+    /* O PASSO AJUSTADO FICA GUARDADO PARA O COMMIT.
+     *
+     * O cartão calcula o próprio `dx` a partir do ponteiro ao soltar, e esse
+     * número nunca viu a guia — sem isto, o alinhamento valia durante o gesto e
+     * era jogado fora no instante em que a pessoa larga, que é o pior momento
+     * possível para uma promessa se desfazer. */
+    ultimoAjuste.current = { dx: ajuste.dx, dy: ajuste.dy };
+
     const passo = new Map();
     passo.set(id, { ...desloca, souEu: true });
     for (const outro of acompanhantes.current) passo.set(outro, desloca);
@@ -1877,6 +2001,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
     /* A seção que receberia este objeto se ele fosse solto agora. */
     const alvo = secaoSob(id, desloca.dx, desloca.dy);
     marcar(alvo ? [alvo] : [], "secao-alvo");
+    return { dx: desloca.dx, dy: desloca.dy };
   }, [registrarMovimento, pintarArrasto, limparPintura, secaoSob, marcar, idDaSecao]);
 
   /* A ÁREA LEVA O QUE ESTÁ DENTRO DELA — e antes ela não levava nada.
@@ -2495,6 +2620,8 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
     } catch { /* sem memória: começa do começo, e é um começo válido */ }
     return { x: 0, y: 0, escala: 1 };
   });
+
+  cameraRef.current = camera;
 
   useEffect(() => {
     /* Escrito num relógio: a câmera muda a cada quadro de um deslocamento, e
@@ -3225,6 +3352,11 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
             />
           ))}
           </div>
+
+          {/* AS GUIAS DE ALINHAMENTO, em coordenadas da janela e sem receber
+              toque. Vazio no repouso: elas são desenhadas direto no DOM durante
+              o gesto, e o React nunca sabe que existem. */}
+          <svg className="canvas-guias" ref={guiasNoDom} aria-hidden="true" />
 
           {/* O RETÂNGULO DO LAÇO, em coordenadas da janela — como o fio, pela
               mesma razão: assim ele fica exatamente sob o dedo em qualquer zoom.
