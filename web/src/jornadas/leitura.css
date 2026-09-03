@@ -357,18 +357,31 @@
 .paleta-cor.escolhida { border-width: 3px; border-color: var(--foreground); }
 
 /* ─── O caderno ─────────────────────────────────────────────────────────────
-   Coluna à direita, fixa. Fora do texto de propósito: a nota é sobre o texto, e
-   dentro dele competiria com a leitura. */
+   Coluna fixa, do LADO DO BOTÃO que a abre. Fora do texto de propósito: a nota é
+   sobre o texto, e dentro dele competiria com a leitura.
+
+   O ERIK: "menu errado, itens abrem do lado contrário ao do ícone". Medido, e
+   ele estava certo em três dos quatro:
+
+     Índice     botão em 113   painel em 0      certo
+     Notas      botão em 177   painel em 1060   oposto
+     Aparência  botão em 304   painel em 1056   oposto
+     Buscar     botão em 1339  painel em 0      oposto
+
+   Um painel que nasce do outro lado da tela quebra a única pista que a pessoa
+   tem de qual botão o abriu — e ela aperta de novo o botão errado para fechar.
+   Agora os três da esquerda abrem à esquerda, e a busca, que mora no grupo da
+   direita, abre à direita. */
 .caderno {
   position: fixed;
   inset-block: 0;
-  inset-inline-end: 0;
+  inset-inline-start: 0;
   z-index: 15;
   inline-size: min(380px, 92vw);
   padding: 24px;
   overflow-y: auto;
   background: var(--card, var(--background));
-  border-inline-start: 1px solid var(--border);
+  border-inline-end: 1px solid var(--border);
 }
 
 .caderno header {
@@ -533,15 +546,16 @@
  * condicao do Erik para aceitar a medida de coluna: "desde que seja editavel, ta
  * tudo bem".
  */
+/* Do lado do botão dela, que mora no grupo da esquerda. Ver o caderno acima. */
 .aparencia {
-  position: fixed; inset-block: 0; inset-inline-end: 0;
+  position: fixed; inset-block: 0; inset-inline-start: 0;
   inline-size: min(384px, 100%);
   z-index: 40;
   display: flex; flex-direction: column; gap: 32px;
   padding: 24px;
   overflow-y: auto;
   background: var(--background-secondary);
-  border-inline-start: 1px solid var(--border);
+  border-inline-end: 1px solid var(--border);
 }
 .aparencia header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .aparencia h2 {
@@ -850,6 +864,15 @@
  * mesmo tipo de coisa: um jeito de ir a um lugar do livro. Uma terceira forma
  * de gaveta para a mesma função seria três desenhos para uma ideia.
  */
+/* A BUSCA ABRE A DIREITA, e nao a esquerda como o indice de que ela herda o
+ * estilo: o botao dela mora no grupo da DIREITA do cromo, e o painel segue o
+ * botao. Ver o caderno, mais acima. */
+.busca-livro {
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+  border-inline-end: 0;
+  border-inline-start: 1px solid var(--border);
+}
 .busca-livro .caderno-procura { margin-block-end: 0; }
 
 .busca-livro-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }

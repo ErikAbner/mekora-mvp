@@ -693,10 +693,27 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
   const [aparencia, setAparencia] = useState(() => lerAparencia());
   const [painel, setPainel] = useState(false);
   const [indice, setIndice] = useState(false);
+
   const [copiado, setCopiado] = useState(null);
   /* A nota que o cartão do 941:23113 está mostrando. `null` é "não há cartão". */
   const [cartao, setCartao] = useState(null);
   const [procurando, setProcurando] = useState(false);
+
+  /* UM PAINEL DE CADA VEZ.
+   *
+   * Índice, caderno e aparência passaram a abrir todos do lado ESQUERDO — do
+   * lado dos botões deles, que era o que o Erik apontou. Como eram três estados
+   * independentes, dois abertos juntos ficariam empilhados no mesmo lugar, e o
+   * de cima cobriria o de baixo sem dizer nada.
+   *
+   * Abrir um fecha os outros. É o que a pessoa espera de qualquer gaveta lateral
+   * — e resolve o empilhamento pela regra, e não por `z-index`. */
+  const abrirSo = (qual) => {
+    setIndice(qual === "indice" ? (v) => !v : false);
+    setCaderno(qual === "caderno" ? (v) => !v : false);
+    setPainel(qual === "painel" ? (v) => !v : false);
+    setProcurando(qual === "procurando" ? (v) => !v : false);
+  };
   useEffect(() => { aplicarAparencia(aparencia); gravarAparencia(aparencia); }, [aparencia]);
 
   /* O TEMA FICA NO PAINEL TAMBÉM, como o desenho põe — e continua sendo o mesmo
@@ -787,7 +804,7 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
               type="button"
               aria-label="Índice do livro"
               aria-pressed={indice ? "true" : "false"}
-              onClick={() => setIndice((v) => !v)}
+              onClick={() => abrirSo("indice")}
             >
               <Icone src={iconeIndice} />
             </button>
@@ -796,7 +813,7 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
             type="button"
             aria-label={`Notas (${notas.length})`}
             aria-pressed={caderno ? "true" : "false"}
-            onClick={() => setCaderno((v) => !v)}
+            onClick={() => abrirSo("caderno")}
           >
             <Icone src={iconeCaderno} />
           </button>
@@ -810,7 +827,7 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
             type="button"
             aria-label="Aparência da leitura"
             aria-pressed={painel ? "true" : "false"}
-            onClick={() => setPainel((v) => !v)}
+            onClick={() => abrirSo("painel")}
           >
             <span className="cromo-aa" aria-hidden="true">Aa</span>
           </button>
@@ -837,7 +854,7 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
             aria-pressed={procurando ? "true" : "false"}
             disabled={!aoIrParaCapitulo}
             title={aoIrParaCapitulo ? undefined : "Sem livro aberto, não há o que procurar."}
-            onClick={() => setProcurando((v) => !v)}
+            onClick={() => abrirSo("procurando")}
           >
             <Icone src={iconeBuscar} />
           </button>
