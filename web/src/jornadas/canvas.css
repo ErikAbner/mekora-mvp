@@ -1207,3 +1207,53 @@
   letter-spacing: 0.06em;
 }
 .trazer-titulo:first-child { margin-block-start: 0; }
+
+/* ---- O DETALHE POR DISTANCIA ----------------------------------------------
+ *
+ * Ver `detalheDoZoom` em Canvas.jsx para os cortes e a razao deles. O que segue
+ * e o que cada nivel esconde — e, principalmente, o que ele NAO esconde.
+ *
+ * `tudo` nao precisa de regra: e o cartao como ele e.
+ */
+
+/* MENOS — de longe o suficiente para o rodape nao se ler mais.
+ * Some o que e metadado; fica o que e conteudo. */
+.canvas-plano[data-detalhe="menos"] .nota-canvas footer,
+.canvas-plano[data-detalhe="menos"] .nota-previa-texto,
+.canvas-plano[data-detalhe="menos"] .livro-canvas .nota-acoes,
+.canvas-plano[data-detalhe="menos"] .nota-comentario {
+  display: none;
+}
+.canvas-plano[data-detalhe="menos"] .nota-canvas { padding: 24px; }
+.canvas-plano[data-detalhe="menos"] .nota-previa { padding: 0; border-color: transparent; }
+
+/* SILHUETA — nada mais se le, e o que fica e a FORMA.
+ *
+ * A nota vira papel com a marca da cor. O livro vira capa. A foto continua foto.
+ * O video continua capa com play. E assim a superficie inteira continua
+ * navegavel: nao da para LER nada, mas da para achar. */
+.canvas-plano[data-detalhe="silhueta"] .nota-texto,
+.canvas-plano[data-detalhe="silhueta"] .nota-legenda,
+.canvas-plano[data-detalhe="silhueta"] .nota-trecho,
+.canvas-plano[data-detalhe="silhueta"] .nota-canvas footer,
+.canvas-plano[data-detalhe="silhueta"] .nota-comentario,
+.canvas-plano[data-detalhe="silhueta"] .nota-previa-texto,
+.canvas-plano[data-detalhe="silhueta"] .nota-pega,
+.canvas-plano[data-detalhe="silhueta"] .livro-canvas .livro-texto,
+.canvas-plano[data-detalhe="silhueta"] .livro-canvas .nota-acoes {
+  display: none;
+}
+/* O cartao sem texto precisa de altura propria, senao ele colapsa e a superficie
+ * muda de forma ao afastar — que e perder a memoria espacial na hora em que ela
+ * mais serve. */
+.canvas-plano[data-detalhe="silhueta"] .nota-canvas {
+  padding: 12px;
+  min-block-size: 180px;
+}
+.canvas-plano[data-detalhe="silhueta"] .nota-canvas:has(.nota-imagem),
+.canvas-plano[data-detalhe="silhueta"] .nota-canvas:has(.nota-previa-capa) {
+  min-block-size: 0;
+}
+.canvas-plano[data-detalhe="silhueta"] .nota-marca { inline-size: 8px; }
+.canvas-plano[data-detalhe="silhueta"] .nota-previa { margin: 0; border: 0; }
+.canvas-plano[data-detalhe="silhueta"] .livro-canvas { padding: 8px; }

@@ -163,6 +163,26 @@ const BORDA = 10;
  * que encosta na malha fica alinhada com o que a pessoa VÊ atrás dela. */
 const MALHA_DO_PLANO = 24;
 
+/* O DETALHE QUE CABE EM CADA DISTÂNCIA.
+ *
+ * Escalar a mesma interface até o texto ficar ilegível não é um sistema de zoom
+ * — é a mesma tela menor. A 25%, um corpo de 20px vira 5px: continua ocupando o
+ * espaço, continua custando o desenho, e não informa nada.
+ *
+ * O que muda por nível não é "menos coisas": é O QUE AINDA SE RECONHECE. De
+ * longe, um livro é uma capa, uma nota é um papel com uma marca de cor, uma foto
+ * é a foto e um vídeo é a capa com o play. A DIFERENÇA ENTRE OS TIPOS é a última
+ * coisa a sumir, porque é ela que permite achar algo num plano cheio.
+ *
+ * Os cortes vêm do tamanho do texto, e não de gosto: o corpo do cartão é 20px, e
+ * abaixo de 0,6 ele cai de 12px — o limite em que ainda se lê uma palavra. Abaixo
+ * de 0,35 são 7px, e aí não se lê nada, então o texto sai e sobra a forma. */
+function detalheDoZoom(escala) {
+  if (escala >= 0.6) return "tudo";
+  if (escala >= 0.35) return "menos";
+  return "silhueta";
+}
+
 /* Os mesmos limites que o servidor aplica. Aqui para o cartão não passar deles
  * enquanto o dedo ainda está em cima; lá porque um pedido escrito à mão não
  * passa por aqui. */
@@ -1271,6 +1291,54 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
    * A lista é lida UMA VEZ, no começo do gesto, e não a cada quadro: durante o
    * arrasto a área passa por cima de outras notas, e recalcular faria a área ir
    * catando gente pelo caminho. */
+  /* CRIAR UMA SEÇÃO A PARTIR DO QUE ESTÁ ESCOLHIDO.
+   *
+   * É o "organizar depois" em um gesto, e o Erik foi enfático: "do not require
+   * configuration before creation". Não há passo de configuração nenhum —
+   * escolher, apertar, pronto. O nome abre em edição junto, e `Esc` deixa a
+   * seção sem nome: nomear é oferecido, não cobrado.
+   *
+   * A ÁREA SAI DA CAIXA DO QUE FOI ESCOLHIDO, com uma folga que é a do próprio
+   * sistema. Sem folga, os cartões encostam no traço e a área parece apertada em
+   * volta deles; com folga demais, ela deixa de dizer o que contém.
+   *
+   * E ELA NÃO MEXE EM NADA. Nenhum objeto é movido, reordenado ou reparentado:
+   * quem está dentro continua sendo quem está por cima. A seção pousa em volta
+   * do que já estava lá. */
+  const FOLGA_DA_SECAO = 40;
+  const criarSecaoDaEscolha = useCallback(async () => {
+    const caixas = [];
+    for (const chave of escolha) {
+      const [tipo, id] = chave.split(":");
+      if (tipo === "nota") {
+        const n = nosRef.current.find((x) => x.id === Number(id));
+        const m = medidas[Number(id)] ?? { largura: n?.largura || 375, altura: 200 };
+        if (n) caixas.push({ x: n.x, y: n.y, largura: m.largura, altura: m.altura });
+      }
+      if (tipo === "livro") {
+        const l = livrosRef.current.find((x) => x.id === Number(id));
+        if (l) caixas.push({ x: l.x, y: l.y, largura: l.largura || 280, altura: 420 });
+      }
+    }
+    if (!caixas.length) return;
+    const x = Math.min(...caixas.map((c) => c.x)) - FOLGA_DA_SECAO;
+    const y = Math.min(...caixas.map((c) => c.y)) - FOLGA_DA_SECAO - 54;
+    const direita = Math.max(...caixas.map((c) => c.x + c.largura)) + FOLGA_DA_SECAO;
+    const baixo = Math.max(...caixas.map((c) => c.y + c.altura)) + FOLGA_DA_SECAO;
+
+    idsDeAntes.current = new Set(grupos.map((g) => g.id));
+    const nova = await aoAgrupar?.({ nome: "", x, y, largura: direita - x, altura: baixo - y });
+    limparEscolha();
+    if (!nova) return;
+    historia.registrar({
+      rotulo: "Seção criada",
+      desfazer: () => aoDesagrupar(nova.id),
+      /* Refazer recria, e o id muda — a seção volta com outro. Anotado em
+       * docs/CANVAS.md como limite conhecido do desfazer de seções. */
+      refazer: () => aoAgrupar?.({ nome: nova.nome, x, y, largura: direita - x, altura: baixo - y }),
+    });
+  }, [escolha, medidas, grupos, aoAgrupar, aoDesagrupar, limparEscolha, historia]);
+
   const [levando, setLevando] = useState(null);
   /* QUEM ESTÁ DENTRO DA ÁREA — em CHAVES, e não em ids de nota.
    *
@@ -1996,6 +2064,9 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
             <span className="conta">
               {escolha.size === 1 ? "1 escolhido" : `${escolha.size} escolhidos`}
             </span>
+            {escolha.size > 1 && (
+              <button type="button" onClick={criarSecaoDaEscolha}>Criar seção</button>
+            )}
             <button type="button" onClick={tirarEscolhidos}>Tirar</button>
             <button type="button" onClick={limparEscolha}>Largar</button>
           </div>
@@ -2046,6 +2117,11 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
         >
           <div
             className={`canvas-plano${saltando ? " saltando" : ""}`}
+            /* Um atributo no PLANO, e não uma propriedade em cada cartão: o
+               nível vale para todos ao mesmo tempo, e mandá-lo objeto a objeto
+               redesenharia 123 componentes a cada passo de zoom. Aqui o CSS
+               resolve, e o React não faz nada. */
+            data-detalhe={detalheDoZoom(camera.escala)}
             style={{ transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.escala})` }}
           >
           {!nos.length && (
