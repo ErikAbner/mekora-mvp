@@ -200,6 +200,19 @@ if not c.execute("SELECT 1 FROM canvas_nos WHERE pessoa_id = ?", (pessoa,)).fetc
         ("Uma foto é observação, não diagnóstico — e é por isso que ela precisa de data.", "azul", 560, 300),
         ("Vale reler isto sobre método: https://example.com/", "verde", 200, 460),
     ]
+    # A SEÇÃO VEM ANTES DAS NOTAS, e não depois.
+    #
+    # Pertencer a uma seção deixou de ser geometria e passou a ser vínculo: uma
+    # semente que desenha a área em volta das notas SEM vincular nenhuma produz
+    # exatamente a mentira que a mudança veio consertar — a área carregando nada
+    # do que ela mostra conter. Medido: a seção andava 140px e a nota de dentro
+    # andava 0.
+    secao = inserir("canvas_grupos", {
+        "pessoa_id": pessoa, "nome": "Design & Tecnologia",
+        "x": 100, "y": 60, "largura": 620, "altura": 420,
+        "criado_em": agora, "movido_em": agora,
+    })
+
     postas = []
     for texto, cor, x, y in SOLTAS:
         nota = inserir("notas", {
@@ -208,7 +221,11 @@ if not c.execute("SELECT 1 FROM canvas_nos WHERE pessoa_id = ?", (pessoa,)).fetc
             "origem": "", "fonte": "solta",
             "criada_em": agora, "atualizada_em": agora,
         })
+        # Membro quando o centro cai dentro da área — a mesma conta que a
+        # conversão de dados usou, e a mesma que a tela usa ao soltar.
+        dentro = 100 <= x + 187 <= 720 and 60 <= y + 100 <= 480
         inserir("canvas_nos", {"pessoa_id": pessoa, "nota_id": nota, "x": x, "y": y,
+                               "grupo_id": secao if dentro else None,
                                "movido_em": agora})
         postas.append(nota)
 
@@ -218,11 +235,6 @@ if not c.execute("SELECT 1 FROM canvas_nos WHERE pessoa_id = ?", (pessoa,)).fetc
     inserir("ligacoes", {"pessoa_id": pessoa, "de_id": a, "para_id": b,
                          "como": "mao", "criada_em": agora})
 
-    inserir("canvas_grupos", {
-        "pessoa_id": pessoa, "nome": "Design & Tecnologia",
-        "x": 100, "y": 60, "largura": 620, "altura": 420,
-        "criado_em": agora, "movido_em": agora,
-    })
 
 # Um estudo, com notas reunidas.
 if not c.execute("SELECT 1 FROM estudos WHERE pessoa_id = ?", (pessoa,)).fetchone():

@@ -114,12 +114,14 @@ export function usarCanvas() {
     }
   }, [recarregar]);
 
-  const moverLivro = useCallback(async (id, x, y, largura) => {
+  const moverLivro = useCallback(async (id, x, y, largura, grupo) => {
     setLivros((atual) =>
-      atual.map((l) => (l.id === id ? { ...l, x, y, ...(largura === undefined ? {} : { largura }) } : l)),
+      atual.map((l) => (l.id === id
+        ? { ...l, x, y, ...(largura === undefined ? {} : { largura }), ...(grupo === undefined ? {} : { grupo_id: grupo }) }
+        : l)),
     );
     try {
-      await moverLivroNoCanvas(id, x, y, largura);
+      await moverLivroNoCanvas(id, x, y, largura, grupo);
     } catch (e) {
       setErro(e.message);
       await recarregar();
@@ -140,12 +142,14 @@ export function usarCanvas() {
     }
   }, []);
 
-  const mover = useCallback(async (id, x, y, largura) => {
+  const mover = useCallback(async (id, x, y, largura, grupo) => {
     setNos((atual) =>
-      atual.map((n) => (n.id === id ? { ...n, x, y, ...(largura === undefined ? {} : { largura }) } : n)),
+      atual.map((n) => (n.id === id
+        ? { ...n, x, y, ...(largura === undefined ? {} : { largura }), ...(grupo === undefined ? {} : { grupo_id: grupo }) }
+        : n)),
     );
     try {
-      await moverNoCanvas(id, x, y, largura);
+      await moverNoCanvas(id, x, y, largura, grupo);
     } catch (e) {
       setErro(e.message);
       await recarregar();

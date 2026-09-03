@@ -1303,3 +1303,39 @@
 /* E o "Desfazer grupo" sai de cena: de longe ele nao se le e ainda rouba a
  * largura do nome. */
 .canvas-plano[data-detalhe="silhueta"] .canvas-grupo-tirar { display: none; }
+
+/* ---- A SEÇAO QUIETA --------------------------------------------------------
+ *
+ * Uma area em volta de dois objetos nao pode desenhar filete forte, faixa de
+ * titulo e botao permanente. Isso e onde a Seçao vira burocracia: mais interface
+ * do que conteudo, para dizer "estes dois andam juntos".
+ *
+ * NAO SAO DOIS TIPOS. E a mesma seçao, apresentada conforme ela TEM ou NAO tem
+ * nome — que e o unico metadado semantico que ela carrega hoje. Dar nome e o que
+ * a promove de "estes andam juntos" para "esta area e sobre alguma coisa".
+ */
+.canvas-grupo.sem-nome .canvas-grupo-area {
+  border-color: color-mix(in oklab, var(--border) 45%, transparent);
+  background: color-mix(in oklab, var(--folha) 55%, transparent);
+}
+/* O rotulo "Dar um nome" e o "Desfazer grupo" somem parados: sao controles, e
+ * controle permanente em vinte seçoes vira textura. */
+.canvas-grupo.sem-nome .canvas-grupo-titulo { opacity: 0; transition: opacity 150ms var(--saida); }
+.canvas-grupo.sem-nome:hover .canvas-grupo-titulo,
+.canvas-grupo.sem-nome:focus-within .canvas-grupo-titulo,
+.canvas-grupo.sem-nome.escolhido .canvas-grupo-titulo,
+.canvas-grupo.sem-nome.revelada .canvas-grupo-titulo { opacity: 1; }
+
+/* E O TRAÇO VOLTA A APARECER quando ela e tocada, escolhida, ou quando o
+ * ponteiro passa sobre um membro dela. Este ultimo caso e o que impede "quieta"
+ * de virar "invisivel": se tres objetos andam juntos, passar sobre um deles
+ * mostra por que. */
+.canvas-grupo.sem-nome:hover .canvas-grupo-area,
+.canvas-grupo.sem-nome.escolhido .canvas-grupo-area,
+.canvas-grupo.sem-nome.revelada .canvas-grupo-area {
+  border-color: var(--border);
+  background: var(--folha);
+}
+/* A seçao COM NOME ja e uma area sobre um assunto, e mantem a presenca que
+ * tinha. */
+.canvas-grupo.revelada.com-nome .canvas-grupo-area { border-color: var(--escolha); }

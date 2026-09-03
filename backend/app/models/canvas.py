@@ -51,6 +51,20 @@ class NoCanvas(Base):
     # cartão que esconde o que a pessoa escreveu erra o propósito do Canvas.
     largura = Column(Float, nullable=False, default=375, server_default="375")
 
+    # A QUE SEÇÃO ESTE NÓ PERTENCE — e pertencer é EXPLÍCITO.
+    #
+    # A versão anterior derivava isto da geometria a cada gesto, e reprovou nos
+    # testes: com duas áreas sobrepostas o objeto andava com as duas, e esticar
+    # uma área por motivo de respiro adotava tudo que o traço cruzasse. A relação
+    # mudava sem ninguém tê-la mudado.
+    #
+    # Agora a geometria só SUGERE: ela acende a área candidata durante o arrasto.
+    # Quem decide é o gesto — soltar dentro, soltar fora, ou criar a seção a
+    # partir de uma escolha.
+    grupo_id = Column(
+        Integer, ForeignKey("canvas_grupos.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+
     movido_em = Column(DateTime, default=agora, onupdate=agora, nullable=False)
 
 
@@ -203,6 +217,11 @@ class LivroCanvas(Base):
     x = Column(Float, nullable=False, default=0)
     y = Column(Float, nullable=False, default=0)
     largura = Column(Float, nullable=False, default=280, server_default="280")
+
+    # Mesma regra da nota: pertencer é explícito. Ver `NoCanvas.grupo_id`.
+    grupo_id = Column(
+        Integer, ForeignKey("canvas_grupos.id", ondelete="SET NULL"), nullable=True, index=True
+    )
 
     criado_em = Column(DateTime, default=agora, nullable=False)
     movido_em = Column(DateTime, default=agora, onupdate=agora, nullable=False)

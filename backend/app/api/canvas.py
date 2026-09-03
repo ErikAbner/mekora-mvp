@@ -41,6 +41,17 @@ class Movimento(BaseModel):
     # mexer no cartão.
     largura: Optional[float] = None
 
+    # A SEÇÃO A QUE ELE PASSA A PERTENCER, e aqui os três estados importam:
+    #
+    #   ausente  não mexe no vínculo — é o caso de esticar, que é layout
+    #   `null`   sai da seção em que estava
+    #   número   entra nesta
+    #
+    # `null` e "ausente" precisam ser distinguíveis, e em Pydantic os dois viram
+    # `None`. Quem separa é `model_fields_set`, abaixo — sem isso, todo arrasto
+    # que não mencionasse a seção soltaria o objeto dela.
+    grupo_id: Optional[int] = None
+
 
 class LigacaoNova(BaseModel):
     de_id: int
@@ -120,6 +131,7 @@ def superficie(
         "nos": [
             {
                 "id": n.id, "nota_id": nota.id, "x": n.x, "y": n.y, "largura": n.largura,
+                "grupo_id": n.grupo_id,
                 "texto": nota.trecho, "comentario": nota.comentario, "cor": nota.cor,
                 # A ORIGEM VAI JUNTO. O item 6 do contrato pede "manter a origem
                 # da nota, e abri-la" — sem isto, uma nota no Canvas vira texto
@@ -151,6 +163,7 @@ def superficie(
             {
                 "id": lc.id, "job_id": j.id,
                 "x": lc.x, "y": lc.y, "largura": lc.largura,
+                "grupo_id": lc.grupo_id,
                 "titulo": j.final_title or j.detected_title or j.original_filename,
                 "autor": j.final_author or j.detected_author or "",
                 "paginas": j.page_count,
@@ -239,6 +252,8 @@ def mover(
     if no is None:
         raise HTTPException(status_code=404, detail="Não encontrado.")
     no.x, no.y = onde.x, onde.y
+    if "grupo_id" in onde.model_fields_set:
+        no.grupo_id = _secao_valida(db, pessoa, onde.grupo_id)
     if onde.largura is not None:
         # TETO E PISO NO SERVIDOR, e não só na tela. A largura vem de um arrasto,
         # e um arrasto que escapa — ou um pedido escrito à mão — poria um cartão
@@ -348,6 +363,28 @@ def _meu_grupo(db: Session, pessoa: Pessoa, grupo_id: int) -> GrupoCanvas:
     if g is None:
         raise HTTPException(status_code=404, detail="Esse grupo não existe.")
     return g
+
+
+def _secao_valida(db: Session, pessoa: Pessoa, grupo_id):
+    """A seção existe, é desta pessoa, e não saiu da superfície — ou é `None`.
+
+    Sem esta conferência, um pedido escrito à mão poria uma nota dentro da seção
+    de outra pessoa, e a tela dela mostraria um cartão que não é dela.
+    """
+    if grupo_id is None:
+        return None
+    g = (
+        db.query(GrupoCanvas)
+        .filter(
+            GrupoCanvas.id == grupo_id,
+            GrupoCanvas.pessoa_id == pessoa.id,
+            GrupoCanvas.apagado_em.is_(None),
+        )
+        .first()
+    )
+    if g is None:
+        raise HTTPException(status_code=404, detail="Essa seção não existe.")
+    return g.id
 
 
 def _lado(valor: float) -> float:
@@ -703,6 +740,8 @@ def mover_livro(
     if lc is None:
         raise HTTPException(status_code=404, detail="Não encontrado.")
     lc.x, lc.y = onde.x, onde.y
+    if "grupo_id" in onde.model_fields_set:
+        lc.grupo_id = _secao_valida(db, pessoa, onde.grupo_id)
     if onde.largura is not None:
         lc.largura = max(160.0, min(600.0, onde.largura))
     db.commit()

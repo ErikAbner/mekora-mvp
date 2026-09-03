@@ -514,11 +514,22 @@ export function porNoCanvas(o) {
 /* `largura` e opcional: arrastar manda so x e y, esticar manda os tres. A rota e
  * a mesma porque do ponto de vista de quem usa e o mesmo gesto — mexer no
  * cartao. */
-export function moverNoCanvas(id, x, y, largura) {
+/* `grupo_id` tem TRES estados e os tres importam: ausente nao mexe no vinculo,
+ * `null` tira da seçao, e um numero poe nela. Por isso o corpo e montado campo a
+ * campo — um objeto com `grupo_id: undefined` vira JSON sem a chave, que e o
+ * "ausente" certo, mas depender disso por acidente seria fragil. */
+function corpoDoMovimento(x, y, largura, grupo) {
+  const corpo = { x, y };
+  if (largura !== undefined) corpo.largura = largura;
+  if (grupo !== undefined) corpo.grupo_id = grupo;
+  return JSON.stringify(corpo);
+}
+
+export function moverNoCanvas(id, x, y, largura, grupo) {
   return pede(`/canvas/nos/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(largura === undefined ? { x, y } : { x, y, largura }),
+    body: corpoDoMovimento(x, y, largura, grupo),
   });
 }
 
@@ -550,11 +561,11 @@ export function porLivroNoCanvas(job_id, x, y) {
   });
 }
 
-export function moverLivroNoCanvas(id, x, y, largura) {
+export function moverLivroNoCanvas(id, x, y, largura, grupo) {
   return pede(`/canvas/livros/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(largura === undefined ? { x, y } : { x, y, largura }),
+    body: corpoDoMovimento(x, y, largura, grupo),
   });
 }
 
