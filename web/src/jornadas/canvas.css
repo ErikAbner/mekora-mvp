@@ -543,27 +543,58 @@
   cursor: pointer;
 }
 
-.trazer-lista { margin: 16px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
-
+/* A LISTA DE TRAZER — livros e notas, na mesma porta.
+ *
+ * Era um grid `14px 1fr` pensado para a NOTA: a marca na coluna de 14px, e o
+ * trecho e a origem empilhados na de 1fr. O LIVRO não tem marca, então o título
+ * caía na coluna de 14px e quebrava UMA PALAVRA POR LINHA — um título de dez
+ * palavras virava dez linhas, com o autor sobreposto ao lado. Medido:
+ * `grid-template-columns: 14px 548px`, título com 14px de largura, autor por
+ * cima.
+ *
+ * Agora é uma lista de verdade: linhas com filete embaixo — não caixas soltas
+ * que liam como campos de formulário —, corpo em coluna, e `min-inline-size: 0`,
+ * a peça que faltava, para o texto ENCOLHER e quebrar em vez de estourar. O
+ * título manda; o autor é secundário. Serve para livro (só corpo) e para nota
+ * (marca + corpo) sem grid frágil. */
+.trazer-lista {
+  margin: 12px 0 0; padding: 0; list-style: none;
+  border-block-start: 1px solid var(--border);
+}
 .trazer-lista button {
   inline-size: 100%;
+  display: flex; align-items: flex-start; gap: 10px;
   padding: 10px 12px;
-  border: 1px solid var(--border);
+  border: 0; border-block-end: 1px solid var(--border);
   background: transparent;
   color: var(--foreground);
   font-family: inherit;
   text-align: start;
   cursor: pointer;
-  display: grid;
-  grid-template-columns: 14px 1fr;
-  gap: 4px 10px;
+  transition: background-color 120ms var(--saida);
 }
-
-.trazer-lista button:hover { border-color: var(--foreground); }
-.trazer-lista button:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
-.trazer-marca { grid-row: span 2; inline-size: 14px; block-size: 14px; margin-block-start: 3px; }
-.trazer-texto { font-size: 14px; line-height: 20px; }
-.trazer-origem { font-size: 14px; line-height: 20px; color: var(--muted-foreground); }
+/* Hover e foco de LISTA, não de campo: fundo suave em vez de trocar a borda,
+ * que agora é o filete de divisão. */
+.trazer-lista button:hover { background: var(--muted); }
+.trazer-lista button:focus-visible { outline: 2px solid var(--foreground); outline-offset: -2px; }
+/* O CORPO carrega título e autor, e é ELE que pode encolher. `min-inline-size:
+ * 0` desfaz o mínimo automático do flex — o que empurrava o texto para fora em
+ * vez de deixá-lo quebrar. */
+.trazer-corpo { flex: 1 1 auto; min-inline-size: 0; display: flex; flex-direction: column; gap: 1px; }
+.trazer-marca { flex: none; inline-size: 10px; block-size: 10px; margin-block-start: 5px; }
+/* O TÍTULO manda: corpo maior, no máximo duas linhas, e o resto vira
+ * reticências — o título inteiro fica no `title` do botão. `overflow-wrap:
+ * anywhere` garante que uma palavra longa sem espaço não estoure a coluna. */
+.trazer-texto {
+  font-size: 15px; line-height: 21px;
+  text-wrap: pretty; overflow-wrap: anywhere;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+/* O AUTOR é secundário: menor, apagado, uma linha com reticências. */
+.trazer-origem {
+  font-size: 13px; line-height: 18px; color: var(--muted-foreground);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 
 /* ---- Os grupos — nó 895:6938 -----------------------------------------------
  *

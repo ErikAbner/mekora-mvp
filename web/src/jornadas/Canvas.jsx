@@ -3920,8 +3920,13 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
                       setTrazendo(false);
                     }}
                   >
-                    <span className="trazer-texto">{l.titulo}</span>
-                    <span className="trazer-origem">{l.autor || "livro da sua estante"}</span>
+                    <span className="trazer-corpo">
+                      {/* `title` guarda o nome inteiro: o visível corta em duas
+                          linhas, e o que corta continua acessível ao passar o
+                          ponteiro e ao leitor de tela. */}
+                      <span className="trazer-texto" title={l.titulo}>{l.titulo}</span>
+                      <span className="trazer-origem">{l.autor || "livro da sua estante"}</span>
+                    </span>
                   </button>
                 </li>
               ))}
@@ -3944,9 +3949,11 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
                 }}
               >
                 <span className="trazer-marca" style={{ background: DESTAQUES[n.cor] }} />
-                <span className="trazer-texto">{n.trecho}</span>
-                <span className="trazer-origem">
-                  {n.fonte === "kindle" ? `Kindle · ${n.origem}` : n.origem || "do seu livro"}
+                <span className="trazer-corpo">
+                  <span className="trazer-texto" title={n.trecho}>{n.trecho}</span>
+                  <span className="trazer-origem">
+                    {n.fonte === "kindle" ? `Kindle · ${n.origem}` : n.origem || "do seu livro"}
+                  </span>
                 </span>
               </button>
             </li>
