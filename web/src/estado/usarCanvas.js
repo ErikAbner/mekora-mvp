@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   apagarGrupo, criarGrupo, desligarNotas, lerCanvas, ligarNotas, moverNoCanvas,
-  moverLivroNoCanvas, mudarGrupo, porLivroNoCanvas, porMidiaNoCanvas, porNoCanvas,
+  moverLivroNoCanvas, mudarGrupo, porLivroNoCanvas, voltarGrupo, porMidiaNoCanvas, porNoCanvas,
   tirarDoCanvas, tirarLivroDoCanvas,
 } from "../../../contrato/api.js";
 
@@ -71,6 +71,19 @@ export function usarCanvas() {
   /* O LIVRO ENTRA POR REFERÊNCIA. `recarregar` em vez de remendar porque o
    * servidor devolve título, autor e capa resolvidos — o cartão precisa deles
    * para se parecer com um livro, e a tela não os tem. */
+  /* DESAPAGAR UMA SEÇÃO — a mesma, com o mesmo id. Ver `apagado_em` no modelo:
+   * recriar daria um objeto que só se parece com o anterior. */
+  const devolverGrupo = useCallback(async (id) => {
+    try {
+      await voltarGrupo(id);
+      await recarregar();
+      return true;
+    } catch (e) {
+      setErro(e.message);
+      return false;
+    }
+  }, [recarregar]);
+
   const trazerLivro = useCallback(async (jobId, x, y) => {
     setErro(null);
     try {
@@ -196,6 +209,6 @@ export function usarCanvas() {
   return {
     nos, ligacoes, grupos, livros, erro, carregando,
     trazer, trazerMidia, trazerLivro, mover, moverLivro, tirar, tirarLivro, ligar, desligar, recarregar,
-    agrupar, mudarArea, desagrupar,
+    agrupar, mudarArea, desagrupar, devolverGrupo,
   };
 }

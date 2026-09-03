@@ -1069,10 +1069,18 @@
  * encolhe ao ser escolhido empurra o texto. `outline` fica por fora e nao mexe
  * em layout nenhum.
  */
+/* O CONTORNO E CONSTANTE NA TELA, e nao no plano.
+ *
+ * Ele vive dentro do plano escalado: a 25% um traco de 2px vira 0,5px, e a
+ * escolha simplesmente desaparece quando ela mais serve — de longe, olhando
+ * muita coisa. Dividir pela escala mantem os mesmos 2px em qualquer zoom.
+ *
+ * Medido antes: `contorno_na_tela_px: 0.5`. */
 .nota-canvas.escolhido,
+.livro-canvas.escolhido,
 .canvas-grupo.escolhido > .canvas-grupo-area {
-  outline: 2px solid var(--escolha);
-  outline-offset: 2px;
+  outline: calc(2px / var(--escala, 1)) solid var(--escolha);
+  outline-offset: calc(2px / var(--escala, 1));
 }
 /* O veu diz "este e um dos varios", sem competir com o texto. So aparece quando
  * ha mais de um: com um so, o traco ja diz tudo. */
@@ -1194,7 +1202,6 @@
 
 /* A escolha fala a MESMA lingua em qualquer objeto — e e essa a prova de que ela
  * e agnostica de tipo. */
-.livro-canvas.escolhido { outline: 2px solid var(--escolha); outline-offset: 2px; }
 .livro-canvas.escolhido.entre-varios { background-image: linear-gradient(var(--escolha-veu), var(--escolha-veu)); }
 
 /* O rotulo de cada lista dentro da folha de trazer. Duas listas na mesma folha
@@ -1257,3 +1264,42 @@
 .canvas-plano[data-detalhe="silhueta"] .nota-marca { inline-size: 8px; }
 .canvas-plano[data-detalhe="silhueta"] .nota-previa { margin: 0; border: 0; }
 .canvas-plano[data-detalhe="silhueta"] .livro-canvas { padding: 8px; }
+
+/* ---- O QUE VAI JUNTO, E PARA ONDE ------------------------------------------
+ *
+ * Feedback de gesto, e nao estado permanente: as duas classes sao postas e
+ * tiradas pelo arrasto. Uma seçao brilhando o tempo todo, ou todo filho
+ * contornado, seria ruido constante para responder uma pergunta que so se faz no
+ * momento de arrastar.
+ *
+ * `vai-junto` e mais fraco que a escolha de proposito: ele nao e uma escolha, e
+ * uma consequencia dela. Traco tracejado, na tinta da escolha, sem veu.
+ */
+.nota-canvas.vai-junto,
+.livro-canvas.vai-junto {
+  outline: calc(1px / var(--escala, 1)) dashed var(--escolha);
+  outline-offset: calc(4px / var(--escala, 1));
+}
+
+/* A SEÇAO QUE RECEBERIA O OBJETO se ele fosse solto agora: o traco tracejado
+ * dela fica cheio. E a mesma linha, mais firme — nao um retangulo novo. */
+.canvas-grupo.secao-alvo > .canvas-grupo-area {
+  border-style: solid;
+  border-color: var(--escolha);
+  background: color-mix(in oklab, var(--escolha) 4%, var(--folha));
+}
+
+/* O NOME DA SEÇAO CRESCE QUANDO A SUPERFICIE ENCOLHE.
+ *
+ * Ele e a UNICA coisa legivel de longe: some o texto dos cartoes, some o rodape,
+ * e o que resta para orientar quem procura e o nome da area. A 25% ele media 5px
+ * — media, nao "parecia": foi medido.
+ *
+ * Os dois valores sao degraus da escala do sistema (28 e 40), e nao um `calc`:
+ * uma conta daria corpos fora da progressao, e o portao recusa isso com razao.
+ * Na tela dao ~14px a 50% e ~10px a 25%. */
+.canvas-plano[data-detalhe="menos"] .canvas-grupo-nome { font-size: 28px; line-height: 36px; }
+.canvas-plano[data-detalhe="silhueta"] .canvas-grupo-nome { font-size: 40px; line-height: 48px; }
+/* E o "Desfazer grupo" sai de cena: de longe ele nao se le e ainda rouba a
+ * largura do nome. */
+.canvas-plano[data-detalhe="silhueta"] .canvas-grupo-tirar { display: none; }

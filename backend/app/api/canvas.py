@@ -173,7 +173,7 @@ def superficie(
             {"id": g.id, "nome": g.nome, "x": g.x, "y": g.y,
              "largura": g.largura, "altura": g.altura}
             for g in db.query(GrupoCanvas)
-            .filter(GrupoCanvas.pessoa_id == pessoa.id)
+            .filter(GrupoCanvas.pessoa_id == pessoa.id, GrupoCanvas.apagado_em.is_(None))
             .order_by(GrupoCanvas.criado_em)
             .all()
         ],
@@ -336,7 +336,13 @@ LADO_MAXIMO = 8000
 def _meu_grupo(db: Session, pessoa: Pessoa, grupo_id: int) -> GrupoCanvas:
     g = (
         db.query(GrupoCanvas)
-        .filter(GrupoCanvas.id == grupo_id, GrupoCanvas.pessoa_id == pessoa.id)
+        .filter(
+            GrupoCanvas.id == grupo_id,
+            GrupoCanvas.pessoa_id == pessoa.id,
+            # Uma seção que saiu da superfície não pode ser movida nem renomeada
+            # — só voltar. Sem isto ela seria editável fora da tela.
+            GrupoCanvas.apagado_em.is_(None),
+        )
         .first()
     )
     if g is None:
@@ -414,9 +420,37 @@ def apagar_grupo(
     O grupo é um pedaço de chão com nome, e não um recipiente — apagar o nome do
     chão não leva junto o que estava sobre ele. É a mesma razão de "Tirar" não
     apagar a nota.
+
+    APAGAR É EM DUAS ETAPAS. A linha ganha uma marca de quando saiu, e não
+    desaparece: desfazer limpa a marca e a seção volta sendo A MESMA — mesmo id,
+    mesmo nome, mesma geometria. Recriar com id novo daria um objeto que só se
+    parece com o anterior, e qualquer coisa que aponte para a seção ficaria
+    apontando para o vazio.
     """
+    from app.models.pessoa import agora as _agora
+
     pessoa = _quem(db, mekora_sessao)
-    db.delete(_meu_grupo(db, pessoa, grupo_id))
+    g = _meu_grupo(db, pessoa, grupo_id)
+    g.apagado_em = _agora()
+    db.commit()
+
+
+@router.post("/canvas/grupos/{grupo_id}/voltar", status_code=204)
+def voltar_grupo(
+    grupo_id: int,
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> None:
+    """Devolve à superfície a seção que tinha saído — a mesma, com o mesmo id."""
+    pessoa = _quem(db, mekora_sessao)
+    g = (
+        db.query(GrupoCanvas)
+        .filter(GrupoCanvas.id == grupo_id, GrupoCanvas.pessoa_id == pessoa.id)
+        .first()
+    )
+    if g is None:
+        raise HTTPException(status_code=404, detail="Não encontrado.")
+    g.apagado_em = None
     db.commit()
 
 

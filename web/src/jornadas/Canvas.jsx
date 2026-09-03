@@ -1077,7 +1077,7 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
   );
 }
 
-export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acervo = [], notas = [], erro, aoTrazer, aoTrazerMidia, aoTrazerLivro, aoMoverLivro, aoTirarLivro, aoMover, aoTirar, aoLigar, aoDesligar, aoAgrupar, aoMudarArea, aoDesagrupar }) {
+export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acervo = [], notas = [], erro, aoTrazer, aoTrazerMidia, aoTrazerLivro, aoMoverLivro, aoTirarLivro, aoMover, aoTirar, aoLigar, aoDesligar, aoAgrupar, aoMudarArea, aoDesagrupar, aoDevolverGrupo }) {
   /* O FIO QUE ESTÁ SENDO PUXADO, em coordenadas da JANELA e não do plano.
    *
    * Da janela porque ele é desenhado por cima de tudo, e não dentro do plano:
@@ -1273,7 +1273,8 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
       }
       if (tipo === "secao") {
         const g = grupos.find((x) => x.id === Number(id));
-        if (g) { secoes.push({ nome: g.nome, x: g.x, y: g.y, largura: g.largura, altura: g.altura }); aoDesagrupar(g.id); }
+        /* Só o id: a seção não é recriada, ela VOLTA. */
+        if (g) { secoes.push(g.id); aoDesagrupar(g.id); }
       }
     }
     limparEscolha();
@@ -1289,11 +1290,30 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
       desfazer: async () => {
         for (const n of notas) await aoTrazer(n);
         for (const l of deVolta) await aoTrazerLivro(l.job_id, l.x, l.y);
-        for (const g of secoes) await aoAgrupar(g);
+        for (const id of secoes) await aoDevolverGrupo(id);
       },
-      refazer: () => {},
+      /* REFAZER PROCURA PELA IDENTIDADE QUE SOBREVIVE, e não pelo id da linha.
+       *
+       * Desfazer um "tirar" recria a POSIÇÃO da nota na superfície, e essa linha
+       * nasce com id novo — mas a NOTA é a mesma, e `nota_id` é o que não muda.
+       * Refazer então acha o nó atual daquela nota e o tira de novo. Mesma coisa
+       * para o livro, pelo `job_id`.
+       *
+       * Sem isto, `⌘Z ⌘⇧Z` devolvia a nota e não a tirava de volta: medido, o
+       * refazer deixava três cartões onde deviam ficar dois. */
+      refazer: async () => {
+        for (const n of notas) {
+          const atual = nosRef.current.find((x) => x.nota_id === n.nota_id);
+          if (atual) aoTirar(atual.id);
+        }
+        for (const l of deVolta) {
+          const atual = livrosRef.current.find((x) => x.job_id === l.job_id);
+          if (atual) aoTirarLivro(atual.id);
+        }
+        for (const id of secoes) await aoDesagrupar(id);
+      },
     });
-  }, [escolha, aoTirar, aoTirarLivro, aoDesagrupar, limparEscolha, grupos, historia, aoTrazer, aoTrazerLivro, aoAgrupar]);
+  }, [escolha, aoTirar, aoTirarLivro, aoDesagrupar, aoDevolverGrupo, limparEscolha, grupos, historia, aoTrazer, aoTrazerLivro]);
 
   /* O TECLADO CHEGA NA ESCOLHA. `Esc` larga tudo; `Delete` e `Backspace` tiram
    * da superfície o que estiver escolhido.
@@ -1393,11 +1413,56 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
     }
   }, []);
 
+  /* O QUE VAI JUNTO, DITO ENQUANTO O GESTO ACONTECE.
+   *
+   * O Erik: "right now the user cannot reliably understand what belongs to the
+   * Section; what will move with it; what is about to enter it; what is about to
+   * leave it."
+   *
+   * Isto TORNA LEGÍVEL a semântica que já existe — não cria nenhuma nova. Não há
+   * pertencimento persistido aqui: quem vai junto continua sendo quem está por
+   * cima, lido uma vez no começo do gesto. O que muda é que agora dá para VER.
+   *
+   * E aparece só durante a interação. Uma seção brilhando o tempo todo, ou todo
+   * filho contornado, seria ruído permanente para responder a uma pergunta que
+   * só se faz no momento de arrastar. */
+  const marcados = useRef([]);
+  const marcar = useCallback((chaves, classe) => {
+    for (const { chave, classe: c } of marcados.current) {
+      cena.current.get(chave)?.no?.classList.remove(c);
+    }
+    marcados.current = [];
+    for (const chave of chaves) {
+      const no = cena.current.get(chave)?.no;
+      if (!no) continue;
+      no.classList.add(classe);
+      marcados.current.push({ chave, classe });
+    }
+  }, []);
+
+  /* SOBRE QUAL SEÇÃO O OBJETO ESTÁ AGORA — a resposta de "vai entrar" e "vai
+   * sair", dada com o dedo ainda no ar. O centro decide, que é a mesma regra da
+   * contenção; ver `filhosDe`. */
+  const secaoSob = useCallback((chave, dx, dy) => {
+    const ficha = cena.current.get(chave);
+    if (!ficha) return null;
+    const c = ficha.ler();
+    const cx = c.x + dx + c.largura / 2;
+    const cy = c.y + dy + c.altura / 2;
+    for (const [k, f] of cena.current) {
+      if (f.tipo !== "secao") continue;
+      const g = f.ler();
+      if (cx >= g.x && cx <= g.x + g.largura && cy >= g.y && cy <= g.y + g.altura) return k;
+    }
+    return null;
+  }, []);
+
   const limparPintura = useCallback(() => {
     for (const [, ficha] of cena.current) {
       if (ficha.no) ficha.no.style.transform = "";
     }
-  }, []);
+    marcar([], "");
+  }, [marcar]);
 
   /* A ESCOLHA E A LISTA DE NÓS CHEGAM POR `ref`, e não por dependência.
    *
@@ -1463,7 +1528,11 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
     passo.set(id, { ...desloca, souEu: true });
     for (const outro of acompanhantes.current) passo.set(outro, desloca);
     pintarArrasto(passo);
-  }, [registrarMovimento, pintarArrasto, limparPintura]);
+
+    /* A seção que receberia este objeto se ele fosse solto agora. */
+    const alvo = secaoSob(id, desloca.dx, desloca.dy);
+    marcar(alvo ? [alvo] : [], "secao-alvo");
+  }, [registrarMovimento, pintarArrasto, limparPintura, secaoSob, marcar]);
 
   /* A ÁREA LEVA O QUE ESTÁ DENTRO DELA — e antes ela não levava nada.
    *
@@ -1517,16 +1586,30 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
 
     idsDeAntes.current = new Set(grupos.map((g) => g.id));
     const nova = await aoAgrupar?.({ nome: "", x, y, largura: direita - x, altura: baixo - y });
-    limparEscolha();
-    if (!nova) return;
+    if (!nova) { limparEscolha(); return; }
+
+    /* O QUE FICA ESCOLHIDO DEPOIS: A SEÇÃO NOVA — e isto é escolha, não sobra de
+     * atualização de estado.
+     *
+     * Quatro respostas eram possíveis: nada, os objetos de antes, a seção, ou a
+     * seção mais os filhos. A seção ganha porque ela é o SUJEITO DA PRÓXIMA
+     * AÇÃO: quem acabou de criar uma área vai renomeá-la, movê-la ou
+     * redimensioná-la, e nenhuma dessas é sobre os cartões que já estavam ali.
+     *
+     * Manter os objetos escolhidos seria pior de um jeito específico: a seção
+     * nasce por cima deles, e um `Delete` distraído tiraria o conteúdo em vez da
+     * área que acabou de aparecer. */
+    setEscolha(new Set([`secao:${nova.id}`]));
+    /* DESFAZER E REFAZER GUARDAM A IDENTIDADE. Apagar é uma marca, e não uma
+     * exclusão — então refazer devolve A MESMA seção, com o mesmo id. Sem isto,
+     * qualquer coisa que aponte para ela (uma ligação, uma referência de Estudo)
+     * ficaria apontando para o vazio depois de um `⌘Z ⌘⇧Z`. */
     historia.registrar({
       rotulo: "Seção criada",
       desfazer: () => aoDesagrupar(nova.id),
-      /* Refazer recria, e o id muda — a seção volta com outro. Anotado em
-       * docs/CANVAS.md como limite conhecido do desfazer de seções. */
-      refazer: () => aoAgrupar?.({ nome: nova.nome, x, y, largura: direita - x, altura: baixo - y }),
+      refazer: () => aoDevolverGrupo(nova.id),
     });
-  }, [escolha, medidas, grupos, aoAgrupar, aoDesagrupar, limparEscolha, historia]);
+  }, [escolha, medidas, grupos, aoAgrupar, aoDesagrupar, aoDevolverGrupo, limparEscolha, historia]);
 
   const [levando, setLevando] = useState(null);
   /* QUEM ESTÁ DENTRO DA ÁREA — em CHAVES, e não em ids de nota.
@@ -1612,9 +1695,10 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
       const passo = new Map();
       for (const chave of filhos) passo.set(chave, desloca);
       pintarArrasto(passo);
+      marcar(filhos, "vai-junto");
       return { id: grupoId, dx: desloca.dx, dy: desloca.dy, filhos };
     });
-  }, [filhosDe, grupos, moverChave, ondeEsta, aoMudarArea, historia, pintarArrasto, limparPintura]);
+  }, [filhosDe, grupos, moverChave, ondeEsta, aoMudarArea, historia, pintarArrasto, limparPintura, marcar]);
 
   const tracos = useMemo(() => {
     const linhas = [];

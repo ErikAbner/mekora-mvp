@@ -537,6 +537,11 @@ export function porMidiaNoCanvas(arquivo, x, y, legenda = "") {
 
 /* O LIVRO NA SUPERFICIE. Referencia e nao copia: o que vai e volta e a POSICAO,
  * e o livro continua sendo da estante. Tirar daqui nao apaga nada. */
+/* A seçao volta com o MESMO id — ver `apagado_em` em models/canvas.py. */
+export function voltarGrupo(id) {
+  return pede(`/canvas/grupos/${id}/voltar`, { method: "POST" });
+}
+
 export function porLivroNoCanvas(job_id, x, y) {
   return pede("/canvas/livros", {
     method: "POST",

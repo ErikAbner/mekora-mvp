@@ -116,6 +116,15 @@ class GrupoCanvas(Base):
     criado_em = Column(DateTime, default=agora, nullable=False)
     movido_em = Column(DateTime, default=agora, onupdate=agora, nullable=False)
 
+    # APAGAR É EM DUAS ETAPAS, para o desfazer devolver a MESMA seção.
+    #
+    # Recriar com id novo daria um objeto que só se PARECE com o anterior — e
+    # qualquer coisa que aponte para a seção (uma ligação, uma referência de
+    # Estudo, um comentário) ficaria apontando para o vazio depois de um desfazer.
+    # A marca guarda a identidade; a superfície simplesmente não mostra o que a
+    # tem.
+    apagado_em = Column(DateTime, nullable=True)
+
 
 class MidiaCanvas(Base):
     """A imagem de uma nota de mídia — a primeira ferramenta do dock.
