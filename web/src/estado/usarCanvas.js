@@ -17,12 +17,12 @@ import {
 export function usarCanvas() {
   const [nos, setNos] = useState([]);
   const [ligacoes, setLigacoes] = useState([]);
-  const [grupos, setGrupos] = useState([]);
+  const [secoes, setSecoes] = useState([]);
   const [livros, setLivros] = useState([]);
 
   /* AS LISTAS TAMBÉM CHEGAM POR `ref`, e a razão é de desempenho — medida.
    *
-   * `tirar`, `tirarLivro`, `mudarArea` e `desagrupar` guardavam a lista de antes
+   * `tirar`, `tirarLivro`, `mudarSecao` e `dissolverSecao` guardavam a lista de antes
    * para poder desfazer a mudança otimista se o servidor recusasse. Isso as
    * punha nas dependências, e elas trocavam de identidade a cada mudança de
    * lista — indo como propriedade para as 123 notas memoizadas, que redesenhavam
@@ -32,10 +32,10 @@ export function usarCanvas() {
    * de defeito que `usarHistoria` tinha, e vale registrar como padrão: função
    * que vai como propriedade para muitos filhos não pode depender de lista. */
   const nosVivos = useRef([]);
-  const grupasVivos = useRef([]);
+  const secoesVivas = useRef([]);
   const livrosVivos = useRef([]);
   nosVivos.current = nos;
-  grupasVivos.current = grupos;
+  secoesVivas.current = secoes;
   livrosVivos.current = livros;
   const [erro, setErro] = useState(null);
   const [carregando, setCarregando] = useState(true);
@@ -45,13 +45,17 @@ export function usarCanvas() {
       const d = await lerCanvas();
       setNos(d.nos ?? []);
       setLigacoes(d.ligacoes ?? []);
-      setGrupos(d.grupos ?? []);
+      /* `grupos` é o nome NO FIO, e ele fica: renomear a tabela e a rota custa
+       * uma migração de SQLite por nenhum ganho para quem usa. A tradução para o
+       * vocabulário do produto acontece aqui, na entrada, e é a única linha do
+       * front que ainda precisa saber do nome antigo. */
+      setSecoes(d.grupos ?? []);
       setLivros(d.livros ?? []);
     } catch {
       setNos([]);
       setLigacoes([]);
       setLivros([]);
-      setGrupos([]);
+      setSecoes([]);
     } finally {
       setCarregando(false);
     }
@@ -91,7 +95,7 @@ export function usarCanvas() {
    * para se parecer com um livro, e a tela não os tem. */
   /* DESAPAGAR UMA SEÇÃO — a mesma, com o mesmo id. Ver `apagado_em` no modelo:
    * recriar daria um objeto que só se parece com o anterior. */
-  const devolverGrupo = useCallback(async (id) => {
+  const devolverSecao = useCallback(async (id) => {
     try {
       await voltarGrupo(id);
       await recarregar();
@@ -194,11 +198,11 @@ export function usarCanvas() {
    * retângulo enquanto o dedo está apertado, e só o que foi SOLTO chega aqui.
    * Gravar durante o arrasto mandaria centenas de pedidos para registrar
    * lugares por onde a área só passou. */
-  const agrupar = useCallback(async (g) => {
+  const criarSecao = useCallback(async (g) => {
     setErro(null);
     try {
       const novo = await criarGrupo(g);
-      setGrupos((atual) => [...atual, novo]);
+      setSecoes((atual) => [...atual, novo]);
       return novo;
     } catch (e) {
       setErro(e.message);
@@ -206,31 +210,31 @@ export function usarCanvas() {
     }
   }, []);
 
-  const mudarArea = useCallback(async (id, troca) => {
-    const antes = grupasVivos.current;
-    setGrupos((atual) => atual.map((g) => (g.id === id ? { ...g, ...troca } : g)));
+  const mudarSecao = useCallback(async (id, troca) => {
+    const antes = secoesVivas.current;
+    setSecoes((atual) => atual.map((g) => (g.id === id ? { ...g, ...troca } : g)));
     try {
       await mudarGrupo(id, troca);
     } catch (e) {
-      setGrupos(antes);
+      setSecoes(antes);
       setErro(e.message);
     }
   }, []);
 
-  const desagrupar = useCallback(async (id) => {
-    const antes = grupasVivos.current;
-    setGrupos((atual) => atual.filter((g) => g.id !== id));
+  const dissolverSecao = useCallback(async (id) => {
+    const antes = secoesVivas.current;
+    setSecoes((atual) => atual.filter((g) => g.id !== id));
     try {
       await apagarGrupo(id);
     } catch (e) {
-      setGrupos(antes);
+      setSecoes(antes);
       setErro(e.message);
     }
   }, []);
 
   return {
-    nos, ligacoes, grupos, livros, erro, carregando,
+    nos, ligacoes, secoes, livros, erro, carregando,
     trazer, trazerMidia, trazerLivro, mover, moverLivro, tirar, tirarLivro, ligar, desligar, recarregar,
-    agrupar, mudarArea, desagrupar, devolverGrupo,
+    criarSecao, mudarSecao, dissolverSecao, devolverSecao,
   };
 }

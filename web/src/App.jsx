@@ -455,7 +455,7 @@ function SoParaQuemEntrou({ acesso, lugar, children }) {
 }
 
 function PaginaCanvas() {
-  const { nos, ligacoes, grupos, livros, erro, trazer, trazerMidia, trazerLivro, mover, moverLivro, tirar, tirarLivro, ligar, desligar, agrupar, mudarArea, desagrupar, devolverGrupo } = usarCanvas();
+  const { nos, ligacoes, secoes, livros, erro, trazer, trazerMidia, trazerLivro, mover, moverLivro, tirar, tirarLivro, ligar, desligar, criarSecao, mudarSecao, dissolverSecao, devolverSecao } = usarCanvas();
   const [notas, setNotas] = useState([]);
   /* A ESTANTE INTEIRA, para a folha de "trazer" poder oferecer livros. É a
    * mesma lista da tela de Estante — o Canvas não tem acervo próprio. */
@@ -476,7 +476,7 @@ function PaginaCanvas() {
     <Canvas
       nos={nos}
       ligacoes={ligacoes}
-      grupos={grupos}
+      secoes={secoes}
       notas={notas}
       erro={erro}
       aoTrazer={trazer}
@@ -490,10 +490,10 @@ function PaginaCanvas() {
       aoTirar={tirar}
       aoLigar={ligar}
       aoDesligar={desligar}
-      aoAgrupar={agrupar}
-      aoMudarArea={mudarArea}
-      aoDesagrupar={desagrupar}
-      aoDevolverGrupo={devolverGrupo}
+      aoCriarSecao={criarSecao}
+      aoMudarSecao={mudarSecao}
+      aoDissolverSecao={dissolverSecao}
+      aoDevolverSecao={devolverSecao}
     />
   );
 }

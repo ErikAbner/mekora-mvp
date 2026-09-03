@@ -567,7 +567,7 @@
  * O `895:7024` põe o nome como parágrafo SOBRE a caixa, com 24px entre os dois.
  * Eu tinha uma barra de título DENTRO do retângulo, e a diferença não é
  * cosmética: dentro, o nome disputa espaço com as notas e cobre a de cima. */
-.canvas-grupo {
+.canvas-secao {
   position: absolute;
   z-index: 0;
   display: flex; flex-direction: column; gap: 24px;
@@ -579,20 +579,20 @@
 /* A área é `surface/base` e o traço é o filete do sistema. Eu tinha uma tinta
  * derivada a 3% sobre transparente — quase invisível sobre o chão pontilhado,
  * que é justamente onde ela precisa se ver. */
-.canvas-grupo-area {
+.canvas-secao-area {
   flex: 1 1 auto;
   position: relative;
   min-block-size: 0;
   border: 1px dashed var(--border);
   background: var(--folha);
-  /* A AREA RECEBE O PONTEIRO DE NOVO — o `.canvas-grupo` continua sem receber,
+  /* A AREA RECEBE O PONTEIRO DE NOVO — o `.canvas-secao` continua sem receber,
    * e quem reabre e ela. Precisa disso para a moldura de 10px que estica; o meio
    * dela nao faz nada, e o evento cai na nota que estiver por cima. */
   pointer-events: auto;
   touch-action: none;
 }
 
-.canvas-grupo-titulo {
+.canvas-secao-faixa {
   flex: none;
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   pointer-events: auto;
@@ -602,21 +602,21 @@
    * azul em vez de mover a area — foi o que apareceu na captura do Erik. */
   user-select: none;
 }
-.canvas-grupo-titulo:active { cursor: grabbing; }
+.canvas-secao-faixa:active { cursor: grabbing; }
 
 /* Body/Medium, do `895:7024`. Estava em Label/Medium — o nome da área tinha
  * menos presença que o texto de uma nota. */
-.canvas-grupo-nome {
+.canvas-secao-nome {
   padding: 0;
   border: 0; background: transparent;
   color: var(--foreground);
   font: inherit; font-size: 20px; line-height: 30px;
   cursor: text;
 }
-.canvas-grupo-nome:hover { color: var(--foreground); }
-.canvas-grupo-nome:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+.canvas-secao-nome:hover { color: var(--foreground); }
+.canvas-secao-nome:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
 
-.canvas-grupo-titulo input {
+.canvas-secao-faixa input {
   flex: 1 1 auto; min-inline-size: 0;
   padding: 2px 4px;
   border: 1px solid var(--border);
@@ -625,14 +625,14 @@
   font: inherit; font-size: 16px; line-height: 24px;
 }
 
-.canvas-grupo-tirar {
+.canvas-secao-dissolver {
   border: 0; background: transparent; padding: 2px 4px;
   color: var(--muted-foreground);
   font: inherit; font-size: 14px; line-height: 22px;
   text-decoration: underline; cursor: pointer;
 }
-.canvas-grupo-tirar:hover { color: var(--foreground); }
-.canvas-grupo-tirar:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+.canvas-secao-dissolver:hover { color: var(--foreground); }
+.canvas-secao-dissolver:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
 
 /* O RISCO DO CANTO E SO AVISO, e nao mais o unico lugar que estica.
  *
@@ -640,7 +640,7 @@
  * ali. Agora quem estica e a moldura inteira — as quatro bordas e os quatro
  * cantos —, e o risco fica como o sinal de que da para esticar. `::after`
  * porque um aviso nao precisa existir na arvore. */
-.canvas-grupo-area::after {
+.canvas-secao-area::after {
   content: "";
   position: absolute;
   inset-block-end: 0; inset-inline-end: 0;
@@ -873,7 +873,7 @@
   to   { opacity: 1; transform: scale(1); }
 }
 
-.nota-canvas, .canvas-grupo {
+.nota-canvas, .canvas-secao {
   animation: canvas-entra 200ms var(--saida) both;
 }
 /* A nota em movimento NÃO reanima: o `transform` dela é o arrasto, e a animação
@@ -903,7 +903,7 @@
 .canvas-zoom button:active { transform: scale(0.97); }
 
 @media (prefers-reduced-motion: reduce) {
-  .nota-canvas, .canvas-grupo { animation: none; }
+  .nota-canvas, .canvas-secao { animation: none; }
   .canvas-plano.saltando { transition: none; }
   .canvas-ferramentas button,
   .canvas-zoom button { transition: none; }
@@ -1044,18 +1044,18 @@
 /* A JUNTA SO APARECE SOB O PONTEIRO. Desenhada o tempo todo, ela era uma bolinha
  * solta no meio do vao — que nao se parece com nada do produto e le como
  * defeito. A ligacao parada e so a linha. */
-.traco-grupo .traco-junta {
+.traco-todo .traco-junta {
   opacity: 0;
   transition: opacity 150ms var(--saida);
 }
-.traco-grupo:hover .traco-junta,
-.traco-grupo:focus-within .traco-junta { opacity: 1; }
+.traco-todo:hover .traco-junta,
+.traco-todo:focus-within .traco-junta { opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
-  .traco-grupo .traco-junta { transition: none; }
+  .traco-todo .traco-junta { transition: none; }
 }
 /* Sem ponteiro nao ha `:hover`, e desfazer ficaria inalcancavel. */
 @media (hover: none) {
-  .traco-grupo .traco-junta { opacity: 1; }
+  .traco-todo .traco-junta { opacity: 1; }
 }
 
 /* ---- A ESCOLHA -------------------------------------------------------------
@@ -1078,7 +1078,7 @@
  * Medido antes: `contorno_na_tela_px: 0.5`. */
 .nota-canvas.escolhido,
 .livro-canvas.escolhido,
-.canvas-grupo.escolhido > .canvas-grupo-area {
+.canvas-secao.escolhido > .canvas-secao-area {
   outline: calc(2px / var(--escala, 1)) solid var(--escolha);
   outline-offset: calc(2px / var(--escala, 1));
 }
@@ -1283,7 +1283,7 @@
 
 /* A SEÇAO QUE RECEBERIA O OBJETO se ele fosse solto agora: o traco tracejado
  * dela fica cheio. E a mesma linha, mais firme — nao um retangulo novo. */
-.canvas-grupo.secao-alvo > .canvas-grupo-area {
+.canvas-secao.secao-alvo > .canvas-secao-area {
   border-style: solid;
   border-color: var(--escolha);
   background: color-mix(in oklab, var(--escolha) 4%, var(--folha));
@@ -1298,11 +1298,11 @@
  * Os dois valores sao degraus da escala do sistema (28 e 40), e nao um `calc`:
  * uma conta daria corpos fora da progressao, e o portao recusa isso com razao.
  * Na tela dao ~14px a 50% e ~10px a 25%. */
-.canvas-plano[data-detalhe="menos"] .canvas-grupo-nome { font-size: 28px; line-height: 36px; }
-.canvas-plano[data-detalhe="silhueta"] .canvas-grupo-nome { font-size: 40px; line-height: 48px; }
+.canvas-plano[data-detalhe="menos"] .canvas-secao-nome { font-size: 28px; line-height: 36px; }
+.canvas-plano[data-detalhe="silhueta"] .canvas-secao-nome { font-size: 40px; line-height: 48px; }
 /* E o "Desfazer grupo" sai de cena: de longe ele nao se le e ainda rouba a
  * largura do nome. */
-.canvas-plano[data-detalhe="silhueta"] .canvas-grupo-tirar { display: none; }
+.canvas-plano[data-detalhe="silhueta"] .canvas-secao-dissolver { display: none; }
 
 /* ---- A SEÇAO QUIETA --------------------------------------------------------
  *
@@ -1314,31 +1314,31 @@
  * nome — que e o unico metadado semantico que ela carrega hoje. Dar nome e o que
  * a promove de "estes andam juntos" para "esta area e sobre alguma coisa".
  */
-.canvas-grupo.sem-nome .canvas-grupo-area {
+.canvas-secao.sem-nome .canvas-secao-area {
   border-color: color-mix(in oklab, var(--border) 45%, transparent);
   background: color-mix(in oklab, var(--folha) 55%, transparent);
 }
 /* O rotulo "Dar um nome" e o "Desfazer grupo" somem parados: sao controles, e
  * controle permanente em vinte seçoes vira textura. */
-.canvas-grupo.sem-nome .canvas-grupo-titulo { opacity: 0; transition: opacity 150ms var(--saida); }
-.canvas-grupo.sem-nome:hover .canvas-grupo-titulo,
-.canvas-grupo.sem-nome:focus-within .canvas-grupo-titulo,
-.canvas-grupo.sem-nome.escolhido .canvas-grupo-titulo,
-.canvas-grupo.sem-nome.revelada .canvas-grupo-titulo { opacity: 1; }
+.canvas-secao.sem-nome .canvas-secao-faixa { opacity: 0; transition: opacity 150ms var(--saida); }
+.canvas-secao.sem-nome:hover .canvas-secao-faixa,
+.canvas-secao.sem-nome:focus-within .canvas-secao-faixa,
+.canvas-secao.sem-nome.escolhido .canvas-secao-faixa,
+.canvas-secao.sem-nome.revelada .canvas-secao-faixa { opacity: 1; }
 
 /* E O TRAÇO VOLTA A APARECER quando ela e tocada, escolhida, ou quando o
  * ponteiro passa sobre um membro dela. Este ultimo caso e o que impede "quieta"
  * de virar "invisivel": se tres objetos andam juntos, passar sobre um deles
  * mostra por que. */
-.canvas-grupo.sem-nome:hover .canvas-grupo-area,
-.canvas-grupo.sem-nome.escolhido .canvas-grupo-area,
-.canvas-grupo.sem-nome.revelada .canvas-grupo-area {
+.canvas-secao.sem-nome:hover .canvas-secao-area,
+.canvas-secao.sem-nome.escolhido .canvas-secao-area,
+.canvas-secao.sem-nome.revelada .canvas-secao-area {
   border-color: var(--border);
   background: var(--folha);
 }
 /* A seçao COM NOME ja e uma area sobre um assunto, e mantem a presenca que
  * tinha. */
-.canvas-grupo.revelada.com-nome .canvas-grupo-area { border-color: var(--escolha); }
+.canvas-secao.revelada.com-nome .canvas-secao-area { border-color: var(--escolha); }
 
 /* QUEM E DESTA SEÇAO, dito ao passar sobre ela. E o outro sentido da mesma
  * pergunta: de um membro se acende a area, e da area se acendem os membros.
@@ -1367,8 +1367,8 @@
 .canvas-mundo.de-mao .nota-canvas,
 .canvas-mundo.de-mao .nota-canvas.na-lateral,
 .canvas-mundo.de-mao .livro-canvas,
-.canvas-mundo.de-mao .canvas-grupo-titulo,
-.canvas-mundo.de-mao .canvas-grupo-area,
+.canvas-mundo.de-mao .canvas-secao-faixa,
+.canvas-mundo.de-mao .canvas-secao-area,
 .canvas-mundo.de-mao .nota-pega { cursor: grab; }
 .canvas-mundo.de-mao:active,
 .canvas-mundo.de-mao:active * { cursor: grabbing; }

@@ -27,7 +27,7 @@ const LIMIAR = 4;
  * perde metade da espessura no recorte. */
 const FOLGA_DOS_TRACOS = 8;
 
-/* O menor lado de um grupo. O mesmo número que o backend usa — um retângulo
+/* O menor lado de uma seção. O mesmo número que o backend usa — um retângulo
  * menor que uma nota não agrupa nada, e um de um pixel some da tela sem deixar
  * como pegá-lo de volta. */
 const LADO_MINIMO = 120;
@@ -847,40 +847,40 @@ const Livro = memo(LivroCrua);
  *
  * O desenho mostra cartões dentro de uma área tracejada com título: *"Design &
  * Tecnologia"*. É um agrupamento ESPACIAL, e é o que o distingue de um Estudo:
- * o Estudo é uma lista reunida por assunto e existe fora do Canvas; o grupo é
+ * o Estudo é uma lista reunida por assunto e existe fora do Canvas; a seção é
  * um pedaço de chão com nome, e uma nota pertence a ele por estar em cima dele.
  *
  * ELE FICA ATRÁS DAS NOTAS e não captura o ponteiro no meio: arrastar dentro da
  * área move a NOTA, ou o chão, e nunca o retângulo por baixo. O que pega o
  * retângulo é a barra do título — a mesma regra de uma janela.
  */
-function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoEscolher, aoInscrever, escolhido }) {
+function Secao({ secao, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoEscolher, aoInscrever, escolhido }) {
   const arrasto = useRef(null);
   const [desloca, setDesloca] = useState(null);
   const [medindo, setMedindo] = useState(null);
   const [editando, setEditando] = useState(false);
 
   /* NASCEU AGORA: abre pedindo o nome. O carimbo de tempo entra nas dependências
-   * para que dois grupos seguidos disparem duas vezes — um booleano já ligado
+   * para que duas seções seguidas disparem duas vezes — um booleano já ligado
    * não dispara. */
   useEffect(() => { if (nasceuAgora) setEditando(true); }, [nasceuAgora]);
 
   /* O CLIQUE MORRE SE HOUVE ARRASTO — o mesmo truque da nota. Sem isto, arrastar
-   * o grupo pelo nome abriria o campo de edição ao soltar. */
+   * a seção pelo nome abriria o campo de edição ao soltar. */
   const moveu = useRef(false);
 
   const corpo = useRef(null);
 
   useEffect(() => {
     if (!aoInscrever) return undefined;
-    return aoInscrever(`secao:${grupo.id}`, {
+    return aoInscrever(`secao:${secao.id}`, {
       tipo: "secao",
       pega: true,
       no: corpo.current,
-      ler: () => ({ x: grupo.x, y: grupo.y, largura: grupo.largura, altura: grupo.altura }),
-      mover: (x, y) => aoMudar(grupo.id, { x, y }),
+      ler: () => ({ x: secao.x, y: secao.y, largura: secao.largura, altura: secao.altura }),
+      mover: (x, y) => aoMudar(secao.id, { x, y }),
     });
-  }, [aoInscrever, grupo.id, grupo.x, grupo.y, grupo.largura, grupo.altura, aoMudar]);
+  }, [aoInscrever, secao.id, secao.x, secao.y, secao.largura, secao.altura, aoMudar]);
 
   const focarUmaVez = useCallback((el) => {
     if (el) { el.focus(); el.select(); }
@@ -890,7 +890,7 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
     if (e.button !== 0) return;
     /* Mesma razão da nota: o chão não pode roubar este gesto. */
     e.stopPropagation();
-    aoEscolher?.(`secao:${grupo.id}`, { juntando: e.shiftKey || e.metaKey || e.ctrlKey });
+    aoEscolher?.(`secao:${secao.id}`, { juntando: e.shiftKey || e.metaKey || e.ctrlKey });
     /* QUEM VAI JUNTO SE MARCA AO APERTAR, e não depois do limiar.
      *
      * As marcas nasciam no primeiro movimento que passasse de 4px: a resposta
@@ -899,8 +899,8 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
      *
      * A pergunta é "o que vem comigo se eu arrastar isto?", e ela se faz com o
      * dedo apertado e parado. */
-    if (qual === "mover") aoLevar?.(grupo.id, { dx: 0, dy: 0 });
-    /* Mesma razão da nota: captura mataria o botão do nome e o "Desfazer grupo",
+    if (qual === "mover") aoLevar?.(secao.id, { dx: 0, dy: 0 });
+    /* Mesma razão da nota: captura mataria o botão do nome e o "Dissolver seção",
      * porque o clique vai para quem capturou. O movimento é ouvido na janela. */
     arrasto.current = { qual, x0: e.clientX, y0: e.clientY, mexeu: false };
     window.addEventListener("pointermove", andar);
@@ -923,17 +923,17 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
    * não faz o retângulo inteiro andar. */
   const esticar = (borda, dx, dy) => {
     const mudanca = {};
-    if (borda.includes("l")) mudanca.largura = Math.max(LADO_MINIMO, grupo.largura + dx);
+    if (borda.includes("l")) mudanca.largura = Math.max(LADO_MINIMO, secao.largura + dx);
     if (borda.includes("o")) {
-      const largura = Math.max(LADO_MINIMO, grupo.largura - dx);
+      const largura = Math.max(LADO_MINIMO, secao.largura - dx);
       mudanca.largura = largura;
-      mudanca.x = grupo.x + (grupo.largura - largura);
+      mudanca.x = secao.x + (secao.largura - largura);
     }
-    if (borda.includes("s")) mudanca.altura = Math.max(LADO_MINIMO, grupo.altura + dy);
+    if (borda.includes("s")) mudanca.altura = Math.max(LADO_MINIMO, secao.altura + dy);
     if (borda.includes("n")) {
-      const altura = Math.max(LADO_MINIMO, grupo.altura - dy);
+      const altura = Math.max(LADO_MINIMO, secao.altura - dy);
       mudanca.altura = altura;
-      mudanca.y = grupo.y + (grupo.altura - altura);
+      mudanca.y = secao.y + (secao.altura - altura);
     }
     return mudanca;
   };
@@ -949,10 +949,10 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
     a.mexeu = true;
     if (a.qual === "mover") {
       setDesloca({ dx, dy });
-      /* A ÁREA LEVA O QUE ESTÁ DENTRO DELA. Ver `grupoVivo` no Canvas: quem
+      /* A ÁREA LEVA O QUE ESTÁ DENTRO DELA. Ver `secaoViva` no Canvas: quem
        * decide de quem é cada nota é a geometria, e ela é lida uma vez, no
        * começo do gesto. */
-      aoLevar?.(grupo.id, { dx, dy });
+      aoLevar?.(secao.id, { dx, dy });
     } else setMedindo(esticar(a.qual, dx, dy));
   };
 
@@ -962,7 +962,7 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
     arrasto.current = null;
     setDesloca(null);
     setMedindo(null);
-    aoLevar?.(grupo.id, null);
+    aoLevar?.(secao.id, null);
   };
 
   const soltar = (e) => {
@@ -973,20 +973,20 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
     arrasto.current = null;
     setDesloca(null);
     setMedindo(null);
-    if (!a || !a.mexeu) { aoLevar?.(grupo.id, null); return; }
+    if (!a || !a.mexeu) { aoLevar?.(secao.id, null); return; }
     const dx = (e.clientX - a.x0) / escala;
     const dy = (e.clientY - a.y0) / escala;
     if (a.qual === "mover") {
       /* ENCOSTA NA MALHA AO SOLTAR, e não durante o gesto: um imã que age
        * enquanto o dedo anda faz a área grudar e escapar, e a mão sente que
        * perdeu o controle. No fim, ele só arruma o resto. */
-      const px = Math.round((grupo.x + dx) / MALHA_DO_PLANO) * MALHA_DO_PLANO;
-      const py = Math.round((grupo.y + dy) / MALHA_DO_PLANO) * MALHA_DO_PLANO;
-      aoLevar?.(grupo.id, { dx: px - grupo.x, dy: py - grupo.y, soltou: true });
-      aoMudar(grupo.id, { x: px, y: py });
+      const px = Math.round((secao.x + dx) / MALHA_DO_PLANO) * MALHA_DO_PLANO;
+      const py = Math.round((secao.y + dy) / MALHA_DO_PLANO) * MALHA_DO_PLANO;
+      aoLevar?.(secao.id, { dx: px - secao.x, dy: py - secao.y, soltou: true });
+      aoMudar(secao.id, { x: px, y: py });
     } else {
-      aoLevar?.(grupo.id, null);
-      aoMudar(grupo.id, esticar(a.qual, dx, dy));
+      aoLevar?.(secao.id, null);
+      aoMudar(secao.id, esticar(a.qual, dx, dy));
     }
   };
 
@@ -995,10 +995,10 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
   };
 
   const estilo = {
-    left: medindo?.x ?? grupo.x,
-    top: medindo?.y ?? grupo.y,
-    width: medindo?.largura ?? grupo.largura,
-    height: medindo?.altura ?? grupo.altura,
+    left: medindo?.x ?? secao.x,
+    top: medindo?.y ?? secao.y,
+    width: medindo?.largura ?? secao.largura,
+    height: medindo?.altura ?? secao.altura,
     transform: desloca ? `translate(${desloca.dx}px, ${desloca.dy}px)` : undefined,
   };
 
@@ -1008,23 +1008,23 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
      * O `895:7024` põe "Design & Tecnologia" como um parágrafo SOBRE a caixa
      * tracejada, com 24px entre os dois. Eu tinha posto uma barra de título
      * dentro do retângulo, e a diferença não é cosmética: dentro, o nome disputa
-     * o espaço com as notas do grupo e cobre a de cima. Acima, ele nomeia a área
+     * o espaço com as notas da seção e cobre a de cima. Acima, ele nomeia a área
      * sem ocupar nada dela. */
     <section
       ref={corpo}
-      className={`canvas-grupo${escolhido ? " escolhido" : ""}${grupo.nome ? " com-nome" : " sem-nome"}`}
+      className={`canvas-secao${escolhido ? " escolhido" : ""}${secao.nome ? " com-nome" : " sem-nome"}`}
       style={estilo}
-      aria-label={grupo.nome || "Grupo sem nome"}
+      aria-label={secao.nome || "Seção sem nome"}
     >
       <header
-        className="canvas-grupo-titulo"
+        className="canvas-secao-faixa"
         onPointerDown={(e) => pegar(e, "mover")}
       >
         {editando ? (
           <input
             type="text"
-            defaultValue={grupo.nome}
-            aria-label="Nome do grupo"
+            defaultValue={secao.nome}
+            aria-label="Nome da seção"
             /* `ref` DE CALLBACK, e não `autoFocus`.
              *
              * O `autoFocus` do React age no monte, e aqui o campo monta no mesmo
@@ -1040,27 +1040,27 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
             ref={focarUmaVez}
             maxLength={120}
             onPointerDown={(e) => e.stopPropagation()}
-            onBlur={(e) => { setEditando(false); if (e.target.value !== grupo.nome) aoMudar(grupo.id, { nome: e.target.value }); }}
+            onBlur={(e) => { setEditando(false); if (e.target.value !== secao.nome) aoMudar(secao.id, { nome: e.target.value }); }}
             onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") setEditando(false); }}
           />
         ) : (
-          /* SEM `stopPropagation` AQUI, e essa foi a razão de o grupo não se
-             mover. O nome ocupa a ponta esquerda da faixa e "Desfazer grupo" a
+          /* SEM `stopPropagation` AQUI, e essa foi a razão de a seção não se
+             mover. O nome ocupa a ponta esquerda da faixa e "Dissolver seção" a
              direita, e os dois barravam o gesto: sobrava o vazio do meio. O Erik
              pegou pelo nome, como qualquer um pegaria, e o que aconteceu foi o
              navegador SELECIONAR o texto — dá para ver na captura dele.
              
-             Agora arrastar pelo nome move o grupo, e o clique parado abre a
+             Agora arrastar pelo nome move a seção, e o clique parado abre a
              edição. `onClickCapture` cancela o clique quando houve arrasto. */
           <button
             type="button"
-            className="canvas-grupo-nome"
+            className="canvas-secao-nome"
             onClickCapture={talvezCancelarClique}
             onClick={() => setEditando(true)}
           >
             {/* Grupo sem nome DIZ que não tem nome, e o rótulo é o convite para
                 dar um. Um retângulo com o título em branco parece defeito. */}
-            {grupo.nome || "Dar um nome"}
+            {secao.nome || "Dar um nome"}
           </button>
         )}
         {/* "DESFAZER GRUPO" MENTIA EM DUAS FRENTES. Ele não desfaz vínculo
@@ -1071,9 +1071,9 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
         <button
           type="button"
           title="A área some; o que estava nela fica"
-          className="canvas-grupo-tirar"
+          className="canvas-secao-dissolver"
           onPointerDown={(e) => e.stopPropagation()}
-          onClick={() => aoApagar(grupo.id)}
+          onClick={() => aoApagar(secao.id)}
         >
           Dissolver seção
         </button>
@@ -1087,7 +1087,7 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
           meio. O meio continua sem receber o ponteiro: arrastar ali move a NOTA
           que está por cima, que é o que a pessoa espera. */}
       <div
-        className="canvas-grupo-area"
+        className="canvas-secao-area"
         /* O MIOLO DA ÁREA ARRASTA, e não só a faixa do nome.
          *
          * Antes, a única pegada era uma faixa de 30px no topo — o corpo da área
@@ -1108,7 +1108,7 @@ function Grupo({ grupo, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
   );
 }
 
-export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acervo = [], notas = [], erro, aoTrazer, aoTrazerMidia, aoTrazerLivro, aoMoverLivro, aoTirarLivro, aoMover, aoTirar, aoLigar, aoDesligar, aoAgrupar, aoMudarArea, aoDesagrupar, aoDevolverGrupo }) {
+export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acervo = [], notas = [], erro, aoTrazer, aoTrazerMidia, aoTrazerLivro, aoMoverLivro, aoTirarLivro, aoMover, aoTirar, aoLigar, aoDesligar, aoCriarSecao, aoMudarSecao, aoDissolverSecao, aoDevolverSecao }) {
   /* O FIO QUE ESTÁ SENDO PUXADO, em coordenadas da JANELA e não do plano.
    *
    * Da janela porque ele é desenhado por cima de tudo, e não dentro do plano:
@@ -1186,7 +1186,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
    * it to click selection, add it to lasso, add it to multi-move, add it to
    * undo, add it to Section bounds". O Livro provou metade disso — entrou sem
    * tocar em clique, arrasto e desfazer — e reprovou a outra metade: o laço
-   * percorria `nos` e `grupos` À MÃO, e o livro ficou de fora.
+   * percorria `nos` e as áreas À MÃO, e o livro ficou de fora.
    *
    * Aqui cada objeto se inscreve com uma FICHA, e quem precisa de "todos os
    * objetos" pergunta à cena em vez de listar tipos:
@@ -1308,9 +1308,9 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
         if (l) { deVolta.push({ job_id: l.job_id, x: l.x, y: l.y }); aoTirarLivro(l.id); }
       }
       if (tipo === "secao") {
-        const g = grupos.find((x) => x.id === Number(id));
+        const g = secoes.find((x) => x.id === Number(id));
         /* Só o id: a seção não é recriada, ela VOLTA. */
-        if (g) { secoes.push(g.id); aoDesagrupar(g.id); }
+        if (g) { secoes.push(g.id); aoDissolverSecao(g.id); }
       }
     }
     limparEscolha();
@@ -1326,7 +1326,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
       desfazer: async () => {
         for (const n of notas) await aoTrazer(n);
         for (const l of deVolta) await aoTrazerLivro(l.job_id, l.x, l.y);
-        for (const id of secoes) await aoDevolverGrupo(id);
+        for (const id of secoes) await aoDevolverSecao(id);
       },
       /* REFAZER PROCURA PELA IDENTIDADE QUE SOBREVIVE, e não pelo id da linha.
        *
@@ -1346,10 +1346,10 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
           const atual = livrosRef.current.find((x) => x.job_id === l.job_id);
           if (atual) aoTirarLivro(atual.id);
         }
-        for (const id of secoes) await aoDesagrupar(id);
+        for (const id of secoes) await aoDissolverSecao(id);
       },
     });
-  }, [escolha, aoTirar, aoTirarLivro, aoDesagrupar, aoDevolverGrupo, limparEscolha, grupos, historia, aoTrazer, aoTrazerLivro]);
+  }, [escolha, aoTirar, aoTirarLivro, aoDissolverSecao, aoDevolverSecao, limparEscolha, secoes, historia, aoTrazer, aoTrazerLivro]);
 
   /* O TECLADO CHEGA NA ESCOLHA. `Esc` larga tudo; `Delete` e `Backspace` tiram
    * da superfície o que estiver escolhido.
@@ -1481,7 +1481,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
 
   /* SOBRE QUAL SEÇÃO O OBJETO ESTÁ AGORA — a resposta de "vai entrar" e "vai
    * sair", dada com o dedo ainda no ar. O centro decide, que é a mesma regra da
-   * contenção; ver `filhosDe`. */
+   * contenção; ver `membrosDe`. */
   const secaoSobRef = useRef(null);
   const secaoSob = useCallback((chave, dx, dy) => {
     const ficha = cena.current.get(chave);
@@ -1523,7 +1523,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
   if (typeof window !== "undefined") {
     window.__canvas = {
       desenhos: desenhos.current,
-      objetos: nos.length + livros.length + grupos.length,
+      objetos: nos.length + livros.length + secoes.length,
       escolhidos: escolha.size,
       naCena: cena.current.size,
       tracos: ligacoes.length,
@@ -1651,9 +1651,9 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
 
   /* A ÁREA LEVA O QUE ESTÁ DENTRO DELA — e antes ela não levava nada.
    *
-   * Medido: arrastar o grupo 144px deixou a nota de dentro parada em 0. Um
+   * Medido: arrastar a seção 144px deixou a nota de dentro parada em 0. Um
    * retângulo que desliza por baixo do próprio conteúdo não é um contêiner; é
-   * um desenho. Era o defeito de fundo do "mover grupo é ruim", e nenhuma
+   * um desenho. Era o defeito de fundo do "mover a área é ruim", e nenhuma
    * animação o consertaria.
    *
    * QUEM É DE QUEM SAI DA GEOMETRIA, e não de uma coluna no banco. É a decisão
@@ -1698,8 +1698,8 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
     const direita = Math.max(...caixas.map((c) => c.x + c.largura)) + FOLGA_DA_SECAO;
     const baixo = Math.max(...caixas.map((c) => c.y + c.altura)) + FOLGA_DA_SECAO;
 
-    idsDeAntes.current = new Set(grupos.map((g) => g.id));
-    const nova = await aoAgrupar?.({ nome: "", x, y, largura: direita - x, altura: baixo - y });
+    idsDeAntes.current = new Set(secoes.map((g) => g.id));
+    const nova = await aoCriarSecao?.({ nome: "", x, y, largura: direita - x, altura: baixo - y });
     if (!nova) { limparEscolha(); return; }
 
     /* O QUE FICA ESCOLHIDO DEPOIS: A SEÇÃO NOVA — e isto é escolha, não sobra de
@@ -1730,16 +1730,16 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
      * refazer não os traz de volta sozinho, então ele os revincula. */
     historia.registrar({
       rotulo: "Seção criada",
-      desfazer: () => aoDesagrupar(nova.id),
+      desfazer: () => aoDissolverSecao(nova.id),
       refazer: async () => {
-        await aoDevolverGrupo(nova.id);
+        await aoDevolverSecao(nova.id);
         for (const chave of escolhidos) {
           const o = ondeEstaRef.current(chave);
           if (o) moverChaveRef.current(chave, o.x, o.y, undefined, nova.id);
         }
       },
     });
-  }, [escolha, grupos, aoAgrupar, aoDesagrupar, aoDevolverGrupo, limparEscolha, historia]);
+  }, [escolha, secoes, aoCriarSecao, aoDissolverSecao, aoDevolverSecao, limparEscolha, historia]);
 
   const [levando, setLevando] = useState(null);
   /* QUEM ESTÁ DENTRO DA ÁREA — em CHAVES, e não em ids de nota.
@@ -1761,10 +1761,10 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
    * SEÇÃO NÃO PERTENCE A SEÇÃO: elas não têm `grupo_id`, então o aninhamento
    * simplesmente não existe no modelo. Uma área pode cobrir outra na tela sem
    * virar mãe dela — e foi o cenário 7 que mostrou por que isso importa. */
-  const filhosDe = useCallback(
-    (grupo) => [
-      ...nos.filter((n) => n.grupo_id === grupo.id).map((n) => `nota:${n.id}`),
-      ...livros.filter((l) => l.grupo_id === grupo.id).map((l) => `livro:${l.id}`),
+  const membrosDe = useCallback(
+    (secao) => [
+      ...nos.filter((n) => n.grupo_id === secao.id).map((n) => `nota:${n.id}`),
+      ...livros.filter((l) => l.grupo_id === secao.id).map((l) => `livro:${l.id}`),
     ],
     [nos, livros],
   );
@@ -1772,10 +1772,10 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
   /* MOVER UMA CHAVE, seja ela do tipo que for. É o único lugar do Canvas que
    * sabe traduzir chave em ação, e por isso é o único que precisa mudar quando
    * um tipo novo entra. */
-  const moverChave = useCallback((chave, x, y, largura, grupo) => {
+  const moverChave = useCallback((chave, x, y, largura, secao) => {
     const [tipo, id] = chave.split(":");
-    if (tipo === "nota") aoMover(Number(id), x, y, largura, grupo);
-    if (tipo === "livro") aoMoverLivro(Number(id), x, y, largura, grupo);
+    if (tipo === "nota") aoMover(Number(id), x, y, largura, secao);
+    if (tipo === "livro") aoMoverLivro(Number(id), x, y, largura, secao);
   }, [aoMover, aoMoverLivro]);
 
   moverChaveRef.current = moverChave;
@@ -1789,16 +1789,16 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
   }, []);
   ondeEstaRef.current = ondeEsta;
 
-  const levarGrupo = useCallback((grupoId, desloca) => {
+  const levarSecao = useCallback((secaoId, desloca) => {
     if (!desloca) { limparPintura(); setLevando(null); return; }
     setLevando((atual) => {
-      const filhos = atual?.id === grupoId ? atual.filhos : filhosDe(grupos.find((g) => g.id === grupoId) ?? {});
+      const filhos = atual?.id === secaoId ? atual.filhos : membrosDe(secoes.find((g) => g.id === secaoId) ?? {});
       if (desloca.soltou) {
         limparPintura();
         /* No fim do gesto, cada nota vai para o servidor com o mesmo passo que a
          * área deu — e a área mais tudo que ela levou viram UM passo da história.
          * Desfazer um arrasto de seção tem de devolver a seção E o conteúdo. */
-        const g = grupos.find((x) => x.id === grupoId);
+        const g = secoes.find((x) => x.id === secaoId);
         const mudancas = [];
         for (const chave of filhos) {
           const o = ondeEsta(chave);
@@ -1815,11 +1815,11 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
           historia.registrar({
             rotulo: filhos.length ? `Seção e ${filhos.length} movidos` : "Seção movida",
             desfazer: () => {
-              aoMudarArea(grupoId, antes);
+              aoMudarSecao(secaoId, antes);
               mudancas.forEach((m) => moverChave(m.chave, m.antes.x, m.antes.y, m.antes.largura));
             },
             refazer: () => {
-              aoMudarArea(grupoId, depois);
+              aoMudarSecao(secaoId, depois);
               mudancas.forEach((m) => moverChave(m.chave, m.depois.x, m.depois.y, m.depois.largura));
             },
           });
@@ -1830,9 +1830,9 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
       for (const chave of filhos) passo.set(chave, desloca);
       pintarArrasto(passo);
       marcar(filhos, "vai-junto");
-      return { id: grupoId, dx: desloca.dx, dy: desloca.dy, filhos };
+      return { id: secaoId, dx: desloca.dx, dy: desloca.dy, filhos };
     });
-  }, [filhosDe, grupos, moverChave, ondeEsta, aoMudarArea, historia, pintarArrasto, limparPintura, marcar]);
+  }, [membrosDe, secoes, moverChave, ondeEsta, aoMudarSecao, historia, pintarArrasto, limparPintura, marcar]);
 
   const tracos = useMemo(() => {
     const linhas = [];
@@ -1869,8 +1869,8 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
     };
   }, [ligacoes, nos, medidas]);
 
-  /* O CENTRO DO QUE ESTÁ SENDO VISTO, em coordenadas do plano. É onde o grupo
-   * novo nasce — a origem do plano pode estar a mil pixels daqui. */
+  /* O CENTRO DO QUE ESTÁ SENDO VISTO, em coordenadas do plano. É onde a seção
+   * nova nasce — a origem do plano pode estar a mil pixels daqui. */
   const mundo = useRef(null);
 
   /* ONDE, NO PLANO, ESTÁ O MEIO DA TELA — descontando metade do objeto que vai
@@ -1886,25 +1886,25 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
 
   const criarAqui = () => {
     const meio = meioDaVista(480, 320);
-    /* O GRUPO NASCE PEDINDO O NOME.
+    /* A SEÇÃO NASCE PEDINDO O NOME.
      *
      * Ele nascia sem nome nenhum, e ficava um retângulo tracejado anônimo no
      * meio da tela — a pessoa tinha de descobrir que o rótulo "Dar um nome" era
-     * clicável. No desenho, todo grupo tem nome: o `895:7024` é "Design &
-     * Tecnologia", e um grupo é uma ÁREA COM ASSUNTO. Sem assunto ele é só uma
+     * clicável. No desenho, toda seção tem nome: o `895:7024` é "Design &
+     * Tecnologia", e uma seção é uma ÁREA COM ASSUNTO. Sem assunto ela é só uma
      * caixa.
      *
      * `recemCriado` faz o campo do nome abrir já em edição, com o foco dentro.
-     * Quem não quiser nomear aperta `Esc` e o grupo continua lá. */
+     * Quem não quiser nomear aperta `Esc` e a seção continua lá. */
     /* GUARDA OS IDS DE ANTES, e não a posição.
      *
      * A primeira versão marcava "o último da lista", e a lista se reordena
      * quando ela volta do servidor: medido, DOIS campos de nome abriam ao mesmo
-     * tempo — o grupo que era o último antes, e o que passou a ser depois.
+     * tempo — a seção que era a última antes, e o que passou a ser depois.
      *
      * Id é o que não muda de lugar. */
-    idsDeAntes.current = new Set(grupos.map((g) => g.id));
-    return aoAgrupar?.({ nome: "", x: meio.x, y: meio.y, largura: 480, altura: 320 });
+    idsDeAntes.current = new Set(secoes.map((g) => g.id));
+    return aoCriarSecao?.({ nome: "", x: meio.x, y: meio.y, largura: 480, altura: 320 });
   };
 
   /* ORGANIZAR: ALINHAR E DESENCAVALAR, e não redistribuir tudo.
@@ -2279,7 +2279,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
      * enorme. Interseção é o que todo editor faz, e é o que a mão espera.
      *
      * E A PERGUNTA VAI PARA A CENA, sem citar tipo nenhum. A versão anterior
-     * percorria `nos` e `grupos` à mão — e o Livro, que não precisou de nada
+     * percorria `nos` e as áreas à mão — e o Livro, que não precisou de nada
      * para clicar, arrastar e desfazer, ficou de fora do laço em silêncio.
      * Foi o defeito que provou que faltava este registro. */
     const pega = new Set(oQueEstaEm(a, b));
@@ -2542,7 +2542,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
              superfície deste tipo, do Figma ao Heptabase, e a mão já está no
              lugar onde a nota vai nascer. */
           onDoubleClick={(e) => {
-            if (e.target.closest(".nota-canvas, .canvas-grupo, .canvas-ferramentas, .canvas-zoom")) return;
+            if (e.target.closest(".nota-canvas, .canvas-secao, .canvas-ferramentas, .canvas-zoom")) return;
             setTexto("");
             setEscrevendo(true);
           }}
@@ -2566,7 +2566,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
              * dentro sem ser membro fica idêntico a um que é, e a única forma de
              * descobrir seria arrastando. É a fraqueza que o pertencimento
              * explícito cria, e ela se paga aqui. */
-            const secao = e.target.closest?.(".canvas-grupo");
+            const secao = e.target.closest?.(".canvas-secao");
             if (secao) {
               const chaveSecao = [...cena.current].find(([, f]) => f.no === secao)?.[0];
               revelar(chaveSecao ?? null);
@@ -2616,18 +2616,18 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
               onde as duas estão. */}
           {/* OS GRUPOS FICAM NO FUNDO: eles são o chão, e as notas estão em
               cima. Vêm antes no DOM, e é isso que os põe atrás. */}
-          {grupos.map((g) => (
-            <Grupo
-              aoLevar={levarGrupo}
+          {secoes.map((g) => (
+            <Secao
+              aoLevar={levarSecao}
               aoEscolher={escolher}
               aoInscrever={inscrever}
               escolhido={escolha.has(`secao:${g.id}`)}
               key={g.id}
-              grupo={g}
-              aoMudar={aoMudarArea}
-              aoApagar={aoDesagrupar}
+              secao={g}
+              aoMudar={aoMudarSecao}
+              aoApagar={aoDissolverSecao}
               escala={camera.escala}
-              /* O grupo cujo id NÃO existia antes da última criação abre já
+              /* A seção cujo id NÃO existia antes da última criação abre já
                  pedindo o nome. Ver `idsDeAntes`. */
               nasceuAgora={idsDeAntes.current && !idsDeAntes.current.has(g.id) ? g.id : 0}
             />
@@ -2651,7 +2651,7 @@ export function Canvas({ nos = [], ligacoes = [], grupos = [], livros = [], acer
               viewBox={`${tracos.x} ${tracos.y} ${tracos.largura} ${tracos.altura}`}
             >
               {tracos.linhas.map((l) => (
-                <g key={l.id} className="traco-grupo">
+                <g key={l.id} className="traco-todo">
                   <path ref={(el) => inscreverTraco(l.id, el)} d={l.d} className="traco" fill="none" />
                   {/* A LINHA INTEIRA É O ALVO, e ela é invisível: uma curva de
                       1px é impossível de acertar com o dedo. */}
