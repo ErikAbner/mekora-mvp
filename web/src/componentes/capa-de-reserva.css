@@ -141,30 +141,68 @@
   font-style: italic;
 }
 
-/* ── 3 · duas colunas, título deitado — ESCRITA, FORA DO SORTEIO ──
-   Medida: a largura do contêiner colapsa para ~28px e o corpo do título cai
-   para 2,17px. Ver `capa-substituta.js`. ─────────────────────────────────────
-   Nó 1016:31014. Recheio de 32 em volta, vão de 16 entre as colunas. À esquerda
-   três ladrilhos com vão de 8; à direita o formato e a data em cima, o título
-   girado -90° embaixo. */
-.capa-de-reserva[data-capa="3"] {
+/* ── 3 e 4 · DUAS COLUNAS, arte à esquerda ───────────────────────────────
+ * Nós `1016:31014` e `1016:31027`. A mesma família: a arte ocupa a coluna da
+ * esquerda de ponta a ponta, o texto fica na direita.
+ *
+ * O QUE QUEBROU A 3, e vale como aviso: o gabarito dela citava uma área
+ * `rodape` que deixou de existir no DOM quando o crédito, o formato e a data
+ * saíram — e uma área nomeada sem elemento faz a coluna vizinha colapsar. A
+ * arte media ZERO de largura. Área de grade que não tem dono não fica vazia:
+ * ela desarranja o resto.
+ *
+ * Diferenças entre as duas: na 3 o título é DEITADO e a arte são três ladrilhos
+ * com respiro entre eles; na 4 o título é horizontal em Extrabold 30/33 e a
+ * arte é uma imagem só. */
+.capa-de-reserva[data-capa="3"],
+.capa-de-reserva[data-capa="4"] {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-rows: auto 1fr;
-  grid-template-areas: "arte rodape" "arte alto";
-  gap: 3.81cqw;
-  padding: var(--pad);
+  /* A LINHA PRECISA SER DECLARADA. Sem `grid-template-rows`, a linha implícita
+     mede pelo conteúdo — e a arte é um `span` vazio com imagem de fundo, logo
+     mede zero. Medido: 42×133 numa capa de 252×356. `1fr` faz a linha ocupar a
+     capa inteira, que é o que o nó mostra: a arte vai de ponta a ponta. */
+  grid-template-rows: 1fr;
+  grid-template-areas: "arte alto";
+  /* SEM RECHEIO NEM VÃO AQUI, e a razão é uma regra de `cqw` que quase não
+   * aparece: unidade de contêiner resolve contra o CONTÊINER MAIS PRÓXIMO ACIMA
+   * — nunca contra o próprio elemento que declara `container-type`.
+   *
+   * Medido: `padding: var(--pad)` na capa deu 109,728px numa capa de 252. Como
+   * `--pad` é 7,62cqw, o divisor foi 1440 — a janela. Nas variantes 1, 2 e 12
+   * isso não apareceu porque lá o recheio está nos FILHOS, e para eles a capa é
+   * o contêiner.
+   *
+   * Então o respiro desce para `.cr-alto`, que é descendente e mede certo. */
 }
-.capa-de-reserva[data-capa="3"] .cr-arte {
+.capa-de-reserva[data-capa="3"] .cr-arte,
+.capa-de-reserva[data-capa="4"] .cr-arte {
   grid-area: arte;
+  min-inline-size: 0;
   background: var(--capa-trama) url("/capas/trama.png") center / cover no-repeat;
-  /* Três ladrilhos com vão de 8px: as faixas de papel entre eles são feitas com
-     gradiente sobre a mesma trama, para não pedir três nós ao DOM. */
-  -webkit-mask-image: linear-gradient(#000 0 0);
-  mask-image: linear-gradient(#000 0 0);
-  background-clip: padding-box;
-  border-block: 0 solid transparent;
-  position: relative;
 }
+.capa-de-reserva[data-capa="3"] .cr-alto,
+.capa-de-reserva[data-capa="4"] .cr-alto {
+  grid-area: alto;
+  min-inline-size: 0; min-block-size: 0;
+  display: flex; flex-direction: column;
+  /* O vão entre as colunas e o respiro da direita vivem aqui — ver a nota do
+     `cqw` no gabarito acima. */
+  padding: var(--pad) var(--pad) var(--pad) 3.81cqw;
+}
+
+/* A 3: título deitado, encostado no pé da coluna. */
+.capa-de-reserva[data-capa="3"] .cr-alto { justify-content: flex-end; align-items: flex-start; }
+.capa-de-reserva[data-capa="3"] .cr-titulo {
+  writing-mode: vertical-rl; transform: rotate(180deg);
+  /* `-webkit-box` com escrita vertical colapsa o corpo — medido, 32px viravam
+     2,17. Deitado o corte é por altura da caixa, não por número de linhas. */
+  display: block; -webkit-line-clamp: none;
+  max-block-size: 100%;
+  white-space: nowrap; text-overflow: ellipsis;
+}
+/* Os três ladrilhos da 3: as faixas de papel entre eles saem de gradiente sobre
+   a mesma trama, para não pedir três nós ao DOM. */
+.capa-de-reserva[data-capa="3"] .cr-arte { position: relative; }
 .capa-de-reserva[data-capa="3"] .cr-arte::before,
 .capa-de-reserva[data-capa="3"] .cr-arte::after {
   content: ""; position: absolute; inset-inline: 0; block-size: 1.9cqw;
@@ -172,25 +210,11 @@
 }
 .capa-de-reserva[data-capa="3"] .cr-arte::before { inset-block-start: calc(33.33% - 0.95cqw); }
 .capa-de-reserva[data-capa="3"] .cr-arte::after  { inset-block-start: calc(66.66% - 0.95cqw); }
-.capa-de-reserva[data-capa="3"] .cr-rodape {
-  grid-area: rodape; align-self: start; font-style: italic;
-}
-.capa-de-reserva[data-capa="3"] .cr-alto {
-  grid-area: alto; min-inline-size: 0; min-block-size: 0;
-  display: flex; align-items: flex-end; justify-content: space-between;
-  gap: 2.86cqw;
-  padding-block-end: var(--pad);
-}
-.capa-de-reserva[data-capa="3"] .cr-titulo,
-.capa-de-reserva[data-capa="3"] .cr-credito {
-  writing-mode: vertical-rl; transform: rotate(180deg);
-  /* `-webkit-box` com `writing-mode` vertical colapsa o corpo: medido, 32px
-     viravam 2,17px. O corte deitado é por altura da linha, não por número de
-     linhas. */
-  display: block; -webkit-line-clamp: none;
-  max-block-size: 100%; overflow: hidden;
-  white-space: nowrap; text-overflow: ellipsis;
-}
+
+/* A 4: título horizontal em Extrabold, no alto. O nó põe 30/33 numa capa de
+   420; aqui o corpo é degrau, pela mesma razão da regra base. */
+.capa-de-reserva[data-capa="4"] .cr-alto { justify-content: flex-start; }
+.capa-de-reserva[data-capa="4"] .cr-titulo { font-weight: 800; line-height: 1.1; }
 
 /* ── 12 · centrada, bloco em `mix-blend-saturation`, quatro campos ────────
    Nó 1016:31006. O bloco é preto com mistura de saturação — sem imagem

@@ -22,12 +22,16 @@
  * inteira é melhor que estrear uma incompleta.
  *
  * Acrescentar aqui é o último passo de cada variante nova, depois do CSS. */
-export const CAPAS_PRONTAS = [1, 2, 12];
-/* A 3 tem CSS escrito e NÃO entra: medida na tela, a largura do contêiner
-   colapsa para ~28px e o título de 32px sai com 2,17px. É a única das quatro
-   com duas colunas e título deitado, e a mistura de `container-type` com
-   `writing-mode` vertical pede passada própria. Melhor repetir uma capa
-   inteira que estrear uma quebrada. */
+export const CAPAS_PRONTAS = [1, 2, 3, 4];
+/* A 12 SAIU DO SORTEIO em 04/09, e o motivo é uma medida minha que mediu a
+   coisa errada. O nó `1016:30788` põe a arte como um bloco preto em
+   `mix-blend-mode: saturation`. A minha sonda perguntou se a arte tinha
+   TAMANHO — 210×238, respondeu que sim — e nunca perguntou se ela PINTAVA.
+   Preto em mistura de saturação sobre papel quase neutro não muda nada: na
+   folha de contato a 12 sai como papel liso com um título.
+   No quadro o bloco deve assentar sobre alguma coisa que ele dessatura, e eu
+   não sei sobre o quê. Descobrir é uma leitura de nó; chutar é o que já me
+   custou a regra do fundo preto. Volta quando souber. */
 
 export function capaDoLivro(chave) {
   if (!chave) return CAPAS_PRONTAS[0];
