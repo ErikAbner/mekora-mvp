@@ -150,7 +150,7 @@ export function ContaSeguranca({ pessoa, aoSair }) {
                     </p>
                   </div>
                   {!s.este && (
-                    <Botao onClick={() => derrubar(s.id)} disabled={ocupado}>
+                    <Botao onClick={() => derrubar(s.id)} porque={ocupado ? "Espere a operação anterior terminar" : null}>
                       Encerrar
                     </Botao>
                   )}
@@ -161,7 +161,7 @@ export function ContaSeguranca({ pessoa, aoSair }) {
 
           {outras > 0 && (
             <div className="seguranca-todas">
-              <Botao tom="secundaria" onClick={derrubarOutras} disabled={ocupado}>
+              <Botao tom="secundaria" onClick={derrubarOutras} porque={ocupado ? "Espere a operação anterior terminar" : null}>
                 Sair de todos os outros
               </Botao>
               <p>

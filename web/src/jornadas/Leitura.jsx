@@ -671,6 +671,7 @@ function Caderno({ livro, notas, capitulo, aoComentar, aoTrocarCor, aoApagar, ao
                           type="button"
                           className="nota-procurar"
                           disabled={procurando === n.id}
+                          title={procurando === n.id ? "Procurando no livro inteiro…" : null}
                           onClick={() => aoProcurarNoLivro?.(n)}
                         >
                           {procurando === n.id ? "Procurando no livro…" : "Procurar no livro inteiro"}

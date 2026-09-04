@@ -82,7 +82,7 @@ export function Recado({ aberta, aoFechar, onde, temConta }) {
       aoFechar={fechar}
       acoes={
         foi ? null : (
-          <Botao tom="primaria" onClick={mandar} disabled={!texto.trim() || mandando}>
+          <Botao tom="primaria" onClick={mandar} porque={!texto.trim() ? "Escreva o recado antes de enviar" : mandando ? "Enviando…" : null}>
             {mandando ? "Enviando…" : "Enviar"}
           </Botao>
         )

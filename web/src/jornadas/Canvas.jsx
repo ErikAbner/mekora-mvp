@@ -3730,7 +3730,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
         acoes={
           <Botao
             tom="primaria"
-            disabled={!texto.trim()}
+            porque={!texto.trim() ? "Escreva alguma coisa para pôr na superfície" : null}
             onClick={async () => {
               /* A NOTA NASCE ONDE A PESSOA ESTÁ OLHANDO.
                *
@@ -3834,7 +3834,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
         acoes={
           <Botao
             tom="primaria"
-            disabled={!endereco.trim() && !foto}
+            porque={!endereco.trim() && !foto ? "Cole um endereço ou escolha uma foto" : null}
             onClick={async () => {
               const onde = meioDaVista(375, 220);
               /* A FOTO GANHA do endereço quando os dois estão preenchidos: ela é

@@ -108,7 +108,7 @@ export function ConfiguracoesArquivo({ aberta, aoFechar, livro, notas = 0, aoMud
             ) : (
               <Botao
                 tom="secundaria"
-                disabled={ocupado === "nome" || !nome.trim()}
+                porque={!nome.trim() ? "Escreva o novo nome" : ocupado === "nome" ? "Renomeando…" : null}
                 onClick={() => tentar("nome", async () => {
                   await renomearArquivo(id, nome.trim());
                   setRenomeando(false);
@@ -159,7 +159,7 @@ export function ConfiguracoesArquivo({ aberta, aoFechar, livro, notas = 0, aoMud
             baixavel ? (
               <a className="botao secundaria" href={baixavel} download>Baixar</a>
             ) : (
-              <Botao tom="secundaria" disabled>Baixar</Botao>
+              <Botao tom="secundaria" porque="Este arquivo ainda não tem versão preparada para baixar">Baixar</Botao>
             )
           }
         />
@@ -171,7 +171,7 @@ export function ConfiguracoesArquivo({ aberta, aoFechar, livro, notas = 0, aoMud
           acao={
             <Botao
               tom="secundaria"
-              disabled={ocupado === "refazer"}
+              porque={ocupado === "refazer" ? "Refazendo a preparação…" : null}
               onClick={() => tentar("refazer", async () => {
                 const novo = await refazerPreparo(id);
                 aoFechar?.();
@@ -193,7 +193,7 @@ export function ConfiguracoesArquivo({ aberta, aoFechar, livro, notas = 0, aoMud
             ) : (
               <Botao
                 tom="perigo"
-                disabled={ocupado === "remover"}
+                porque={ocupado === "remover" ? "Removendo…" : null}
                 onClick={() => tentar("remover", async () => {
                   await removerDaEstante(id);
                   aoFechar?.();

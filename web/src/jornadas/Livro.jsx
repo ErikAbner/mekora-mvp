@@ -274,7 +274,7 @@ export function Livro() {
             <div className="livro-pagina-acoes">
               <Botao
                 tom="primaria"
-                disabled={!livro.leitura_url}
+                porque={!livro.leitura_url ? "Este livro ainda não tem texto para ler aqui" : null}
                 onClick={() =>
                   navegar(`/leitura/${id}`, { state: { url: livro.leitura_url, titulo } })
                 }
@@ -288,7 +288,7 @@ export function Livro() {
                   não tinha como levar até ela. */}
               <Botao
                 tom="secundaria"
-                disabled={!livro.leitura_url || enviando || enviado}
+                porque={!livro.leitura_url ? "Este livro ainda não tem arquivo preparado" : enviado ? "Já enviado ao Kindle" : enviando ? "Enviando…" : null}
                 onClick={async () => {
                   setEnviando(true);
                   try {
@@ -386,6 +386,7 @@ export function Livro() {
                     type="button"
                     aria-pressed={chave === recorte ? "true" : "false"}
                     disabled={quantos === 0 && chave !== recorte}
+                    title={quantos === 0 && chave !== recorte ? `Nenhuma nota em ${rotulo.toLowerCase()}` : null}
                     onClick={() => setRecorte(chave)}
                   >
                     <span className="dado">{quantos}</span> {rotulo}
@@ -530,7 +531,7 @@ export function Livro() {
           <div className="livro-pagina-acoes">
             <Botao
               tom="primaria"
-              disabled={!sobreOLivro.trim() || guardando}
+              porque={!sobreOLivro.trim() ? "Escreva alguma coisa antes de guardar" : guardando ? "Guardando…" : null}
               onClick={async () => {
                 setGuardando(true);
                 setRecado(null);

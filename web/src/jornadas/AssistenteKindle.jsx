@@ -198,7 +198,7 @@ export function AssistenteKindle({ aoLigar, aoFechar, aoEnviarTeste }) {
             />
             <div className="ak-acoes">
               <Botao tom="secundaria" onClick={() => setPasso(1)}>Voltar</Botao>
-              <Botao tom="primaria" onClick={salvar} disabled={salvando}>
+              <Botao tom="primaria" onClick={salvar} porque={salvando ? "Guardando…" : null}>
                 {salvando ? "Guardando…" : "Continuar"}
               </Botao>
             </div>

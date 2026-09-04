@@ -174,7 +174,7 @@ export function Privacidade({ pessoa, aoSair, aoApagarConta }) {
         acoes={
           <Botao
             tom="perigo"
-            disabled={confirmacao.trim().toLowerCase() !== (dados?.email ?? "")}
+            porque={confirmacao.trim().toLowerCase() !== (dados?.email ?? "") ? "Escreva o seu email exatamente como ele está acima" : null}
             onClick={async () => {
               setErroApagar(null);
               try {

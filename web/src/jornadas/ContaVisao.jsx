@@ -207,7 +207,7 @@ export function ContaVisao({ pessoa, aoSair, aoMudarPerfil }) {
             />
             <Botao
               tom="primaria"
-              disabled={guardando || (nome.trim() === (eu?.nome ?? ""))}
+              porque={guardando ? "Guardando…" : nome.trim() === (eu?.nome ?? "") ? "O nome está como já estava" : null}
               onClick={async () => {
                 setGuardando(true);
                 setRecado(null);

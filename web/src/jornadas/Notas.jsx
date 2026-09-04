@@ -125,6 +125,7 @@ export function Notas({ notas = [], carregando, aoApagar, aoImportar }) {
                 aria-pressed={r.id === recorte ? "true" : "false"}
                 onClick={() => setRecorte(r.id)}
                 disabled={quantas === 0 && r.id !== "todas"}
+                title={quantas === 0 && r.id !== "todas" ? `Nenhuma nota em ${r.rotulo.toLowerCase()}` : null}
               >
                 {r.rotulo} <span className="dado">{quantas}</span>
               </button>

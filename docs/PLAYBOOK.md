@@ -261,8 +261,34 @@ node scripts/botoes.mjs
 ```
 
 Conta como vivo: `onClick`, `onPointerDown`, `type="submit"`, `{...resto}`, ou
-`disabled` — o desligado é honesto, e a regra pede que ele diga por quê no
-`title`.
+`disabled`.
+
+## O irmão: desligado sem razão
+
+`disabled` sozinho é meia-honestidade. Ele diz *não dá*, e não diz **o que
+falta** — quem usa fica olhando uma coisa apagada sem saber se o defeito é do
+produto ou dele. A regra sempre foi pôr o motivo no `title`; o que não havia era
+quem cobrasse, e por isso eram **34 botões em 16 arquivos**.
+
+O jeito de desligar é o `porque` do `componentes/Botao.jsx`:
+
+```jsx
+<Botao porque={quantos === 0 ? `Nenhum livro em ${rotulo}` : null}>Quadrinhos</Botao>
+```
+
+O mesmo valor desliga **e** explica, então não dá para esquecer metade: o que
+desliga *é* a razão. `<button>` cru continua usando `disabled` + `title`, e o
+`botoes.mjs` recusa os dois ausentes.
+
+Escrever a razão é escrever o que falta, e não o estado interno: *"Escreva o seu
+email"*, e não *"formulário inválido"*.
+
+**A conferência estava cega em pedaços inteiros.** Ela apagava os comentários
+antes de ler, e o padrão do comentário de JSX começava na chave e parava numa
+fechada bem adiante — no `Estante.jsx` engoliu **as linhas 194 a 253**, e o
+botão desligado que morava lá dentro nunca foi visto. Verde por omissão. Foi a
+medida do outro lado que apareceu com ele: a mesma tela, lida no DOM servido,
+mostrava um *"Quadrinhos 0"* apagado e mudo.
 
 **Ele ignora comentários.** A primeira versão acusou três, dois deles
 descrevendo defeitos já corrigidos: este repositório explica os defeitos no

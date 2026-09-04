@@ -245,8 +245,16 @@ export function Apresentacao({ aoReceberArquivos, backend }) {
       <section className="apresentacao-vitrine">
         {/* `inert` tira o bloco inteiro do foco e da árvore de acessibilidade:
             é uma ilustração da Estante, e um leitor de tela que a percorresse
-            anunciaria uma navegação falsa. */}
-        <div className="vitrine" inert="">
+            anunciaria uma navegação falsa.
+
+            ELE VAI COMO BOOLEANO, e não como `inert=""`. A grafia de string é a
+            do HTML, onde atributo booleano presente já vale; no React 19 o
+            `inert` virou propriedade booleana de verdade, e string vazia cai no
+            aviso "Received an empty string for a boolean attribute `inert`" —
+            que o React resolve tratando como `false`, ou seja, DESLIGANDO a
+            proteção que esta linha existe para dar. O aviso saía no console de
+            todas as telas, porque a varredura passa por "/" para entrar. */}
+        <div className="vitrine" inert>
           <div className="vitrine-topo">
             <span className="vitrine-lugares">
               {["Mesa", "Estante", "Canvas", "Estudos"].map((l) => (

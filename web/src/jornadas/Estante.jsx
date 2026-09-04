@@ -230,6 +230,7 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnvia
                 type="button"
                 aria-pressed={r.id === recorte ? "true" : "false"}
                 disabled={quantos === 0 && r.id !== "tudo"}
+                title={quantos === 0 && r.id !== "tudo" ? `Nenhum livro em ${r.rotulo.toLowerCase()}` : null}
                 onClick={() => { setRecorte(r.id); setFiltrando(false); }}
               >
                 <span>{r.rotulo}</span>
@@ -264,6 +265,7 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnvia
                      uma estante vazia é fazê-lo procurar o erro num lugar onde
                      não há erro. */
                   disabled={quantos === 0 && r.id !== "tudo"}
+                  title={quantos === 0 && r.id !== "tudo" ? `Nenhum livro em ${r.rotulo.toLowerCase()}` : null}
                 >
                   {r.rotulo} <span className="dado">{quantos}</span>
                 </button>
@@ -508,7 +510,7 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnvia
                 <Botao
                   tom="primaria"
                   onClick={() => aoAbrir?.(selecionado)}
-                  disabled={!selecionado.leituraUrl}
+                  porque={!selecionado.leituraUrl ? "Este livro ainda não tem texto para ler aqui" : null}
                 >
                   Continuar
                 </Botao>
@@ -532,7 +534,7 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnvia
                   <Botao
                     tom="secundaria"
                     onClick={() => aoEnviar?.(selecionado)}
-                    disabled={selecionado.envio === "enviando"}
+                    porque={selecionado.envio === "enviando" ? "Enviando ao Kindle…" : null}
                   >
                     {selecionado.envio === "enviando"
                       ? "Enviando…"

@@ -97,7 +97,7 @@ export function Entrar() {
           autoFocus
           required
         />
-        <Botao tipo="submit" tom="primaria" disabled={estado === "enviando" || !email.trim()}>
+        <Botao tipo="submit" tom="primaria" porque={!email.trim() ? "Escreva o seu email" : estado === "enviando" ? "Enviando…" : null}>
           {estado === "enviando" ? "Enviando…" : "Receber o link"}
         </Botao>
       </form>

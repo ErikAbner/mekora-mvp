@@ -1,4 +1,4 @@
-/* Acha botão que não faz nada.
+/* Acha botão que não faz nada — e botão que se desliga sem dizer por quê.
  *
  *     node scripts/botoes.mjs
  *
@@ -23,8 +23,28 @@
  * O QUE CONTA COMO VIVO
  * =====================
  * `onClick`, `onPointerDown`, `type="submit"`, ou `disabled` — o desligado é
- * honesto: ele diz que não faz nada, e a regra do produto pede que diga por quê
- * no `title`.
+ * honesto: ele diz que não faz nada.
+ *
+ * A SEGUNDA CLASSE: DESLIGADO SEM RAZÃO
+ * =====================================
+ * `disabled` sozinho é meia-honestidade. Ele diz "não dá", e não diz o que
+ * falta — quem usa fica olhando um botão apagado sem saber se o defeito é do
+ * produto ou dele. A regra deste repositório sempre foi pôr o motivo no
+ * `title`; o que não havia era quem cobrasse.
+ *
+ * A varredura de fumaça achou cinco em quatro telas — "Quadrinhos 0" na
+ * Estante, "Do Kindle 0" e "Para revisar 0" em Notas, "Guardar" na Conta,
+ * "Receber o link" em Entrar. Consertar os cinco tapa cinco buracos; cobrar
+ * aqui fecha a classe, e é o irmão exato do botão sem gesto: os dois são
+ * afordância que promete uma coisa e entrega outra.
+ *
+ * A razão pode vir de dois jeitos, e o segundo é o preferido:
+ *
+ *     <Botao disabled title="Nenhum quadrinho na estante">   explícito
+ *     <Botao porque={vazio && "Nenhum quadrinho na estante"}> o primitivo
+ *
+ * O `porque` do `componentes/Botao.jsx` desliga E explica com o mesmo valor, e
+ * por construção não deixa esquecer metade.
  *
  * O QUE ELE NÃO ACUSA
  * ===================
@@ -46,7 +66,15 @@ const alvo = join(raiz, 'web', 'src');
  * uso certo. */
 const ATRAVESSA = new Set(['Folha', 'Escolha', 'Campo', 'Soltar', 'TrilhaLinhas', 'TrazerDoKindle']);
 
-const VIVO = /\bonClick\s*=|\bonPointerDown\s*=|\bonMouseDown\s*=|\btype\s*=\s*["'{]?submit|\bdisabled\b|\{\.\.\./;
+const VIVO = /\bonClick\s*=|\bonPointerDown\s*=|\bonMouseDown\s*=|\btype\s*=\s*["'{]?submit|\bdisabled\b|\bporque\b|\{\.\.\./;
+
+/* Desligado, de qualquer das duas grafias. */
+const DESLIGA = /\bdisabled\b|\bporque\s*=/;
+
+/* E a razão, que pode estar no `title`, no `porque`, ou vir de fora por
+ * espalhamento — `{...resto}` pode carregar um `title`, e acusar aí seria
+ * acusar o uso certo do componente que atravessa props. */
+const RAZAO = /\btitle\s*=|\bporque\s*=|\baria-label\s*=|\{\.\.\./;
 
 function arquivos(dir) {
   return readdirSync(dir).flatMap((n) => {
@@ -74,6 +102,7 @@ function abertura(texto, i) {
 }
 
 const mortos = [];
+const mudos = [];
 
 /* OS COMENTÁRIOS SAEM ANTES DA CONFERÊNCIA.
  *
@@ -85,10 +114,25 @@ const mortos = [];
  * Trocar `<button>` por outra grafia nos comentários seria consertar o texto
  * para o instrumento; o instrumento é que aprende a não ler comentário.
  *
- * As linhas são preservadas para o número da linha continuar certo. */
+ * As linhas são preservadas para o número da linha continuar certo.
+ *
+ * UM PADRÃO SÓ, e a primeira versão tinha dois — este arquivo é a prova do
+ * estrago. Havia uma alternativa dedicada ao comentário de JSX, o que vem
+ * entre chaves, e ela começava na CHAVE e só parava numa fechada bem adiante:
+ * no `Estante.jsx` a chave do CORPO DA FUNÇÃO casou com uma fechada sessenta
+ * linhas abaixo, e as linhas 194 a 253 saíam em branco. Dentro delas havia um
+ * botão desligado sem razão — e a conferência dizia verde.
+ *
+ * Verde por omissão, que é o defeito que este repositório mais paga: o
+ * instrumento some com o pedaço e depois diz que não há nada ali. Achado
+ * medindo pelo outro lado: a mesma tela, lida no DOM servido, mostrava um
+ * "Quadrinhos 0" apagado e mudo que a leitura do JSX jurava não existir.
+ *
+ * O padrão de bloco cru dá conta dos dois casos, porque o comentário de JSX é
+ * um bloco cru entre chaves; o que sobra de chave está balanceado e não
+ * atrapalha a contagem da `abertura`. */
 function semComentarios(texto) {
   return texto
-    .replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, (t) => t.replace(/[^\n]/g, ' '))
     .replace(/\/\*[\s\S]*?\*\//g, (t) => t.replace(/[^\n]/g, ' '))
     .replace(/^\s*\/\/.*$/gm, (t) => ' '.repeat(t.length));
 }
@@ -100,21 +144,29 @@ for (const arquivo of arquivos(alvo)) {
   while ((m = re.exec(texto)) !== null) {
     if (ATRAVESSA.has(m[1])) continue;
     const tag = abertura(texto, m.index);
-    if (VIVO.test(tag)) continue;
     const linha = texto.slice(0, m.index).split('\n').length;
-    mortos.push({
-      onde: `${relative(raiz, arquivo)}:${linha}`,
-      trecho: tag.replace(/\s+/g, ' ').slice(0, 90),
-    });
+    const onde = `${relative(raiz, arquivo)}:${linha}`;
+    const trecho = tag.replace(/\s+/g, ' ').slice(0, 90);
+    if (DESLIGA.test(tag) && !RAZAO.test(tag)) mudos.push({ onde, trecho });
+    if (VIVO.test(tag)) continue;
+    mortos.push({ onde, trecho });
   }
 }
 
-if (!mortos.length) {
-  console.log('nenhum botão sem gesto.');
+if (!mortos.length && !mudos.length) {
+  console.log('nenhum botão sem gesto, nenhum desligado sem razão.');
   process.exit(0);
 }
 
-console.error(`${mortos.length} botão(ões) sem gesto — clicam e não fazem nada:\n`);
-for (const b of mortos) console.error(`  ${b.onde}\n    ${b.trecho}\n`);
-console.error('Dê um `onClick`, ou marque `disabled` com o motivo no `title`.');
+if (mortos.length) {
+  console.error(`${mortos.length} botão(ões) sem gesto — clicam e não fazem nada:\n`);
+  for (const b of mortos) console.error(`  ${b.onde}\n    ${b.trecho}\n`);
+  console.error('Dê um `onClick`, ou desligue com `porque="o que falta"`.\n');
+}
+
+if (mudos.length) {
+  console.error(`${mudos.length} botão(ões) desligado(s) sem razão — apagam e não dizem por quê:\n`);
+  for (const b of mudos) console.error(`  ${b.onde}\n    ${b.trecho}\n`);
+  console.error('Troque `disabled={x}` por `porque={x && "o que falta"}`.');
+}
 process.exit(1);

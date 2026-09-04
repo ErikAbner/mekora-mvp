@@ -255,7 +255,7 @@ function PrecisaDeVoce({ arquivos, aoDestravar }) {
                     <Botao
                       tom="primaria"
                       tipo="submit"
-                      disabled={tentando === a.id || !(senhas[a.id] ?? "").length}
+                      porque={!(senhas[a.id] ?? "").length ? "Escreva a senha do arquivo" : tentando === a.id ? "Abrindo…" : null}
                     >
                       {tentando === a.id ? "Abrindo…" : qual.acao}
                     </Botao>
@@ -418,6 +418,7 @@ export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberA
                 type="button"
                 aria-pressed={id === recorte ? "true" : "false"}
                 disabled={quantos === 0 && id !== recorte}
+                title={quantos === 0 && id !== recorte ? `Nenhum arquivo em ${String(rotulo).toLowerCase()}` : null}
                 onClick={() => setRecorte(id)}
               >
                 {/* O NÚMERO ANTES DO RÓTULO — "1 Enviando", "0 Na fila", como o

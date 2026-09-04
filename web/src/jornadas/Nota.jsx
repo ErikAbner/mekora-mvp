@@ -443,7 +443,7 @@ export function Nota() {
             </p>
             <Botao
               tom="secundaria"
-              disabled={montando}
+              porque={montando ? "Montando o estudo…" : null}
               onClick={async () => {
                 setMontando(true);
                 try {

@@ -296,6 +296,7 @@ function Topo({ job, titulo, ajustando, aoTrocar, inerte = false }) {
                 type="button"
                 aria-pressed={ajustando === manual ? "true" : "false"}
                 disabled={inerte}
+                title={inerte ? "A conversão já começou — o ajuste não muda mais" : null}
                 onClick={() => aoTrocar(manual)}
               >
                 {rotulo}
@@ -504,7 +505,7 @@ export function Preparo() {
                   resultado e baixe" — não havia como baixar em tela nenhuma. */}
               <Botao
                 tom="primaria"
-                disabled={enviando || enviado}
+                porque={enviado ? "Já enviado ao Kindle" : enviando ? "Enviando…" : null}
                 onClick={async () => {
                   setEnviando(true);
                   try {
@@ -655,7 +656,7 @@ export function Preparo() {
             {p?.operacao && (
               <Botao
                 tom="primaria"
-                disabled={cancelando}
+                porque={cancelando ? "Cancelando…" : null}
                 onClick={async () => {
                   setCancelando(true);
                   try {
@@ -862,7 +863,7 @@ export function Preparo() {
         <div className="preparo-pagina-pagina-acoes">
           <Botao
             tom="primaria"
-            disabled={preparando}
+            porque={preparando ? "Preparando o arquivo…" : null}
             onClick={async () => {
               setPreparando(true);
               setInicio(Date.now());
@@ -928,7 +929,7 @@ export function Preparo() {
               <li key={d.codigo}>
                 <Botao
                   tom="secundaria"
-                  disabled={traduzindo}
+                  porque={traduzindo ? "Traduzindo…" : null}
                   onClick={async () => {
                     setTraduzindo(true);
                     setErro(null);

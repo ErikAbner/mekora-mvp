@@ -191,7 +191,7 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, 
           lista existe para mostrar. */}
       {!resumido && (
       <footer className="estudo-acoes">
-        <Botao tom="secundaria" onClick={() => setReunindo(true)} disabled={!deFora.length}>
+        <Botao tom="secundaria" onClick={() => setReunindo(true)} porque={!deFora.length ? "Todas as suas notas já estão neste estudo" : null}>
           Reunir nota {deFora.length > 0 && <span className="dado">{deFora.length}</span>}
         </Botao>
         {/* FECHAR NÃO ARQUIVA: o estudo continua inteiro e visível. Fechar diz
@@ -564,6 +564,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                             type="button"
                             className="estudos-reler"
                             disabled={relendo === l.chave}
+                            title={relendo === l.chave ? "Marcando para reler…" : null}
                             onClick={async () => {
                               setRelendo(l.chave);
                               try {
@@ -710,7 +711,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                     <div className="estudos-fio-acoes">
                       <Botao
                         tom="secundaria"
-                        disabled={montando === chave}
+                        porque={montando === chave ? "Montando o estudo…" : null}
                         onClick={async () => {
                           setMontando(chave);
                           try {
@@ -738,7 +739,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                           ele volta na próxima visita — que é honesto. */}
                       <Botao
                         tom="secundaria"
-                        disabled={calando === chave}
+                        porque={calando === chave ? "Dispensando…" : null}
                         onClick={async () => {
                           setCalando(chave);
                           try {
@@ -899,7 +900,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
         acoes={
           <Botao
             tom="primaria"
-            disabled={!nome.trim()}
+            porque={!nome.trim() ? "Dê um nome ao estudo" : null}
             onClick={async () => {
               if (await aoCriar({ nome: nome.trim(), sobre: sobre.trim() })) setCriando(false);
             }}
