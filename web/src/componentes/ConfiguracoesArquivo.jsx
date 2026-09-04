@@ -33,7 +33,19 @@ import "./configuracoes-arquivo.css";
  * ícones usado é o solar - 480". */
 const ICONES = {
   renomear: "/icones/icone-renomear.svg",
-  paginas: "/icones/icone-paginas.svg",
+  /* "Ver todas as páginas" usa o de CAMADAS, e não o de páginas.
+   *
+   * `icone-paginas.svg` era byte a byte igual a `icone-canvas.svg` — o mesmo
+   * grid de quatro quadrados servindo de "Canvas" no menu e de "páginas" aqui.
+   * O quadro não pediu isso: o nó `941:23118` desenha as cinco ações com o
+   * ícone EM BRANCO, um quadrado vazio à esquerda de cada uma. A implementação
+   * preencheu a lacuna reusando o glifo do Canvas, e o Canvas é quem estava
+   * certo — `910:1626` é o grid, no menu do Erik.
+   *
+   * `icone-camadas.svg` já existia na biblioteca dele e não era usado por
+   * ninguém: pilha de folhas, que é o que "ver todas as 96 páginas" é. Sem
+   * arte nova, sem inventar glifo, e sem tirar o do Canvas. */
+  paginas: "/icones/icone-camadas.svg",
   baixar: "/icones/icone-baixar.svg",
   refazer: "/icones/icone-refazer.svg",
   remover: "/icones/icone-remover.svg",
