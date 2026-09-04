@@ -1241,3 +1241,14 @@ folha.
 e a marca. É o único quadro com rodapé entre as sete telas lidas em 04/09, e é
 placeholder — por isso a Leitura ficou de fora da retirada de rodapés das seis
 superfícies de produto.
+
+**Medido a 1920 e corrigido:** a abertura tinha vão 40 e altura livre — 345
+contra os 564 do nó. Os dois nós, computador e telefone, pedem vão 64 e
+`h-[564px]`. A altura fixa não é capricho: com altura de conteúdo, um título
+curto encolhe a abertura inteira e o efeito de "abrir um livro" some.
+
+No telefone o recheio era 40/24 e o vão 24, contra `py-64 px-16` e vão 64 do
+`966:29655`. Terceiro caso do mesmo reflexo nesta tela.
+
+**Batem sem tocar:** coluna de prosa em 680 exatos, prosa 20/30 com recuo 32,
+título 64/72 peso 700 com tracking -2,5%. Portão passa a 1920 e a 390.

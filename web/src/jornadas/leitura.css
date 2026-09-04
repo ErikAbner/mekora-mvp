@@ -92,8 +92,19 @@
   .cromo-caixa button::after, .cromo-caixa .cromo-link::after { transition: none; transform: none; }
 }
 
+/* VÃO 64 E ALTURA 564 — os dois nós dizem o mesmo.
+ *
+ * `895:10562` (computador) e `966:29655` (telefone) põem `gap-[64px]` e
+ * `h-[564px]` com o conteúdo centrado. O produto tinha vão 40 e altura livre —
+ * medido a 1920: 345 de altura contra os 564 do desenho.
+ *
+ * A altura fixa não é capricho: a abertura de um livro ocupa uma faixa da tela
+ * antes do texto começar, e é isso que separa "abrir um livro" de "cair no meio
+ * de um parágrafo". Com altura de conteúdo, um título curto encolhe a abertura
+ * inteira e o efeito some. */
 .abertura {
-  display: flex; flex-direction: column; align-items: center; gap: 40px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 64px; min-block-size: 564px;
   padding: 64px; text-align: center;
 }
 .abertura h1 {
@@ -854,7 +865,11 @@
   .cromo { gap: 8px; padding: 8px 12px; }
   .cromo-caixa { flex: 1 1 auto; justify-content: space-around; gap: 0; padding: 6px; }
   .cromo-caixa button, .cromo-link { padding: 10px; inline-size: 44px; block-size: 44px; }
-  .abertura { padding: 40px 24px; gap: 24px; }
+  /* O NÓ DE TELEFONE PEDE `py-64 px-16` E VÃO 64 — os mesmos 64 do computador.
+     `966:29655`. O produto tinha 40/24 e vão 24: encolheu o recheio, encolheu o
+     vão, e encolheu o que o desenho manteve. É o terceiro caso desta tela e o
+     enésimo do dia — a varredura do telefone lista 51. */
+  .abertura { padding: 64px 16px; gap: 64px; }
   /* 56, como o desenho mobile pede — e o degrau agora existe na escala (A-12).
      Ele ia 48 → 64, e o que faltava era justamente o do meio: a cauda anda de 8
      em 8, e acrescentá-lo tornou a sequência regular em vez de abrir exceção.
