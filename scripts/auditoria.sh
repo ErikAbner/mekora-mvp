@@ -56,26 +56,52 @@ for t in contrato/*.teste.mjs; do node "$t" >/dev/null 2>&1 || echo "FALHOU  $t"
 node web/src/medir.teste.mjs || true
 echo
 
-medida() {   # $1 rota  $2 largura  $3 altura  $4 tema  $5 privada?
-  local url="$WEB$1"
+# AS DUAS TELAS QUE NAO TEM URL FIXA.
+#
+# `/nota/:id` e `/estudo/:id` dependem do id de um registro que a semente cria
+# com numero diferente a cada rodada, entao nao ha URL para escrever aqui. Elas
+# ficaram FORA da auditoria por semanas por causa disso — e nao por falta de
+# importancia: eram 19 de 21 telas, e as duas que faltavam sao as do
+# conhecimento.
+#
+# `--dentro=<seletor>` resolve: abre a lista, clica no primeiro item pelo
+# ROTEADOR e mede onde chegou. Navegacao no mesmo documento, que e a unica que a
+# sessao de medida sobrevive.
+#
+# O formato e "rota|seletor", e o `medida()` parte na barra.
+DE_DENTRO="/notas|a[href^=\"/nota/\"] /estudos|a[href^=\"/estudo/\"]"
+
+# UMA SESSAO PARA A RODADA INTEIRA, e nao uma por medida.
+#
+# A versao anterior chamava `entrar-como-dono.sh` a cada linha: 66 medidas, 66
+# pedidos de link. Desde 03/09 ha um teto de 20 links por origem por hora
+# (`LINKS_POR_ORIGEM`), e a rodada morria no vigesimo — as demais caiam na tela
+# de "Criar conta" e o `medir.mjs` as recusava. Medido: 20 medidas atendidas de
+# 66, e o "21 de 21" nunca fechava numa corrida so.
+#
+# O teto esta certo. O que mudou foi o instrumento: `sessao-de-prova.sh` escreve
+# UMA sessao direto no banco de prova — o mesmo caminho do `conftest.py` — e o
+# `--sessao` do medir poe o biscoito antes da primeira navegacao. Nenhum link e
+# pedido, e o caminho do link continua provado onde ele e o assunto.
+SESSAO=""
+LIVRO=""
+abrir_sessao() {
+  local saida
+  saida=$(MEKORA_PROVA="$RAIZ" scripts/sessao-de-prova.sh 2>/dev/null) || return 1
+  SESSAO=$(printf '%s\n' "$saida" | sed -n 1p)
+  LIVRO=$(printf '%s\n' "$saida" | sed -n 2p)
+  [ -n "$SESSAO" ]
+}
+
+medida() {   # $1 rota  $2 largura  $3 altura  $4 tema  $5 privada?  $6 seletor de dentro
+  local url="$WEB${1//\{LIVRO\}/${LIVRO:-0}}"
+  local dentro=""
+  [ -n "${6:-}" ] && dentro="--dentro=$6"
   if [ "$5" = "sim" ]; then
-    # DUAS LINHAS: a chave, e o primeiro livro DA CONTA que acabou de nascer.
-    #
-    # A versao anterior descobria o id do livro numa conta e o passava de volta
-    # ao helper para medir com OUTRA — e passar um id ali TRANSFERE o trabalho.
-    # Cada rodada da auditoria roubava um livro do acervo do Erik, e depois de
-    # algumas a leitura dele abria no texto de exemplo, porque o livro com EPUB
-    # tinha mudado de dono. Ninguem transfere nada agora.
-    local saida k livro
-    saida=$(MEKORA_PROVA="$RAIZ" scripts/entrar-como-dono.sh 2>/dev/null) || { echo "sem sessao"; return; }
-    k=$(printf '%s\n' "$saida" | sed -n 1p)
-    livro=$(printf '%s\n' "$saida" | sed -n 2p)
-    [ -n "$k" ] || { echo "sem sessao"; return; }
-    [ -n "$livro" ] || livro=0
-    url="$WEB${1//\{LIVRO\}/$livro}"
-    node scripts/medir.mjs "$WEB/entrar/$k" "$2" "$3" scripts/portao.js $4 --depois="$url" 2>/dev/null
+    [ -n "$SESSAO" ] || { echo "sem sessao"; return; }
+    node scripts/medir.mjs "$url" "$2" "$3" scripts/portao.js $4 --sessao="$SESSAO" $dentro 2>/dev/null
   else
-    node scripts/medir.mjs "$url" "$2" "$3" scripts/portao.js $4 2>/dev/null
+    node scripts/medir.mjs "$url" "$2" "$3" scripts/portao.js $4 $dentro 2>/dev/null
   fi
 }
 
@@ -90,6 +116,8 @@ print(('passou' if d['passou'] else 'FALHOU') + f\"  {d['nos_com_texto']:>3} nos
 "
 }
 
+abrir_sessao || echo "AVISO: nao consegui abrir sessao de prova — as privadas vao dizer 'sem sessao'"
+
 for larg in "1440 1000 " "390 844 " "1440 1000 --escuro"; do
   set -- $larg
   echo "═══ ${1}x${2} ${3:-claro} ═══"
@@ -103,5 +131,10 @@ for larg in "1440 1000 " "390 844 " "1440 1000 --escuro"; do
   # o texto do livro e nao o de exemplo.
   for r in "/estante/{LIVRO}" "/preparo/{LIVRO}" "/leitura/{LIVRO}"; do
     printf "  %-22s " "$r"; medida "$r" "$1" "$2" "${3:-}" sim | resumo
+  done
+  # AS DUAS DE DENTRO, e com elas a auditoria alcanca 21 de 21.
+  for par in $DE_DENTRO; do
+    rota="${par%%|*}"; sel="${par#*|}"
+    printf "  %-22s " "$rota →"; medida "$rota" "$1" "$2" "${3:-}" sim "$sel" | resumo
   done
 done

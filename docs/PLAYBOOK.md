@@ -17,6 +17,18 @@ cd ~/dev/mekora && node scripts/medir.mjs \
   "http://localhost:5180/sua-rota" 1440 1000 scripts/portao.js
 ```
 
+**Tela que só se alcança por dentro entra com `--dentro`.** Se a rota nova tiver
+um id que muda a cada rodada — como `/nota/:id` —, não há URL para escrever na
+auditoria. O jeito é abrir a lista e clicar:
+
+```bash
+node scripts/medir.mjs "$WEB/entrar/$K" 1440 1000 scripts/portao.js \
+  --depois="$WEB/notas" --dentro='a[href^="/nota/"]'
+```
+
+E acrescente o par `rota|seletor` em `DE_DENTRO`, no `scripts/auditoria.sh`, ou a
+tela vai passar no portão só quando alguém a medir à mão.
+
 **Um caminho só, e ele sai da raiz do repositório.** Não há `npm run portao` em
 `web/`: existiu uma entrada apontando para um arquivo que nunca existiu, e ela
 saiu. Quem quiser o portão logado usa `scripts/portao-logado.sh`; quem quiser

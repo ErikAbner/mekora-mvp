@@ -9,7 +9,7 @@
  *
  * Sem dependência: Node 18+ já tem fetch e WebSocket globais.
  *
- *   node scripts/medir.mjs <url> [largura] [altura] [setup.js] <medida.js> [--png=arq] [--gesto=arq]
+ *   node scripts/medir.mjs <url> [largura] [altura] [setup.js] <medida.js> [--png=arq] [--gesto=arq] [--dentro=seletor] [--sessao=token]
  *
  * setup.js  roda antes da medida (põe o protótipo no estado que interessa)
  * medida.js é uma expressão avaliada na página; o valor volta como JSON
@@ -79,6 +79,31 @@ const depois = (bruto.find(x => x.startsWith('--depois=')) || '').slice(9) || nu
    porque arrasto nao se mede com expressao: dispatchEvent sintetico nao gera
    captura de ponteiro, e captura e exatamente onde o arrasto quebra. */
 const gesto = (bruto.find(x => x.startsWith('--gesto=')) || '').slice(8) || null;
+/* --dentro=<seletor> CLICA e espera, depois de `--depois` e antes da medida.
+ *
+ * POR QUE ISTO EXISTE: duas telas do produto so se alcancam por dentro —
+ * `/nota/:id` e `/estudo/:id` nao tem URL fixa, porque o id e de um registro que
+ * a semente cria com numero diferente a cada rodada. A auditoria mede por URL, e
+ * por isso as duas ficaram fora dela por semanas: elas passavam no portao
+ * quando alguem as media a mao, e nada as media sozinho.
+ *
+ * O clique e do ROTEADOR, e nao uma navegacao nova: `location.href` derruba a
+ * sessao de medida ("Inspected target navigated or closed"). Sair pelo roteador
+ * e navegacao no mesmo documento, e o contexto sobrevive — a mesma licao que a
+ * bancada ja tinha pago.
+ */
+const dentro = (bruto.find(x => x.startsWith('--dentro=')) || '').slice(9) || null;
+/* --sessao=<token> POE O BISCOITO direto, em vez de abrir um link de entrada.
+ *
+ * O link e de uso unico e tem teto — 20 por origem por hora desde 03/09 —, e a
+ * auditoria pede 66 medidas. Ela morria no vigesimo, e as demais mediam a tela
+ * de "Criar conta" ate o `--depois` recusar. Com o token, uma sessao serve a
+ * rodada inteira e nenhum teto e tocado.
+ *
+ * O token vem do `scripts/sessao-de-prova.sh`, que escreve a sessao no banco de
+ * PROVA com o mesmo resumo sha256 que o servidor confere.
+ */
+const sessao = (bruto.find(x => x.startsWith('--sessao=')) || '').slice(9) || null;
 
 /* --teclas=<texto> DIGITA, depois do gesto. `\n` vale por Enter e `\t` por Tab.
  *
@@ -155,6 +180,23 @@ try {
       features: [{ name: 'prefers-color-scheme', value: 'dark' }],
     });
   }
+  if (sessao) {
+    /* ANTES DA PRIMEIRA NAVEGACAO, e o comentario ja dizia isso quando o codigo
+     * fazia o contrario: o bloco morava DEPOIS do `Page.navigate`, entao a
+     * primeira pagina — que e a medida quando nao ha `--depois` — carregava sem
+     * biscoito nenhum. A tela vinha "Criar conta no Mekora" e a sessao estava
+     * boa; `curl` com o mesmo token respondia `entrou: true`.
+     *
+     * `url` E NAO `domain`: com `domain: 'localhost'` o Chrome responde
+     * `success` e o biscoito nao acompanha o pedido. Com `url` ele deriva
+     * dominio, porta e esquema do endereco de verdade. */
+    const posto = await manda('Network.setCookie', {
+      name: 'mekora_sessao', value: sessao,
+      url, path: '/', httpOnly: true, sameSite: 'Lax',
+    });
+    if (!posto.success) throw new Error('--sessao: o navegador recusou o biscoito');
+  }
+
   const nav = await manda('Page.navigate', { url });
   if (nav.errorText) throw new Error(`a página não carregou: ${nav.errorText} — ${url}`);
   await espera(1500);
@@ -198,6 +240,44 @@ try {
       throw new Error(`pediu ${pedido} e parou em ${montou.p} — a sessão não valeu, ou a rota não existe`);
     }
   }
+  if (dentro) {
+    /* O SELETOR TEM DE ACHAR ALGUEM. Um clique em nada mede a tela anterior e
+     * diz que passou — o pior verde possivel, porque parece cobertura. */
+    /* ESPERA O ALVO APARECER, ate seis segundos.
+     *
+     * A lista que o seletor procura vem de um pedido ao servidor, e a primeira
+     * versao olhava uma vez so — logo depois da navegacao. Ela achava quando a
+     * medida vinha de `--depois` (que ja espera 2s) e nao achava quando a rota
+     * era a primeira do comando. Um instrumento que depende de qual flag veio
+     * antes mede coisas diferentes pelo mesmo motivo. */
+    for (let i = 0; i < 12; i++) {
+      const tem = await avalia(`Boolean(document.querySelector(${JSON.stringify(dentro)}))`);
+      if (tem) break;
+      await espera(500);
+    }
+
+    const antes = await avalia(`(() => {
+      /* O CAMINHO E LIDO ANTES DO CLIQUE. Lido depois, o roteador ja mudou a
+       * rota e a conferencia "mudou de tela?" compara o destino consigo mesmo —
+       * que foi exatamente o que a primeira versao fez, e ela acusou uma
+       * navegacao que tinha funcionado. */
+      const de = location.pathname;
+      const el = document.querySelector(${JSON.stringify(dentro)});
+      if (el) el.click();
+      return { achou: Boolean(el), de };
+    })()`);
+    if (!antes.achou) throw new Error(`--dentro nao achou "${dentro}" em ${antes.de}`);
+    await espera(3000);
+    const chegou = await avalia('({p:location.pathname,n:document.body?document.body.querySelectorAll("*").length:0})');
+    if (chegou.p === antes.de) {
+      throw new Error(`--dentro clicou em "${dentro}" e a rota nao mudou: continua em ${chegou.p}`);
+    }
+    if (chegou.n < 5) throw new Error(`--dentro chegou em ${chegou.p} e a tela nao montou (${chegou.n} nos)`);
+    /* O caminho alcancado vai para a saida: sem ele o relatorio diz "/notas" e
+     * mede outra coisa. */
+    process.env.MEKORA_ROTA_MEDIDA = chegou.p;
+  }
+
   if (gesto) {
     const pts = await avalia(readFileSync(gesto, 'utf8'));
     if (!Array.isArray(pts) || pts.length < 2)

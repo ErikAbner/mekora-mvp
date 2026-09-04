@@ -132,9 +132,22 @@ As regras de idioma visual e de honestidade da interface valem para as **duas**.
     node scripts/classes.mjs                           # classe de dois donos, e classe de fora
     node scripts/medir.mjs <url> 1440 1000 scripts/coluna.js   # coluna estrangulada
     node scripts/seletores.mjs                         # seletor que não casa em rota nenhuma
+    node scripts/cobertura.mjs                         # a auditoria alcança todas as rotas?
 
 `--gesto=arq.js` roda na página, devolve pontos, e o Chrome anda por eles com o
 botão apertado — é como se testa arrasto de verdade.
+
+`--sessao=<token>` põe o biscoito antes da primeira navegação, e o token sai do
+`scripts/sessao-de-prova.sh`, que escreve a sessão direto no banco de PROVA. A
+razão é um teto: `LINKS_POR_ORIGEM` é 20 por hora, e a auditoria pedia um link
+por medida — 66 pedidos, 20 atendidos, e a rodada morria na metade. O teto está
+certo; o instrumento é que pedia demais.
+
+`--dentro=<seletor>` clica DEPOIS de chegar e mede onde parou. Existe para as
+duas telas que não têm URL fixa — `/nota/:id` e `/estudo/:id`, cujo id nasce
+diferente a cada semente. Sem ele a auditoria alcançava 19 de 21 telas, e as duas
+que faltavam eram as do conhecimento. O clique é do ROTEADOR: `location.href`
+derruba a sessão de medida.
 
 **O portão de seletor e escopo, de 03/09.** Três defeitos da mesma semana tinham
 a mesma forma — o seletor com um modelo errado do DOM, e a tela parecendo certa:
