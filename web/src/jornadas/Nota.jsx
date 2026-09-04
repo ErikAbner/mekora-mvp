@@ -145,12 +145,21 @@ export function Nota() {
           {nota.trecho}
         </blockquote>
 
+        {/* DE ONDE ELA VEIO — e "de lugar nenhum" e "de um lugar que não existe
+            mais" são coisas diferentes.
+            
+            A `DEC-0021 §15` manda que a nota sobreviva ao livro apagado, com a
+            origem MARCADA como removida. Sem esta linha dizer isso, a nota que
+            perdeu o livro fica igual à nota escrita no Canvas, que nunca teve um
+            — e a pessoa lê "sem livro" sobre um trecho que ela marcou lendo. */}
         <p className="nota-de-onde">
-          {nota.fonte === "solta"
-            ? "Escrita no Canvas, sem livro"
-            : nota.fonte === "kindle"
-              ? `Trazida do Kindle · ${nota.origem}`
-              : `Capítulo ${(nota.capitulo ?? 0) + 1}${nota.livro ? ` · ${nota.livro.titulo}` : ""}`}
+          {nota.origem_removida_em
+            ? `${nota.origem || "O livro desta nota"} · removido da estante`
+            : nota.fonte === "solta"
+              ? "Escrita no Canvas, sem livro"
+              : nota.fonte === "kindle"
+                ? `Trazida do Kindle · ${nota.origem}`
+                : `Capítulo ${(nota.capitulo ?? 0) + 1}${nota.livro ? ` · ${nota.livro.titulo}` : ""}`}
         </p>
 
         {/* O filete marca a fala SOBRE a fala. */}

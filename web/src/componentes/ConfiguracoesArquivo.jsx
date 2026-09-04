@@ -207,8 +207,12 @@ export function ConfiguracoesArquivo({ aberta, aoFechar, livro, notas = 0, aoMud
         >
           {confirmando && (
             <p className="arquivo-confirma">
+              {/* AS NOTAS FICAM, e este aviso dizia o contrário — ele contava
+                  quantas iam sumir. A `DEC-0021 §15` manda que elas sobrevivam,
+                  com a origem marcada como removida, e desde 03/09 é o que
+                  acontece. O aviso passou a dizer o que de fato some. */}
               {notas
-                ? `${notas} ${notas === 1 ? "nota deste livro sai" : "notas deste livro saem"} junto. Não dá para desfazer.`
+                ? `${notas} ${notas === 1 ? "nota deste livro fica" : "notas deste livro ficam"}, com a origem marcada como removida. O arquivo, não: não dá para desfazer.`
                 : "Não dá para desfazer."}{" "}
               <button type="button" className="arquivo-desistir" onClick={() => setConfirmando(false)}>
                 Deixar na estante

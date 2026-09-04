@@ -51,7 +51,15 @@ class Nota(Base):
     # nunca passou pelo Mekora. Exigir `job_id` obrigaria a inventar um trabalho
     # falso para cada livro importado — um registro de conversão que nunca
     # aconteceu, poluindo a Mesa e a estante com coisas que não são arquivos.
-    job_id = Column(Integer, ForeignKey("processing_jobs.id", ondelete="CASCADE"), index=True)
+    #
+    # E `SET NULL`, E NÃO `CASCADE` — a `DEC-0021 §15`.
+    #
+    # A nota SOBREVIVE à exclusão do livro, com a origem marcada como removida. A
+    # razão é normativa: é trabalho intelectual de quem escreveu, e não derivado
+    # do arquivo. Até 03/09 esta linha dizia `CASCADE`, e apagar um livro apagava
+    # as notas dele — o produto avisava antes, então era honesto, e destruía
+    # assim mesmo o que a norma manda preservar.
+    job_id = Column(Integer, ForeignKey("processing_jobs.id", ondelete="SET NULL"), index=True)
 
     # De onde a nota veio, quando não é de um trabalho. Para a nota importada é
     # o título que o Kindle escreveu; para a nota feita lendo aqui, fica vazio
@@ -117,6 +125,19 @@ class Nota(Base):
     # Nulo é o normal, como em `bloqueio`: guarda o NOME do estado quando ele
     # existe, e nada quando a nota é uma nota comum.
     estado = Column(String)
+
+    # QUANDO A ORIGEM SAIU DA ESTANTE. Nula é o normal.
+    #
+    # `SET NULL` sozinho deixaria uma nota sem livro e sem explicação —
+    # indistinguível da nota escrita no Canvas, que nunca teve livro. São coisas
+    # diferentes, e a tela precisa dizer qual é qual: uma nunca teve origem, a
+    # outra teve e ela foi embora.
+    #
+    # O `origem` guarda o TÍTULO do livro no momento da remoção. É o molde do
+    # `dissolver` do Canvas — o contêiner some e o conteúdo fica —, com uma
+    # diferença: a seção dissolvida pode voltar, e por isso o Canvas guarda o
+    # vínculo; o livro apagado não volta, e por isso aqui se guarda o nome.
+    origem_removida_em = Column(DateTime)
 
     criada_em = Column(DateTime, default=agora, nullable=False)
     atualizada_em = Column(DateTime, default=agora, onupdate=agora, nullable=False)

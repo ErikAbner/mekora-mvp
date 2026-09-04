@@ -19,7 +19,16 @@ DESCREVE ERRADO        o documento afirma o que o código não faz — e o errad
 
 ## O que a varredura achou de mais grave
 
-### A nota NÃO sobrevive à exclusão do livro — `DEC-0021 §15` · **norma não construída, e o código faz o contrário**
+### ~~A nota NÃO sobrevive à exclusão do livro~~ — `DEC-0021 §15` · **CONSERTADO em 03/09**
+
+**A nota sobrevive desde 03/09**, com a origem marcada como removida: `SET NULL`
+no lugar do `CASCADE`, mais a coluna `origem_removida_em` e o título copiado
+antes de o livro sumir. O registro do defeito fica abaixo, porque a razão dele
+explica a forma do conserto.
+
+**As duas perguntas que o conserto não responde continuam abertas** — se algum
+livro foi apagado em produção, e se o backup já foi restaurado alguma vez. Ver
+`ABERTO.md`, `C20` e `C21`.
 
 `SISTEMA.md` escreve, com a razão junto:
 
@@ -98,7 +107,7 @@ dois quadros estão desatualizados em relação à DEC, ou a DEC precisa de emen
 | Não existe PDF paralelo ao EPUB `DEC-0021 §6` | **vigente** — `epub_path` é o canônico |
 | O Mekora não adota Work → Edition → Representation `DEC-0021 §3` | **vigente** |
 | O original não é persistido depois da conversão validada `DEC-0021 §5` | **vigente** — a limpeza apaga por idade e por estado terminal |
-| Nota sobrevive à exclusão do item `DEC-0021 §15` | **NORMA NÃO CONSTRUÍDA** — ver acima |
+| Nota sobrevive à exclusão do item `DEC-0021 §15` | **vigente desde 03/09** — era o achado mais grave desta varredura |
 | Não existe "nota de Canvas" `DEC-0030 §7` | **vigente** — `canvas_nos` guarda `nota_id`, a nota é a mesma |
 | Não existe segundo sistema de notas dentro do livro `DEC-0024 §6` | **vigente** — a ficha lê `lerNotas` do mesmo acervo |
 | Destaque e nota são o mesmo registro *(forma vigente)* | **vigente** — uma tabela, `comentario` vazio distingue |
@@ -142,8 +151,8 @@ dois quadros estão desatualizados em relação à DEC, ou a DEC precisa de emen
 
 ## O que isto soma
 
-**Cinco normas não construídas** — a nota que sobrevive à exclusão, a relação
-dispensada, a Tag, o Território, a Coleção — e uma sexta que a norma nomeia sem
+**Quatro normas não construídas** — a nota que sobrevive à exclusão foi
+consertada no mesmo dia; sobram a relação dispensada, a Tag, o Território, a Coleção — e uma sexta que a norma nomeia sem
 existir: **"Para revisar"**.
 
 **Duas descrições erradas**, as duas no `SUBIR.md`: o limite ao contrário e a

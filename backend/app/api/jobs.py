@@ -1294,11 +1294,35 @@ def remover_da_estante(job_id: int, db: Session = Depends(get_db)) -> None:
     linha do banco sai junto, porque um trabalho sem arquivo nenhum na estante é
     uma ficha que abre e não mostra nada.
 
-    AS NOTAS SAEM JUNTO, por cascata. Isso não está escrito no botão do desenho,
-    e por isso está escrito na confirmação da tela: o produto diz o que faz. A
-    contagem vai no cabeçalho da resposta para a tela poder dizer antes.
+    AS NOTAS FICAM. A `DEC-0021 §15` manda que a nota sobreviva à exclusão do
+    item, com a origem marcada como removida, e a razão é normativa: é trabalho
+    intelectual de quem escreveu, e não derivado do arquivo.
+
+    Este docstring dizia o contrário até 03/09 — "AS NOTAS SAEM JUNTO, por
+    cascata" —, e documentava o defeito como se fosse regra. O aviso na tela
+    também: ele contava quantas notas iam sumir. Os dois foram corrigidos junto
+    com o esquema.
+
+    O TÍTULO É COPIADO ANTES DE O LIVRO SUMIR. Depois não há de onde tirá-lo, e
+    uma nota que diz "vim de um livro" sem saber de qual é pior que uma que diz
+    de onde veio e que aquilo não existe mais. É o molde do `dissolver` do
+    Canvas: o contêiner some, o conteúdo fica, e o que sustenta o conteúdo é
+    guardado antes.
     """
     job = _get_or_404(db, job_id)
+
+    from app.models.nota import Nota
+    from app.models.pessoa import agora
+
+    titulo = job.final_title or job.original_filename or ""
+    for n in db.query(Nota).filter(Nota.job_id == job.id).all():
+        # O `origem` só é escrito se estiver vazio: a nota do Kindle já traz o
+        # título que o Kindle escreveu, e sobrescrevê-lo trocaria o que a pessoa
+        # viu por um nome de arquivo.
+        if not n.origem:
+            n.origem = titulo
+        n.origem_removida_em = agora()
+
     apagar_arquivos_do_trabalho(job)
     db.delete(job)
     db.commit()

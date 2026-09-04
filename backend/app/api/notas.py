@@ -140,6 +140,10 @@ def _fora(n: Nota) -> dict:
         # De onde a nota veio. A tela precisa disto para dizer "do Kindle" em
         # vez de oferecer "abrir no livro" numa nota que não tem livro aqui.
         "origem": n.origem, "fonte": n.fonte,
+        # QUANDO A ORIGEM SAIU. A tela precisa dizer "o livro foi removido" em
+        # vez de "escrita no Canvas, sem livro" — são coisas diferentes, e sem
+        # este campo elas ficam idênticas.
+        "origem_removida_em": n.origem_removida_em,
         # O estado da nota — hoje `"rascunho"` ou nulo. A tela precisa dele para
         # o recorte do nó 895:7631 e para explicar por que a nota não entra num
         # estudo.
