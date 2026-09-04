@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.models.pessoa import VALIDADE_DA_SESSAO
 from app.api.porta import exigir_conta
+from app.api.vazao import limitar_links
 from app.services import acesso_service
 
 router = APIRouter()
@@ -54,18 +55,32 @@ def _gravar_cookie(resposta: Response, token: str) -> None:
 # de e-mail que a pessoa vê. Os dois no mesmo caminho só se distinguiriam pelo
 # método HTTP, e uma borda que roteia por método é uma sutileza a mais para
 # alguém quebrar sem perceber. Abaixo de /entrar, a divisão é por caminho.
-@router.post("/entrar/pedir", status_code=204)
+@router.post("/entrar/pedir", status_code=204, dependencies=[Depends(limitar_links)])
 def entrar(pedido: PedidoDeEntrada, request: Request, db: Session = Depends(get_db)) -> Response:
     """Pede um link.
 
     RESPONDE A MESMA COISA SEMPRE, e isso é deliberado. Se a resposta mudasse
     conforme o e-mail já tem conta, qualquer um poderia descobrir quem usa o
-    Mekora só perguntando um endereço de cada vez. Limite atingido também
-    responde igual, pelo mesmo motivo.
+    Mekora só perguntando um endereço de cada vez. O limite POR E-MAIL —
+    `pedir_link`, cinco por dez minutos — também responde igual, pelo mesmo
+    motivo.
 
     O custo é real: quem digita o endereço errado espera um e-mail que não vem.
     A tela compensa dizendo o que fazer quando não chegar, em vez de o servidor
     revelar quem existe.
+
+    O TETO POR ORIGEM É OUTRA COISA, e ele responde 429.
+    ===================================================
+    O limite de `pedir_link` conta por E-MAIL PEDIDO, e o número de e-mails
+    distintos não tem teto — então o limite real de quem chamava esta rota era
+    cinco mensagens *por endereço que ele escolhesse*, sem conta e sem nada. A
+    conta SMTP do Mekora virava máquina de mandar e-mail para terceiros, e a
+    reputação de remetente do domínio ia junto.
+
+    `limitar_links` conta por ORIGEM, e responde 429 quando estoura. O 429 não
+    desfaz o sigilo do parágrafo acima: ele não fala do endereço pedido, fala do
+    volume de quem está pedindo — um fato sobre o próprio requisitante, igual
+    para todo endereço.
     """
     if not acesso_service.email_parece_valido(pedido.email):
         raise HTTPException(status_code=400, detail="Esse endereço não parece um e-mail.")

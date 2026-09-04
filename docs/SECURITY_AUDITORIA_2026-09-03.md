@@ -1,6 +1,7 @@
 # Auditoria de segurança — 03/09/2026
 
-**Estado:** achados abertos, nenhum corrigido
+**Estado:** os três ALTOs (1, 2, 3) estão **corrigidos** e com teste; 4 a 8
+continuam abertos; 9 e 10 foram encontrados durante o conserto e nascem abertos
 **Método:** leitura do código, mais **uma** prova dinâmica local — o achado 3,
 metade do app, num servidor isolado na porta 8299 (ver *Anexo: a prova do achado
 3*). Todo o resto se lê no código e **não** foi reproduzido contra um Mekora
@@ -62,7 +63,18 @@ lida como um retrato do todo. Foi conferido e está correto:
 
 ## Achados
 
-### 1 — Trabalho anônimo envia para o Kindle do dono · ALTO
+### 1 — Trabalho anônimo envia para o Kindle do dono · ALTO · CORRIGIDO 03/09
+
+> **Conserto:** `_destino_de` virou `_exigir_destino` e responde **403** quando o
+> trabalho não tem dono, nas duas portas — `/jobs/{id}/send` e
+> `/pending-send/{id}/retry`. A recusa acontece **antes** de qualquer escrita de
+> estado, senão o trabalho ficaria preso em "enviando" sem ninguém para
+> desfazê-lo. O padrão do `.env` continua valendo para quem TEM dono e não
+> cadastrou aparelho: ali há uma pessoa, e o trabalho é dela.
+> Teste: `backend/tests/test_envio_sem_dono.py` (5 casos). Controle negativo:
+> com o `raise` comentado, os dois casos de porta ficam vermelhos com
+> `assert 200 == 403`, e o espião registra o envio já feito.
+> **Continua aberto o achado 9**, que é a terceira porta para o mesmo lugar.
 
 `backend/app/api/jobs.py:175` (`_destino_de`), `:1685` (`send_job`), `:1726`.
 
@@ -93,7 +105,18 @@ continua servindo à instalação de uma pessoa só se o retorno ao padrão anti
 ficar condicionado a `DONO_EMAIL` vazio — que é exatamente a marca de "isto aqui
 ainda é a máquina de alguém", e a mesma que já governa `/config`.
 
-### 2 — O limite de `/entrar/pedir` é por endereço pedido, não por quem pede · ALTO
+### 2 — O limite de `/entrar/pedir` é por endereço pedido, não por quem pede · ALTO · CORRIGIDO 03/09
+
+> **Conserto:** `vazao.limitar_links` — vinte pedidos por hora **por origem** —
+> entrou como dependência da rota. O teto por e-mail continua onde estava: ele
+> cobre insistir no mesmo endereço, que é outra coisa. O `docs/SUBIR.md` foi
+> corrigido junto, e agora descreve os dois tetos e o que cada um conta.
+> Teste: `backend/tests/test_pedido_de_link.py` (4 casos). Controle negativo:
+> tirando a dependência, dois casos ficam vermelhos com `assert 204 == 429` — e
+> o caso do sigilo continua verde, que é o que mostra que o teto novo não
+> comprou volume ao preço do silêncio da rota.
+> **Continua aberto:** `_pessoa` ainda cria a linha em `pessoas` ao PEDIR, e não
+> ao usar o link. O teto por origem limita o crescimento; não o zera.
 
 `backend/app/services/acesso_service.py:69-95`, e `docs/SUBIR.md:184`.
 
@@ -121,7 +144,19 @@ Direção: a janela em memória de `vazao.py` já existe e já resolve esse form
 de problema; falta aplicá-la a `/entrar/pedir`, por origem. E criar a `Pessoa`
 só quando o link for usado, ou podar as que nunca foram.
 
-### 3 — `X-Forwarded-For` é confiável, e o Caddy só ANEXA · ALTO
+### 3 — `X-Forwarded-For` é confiável, e o Caddy só ANEXA · ALTO · CORRIGIDO 03/09
+
+> **Conserto, nas duas metades.** A borda: `scripts/rotas.py` passou a gerar
+> `reverse_proxy backend:8000 { header_up X-Forwarded-For {remote_host} }`, que
+> SOBRESCREVE a lista em vez de acrescentar a ela — e é gerador, e não
+> `Caddyfile` à mão, porque o bloco é regenerado e a correção precisa
+> sobreviver à próxima regeneração. O app: `_de_onde` lê o **último** elemento.
+> As duas se seguram sozinhas de propósito: uma borda trocada um dia não pode
+> reabrir o buraco calada.
+> Teste: `backend/tests/test_vazao_cabecalho.py` — as três rodadas do anexo,
+> agora sem servidor, mais uma conferência de que o `header_up` não some do
+> `Caddyfile`. Controle negativo: voltando a `partes[0]`, a rodada B fica
+> vermelha com `assert [201, 201] == [429, 429]`, e A e C seguem verdes.
 
 `backend/app/api/vazao.py:52-69` e `Caddyfile:18,21`.
 
@@ -246,6 +281,97 @@ por completude; a correção não é prioritária.
   `porta.py:exigir_dono`). O `SUBIR.md` está mais fechado do que descreve, que é
   o lado certo de errar — mas continua sendo duas verdades sobre a mesma coisa.
 
+### 9 — O router `/batch` opera sobre trabalho de qualquer um · ALTO · ABERTO
+
+`backend/app/api/batch.py:72` (`GET /batch/jobs`), `:118`, `:167`, `:241`,
+`:321` (`retry-send`), `:381`. Achado em 03/09, **durante o conserto do achado
+1**, e não na leitura que produziu a lista original.
+
+O router é montado com `Depends(exigir_acesso)` e `Depends(exigir_conta)`. A
+primeira dependência **não cobre nada aqui**: ela procura `job_id` ou
+`upload_id` no CAMINHO, e as rotas de lote levam os números no CORPO. Sem esses
+nomes no caminho ela devolve na primeira linha, por desenho — está escrito na
+docstring do `porta.py`. Sobra `exigir_conta`, que é "tem conta"; e a entrada é
+por link no e-mail, então isso é qualquer pessoa da internet em trinta segundos.
+
+Depois da porta, nenhuma das seis rotas filtra por dono:
+
+    db.query(ProcessingJob).filter(ProcessingJob.id == job_id).first()
+
+Sem `dono_id` no filtro. É a forma exata que o resto do backend não usa em
+lugar nenhum — `notas.py`, `estudos.py`, `canvas.py`, `aparelhos.py` e
+`privacidade.py` põem o `pessoa_id` no `WHERE`, e o comentário de cada um diz
+por quê. Este arquivo ficou de fora da revisão de 31/08 e da de 30/08.
+
+O que está do outro lado, com uma conta qualquer e uma lista de números:
+
+| Rota | O que faz com trabalho alheio |
+|---|---|
+| `GET /batch/jobs` | lista **todos** os trabalhos da instalação, de todo mundo |
+| `POST /batch/apply-preset` | muda as configurações de conversão deles |
+| `POST /batch/export` | dispara exportação |
+| `POST /batch/apply-suggestions` | escreve sugestões no conteúdo |
+| `POST /batch/set-final-variant` | escolhe qual variante é a final |
+| `POST /batch/retry-send` | **manda o arquivo para o `KINDLE_EMAIL` da instalação** |
+
+`GET /batch/jobs` é a mesma coisa que o `/history` deixou de ser em 30/08 —
+"listava TODOS os processamentos registrados", diz o comentário lá. A correção
+foi feita num arquivo e não no outro. Duas atenuações reais: o `response_model`
+é `HistoryEntry`, e `_to_history` do `batch.py` (diferente do de `jobs.py`) não
+escreve `endereco`, então o `token_publico` **não** sai na resposta — sem ele
+não há acesso aos arquivos. E a listagem não traz caminho de disco. O que sai é
+nome de arquivo original, título, autor, estado e datas de todo mundo.
+
+`POST /batch/retry-send` é a **terceira porta** do achado 1, e a única que
+continua aberta: `send_epub_to_kindle(epub, cfg)` — repare que `cfg` está na
+posição do `title`, e o `destino` fica em `None` — manda para o `KINDLE_EMAIL`
+sempre, para qualquer trabalho, inclusive os sem dono. A diferença para o achado
+1 é que aqui é preciso ter conta; a semelhança é o destino.
+
+**Não foi corrigido, e a razão é de combinado, não de dificuldade.** O conserto
+desta rodada foi acordado nos arquivos `jobs.py`, `acesso_service.py`,
+`vazao.py` e `Caddyfile`. O `batch.py` está fora, e sair do combinado sem avisar
+é o que faz duas frentes colidirem. Fica como a próxima da fila, e ela é curta:
+`exigir_conta` já devolve a pessoa, então falta pôr `dono_id` no filtro das seis
+consultas e passar o destino no `retry-send`.
+
+### 10 — O comportamento que só existe em produção não é testado por construção · MÉDIO · ABERTO
+
+Este não é um defeito: é a **categoria** de que os achados 1 e 3 são membros, e
+ela foi encontrada olhando por que a suíte de 801 testes passava por cima dos
+dois. Está aqui porque uma família se conserta uma vez, e um membro se conserta
+por vez.
+
+A forma é sempre a mesma: um `if` sobre variável de ambiente que a bancada nunca
+define, e por isso um dos dois lados do `if` nunca roda em teste nenhum. A
+bancada diz que está tudo certo, e está — para o lado que ela executa.
+
+Antes de 03/09, **nenhum teste do repositório mencionava `MEKORA_DOMINIO`**. O
+`grep` devolvia zero linhas em `backend/tests/`.
+
+| Onde | Variável | O que muda, e o que nunca foi executado em teste |
+|---|---|---|
+| `vazao.py:107` `_de_onde` | `MEKORA_DOMINIO` | lê ou ignora o `X-Forwarded-For`. **Era o achado 3.** Hoje coberto, nos dois lados |
+| `acesso.py:29` `EM_PRODUCAO` | `MEKORA_DOMINIO` | o cookie de sessão sai com `Secure` ou sem. **Lido no import**, então nem `monkeypatch.setenv` alcança — é o pior caso da lista |
+| `acesso.py:109` `_base_publica` | `MEKORA_DOMINIO` | o endereço que vai DENTRO do e-mail. Errado aqui, ninguém entra, e a suíte não vê |
+| `acesso_service.py:99` `_em_producao` | `MEKORA_DOMINIO` | sem SMTP, produção levanta `RuntimeError`; fora dela o link de entrada é IMPRESSO no log do servidor |
+| `email_service.py:81` | `KINDLE_EMAIL` | o padrão de destino. Vazio na bancada, então "foi para o `.env`" e "não foi para lugar nenhum" tinham a mesma cara. **Era metade do achado 1** |
+| `acesso_service.py:107-109`, `email_service.py:84-92` | `SMTP_*` | com credenciais, conectar/autenticar/enviar. Tudo mockado na suíte, sempre |
+| `main.py:71` | `ALLOWED_ORIGINS` | a lista de origens do CORS, e o portão contra `*` |
+| `config.py:23`, `database.py:21` | `MEKORA_STORAGE`, `DATABASE_URL` | onde os documentos e o banco ficam. Já custou uma colisão em 30/08, e está anotada no `config.py` |
+| `Dockerfile:79` | `--workers 1` | não é variável, é a mesma família: as janelas de vazão em memória só são corretas com um processo, e nenhum teste consegue ver isso |
+
+Uma linha da tabela **está coberta**, e vale dizer qual: `porta.py:145`
+`DONO_EMAIL`. O `conftest` nomeia a conta de teste como dona, e
+`test_acesso.py::test_sem_dono_configurado_ninguem_entra` roda o outro lado. É a
+prova de que a categoria é tratável — não é que produção não dê para testar, é
+que ninguém tinha listado o que precisava ser.
+
+Direção: esta tabela vira um teste que percorre os dois lados de cada `if`, e o
+`EM_PRODUCAO` de `acesso.py` deixa de ser calculado no import — enquanto for, o
+lado de produção dele é inalcançável para qualquer teste, e isso é uma decisão
+de desenho, não uma falta de esforço.
+
 ---
 
 ## O que esta leitura não cobriu
@@ -253,9 +379,15 @@ por completude; a correção não é prioritária.
 Escrito porque um relatório que não diz onde parou é lido como se tivesse ido
 até o fim.
 
-- **Só o achado 3 foi executado, e só metade dele.** Os achados 1 e 2 são cadeias
-  que se leem inteiras no código e não foram rodadas. A metade do Caddy do
-  achado 3 continua sem prova, por falta de `caddy` e de `docker` nesta máquina.
+- **A metade do Caddy do achado 3 continua sem prova**, por falta de `caddy` e de
+  `docker` nesta máquina. A decisão do Erik em 03/09 foi não instalar: a correção
+  é a mesma nas duas hipóteses — borda autoritativa e app lendo o valor que o
+  próprio proxy escreveu —, um Caddy local não é a borda real, e a prova
+  definitiva já está definida: a rodada B tem de responder 429 no 11º contra a
+  borda que existir.
+- **Os achados 1 e 2 nunca foram rodados como ataque**, só como teste da
+  correção. A cadeia dos dois se lê inteira no código; o que existe hoje é a
+  prova de que ela está fechada, e não o registro de tê-la percorrido aberta.
 - **Nenhum teste foi feito contra produção**, e a prova do achado 3 rodou num
   servidor isolado, com storage e banco descartáveis, sem SMTP e em porta que não
   é a da bancada de prova (8299, não 8199/5180).

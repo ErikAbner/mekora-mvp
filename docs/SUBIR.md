@@ -170,10 +170,13 @@ num endereço público.
 por dentro; para fora vai um token aleatório. Antes era `/storage/output/7/...`,
 e qualquer um lia os documentos de todos só contando.
 
-**Duas portas cobrem as rotas.** `exigir_acesso` protege tudo que tem o número de
+**Três portas cobrem as rotas.** `exigir_acesso` protege tudo que tem o número de
 um trabalho no caminho — 41 rotas —, aceitando a sessão do dono ou a chave do
-trabalho. `exigir_conta` protege o que fala da instalação: configuração,
-presets, métricas.
+trabalho. `exigir_conta` protege o que fala de uma pessoa sem falar de um
+trabalho: busca, notas, marcadores, métricas. `exigir_dono` protege o que fala da
+INSTALAÇÃO — `/config`, `/app-config`, `/presets` —, e é mais que ter conta: a
+entrada é por link no e-mail, então "tem conta" é qualquer pessoa da internet.
+Ver *Quem manda na instalação*, abaixo.
 
 **Cinco rotas ficam públicas, e cada uma tem razão:**
 
@@ -181,17 +184,46 @@ presets, métricas.
 |---|---|
 | `/health` | a verificação do container bate aqui, sem credencial |
 | `/config/formatos` | a tela de entrada precisa saber o que o Mekora aceita antes de haver conta |
-| `/entrar/pedir` | pedir um link é o começo de tudo; tem limite de 5 por 10 minutos |
+| `/entrar/pedir` | pedir um link é o começo de tudo; tem dois tetos, e eles contam coisas diferentes |
 | `/entrar/{token}` | o token no caminho **é** a credencial |
 | `/storage/{rest}` | o apanhador que responde 404 a tudo que não é artefato permitido |
+
+**Os dois tetos de `/entrar/pedir`, e por que são dois.** Cinco pedidos por dez
+minutos **por e-mail**, que impede insistir no mesmo endereço; e vinte por hora
+**por origem**, que impede o resto. Até 03/09 só existia o primeiro, e ele foi
+descrito aqui como se fosse o teto de quem chama — não era: o número de
+endereços distintos não tinha teto, então uma pessoa mandava cinco mensagens
+*para cada endereço que escolhesse*, sem conta. O estrago não é o volume, é o
+remetente: as mensagens saem da conta SMTP do Mekora, e reputação de envio não
+volta com correção.
 
 **Enviar sem conta tem teto**: dez arquivos por hora por origem de rede, sessenta
 com conta. Converter sem cadastro é garantido pela `DEC-0018`, e sem teto de
 quantidade essa garantia era o caminho para encher o disco da máquina.
 
-`tests/test_superficie.py` verifica tudo isto. Ele existe porque proteção sem
-teste é proteção que some no próximo refactor — e ele foi provado removendo uma
-das portas, para confirmar que reprova.
+**Origem de rede é o que a BORDA diz.** O `Caddyfile` manda
+`header_up X-Forwarded-For {remote_host}`, que sobrescreve o cabeçalho em vez de
+acrescentar a ele, e o `_de_onde` do `vazao.py` lê o ÚLTIMO elemento. As duas
+metades existem separadas de propósito: uma borda trocada um dia não pode
+reabrir o buraco calada. Até 03/09 o app lia o primeiro elemento — que é o que o
+visitante escreve —, e girá-lo fazia todo teto por origem desaparecer.
+
+**Enviar ao Kindle pede conta.** Trabalho sem dono não tem destino: `/jobs/{id}/send`
+e `/pending-send/{id}/retry` respondem 403. Até 03/09 caíam no `KINDLE_EMAIL` do
+`.env`, e como `/upload` é público, um estranho punha um arquivo no Kindle de
+quem cuida da instalação — pela conta SMTP dela. Quem TEM dono e não cadastrou
+aparelho continua caindo no `.env`, que é a instalação de uma pessoa só
+funcionando como sempre funcionou.
+
+`tests/test_superficie.py` verifica as portas. Os três consertos de 03/09 têm
+teste próprio, e cada um foi aceito reproduzindo o defeito e ficando vermelho:
+
+    test_envio_sem_dono.py      trabalho sem dono não sai para Kindle nenhum
+    test_vazao_cabecalho.py     o X-Forwarded-For forjado não escapa do teto
+    test_pedido_de_link.py      trocar de endereço não zera a contagem
+
+Proteção sem teste é proteção que some no próximo refactor, e verde sem a prova
+do vermelho não conta.
 
 ### Onde ficam os recados
 
