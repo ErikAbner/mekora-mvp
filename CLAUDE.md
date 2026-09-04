@@ -63,6 +63,26 @@ As regras de idioma visual e de honestidade da interface valem para as **duas**.
 - Quatro categorias de interação que não se misturam: **Navegação · Ferramenta ·
   Menu de objeto · Barra flutuante**.
 
+## A busca também precisa de controle negativo
+
+**Zero por seletor errado tem a mesma cara de zero por defeito.** Em 04/09 isto
+aconteceu CINCO vezes num dia: `.canvas-no` quando a classe era `nota-canvas`;
+`.livro-texto p` quando a prosa era `.bloco.paragrafo`; um `closest()` procurando
+para dentro quando o alvo era o `<li>` ancestral; um avatar "que não existe" e
+que media exatamente os 80×80 do nó. Nenhuma era defeito do produto. Todas
+quase viraram um.
+
+A regra: **antes de reportar ausência, provar que a busca sabe achar.** Se o
+seletor devolveu zero, procurar o mesmo elemento por outro caminho — texto,
+`aria-label`, forma da árvore — e só então dizer que não há. É o controle
+negativo aplicado à busca, e vale tanto para `querySelector` quanto para `grep`.
+
+**E o inverso, que custou o mesmo dia:** agir sobre o resumo de um relatório em
+vez do relatório. Em 04/09 troquei o fundo de uma faixa que JÁ BATIA porque li a
+lista de divergências e mexi no que não estava nela — o texto dizia, com todas
+as letras, que aquele valor estava certo. Ler menos não é economia quando o que
+se pula é a parte que impede o trabalho errado.
+
 ## Armadilhas de implementação já pagas
 
 - **Arrastar não mexe no DOM.** Mover o nó libera a captura de ponteiro no
