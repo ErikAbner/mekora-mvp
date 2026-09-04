@@ -608,15 +608,34 @@
  * tudo bem".
  */
 /* Do lado do botão dela, que mora no grupo da esquerda. Ver o caderno acima. */
+/* ELA ABRE PELA DIREITA, do lado do próprio botão.
+ *
+ * Abria pela esquerda enquanto o "Aa" mora no grupo da direita — o Erik mandou
+ * a captura em 04/09, e é a forma exata do item 24 dele: "itens abrem do lado
+ * contrário ao do ícone".
+ *
+ * Com os dois grupos lidos como frases — à esquerda "onde estou e o que
+ * marquei", à direita "como leio e o que procuro" —, o lado do painel deixa de
+ * ser detalhe: a gaveta sai de onde o dedo tocou. */
 .aparencia {
-  position: fixed; inset-block: 0; inset-inline-start: 0;
+  position: fixed; inset-block: 0; inset-inline-end: 0;
   inline-size: min(384px, 100%);
   z-index: 40;
   display: flex; flex-direction: column; gap: 32px;
   padding: 24px;
   overflow-y: auto;
   background: var(--background-secondary);
-  border-inline-end: 1px solid var(--border);
+  border-inline-start: 1px solid var(--border);
+}
+
+/* A BUSCA SEGUE A APARÊNCIA, pelo mesmo motivo: ela também está no grupo da
+   direita. Ela veste a gaveta do índice — `.indice` —, que é de esquerda, então
+   as duas propriedades são desfeitas aqui. */
+.indice.busca-livro {
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+  border-inline-end: 0;
+  border-inline-start: 1px solid var(--border);
 }
 .aparencia header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .aparencia h2 {

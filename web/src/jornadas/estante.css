@@ -506,7 +506,29 @@
 .pilha li {
   inline-size: 100%; max-inline-size: 680px;
   transform-style: preserve-3d;
+  /* A ORDEM DE PINTURA MORA AQUI, e não no botão — foi o que me custou a
+   * primeira tentativa. O `<li>` é quem tem a margem negativa e quem participa
+   * do empilhamento do fluxo; o `.livro-deitado` é filho dele, e um `z-index`
+   * no filho não tira o `<li>` do irmão da frente.
+   *
+   * Medido antes: apontando no meio da lombada, os livros 2, 3 e 4 entregavam o
+   * ponteiro ao `<li>` do livro SEGUINTE. Numa pilha vista de cima, quem está no
+   * topo está na frente. */
+  position: relative;
+  /* O `<li>` NÃO RECEBE PONTEIRO. Só o botão dentro dele.
+   *
+   * A face de cima gira 74°: desenha uns 20px e continua reservando 72 no
+   * fluxo. Essa sobra é área do `<li>`, que não é transformado — e como o
+   * `<li>` seguinte começa 28px acima do fim do anterior, a sobra dele cobre a
+   * lombada do vizinho.
+   *
+   * O botão é transformado, então o navegador já o testa pela geometria certa:
+   * onde ele é desenhado, ele recebe. Tirando o `<li>` do caminho, a sobra
+   * deixa de interceptar e o ponteiro atravessa até o livro certo. */
+  pointer-events: none;
 }
+.pilha .livro-deitado { pointer-events: auto; }
+
 
 /* Cada livro e uma fatia: a face de cima inclinada, e a lombada de frente.
  * `--espessura` vem de contrato/lombada.js, em pixels derivados de milimetros de
@@ -519,8 +541,22 @@
   /* O RECUO DOS VIZINHOS: cada livro fica um pouco atras do anterior, e ao
    * passar o dedo sobre a pilha os outros recuam mais. E o gesto de puxar um
    * livro de uma pilha, em que os de cima cedem. */
-  transform: translateZ(calc(var(--ordem, 0) * -6px));
   transition: transform var(--d2, 240ms) cubic-bezier(.16, 1, .3, 1);
+  /* QUEM ESTÁ EM CIMA DA PILHA PINTA EM CIMA — e isto é conserto de CLIQUE,
+   * não de aparência.
+   *
+   * O Erik descreveu o defeito exatamente: "praticamente tenho que colocar o
+   * mouse em cima do item de cima para o de baixo ficar com o hover".
+   *
+   * A causa: a face de cima gira 74°, então ela DESENHA uns 20px e continua
+   * reservando os 72 do fluxo. Sobram 36 a 44px de espaço morto no alto de cada
+   * livro — medido —, e o `margin-block-start: -28px` faz a caixa do livro
+   * seguinte subir por cima da lombada do anterior. Sem ordem de pintura
+   * declarada, quem vence é a ordem do DOM: o livro de BAIXO cobre o de cima.
+   *
+   * Medido antes: apontar no meio da lombada devolvia "OUTRO livro" nos quatro
+   * primeiros. Numa pilha vista de cima, quem está no topo está na frente. */
+  z-index: calc(20 - var(--ordem, 0));
 }
 
 /* AS FATIAS NÃO SE ENCOSTAM — e a versão anterior as fazia se encostar.
@@ -537,7 +573,7 @@
  * O vão é o que a face de cima não ocupa: ela reserva 72px no fluxo e desenha
  * cerca de 20 depois do giro de 74°, e 24px de respiro deixam a diferença
  * visível como espaço entre livros. */
-.pilha li + li { margin-block-start: -28px; }
+.pilha li + li { margin-block-start: -8px; }
 
 /* A FACE DE CIMA É O CORTE DAS PÁGINAS, e não a capa: um livro deitado mostra o
  * papel por cima, e a capa fica embaixo contra a mesa. As listras finas são as
@@ -649,17 +685,15 @@
 /* AO PASSAR E AO ESCOLHER: o livro cresce e vem para a frente, e os outros
  * recuam mais. O escolhido também SAI PARA A ESQUERDA, como no desenho — é o
  * gesto de puxar um livro de dentro da pilha. */
-.pilha:hover .livro-deitado { transform: translateZ(calc(var(--ordem, 0) * -12px)); }
-.livro-deitado:hover,
-.livro-deitado:focus-visible,
-.pilha:hover .livro-deitado:hover {
+.pilha:hover li { transform: translateZ(calc(var(--ordem, 0) * -12px)); }
+.pilha li:has(.livro-deitado:hover),
+.pilha li:has(.livro-deitado:focus-visible),
+.pilha:hover li:has(.livro-deitado:hover) {
   transform: translateZ(32px);
-  z-index: 2;
 }
-.livro-deitado.escolhido,
-.pilha:hover .livro-deitado.escolhido {
+.pilha li:has(.escolhido),
+.pilha:hover li:has(.escolhido) {
   transform: translateZ(56px) translateX(-24px);
-  z-index: 3;
 }
 .livro-deitado.escolhido .deitado-lombada {
   block-size: 96px;
@@ -681,7 +715,7 @@
 @media (max-width: 767px) {
   .pilha-caixa { padding: 24px 0 40px; }
   .deitado-topo { block-size: 56px; }
-  .pilha li + li { margin-block-start: -40px; }
+  .pilha li + li { margin-block-start: -8px; }
   .pilha { perspective: 1100px; }
 }
 

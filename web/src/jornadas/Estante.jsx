@@ -103,14 +103,19 @@ function Estante3D({ livros, selecionado, aoEscolher }) {
           const mm = espessuraMm(l.paginas);
           const escolhido = l.chave === selecionado?.chave;
           return (
-            <li key={l.chave}>
+            /* AS DUAS VARIÁVEIS FICAM NO `<li>`, e não no botão.
+               `--espessura` desce por herança e serve igual lá dentro. `--ordem`
+               PRECISA estar aqui: quem empilha é o `<li>` — ele tem a margem
+               negativa e é irmão dos outros —, e propriedade custom só herda
+               para baixo. Com ela no botão, todo `<li>` lia o valor padrão zero,
+               os seis ficavam com o mesmo `z-index` e a ordem do DOM decidia:
+               o livro de baixo cobria a lombada do de cima, que é o defeito que
+               o Erik descreveu em 04/09. */
+            <li key={l.chave} style={{ "--espessura": `${px ?? 2}px`, "--ordem": ordem }}>
               <button
                 type="button"
                 className={`livro-deitado${escolhido ? " escolhido" : ""}`}
                 onClick={() => aoEscolher?.(l)}
-                /* A espessura vira ALTURA da fatia, e a ordem entra como
-                   variável para o recuo dos vizinhos ser calculado no CSS. */
-                style={{ "--espessura": `${px ?? 2}px`, "--ordem": ordem }}
                 aria-label={
                   mm === null
                     ? `${l.titulo}, de ${l.autor || "autor desconhecido"} — espessura desconhecida`
