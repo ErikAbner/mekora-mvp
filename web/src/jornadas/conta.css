@@ -96,7 +96,27 @@
 /* No escuro ele clareia junto com as outras ilustracoes — a regra do base.css e
  * por classe, e esta entra nela. */
 @media (max-width: 767px) {
-  /* No telefone o desenho sai: 272px de ornamento antes do conteudo empurram a
-   * primeira informacao para fora da primeira tela. */
-  .conta-desenho { display: none; }
+  /* NO TELEFONE ELA FICA — e o motivo de ter saído era uma medida do OUTRO nó.
+   *
+   * O comentário anterior dizia "272px de ornamento antes do conteúdo empurram a
+   * primeira informação para fora da primeira tela", e estava certo sobre 272.
+   * Só que 272×224 é o `934:10740`, do computador. O nó do telefone,
+   * `966:25339`, põe a MESMA ilustração em 138,22×164 — metade —, encostada à
+   * direita e sobrepondo o card em 26px, exatamente como no desktop.
+   *
+   * Esconder foi resolver o sintoma de uma medida que não era desta tela. É o
+   * item 29 do Erik: "imagens ilustrativas cuidadosamente posicionadas para
+   * ficar em cima do container... e ainda assim você fez errado".
+   *
+   * Aqui ela volta AO FLUXO, e não absoluta: no telefone não há régua de duas
+   * colunas para fechar — o card vem logo abaixo, e `margin-block-end` negativo
+   * dá o encavalamento sem cálculo nenhum. */
+  .conta-desenho {
+    position: static;
+    display: block;
+    margin-inline-start: auto;
+    margin-block-end: -26px;
+    inline-size: 138.22px;
+    block-size: 164px;
+  }
 }
