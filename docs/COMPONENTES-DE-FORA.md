@@ -133,3 +133,136 @@ onde não há forma a mostrar — uma conversão longa, não a abertura da tela.
 | sol/lua | **não** | dois estados para três temas |
 | hambúrguer | **não** | perdeu a vaga com a decisão do cromo |
 | carregador | **não** | o esqueleto já faz melhor |
+
+---
+
+# Segunda leva — 04/09
+
+Nove itens. **Dois mudam decisões que já tomamos**, dois esbarram em barreira
+estrutural, e o resto não tem lugar no Mekora.
+
+## O QUE O PROJETO É HOJE, e por que isso decide metade da lista
+
+```
+dependências:  posthog-js · react · react-dom · react-router-dom · vaul
+dev:           @vitejs/plugin-react · vite
+vite plugins:  [react()]
+```
+
+**Cinco dependências, e nenhuma de interface** além do `vaul`. Sem Tailwind, sem
+Radix, sem biblioteca de animação. O CSS é escrito à mão contra tokens gerados.
+
+Isso não é pobreza: é o que permite o portão medir cor, contraste e escala e
+saber o que reprovar. Uma biblioteca que traga a própria folha de estilo traz
+junto uma paleta que ninguém decidiu — que é exatamente o que o Erik pediu para
+não acontecer.
+
+## 1 · Botão que expande e mostra o rótulo — Uiverse
+Ícone num círculo; ao pousar o ponteiro, ele vira cápsula e o texto aparece.
+O Erik: *"icone unico, expande e mostra o texto + perspectiva nova do icone"*.
+
+**Ideia certa, lugar errado — e o lugar certo existe.**
+
+No cromo da leitura, não: ele muda de 50px para 140px ao pousar, e numa barra de
+quatro botões isso **empurra os outros três**. A pessoa vai atrás de um alvo que
+se moveu porque ela chegou perto dele. É a razão de o balão (tooltip) existir:
+ele flutua, não empurra.
+
+Onde ele é ótimo é onde o botão está **sozinho** e nada tem para empurrar —
+"novo estudo", "nova nota no Canvas". Aí a expansão não custa layout e o rótulo
+resolve o ícone sem nome.
+
+**Cor crua:** `rgb(20,20,20)`, `rgb(255,69,69)`.
+**Também:** o rótulo é `content` no `::before` com `font-size: 2px` crescendo
+para 13 — truque que leitor de tela não lê e que não traduz. Se entrar, o texto
+vira elemento de verdade.
+**Veredito: guardar para botão solitário. Não para o cromo.**
+
+## 2 · Livro cuja capa abre — Uiverse
+Capa gira em `rotateY(-80deg)` ao pousar, revelando o que está atrás.
+
+**Este responde a um item teu de 01/09**, o R-01: *"Hover nos livros é muito
+feio e não dá o devido destaque"*. E responde de um jeito que o quadro não
+previu — o `895:7389` marca o livro ativo com **borda**, não com abertura.
+
+**É decisão tua, e é boa pergunta:** a capa abrir ao pousar é bonito e conta o
+que o livro é (abre = tem conteúdo dentro). Mas: não existe no toque, e numa
+grade de 4 colunas vira muito movimento junto.
+**Bug no original:** `transform: preserve-3d` — a propriedade é
+`transform-style`. Copiar sem ver isso traz o defeito junto.
+**Veredito: vale discutir contra o R-01. Não implementar antes disso.**
+
+## 3 · Cartão "New Transaction" — Uiverse
+Cartão de fintech com maquininha animada. Nada no Mekora se parece com isso.
+**Veredito: não.**
+
+## 4 · Pasta 3D que abre com arquivos — Uiverse
+**Cor crua: nove** (`#0056b3`, `#60a5fa`, `#ff5f6d`, `#ffc371`, `#4facfe`,
+`#00f2fe`, `#a18cd1`, `#34d399`, e mais). Mais `perspective`,
+`backdrop-filter` em dois lugares e cinco camadas transformadas.
+Conceitualmente perto de um Estudo — grupo com coisas dentro. Mas os Estudos já
+têm quadro (`895:8849`), e o quadro não é isto.
+**Veredito: não.**
+
+## 5 · Cartão 3D com círculos — Uiverse
+Gradiente verde-água, `rotate3d` ao pousar, botões de rede social.
+Linguagem visual oposta à do Mekora.
+**Veredito: não.**
+
+## 6 · Botão neumórfico — Uiverse
+`box-shadow: 6px 6px 12px #c5c5c5, -6px -6px 12px #ffffff`.
+
+**Conflita com o sistema, não só com a paleta.** O Mekora é chapado, com borda
+de 1px e sombra rasa — o desenho do Erik é assim em toda tela medida até agora.
+Neumorfismo é outra gramática: o relevo substitui a borda. Misturar as duas dá
+uma tela com dois idiomas.
+**Veredito: não.**
+
+## 7 · Pilha de arquivos — Uiverse (Cobp)
+**Barreira estrutural:** escrito inteiro em classes utilitárias do Tailwind
+(`bg-amber-600`, `[perspective:1500px]`, `group-hover:[transform:rotateX(-38deg)]`).
+O projeto não tem Tailwind e não vai ter por causa disto. Trazer significa
+reescrever do zero — e aí não é o componente, é a ideia dele.
+**Veredito: não como código. A ideia (pilha que se abre) pode voltar como
+desenho.**
+
+## 8 · Files — Animate UI (Radix Accordion)
+Árvore de pastas e arquivos.
+**Dependência real, não trecho:** puxa Radix UI e o pacote `animate-ui`. Duas
+bibliotecas com estilo próprio para uma árvore.
+**E o Mekora não mostra árvore de arquivos.** O parente mais próximo é o índice
+do livro, que é lista de capítulos — o LineSidebar da primeira leva serve melhor
+e sem dependência.
+**Veredito: não.**
+
+## 9 · Cursor com o nome no balão — Animate UI
+O Erik: *"gostei do cursor com o nome do usuario escrito no balao"*.
+
+**Isto não é um componente, é uma FEATURE.** Cursor com nome existe para
+mostrar **onde as outras pessoas estão** — é presença, de produto colaborativo.
+O Mekora é ambiente pessoal de leitura: só há uma pessoa na tela, e um balão com
+o próprio nome seguindo o próprio ponteiro não diz nada a ninguém.
+
+Se o que agradou foi a ideia de **várias pessoas no mesmo Canvas**, isso é
+decisão de produto grande — muda dado, conta, permissão e sincronismo. Vale
+conversar; não vale trazer o cursor antes.
+**Dependência:** `motion` (Framer Motion).
+**Veredito: não como componente. Como pergunta de produto, sim.**
+
+---
+
+## Resumo da segunda leva
+
+| | veredito |
+|---|---|
+| botão que expande | **guardar** — para botão solitário, nunca no cromo |
+| livro que abre a capa | **discutir** — responde ao R-01, mas o quadro usa borda |
+| cartão de transação | não |
+| pasta 3D | não — nove cores cruas, e os Estudos já têm quadro |
+| cartão 3D | não — gramática visual oposta |
+| botão neumórfico | não — relevo no lugar de borda é outro idioma |
+| pilha de arquivos | não — é Tailwind puro |
+| Files (Radix) | não — duas dependências, e não há árvore no produto |
+| cursor com nome | não — é feature de presença, não componente |
+
+**O último item da mensagem veio vazio** — se faltou um, manda de novo.
