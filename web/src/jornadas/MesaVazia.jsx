@@ -9,7 +9,6 @@
  * sabe, aplicada ao que ele sabe que não tem.
  */
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
-import { Rodape } from "../componentes/Rodape.jsx";
 import { Soltar } from "../componentes/Soltar.jsx";
 // Assets do Figma, servidos de `publico/`. Caminho e nao import: o import ES
 // so vale para asset dentro de src/, que o Vite processa e versiona.
@@ -46,7 +45,6 @@ export function MesaVazia({ aoReceberArquivos, backend }) {
         </div>
       </section>
 
-      <Rodape />
     </div>
   );
 }

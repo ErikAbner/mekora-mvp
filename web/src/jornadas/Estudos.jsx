@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
-import { Rodape } from "../componentes/Rodape.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
 import { achatar, comecosDistintos } from "../../../contrato/texto.js";
@@ -926,7 +925,6 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
         />
       </Folha>
     
-      <Rodape />
     </div>
   );
 }

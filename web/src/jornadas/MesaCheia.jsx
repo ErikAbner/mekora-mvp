@@ -13,7 +13,6 @@
  * trocar, senão o número treme enquanto conta.
  */
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
-import { Rodape } from "../componentes/Rodape.jsx";
 import { Soltar } from "../componentes/Soltar.jsx";
 import { Icone } from "../componentes/Icone.jsx";
 import { Link } from "react-router-dom";
@@ -514,7 +513,6 @@ export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberA
 
       <Faixa titulo="Na estante" livros={livros.filter((l) => l.leituraUrl).slice(0, 6)} verTudo="/estante" />
 
-      <Rodape />
     </div>
   );
 }

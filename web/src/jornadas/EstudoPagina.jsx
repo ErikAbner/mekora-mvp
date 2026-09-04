@@ -19,7 +19,6 @@
  */
 import { Link } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
-import { Rodape } from "../componentes/Rodape.jsx";
 import { Estudo } from "./Estudos.jsx";
 import { TrilhaDaPagina } from "../componentes/TrilhaDaPagina.jsx";
 import "./estudo-pagina.css";
@@ -83,7 +82,6 @@ export function EstudoPagina({ estudo, notas = [], erro, aoMudar, aoApagar, aoRe
         </div>
       </main>
 
-      <Rodape />
     </div>
   );
 }

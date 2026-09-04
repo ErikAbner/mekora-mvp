@@ -19,7 +19,6 @@ import { Link } from "react-router-dom";
 import { espessuraMm, espessuraPx } from "../../../contrato/lombada.js";
 import { TrilhaLinhas } from "../componentes/TrilhaLinhas.jsx";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
-import { Rodape } from "../componentes/Rodape.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { Folha } from "../componentes/Folha.jsx";
 import { DESTAQUES } from "./Leitura.jsx";
@@ -557,7 +556,6 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher }) {
       </section>
 
     
-      <Rodape />
     </div>
   );
 }

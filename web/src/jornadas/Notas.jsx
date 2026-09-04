@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
-import { Rodape } from "../componentes/Rodape.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { TrazerDoKindle } from "../componentes/TrazerDoKindle.jsx";
 import { DESTAQUES } from "./Leitura.jsx";
@@ -183,7 +182,6 @@ export function Notas({ notas = [], carregando, aoApagar, aoImportar }) {
         </div>
       </section>
     
-      <Rodape />
     </div>
   );
 }
