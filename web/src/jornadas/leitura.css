@@ -29,6 +29,69 @@
 .cromo-caixa button:hover { background: var(--muted); }
 .cromo-caixa button:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
 
+/* O BALÃO COM O NOME DO BOTÃO.
+ *
+ * O cromo é só ícone, e o Erik pediu o nome sem rótulo fixo: "explica
+ * brevemente inves de ter um texto fixo em todo botao aumentando
+ * desnecessariamente a area do conteudo". Rótulo fixo engorda a barra; balão
+ * flutua e não empurra nada.
+ *
+ * O TEXTO SAI DO `aria-label`, e isso é o ponto: um nome só, num lugar só. Ele
+ * já estava lá para quem ouve; agora serve também para quem vê. Escrever o
+ * nome duas vezes é como os dois começam a divergir.
+ *
+ * Toque não tem repouso de ponteiro, então o balão nunca aparece no telefone —
+ * lá o ícone precisa ser legível sozinho, e é por isso que a auditoria de
+ * ícone importa mais do que parece. */
+.cromo-caixa button,
+.cromo-caixa .cromo-link { position: relative; }
+
+.cromo-caixa button::after,
+.cromo-caixa .cromo-link::after {
+  content: attr(aria-label);
+  position: absolute;
+  inset-block-start: calc(100% + 8px);
+  inset-inline-start: 50%;
+  translate: -50% 0;
+  transform: scale(0.97);
+  transform-origin: top center;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  background: var(--popover, var(--card));
+  color: var(--foreground);
+  font-size: 14px; line-height: 20px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 3;
+  /* Sai rápido, entra com atraso: sem o atraso o balão pisca a cada travessia
+     da barra. `ease-out` porque é entrada — `ease-in` começa devagar e faz a
+     interface parecer lenta justo no instante em que se está olhando. */
+  transition: opacity 125ms cubic-bezier(0.23, 1, 0.32, 1), transform 125ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.cromo-caixa button:hover::after,
+.cromo-caixa button:focus-visible::after,
+.cromo-caixa .cromo-link:hover::after,
+.cromo-caixa .cromo-link:focus-visible::after {
+  opacity: 1;
+  transform: scale(1);
+  transition-delay: 400ms;
+}
+
+/* DEPOIS DO PRIMEIRO, OS VIZINHOS ABREM NA HORA. Com um balão já aberto, o
+   atraso deixa de proteger de nada e só faz a barra parecer lenta. */
+.cromo-caixa:hover button:hover::after,
+.cromo-caixa:hover .cromo-link:hover::after { transition-delay: 0ms; }
+
+/* Botão desligado não explica o que faz — explica por que não faz, e isso já
+   está no `title`. Dois balões no mesmo alvo é um a mais. */
+.cromo-caixa button:disabled::after { content: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cromo-caixa button::after, .cromo-caixa .cromo-link::after { transition: none; transform: none; }
+}
+
 .abertura {
   display: flex; flex-direction: column; align-items: center; gap: 40px;
   padding: 64px; text-align: center;

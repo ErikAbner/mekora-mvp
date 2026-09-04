@@ -36,7 +36,6 @@ const iconeNotaNova = "/icones/icone-nota-nova.svg";
 const iconeCopiar = "/icones/icone-copiar.svg";
 const iconeMarcador = "/icones/icone-marcador.svg";
 const iconeBuscar = "/icones/icone-buscar.svg";
-const iconeConta = "/icones/icone-conta.svg";
 const ornamentoAbertura = "/icones/ornamento-abertura.svg";
 
 /* As quatro cores de destaque. O nome diz o papel, e o valor é o conjunto claro
@@ -1099,9 +1098,19 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
           >
             <Icone src={iconeMarcador} />
           </button>
+        </nav>
+        <nav className="cromo-caixa" aria-label="Ferramentas">
           {/* APARÊNCIA. O nó 973:32215 põe este painel na leitura, e é ele que
               torna editável o que o desenho fixa — corpo, fonte, entrelinha,
-              coluna e destaques. */}
+              coluna e destaques.
+
+              ELA MUDOU DE LADO EM 04/09, e não por fidelidade: por assunto. O
+              nó `919:18714` a põe à direita, junto da busca, e a razão fica
+              clara quando se lê os dois grupos como frases — à esquerda "onde
+              estou e o que marquei", à direita "como leio e o que procuro".
+              Com essa divisão, a regra de o painel abrir do lado do próprio
+              botão deixa de ser detalhe e passa a ter motivo. É o item 24 do
+              Erik: "itens abrem do lado contrário ao do ícone". */}
           <button
             type="button"
             aria-label="Aparência da leitura"
@@ -1110,8 +1119,6 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
           >
             <span className="cromo-aa" aria-hidden="true">Aa</span>
           </button>
-        </nav>
-        <nav className="cromo-caixa" aria-label="Ferramentas">
           {/* AINDA NÃO RESPONDEM, e agora se sabe por quê: os quatro painéis da
               leitura estão desenhados — aparência (941:23110), notas e
               destaques (941:23111), índice (941:23112) e a barra de seleção
@@ -1137,7 +1144,11 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
           >
             <Icone src={iconeBuscar} />
           </button>
-          <Link to="/conta" className="cromo-link" aria-label="Conta"><Icone src={iconeConta} /></Link>
+          {/* A CONTA SAIU DAQUI EM 04/09, por decisão do Erik.
+              Ler é um MODO, não uma tela. O nó `919:18714` traz dois itens à
+              direita — aparência e busca —, e nenhum deles é conta. Um botão de
+              conta no meio da leitura só serve para tirar a pessoa do livro, e
+              ela existe no cabeçalho de todas as outras telas. */}
         </nav>
       </div>
 
