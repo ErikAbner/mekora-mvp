@@ -1002,3 +1002,47 @@ recheio do desenho cabe e o encolhimento some sozinho.
 decisão escrita ("tracking relativo, nunca absoluto"); o nó põe `-1.6px`, que
 em 56px dá `-2.86%`. Diferença de 0,2px por letra — registrada, não mexida,
 porque a regra do relativo é decisão anterior e vale discutir antes de trocar.
+
+## `966:31504` — M · Preparo, "o que encontrei": A BANCADA NÃO ALCANÇA · 04/09
+
+Tentei conferir por dado de nó e parei antes de medir: **o acervo semeado não
+produz o estado que esta tela mostra.**
+
+O `scripts/semear.py` grava trabalhos em `converted` e `done`. A tela
+`966:31504` é o estado **`analyzed`** — o momento em que a análise terminou e a
+pessoa ainda não decidiu nada. Pedindo `/preparo/{id}` na bancada, o que aparece
+é "Analisando o arquivo…", que é outra tela (`967:31833`).
+
+**Isto é uma tela inteira que a bancada nunca mostrou, e portanto nunca foi
+medida — nem por mim, nem pelas auditorias anteriores.** E não é uma tela
+qualquer: é onde a pessoa lê o que o Mekora encontrou no arquivo dela e decide
+se aceita as recomendações. É o item 34 do Erik — *"bem errada também, não
+condizendo com o Figma"*.
+
+**O que falta é um trabalho semeado em `analyzed`.** Uma linha no semeador, e
+ela vale mais que a medida: enquanto não existir, qualquer varredura que rode
+"em todas as rotas" continua passando por `/preparo/:id` e medindo a tela
+errada, com verde.
+
+O que o nó pede, para quando der para medir:
+
+| | |
+|---|---|
+| cabeçalho | `p-16`, busca `px-16 py-17`, atalho `p-17`, vão 16 |
+| hero | `py-56 px-16`, coluna com vão 48 |
+| capa | `aspect 427/645` dentro de bloco `aspect 270/407` |
+| título | Heading/MD 32/40, peso 540, `#535353` |
+| botão ⋮ | 56×56, `p-8`, girado -90° |
+| selos | `px-17 py-13`, raio 24, Label/Small 14/22, vão 16, quebram linha |
+| título→selos | vão 32 · selos→alternador: vão 64 |
+| alternador | `p-9.5`, botões `px-24 py-14` |
+| corpo | `pb-64 px-16`, seções com vão 48, blocos com vão 64 |
+| faixa do veredito | `border-l-2 #6a6a6a`, fundo `#f3f3f3`, `px-24 py-40`, vão 24 |
+| cartão | fundo `#f9f9f9`, `px-24 py-40`, vão 24; lista com vão 24 |
+| botão do cartão | `h-58`, `px-33 py-17`, borda `rgba(0,0,0,0.15)`, texto `#464646` |
+| ações finais | vão 16, botões `h-58` |
+
+**E os ícones desta tela estão em branco no quadro**, como nas Configurações de
+arquivo: quadrados `32×32` em `#d9d9d9`, oito deles. É a mesma lacuna que fez o
+ícone de "ver todas as páginas" nascer clonado do Canvas — e ela vai se repetir
+aqui se alguém preencher por conta própria.
