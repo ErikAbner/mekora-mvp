@@ -25,6 +25,7 @@ import { EXPLICACAO, procurarNoLivro, reancorar } from "../leitor/ancora.js";
 import { ondeComeca, tituloDoCapitulo, usarSumario } from "../leitor/sumario.js";
 import { blocosDoCapitulo } from "../leitor/abrir.js";
 import "./leitura.css";
+import { medir } from "../medir.js";
 
 const iconeMenu = "/icones/icone-menu.svg";
 const iconeCaderno = "/icones/icone-caderno.svg";
@@ -725,7 +726,71 @@ function Caderno({ livro, notas, capitulo, aoComentar, aoTrocarCor, aoApagar, ao
 
 
 export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirAntes, temMais = false, temAntes = false, progresso, aoMarcar, notas = [], aoAnotar, aoComentar, aoTrocarCor, aoApagarNota, erroDeNota, aoIrParaCapitulo, marcadores = [], aoDobrar, aoDesdobrar, erroDeMarcador }) {
+  /* O CROMO PASSA A CONTAR QUEM O USA.
+   *
+   * O Erik decidiu em 04/09 manter o marcador de páginas e deixar o uso real
+   * decidir: "lança com os cinco, instrumenta os cinco, e o que ninguém tocar
+   * em três semanas sai depois". Medido no mesmo dia: o `medir()` do
+   * `medir.js` não era chamado em lugar NENHUM do produto — o PostHog captura
+   * `$pageview` e mais nada. A decisão dependia de um dado que não existia.
+   *
+   * Um evento, um campo. Nome do painel e nada mais: quantas vezes cada um dos
+   * cinco é aberto responde a pergunta inteira, e qualquer campo a mais aqui é
+   * dado pessoal saindo de uma tela de leitura sem precisar. */
+  const contarCromo = useCallback((qual) => medir("leitura:cromo", { painel: qual }), []);
+
   const [cromoVisivel, setCromo] = useState(true);
+
+  /* O CROMO RECOLHE SOZINHO ENQUANTO SE LÊ.
+   *
+   * Nenhum dos botões é de alta frequência — índice, aparência e busca são de
+   * vez em quando, e nota se cria selecionando texto, não clicando em botão.
+   * Uma barra permanente disputa a tela o tempo todo para servir ao que
+   * acontece raramente.
+   *
+   * Descer recolhe, subir devolve: quem rola para baixo está lendo, quem rola
+   * para cima está procurando alguma coisa — e o que se procura numa página de
+   * leitura costuma estar no topo. É a leitura do GESTO, e não um tempo fixo
+   * que apaga a barra no meio de quem estava mirando nela.
+   *
+   * O ESTADO SÓ MUDA QUANDO MUDA. Rolagem dispara dezenas de vezes por segundo;
+   * chamar `setCromo` a cada evento renderiza a tela inteira à toa. O `ref`
+   * guarda o último valor e o `setState` só é chamado na virada.
+   *
+   * `passive: true` porque este ouvinte não impede nada, e sem isso o navegador
+   * espera por ele antes de rolar. */
+  const ultimoY = useRef(0);
+  const cromoRef = useRef(true);
+  useEffect(() => {
+    const LIMIAR = 8;   /* menos que isso é tremor de dedo, não gesto */
+    const TOPO = 64;    /* perto do topo o cromo fica, sempre */
+    /* A ROLAGEM DA ABERTURA NÃO É DA PESSOA.
+     *
+     * A leitura devolve quem volta ao ponto onde parou, e esse salto chega aqui
+     * como descida. Medido: o cromo nascia com 0,15 de opacidade — a pessoa
+     * abria o livro e a barra já estava apagada sem ela ter tocado em nada.
+     *
+     * Pular só o PRIMEIRO evento não resolveu, e a segunda medida disse por
+     * quê: a restauração não é um salto, é uma sequência. O que separa ela de
+     * um gesto é o TEMPO desde a abertura, não a contagem de eventos. */
+    const nascido = performance.now();
+    const BERCO = 1200;
+    const aoRolar = () => {
+      const y = window.scrollY;
+      if (performance.now() - nascido < BERCO) { ultimoY.current = y; return; }
+      const desceu = y - ultimoY.current > LIMIAR;
+      const subiu = ultimoY.current - y > LIMIAR;
+      if (!desceu && !subiu) return;
+      ultimoY.current = y;
+      const querVisivel = subiu || y < TOPO;
+      if (querVisivel !== cromoRef.current) {
+        cromoRef.current = querVisivel;
+        setCromo(querVisivel);
+      }
+    };
+    window.addEventListener("scroll", aoRolar, { passive: true });
+    return () => window.removeEventListener("scroll", aoRolar);
+  }, []);
   const [paleta, setPaleta] = useState(null);
 
   /* MARCAR O TRECHO. Sai do JSX porque as duas ações do 941:23120 fazem a mesma
@@ -914,6 +979,10 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
    * Abrir um fecha os outros. É o que a pessoa espera de qualquer gaveta lateral
    * — e resolve o empilhamento pela regra, e não por `z-index`. */
   const abrirSo = (qual) => {
+    /* A contagem entra AQUI, e não em cada botão: `abrirSo` é o caminho por
+       onde os cinco passam. Contar em cinco lugares é como o quinto fica de
+       fora sem ninguém notar. */
+    contarCromo(qual);
     setIndice(qual === "indice" ? (v) => !v : false);
     setCaderno(qual === "caderno" ? (v) => !v : false);
     setPainel(qual === "painel" ? (v) => !v : false);
@@ -928,6 +997,9 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
   const [aqui, setAqui] = useState(null);
 
   const abrirDobras = () => {
+    /* Sem `contarCromo` aqui: o `abrirSo("dobras")` abaixo já conta, e contar
+       duas vezes dobraria justamente o número do item que o Erik vai usar para
+       decidir se o marcador fica. */
     setAqui(dobras ? null : ondeEstouNoLivro(prosa.current));
     abrirSo("dobras");
   };
@@ -1060,9 +1132,15 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
           disputa atenção com o texto — e aqui o texto é o produto. */}
       <div className={`cromo${cromoVisivel ? "" : " recolhido"}`}>
         <nav className="cromo-caixa" aria-label="Leitura">
-          <button type="button" aria-label="Menu" onClick={() => setCromo((v) => !v)}>
-            <Icone src={iconeMenu} />
-          </button>
+          {/* O BOTÃO "MENU" SAIU EM 04/09, e ele não era menu: era
+              `setCromo(v => !v)`, o gatilho que recolhia o próprio cromo. Ficava
+              ao lado do Índice com o MESMO glifo — os arquivos
+              `icone-menu.svg` e `icone-indice.svg` são idênticos byte a byte,
+              porque o desenho usa o nó `910:1671` para os dois.
+
+              Recolher virou automático (ver `useEffect` acima): quem lê rola
+              para baixo, e o cromo sai da frente sozinho. Um botão para
+              esconder a interface é interface a mais para esconder interface. */}
           {/* O ÍNDICE. Ele não existia — nem botão, nem painel —, e é a única
               forma de ir a um capítulo pelo nome dele numa leitura que rola sem
               costura. Só aparece quando o livro sabe dar um sumário. */}
