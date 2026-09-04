@@ -147,6 +147,29 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow: hidden;
+  /* A BORDA DE BAIXO VAI ATÉ A TINTA, E NÃO ATÉ A LINHA DE BASE.
+   *
+   * O `base.css` põe `text-box-edge: cap alphabetic` em todo h1..h6 e p. A
+   * borda `alphabetic` fecha a caixa NA LINHA DE BASE, e descendente mora
+   * abaixo dela. Sem `overflow: hidden` isso não aparece — a tinta transborda e
+   * ninguém vê. O corte em duas linhas acima trouxe o `hidden`, e com ele a
+   * caixa passou a RASPAR a perna do "p" de "campo" e a cedilha de
+   * "Apresentação". Medido: 11,8px de tinta abaixo do recorte.
+   *
+   * `cap text` mantém o topo aparado na altura de maiúscula — que é de onde vem
+   * o espaçamento apertado que o trim foi buscar — e leva o fundo até onde a
+   * tinta acaba.
+   *
+   * A LIÇÃO É MAIOR QUE ESTA REGRA: qualquer bloco desta lista que ganhe
+   * `overflow: hidden` daqui para a frente passa a cortar descendente. O corte
+   * não criou o defeito, revelou-o.
+   *
+   * `cap text` sozinho não fechou: medido, caiu de 11,8px para 4,8px de tinta
+   * cortada, e 4,8px em 24px é exatamente o descendente da Zodiak. O recheio de
+   * 0,2em cobre isso em qualquer corpo, porque o descendente é proporção da
+   * fonte e não número fixo. */
+  text-box-edge: cap text;
+  padding-block-end: 0.2em;
 }
 .livro-texto p {
   margin: 0;
