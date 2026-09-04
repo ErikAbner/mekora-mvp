@@ -45,11 +45,11 @@ Estado de cada um: `docs/RETORNO-2026-09-02.md`.
 **Medido em 04/09:** Medido em 04/09: a unica regra de hover e `background: color-mix(--foreground 4%)`. E ela quase nao dispara — a capa e pintada por cima do alvo, entao passar o mouse sobre a capa nao acende nada.
 **Prova:** sem-prova
 
-### R-02 · 2026-09-01 · aberto
+### R-02 · 2026-09-01 · fechado
 **Erik:** "O click só funciona na div inferior à da capa, usuários tendem a clicar na capa"
 **Onde:** /estante
-**Medido em 04/09:** Medido em 04/09, e o defeito esta intacto: clique no centro da capa nao muda a ficha nem a escolha; clique no texto de baixo muda. O `.livro-alvo` e `inset:0`, mas a capa tem o mesmo `z-index` e vem depois no DOM. **O comentario do codigo diz "o livro inteiro e o alvo do clique".**
-**Prova:** sem-prova
+**Medido em 04/09:** `.livro-alvo` e `.capa` estavam ambos em `z-index: 1`, e `.capa-caixa` é `position: relative` **sem** `z-index` — logo não abre contexto de empilhamento próprio, as duas disputam o mesmo e a ordem do DOM desempata. A capa vem depois, ficava por cima e comia o clique. O conserto é `pointer-events: none` na capa, e não `z-index: 2` no alvo: subir o alvo o poria na frente da imagem e levaria junto o véu de 4% do `:hover` — o mesmo véu sobre a capa que a regra do escolhido já tinha tirado por apagar o que se está tentando mostrar. Medido com ponteiro de verdade pelo CDP, nos dois sentidos: limpo, o centro da capa entrega o clique a `button.livro-alvo` e a ficha passa de "Cadernos de campo" para "Relatório de pesquisa"; envenenado (`pointer-events: auto` de volta), quem recebe é `img.capa` e a ficha não muda.
+**Prova:** `node scripts/provas.mjs r02`
 
 ### R-03 · 2026-09-01 · fechado
 **Erik:** "O marcador de notas e destaques quebra o grid e vaza tanto da capa quanto invade o espaço do filtro superior"
@@ -190,6 +190,22 @@ Estado de cada um: `docs/RETORNO-2026-09-02.md`.
 **Erik:** "Você esqueceu de REMOVER o vertical trim de todos os textos — line height normal, nada de vertical trim"
 **Onde:** todas
 **Medido em 04/09:** Medido na Leitura: ha computados com `text-box-trim: trim-both`. Continua aplicado.
+**Medido em 04/09, na Estante:** vivo em `web/src/estilo/base.css:117`, global. Um título de uma linha mede `clientHeight` 17 onde a linha pede 32; de duas linhas, 57 onde pede 64. **Quinze pixels por linha a menos do que o texto ocupa.** Consequência para a Fase 2a: varredura de transbordo que compare `scrollHeight` com `clientHeight` acusa FALSO em toda tela enquanto ele estiver lá — aconteceu aqui hoje, seis títulos "cortados" que não estavam cortados.
+**Prova:** sem-prova
+
+### R-46 · 2026-09-04 · aberto
+**Erik:** "limitar a quantidade de caracteres do titulo do arquivo aparecendo na estante, se nao, vai ter texto enorme quebrando o layout e fazendo a tela perder o sentido"
+**Onde:** /estante
+**Feito em 04/09:** corte em DUAS LINHAS, não em número de caracteres — contagem não sabe a largura do glifo, e `IIIIIIIIIIIIIIIIIIII` e `WWWWWWWWWWWWWWWWWWWW` têm vinte caracteres e larguras muito diferentes. `title` no elemento devolve o nome inteiro. Veneno de 140 caracteres: o cartão cresceu **0px**, o título parou em 2 linhas, 6 cartões com 1 altura só (467px).
+**Falta:** a prova entra no `scripts/provas.mjs` — precisa da bancada de pé.
+**Prova:** sem-prova
+
+### R-47 · 2026-09-04 · aberto
+**Erik:** "tem um component set no figma com varias capas que criei justamente pro usuario n ficar sem capa caso o arquivo dele n tivesse uma... em caso de n haver borda ou lateral a gente segue o padrao de cor solida principal do livro"
+**Onde:** /estante, /canvas, /estante/:id
+**Lido em 04/09:** conjunto `1016:31030` — 14 capas de 420×594 e 14 lombadas de 58×594, mapeadas em `docs/TELAS-FIGMA.md`. São gabaritos que recebem o título, não fundos. Paleta: `#f4f2ec`, `#101010`, `#d9d9d9`.
+**Feito:** uma peça só (`componentes/CapaDeReserva.jsx`) no lugar de TRÊS implementações divergentes — `.capa-vazia`, `.livro-capa-vazia`, `.livro-pagina-capa-vazia` —, com a variante saindo do token do trabalho: mesmo livro, mesma capa, sempre.
+**Falta:** a ARTE das catorze. Cada variante tem nó próprio; entra como regra `[data-capa]`, sem tocar no componente.
 **Prova:** sem-prova
 
 ### R-28 · 2026-09-01 · aberto
@@ -292,3 +308,17 @@ Estado de cada um: `docs/RETORNO-2026-09-02.md`.
 **Onde:** /estante
 **Medido em 04/09:** A causa não era do produto: cada cartão apontava para o seu próprio arquivo. Errado estava o DADO — `scripts/semear.py` tinha **quatro** imagens de exemplo para **seis** livros, e `exemplo-1` servia a dois títulos (Malha Urbana e Relatório de pesquisa), `exemplo-3` a outros dois. E havia um segundo defeito embaixo: a lista pedia `exemplo-1.png` e o que existe em disco é `.webp`, então o `if origem.exists()` pulava a cópia **em silêncio** — as capas que apareciam eram restos de uma rodada antiga. Agora cada livro ganha uma capa distinta, com o título escrito nela, e arquivo de exemplo faltando é erro que fala.
 **Prova:** `node scripts/provas.mjs r44`
+
+### R-45 · 2026-09-04 · aberto
+**Erik:** (não é dele — saiu de medir a outra metade do R-44, a pedido dele: "quando a extração de capa de um livro REAL falha, o cartão cai em `.capa-vazia` ou fica com imagem de outro livro?")
+**Onde:** /estante · `backend/app/api/jobs.py`
+**Medido em 04/09:** Nenhuma das duas. A resposta é uma terceira: o cartão fica com um `<img class="capa">` **quebrado** — `naturalWidth: 0`, `complete: true`, e **sem** `.capa-vazia`. Imagem de outro livro não acontece: `serve_thumbnail` resolve o token para o `job_id` e lê de `STORAGE_TEMP/{job_id}`, então cada cartão só pode servir o próprio diretório. O que acontece é que `jobs.py` monta `cover_url` de `token_publico` + número da página **sempre que há `page_count`**, sem olhar se o arquivo existe — e a tela confia: `capa: e.cover_url ?? null`, e `capa ? <img> : <div class="capa capa-vazia">`. Um `cover_url` não-nulo apontando para 404 é justamente o caso em que o `.capa-vazia` existe e não é usado.
+
+Medido no acervo semeado: com `storage/temp/9374/page_0.png` removido, a rota devolve 404 e o cartão "Relatório de pesquisa" fica com `larguraNatural: 0` e `temCapaVazia: false`; com o arquivo de volta, `larguraNatural: 420`. E no banco de desenvolvimento real (`storage/kindle_tool.db`), **32 dos 37 trabalhos** carregam `cover_url` não-nulo e **nenhum** dos 32 arquivos existe em disco — `storage/temp` é temporário.
+
+O `scripts/semear.py` já sabia disso e contornou: *"TODOS OS LIVROS TÊM CAPA... um livro semeado sem arquivo em disco vira 404 — a estante mostrava capa quebrada nos dois que não tinham"*. Dar capa a todo livro semeado fez o sintoma sumir do acervo de prova sem tirá-lo do produto.
+
+**Isto não reabre o R-44.** O R-44 diz "capa do livro errado", e capa de outro livro está medida como impossível por construção. Este é outro defeito, com outro sintoma, e por isso outro número.
+
+**Conserto de uma linha, quando for a vez:** `jobs.py` conferir o arquivo em disco antes de emitir `cover_url` — sem arquivo, `None`, e a tela já cai sozinha no `.capa-vazia`, que existe exatamente para isto.
+**Prova:** sem-prova
