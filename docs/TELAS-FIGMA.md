@@ -1003,7 +1003,10 @@ decisão escrita ("tracking relativo, nunca absoluto"); o nó põe `-1.6px`, que
 em 56px dá `-2.86%`. Diferença de 0,2px por letra — registrada, não mexida,
 porque a regra do relativo é decisão anterior e vale discutir antes de trocar.
 
-## `966:31504` — M · Preparo, "o que encontrei": A BANCADA NÃO ALCANÇA · 04/09
+## `966:31504` — M · Preparo, "o que encontrei": MEDIDA, enfim · 04/09
+
+> **A bancada alcançou.** O bloco abaixo é o registro de por que ela não
+> alcançava; a comparação das catorze linhas vem depois dele.
 
 Tentei conferir por dado de nó e parei antes de medir: **o acervo semeado não
 produz o estado que esta tela mostra.**
@@ -1046,3 +1049,94 @@ O que o nó pede, para quando der para medir:
 arquivo: quadrados `32×32` em `#d9d9d9`, oito deles. É a mesma lacuna que fez o
 ícone de "ver todas as páginas" nascer clonado do Canvas — e ela vai se repetir
 aqui se alguém preencher por conta própria.
+
+### A bancada passou a alcançar · 04/09
+
+`scripts/semear.py` grava um trabalho parado em **`analyzed`**: 312 páginas,
+idioma `pt`, 14 capítulos declarados, 11,5 MB, **sem capa e sem miniatura**. Os
+números são os do nó de propósito — o selo "11.5 MB" e os "14 títulos de
+capítulo" —, e o título e o autor vêm preenchidos porque o veredito do `895:7856`
+diz *"UMA coisa eu resolvi sozinho"*, no singular: sem título detectado a tela
+decidiria duas e a frase mudaria de número.
+
+**Não precisa de arquivo em disco**, e é isso que torna a linha barata:
+`GET /analyze/{id}` devolve o trabalho em cache assim que `status != "uploaded"`.
+O que ele não faz é converter — o botão "Preparar com recomendações" desta linha
+falha de propósito, e a tela sob medida é a de ANTES da decisão.
+
+O endereço saiu do palpite: `scripts/_sessao.py … analisado` imprime o id, o
+`sessao-de-prova.sh` o devolve na terceira linha, e as provas o pedem por
+`{ANALISADO}`. **Apontar a medida para "o primeiro livro" era o erro que deixou
+esta tela sem medida:** o primeiro livro já está convertido, e `/preparo/{id}`
+sobre ele abre a tela de espera.
+
+### As catorze linhas, medidas a 390
+
+Nenhuma rolagem horizontal. **Três batem, onze divergem** — e duas das onze não
+são número, são peça faltando.
+
+| linha | o nó pede | medido | |
+|---|---|---|---|
+| cabeçalho | `p-16`, busca `px-16 py-17` | `12/16`, busca `13/16` | diverge |
+| hero | `py-56 px-16`, coluna vão 48 | sem recuo próprio (`0/0/0/0`), vão **24** | diverge |
+| capa | img `427/645` (0,662) em bloco `270/407` (0,663) | bloco **0,707** | diverge — 0,707 é `420/594`, a razão da **Estante** |
+| título | 32/40, peso **540**, `#535353` | **28**/40, peso **700**, `#151515` | diverge nos três |
+| botão ⋮ | 56×56, `p-8`, girado −90° | **não existe** | falta |
+| selos | `px-17 py-13`, raio **24**, 14/**22**, vão 16 | `4/12`, raio **999px**, 14/**20**, vão **8** | diverge |
+| título→selos | 32 | **12** | diverge |
+| selos→alternador | 64 | **20** | diverge |
+| alternador | `p-9.5`, botões `px-24 py-14` | `12/12`, botões `12/16` | diverge |
+| corpo | `pb-64 px-16`, seções vão 48 | `32/40/80/40`, seções vão **28** | diverge |
+| faixa do veredito | `border-l-2 #6a6a6a`, fundo `#f3f3f3`, `px-24 py-40`, vão 24 | **sem filete** (`0px`), fundo `#f3f3f3` ✓, `20/24`, vão **6** | fundo bate, o resto não |
+| cartão | fundo `#f9f9f9`, `px-24 py-40`, vão 24 | fundo `#f9f9f9` ✓, `16/20`, lista com vão **1px** | fundo bate, o resto não |
+| botão do cartão | `h-58`, `px-33 py-17`, borda `rgba(0,0,0,.15)`, texto `#464646` | **h-58 ✓**, `16/32`, borda `#878787`, texto `#6a6a6a` | altura bate |
+| ações finais | vão 16, botões `h-58` | vão **12**, botões **h-80** | diverge |
+
+**As duas que não são número:**
+
+1. **O botão ⋮ não existe.** O nó o desenha 56×56 girado −90° ao lado do título;
+   a tela não tem nada ali. Não é medida errada: é peça ausente.
+2. **A faixa do veredito não tem o filete à esquerda.** `border-l-2 #6a6a6a` é o
+   que faz aquele parágrafo ser uma FAIXA e não um bloco cinza qualquer — e é a
+   regra do sistema que o repositório já escreveu ao contrário uma vez: *"o chão
+   marca o conteúdo; o filete marca a citação"*. Aqui o desenho pede os dois, e
+   só o chão está.
+
+**E uma terceira, que veio de graça com a bancada nova:** a capa do Preparo cai
+para `<span>{titulo}</span>` dentro de `.preparo-pagina-capa` — **uma quarta
+implementação divergente do "sem capa"**, depois das três que a `CapaDeReserva`
+unificou no R-47. Medido: `ehComponenteDeReserva: false`. Foi só existir um
+trabalho sem capa para ela aparecer.
+
+**Os ícones continuam sem preencher, e de propósito.** O aviso do bloco acima
+vale: oito quadrados `32×32` em `#d9d9d9` no quadro, e preencher por conta
+própria é como o ícone de "ver todas as páginas" nasceu clonado do Canvas.
+Medido em 04/09, no R-49: `icone-indice.svg` e `icone-menu.svg` são byte a byte
+iguais, e `icone-canvas.svg` e `icone-paginas.svg` também.
+
+## `966:30771` — M · Estudos, primeira medida · 04/09
+
+A rota nunca tinha sido medida: até hoje a bancada mostrava o portão de quem não
+entrou nela e em mais seis (ver `docs/BANCADA-CEGA.md`). Esta é a primeira vez
+que alguém compara.
+
+**Corrigido, e vale para TODAS as telas:** o cabeçalho tinha `padding: 12px 16px`
+no telefone. Quatro nós diferentes — Estudos `966:31048`, Estante `964:24607`,
+Preparo `966:31683` e Conta `966:25486` — põem `p-[16px]` fechado. É o mesmo
+componente em todas, então é um conserto só. Medido depois: 16px, sem transbordo
+horizontal, portão passa em cinco rotas.
+
+**O item 20 do Erik é de COMPUTADOR.** *"Div central com 2 larguras sem
+necessidade"* — a 390 há duas larguras e as duas são certas (342 é o conteúdo
+dentro dos 16 de respiro, 390 é a faixa de borda a borda). A outra sessão mediu
+NOVE larguras a 1440. A tela do telefone está bem nessa medida; o problema é o
+desktop, e é lá que ele precisa ser conferido contra o `895:8849`.
+
+**Registrado, não mexido:** `.cabecalho-acoes` tem vão 8 e o nó da caixa de ações
+pede 16. Não toquei porque não confirmei que os dois são a mesma peça — e hoje
+oito seletores meus pegaram o elemento errado, o que é justamente o motivo de a
+regra da busca ter entrado no `CLAUDE.md`.
+
+**O que a varredura do telefone diz desta tela:** duas linhas, as duas em
+`.estudos-fio-conta` — corpo 20→18 e entrelinha 30→27. Ficam para a conferência
+contra o nó, com o resto das 51.
