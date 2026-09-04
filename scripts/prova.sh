@@ -22,8 +22,29 @@ set -euo pipefail
 RAIZ="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PROVA="${MEKORA_PROVA:-/tmp/mekora-prova}"
 
+# AS PORTAS SAO ESCOLHIVEIS, e isto conserta uma briga entre sessoes.
+#
+# Elas eram cravadas em 8199 e 5180, e o `parar()` abaixo MATA o que estiver
+# nelas antes de subir. Com duas sessoes de trabalho na mesma maquina — o que
+# aconteceu o dia 04/09 inteiro —, cada `prova.sh` derrubava a bancada da outra
+# POR DESENHO. Tres quedas numa tarde, e cada uma custava a medida que estava a
+# correr.
+#
+# Os valores continuam os mesmos por omissao, entao nada muda para quem ja usa.
+# Quem quiser uma segunda bancada muda as duas:
+#
+#     MEKORA_PORTA_API=8200 MEKORA_PORTA_WEB=5181 bash scripts/prova.sh
+#
+# E as medidas dessa bancada apontam para a porta dela:
+#
+#     MEKORA_WEB=http://localhost:5181 node scripts/provas.mjs --provar
+PORTA_API="${MEKORA_PORTA_API:-8199}"
+PORTA_WEB="${MEKORA_PORTA_WEB:-5180}"
+
 parar() {
-  for porta in 8199 5180; do
+  # So as portas DESTA bancada. Matar por porta e nao por nome ja era a regra;
+  # matar so as suas e a metade que faltava.
+  for porta in "$PORTA_API" "$PORTA_WEB"; do
     lsof -ti:"$porta" 2>/dev/null | xargs -r kill -9 2>/dev/null || true
   done
   sleep 1
@@ -43,17 +64,17 @@ mkdir -p "$PROVA/storage"
     DONO_EMAIL="${MEKORA_EMAIL:-erik@mekora.local}" \
     "$RAIZ/.venv/bin/python" -c "
 import sys; sys.path.insert(0, '$RAIZ/backend')
-import uvicorn; uvicorn.run('main:app', host='127.0.0.1', port=8199, log_level='warning')
+import uvicorn; uvicorn.run('main:app', host='127.0.0.1', port=$PORTA_API, log_level='warning')
 " > "$PROVA/servidor.log" 2>&1 &
 )
 
-( cd "$RAIZ/web" && MEKORA_API=http://127.0.0.1:8199 npx vite --port 5180 > "$PROVA/web.log" 2>&1 & )
+( cd "$RAIZ/web" && MEKORA_API=http://127.0.0.1:$PORTA_API npx vite --port "$PORTA_WEB" > "$PROVA/web.log" 2>&1 & )
 
 for _ in $(seq 1 30); do
   sleep 1
-  if curl -sf -o /dev/null http://localhost:5180/health 2>/dev/null; then
-    echo "no ar: http://localhost:5180  (log: $PROVA)"
-    echo "  backend $(lsof -ti:8199 | wc -l | tr -d ' ') processo, web $(lsof -ti:5180 | wc -l | tr -d ' ')"
+  if curl -sf -o /dev/null "http://localhost:$PORTA_WEB/health" 2>/dev/null; then
+    echo "no ar: http://localhost:$PORTA_WEB  (log: $PROVA)"
+    echo "  backend $(lsof -ti:"$PORTA_API" | wc -l | tr -d ' ') processo, web $(lsof -ti:"$PORTA_WEB" | wc -l | tr -d ' ')"
     exit 0
   fi
 done
