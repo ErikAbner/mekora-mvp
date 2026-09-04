@@ -55,17 +55,32 @@
 
 /* O veredito: chão, porque é conteúdo — a resposta à pergunta que trouxe a
    pessoa aqui. */
+/* O FILETE À ESQUERDA É O QUE FAZ DISTO UMA FAIXA.
+ *
+ * O nó `966:31540` põe `border-l-2` em `#6a6a6a` sobre `surface/sunken`. Medido
+ * em 04/09: 0px. Sem ele aquilo é um bloco cinza, e este repositório já escreveu
+ * a regra ao contrário uma vez — "o chão marca o conteúdo; o filete marca a
+ * citação". Aqui o desenho pede os DOIS, e só o chão estava.
+ *
+ * O recheio e o vão também vinham de outro lugar: 20/24 e 6 contra os 24/40 e
+ * 24 do nó, e a tipografia em 18/28 e 14/20 contra Body/Large 24/32 e
+ * Body/Small 16/24. */
 .preparo-pagina-veredito {
   margin: 0;
-  padding: 20px 24px;
+  padding: 40px 24px;
+  /* `--card` É o `surface/sunken` (#f3f3f3), e o nó pede esse. Troquei para
+     `--muted` (#ebebeb) sem conferir e piorei uma medida que já batia — o
+     terminal tinha reportado o fundo como CERTO. Conferido depois: 235,235,235
+     onde deviam ser 243. */
   background: var(--card);
+  border-inline-start: 2px solid var(--muted-foreground);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 24px;
 }
 
-.preparo-pagina-veredito strong { font-size: 18px; line-height: 28px; font-weight: 540; color: var(--foreground); }
-.preparo-pagina-veredito span { font-size: 14px; line-height: 20px; color: var(--muted-foreground); text-wrap: pretty; }
+.preparo-pagina-veredito strong { font-size: 24px; line-height: 32px; font-weight: 500; color: var(--foreground); }
+.preparo-pagina-veredito span { font-size: 16px; line-height: 24px; color: var(--muted-foreground); text-wrap: pretty; }
 
 .preparo-pagina-secao { padding-block-start: 8px; }
 .preparo-pagina-secao h2 { margin: 0 0 16px; font-size: 22px; line-height: 28px; color: var(--foreground); }
