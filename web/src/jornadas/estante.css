@@ -1,6 +1,25 @@
+/* A COLUNA DE CONTEÚDO TEM TETO, e é o do nó.
+ *
+ * Ela era `1fr` — crescia até onde a janela deixasse. Medido a 1920, que é a
+ * largura do quadro `895:7315`: a coluna deu 1332 onde o nó põe 1221, e a grade
+ * fluida coube CINCO livros por linha onde o desenho põe quatro.
+ *
+ * O teto resolve os dois de uma vez: com 1221 e vão de 48, o `auto-fill` de
+ * mínimo 220 cabe exatamente quatro. Não é conta minha — é a mesma conta que o
+ * desenho fez.
+ *
+ * `space-between` porque no nó `895:7366` o conteúdo e a ficha estão nas duas
+ * pontas, com o resto de sobra entre eles: a 1920 sobram 159px, e o `gap: 48`
+ * fixo os grudava.
+ *
+ * E ISTO QUASE VIROU DOIS ACHADOS FALSOS. A primeira medida foi a 1440 e disse
+ * "852 onde o nó pede 1221, três colunas onde ele pede quatro" — as duas coisas
+ * eram só o quadro ser de 1920 e eu estar medindo noutra largura. Quadro de
+ * desktop mede-se a 1920; o de telefone, a 390. */
 .estante {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 476px;
+  grid-template-columns: minmax(0, 1221px) 476px;
+  justify-content: space-between;
   gap: 48px;
   align-items: start;
   padding: 64px 32px 128px;
@@ -248,7 +267,11 @@
  * LINHA, e nao rolam: rolagem esconde recorte, e um filtro que a pessoa nao ve
  * e um filtro que ela nao usa. */
 @media (max-width: 767px) {
-  .recortes { flex-wrap: wrap; align-self: stretch; padding: 8px; }
+  /* DEZ, e não oito. O nó do telefone `966:25072` põe `p-[10px]` na caixa do
+     alternador; o de computador põe 12, e o produto usava 12 lá (certo) e 8
+     aqui. Mais um do reflexo que a varredura do telefone lista: encolher porque
+     a tela encolheu, quando o desenho encolheu MENOS. */
+  .recortes { flex-wrap: wrap; align-self: stretch; padding: 10px; }
   .recortes button { flex: 1 0 auto; padding: 12px 16px; }
 }
 

@@ -1176,3 +1176,36 @@ e isso é a Fase 4 desta tela por inteiro.
 também mede 1172. O estreitamento acontece acima dele, e não nele.
 
 Fica como a fatia seguinte, com o mapeamento bloco a bloco por fazer.
+
+## `895:7315` — D · Estante: a grade cabia um livro a mais · 04/09
+
+**Medir na largura do QUADRO, e não numa qualquer.** A primeira medida foi a
+1440 e disse "coluna de 852 onde o nó pede 1221, três colunas onde ele pede
+quatro". As duas coisas eram falsas: o quadro `895:7315` é de **1920**, e a 1440
+o produto estava só respondendo à janela menor.
+
+Quase virou dois achados inventados. Quadro de desktop mede-se a 1920; o de
+telefone, a 390 — e isso passa a valer para as 45 telas que faltam.
+
+**A 1920, o achado é o oposto e é real:** cinco livros por linha onde o desenho
+põe quatro, com a coluna de conteúdo em 1332 contra os 1221 do nó.
+
+A causa é uma só: `grid-template-columns: minmax(0, 1fr) 476px` — a coluna de
+conteúdo crescia até onde a janela deixasse, e a grade fluida (`auto-fill`,
+mínimo 220, vão 48) cabia mais um.
+
+Com o teto nos 1221 do nó, a conta fecha sozinha: `(1221 + 48) / (220 + 48)` dá
+exatamente quatro. Não é conta minha — é a mesma que o desenho fez.
+
+E `justify-content: space-between`, porque no `895:7366` o conteúdo e a ficha
+ficam nas duas pontas com o resto de sobra entre eles: a 1920 sobram 159px, e o
+`gap: 48` fixo os grudava.
+
+Medido depois: **a 1920, 4 colunas e coluna de 1221** — o nó exato. A 1440
+degrada para 3 e 852, que é a resposta honesta a uma janela menor.
+
+**Também corrigido:** o recheio do alternador no telefone, 8 → 10. O 12 do
+computador estava certo (`917:8199`); o 10 é do nó de telefone (`966:25072`), e
+o produto encolhia mais do que o desenho.
+
+Portão passa a 1920, 1440 e 390.
