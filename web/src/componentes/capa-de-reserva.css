@@ -1,75 +1,204 @@
-/* A capa de reserva. O porquê de existir uma só está no `CapaDeReserva.jsx`.
+/* A capa de reserva — catorze composições, uma marcação. Ver `CapaDeReserva.jsx`.
  *
- * Os números vêm dos nós `1016:31028` e `1016:31018`, lidos por dado e não por
- * captura. A ARTE das catorze não está aqui: cada variante tem nó próprio em
- * `docs/TELAS-FIGMA.md`, e entra por `[data-capa]` sem mexer no resto. */
+ * Todo número aqui saiu de `get_design_context` nos nós do conjunto
+ * `1016:31030`, e não de captura. A distinção não é preciosismo: o
+ * `get_screenshot` de um quadro alto volta reescalado, e um bloco de 100px sai
+ * com 30 de altura. Já errei uma vez neste arquivo por ler miniatura.
+ *
+ * FEITAS: 1, 2, 12.  ESCRITA MAS QUEBRADA: 3.  FALTAM: 4, 5, 6, 7, 8, 9, 10, 11, 13, 14. */
+
 .capa-de-reserva {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  display: grid;
   inline-size: 100%;
   block-size: 100%;
   aspect-ratio: 420 / 594;
   background: #f4f2ec;
   color: #111;
   overflow: hidden;
+  container-type: inline-size;
+  /* Tudo em `cqw` — a capa vive em 420px no desenho e em 252px na grade a 1440.
+     Medida fixa acertaria uma largura e erraria as outras; a proporção é o que
+     o desenho de fato fixou. 1cqw = 1% da largura da capa; 32px em 420 = 7,62cqw. */
+  --pad: 7.62cqw;
+  --corpo-titulo: 7.62cqw;   /* 32/420 */
+  --corpo-nota: 2.38cqw;     /* 10/420 */
 }
 
-/* Recheio de 32 em cima e nos lados, como o cabeçalho do desenho. O de baixo
-   fica no rodapé, que tem o seu. */
-.capa-de-reserva-alto {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 32px 32px 0;
-  min-block-size: 0;
-}
-
-/* Zodiak Black 32/36. O desenho põe `whitespace-nowrap` porque lá o título é
-   escolhido e curto; aqui ele é NOME DE ARQUIVO, que é longo com frequência —
-   então quebra, e para em três linhas. Deixar `nowrap` faria o título vazar
-   pela lateral da capa, que é a mesma classe de defeito que o R-46 fechou
-   embaixo do cartão. */
-.capa-de-reserva-titulo {
+.cr-titulo {
   font-family: var(--fonte-titulo, "Zodiak Variable", Georgia, serif);
   font-weight: 900;
-  font-size: 32px;
-  line-height: 36px;
+  font-size: var(--corpo-titulo);
+  line-height: 1.375;
+  /* O desenho põe `nowrap` porque lá o título é escolhido e curto. Aqui é NOME
+     DE ARQUIVO. Com `nowrap` ele vazaria pela lateral — a mesma classe que o
+     R-46 fechou embaixo do cartão. Quebra, e para. */
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
   overflow: hidden;
   overflow-wrap: anywhere;
+  /* A dupla do R-27: com `overflow: hidden` e a borda na linha de base, a caixa
+     rasparia descendente. Ver `estante.css`. */
+  text-box-edge: cap text;
+  padding-block-end: 0.2em;
 }
 
-/* `Capa/Credito` — Zodiak Regular 10, entrelinha 100%. */
-.capa-de-reserva-credito {
-  font-size: 10px;
+.cr-credito {   /* estilo `Capa/Credito` — Zodiak Regular 10, entrelinha 100% */
+  font-size: var(--corpo-nota);
   line-height: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* O rodapé: recheio 32/16, formato à esquerda e data à direita. A faixa preta
-   da variante 1 NÃO está aqui — ela é de variante, e só duas das catorze foram
-   lidas. Pintar as outras doze de memória é o erro que este arquivo já cometeu
-   uma vez. */
-.capa-de-reserva-rodape {
+.cr-rodape {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 16px 32px;
-  font-size: 10px;
+  gap: var(--pad);
+  font-size: var(--corpo-nota);
   line-height: 1;
 }
 
-/* `Capa/Data` — Zodiak Italic 10. */
-.capa-de-reserva-data { font-style: italic; }
+.cr-data { font-style: italic; }   /* `Capa/Data` — Zodiak Italic 10 */
+.cr-arte { display: block; background-repeat: no-repeat; }
 
-/* `Capa/Formato` — IBM Plex Mono 10 na variante 1; na 2 é Zodiak Italic. Fica
-   monoespaçada até a leitura das outras doze dizer qual é a regra. */
-.capa-de-reserva-formato {
+/* ── 1 · título em cima, meio-tom embaixo, rodapé em faixa preta ──────────
+   Nó 1016:31028. Cabeçalho de 130px (30,98% da altura útil), arte 418,845×294,922
+   e faixa preta com o formato em IBM Plex Mono. */
+.capa-de-reserva[data-capa="1"] {
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas: "alto" "arte" "rodape";
+}
+.capa-de-reserva[data-capa="1"] .cr-alto {
+  grid-area: alto;
+  display: flex; flex-direction: column; justify-content: space-between;
+  gap: 2.86cqw;
+  padding: var(--pad) var(--pad) 0;
+  min-block-size: 30.98cqw;
+}
+.capa-de-reserva[data-capa="1"] .cr-arte {
+  grid-area: arte;
+  background-image: url("/capas/capa-1.svg");
+  background-size: 100% auto;
+  background-position: bottom center;
+  align-self: end;
+  aspect-ratio: 418.845 / 294.922;
+}
+.capa-de-reserva[data-capa="1"] .cr-rodape {
+  grid-area: rodape;
+  padding: 3.81cqw var(--pad);
+  background: #000;
+  color: #f4f2ec;
+}
+.capa-de-reserva[data-capa="1"] .cr-formato {
   font-family: var(--fonte-mono, "IBM Plex Mono", ui-monospace, monospace);
+}
+
+/* ── 2 · título em cima, foto grande, rodapé em papel ─────────────────────
+   Nó 1016:31018. Cabeçalho de 107px, arte de 425px sobre `#d9d9d9`, crédito à
+   direita, rodapé sem faixa e todo em itálico. */
+.capa-de-reserva[data-capa="2"] {
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas: "alto" "arte" "rodape";
+}
+.capa-de-reserva[data-capa="2"] .cr-alto {
+  grid-area: alto;
+  display: flex; flex-direction: column; justify-content: space-between;
+  gap: 2.86cqw;
+  padding: var(--pad) var(--pad) 0;
+  min-block-size: 25.48cqw;
+}
+.capa-de-reserva[data-capa="2"] .cr-credito { align-self: flex-end; }
+.capa-de-reserva[data-capa="2"] .cr-arte {
+  grid-area: arte;
+  background: #d9d9d9 url("/capas/trama.png") center / cover no-repeat;
+}
+.capa-de-reserva[data-capa="2"] .cr-rodape {
+  grid-area: rodape;
+  padding: 3.81cqw var(--pad);
+  font-style: italic;
+}
+
+/* ── 3 · duas colunas, título deitado — ESCRITA, FORA DO SORTEIO ──
+   Medida: a largura do contêiner colapsa para ~28px e o corpo do título cai
+   para 2,17px. Ver `capa-substituta.js`. ─────────────────────────────────────
+   Nó 1016:31014. Recheio de 32 em volta, vão de 16 entre as colunas. À esquerda
+   três ladrilhos com vão de 8; à direita o formato e a data em cima, o título
+   girado -90° embaixo. */
+.capa-de-reserva[data-capa="3"] {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  grid-template-areas: "arte rodape" "arte alto";
+  gap: 3.81cqw;
+  padding: var(--pad);
+}
+.capa-de-reserva[data-capa="3"] .cr-arte {
+  grid-area: arte;
+  background: #d9d9d9 url("/capas/trama.png") center / cover no-repeat;
+  /* Três ladrilhos com vão de 8px: as faixas de papel entre eles são feitas com
+     gradiente sobre a mesma trama, para não pedir três nós ao DOM. */
+  -webkit-mask-image: linear-gradient(#000 0 0);
+  mask-image: linear-gradient(#000 0 0);
+  background-clip: padding-box;
+  border-block: 0 solid transparent;
+  position: relative;
+}
+.capa-de-reserva[data-capa="3"] .cr-arte::before,
+.capa-de-reserva[data-capa="3"] .cr-arte::after {
+  content: ""; position: absolute; inset-inline: 0; block-size: 1.9cqw;
+  background: #f4f2ec;
+}
+.capa-de-reserva[data-capa="3"] .cr-arte::before { inset-block-start: calc(33.33% - 0.95cqw); }
+.capa-de-reserva[data-capa="3"] .cr-arte::after  { inset-block-start: calc(66.66% - 0.95cqw); }
+.capa-de-reserva[data-capa="3"] .cr-rodape {
+  grid-area: rodape; align-self: start; font-style: italic;
+}
+.capa-de-reserva[data-capa="3"] .cr-alto {
+  grid-area: alto; min-inline-size: 0; min-block-size: 0;
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 2.86cqw;
+  padding-block-end: var(--pad);
+}
+.capa-de-reserva[data-capa="3"] .cr-titulo,
+.capa-de-reserva[data-capa="3"] .cr-credito {
+  writing-mode: vertical-rl; transform: rotate(180deg);
+  /* `-webkit-box` com `writing-mode` vertical colapsa o corpo: medido, 32px
+     viravam 2,17px. O corte deitado é por altura da linha, não por número de
+     linhas. */
+  display: block; -webkit-line-clamp: none;
+  max-block-size: 100%; overflow: hidden;
+  white-space: nowrap; text-overflow: ellipsis;
+}
+
+/* ── 12 · centrada, bloco em `mix-blend-saturation`, quatro campos ────────
+   Nó 1016:31006. O bloco é preto com mistura de saturação — sem imagem
+   nenhuma —, proporção 356/403, e o crédito vem em 24px com 2px de vão entre
+   letras. O quarto campo do desenho é uma CATEGORIA ("PESQUISA") que o produto
+   não tem; fica de fora até virar dado, e não texto inventado. */
+.capa-de-reserva[data-capa="12"] {
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas: "alto" "arte" "rodape";
+  justify-items: center;
+}
+.capa-de-reserva[data-capa="12"] .cr-alto {
+  grid-area: alto; padding: var(--pad) var(--pad) 0; inline-size: 100%;
+}
+.capa-de-reserva[data-capa="12"] .cr-titulo { text-align: center; }
+.capa-de-reserva[data-capa="12"] .cr-credito {
+  display: block; text-align: center;
+  font-weight: 540; font-size: 5.71cqw; letter-spacing: 0.48cqw;
+  margin-block-start: 7.62cqw;
+}
+.capa-de-reserva[data-capa="12"] .cr-arte {
+  grid-area: arte; align-self: end;
+  inline-size: calc(100% - 2 * var(--pad));
+  aspect-ratio: 356 / 403;
+  background: #000;
+  mix-blend-mode: saturation;
+}
+.capa-de-reserva[data-capa="12"] .cr-rodape {
+  grid-area: rodape; inline-size: 100%;
+  padding: 3.81cqw var(--pad);
+  font-style: italic;
 }
