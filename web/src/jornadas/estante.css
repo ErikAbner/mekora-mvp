@@ -483,7 +483,18 @@
 
 /* A trilha de linhas ocupa a coluna da esquerda. O resto do comportamento vem
  * de `componentes/trilha-linhas.css` — aqui so o lugar dela na pagina. */
-.pilha-indice { flex: 0 0 260px; position: sticky; inset-block-start: 32px; }
+/* `min-inline-size: 0` É O QUE SEGURA OS 260px.
+ *
+ * Item de flex tem `min-width: auto`, e isso deixa ele CRESCER além da base
+ * para caber o conteúdo — `flex: 0 0 260px` não é um limite, é um ponto de
+ * partida. Medido em 04/09: com o título "Ruined by Design: How Designers
+ * Destroyed the World, and What We Can Do to Fix It", a coluna foi de 276 para
+ * 723px e empurrou a pilha.
+ *
+ * E é por isso que as reticências do `.texto` nunca disparavam: elas existiam,
+ * mas a caixa crescia junto com o texto, então nunca havia sobra para cortar.
+ * O corte só morde depois que alguém segura a largura. */
+.pilha-indice { flex: 0 0 260px; min-inline-size: 0; position: sticky; inset-block-start: 32px; }
 
 .pilha {
   flex: 1 1 0; min-inline-size: 0;

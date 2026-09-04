@@ -42,11 +42,20 @@
 .trilha-linhas .rotulo {
   position: relative;
   display: inline-flex; align-items: baseline; gap: 10px;
+  /* ELE NÃO PASSA DA COLUNA. `inline-flex` mede pelo conteúdo, então um título
+     longo empurrava a caixa para fora dos 260px da trilha e as reticências do
+     `.texto` nunca disparavam — o corte existia e não tinha onde cortar.
+     O Erik mandou a captura em 04/09: "Ruined by Design: How Designers
+     Destroyed the World, and What We Can Do to Fix It" atravessando a tela
+     inteira. É a mesma classe do R-46, num lugar que ele não cobria. */
+  max-inline-size: 100%;
   font-size: 16px; line-height: 24px;   /* Label/Medium */
   color: color-mix(in srgb, var(--foreground) calc(var(--efeito, 0) * 100%), var(--muted-foreground));
   transform: translateX(calc(var(--efeito, 0) * var(--desloca)));
 }
-.trilha-linhas .texto { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* `min-inline-size: 0` porque item de flex não encolhe abaixo do conteúdo sem
+   isso — e sem encolher, não há o que reticenciar. */
+.trilha-linhas .texto { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .trilha-linhas .indice {
   font-family: var(--font-mono, ui-monospace, Menlo, monospace);
   font-size: 14px; line-height: 22px;

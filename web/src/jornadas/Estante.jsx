@@ -151,7 +151,7 @@ function Estante3D({ livros, selecionado, aoEscolher }) {
   );
 }
 
-function Livro({ chave, titulo, autor, formato, notas, capa, aoEscolher, escolhido }) {
+function Livro({ chave, titulo, autor, formato, estado, notas, capa, aoEscolher, escolhido }) {
   return (
     <li className={`livro${escolhido ? " escolhido" : ""}`}>
       {/* O livro inteiro é o alvo do clique, e é um `button` de verdade: o
@@ -191,7 +191,11 @@ function Livro({ chave, titulo, autor, formato, notas, capa, aoEscolher, escolhi
         {/* `title` porque o nome para em duas linhas no CSS: cortar sem deixar
             como ler seria esconder o livro em vez de resumir o nome dele. */}
         <h3 title={titulo}>{titulo}</h3>
-        <p>{autor}</p>
+        {/* ONDE O LIVRO PRONTO DIZ O AUTOR, O ARQUIVO EM PREPARO DIZ O ESTADO.
+            Mesmo lugar, mesma tipografia, sem selo novo nem cor nova: a linha
+            já existia e estava vazia nesse cartão. E responde à pergunta que a
+            pessoa tem ANTES de clicar — "posso ler isto agora?" */}
+        <p>{estado && estado !== "pronto" ? "Em preparo" : autor}</p>
       </div>
     </li>
   );

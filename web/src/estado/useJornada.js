@@ -192,6 +192,18 @@ export function useJornada() {
         leituraUrl: e.leitura_url ?? null,
         titulo: e.final_title || e.original_filename,
         autor: e.final_author || "",
+        /* O ESTADO VIAJA COM O CARTÃO, decidido pelo Erik em 04/09.
+         *
+         * A estante mostra ARQUIVOS — "é para organizar arquivos e conseguir ir
+         * até ele de forma mais fácil, apenas isso" —, e um arquivo em preparo é
+         * um dos arquivos da pessoa. Ele fica.
+         *
+         * Só que ele era indistinguível de um livro pronto: mesmo cartão, mesma
+         * capa de reserva, mesmo tamanho. A única diferença era o título vir com
+         * extensão e o autor vir vazio — acidente do dado, não sinal. No dia em
+         * que um arquivo em preparo tiver título nas propriedades, os dois
+         * cartões ficam iguais, e clicar leva a lugares diferentes sem aviso. */
+        estado: estadoDe(e).estado,
         noKindle: e.kindle_sent,
         /* O que a ficha mostra sobre a LEITURA, tudo vindo do servidor.
          * Antes ela completava o que não sabia com um exemplo escrito à mão:
