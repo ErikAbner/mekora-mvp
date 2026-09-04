@@ -13,6 +13,7 @@ import { comoSeDiz } from "../../../contrato/duracao.js";
 import { Folha } from "../componentes/Folha.jsx";
 import { tamanhoLegivel } from "../../../contrato/tamanho.js";
 import "./preparo.css";
+import { CapaDeReserva } from "../componentes/CapaDeReserva.jsx";
 
 /* O preparo-pagina: o que o Mekora encontrou, e o que vai fazer.
  *
@@ -263,7 +264,19 @@ function Topo({ job, titulo, ajustando, aoTrocar, inerte = false }) {
           {capa && !capaFalhou ? (
             <img src={capa} alt="" onError={() => setCapaFalhou(true)} />
           ) : (
-            <span>{titulo}</span>
+            /* A QUARTA IMPLEMENTAÇÃO DE "SEM CAPA", e ela ficou de fora quando
+               as outras três viraram uma. Era `<span>{titulo}</span>` — título
+               solto numa caixa cinza —, enquanto a Estante, o Canvas e a ficha
+               do Livro já usavam o gabarito do conjunto `1016:31030`.
+               Achada pela outra sessão em 04/09, medindo o Preparo com o
+               trabalho parado em `analyzed`: `ehComponenteDeReserva: false`.
+               Divergência não some por decreto — some quando alguém mede o
+               lugar onde ela mora. */
+            <CapaDeReserva
+              titulo={titulo}
+              autor={job.detected_author || job.final_author || ""}
+              chave={job.token_publico || String(job.upload_id ?? job.id ?? "")}
+            />
           )}
         </div>
         <div>

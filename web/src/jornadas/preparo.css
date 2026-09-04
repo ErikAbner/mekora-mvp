@@ -26,6 +26,18 @@
 
 .preparo-pagina-capa img { inline-size: 100%; block-size: 100%; object-fit: cover; }
 
+/* O GABARITO DE RESERVA HERDA A PROPORÇÃO DAQUI, e não a dele.
+ *
+ * A `CapaDeReserva` traz `aspect-ratio: 420/594` — a proporção do conjunto
+ * `1016:31030` e a que a Estante usa. Aqui a caixa é 2/3, que é o que o nó
+ * `966:31511` pede para o Preparo. Duas proporções certas em telas diferentes;
+ * quem manda é o lugar. Especificidade de dois nomes para vencer a do
+ * componente sem depender da ordem em que as folhas entram no pacote. */
+.preparo-pagina-capa .capa-de-reserva {
+  aspect-ratio: auto;
+  block-size: 100%;
+}
+
 .preparo-pagina h1 { margin: 0 0 12px; font-size: 28px; line-height: 40px; letter-spacing: -0.01em; color: var(--foreground); text-wrap: balance; }
 
 .preparo-pagina-marcas { margin: 0; display: flex; gap: 8px; flex-wrap: wrap; }
@@ -234,7 +246,16 @@
  * inteira no topo — é o que se reconhece de um arquivo antes de ler o nome.
  */
 @media (max-width: 619px) {
-  .preparo-pagina-capa { inline-size: 100%; aspect-ratio: 420 / 594; }
+  /* A PROPORÇÃO DO PREPARO É 270/407, e não a da Estante.
+   *
+   * Estava em `420 / 594`, que é a proporção do conjunto de capas e a que a
+   * grade da Estante usa — copiada de lá. O nó `966:31511` põe a caixa da capa
+   * do Preparo em `aspect-[270/407]`, e a imagem dentro em `427/645`. São
+   * telas diferentes com proporções diferentes, e as duas estão certas nos
+   * lugares delas.
+   *
+   * Medido a 390 antes: 310×438, razão 0,707. O nó pede 0,663. */
+  .preparo-pagina-capa { inline-size: 100%; aspect-ratio: 270 / 407; }
   .preparo-pagina-pagina-acoes { flex-direction: column; align-items: stretch; }
   .preparo-pagina-pagina-acoes .botao { inline-size: 100%; justify-content: center; }
 }
