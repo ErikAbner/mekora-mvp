@@ -266,3 +266,67 @@ conversar; não vale trazer o cursor antes.
 | cursor com nome | não — é feature de presença, não componente |
 
 **O último item da mensagem veio vazio** — se faltou um, manda de novo.
+
+---
+
+# Terceira leva — 04/09, tarde
+
+Sete referências. **Uma é acionável hoje**, duas eu não consegui abrir, e uma é
+decisão de processo que não cabe nesta lista.
+
+**Não abri torph.lochie.me nem movo.video.** A navegação externa está bloqueada
+nesta sessão, e descrever um site de memória é o mesmo chute de miniatura que já
+me custou uma regra errada nas capas. Ficam registrados com o endereço e sem
+descrição: quando alguém abrir, escreve aqui o que viu.
+
+## 1 · press.stripe.com — referência do R-35, a estante 3D
+
+**A mais útil da leva, e a mais antiga da fila.** O R-35 está aberto desde 01/09
+com uma frase só do Erik — *"continua completamente bugada"* — e sem referência
+nenhuma. Agora tem.
+
+Não abri o site aqui, mas o que ele é já era conhecido: a Stripe Press mostra
+livros como objetos tridimensionais de verdade, com lombada, capa e profundidade
+— e não como capa chapada com sombra.
+
+O que isso muda para o R-35, quando alguém for medir com o site aberto ao lado:
+a pergunta deixa de ser "a estante 3D está bugada?" e passa a ser "o que ela faz
+que a Stripe não faz". Item sem referência não fecha, porque não há contra o quê
+comparar.
+
+## 2 · Navbar retrátil — Aceternity UI
+
+Menu que encolhe ao rolar e volta ao subir.
+
+**Já está feito, e sem dependência.** Em 04/09 o cromo da leitura passou a
+recolher exatamente assim — descer recolhe, subir devolve —, escrito à mão em
+`Leitura.jsx`. O componente traz Tailwind e `framer-motion` para o mesmo
+comportamento; o projeto não tem nenhum dos dois.
+
+Fica registrado como confirmação de que o padrão é reconhecido, não como coisa a
+trazer.
+**Veredito: não. Já existe.**
+
+## 3 · DialKit — dialkit.dev
+
+Painel de controle ao vivo para ajustar valores de animação, com linha do tempo
+que se arrasta.
+
+Ele resolve um problema real e específico: **achar o valor certo de uma
+animação sem recompilar entre tentativas.** É útil quando se está desenhando
+movimento, e inútil depois.
+
+**Veredito: guardar para quando houver animação a desenhar.** Hoje o Mekora tem
+transição, não coreografia. Trazer um painel para ajustar o que ainda não
+existe é ferramenta procurando trabalho.
+
+## 4 · find-skills — skills.sh/vercel-labs
+
+Uma skill que procura outras skills.
+**Veredito: sem opinião formada.** Não abri. Anotado.
+
+## 5 · Intent — orquestrador de agentes
+
+Isto não é componente e não pertence a este documento: é decisão de processo,
+sobre como o trabalho é organizado, e não sobre o que entra na tela. A análise
+fica em `docs/INTENT.md`.
