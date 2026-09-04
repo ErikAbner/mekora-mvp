@@ -11,8 +11,7 @@
 
 .aviso-pref-conta {
   margin: 0;
-  color: var(--card-foreground);
-  font-size: 24px; line-height: 32px; font-weight: 540;   /* Heading/XS */
+  /* aparência: `.titulo-24`, em `estilo/base.css` */
 }
 
 .aviso-pref-quais {

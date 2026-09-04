@@ -169,7 +169,7 @@ export function Busca() {
                       {item.capa && <img src={item.capa} alt="" />}
                     </span>
                     <span className="busca-texto">
-                      <span className="busca-titulo">{item.titulo}</span>
+                      <span className="titulo-24 busca-titulo">{item.titulo}</span>
                       <span className="busca-abaixo">{item.abaixo}</span>
                     </span>
                   </button>

@@ -38,7 +38,7 @@ export function AvisoPreferencias({ children }) {
   return (
     <div className="aviso-pref">
       <div className="aviso-pref-texto">
-        <p className="aviso-pref-conta">
+        <p className="titulo-24 aviso-pref-conta">
           {desvios.length}{" "}
           {desvios.length === 1 ? "preferência fora do padrão" : "preferências fora do padrão"}
         </p>

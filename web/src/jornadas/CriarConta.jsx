@@ -52,7 +52,7 @@ export function CriarConta({ lugar }) {
         <p className="criar-conta-etiqueta">Criação de conta</p>
 
         <h1>Criar conta no Mekora</h1>
-        <p className="criar-conta-abre">
+        <p className="titulo-24 discreto criar-conta-abre">
           Converter não exige conta e não vai exigir.
           <br />
           A conta serve para o que vem depois:
@@ -74,7 +74,7 @@ export function CriarConta({ lugar }) {
                   tela já numera a `<ol>`, e ouvir "um um" é ruído. */}
               <span className="criar-conta-numero" aria-hidden="true">{r.n}</span>
               <span className="criar-conta-razao">
-                <span className="criar-conta-razao-titulo">{r.titulo}</span>
+                <span className="titulo-24 criar-conta-razao-titulo">{r.titulo}</span>
                 <span className="criar-conta-razao-sobre">{r.sobre}</span>
               </span>
             </li>

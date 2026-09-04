@@ -244,7 +244,7 @@ function Indice({ livro, aqui, aoIr, aoFechar }) {
                   aria-current={nele ? "true" : undefined}
                   onClick={() => { aoIr?.(i.capitulo); aoFechar?.(); }}
                 >
-                  <span className="indice-titulo">{i.titulo}</span>
+                  <span className="titulo-24 discreto indice-titulo">{i.titulo}</span>
                   {nele ? (
                     <span className="indice-aqui">Você está aqui</span>
                   ) : (
@@ -630,7 +630,7 @@ function Caderno({ livro, notas, capitulo, aoComentar, aoTrocarCor, aoApagar, ao
               className={n.capitulo === capitulo ? "aqui" : ""}
               style={{ "--cor-da-nota": DESTAQUES[n.cor] }}
             >
-              {n.comentario && <p className="nota-titulo">{n.comentario}</p>}
+              {n.comentario && <p className="titulo-24 nota-titulo">{n.comentario}</p>}
 
               <p className="nota-onde">
                 <span>

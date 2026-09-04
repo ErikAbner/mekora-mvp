@@ -453,9 +453,7 @@
    que ela reconhece a nota numa lista de quarenta. */
 .nota-titulo {
   margin: 0;
-  color: var(--card-foreground);
-  font-size: 24px; line-height: 32px; font-weight: 500;   /* Body/Large */
-  text-wrap: pretty;
+  /* aparência: `.titulo-24`, em `estilo/base.css` */
 }
 .nota-onde {
   display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
@@ -702,9 +700,7 @@
 .indice-lista button:focus-visible { outline: 1px solid var(--foreground); outline-offset: -1px; }
 
 .indice-titulo {
-  color: var(--muted-foreground);
-  font-size: 24px; line-height: 32px; font-weight: 500;   /* Body/Large */
-  text-wrap: pretty;
+  /* aparência: `.titulo-24`, em `estilo/base.css` */
 }
 .indice-onde {
   flex: 0 0 auto;

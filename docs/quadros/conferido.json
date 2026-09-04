@@ -1,0 +1,549 @@
+{
+  "formato": 1,
+  "entradas": {
+    "964:24178": {
+      "tela": "M · Apresentação",
+      "rota": "/",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/apresentacao.jsx",
+        "web/src/jornadas/apresentacao.css",
+        "web/src/jornadas/Apresentacao.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "964:24606": {
+      "tela": "M · Estante — grade",
+      "rota": "/estante",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/estante.jsx",
+        "web/src/jornadas/estante.css",
+        "web/src/jornadas/Estante.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "966:25321": {
+      "tela": "M · Conta",
+      "rota": "/conta",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/conta.jsx",
+        "web/src/jornadas/conta.css",
+        "web/src/jornadas/Conta.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "966:25554": {
+      "tela": "M · Conta — Dispositivos Kindle",
+      "rota": "/conta/kindle",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/conta.jsx",
+        "web/src/jornadas/conta.css",
+        "web/src/jornadas/Conta.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "966:25786": {
+      "tela": "M · Conta — Preferências",
+      "rota": "/conta/preferencias",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/conta.jsx",
+        "web/src/jornadas/conta.css",
+        "web/src/jornadas/Conta.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "966:26643": {
+      "tela": "M · Conta — Privacidade",
+      "rota": "/conta/privacidade",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/conta.jsx",
+        "web/src/jornadas/conta.css",
+        "web/src/jornadas/Conta.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "966:27160": {
+      "tela": "M · Atualizações",
+      "rota": "/atualizacoes",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/atualizacoes.jsx",
+        "web/src/jornadas/atualizacoes.css",
+        "web/src/jornadas/Atualizacoes.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "966:27747": {
+      "tela": "M · Ajuda e recursos",
+      "rota": "/ajuda",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/ajuda.jsx",
+        "web/src/jornadas/ajuda.css",
+        "web/src/jornadas/Ajuda.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "966:28476": {
+      "tela": "M · Mesa",
+      "rota": "/mesa",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "966:29052": {
+      "tela": "M · Livro — o que ficou",
+      "rota": "/estante/:id",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/estante.jsx",
+        "web/src/jornadas/estante.css",
+        "web/src/jornadas/Estante.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "966:29395": {
+      "tela": "M · Leitura",
+      "rota": "/leitura/:id",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/leitura.jsx",
+        "web/src/jornadas/leitura.css",
+        "web/src/jornadas/Leitura.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "966:29743": {
+      "tela": "M · Estudo — página",
+      "rota": "/estudo/:id",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "966:30269": {
+      "tela": "M · Conexões — sugestões",
+      "rota": "/nota/:id",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/nota.jsx",
+        "web/src/jornadas/nota.css",
+        "web/src/jornadas/Nota.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "966:30771": {
+      "tela": "M · Estudos — lista",
+      "rota": "/estudos",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/estudos.jsx",
+        "web/src/jornadas/estudos.css",
+        "web/src/jornadas/Estudos.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "966:31095": {
+      "tela": "M · Estudos — lista (variação)",
+      "rota": "/estudos",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/estudos.jsx",
+        "web/src/jornadas/estudos.css",
+        "web/src/jornadas/Estudos.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "966:31504": {
+      "tela": "M · Preparo — o que encontrei",
+      "rota": "/preparo/:id",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/preparo.jsx",
+        "web/src/jornadas/preparo.css",
+        "web/src/jornadas/Preparo.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "967:31833": {
+      "tela": "M · Preparo — em andamento",
+      "rota": "/preparo/:id",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/preparo.jsx",
+        "web/src/jornadas/preparo.css",
+        "web/src/jornadas/Preparo.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "973:32414": {
+      "tela": "M · Leitura · aparência",
+      "rota": "painel da leitura",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "941:23103": {
+      "tela": "Kindle · assistente",
+      "rota": "/conta/kindle",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/conta.jsx",
+        "web/src/jornadas/conta.css",
+        "web/src/jornadas/Conta.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "941:23106": {
+      "tela": "Criar conta",
+      "rota": "gate de quem não entrou",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "941:23107": {
+      "tela": "Estudo · seletor",
+      "rota": "busca do cabeçalho",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "941:23108": {
+      "tela": "Conectar nota",
+      "rota": "folha da página da nota",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "941:23109": {
+      "tela": "Aviso · preferência fora do padrão",
+      "rota": "/preparo/:id",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/preparo.jsx",
+        "web/src/jornadas/preparo.css",
+        "web/src/jornadas/Preparo.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "941:23110": {
+      "tela": "Leitura · aparência",
+      "rota": "painel da leitura",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "941:23111": {
+      "tela": "Leitura · notas e destaques",
+      "rota": "painel da leitura",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "941:23112": {
+      "tela": "Leitura · índice",
+      "rota": "painel da leitura",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "941:23113": {
+      "tela": "Nota · cartão",
+      "rota": "popup de escrever a nota",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "941:23118": {
+      "tela": "Arquivo · configurações",
+      "rota": "ficha do livro",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "941:23120": {
+      "tela": "Seleção · ações",
+      "rota": "leitura",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/leitura.jsx",
+        "web/src/jornadas/leitura.css",
+        "web/src/jornadas/Leitura.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "895:7063": {
+      "tela": "D · Apresentação",
+      "rota": "/",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/apresentacao.jsx",
+        "web/src/jornadas/apresentacao.css",
+        "web/src/jornadas/Apresentacao.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "895:7315": {
+      "tela": "D · Estante — grade",
+      "rota": "/estante",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/estante.jsx",
+        "web/src/jornadas/estante.css",
+        "web/src/jornadas/Estante.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "895:7506": {
+      "tela": "D · Livro — ficha / estante 3D",
+      "rota": "/estante (vista 3D)",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "895:6938": {
+      "tela": "D · Canvas",
+      "rota": "/canvas",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/canvas.jsx",
+        "web/src/jornadas/canvas.css",
+        "web/src/jornadas/Canvas.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "895:10599": {
+      "tela": "D · Conta — visão geral",
+      "rota": "/conta",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/conta.jsx",
+        "web/src/jornadas/conta.css",
+        "web/src/jornadas/Conta.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "895:10715": {
+      "tela": "D · Conta — preferências",
+      "rota": "/conta/preferencias",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/conta.jsx",
+        "web/src/jornadas/conta.css",
+        "web/src/jornadas/Conta.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "895:10909": {
+      "tela": "D · Conta — dados",
+      "rota": "/conta/privacidade",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/conta.jsx",
+        "web/src/jornadas/conta.css",
+        "web/src/jornadas/Conta.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "895:11060": {
+      "tela": "D · Atualizações",
+      "rota": "/atualizacoes",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/atualizacoes.jsx",
+        "web/src/jornadas/atualizacoes.css",
+        "web/src/jornadas/Atualizacoes.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "895:11193": {
+      "tela": "D · Ajuda — início",
+      "rota": "/ajuda",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/ajuda.jsx",
+        "web/src/jornadas/ajuda.css",
+        "web/src/jornadas/Ajuda.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "895:9348": {
+      "tela": "D · Mesa — cheia",
+      "rota": "/mesa",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "895:9981": {
+      "tela": "D · Mesa — variação",
+      "rota": "/mesa",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "895:10286": {
+      "tela": "D · Mesa — vazia",
+      "rota": "/mesa",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "895:9736": {
+      "tela": "D · Mesa — primeira vez",
+      "rota": "/mesa",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "895:7631": {
+      "tela": "D · Livro — o que ficou",
+      "rota": "/estante/:id",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/estante.jsx",
+        "web/src/jornadas/estante.css",
+        "web/src/jornadas/Estante.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "895:10472": {
+      "tela": "D · Leitura",
+      "rota": "/leitura/:id",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/leitura.jsx",
+        "web/src/jornadas/leitura.css",
+        "web/src/jornadas/Leitura.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "895:8260": {
+      "tela": "D · Estudo — página",
+      "rota": "/estudo/:id",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "895:8545": {
+      "tela": "D · Conexões — sugestões",
+      "rota": "/nota/:id",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/nota.jsx",
+        "web/src/jornadas/nota.css",
+        "web/src/jornadas/Nota.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "895:8849": {
+      "tela": "D · Estudos — lista",
+      "rota": "/estudos",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/estudos.jsx",
+        "web/src/jornadas/estudos.css",
+        "web/src/jornadas/Estudos.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "900:56142": {
+      "tela": "D · Estudos — lista (variação)",
+      "rota": "/estudos",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/estudos.jsx",
+        "web/src/jornadas/estudos.css",
+        "web/src/jornadas/Estudos.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "895:7856": {
+      "tela": "D · Preparo — o que encontrei",
+      "rota": "/preparo/:id",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/preparo.jsx",
+        "web/src/jornadas/preparo.css",
+        "web/src/jornadas/Preparo.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "895:8029": {
+      "tela": "D · Preparo — em andamento",
+      "rota": "/preparo/:id",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/preparo.jsx",
+        "web/src/jornadas/preparo.css",
+        "web/src/jornadas/Preparo.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    },
+    "895:8164": {
+      "tela": "D · Preparo — pronto",
+      "rota": "/preparo/:id",
+      "conferido_em": "2026-09-02",
+      "contra": "captura",
+      "arquivos": [
+        "web/src/jornadas/preparo.jsx",
+        "web/src/jornadas/preparo.css",
+        "web/src/jornadas/Preparo.jsx"
+      ],
+      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+    }
+  }
+}

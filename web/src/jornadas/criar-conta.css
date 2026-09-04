@@ -23,9 +23,7 @@
 
 .criar-conta-abre {
   margin: 0;
-  color: var(--muted-foreground);
-  font-size: 24px; line-height: 32px; font-weight: 500;     /* Body/Large */
-  text-wrap: pretty;
+  /* aparência: `.titulo-24`, em `estilo/base.css` */
 }
 
 /* O filete marca a fala do produto sobre si mesmo — é o mesmo gesto do
@@ -57,9 +55,7 @@
 
 .criar-conta-razao { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .criar-conta-razao-titulo {
-  color: var(--card-foreground);
-  font-size: 24px; line-height: 32px; font-weight: 500;     /* Body/Large */
-  text-wrap: pretty;
+  /* aparência: `.titulo-24`, em `estilo/base.css` */
 }
 .criar-conta-razao-sobre {
   color: var(--muted-foreground);

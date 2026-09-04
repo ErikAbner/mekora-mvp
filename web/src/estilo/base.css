@@ -490,3 +490,38 @@ button, input, textarea, select { border-radius: 0; font: inherit; color: inheri
 
 /* No sepia os desenhos NAO invertem: o fundo ja e claro, e clarea-los faria
  * sumir. A regra do escuro nao alcanca aqui porque ela e por `data-tema`. */
+
+
+/* O TÍTULO DE 24/32 — UM SÓ, e antes eram SETE NOMES.
+ *
+ * O `scripts/inventario.mjs` achou a mesma assinatura visual escrita cinco
+ * vezes com nomes diferentes, em dois pesos:
+ *
+ *   500  .criar-conta-razao-titulo · .nota-titulo · .arquivo-linha-titulo
+ *   540  .aviso-pref-conta · .busca-titulo
+ *   500  .criar-conta-abre · .indice-titulo   (o mesmo, em tinta secundária)
+ *
+ * Nenhum dos dois pesos vinha do sistema. O `tokens/theme.css` declara
+ * `--font-weight-heading: 540` e `--font-weight-body: 400`; **500 não é nem um
+ * nem outro** — é um número que alguém digitou. A consolidação usa o token, e
+ * quem já estava em 540 não muda.
+ *
+ * PENDÊNCIA DECLARADA, e ela é do Erik: se estes títulos são `Heading/XS`
+ * (540, o que está aqui) ou `Body/Large` (que o `DESIGN-SYSTEM.md` marca como
+ * **Regular**, 400), decide-se contra o quadro, na Fase 4, tela por tela. O
+ * `.busca-titulo` carrega a confusão por escrito: o comentário dele cita o nó
+ * 895:12124 dizendo "Body/Large … peso 540", e Body/Large é Regular na tabela.
+ *
+ * O que a consolidação resolve agora é a divergência entre irmãos: a mesma
+ * peça deixa de ter dois pesos e cinco nomes. Onde ela vive continua sendo o
+ * nome local — margem, recorte de duas linhas, o que for de layout. */
+.titulo-24 {
+  color: var(--card-foreground);
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: var(--font-weight-heading);
+  text-wrap: pretty;
+}
+/* A mesma peça em tinta secundária: o índice da leitura e a abertura do criar
+ * conta. É variação de TINTA, e não outra peça. */
+.titulo-24.discreto { color: var(--muted-foreground); }

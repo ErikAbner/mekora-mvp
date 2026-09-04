@@ -41,6 +41,21 @@ PRIVADAS="/mesa /estante /canvas /estudos /notas /conta /conta/kindle /conta/seg
 echo "── conferências estáticas ──"
 node scripts/classes.mjs || true
 node scripts/botoes.mjs || true
+
+# OS TRES PORTOES DE CONSUMO, de 04/09.
+#
+# Eles nao medem a pagina: medem se o SISTEMA foi consumido, se o DESENHO foi
+# conferido e se o que o Erik ja recusou tem quem segure. As tres perguntas que
+# nenhum instrumento aqui fazia — e por isso "nunca conferido" saia verde.
+#
+# `|| true` pela mesma razao das duas de cima: o `quadro` esta 51 de 51 vermelho
+# hoje, e portao que nasce vermelho no agregado ensina todo mundo a ignorar o
+# agregado. Rodados sozinhos eles saem com codigo 1. O caminho para cobrarem de
+# verdade e o mesmo que o `classes.mjs` percorreu: triar uma vez, guardar o
+# resto como divida com nome, e so entao cobrar.
+node scripts/inventario.mjs || true
+node scripts/rejeitado.mjs || true
+node scripts/quadro.mjs || true
 # O SVG re-exportado do Figma volta com seis casas decimais e 51 KB por icone.
 # Isto so avisa; enxugar e um comando, e o desenho nao muda (scripts/svg.py).
 "$PY_" scripts/svg.py --conferir || true

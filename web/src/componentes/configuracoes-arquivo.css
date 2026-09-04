@@ -27,8 +27,7 @@
 .arquivo-linha-texto { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .arquivo-linha-titulo {
   margin: 0;
-  color: var(--card-foreground);
-  font-size: 24px; line-height: 32px; font-weight: 500;   /* Body/Large */
+  /* aparência: `.titulo-24`, em `estilo/base.css` */
 }
 .arquivo-linha-sobre {
   margin: 0;

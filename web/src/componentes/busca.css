@@ -103,11 +103,10 @@
 .busca-texto { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 
 .busca-titulo {
-  color: var(--card-foreground);
-  /* Body/Large, do `895:12124` — 24/32 e peso 540. Eu tinha posto Label/Medium,
-   * 16/24: a linha inteira ficou com metade da presença que o desenho dá a ela,
-   * e a busca virou uma listinha em vez do resultado principal. */
-  font-size: 24px; line-height: 32px; font-weight: 540;
+  /* Aparência: `.titulo-24`, em `estilo/base.css`. O peso vinha escrito aqui
+   * como 540 citando o nó 895:12124 — e a citação diz "Body/Large", que a
+   * tabela do sistema marca como Regular. A contradição está registrada na
+   * pendência do `.titulo-24`; o que sai daqui é a duplicata, não a dúvida. */
   /* Trecho de nota é longo. Duas linhas e corta — o resto está na nota. */
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
   overflow: hidden;

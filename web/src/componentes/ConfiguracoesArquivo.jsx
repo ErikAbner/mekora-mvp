@@ -47,7 +47,7 @@ function Linha({ icone, titulo, sobre, acao, children }) {
           <Icone src={icone} />
         </span>
         <div className="arquivo-linha-texto">
-          <p className="arquivo-linha-titulo">{titulo}</p>
+          <p className="titulo-24 arquivo-linha-titulo">{titulo}</p>
           <p className="arquivo-linha-sobre">{sobre}</p>
           {children}
         </div>
