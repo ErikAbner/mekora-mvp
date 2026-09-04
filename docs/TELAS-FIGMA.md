@@ -1209,3 +1209,35 @@ computador estava certo (`917:8199`); o 10 é do nó de telefone (`966:25072`), 
 o produto encolhia mais do que o desenho.
 
 Portão passa a 1920, 1440 e 390.
+
+## `895:10472` — D · Leitura, spec lida · 04/09
+
+A tela de leitura de computador nunca tinha sido medida em largura nenhuma. A
+spec fica aqui para a comparação ser uma passada, e não uma descoberta.
+
+O quadro é de **1920**, e o contêiner do conteúdo mede **1856**.
+
+| | |
+|---|---|
+| cabeçalho | `px-32 py-16`, `mb-[-82px]` — ele encavala o conteúdo |
+| cromo (`919:18768`) | `p-8`, duas caixas nas pontas, cada uma `p-12` com itens `p-16` |
+| abertura (`895:10562`) | `p-64`, vão 64, altura 564 |
+| título | Display/Large — 64/72, Extrabold, `#151515` |
+| autor | Body/Medium 20/30 |
+| **coluna de prosa** | **680px fixos**, dentro de um `p-64` |
+| prosa | `body-medium-prosa` 20/30, recuo 32, vão 32 entre parágrafos |
+| destaques | as quatro cores do sistema, faixas de 28 a 36 de altura |
+| imagem | 1540×830, dentro de `p-64` |
+| rodapé preto | `pt-128 px-64`, vão 128, marca 1704×212 |
+
+**Uma pendência fecha de graça.** O `letter-spacing` do título estava registrado
+como divergência: a folha usa `-2.5%` por decisão escrita ("tracking relativo,
+nunca absoluto") e a instância do nó diz `-1.6px`. O ESTILO do nó diz
+`letterSpacing: -2.5` — e a 64px, -2,5% dá exatamente -1,6px. **São o mesmo
+valor**, e o produto está certo. A divergência era da minha leitura, não da
+folha.
+
+**O rodapé desta tela é o A-14**: `895:10591` traz "Link link link" quatro vezes
+e a marca. É o único quadro com rodapé entre as sete telas lidas em 04/09, e é
+placeholder — por isso a Leitura ficou de fora da retirada de rodapés das seis
+superfícies de produto.
