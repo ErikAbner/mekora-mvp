@@ -36,6 +36,7 @@ _tmp = Path(tempfile.gettempdir()) / "mekora-rotas.db"
 os.environ["DATABASE_URL"] = f"sqlite:///{_tmp}"
 
 from main import app  # noqa: E402
+from app.core.arvore_de_rotas import rotas_do_app  # noqa: E402
 
 # Caminhos que o backend declara mas que a borda NÃO deve repassar.
 # `/{full_path:path}` é o catch-all que serve o frontend legado: em produção
@@ -67,7 +68,12 @@ def prefixos():
     sem nada depois.
     """
     exatas, com_sub = set(), set()
-    for rota in app.routes:
+    # A ÁRVORE, E NÃO `app.routes`. Este gerador escreve o `Caddyfile`, e a
+    # partir do FastAPI 0.141 ele enxergava UMA rota de 124: rodar
+    # `scripts/rotas.py` teria regravado o proxy a partir de uma lista vazia, e
+    # em produção `/jobs`, `/canvas` e `/notas` cairiam todos no SPA. O
+    # `--conferir` já dizia FORA DE DATA — a remediação óbvia era a destrutiva.
+    for rota in rotas_do_app(app):
         caminho = getattr(rota, "path", "")
         if not caminho.startswith("/") or caminho in IGNORADAS:
             continue

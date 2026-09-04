@@ -58,10 +58,15 @@ FILTRAM_POR_DONO = {
 def _rotas_com_id_no_corpo():
     from main import app  # noqa: backend/ está em sys.path
 
+    from app.core.arvore_de_rotas import rotas_do_app
+
     achadas = {}
-    for r in app.routes:
-        if not isinstance(r, APIRoute):
-            continue
+    # A ÁRVORE, E NÃO `app.routes`. Esta varredura existe por causa do IDOR de
+    # `/batch`, e a partir do FastAPI 0.141 ela deixou de enxergar as seis rotas
+    # de lote — `app.routes` passou a guardar `_IncludedRouter` no lugar das
+    # rotas, e o `isinstance(r, APIRoute)` sobrou com UMA de 124. A trava
+    # continuou verde olhando para o vazio. Ver `app/core/arvore_de_rotas.py`.
+    for r in rotas_do_app(app):
         corpo = getattr(r, "body_field", None)
         if corpo is None:
             continue

@@ -398,11 +398,16 @@ def test_a_porta_vale_para_rota_que_ainda_nao_existe(client_cru):
     """
     from main import app
 
+    from app.core.arvore_de_rotas import rotas_do_app
     from app.api.porta import exigir_acesso
 
     protegidas = set()
     desprotegidas = set()
-    for rota in app.routes:
+    # A ÁRVORE, E NÃO `app.routes`. O FastAPI 0.141 troca cada
+    # `include_router` por um `_IncludedRouter`, e o filtro por `APIRoute`
+    # passou a ver 1 rota de 124 — sem erro nenhum. Ver
+    # `app/core/arvore_de_rotas.py`.
+    for rota in rotas_do_app(app):
         caminho = getattr(rota, "path", "")
         if not any(f"{{{n}}}" in caminho for n in ("job_id", "upload_id")):
             continue
@@ -478,10 +483,15 @@ def test_a_porta_de_dono_cobre_as_tres_familias():
     """
     from main import app
 
+    from app.core.arvore_de_rotas import rotas_do_app
     from app.api.porta import exigir_dono
 
     faltando = []
-    for rota in app.routes:
+    # A ÁRVORE, E NÃO `app.routes`. O FastAPI 0.141 troca cada
+    # `include_router` por um `_IncludedRouter`, e o filtro por `APIRoute`
+    # passou a ver 1 rota de 124 — sem erro nenhum. Ver
+    # `app/core/arvore_de_rotas.py`.
+    for rota in rotas_do_app(app):
         caminho = getattr(rota, "path", "")
         if not caminho.startswith(("/config", "/app-config", "/presets")):
             continue
