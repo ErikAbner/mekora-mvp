@@ -77,22 +77,41 @@ quadro dá o rótulo e não diz o que tira o estado. **A norma responde metade:*
 `Marcadores`, da mesma linha, saiu de "norma não construída" para **vigente** em
 03/09.
 
-### O vocabulário de Conexões vem de uma DEC, e não da redação velha — `DEC-0023 §6`
+### O vocabulário de Conexões — **resolvido pela própria DEC, e eu errei duas vezes antes**
 
-`PRODUTO.md`:
+`PRODUTO.md` cita a `DEC-0023 §6` assim:
 
 > **Conexões** | existe em todo aparelho; no telefone como **Relacionadas ·
-> Trilhas · Assuntos**, em listas, sem grafo `DEC-0023 §6`
+> Trilhas · Assuntos**, em listas, sem grafo
 
-**Eu registrei errado no B8.** Escrevi que "Trilhas" e "Assuntos" eram vocabulário
-da redação antiga do item, e não são: eles vêm da `DEC-0023 §6`. O que existe é um
-**conflito entre a norma e o desenho** — os dois quadros de Conexões
-(`895:8545`, `966:30269`) nomeiam Estudos, Relacionadas e as três faixas, e não
-têm Trilhas nem Assuntos em lugar nenhum.
+Registrei isto primeiro como "redação velha do item" — errado — e depois como
+"conflito entre norma e desenho, decisão do Erik" — errado de novo, e pela mesma
+causa: **li o §6 sem ler a lista de pendências da própria DEC.** Ela diz, no
+mesmo arquivo:
 
-Pela ordem de autoridade, a DEC vence o documento e vence o desenho. Então ou os
-dois quadros estão desatualizados em relação à DEC, ou a DEC precisa de emenda.
-**É decisão do Erik**, e agora ela tem os dois lados medidos.
+> **Como Relacionadas, Trilhas e Assuntos se apresentam.** Erik esboçou o
+> formato: dentro de uma nota, um bloco `RELACIONADO` listando as notas próximas
+> com o livro de origem, e um "Ver trilha →". **É ponto de partida para desenho,
+> não especificação fechada.**
+
+**A DEC não fechou o vocabulário: ela o delegou ao desenho.** Então não há
+conflito de autoridade a resolver, e não há emenda a fazer.
+
+**As duas datas**, que era o que o critério pedia:
+
+| | data | como se sabe |
+|---|---|---|
+| `DEC-0023` | **2026-08-20** | `Data:` no cabeçalho, aceita no mesmo dia |
+| `895:8545` e `966:30269` | **existiam em 2026-09-01** | é limite inferior, não criação: é a primeira vez que os ids aparecem no repositório, no commit do inventário. **O conector do Figma não expõe data de nó** — `get_metadata` devolve nome, posição e tamanho, e nada de tempo |
+
+Pelas datas o desenho é posterior em pelo menos doze dias; pelo texto da DEC ele é
+quem tinha de dizer a forma. **Os dois apontam para o mesmo lado: constrói-se o
+que está no quadro** — Estudos, Relacionadas, Parecem próximas, Talvez, Talvez um
+estudo, Tag, Conectar outra nota.
+
+**O que sobra é de documento, não de produto:** o `PRODUTO.md` cita o §6 como se
+fosse fechado, sem a ressalva que a DEC escreveu ao lado. É assim que uma frase
+de ponto de partida vira especificação por citação.
 
 ---
 
@@ -133,7 +152,7 @@ dois quadros estão desatualizados em relação à DEC, ou a DEC precisa de emen
 | Em todos os aparelhos: … Marcadores · Para revisar `DEC-0023 §4` | **norma não construída** — "Para revisar" não existe. Ver acima |
 | A 390px, uma indisponível é falha de V1 `DEC-0023 §4` | **vigente** para as construídas — medido: 390 de 390 em dez rotas |
 | Canvas desktop-only no V1 `DEC-0023 §5` | **vigente** |
-| Conexões no telefone como Relacionadas · Trilhas · Assuntos `DEC-0023 §6` | **conflito norma × desenho** — ver acima |
+| Conexões no telefone como Relacionadas · Trilhas · Assuntos `DEC-0023 §6` | **descreve errado** — cita o §6 sem a ressalva que a própria `DEC-0023` escreve na lista de pendências: *"é ponto de partida para desenho, não especificação fechada"*. A citação transformou um esboço em espec |
 | Tablet decide-se feature a feature `DEC-0023 §8` | **vigente** — nada foi decidido por herança |
 | O Mapa | **aposentado em 03/09** |
 | Original / Adaptado / Comparar deixou de ser arquitetura | **vigente** |
@@ -158,9 +177,13 @@ existir: **"Para revisar"**.
 **Duas descrições erradas**, as duas no `SUBIR.md`: o limite ao contrário e a
 frase de que não há papel de administrador.
 
-**Dois conflitos** que são decisão do Erik, não trabalho: o vocabulário de
-Conexões (`DEC-0023 §6` × os dois quadros) e o lugar `Estudos`, que existe no
-produto e não está entre os cinco da norma.
+**Um conflito** que é decisão do Erik, não trabalho: o lugar `Estudos`, que
+existe no produto e não está entre os cinco da norma.
+
+**E uma lição de método, que custou dois registros errados meus:** citar um §
+sem ler a lista de pendências da mesma DEC transforma esboço em especificação.
+A `DEC-0023 §6` parecia fechar o vocabulário de Conexões; a própria DEC dizia,
+trinta linhas abaixo, que aquilo era ponto de partida para desenho.
 
 Nenhuma foi consertada nesta passada. As que viram trabalho, viram item; as que
 viram decisão, viram pergunta.
