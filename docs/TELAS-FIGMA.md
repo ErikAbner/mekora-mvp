@@ -245,6 +245,32 @@ Então a política, e ela vale para todos os casos que vierem:
 | quadro | o que ele mostra | o que o supera |
 |---|---|---|
 | `966:25321` · M · Conta | um campo de **Senha** | **`DEC-0039`** — a entrada é por link no e-mail, e não há senha. A tela de Segurança diz isso com todas as letras. Retrato e Nome, do mesmo quadro, **foram construídos** em 02/09 |
+| `895:8545` e `966:30269` · Conexões | o **cabeçalho** da seção de ligações, escrito **"Relacionadas"** | **Só o cabeçalho é superado; a AÇÃO do mesmo quadro é mantida.** A seção continua sendo a do quadro, com a ação do quadro — "Conectar outra nota" → *"Ligar esta nota a qual?"* —, e o produto a chama de **"Ligadas"**. Ver a razão abaixo |
+
+### Por que o cabeçalho de Conexões é o único superado
+
+**O quadro se contradiz, e o produto escolheu o sinal mais forte dele.** O
+cabeçalho diz "Relacionadas"; a ação do mesmo quadro diz *"Ligar esta nota a
+qual?"*. O verbo do fluxo é LIGAR, e o substantivo tem de concordar com o verbo
+— "ligar" é o verbo do produto inteiro: a tabela `Ligacao`, `/canvas/ligacoes`,
+"Ligar a…" no menu do cartão. Isto não é o produto contrariando o quadro: é o
+produto escolhendo, entre dois sinais do mesmo quadro, o que concorda com o ato.
+
+**E a composição que o próprio quadro especifica quebra com o outro nome.** Logo
+abaixo desta seção ficam três palpites, nomeados na voz do que pode ser
+discordado. Com "Relacionadas" em cima, a coluna lê:
+
+    Relacionadas       ← na verdade: o que VOCÊ ligou
+    Parecem próximas   ← palpite
+    Talvez             ← palpite
+    Talvez um estudo   ← palpite
+
+Quatro seções que soam como graus da mesma coisa, um gradiente de confiança — e a
+primeira não está no gradiente: ela é fato, escrito pela pessoa. O rótulo funciona
+sozinho e quebra na composição.
+
+**"Cabeçalho superado, ação mantida"** é o registro exato, e ele existe para que
+uma auditoria futura não reabra isto achando que houve descuido.
 
 ## O dado do nó vence a captura — e isto custou uma pendência de dois dias
 
