@@ -909,7 +909,7 @@ function LivroCrua({ livro, aoMover, aoTirar, aoLigarDaLista, aoEscolher, aoEsco
         {livro.capa && !semCapa ? (
           <img src={livro.capa} alt="" draggable="false" loading="lazy" onError={() => setSemCapa(true)} />
         ) : (
-          <CapaDeReserva className="livro-capa-vazia" titulo={livro.titulo} chave={livro.chave ?? livro.id} />
+          <CapaDeReserva className="livro-capa-vazia" titulo={livro.titulo} autor={livro.autor} chave={livro.chave ?? livro.id} />
         )}
       </span>
       <span className="livro-texto">

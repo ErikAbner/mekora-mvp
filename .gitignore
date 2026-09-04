@@ -78,3 +78,8 @@ web/dist/
 
 # o acervo semeado para ver a interface
 .ver/
+
+# Assets que o get_design_context exige escrever em disco. Descartáveis: eles
+# se refazem a cada leitura, e o que vale do desenho vira código ou vira nota
+# em docs/TELAS-FIGMA.md.
+.figma-tmp/

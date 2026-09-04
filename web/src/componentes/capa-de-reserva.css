@@ -1,44 +1,75 @@
-/* A capa de reserva. Ver `CapaDeReserva.jsx` para o porquê de existir uma só.
+/* A capa de reserva. O porquê de existir uma só está no `CapaDeReserva.jsx`.
  *
- * As três cores do conjunto `1016:31030` e nada mais: papel, preto, cinza.
- * Enquanto a arte das catorze não entra, `[data-capa]` já separa os livros —
- * e, quando entrar, entra aqui embaixo sem mexer no componente. */
+ * Os números vêm dos nós `1016:31028` e `1016:31018`, lidos por dado e não por
+ * captura. A ARTE das catorze não está aqui: cada variante tem nó próprio em
+ * `docs/TELAS-FIGMA.md`, e entra por `[data-capa]` sem mexer no resto. */
 .capa-de-reserva {
-  display: grid;
-  align-content: start;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   inline-size: 100%;
   block-size: 100%;
-  padding: 24px;
+  aspect-ratio: 420 / 594;
   background: #f4f2ec;
-  color: #101010;
+  color: #111;
   overflow: hidden;
 }
 
+/* Recheio de 32 em cima e nos lados, como o cabeçalho do desenho. O de baixo
+   fica no rodapé, que tem o seu. */
+.capa-de-reserva-alto {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 32px 32px 0;
+  min-block-size: 0;
+}
+
+/* Zodiak Black 32/36. O desenho põe `whitespace-nowrap` porque lá o título é
+   escolhido e curto; aqui ele é NOME DE ARQUIVO, que é longo com frequência —
+   então quebra, e para em três linhas. Deixar `nowrap` faria o título vazar
+   pela lateral da capa, que é a mesma classe de defeito que o R-46 fechou
+   embaixo do cartão. */
 .capa-de-reserva-titulo {
-  font-size: 24px;
-  line-height: 32px;
-  text-wrap: pretty;
-  /* Seis linhas dentro da capa, contra duas embaixo dela: aqui a caixa tem a
-     altura de uma capa inteira, e o título é a única coisa que identifica o
-     livro. Cortar cedo aqui esconderia o livro. */
+  font-family: var(--fonte-titulo, "Zodiak Variable", Georgia, serif);
+  font-weight: 900;
+  font-size: 32px;
+  line-height: 36px;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 6;
+  -webkit-line-clamp: 3;
   overflow: hidden;
+  overflow-wrap: anywhere;
 }
 
-/* AS CATORZE, POR ENQUANTO SÓ NO CHÃO.
- *
- * Metade do conjunto assenta em preto e metade em papel — dá para ler isso da
- * captura do conjunto sem inventar nada. A arte de cada uma NÃO está aqui de
- * propósito: ela sai de `get_design_context` em cada nó, e chutá-la a partir
- * de uma miniatura é como as telas ficaram erradas da primeira vez. */
-.capa-de-reserva[data-capa="2"],
-.capa-de-reserva[data-capa="5"],
-.capa-de-reserva[data-capa="8"],
-.capa-de-reserva[data-capa="10"],
-.capa-de-reserva[data-capa="12"],
-.capa-de-reserva[data-capa="13"] {
-  background: #101010;
-  color: #f4f2ec;
+/* `Capa/Credito` — Zodiak Regular 10, entrelinha 100%. */
+.capa-de-reserva-credito {
+  font-size: 10px;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* O rodapé: recheio 32/16, formato à esquerda e data à direita. A faixa preta
+   da variante 1 NÃO está aqui — ela é de variante, e só duas das catorze foram
+   lidas. Pintar as outras doze de memória é o erro que este arquivo já cometeu
+   uma vez. */
+.capa-de-reserva-rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 32px;
+  font-size: 10px;
+  line-height: 1;
+}
+
+/* `Capa/Data` — Zodiak Italic 10. */
+.capa-de-reserva-data { font-style: italic; }
+
+/* `Capa/Formato` — IBM Plex Mono 10 na variante 1; na 2 é Zodiak Italic. Fica
+   monoespaçada até a leitura das outras doze dizer qual é a regra. */
+.capa-de-reserva-formato {
+  font-family: var(--fonte-mono, "IBM Plex Mono", ui-monospace, monospace);
 }

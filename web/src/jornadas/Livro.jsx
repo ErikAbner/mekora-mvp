@@ -179,7 +179,7 @@ export function Livro() {
             ) : (
               /* Livro sem capa não vira buraco: a caixa fica, com o título
                  dentro. Uma lacuna parece defeito de carregamento. */
-              <CapaDeReserva className="livro-pagina-capa-vazia" titulo={titulo} chave={id} />
+              <CapaDeReserva className="livro-pagina-capa-vazia" titulo={titulo} autor={autor} formato={(livro.input_format || "").toUpperCase() || null} chave={id} />
             )}
           </div>
 

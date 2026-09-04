@@ -146,7 +146,7 @@ function Estante3D({ livros, selecionado, aoEscolher }) {
   );
 }
 
-function Livro({ chave, titulo, autor, notas, capa, aoEscolher, escolhido }) {
+function Livro({ chave, titulo, autor, formato, notas, capa, aoEscolher, escolhido }) {
   return (
     <li className={`livro${escolhido ? " escolhido" : ""}`}>
       {/* O livro inteiro é o alvo do clique, e é um `button` de verdade: o
@@ -179,7 +179,7 @@ function Livro({ chave, titulo, autor, notas, capa, aoEscolher, escolhido }) {
         {capa ? (
           <img src={capa} alt={`Capa de ${titulo}`} className="capa" />
         ) : (
-          <CapaDeReserva className="capa" titulo={titulo} chave={chave} />
+          <CapaDeReserva className="capa" titulo={titulo} autor={autor} formato={formato} chave={chave} />
         )}
       </div>
       <div className="livro-texto">
