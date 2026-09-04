@@ -1140,3 +1140,39 @@ regra da busca ter entrado no `CLAUDE.md`.
 **O que a varredura do telefone diz desta tela:** duas linhas, as duas em
 `.estudos-fio-conta` — corpo 20→18 e entrelinha 30→27. Ficam para a conferência
 contra o nó, com o resto das 51.
+
+## `895:8849` — D · Estudos, o item 20 medido · 04/09
+
+O item 20 do Erik é *"div central com 2 larguras sem necessidade"*. Ele estava
+certo sobre haver mais de uma, e errado sobre o número — como eu sobre a leitura
+dele.
+
+**A 1440 há DOZE larguras distintas:**
+
+```
+1440  cabeçalho                        ← borda a borda, esperado
+1222  estudos · estudos-topo           ← BATE com o nó (1222 aparece 5 vezes lá)
+1172  estudo-livros
+ 974  estudos-de-baixo · estudos-fios
+ 910  estudos-fio-notas
+ 580  · 560 campo · 546 lugares · 505 recortes
+ 476  cabecalho-acoes                  ← BATE (o nó põe 476)
+ 411  estudos-vistas · 389 fio-acoes
+```
+
+**O que está estabelecido:** a coluna principal está certa. 1222 no produto e
+1222 no nó, cinco vezes. E a caixa de ações do cabeçalho, 476 nos dois. Isso não
+se sabia antes desta medida.
+
+**O que NÃO está, e não vou fingir que está:** se 1172, 974 e 910 divergem. O nó
+também tem blocos internos de larguras variadas — 755, 746, 616, 587, 287, 270,
+205, 184, 174, 137, 130, 116, 93, 72 —, então "o nó tem uma coluna só" é leitura
+minha, e é falsa. Dizer que três larguras sobram exigiria mapear bloco a bloco,
+e isso é a Fase 4 desta tela por inteiro.
+
+**Uma hipótese minha que a medida derrubou:** achei que `.estudo-livros` fosse um
+`<ul>` com o recuo padrão do navegador — o clássico dos 40px. Medido:
+`padding-inline-start: 0` em TODAS as listas da tela, e o pai do `<ul>` de 1172
+também mede 1172. O estreitamento acontece acima dele, e não nele.
+
+Fica como a fatia seguinte, com o mapeamento bloco a bloco por fazer.
