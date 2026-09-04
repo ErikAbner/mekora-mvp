@@ -41,11 +41,21 @@ LIVROS = [
     ("Apresentação Institucional", "Ana Duarte", 96, "/capas/exemplo-2.webp", 8, 0.35),
     ("Sequência Noturna", "Ana Duarte", 412, "/capas/exemplo-3.webp", 12, 0.12),
     ("Estudo de Viabilidade", "Ana Duarte", 640, "/capas/exemplo-4.webp", 5, None),
-    # TODOS COM CAPA. O backend monta `cover_url` a partir da primeira página
-    # sempre que há `page_count`, e um livro semeado sem arquivo em disco vira
-    # 404 — a estante mostrava capa quebrada nos dois que não tinham.
     ("Relatório de pesquisa", "Marina Alves", 88, "/capas/exemplo-1.webp", 0, None),
-    ("Cadernos de campo", "Marina Alves", 1020, "/capas/exemplo-3.webp", 3, 0.97),
+    # UM LIVRO SEM CAPA, DE PROPÓSITO — e é o conserto de um erro de bancada.
+    #
+    # Antes estava escrito aqui "TODOS COM CAPA", porque um livro sem arquivo em
+    # disco virava 404 e a estante mostrava moldura quebrada. Dar capa a todos
+    # tirou o sintoma da bancada e deixou o defeito no produto: o `.capa-vazia`
+    # existia no CSS e nunca era alcançado, e ninguém via porque nunca havia
+    # livro sem capa para ver. Foi assim que TRÊS implementações divergentes do
+    # mesmo estado conviveram sem nenhuma chegar à tela (R-47).
+    #
+    # Agora o emissor confere o arquivo e devolve `None` sem ele
+    # (`services/capa_service.py`), então este livro exercita a `CapaDeReserva`
+    # em toda medida. Acervo de prova onde todo arquivo é perfeito é acervo que
+    # só sabe dizer que está tudo bem.
+    ("Cadernos de campo", "Marina Alves", 1020, None, 3, 0.97),
 ]
 
 NOTAS = [
@@ -101,7 +111,7 @@ if ja >= len(LIVROS):
 agora = datetime.utcnow()
 colunas = {r[1] for r in c.execute("PRAGMA table_info(processing_jobs)")}
 
-def escrever_capa(capa: str, titulo: str, destino):
+def escrever_capa(capa: str, titulo: str, destino, nome: str = "page_0.png"):
     """Grava a capa do livro semeado, com o título escrito nela.
 
     SEM `if existe: ...` MUDO. A versão anterior pulava em silêncio quando o
@@ -116,7 +126,7 @@ def escrever_capa(capa: str, titulo: str, destino):
         raise SystemExit(f"capa de exemplo não encontrada: {origem}")
 
     destino.mkdir(parents=True, exist_ok=True)
-    alvo = destino / "page_0.png"
+    alvo = destino / nome
 
     try:
         from PIL import Image, ImageDraw
@@ -163,12 +173,23 @@ for i, (titulo, autor, paginas, capa, quantas_notas, fracao) in enumerate(LIVROS
     }
     job = inserir("processing_jobs", campos)
 
-    # A CAPA VAI PARA `temp/{id}` **E** PARA `temp/{token}`.
+    # A CAPA VAI PARA `covers/{id}/capa.png` **E** PARA `temp/{id}/page_0.png`.
     #
-    # A URL é `/storage/temp/{token}/page_0.png`, e o token engana: o endpoint
-    # traduz o token em id e serve de `STORAGE_TEMP / str(job_id)`. O semeador
-    # gravava só no caminho da URL, e a estante devolvia 404 em toda capa — o
-    # arquivo existia, no lugar errado.
+    # A PROMOVIDA É A QUE A TELA VÊ. Desde o `services/capa_service.py`, quem
+    # emite `cover_url` confere o arquivo em `storage/covers/{id}/capa.png` e
+    # devolve `None` sem ele. O semeador escrevia só em `temp`, e o resultado
+    # foi a bancada inteira sem capa: seis livros caindo na `CapaDeReserva` e a
+    # prova do R-44 acusando "livro sem capa" nos seis. Dado de bancada que não
+    # segue o contrato do produto reprova o produto por engano.
+    #
+    # A DE `temp` FICA porque ela é a MINIATURA DA ANÁLISE, que é outra coisa:
+    # é dela que sai a escolha de outra página para capa, e é dela que o
+    # `backend/scripts/promover_capas.py` promove.
+    #
+    # A TERCEIRA CÓPIA, em `temp/{token}`, SAIU. Ela nunca foi lida: o endpoint
+    # traduz o token em id e serve de `STORAGE_TEMP / str(job_id)`. Medido em
+    # 04/09 — apagar `temp/{token}/page_0.png` não muda nada na tela; apagar
+    # `temp/{id}/page_0.png` derruba a capa.
     #
     # CADA LIVRO GANHA UMA CAPA DIFERENTE, e isto é conserto de 04/09.
     #
@@ -182,8 +203,9 @@ for i, (titulo, autor, paginas, capa, quantas_notas, fracao) in enumerate(LIVROS
     # quebrada quando não está, e ESCONDE a troca de verdade no dia em que ela
     # acontecer — se o produto cruzasse as capas destes dois, ninguém veria.
     # Por isso o título é escrito na imagem: a capa passa a dizer de quem é.
-    escrever_capa(capa, titulo, RAIZ / "storage" / "temp" / str(job))
-    escrever_capa(capa, titulo, RAIZ / "storage" / "temp" / campos["token_publico"])
+    if capa:
+        escrever_capa(capa, titulo, RAIZ / "storage" / "temp" / str(job))
+        escrever_capa(capa, titulo, RAIZ / "storage" / "covers" / str(job), "capa.png")
 
     # O EPUB, para este livro abrir de verdade na leitura.
     sys.path.insert(0, str(Path(__file__).resolve().parent))

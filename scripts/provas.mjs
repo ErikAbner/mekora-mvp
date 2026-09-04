@@ -57,6 +57,14 @@ function medir(rota, corpo, veneno = '') {
      e `Identifier 'b' has already been declared`. O arquivo nem chegava a
      rodar, e o erro chegava aqui como "nao consegui medir", que parece falta de
      servidor. Erro de sintaxe disfarcado de ambiente e o pior tipo. */
+  /* DUAS ARMADILHAS DE ESCRITA NESTE ARQUIVO, as duas pagas:
+       · CRASE dentro do corpo da medida FECHA o literal. Comentario com
+         `nome-de-classe` entre crases quebra o arquivo inteiro com
+         "missing ) after argument list" — que tambem parece outra coisa.
+       · CONTRABARRA e comida pelo literal. `\s` numa expressao regular vira
+         `s`, e `/enviar[\s\S]{0,24}kindle/` virou uma classe [sS] que nao casa
+         espaco: a prova do R-05 reprovou limpa e envenenada, com a tela certa
+         nos dois casos. Escreva `\\s`, ou nao precise dela. */
   writeFileSync(alvo, `(async () => {\n  const esperar = ms => new Promise(r => setTimeout(r, ms));\n  await esperar(3200);\n  {\n${veneno}\n  }\n  ${corpo}\n})()`);
   const url = `${WEB}${rota.replace('{LIVRO}', livro)}`;
   let bruto;
@@ -101,8 +109,17 @@ const PROVAS = {
         const vistos = {};
         for (const c of cartoes) { if (!c.src) continue; c.resumo = await resumo(c.src); (vistos[c.resumo] ??= []).push(c.titulo); }
         return { cartoes, repetidas: Object.entries(vistos).filter(([, t]) => t.length > 1).map(([r, t]) => ({ resumo: r, titulos: t })) };`, veneno);
-      const semCapa = d.cartoes.filter((c) => !c.src).map((c) => c.titulo);
-      if (semCapa.length) return `livro sem capa na estante: ${semCapa.join(', ')}`;
+      /* LIVRO SEM CAPA E ESTADO LEGITIMO, e deixou de ser defeito quando a
+         `CapaDeReserva` entrou (R-47): sem arquivo, o emissor devolve `null` e
+         a tela desenha o gabarito com o titulo. O acervo semeado tem um assim
+         de proposito.
+         O QUE CONTINUA SENDO DEFEITO E NINGUEM TER CAPA. Foi o que aconteceu
+         em 04/09, quando a capa passou a morar em `storage/covers` e o
+         semeador continuou escrevendo so em `storage/temp`: os seis cartoes
+         caIram no gabarito de uma vez, e sem esta linha a prova teria passado
+         verde numa bancada que nao mostrava capa nenhuma. */
+      const comCapa = d.cartoes.filter((c) => c.src);
+      if (!comCapa.length) return 'nenhum livro da estante tem capa — a bancada nao esta servindo capa';
       if (d.repetidas.length) {
         const par = d.repetidas[0];
         return `dois livros com a MESMA imagem de capa: ${par.titulos.join(' e ')}`;
@@ -144,6 +161,224 @@ const PROVAS = {
       if (d.vazio) return 'a estante nao tem cartao para clicar — semeie antes';
       if (!d.dentroDoAlvo) return `o centro da capa nao chega ao alvo do clique: quem recebe e ${d.recebe}`;
       if (d.depois !== d.titulo) return `clicar no centro da capa nao trocou a ficha: ela continua em ${d.depois}`;
+      return null;
+    },
+  },
+  'r46': {
+    erik: 'limitar o titulo na estante, senao texto enorme quebra o layout',
+    /* O VENENO TIRA O CORTE, e nao encurta o titulo: o titulo longo e a
+       CONDICAO da medida, e por isso ele entra na propria medida. Prova que so
+       ve nome curto nao sabe dizer nada sobre nome comprido. */
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.livro-texto h3 { -webkit-line-clamp: none; display: block; overflow: visible; }';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/estante', `
+        const cartoes = [...document.querySelectorAll('.livro')];
+        if (!cartoes.length) return { vazio: true };
+        const h = cartoes[0].querySelector('.livro-texto h3');
+        const antes = h.getBoundingClientRect().height;
+        const inteiro = 'Um nome de arquivo desses que vem de exportador automatico e nao acaba nunca, com data e versao no fim 2026-09-04 v3';
+        h.textContent = inteiro;
+        h.setAttribute('title', inteiro);
+        await new Promise(r2 => setTimeout(r2, 400));
+        /* O CORTE SE MEDE PELO QUANTO A CAIXA CRESCEU, e nao contando linhas.
+           Duas tentativas antes desta responderam errado, e as duas pelo mesmo
+           motivo — instrumento que le altura absoluta:
+             · Range.getClientRects() devolve uma caixa por linha DIAGRAMADA, e
+               o -webkit-line-clamp esconde as linhas de baixo sem tira-las do
+               fluxo: 7 linhas no limpo e 7 no envenenado, com a tela cortando
+               em 2 nos dois casos.
+             · dividir altura por entrelinha erra porque o text-box-trim:
+               trim-both do estilo/base.css tira ~15px por linha do que a caixa
+               mede — clientHeight 17 onde a linha pede 32 (R-27).
+           A diferenca da MESMA caixa antes e depois nao carrega nenhum dos
+           dois: o corte, se existe, segura o crescimento; sem ele a caixa vai
+           atras do texto. E a altura do CARTAO diz o que o Erik reclamou, que
+           e a grade se desmanchando. */
+        const linha = parseFloat(getComputedStyle(h).lineHeight) || 32;
+        const cresceu = Math.round(h.getBoundingClientRect().height - antes);
+        const alturas = [...new Set(cartoes.map(c => Math.round(c.getBoundingClientRect().height)))];
+        return { cresceu, linha, alturas, guardaOInteiro: h.getAttribute('title') === inteiro };`, veneno);
+      if (d.vazio) return 'a estante nao tem cartao para medir — semeie antes';
+      if (d.cresceu > d.linha) return `o titulo longo esticou a caixa do nome em ${d.cresceu}px — mais de uma linha de ${d.linha}px, entao o corte em 2 nao segurou`;
+      if (d.alturas.length > 1) return `o titulo longo mudou a altura do cartao: ${d.alturas.join('px, ')}px`;
+      if (!d.guardaOInteiro) return 'o cartao corta o nome e nao guarda o inteiro no `title` — isso e esconder, nao resumir';
+      return null;
+    },
+  },
+  'r47': {
+    erik: 'tem um component set no figma com varias capas justamente pro usuario nao ficar sem capa',
+    /* O VENENO REFAZ O ESTADO ANTERIOR: no lugar do gabarito, a moldura
+       quebrada que a estante mostrava quando `cover_url` vinha nao-nulo sem
+       arquivo em disco. Era esse o defeito — o `.capa-vazia` existia no CSS e
+       nunca era alcancado. */
+    veneno: `document.querySelectorAll('.capa-de-reserva').forEach((e) => {
+               const i = document.createElement('img');
+               i.className = 'capa';
+               i.setAttribute('src', '/storage/covers/nao-existe-de-proposito/capa.png');
+               e.replaceWith(i);
+             });`,
+    async correr(veneno) {
+      const d = medir('/estante', `
+        await new Promise(r2 => setTimeout(r2, 600));
+        const cartoes = [...document.querySelectorAll('.livro')].map(l => {
+          const img = l.querySelector('img.capa');
+          const res = l.querySelector('.capa-de-reserva');
+          const alvo = res || img;
+          const r = alvo ? alvo.getBoundingClientRect() : null;
+          return {
+            titulo: (l.querySelector('h3') || { textContent: '' }).textContent.trim(),
+            reserva: !!res,
+            quebrada: !!(img && img.complete && img.naturalWidth === 0),
+            variante: res ? res.getAttribute('data-capa') : null,
+            /* O TITULO SE LE DO GABARITO INTEIRO, e nao de uma classe filha.
+               A primeira versao mirava .capa-de-reserva-titulo, e a peca foi
+               reorganizada do outro lado — .cr-titulo, com .cr-arte e .cr-alto
+               em volta. A prova ficou vermelha por um RENOME, dizendo
+               "regrediu" sobre uma tela que estava certa. O item cobra que o
+               titulo esteja DENTRO do gabarito; onde ele mora la dentro e
+               desenho, e desenho muda. */
+            dentro: res ? (res.textContent || '').trim() : null,
+            largura: r ? Math.round(r.width) : 0,
+            razao: r && r.height ? +(r.width / r.height).toFixed(3) : 0,
+          };
+        });
+        return { cartoes };`, veneno);
+      const quebradas = d.cartoes.filter((c) => c.quebrada).map((c) => c.titulo);
+      if (quebradas.length) return `capa quebrada na estante, e nao o gabarito: ${quebradas.join(', ')}`;
+      const reservas = d.cartoes.filter((c) => c.reserva);
+      if (!reservas.length) return 'nenhum livro caiu no gabarito — semeie um sem capa, senao a medida nao ve o estado que ela mede';
+      for (const r of reservas) {
+        if (!r.dentro || !r.dentro.includes(r.titulo)) return `o gabarito de "${r.titulo}" nao traz o titulo dentro (leu "${r.dentro}")`;
+        if (!r.variante) return `o gabarito de "${r.titulo}" saiu sem variante — o mesmo livro mudaria de capa a cada visita`;
+        /* 420/594 = 0,7071. O gabarito ocupa a MESMA caixa da capa de verdade,
+           senao a grade dança conforme quantos livros tem capa. */
+        if (Math.abs(r.razao - 0.707) > 0.01) return `o gabarito de "${r.titulo}" saiu com razao ${r.razao}, e a capa e 420/594 (0,707)`;
+      }
+      const larguras = [...new Set(d.cartoes.map((c) => c.largura))];
+      if (larguras.length > 1) return `gabarito e capa ocupam larguras diferentes: ${larguras.join('px, ')}px`;
+      return null;
+    },
+  },
+  'r45': {
+    erik: 'capa que falta virava moldura quebrada, e a que existia morava na pasta que a limpeza apaga',
+    /* DOIS VENENOS NUM SO, porque o item tem dois defeitos e um so nao o
+       reproduz: a URL emitida sem conferir o arquivo (moldura quebrada) e a
+       capa morando em storage/temp, que o cleanup_old_jobs apaga por idade. */
+    veneno: `document.querySelectorAll('img.capa').forEach((i, n) => {
+               i.setAttribute('src', n === 0
+                 ? '/storage/covers/nao-existe-de-proposito/capa.png'
+                 : i.getAttribute('src').replace('/storage/covers/', '/storage/temp/').replace('capa.png', 'page_0.png'));
+             });`,
+    async correr(veneno) {
+      const d = medir('/estante', `
+        await new Promise(r2 => setTimeout(r2, 700));
+        return { capas: [...document.querySelectorAll('img.capa')].map(i => ({
+          titulo: (i.closest('.livro') || document.body).querySelector('h3')
+            ? i.closest('.livro').querySelector('h3').textContent.trim() : '(sem titulo)',
+          src: i.getAttribute('src'),
+          quebrada: i.complete && i.naturalWidth === 0,
+        })) };`, veneno);
+      if (!d.capas.length) return 'nenhuma capa na estante — a bancada nao esta servindo capa';
+      const quebradas = d.capas.filter((c) => c.quebrada).map((c) => c.titulo);
+      if (quebradas.length) return `capa emitida sem arquivo, e a moldura sai quebrada: ${quebradas.join(', ')}`;
+      /* A CAPA NAO PODE MORAR NO QUE A LIMPEZA APAGA. O cleanup_old_jobs faz
+         rmtree em storage/temp depois de retention_days, e a estante que a
+         mostra e permanente: capa em temp e capa com prazo de validade. */
+      const efemeras = d.capas.filter((c) => !c.src.startsWith('/storage/covers/')).map((c) => `${c.titulo} (${c.src})`);
+      if (efemeras.length) return `capa fora de /storage/covers, na pasta que a limpeza por idade apaga: ${efemeras.join(', ')}`;
+      return null;
+    },
+  },
+  'r05': {
+    erik: 'nao precisa do botao enviar ao Kindle na Estante — o usuario faz isso na tela do livro',
+    /* O VENENO REPOE O BOTAO na ficha da Estante, que e o estado anterior. Ele
+       nao mexe na tela do livro: a prova tem de reprovar por ele estar de volta
+       na Estante, e nao por ter sumido do lugar certo. */
+    veneno: `const ficha = document.querySelector('.ficha-caixa');
+             if (ficha) {
+               const b = document.createElement('button');
+               b.type = 'button';
+               b.className = 'botao secundaria';
+               b.textContent = 'Enviar ao Kindle';
+               ficha.appendChild(b);
+             }`,
+    async correr(veneno) {
+      const acha = `
+        const gatilhos = [...document.querySelectorAll('button, a')]
+          .filter(e => /enviar.{0,24}kindle/i.test((e.textContent || '').trim()))
+          .map(e => (e.textContent || '').trim().slice(0, 60));
+        return { gatilhos, temFicha: !!document.querySelector('.ficha-caixa') };`;
+      const estante = medir('/estante', acha, veneno);
+      if (!estante.temFicha) return 'a ficha do livro escolhido nao abriu — sem ela a medida nao ve o lugar de onde o botao saiu';
+      if (estante.gatilhos.length) return `o envio ao Kindle continua na Estante: ${estante.gatilhos.join(' · ')}`;
+      /* E ELE TEM DE ESTAR NA TELA DO LIVRO. Sem esta metade, apagar o botao
+         das duas telas passaria — e aI o produto perdia a promessa que da nome
+         a ele em vez de mudar de lugar. */
+      const livro = medir('/estante/{LIVRO}', acha);
+      if (!livro.gatilhos.length) return 'o envio ao Kindle sumiu tambem da tela do livro, que e onde o Erik disse que ele mora';
+      return null;
+    },
+  },
+  'r28': {
+    erik: 'clico em adicionar cor e o texto da leitura nao muda de cor — botao que nao pressiona, nao muda, nao da feedback',
+    /* O VENENO FAZ O BOTAO NAO FAZER NADA, que e o sintoma inteiro. Um ouvinte
+       de CAPTURA no documento para o clique antes de ele chegar ao React, que
+       escuta na raiz: a paleta continua na tela, a cor continua clicavel, e o
+       clique morre no caminho. */
+    veneno: `document.addEventListener('click', (e) => {
+               if (e.target.closest && e.target.closest('.paleta-cor')) { e.stopPropagation(); e.preventDefault(); }
+             }, true);`,
+    async correr(veneno) {
+      const d = medir('/leitura/{LIVRO}', `
+        /* O 'esperar' JA VEM DO INVOLUCRO. Declarar de novo da
+           "Identifier 'esperar' has already been declared", e o erro chega
+           aqui como "nao consegui medir" — ambiente, quando e sintaxe. E o
+           mesmo motivo pelo qual o veneno mora num bloco proprio. */
+        await esperar(2000);
+        /* O PARAGRAFO TEM DE ESTAR NA PROSA E RENDERIZADO. A primeira versao
+           pegava o primeiro p longo da pagina, e ele era do formulario de
+           recado, que esta na arvore e nao na tela: a selecao sobre conteudo
+           nao renderizado sai VAZIA, e a medida dizia "a paleta nao abriu"
+           quando o defeito era do instrumento. */
+        const p = [...document.querySelectorAll('.prosa p')]
+          .find(e => (e.textContent || '').trim().length > 80 && e.offsetParent !== null);
+        if (!p) return { semParagrafo: true };
+        const no = [...p.childNodes].find(n => n.nodeType === 3 && n.textContent.trim().length > 60);
+        if (!no) return { semTexto: true };
+        const faixa = document.createRange();
+        faixa.setStart(no, 5); faixa.setEnd(no, 45);
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(faixa);
+        const trecho = sel.toString();
+        document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+        await esperar(700);
+        const paleta = document.querySelector('.paleta');
+        const cores = paleta ? [...paleta.querySelectorAll('.paleta-cor')] : [];
+        const antes = document.querySelectorAll('mark').length;
+        if (cores.length) cores[0].click();
+        /* QUATRO SEGUNDOS, E O NUMERO FOI MEDIDO. Marcar vai ao servidor e
+           volta; com 1,6s a marca aparecia uma vez e nao aparecia na seguinte,
+           com a MESMA tela. Prova intermitente e pior que prova ausente: ela
+           ensina a ignorar o vermelho. Tres corridas seguidas a 4s: 1, 2 e 3
+           marcas — crescendo, porque a nota fica gravada no livro. */
+        await esperar(4000);
+        const marcas = [...document.querySelectorAll('mark')].map(m => ({
+          texto: m.textContent.trim(),
+          fundo: getComputedStyle(m).backgroundColor,
+        }));
+        return { trecho, paletaAbriu: !!paleta, quantasCores: cores.length, antes, marcas };`, veneno);
+      if (d.semParagrafo || d.semTexto) return 'a leitura nao abriu com texto — sem prosa nao da para marcar nada';
+      if (!d.trecho) return 'a selecao saiu vazia: o trecho escolhido nao esta renderizado';
+      if (!d.paletaAbriu) return 'soltar o botao sobre um trecho selecionado nao abriu a paleta';
+      if (d.quantasCores < 4) return `a paleta abriu com ${d.quantasCores} cores, e o desenho tem 4`;
+      if (d.marcas.length <= d.antes) return 'clicar na cor nao marcou nada: o texto da leitura continua sem cor';
+      const nova = d.marcas.find((m) => d.trecho.includes(m.texto) || m.texto.includes(m.texto));
+      /* PINTAR E O PONTO. Uma marca com fundo transparente seria a mesma queixa
+         com outra forma — o elemento existe e a tela nao muda. */
+      const semTinta = d.marcas.filter((m) => /transparent|rgba\(0, 0, 0, 0\)/.test(m.fundo));
+      if (semTinta.length) return `a marca entrou sem tinta: fundo ${semTinta[0].fundo}`;
+      if (!nova) return 'marcou, mas nao o trecho que estava selecionado';
       return null;
     },
   },
@@ -196,19 +431,91 @@ const PROVAS = {
        04/09. Se alguem os trocar de novo, o resumo muda e isto fica vermelho. */
     texto: () => JSON.stringify({
       lugares: arq('web/src/lugares.js'),
-      resumos: execSync('shasum -a 256 web/publico/icones/icone-estante.svg web/publico/icones/icone-duvidas.svg', { cwd: RAIZ, encoding: 'utf8' }),
+      resumos: execSync('shasum -a 256 web/publico/icones/icone-*.svg', { cwd: RAIZ, encoding: 'utf8' }),
     }),
+    /* A BIBLIOTECA INTEIRA, e nao os dois de 04/09.
+     *
+     * A Fase 3 passou glifo contra rotulo nos 27, e o que ela achou nao se
+     * enxerga um arquivo por vez: DOIS PARES sao byte a byte iguais —
+     * icone-indice.svg e icone-menu.svg, icone-canvas.svg e
+     * icone-paginas.svg. Dois nomes, um desenho, quatro lugares na tela. O
+     * comentario do `Leitura.jsx` chega a explicar que "o icone do indice e uma
+     * LISTA", e ele e o hamburguer do menu.
+     *
+     * Qual dos dois de cada par e o errado e do QUADRO, e esta no R-49. O que
+     * cabe aqui e a impressao digital: fixar os 27 como estavam na auditoria, e
+     * recusar par novo. */
     correr(bruto) {
       const { lugares, resumos } = JSON.parse(bruto);
       if (!/id: "estante"[\s\S]{0,200}icone: "\/icones\/icone-estante\.svg"/.test(lugares)) return 'a Estante nao usa o icone-estante.svg';
       const esperados = {
-        'icone-estante.svg': 'a08ea4aca7c094bcbc045801cf305f029cc5e27c824708a3757c3f5a3e72465d',
-        'icone-duvidas.svg': '3f37071634f6c04a690ef4963d61edfce99c45ae4be49136f24755941717d155',
+      'icone-aparelho.svg': '7b0016f559dce34bc0a51eb16a5dc8732bc5ad3e8145d6747393ca5894ae6196',
+      'icone-baixar.svg': '926132b4d14a21ca14ac6c752de2d309576ea34500462fbdc169d35fe5317bd5',
+      'icone-buscar.svg': 'ecb2c0653686aec7a3121aa3f933834d0417a143d5a031a53491a24b738c9ccd',
+      'icone-caderno.svg': 'd65bb2ddf07416ef8b74316a0f7da30a580523a48709c86c223fb2f5ef67e9e9',
+      'icone-camadas.svg': 'f7a766d36d07b1f645804199ffa86be12cea8570611e40f62e5fbdb2081cc772',
+      'icone-canvas.svg': 'f90e29714752fd20d887ff65fbe5813f6e2eeca7d868387d43adb6e43b4db5c4',
+      'icone-conta.svg': '9f27d23a1637d08e8c87fc5b1e68e298d6ec0b4db4973346c088e6931940bb0f',
+      'icone-copiar.svg': '6cd039b18d0ef514727af5e0101c0724af0cfa0ed750324a0ad89c9b78f5cddc',
+      'icone-defeito.svg': '7a5343dccb4d50d4778831fc3ebfdb353ed5f245eb3e98c68e8072f453609983',
+      'icone-duvidas.svg': '3f37071634f6c04a690ef4963d61edfce99c45ae4be49136f24755941717d155',
+      'icone-enviar.svg': '85e18bb08f9c38f5a7e427791dfec5e0842418c93cb28836a7ce082636dae4af',
+      'icone-estante.svg': 'a08ea4aca7c094bcbc045801cf305f029cc5e27c824708a3757c3f5a3e72465d',
+      'icone-estudos.svg': '87386e53ba5b3bd01e70234d676d3c6346c20b8bd70d8cef1f2d4276b6b40f2f',
+      'icone-fixar.svg': 'ace45115fbd90cade0c20f15c0b7405f51df9851637c43cf9bb22b059b34b287',
+      'icone-indice.svg': 'ec02f366132ee4b87e9233bbedab7a5b54cf8ba5fd25cd588f0dc3932eab91bc',
+      'icone-mais-acoes.svg': '21c9fc9de7603ee9ea14529fdc71f7b363229eeaf1fdb1c0d3fb74b9cd35d94c',
+      'icone-marcador.svg': '50d2de341fa5497b507b310c69fecb950a4ec7635b92b00c39d349df117abe71',
+      'icone-menu.svg': 'ec02f366132ee4b87e9233bbedab7a5b54cf8ba5fd25cd588f0dc3932eab91bc',
+      'icone-mesa.svg': '684a463040482c0fadd620593990802bd272586f972b538c28101001e96375a9',
+      'icone-nota-imagem.svg': '44525d79ed918988d634feaf45f8a9cfd559880984a7c5d820d49b39322f4a3b',
+      'icone-nota-nova.svg': '86edb3d160197d915d3644f9e82dbb7061bcc28609aee27d064736afb10762f1',
+      'icone-paginas.svg': 'f90e29714752fd20d887ff65fbe5813f6e2eeca7d868387d43adb6e43b4db5c4',
+      'icone-preferencias.svg': '9df1b852a6fb4f119f00716cc176f6289a96514155e85b20d7bd5b78e8ecca83',
+      'icone-privacidade.svg': '22e10767d5de2e6ff9d75537e2dbd39da42283709ee5b70ec1cf6523928e3ce3',
+      'icone-refazer.svg': '4bfe930079ef2515f11f5c40cf2bfe8a5bb42008a6a19006228451aba998f157',
+      'icone-remover.svg': 'e959776783a84ecadc8659de5a4d2036915a6a0090dfc64ff415b056576fac7f',
+      'icone-renomear.svg': '9ff07eda892cbe1830ade4fed17f79a4658d5a5ee2af89f9426fd2ca2db80738',
       };
+      const lidos = new Map();
+      for (const linha of resumos.split('\n')) {
+        const [resumo, caminho] = linha.trim().split(/\s+/);
+        if (!caminho) continue;
+        lidos.set(caminho.split('/').pop(), resumo);
+      }
       for (const [nome, resumo] of Object.entries(esperados)) {
-        const linha = resumos.split('\n').find((l) => l.includes(nome));
-        if (!linha) return `nao achei o resumo de ${nome}`;
-        if (!linha.startsWith(resumo)) return `${nome} mudou de conteudo desde a auditoria de 04/09`;
+        if (!lidos.has(nome)) return `o ${nome} sumiu da biblioteca desde a auditoria de 04/09`;
+        if (lidos.get(nome) !== resumo) return `${nome} mudou de desenho desde a auditoria de 04/09`;
+      }
+      for (const nome of lidos.keys()) {
+        if (!(nome in esperados)) return `${nome} entrou na biblioteca sem passar pela auditoria`;
+      }
+      /* NENHUM PAR NOVO. Os dois conhecidos estao escritos aqui porque sao
+         divida medida e datada, e nao descuido: fingir que nao existem faria a
+         regra passar por omissao.
+
+         ESTA REGRA NAO E ALCANCAVEL HOJE, e vale dizer em vez de deixar
+         parecer provada: com a tabela de resumos exata, qualquer arquivo novo
+         cai antes em "entrou sem passar pela auditoria", e qualquer copia de um
+         existente cai em "mudou de desenho". Ela existe para o dia em que a
+         tabela for refeita — quando o quadro disser qual dos dois de cada par
+         e o errado, o desenho novo entra e esta linha e a que impede o par
+         seguinte de nascer em silencio. Tentei alcanca-la em 04/09 copiando o
+         icone-fixar sobre o icone-camadas: quem ficou vermelho foi a impressao
+         digital, como esta escrito. */
+      const PARES_CONHECIDOS = [
+        ['icone-canvas.svg', 'icone-paginas.svg'],
+        ['icone-indice.svg', 'icone-menu.svg'],
+      ].map((p) => p.join('|'));
+      const porResumo = new Map();
+      for (const [nome, resumo] of lidos) {
+        if (!porResumo.has(resumo)) porResumo.set(resumo, []);
+        porResumo.get(resumo).push(nome);
+      }
+      for (const [, nomes] of porResumo) {
+        if (nomes.length < 2) continue;
+        const chave = nomes.slice().sort().join('|');
+        if (!PARES_CONHECIDOS.includes(chave)) return `dois nomes com o mesmo desenho, e este par e novo: ${nomes.join(' e ')}`;
       }
       return null;
     },

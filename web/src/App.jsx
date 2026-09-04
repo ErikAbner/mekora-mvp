@@ -122,7 +122,7 @@ function PaginaApresentacao() {
 }
 
 function PaginaEstante() {
-  const { livros, carregarEstante, enviar } = useJornada();
+  const { livros, carregarEstante } = useJornada();
   const [aberto, setAberto] = useState(null);
   const navegar = useNavigate();
   useEffect(() => { carregarEstante(); }, [carregarEstante]);
@@ -148,7 +148,6 @@ function PaginaEstante() {
        * tela cala em vez de completar. */
       selecionado={selecionado}
       aoEscolher={(l) => setAberto(l.chave)}
-      aoEnviar={(l) => enviar(l.chave)}
       aoAbrir={(l) => {
         /* Sem arquivo convertido não há o que abrir. Navegar mesmo assim
          * levaria a um leitor em branco, e o leitor em branco não distingue
@@ -409,7 +408,7 @@ function PaginaLeitura() {
       /* O capítulo vem daqui, e não da seleção: quem marca um trecho está no
        * capítulo aberto, e pedir isso à tela seria pedir que ela repita algo que
        * já se sabe — e que pode discordar. */
-      aoAnotar={(t) => marcar({ ...t, capitulo: livro.capitulo ?? 0 })}
+      aoAnotar={(t) => marcar({ ...t, capitulo: t.capitulo ?? livro.capitulo ?? 0 })}
       aoComentar={comentar}
       aoTrocarCor={trocarCor}
       aoApagarNota={remover}

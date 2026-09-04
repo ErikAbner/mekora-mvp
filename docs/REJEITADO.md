@@ -64,11 +64,14 @@ Estado de cada um: `docs/RETORNO-2026-09-02.md`.
 **Medido em 04/09:** Medido a 1440: a ficha ocupa 476px, 33% da janela, com fundos `rgb(28,28,28)`, `rgb(22,22,22)` e `rgb(97,114,47)` dentro.
 **Prova:** sem-prova
 
-### R-05 · 2026-09-01 · aberto
+### R-05 · 2026-09-01 · fechado
 **Erik:** "Não precisa do botão enviar ao Kindle na Estante — o usuário faz isso na tela do livro"
 **Onde:** /estante
 **Medido em 04/09:** Medido: o botao "Enviar ao Kindle" continua na Estante (`Estante.jsx:536`).
-**Prova:** sem-prova
+**Feito em 04/09:** o bloco `.ficha-kindle` saiu inteiro da ficha lateral, com o `aoEnviar` que o alimentava (`Estante.jsx`, `App.jsx`) e o CSS que sobrou. **O estado continua na ficha** — "No Kindle · Enviado" está nos dados do arquivo —, o que saiu é o gatilho: a ficha é resumo, e mandar um arquivo para um aparelho é a ação que sai da tela e a mais cara de desfazer. Ao lado de "Continuar" e "Notas", que agem dentro dela, a diferença entre as três sumia.
+
+**A prova mede as DUAS metades**, e a segunda importa mais: sem ela, apagar o botão das duas telas passaria — e aí o produto perderia a promessa que dá nome a ele em vez de mudar de lugar de lugar. Envenenada (o botão reposto na ficha), ela acusa *"o envio ao Kindle continua na Estante"*.
+**Prova:** `node scripts/provas.mjs r05`
 
 ### R-06 · 2026-09-01 · fechado
 **Erik:** "O item ao lado da pesquisa é de DÚVIDAS, não de notas"
@@ -80,6 +83,7 @@ Estado de cada um: `docs/RETORNO-2026-09-02.md`.
 **Erik:** "Você trocou o ícone da Estante, o que não faz sentido — existem componentes para isso"
 **Onde:** /estante
 **Medido em 04/09:** A causa era os ARQUIVOS trocados: `icone-estante.svg` desenhava um "?". Os dois foram renomeados para o que desenham, e a prova fixa o `sha256` dos dois auditados em 04/09 — trocar de novo fica vermelho.
+**Ampliado em 04/09, na Fase 3:** a prova deixou de fixar dois ícones e passou a fixar **os 27 da biblioteca**, com o `sha256` de cada um, mais a recusa de arquivo novo sem auditoria e de par novo com o mesmo desenho. Foi essa passada que achou o R-49.
 **Prova:** `node scripts/provas.mjs r07`
 
 ### R-08 · 2026-09-01 · fechado
@@ -91,7 +95,12 @@ Estado de cada um: `docs/RETORNO-2026-09-02.md`.
 ### R-09 · 2026-09-01 · aberto
 **Erik:** "A pesquisa é MENOR e se expande quando o usuário tenta pesquisar — você não respeitou o componente que já existia e criou outro por cima"
 **Onde:** /estante
-**Prova:** `node scripts/inventario.mjs`
+**Medido em 04/09 — duas das três queixas não se reproduzem.** A moldura mede **258×60 em repouso, 258×60 com o foco dentro e 258×60 digitando**: ela não expande. E há **um** campo de busca na página (`input[type=search]`, `.busca-campo`), não dois — não existe componente por cima de componente. O painel abre e acha: digitando "urbana" com teclado de verdade, um item, "Malha Urbana · Ana Duarte · PDF".
+
+**A terceira queixa fica de pé e é do quadro:** "a pesquisa é MENOR" é uma medida contra o desenho, e o `941:23107` está do lado da Fase 4. **Pendência do Erik**, não escolha de quem implementa: se 258 é menor do que o nó pede, o número vem de lá.
+
+**O `inventario.mjs` NÃO é a prova deste item.** Ele relata assinaturas visuais repetidas — hoje seis pares, nenhum deles da busca — e sai com **0** em qualquer caso: relatório, não portão. Item fechado com ele seria fechado com nada.
+**Prova:** sem-prova
 
 ### R-10 · 2026-09-01 · fechado
 **Erik:** "Conta: clicar navega automaticamente em vez de abrir um dropdown"
@@ -124,6 +133,11 @@ Estado de cada um: `docs/RETORNO-2026-09-02.md`.
 ### R-15 · 2026-09-01 · aberto
 **Erik:** "Os grupos se sobrepõem e não são como o que eu criei no Figma"
 **Onde:** /canvas
+**Medido em 04/09:** **nada no produto impede duas seções de se sobreporem**, e a tolerância é deliberada — está escrita no `Canvas.jsx`: a contenção é por VÍNCULO e não por geometria, e a versão que perguntava "quem está por cima?" foi testada e reprovou justamente "com duas áreas sobrepostas". O `organizar()` desfaz sobreposição de **notas** (`conjunto = alvos || nos`), e não toca em seção. E a seção nasce em volta do que está selecionado — se duas seleções se cruzam no plano, as duas áreas se cruzam.
+
+Não deu para medir a sobreposição na tela: **o acervo semeado traz uma seção só** ("Design & Tecnologia", 620×420), e sobreposição precisa de duas.
+
+**Pendência do Erik, e é uma regra que falta:** seção pode encostar em seção? Se não pode, o produto deve *impedir* (empurrar como o `organizar` faz com as notas) ou apenas *avisar*? Isso não está no repositório e não se deduz do código — a segunda metade da queixa ("não são como o que eu criei no Figma") é do quadro, na Fase 4.
 **Prova:** sem-prova
 
 ### R-16 · 2026-09-01 · aberto
@@ -222,11 +236,19 @@ O escopo é grande, e está escrito no próprio `base.css`: o trim entrou junto 
 Medido: o cartão sem capa desenha `.capa-de-reserva` com variante `1`, papel `rgb(244, 242, 236)`, o título dentro, e a caixa **252×356 — razão 0,707, a mesma 420/594 da capa de verdade**, com a mesma largura dos outros cinco. Nenhuma moldura quebrada na estante. Envenenado (o gabarito trocado pela `<img>` sem arquivo, que é o estado anterior), a prova acusa: *capa quebrada na estante, e nao o gabarito: Cadernos de campo*.
 **Prova:** `node scripts/provas.mjs r47`
 
-### R-28 · 2026-09-01 · aberto
+### R-28 · 2026-09-01 · fechado
 **Erik:** "Clico em adicionar cor (criar destaque, não nota) e o texto da leitura não muda de cor — botão que não pressiona, não muda, não dá feedback"
 **Onde:** /leitura/:id
 **Medido em 04/09:** Medido na Leitura: zero elementos de marca (`mark`, `.destaque`) no DOM do capitulo aberto.
-**Prova:** sem-prova
+
+**Medido de novo em 04/09, com o gesto inteiro, e o defeito era REAL — e primeiro-uso.** Selecionar um trecho, soltar, e clicar na primeira cor: numa conta nova, a marca **não** aparecia; na segunda tentativa, aparecia. Foi por isso que ele parecia consertado — quem mede duas vezes só vê a segunda.
+
+**A causa não era o botão, e a medida quase mentiu duas vezes.** O `POST /jobs/:id/notas` respondia **201** com a nota gravada: nada falhava, e não havia erro para mostrar. O que estava errado era o CAPÍTULO. A leitura é rolagem contínua — há várias `<section class="capitulo">` na página ao mesmo tempo —, e `App.jsx` gravava a nota com `livro.capitulo`, que é só o capítulo em que o livro foi ABERTO. O trecho selecionado era de outro, e o desenho filtra as notas por `n.capitulo === indice`: a marca não aparecia em capítulo nenhum. O deslocamento ia junto no erro, porque ele é contado a partir do começo do capítulo — e o capítulo era outro. Na segunda visita o livro abre onde a leitura parou, o capítulo de entrada passa a ser o mesmo, e a marca aparece.
+
+**A mesma armadilha já tinha sido paga três linhas ao lado**, para o progresso: *"usá-lo faria toda a leitura ser gravada como se fosse no capítulo de entrada"*. A marcação ficou para trás. Agora o capítulo sai da seleção (`leitor/selecao.js`), como o deslocamento já saía.
+
+Medido depois do conserto, em conta nova: `POST` com `capitulo: 0` — o do parágrafo, e não `1`, o de entrada — e **uma** marca na tela, com fundo `rgb(239, 255, 191)`.
+**Prova:** `node scripts/provas.mjs r28`
 
 ### R-29 · 2026-09-01 · aberto
 **Erik:** "Há imagens ilustrativas nas seções, cuidadosamente posicionadas para ficar em cima do container, com layout e ordem de layers pensados para não dar problema na implementação — e ainda assim você fez errado"
@@ -348,4 +370,25 @@ O `scripts/semear.py` já sabia disso e contornou: *"TODOS OS LIVROS TÊM CAPA..
 **Preparado em 04/09:** as três cores saíram para variável (`--capa-papel`, `--capa-tinta`, `--capa-trama`) num lugar só, e a família `capa-reserva/*` entrou no portão como superfície própria. Trocar por pessoa passa a ser escrever as três variáveis em vez de caçar hex.
 **O que falta é produto, não CSS:** onde a pessoa escolhe, se a escolha é por livro ou geral, e onde ela é guardada — provavelmente ao lado das preferências de leitura. Não implementado: é recurso novo, e a fila do lançamento vem antes.
 **Nota do Erik, no mesmo dia:** "as cores tao erradas pq n refinei elas" — os valores atuais são os do quadro, e são provisórios por decisão dele.
+**Prova:** sem-prova
+
+### R-49 · 2026-09-04 · aberto
+**Erik:** (não é dele — saiu da Fase 3, a auditoria de ícone: glifo contra rótulo, passada única nos 27 da biblioteca)
+**Onde:** `web/publico/icones/` · /leitura/:id, /canvas, /preparo/:id, o cabeçalho
+**Medido em 04/09:** **dois pares de arquivos são byte a byte iguais** — mesmo `sha256`, mesmo tamanho:
+
+    ec02f366132ee4b8…   icone-indice.svg   ==   icone-menu.svg      (14.585 bytes)
+    f90e29714752fd20…   icone-canvas.svg   ==   icone-paginas.svg   (21.235 bytes)
+
+São dois nomes para um desenho, em quatro lugares da tela: o índice do leitor e o menu do cabeçalho mostram o mesmo hambúrguer; o Canvas na navegação e "páginas" na tela de preparo mostram a mesma grade de quatro. **O `Leitura.jsx` chega a explicar a distinção que não existe:** *"O ícone do índice é uma LISTA, e não o da estante: aquele é o lugar onde os livros ficam"* — e o arquivo do índice é o hambúrguer do menu, letra por letra.
+
+É a mesma família do R-07, e a mesma lição: **nenhuma leitura de CSS ou de JSX pega isto.** O nome do arquivo está certo em todos os quatro usos, o `import` está certo, o rótulo ao lado está certo. O que está errado é o CONTEÚDO do arquivo, e só a impressão digital o vê.
+
+**Qual dos dois de cada par é o errado é do QUADRO, e por isso o item fica aberto.** "Menu = hambúrguer" e "grade de quatro = páginas" são as leituras mais prováveis, o que faria de `icone-indice.svg` e `icone-canvas.svg` os dois a refazer — mas provável não é medido, e desenhar de palpite é como as telas ficaram erradas da primeira vez. Os nós estão do lado da Fase 4.
+
+**O que já entrou:** o `r07` deixou de fixar dois ícones e passou a fixar **os 27**, com o `sha256` de cada um como estavam nesta auditoria, mais a recusa de qualquer par novo. Verificado nos dois sentidos: um byte a mais no `icone-fixar.svg` dá *"mudou de desenho desde a auditoria de 04/09"*; copiar um ícone sobre outro dá o mesmo, e o vermelho chega antes da regra de par — está escrito na prova por que ela ainda não é alcançável, e para quando ela serve.
+
+**Dois ícones não são usados em lugar nenhum:** `icone-camadas.svg` (30.660 bytes) e `icone-fixar.svg` (32.365 bytes), zero referências em `web/src`. Não apaguei: podem ser de tela que ainda não existe, e apagar arte que alguém desenhou por não achar o uso é decisão de quem desenhou. **Pendência do Erik:** ficam ou saem?
+
+**O resto da biblioteca passou.** 25 desenhos distintos, cada um legível como o rótulo ao lado — aparelho, baixar, buscar, caderno, conta, copiar, defeito, dúvidas, enviar, estante, estudos, mais-ações, marcador, mesa, nota-imagem, nota-nova, preferências, privacidade, refazer, remover, renomear. Duas observações que são de desenho e não de defeito, e por isso não viram item: o `baixar` põe a barra ACIMA da seta enquanto o `enviar` põe a bandeja ABAIXO — o par não espelha; e o `marcador` é um hexágono com um ponto, que é o glifo de nó ou de ajuste, e não o da fita que marca a página.
 **Prova:** sem-prova

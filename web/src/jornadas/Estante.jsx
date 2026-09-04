@@ -192,7 +192,7 @@ function Livro({ chave, titulo, autor, formato, notas, capa, aoEscolher, escolhi
   );
 }
 
-export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnviar }) {
+export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher }) {
   /* OS RECORTES FILTRAM AGORA.
    *
    * Eram quatro botões sem `onClick`, com "Tudo" marcado por `aria-pressed={i === 0}`
@@ -522,40 +522,21 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher, aoEnvia
                 </Link>
               </div>
 
-              {/* ENVIAR AO KINDLE. É a promessa que dá nome ao produto, e até
-                  30/08 nenhuma tela a cumpria — o contrato tinha a chamada e
-                  ninguém a usava, então dava para converter e nunca mandar.
+              {/* O ENVIO AO KINDLE NÃO MORA AQUI, e a razão é do Erik: "não
+                  precisa do botão enviar ao Kindle na Estante — o usuário faz
+                  isso na tela do livro" (R-05).
 
-                  Já enviado NÃO vira botão desabilitado: reenviar é legítimo
-                  (a pessoa apagou do aparelho, trocou de Kindle), e um botão
-                  morto ao lado de "No Kindle" faria parecer que não dá. O que
-                  muda é o rótulo, que passa a dizer o que o clique faz. */}
-              {selecionado.leituraUrl && (
-                <div className="ficha-kindle">
-                  <Botao
-                    tom="secundaria"
-                    onClick={() => aoEnviar?.(selecionado)}
-                    porque={selecionado.envio === "enviando" ? "Enviando ao Kindle…" : null}
-                  >
-                    {selecionado.envio === "enviando"
-                      ? "Enviando…"
-                      : selecionado.noKindle
-                        ? "Enviar de novo ao Kindle"
-                        : "Enviar ao Kindle"}
-                  </Botao>
-                  {selecionado.envio === "erro" && (
-                    <p className="ficha-erro" role="alert">
-                      {/* A mensagem do backend, e não "falhou": ela diz se foi
-                          SMTP, remetente não autorizado na Amazon, ou tamanho —
-                          e cada uma tem uma saída diferente. */}
-                      {selecionado.envioErro}
-                    </p>
-                  )}
-                  {selecionado.noKindle && selecionado.envio !== "erro" && (
-                    <p className="ficha-nota">Já está no seu Kindle.</p>
-                  )}
-                </div>
-              )}
+                  A ficha lateral é um RESUMO: ela cabe o que o livro é e para
+                  onde ir. Mandar um arquivo para um aparelho é a ação que sai
+                  da tela, é a mais cara de desfazer, e ela pede a tela inteira
+                  do livro — onde ela está, com o estado do envio e o erro do
+                  servidor ao lado (`Livro.jsx`). Aqui ela dividia espaço com
+                  "Continuar" e "Notas", que agem dentro da tela, e a diferença
+                  entre as três sumia.
+
+                  O estado CONTINUA visível na ficha: "No Kindle · Enviado" está
+                  nos dados do arquivo, acima. Tirar o botão não é esconder o
+                  fato — é tirar o gatilho de onde ele não é o assunto. */}
               {!selecionado.leituraUrl && (
                 <p className="ficha-aviso">
                   Ainda em preparo. O texto abre quando a conversão terminar.

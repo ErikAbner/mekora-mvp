@@ -94,6 +94,25 @@ export function lerSelecao(raiz) {
   const antes = (blocoInicio.textContent || "").slice(Math.max(0, de - inicio - CONTEXTO), de - inicio);
   const depois = (blocoFim.textContent || "").slice(ate - fim, ate - fim + CONTEXTO);
 
+  /* O CAPÍTULO SAI DO TEXTO SELECIONADO, e não do estado da tela.
+   *
+   * A leitura é rolagem contínua: há várias `<section class="capitulo">` na
+   * página ao mesmo tempo, e o capítulo que a tela guarda é só o que foi ABERTO
+   * primeiro. Marcar um trecho de outro capítulo gravava a nota no de entrada —
+   * e o desenho filtra as notas por `n.capitulo === indice`, então a marca não
+   * aparecia em capítulo nenhum: nem no que foi lido, nem no que foi gravado.
+   * O deslocamento ia junto no erro, porque ele é contado a partir do começo do
+   * capítulo, e o capítulo era outro.
+   *
+   * A mesma armadilha já tinha sido paga uma vez, três linhas ao lado, para o
+   * PROGRESSO — está escrito lá: "usá-lo faria toda a leitura ser gravada como
+   * se fosse no capítulo de entrada". A marcação ficou para trás.
+   *
+   * `null` quando não há seção — o texto de exemplo e a prova desenham a prosa
+   * sem envelope de capítulo, e ali quem sabe o capítulo é quem chamou. */
+  const secao = blocoInicio.closest?.("[data-capitulo]");
+  const capitulo = secao ? Number(secao.dataset.capitulo) : null;
+
   /* A posição na tela, para a paleta aparecer JUNTO do que foi marcado. Uma
    * paleta em canto fixo obriga a olhar para longe do texto e voltar. */
   const caixa = faixa.getBoundingClientRect();
@@ -104,6 +123,7 @@ export function lerSelecao(raiz) {
     trecho,
     antes,
     depois,
+    capitulo,
     onde: { x: caixa.left + caixa.width / 2, y: caixa.top },
   };
 }

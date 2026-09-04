@@ -737,6 +737,8 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
     const nova = await aoAnotar?.({
       de: paleta.de, ate: paleta.ate, cor, trecho: paleta.trecho,
       antes: paleta.antes, depois: paleta.depois,
+      /* O capítulo vem da seleção — ver o porquê em `leitor/selecao.js`. */
+      capitulo: paleta.capitulo,
     });
     setPaleta(null);
     /* Limpa a seleção: deixá-la azul por cima do destaque recém-feito esconde
