@@ -284,3 +284,11 @@ Estado de cada um: `docs/RETORNO-2026-09-02.md`.
 **Erik:** "itens no canvas que diz escrita aqui mas n da pra escrever nem alterar o que tem na nota"
 **Onde:** /canvas
 **Prova:** sem-prova
+
+## 04/09 — o que ele achou nas onze capturas
+
+### R-44 · 2026-09-04 · fechado
+**Erik:** "capa do livro errado — o cartão Relatório de pesquisa renderiza a capa de Malha Urbana"
+**Onde:** /estante
+**Medido em 04/09:** A causa não era do produto: cada cartão apontava para o seu próprio arquivo. Errado estava o DADO — `scripts/semear.py` tinha **quatro** imagens de exemplo para **seis** livros, e `exemplo-1` servia a dois títulos (Malha Urbana e Relatório de pesquisa), `exemplo-3` a outros dois. E havia um segundo defeito embaixo: a lista pedia `exemplo-1.png` e o que existe em disco é `.webp`, então o `if origem.exists()` pulava a cópia **em silêncio** — as capas que apareciam eram restos de uma rodada antiga. Agora cada livro ganha uma capa distinta, com o título escrito nela, e arquivo de exemplo faltando é erro que fala.
+**Prova:** `node scripts/provas.mjs r44`

@@ -37,15 +37,15 @@ if not BANCO.exists():
 
 LIVROS = [
     # titulo, autor, paginas, capa, notas, fracao lida
-    ("Malha Urbana", "Ana Duarte", 248, "/capas/exemplo-1.png", 24, 0.80),
-    ("Apresentação Institucional", "Ana Duarte", 96, "/capas/exemplo-2.png", 8, 0.35),
-    ("Sequência Noturna", "Ana Duarte", 412, "/capas/exemplo-3.png", 12, 0.12),
-    ("Estudo de Viabilidade", "Ana Duarte", 640, "/capas/exemplo-4.png", 5, None),
+    ("Malha Urbana", "Ana Duarte", 248, "/capas/exemplo-1.webp", 24, 0.80),
+    ("Apresentação Institucional", "Ana Duarte", 96, "/capas/exemplo-2.webp", 8, 0.35),
+    ("Sequência Noturna", "Ana Duarte", 412, "/capas/exemplo-3.webp", 12, 0.12),
+    ("Estudo de Viabilidade", "Ana Duarte", 640, "/capas/exemplo-4.webp", 5, None),
     # TODOS COM CAPA. O backend monta `cover_url` a partir da primeira página
     # sempre que há `page_count`, e um livro semeado sem arquivo em disco vira
     # 404 — a estante mostrava capa quebrada nos dois que não tinham.
-    ("Relatório de pesquisa", "Marina Alves", 88, "/capas/exemplo-1.png", 0, None),
-    ("Cadernos de campo", "Marina Alves", 1020, "/capas/exemplo-3.png", 3, 0.97),
+    ("Relatório de pesquisa", "Marina Alves", 88, "/capas/exemplo-1.webp", 0, None),
+    ("Cadernos de campo", "Marina Alves", 1020, "/capas/exemplo-3.webp", 3, 0.97),
 ]
 
 NOTAS = [
@@ -101,6 +101,44 @@ if ja >= len(LIVROS):
 agora = datetime.utcnow()
 colunas = {r[1] for r in c.execute("PRAGMA table_info(processing_jobs)")}
 
+def escrever_capa(capa: str, titulo: str, destino):
+    """Grava a capa do livro semeado, com o título escrito nela.
+
+    SEM `if existe: ...` MUDO. A versão anterior pulava em silêncio quando o
+    arquivo não estava lá — e estava justamente assim: a lista pedia
+    `exemplo-1.png` e o que existe em disco é `exemplo-1.webp`. O semeador
+    copiava zero capas e não dizia nada; as que apareciam na tela eram restos de
+    uma rodada antiga, e num banco de prova novo não haveria capa nenhuma.
+    Falta de arquivo aqui é erro, e erro se diz.
+    """
+    origem = Path(__file__).resolve().parent.parent / "web" / "publico" / capa.lstrip("/")
+    if not origem.exists():
+        raise SystemExit(f"capa de exemplo não encontrada: {origem}")
+
+    destino.mkdir(parents=True, exist_ok=True)
+    alvo = destino / "page_0.png"
+
+    try:
+        from PIL import Image, ImageDraw
+    except ImportError:
+        # Sem Pillow a capa vai crua — e aí duas ficam iguais de novo, o que é
+        # pior que nada só se ninguém souber. Fica dito.
+        print(f"  aviso: sem Pillow, a capa de {titulo!r} vai sem o nome escrito")
+        alvo.write_bytes(origem.read_bytes())
+        return
+
+    with Image.open(origem) as img:
+        arte = img.convert("RGB")
+        largura, altura = arte.size
+        faixa = max(48, altura // 8)
+        desenho = ImageDraw.Draw(arte)
+        # Uma faixa escura no pé e o nome em cima dela. Não é desenho de
+        # produto: é etiqueta de dado de prova, e tem de se parecer com isso.
+        desenho.rectangle([0, altura - faixa, largura, altura], fill=(21, 21, 21))
+        desenho.text((16, altura - faixa + faixa // 3), titulo[:38], fill=(249, 249, 249))
+        arte.save(alvo, "PNG")
+
+
 for i, (titulo, autor, paginas, capa, quantas_notas, fracao) in enumerate(LIVROS):
     campos = {
         "dono_id": pessoa,
@@ -125,32 +163,27 @@ for i, (titulo, autor, paginas, capa, quantas_notas, fracao) in enumerate(LIVROS
     }
     job = inserir("processing_jobs", campos)
 
-    # A CAPA VAI PARA `temp/{id}`, e não `temp/{token}`.
+    # A CAPA VAI PARA `temp/{id}` **E** PARA `temp/{token}`.
     #
     # A URL é `/storage/temp/{token}/page_0.png`, e o token engana: o endpoint
     # traduz o token em id e serve de `STORAGE_TEMP / str(job_id)`. O semeador
-    # gravava no caminho da URL, e a estante devolvia 404 em toda capa — o
+    # gravava só no caminho da URL, e a estante devolvia 404 em toda capa — o
     # arquivo existia, no lugar errado.
-    if capa:
-        origem = Path(__file__).resolve().parent.parent / "web" / "publico" / capa.lstrip("/")
-        if origem.exists():
-            destino = RAIZ / "storage" / "temp" / str(job)
-            destino.mkdir(parents=True, exist_ok=True)
-            (destino / "page_0.png").write_bytes(origem.read_bytes())
-
-    # A CAPA PRECISA EXISTIR EM DISCO. O backend monta a URL como
-    # `/storage/temp/{token}/page_0.png` — a primeira página renderizada —, e
-    # para um livro semeado essa página nunca foi gerada: a estante mostrava
-    # ícone de imagem quebrada em todos os seis.
-    if capa:
-        # CAMINHO ABSOLUTO, a partir deste arquivo: o semeador e chamado tanto
-        # da raiz quanto de dentro de outro script, e um caminho relativo copia
-        # a capa numa execucao e falha em silencio na outra.
-        origem = Path(__file__).resolve().parent.parent / "web" / "publico" / capa.lstrip("/")
-        if origem.exists():
-            destino = RAIZ / "storage" / "temp" / campos["token_publico"]
-            destino.mkdir(parents=True, exist_ok=True)
-            (destino / "page_0.png").write_bytes(origem.read_bytes())
+    #
+    # CADA LIVRO GANHA UMA CAPA DIFERENTE, e isto é conserto de 04/09.
+    #
+    # O Erik mandou uma captura: o cartão "Relatório de pesquisa" mostrando a
+    # capa de "Malha Urbana". O produto estava certo — cada cartão apontava para
+    # o próprio arquivo. Errado estava o DADO: havia quatro imagens de exemplo
+    # para seis livros, e `exemplo-1` servia a dois títulos, `exemplo-3` a
+    # outros dois. Dois livros ficavam impossíveis de distinguir na tela.
+    #
+    # Dado de medida que mente custa duas vezes: faz a interface parecer
+    # quebrada quando não está, e ESCONDE a troca de verdade no dia em que ela
+    # acontecer — se o produto cruzasse as capas destes dois, ninguém veria.
+    # Por isso o título é escrito na imagem: a capa passa a dizer de quem é.
+    escrever_capa(capa, titulo, RAIZ / "storage" / "temp" / str(job))
+    escrever_capa(capa, titulo, RAIZ / "storage" / "temp" / campos["token_publico"])
 
     # O EPUB, para este livro abrir de verdade na leitura.
     sys.path.insert(0, str(Path(__file__).resolve().parent))

@@ -76,6 +76,34 @@ function medir(rota, corpo, veneno = '') {
  * `veneno` refaz o defeito para o controle negativo. */
 
 const PROVAS = {
+  'r44': {
+    erik: 'o cartao "Relatorio de pesquisa" renderiza a capa de "Malha Urbana"',
+    /* O VENENO E O PROPRIO SINTOMA: dois cartoes passam a mostrar a mesma
+       imagem. Ele reproduz o que o Erik fotografou, e nao uma aproximacao. */
+    veneno: `const capas = document.querySelectorAll('.livro img.capa');
+             if (capas.length > 1) capas[1].setAttribute('src', capas[0].getAttribute('src'));`,
+    async correr(veneno) {
+      const d = medir('/estante', `
+        const cartoes = [...document.querySelectorAll('.livro')].map(l => ({
+          titulo: (l.querySelector('h3') || { textContent: '' }).textContent.trim(),
+          src: l.querySelector('img.capa') ? l.querySelector('img.capa').getAttribute('src') : null }));
+        const resumo = async (u) => {
+          const b = await fetch(u, { credentials: 'include' }).then(r => r.arrayBuffer());
+          const h = await crypto.subtle.digest('SHA-256', b);
+          return [...new Uint8Array(h)].slice(0, 8).map(x => x.toString(16).padStart(2, '0')).join('');
+        };
+        const vistos = {};
+        for (const c of cartoes) { if (!c.src) continue; c.resumo = await resumo(c.src); (vistos[c.resumo] ??= []).push(c.titulo); }
+        return { cartoes, repetidas: Object.entries(vistos).filter(([, t]) => t.length > 1).map(([r, t]) => ({ resumo: r, titulos: t })) };`, veneno);
+      const semCapa = d.cartoes.filter((c) => !c.src).map((c) => c.titulo);
+      if (semCapa.length) return `livro sem capa na estante: ${semCapa.join(', ')}`;
+      if (d.repetidas.length) {
+        const par = d.repetidas[0];
+        return `dois livros com a MESMA imagem de capa: ${par.titulos.join(' e ')}`;
+      }
+      return null;
+    },
+  },
   'r03': {
     erik: 'o marcador vaza da capa e invade o filtro',
     veneno: `document.querySelectorAll('.marcador').forEach(m => { m.style.zIndex = '5'; m.style.position = 'absolute'; });
