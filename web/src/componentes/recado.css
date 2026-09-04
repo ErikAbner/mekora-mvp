@@ -58,7 +58,12 @@
 .recado-erro {
   margin: 0;
   padding: 16px;
-  border-inline-start: 4px solid var(--destructive);
+    /* DOIS, e nao quatro. A barra de acento do desenho tem 2px: o no `966:31540`,
+     a faixa do veredito do Preparo, usa `border-l-2`. O codigo tinha 4px em
+     CINCO lugares — aqui, na leitura duas vezes, no recado e no campo com erro
+     —, e nenhum deles saiu de medida: saiu de repetir o vizinho.
+     Achado pelo `scripts/borda.mjs` em 04/09. */
+  border-inline-start: 2px solid var(--destructive);
   background: var(--muted);
   color: var(--foreground);
   font-size: 16px; line-height: 24px;

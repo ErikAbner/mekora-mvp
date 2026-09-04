@@ -54,6 +54,7 @@ node scripts/botoes.mjs || true
 # verdade e o mesmo que o `classes.mjs` percorreu: triar uma vez, guardar o
 # resto como divida com nome, e so entao cobrar.
 node scripts/inventario.mjs || true
+node scripts/borda.mjs || true
 node scripts/rejeitado.mjs || true
 node scripts/quadro.mjs || true
 # O SVG re-exportado do Figma volta com seis casas decimais e 51 KB por icone.

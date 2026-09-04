@@ -778,7 +778,12 @@
   text-decoration: underline;
 }
 /* Onde a pessoa está: o filete à esquerda do desenho. */
-.indice-lista li.aqui { border-inline-start: 4px solid var(--foreground); }
+.indice-lista li.aqui {   /* DOIS, e nao quatro. A barra de acento do desenho tem 2px: o no `966:31540`,
+     a faixa do veredito do Preparo, usa `border-l-2`. O codigo tinha 4px em
+     CINCO lugares — aqui, na leitura duas vezes, no recado e no campo com erro
+     —, e nenhum deles saiu de medida: saiu de repetir o vizinho.
+     Achado pelo `scripts/borda.mjs` em 04/09. */
+  border-inline-start: 2px solid var(--foreground); }
 
 @media (max-width: 767px) {
   .indice { inline-size: 100%; padding: 24px; border-inline-end: 0; }
@@ -893,7 +898,7 @@
 .cartao-nota blockquote {
   margin: 0;
   padding-inline-start: 24px;
-  border-inline-start: 4px solid var(--cor-da-nota, var(--border));
+  border-inline-start: 2px solid var(--cor-da-nota, var(--border));
   color: var(--card-foreground);
   font-size: 24px; line-height: 32px;                     /* Body/Large */
   text-wrap: pretty;

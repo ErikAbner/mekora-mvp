@@ -55,7 +55,12 @@
 /* O erro nao e so cor. A borda muda de ESPESSURA junto, para quem nao distingue
  * vermelho de cinza, e a mensagem diz o que fazer. */
 .com-erro input,
-.com-erro textarea { border-color: var(--destructive); border-inline-start-width: 4px; }
+.com-erro textarea { border-color: var(--destructive);   /* DOIS, e nao quatro. A barra de acento do desenho tem 2px: o no `966:31540`,
+     a faixa do veredito do Preparo, usa `border-l-2`. O codigo tinha 4px em
+     CINCO lugares — aqui, na leitura duas vezes, no recado e no campo com erro
+     —, e nenhum deles saiu de medida: saiu de repetir o vizinho.
+     Achado pelo `scripts/borda.mjs` em 04/09. */
+  border-inline-start-width: 2px; }
 .campo-erro {
   margin: 0;
   font-size: 16px; line-height: 24px;
