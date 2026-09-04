@@ -64,12 +64,18 @@ function medir(rota, corpo, veneno = '') {
     bruto = execFileSync('node', ['scripts/medir.mjs', url, '1440', '1000', alvo, `--sessao=${token}`],
       { cwd: RAIZ, encoding: 'utf8', timeout: 110000, stdio: ['ignore', 'pipe', 'pipe'] });
   } catch (e) {
-    throw new Error(`nao consegui medir ${url} — o servidor de desenvolvimento esta em pe? (${String(e.message).slice(0, 90)})`);
+    throw new NaoPodeMedir(`nao consegui medir ${url} — o servidor de desenvolvimento esta em pe? (${String(e.message).slice(0, 90)})`);
   }
   const i = bruto.indexOf('{');
   if (i < 0) throw new Error('a medida nao devolveu JSON: ' + bruto.trim().slice(-120));
   return JSON.parse(bruto.slice(i));
 }
+
+/* Nao poder medir e uma terceira resposta, ao lado de "passa" e "reprova".
+   Confundi-la com reprovacao inventa regressao; confundi-la com aprovacao e o
+   verde por omissao. Ela tem classe propria para poder ter codigo de saida
+   proprio (97), lido pelo `scripts/rejeitado.mjs`. */
+class NaoPodeMedir extends Error {}
 
 /* ── as provas ─────────────────────────────────────────────────────────────
  * Cada uma devolve `null` quando o defeito NAO esta la, ou a frase do defeito.
@@ -104,6 +110,43 @@ const PROVAS = {
       return null;
     },
   },
+  'r02': {
+    erik: 'o click so funciona na div inferior a da capa, usuarios tendem a clicar na capa',
+    /* O VENENO DESFAZ O CONSERTO, e nao imita o sintoma de longe: devolve
+       `pointer-events: auto` a capa, que e exatamente o estado em que ela
+       ficava por cima do alvo e comia o clique. */
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.capa { pointer-events: auto; }';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/estante', `
+        const ficha = () => {
+          const h = document.querySelector('.ficha-caixa header h2');
+          return h ? h.textContent.trim() : null;
+        };
+        const antes = ficha();
+        const cartoes = [...document.querySelectorAll('.livro')];
+        const alvo = cartoes.find(l => !l.classList.contains('escolhido')) || cartoes[0];
+        if (!alvo) return { vazio: true };
+        const capa = alvo.querySelector('.capa');
+        const r = capa.getBoundingClientRect();
+        const x = Math.round(r.left + r.width / 2), y = Math.round(r.top + r.height / 2);
+        /* ELEMENTFROMPOINT E O MESMO TESTE QUE O NAVEGADOR FAZ para decidir
+           quem recebe o clique. Medido nos dois sentidos com ponteiro de
+           verdade pelo CDP: limpa ele devolve o botao e a ficha troca;
+           envenenada devolve a imagem e a ficha nao troca. */
+        const no = document.elementFromPoint(x, y);
+        const recebe = no ? (no.tagName.toLowerCase() + (no.className ? '.' + String(no.className).trim().split(/\s+/).join('.') : '')) : null;
+        const dentroDoAlvo = !!(no && no.closest('.livro-alvo'));
+        if (no) no.click();
+        await new Promise(r2 => setTimeout(r2, 500));
+        return { antes, depois: ficha(), titulo: (alvo.querySelector('h3') || { textContent: '' }).textContent.trim(), recebe, dentroDoAlvo };`, veneno);
+      if (d.vazio) return 'a estante nao tem cartao para clicar — semeie antes';
+      if (!d.dentroDoAlvo) return `o centro da capa nao chega ao alvo do clique: quem recebe e ${d.recebe}`;
+      if (d.depois !== d.titulo) return `clicar no centro da capa nao trocou a ficha: ela continua em ${d.depois}`;
+      return null;
+    },
+  },
   'r03': {
     erik: 'o marcador vaza da capa e invade o filtro',
     veneno: `document.querySelectorAll('.marcador').forEach(m => { m.style.zIndex = '5'; m.style.position = 'absolute'; });
@@ -112,9 +155,22 @@ const PROVAS = {
       const d = medir('/estante', `
         const l = document.querySelector('.livro'), c = l.querySelector('.capa'), m = l.querySelector('.marcador');
         const rc = c.getBoundingClientRect(), rm = m.getBoundingClientRect();
-        const cruz = document.elementFromPoint(rm.x + rm.width / 2, Math.max(rm.top, rc.top) + 4);
         const filtros = document.querySelector('.recortes');
-        return { na_frente: cruz && cruz.className, z_marca: getComputedStyle(m).zIndex, z_capa: getComputedStyle(c).zIndex,
+        /* QUEM ESTA NA FRENTE E CONTA DE PINTURA, e nao de ponteiro.
+           Isto era um elementFromPoint no ponto onde os dois se cruzam, e a
+           resposta mudou quando a capa ganhou pointer-events: none para
+           devolver o clique ao .livro-alvo (R-02): sem receber ponteiro, ela
+           sumiu do teste de acerto e a prova acusou regressao numa sobreposicao
+           que nao mudou um pixel. Instrumento que mede a coisa errada acusa o
+           item errado.
+           A ordem de pintura entre irmaos posicionados no mesmo contexto de
+           empilhamento e o z-index, e a ordem do DOM desempata. */
+        const zi = (e) => { const v = getComputedStyle(e).zIndex; return v === 'auto' ? 0 : Number(v); };
+        const zc = zi(c), zm = zi(m);
+        const depoisNoDom = !!(m.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING);
+        const na_frente = zc > zm ? 'capa' : zc < zm ? 'marcador' : (depoisNoDom ? 'capa' : 'marcador');
+        return { na_frente, z_marca: String(zm), z_capa: String(zc),
+                 cruzam: rm.bottom > rc.top && rm.top < rc.bottom,
                  invade_filtros: filtros ? rm.top < filtros.getBoundingClientRect().bottom : false };`, veneno);
       if (d.invade_filtros) return `o marcador alcanca a barra de recortes`;
       if (!String(d.na_frente || '').includes('capa')) return `na sobreposicao quem esta na frente e "${d.na_frente}", e nao a capa (z marca ${d.z_marca}, z capa ${d.z_capa})`;
@@ -309,14 +365,25 @@ const args = process.argv.slice(2);
 if (args.includes('--provar')) {
   const so = args.find((a) => !a.startsWith('--'));
   const ids = so ? [so] : Object.keys(PROVAS);
-  let tudoBem = true;
+  let tudoBem = true, indeterminadas = 0;
   for (const id of ids) {
     let limpa, suja;
-    try { limpa = await rodar(id, false); } catch (e) { limpa = 'ERRO: ' + e.message; }
-    try { suja = await rodar(id, true); } catch (e) { suja = 'ERRO: ' + e.message; }
+    /* TERCEIRO SITIO DA MESMA CONFUSAO. Com o servidor fora, o `NaoPodeMedir`
+       virava a string 'ERRO: …' e o arquivo anunciava CONTROLE NEGATIVO FALHOU
+       — "o controle esta quebrado" quando a verdade e "nao deu para medir".
+       Nao saber nao e reprovar, aqui pela mesma razao que no `rejeitado.mjs`. */
+    let mudo = false;
+    try { limpa = await rodar(id, false); } catch (e) { if (e instanceof NaoPodeMedir) mudo = true; else limpa = 'ERRO: ' + e.message; }
+    if (!mudo) { try { suja = await rodar(id, true); } catch (e) { if (e instanceof NaoPodeMedir) mudo = true; else suja = 'ERRO: ' + e.message; } }
+    if (mudo) { indeterminadas++; console.log(`  ?      ${id}  indeterminada — nao deu para medir`); continue; }
     const ok = limpa === null && typeof suja === 'string' && !suja.startsWith('ERRO');
     tudoBem &&= ok;
     console.log(`  ${ok ? 'serve  ' : 'FALHOU '} ${id}  limpa: ${limpa === null ? 'passa' : limpa} · envenenada: ${suja || 'PASSOU, e nao devia'}`);
+  }
+  if (indeterminadas) {
+    console.log(`\n${indeterminadas} de ${ids.length} indeterminadas — o servidor de desenvolvimento esta fora.`);
+    console.log('Nao e falha do controle: e ausencia de resposta. Suba `cd web && npm run dev` e rode de novo.');
+    process.exit(97);
   }
   console.log(tudoBem
     ? '\nCONTROLE NEGATIVO: toda prova passa limpa e reprova envenenada. Serve.'
@@ -330,6 +397,19 @@ if (!args.length) {
 }
 
 const id = args[0].toLowerCase();
-const defeito = await rodar(id, false);
+let defeito;
+try {
+  defeito = await rodar(id, false);
+} catch (e) {
+  /* SAIR 97 QUANDO NAO DEU PARA MEDIR — e nao 1.
+     Codigo 1 quer dizer "o defeito esta la". Servidor fora tambem saia 1, e o
+     `rejeitado.mjs` lia isso como REGREDIU: o portao anunciava regressao em
+     dez itens porque ninguem tinha subido o `npm run dev`. Portao que grita
+     regressao falsa e portao que se aprende a ignorar, e ai ele nao serve nem
+     quando a regressao for de verdade.
+     Nao poder medir NAO e passar: e nao saber. 97 diz isso. */
+  if (e instanceof NaoPodeMedir) { console.error(`${id}: ${e.message}`); process.exit(97); }
+  throw e;
+}
 if (defeito) { console.error(`${id}: ${defeito}`); process.exit(1); }
 console.log(`${id}: o defeito nao se reproduz.`);
