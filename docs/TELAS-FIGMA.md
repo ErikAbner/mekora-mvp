@@ -962,3 +962,43 @@ data em 10px numa capa de 420. O produto mostra a capa em 252 no computador e
 159 no telefone, onde os 10 viram 6 e 3,7 — o degrau mais baixo da escala é 14.
 Os três saíram do desenhado; o CSS deles fica escrito para quando houver um
 lugar que mostre a capa em 420.
+
+## `966:29395` — M · Leitura, conferida por DADO DE NÓ · 04/09
+
+**Bate:** a prosa. `.bloco.paragrafo` em 20/30 com recuo de 32 — exatamente
+`corpo/body-medium-prosa`, `entre/body-medium-prosa` e `indent-[32px]` do nó
+`966:29675`. E a cor, `#6a6a6a`.
+
+**Corrigido:** a entrelinha do título de abertura. Estava em 64 com corpo 56; o
+nó `966:29657` põe `leading-[72px]` no mesmo corpo 56 — a mesma entrelinha do
+computador. O comentário da folha dizia que 56 vinha "como o desenho mobile
+pede", e vinha; a entrelinha desceu junto por conta própria. É o mesmo
+encolhimento automático que a Estante tinha: a folha reduz o que o desenho
+mantém.
+
+### O cromo diverge por CONTAGEM, e não por recheio
+
+Medido a 390: caixa com recheio 6, botões com 10. O nó põe **12 na caixa e 16
+no botão** — os mesmos do computador, sem encolher.
+
+Mas o comentário da folha explica por que alguém encolheu:
+
+> *"O desenho mostra os seis numa fileira só, em botões menores."*
+
+Lido por captura. Por dado de nó, o desenho tem **cinco** itens, não seis nem
+sete: `919:18713` traz três à esquerda — menu, notas, marcadores — e
+`919:18714` traz dois à direita.
+
+O produto tem **sete**: Menu, Índice, Notas, Marcadores, Aparência à esquerda;
+Buscar e Conta à direita. Com sete, o recheio do desenho não cabe a 390 — a
+conta dá 480px numa tela de 390. Então encolheram o botão em vez de perguntar
+pela contagem.
+
+**Não corrigi**: tirar Índice, Aparência ou Conta do cromo é decisão de produto,
+e é a forma precisa do item 24 do Erik ("menu errado"). Com cinco itens, o
+recheio do desenho cabe e o encolhimento some sozinho.
+
+**Aberto também:** o `letter-spacing` do título. A folha usa `-2.5%` por
+decisão escrita ("tracking relativo, nunca absoluto"); o nó põe `-1.6px`, que
+em 56px dá `-2.86%`. Diferença de 0,2px por letra — registrada, não mexida,
+porque a regra do relativo é decisão anterior e vale discutir antes de trocar.

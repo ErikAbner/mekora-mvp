@@ -770,8 +770,14 @@
   .abertura { padding: 40px 24px; gap: 24px; }
   /* 56, como o desenho mobile pede — e o degrau agora existe na escala (A-12).
      Ele ia 48 → 64, e o que faltava era justamente o do meio: a cauda anda de 8
-     em 8, e acrescentá-lo tornou a sequência regular em vez de abrir exceção. */
-  .abertura h1 { font-size: 56px; line-height: 64px; }
+     em 8, e acrescentá-lo tornou a sequência regular em vez de abrir exceção.
+
+     A ENTRELINHA NÃO ENCOLHE JUNTO. Estava em 64, e o nó `966:29657` põe
+     `leading-[72px]` no título de 56 — a mesma entrelinha do computador. Ler
+     "o corpo caiu, logo a entrelinha cai" é o encolhimento automático que já
+     tinha errado na Estante, onde a folha reduziu o que o desenho mantinha.
+     Conferido por dado de nó em 04/09. */
+  .abertura h1 { font-size: 56px; line-height: 72px; }
 }
 
 /* ---- Nota · cartão — nó 941:23113 -----------------------------------------

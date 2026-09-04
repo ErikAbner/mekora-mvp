@@ -121,14 +121,13 @@
     "966:29395": {
       "tela": "M · Leitura",
       "rota": "/leitura/:id",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-04",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/leitura.jsx",
-        "web/src/jornadas/leitura.css",
-        "web/src/jornadas/Leitura.jsx"
+        "web/src/jornadas/Leitura.jsx",
+        "web/src/jornadas/leitura.css"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "prosa bate (20/30, recuo 32). Titulo corrigido (entrelinha 64→72). Cromo diverge por CONTAGEM de itens, nao por recheio — registrado em TELAS-FIGMA.md, decisao do Erik."
     },
     "966:29743": {
       "tela": "M · Estudo — página",
