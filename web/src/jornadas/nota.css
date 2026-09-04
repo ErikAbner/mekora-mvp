@@ -181,3 +181,35 @@
   color: var(--muted-foreground);
   font-size: 14px; line-height: 22px;
 }
+
+/* Dispensar é a terceira ação da candidata, e a mais fraca das três: texto sem
+ * sublinhado, tinta secundária. Confirmar é botão, "ir" é link, e dispensar não
+ * empata com nenhum dos dois. */
+.candidata-dispensar {
+  padding: 0;
+  border: 0; background: none;
+  color: var(--muted-foreground);
+  font: inherit; font-size: 16px; line-height: 24px;
+  cursor: pointer;
+}
+.candidata-dispensar:hover { color: var(--foreground); text-decoration: underline; }
+.candidata-dispensar:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+
+/* O aviso do desfazer. Ele diz O QUE saiu — o trecho —, e não "pronto": um aviso
+ * que não nomeia o que aconteceu obriga a pessoa a lembrar em que clicou. */
+.nota-dispensada {
+  margin: 0 0 20px;
+  padding-inline-start: 12px;
+  border-inline-start: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-size: 14px; line-height: 22px;
+  text-wrap: pretty;
+}
+.nota-dispensada button {
+  padding: 0;
+  border: 0; background: none;
+  color: var(--foreground);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}

@@ -126,6 +126,20 @@ class Nota(Base):
     # existe, e nada quando a nota é uma nota comum.
     estado = Column(String)
 
+    # QUANDO A PESSOA MARCOU "revisar depois". Nula é o normal.
+    #
+    # A DATA, e não um `true`, porque o que TIRA a marca é derivado dela: a nota
+    # sai da lista quando é editada DEPOIS da marca — `atualizada_em` maior que
+    # `revisar_desde`. Marcar é explícito, porque é INTENÇÃO e intenção não se
+    # deduz; limpar é FATO, e por isso o estado nunca envelhece.
+    #
+    # É o "estado derivado, corrigível à mão" do `CLAUDE.md`, e o inverso do
+    # campo de status que ele proíbe: aqui ninguém precisa lembrar de tirar.
+    # Desmarcar à mão continua possível, e é a correção quando a saída derivada
+    # aconteceu por engano — corrigir uma vírgula limpa a marca, e o conserto é
+    # marcar de novo.
+    revisar_desde = Column(DateTime)
+
     # QUANDO A ORIGEM SAIU DA ESTANTE. Nula é o normal.
     #
     # `SET NULL` sozinho deixaria uma nota sem livro e sem explicação —

@@ -108,3 +108,26 @@
 
 /* As ações do topo das Notas: agrupar, e trazer do Kindle. */
 .notas-acoes { display: flex; gap: 16px; flex-wrap: wrap; }
+
+/* A TIRA DE RECORTES NO TELEFONE — uma linha que rola, e não sete empilhados.
+ *
+ * Os recortes passaram de cinco a sete em 03/09, com "Sem ligação" e "Para
+ * revisar". Medido a 390: a caixa com `flex-wrap` ficou com 320px de altura —
+ * 38% da tela ocupados por filtro antes da primeira nota aparecer. A tela existe
+ * para ler notas.
+ *
+ * Rolar na horizontal mantém os sete alcançáveis em uma linha. O recheio à
+ * direita e o `scroll-snap` são o que diz que há mais: uma tira que corta o
+ * último chip no meio anuncia a continuação; uma que termina certinho na borda
+ * finge que acabou.
+ */
+@media (max-width: 767px) {
+  .notas-recortes {
+    align-self: stretch;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+  }
+  .notas-recortes button { flex: none; scroll-snap-align: start; }
+}

@@ -183,5 +183,61 @@
     };
   });
 
+  /* ── A FRENTE DE NOTAS ─────────────────────────────────────────────────── */
+
+  await passo('dispensar tira a sugestao, e o desfazer devolve', async () => {
+    const antes = candidatas().length;
+    if (!antes) return { ok: false, medida: 'sem candidata para dispensar' };
+    const li = candidatas()[0];
+    const alvo_ = Number(li.querySelector('.candidata-ir').getAttribute('href').split('/').pop());
+    li.querySelector('.candidata-dispensar').click();
+    await esperar(1500);
+    const sumiu = !candidatas().some(x => Number(x.querySelector('.candidata-ir')?.getAttribute('href').split('/').pop()) === alvo_);
+    /* O AVISO TEM DE NOMEAR o que saiu: "pronto" obriga a pessoa a lembrar em
+       que clicou. */
+    const aviso = document.querySelector('.nota-dispensada')?.textContent || '';
+    const desfazer = document.querySelector('.nota-dispensada button');
+    if (!desfazer) return { ok: false, medida: `sem desfazer; aviso: "${aviso.slice(0, 40)}"` };
+    desfazer.click();
+    await esperar(1500);
+    const voltou = candidatas().some(x => Number(x.querySelector('.candidata-ir')?.getAttribute('href').split('/').pop()) === alvo_);
+    return {
+      ok: sumiu && voltou && /Dispensada:/.test(aviso),
+      medida: `${antes} candidatas; sumiu: ${sumiu}; aviso: "${aviso.trim().slice(0, 44)}"; voltou: ${voltou}`,
+    };
+  });
+
+  await passo('"Revisar depois" marca, e editar a nota TIRA a marca', async () => {
+    const acao = () => [...document.querySelectorAll('.npag-acoes button')]
+      .find(b => /Revisar depois|Não revisar depois/i.test(b.textContent || ''));
+    if (!acao()) return { ok: false, medida: 'sem a acao de revisar' };
+    acao().click();
+    await esperar(1500);
+    const marcada = await doServidor();
+    const rotuloDepois = acao()?.textContent?.trim();
+
+    /* A SAIDA E DERIVADA: editar a nota depois da marca a tira da lista. */
+    const escrever = [...document.querySelectorAll('.npag-acoes button')]
+      .find(b => /Escrever ao lado|Editar o que escrevi/i.test(b.textContent || ''));
+    escrever.click();
+    await esperar(700);
+    const campo = document.querySelector('.nota-escrever textarea');
+    const setar = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+    setar.call(campo, 'mexi nela depois de marcar');
+    campo.dispatchEvent(new Event('input', { bubbles: true }));
+    const salvar = [...document.querySelectorAll('.nota-escrever button')]
+      .find(b => /Guardar|Salvar/i.test(b.textContent || ''));
+    salvar.click();
+    await esperar(1800);
+    const depois = await doServidor();
+
+    const marcou = Boolean(marcada.revisar_desde) && rotuloDepois === 'Não revisar depois';
+    const saiu = depois.atualizada_em > depois.revisar_desde;
+    return {
+      ok: marcou && saiu,
+      medida: `marcou: ${marcou} (${rotuloDepois}); editar derrubou: ${saiu}`,
+    };
+  });
+
   return { passos, verdes: passos.filter(p => p.ok).length, de: passos.length };
 })()

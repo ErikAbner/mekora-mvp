@@ -131,7 +131,7 @@ de ponto de partida vira especificação por citação.
 | Não existe segundo sistema de notas dentro do livro `DEC-0024 §6` | **vigente** — a ficha lê `lerNotas` do mesmo acervo |
 | Destaque e nota são o mesmo registro *(forma vigente)* | **vigente** — uma tabela, `comentario` vazio distingue |
 | Relação: uma só, duas maneiras de fazer `DEC-0030 §2` | **vigente** — `ligacoes` serve Canvas e Conexões |
-| Relação **dispensada** *(forma vigente)* | **NORMA NÃO CONSTRUÍDA** no nível da nota — é o B8-f. Existe para grupos, nos Estudos (`grupos_ignorados`) |
+| Relação **dispensada** *(forma vigente)* | **vigente desde 03/09** — `sugestoes_dispensadas`, com o par normalizado e desfazer imediato |
 | **Tag** — palavra colada na nota | **NORMA NÃO CONSTRUÍDA** — sem modelo, tabela, rota ou tela. É o B8-e |
 | **Território** — assunto que apareceu sozinho | **NORMA NÃO CONSTRUÍDA** — não há entidade nem tela; o que existe é a varredura de `/notas/agrupadas` |
 | **Coleção** — agrupa itens na Estante | **NORMA NÃO CONSTRUÍDA** — a Estante tem recortes (Tudo/Com nota/No Kindle/Quadrinhos), que são filtros derivados, não coleções |
@@ -149,7 +149,7 @@ de ponto de partida vira especificação por citação.
 | afirmação | marca |
 |---|---|
 | Cinco lugares: Mesa · Estante · Notas · Canvas · Conexões `DEC-0024 §1` | **norma incompleta, e não descrição errada** — o próprio `PRODUTO.md` diz que "cinco lugares" é arquitetura de informação e **não** cinco botões, então a navegação ter quatro não contradiz nada. O que contradiz é outra coisa: **`Estudos` é um lugar do produto — rota, tela, ícone na barra — e não aparece entre os cinco, nem no `PRODUTO.md` nem no `SISTEMA.md`.** Ele foi construído e a norma não o nomeia. Ou ele é um dos cinco com outro nome, ou a lista precisa de emenda. **Pergunta para o Erik** |
-| Em todos os aparelhos: … Marcadores · Para revisar `DEC-0023 §4` | **norma não construída** — "Para revisar" não existe. Ver acima |
+| Em todos os aparelhos: … Marcadores · Para revisar `DEC-0023 §4` | **vigente desde 03/09** — "Para revisar" é recorte de `/notas`, e a §4 pede **capacidade** disponível a 390, não lugar: ela abre com *"estas CAPACIDADES existem no telefone"* e a lista mistura lugares (Mesa) com capacidades (Busca, Marcadores) |
 | A 390px, uma indisponível é falha de V1 `DEC-0023 §4` | **vigente** para as construídas — medido: 390 de 390 em dez rotas |
 | Canvas desktop-only no V1 `DEC-0023 §5` | **vigente** |
 | Conexões no telefone como Relacionadas · Trilhas · Assuntos `DEC-0023 §6` | **descreve errado** — cita o §6 sem a ressalva que a própria `DEC-0023` escreve na lista de pendências: *"é ponto de partida para desenho, não especificação fechada"*. A citação transformou um esboço em espec |

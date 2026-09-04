@@ -15,20 +15,53 @@ import "./notas.css";
  *
  * OS RECORTES SÃO OS QUE TÊM DADO POR TRÁS.
  * O protótipo desenha seis: Todas, De livros, Soltas, Para revisar, Ideias e
- * Por pergunta. Três deles — "Para revisar", "Ideias" e a distinção que separa
- * ideia de nota — dependem de um marcador que não existe no modelo, e um
- * recorte que não filtra é um botão que responde ao clique com nada. Eles ficam
- * de fora até haver o que marcar; os que ficam, filtram de verdade.
+ * Por pergunta. Três deles dependiam de um marcador que não existia no modelo, e
+ * um recorte que não filtra é um botão que responde ao clique com nada.
+ *
+ * "PARA REVISAR" ENTROU EM 03/09, com a marca que faltava — e ela é derivada:
+ * a nota sai da lista quando é editada depois de marcada. Ver `revisar_desde`.
+ * "Ideias" continua fora: separar ideia de nota ainda não tem o que marcar.
+ *
+ * DOIS EIXOS, E ELES NÃO SE MISTURAM
+ * ==================================
+ * ORIGEM   Do livro · Do Kindle · Escritas aqui — exclusivos entre si, porque
+ *          uma nota vem de um lugar só.
+ * ESTADO   Sem ligação · Para revisar — outro eixo. Uma nota pode ser "Do livro"
+ *          E "Sem ligação" ao mesmo tempo.
+ *
+ * A SELEÇÃO É ÚNICA, um recorte por vez, e isso não é limitação: é o precedente
+ * da Estante, e evita a pergunta que dois eixos combináveis criam — "clicar nos
+ * dois soma ou troca?". Quem quiser o cruzamento tem a busca.
+ *
+ * "SOLTAS" VIROU "ESCRITAS AQUI". "Solta" nomeia a nota pelo que ela NÃO tem, e
+ * uma nota escrita no Canvas não é deficiente: é um pensamento que não veio de
+ * livro. Os dois nomes de origem passaram a ser positivos e paralelos, e
+ * "escrita aqui" é palavra que o produto já falava, no rodapé do cartão.
  */
+
+/* A NOTA ESTÁ PARA REVISAR quando foi marcada e NÃO foi editada depois.
+ *
+ * O critério mora aqui e no servidor pela mesma conta — as duas datas —, e não
+ * num campo `para_revisar` que alguém teria de manter. Corrigir uma vírgula
+ * limpa a marca, e isso é aceito: a alternativa é o campo que envelhece, e
+ * marcar de novo é a correção. */
+export const paraRevisar = (n) =>
+  Boolean(n.revisar_desde) && !(n.atualizada_em > n.revisar_desde);
+
 const RECORTES = [
   { id: "todas", rotulo: "Todas", cabe: () => true },
-  { id: "livros", rotulo: "De livros", cabe: (n) => n.fonte === "leitura" || !!n.job_id },
+  { id: "livros", rotulo: "Do livro", cabe: (n) => n.fonte === "leitura" || !!n.job_id },
   { id: "kindle", rotulo: "Do Kindle", cabe: (n) => n.fonte === "kindle" },
-  { id: "soltas", rotulo: "Soltas", cabe: (n) => n.fonte === "solta" },
+  { id: "escritas-aqui", rotulo: "Escritas aqui", cabe: (n) => n.fonte === "solta" },
+  { id: "sem-ligacao", rotulo: "Sem ligação", cabe: (n) => !n.ligadas },
+  { id: "revisar", rotulo: "Para revisar", cabe: paraRevisar },
   { id: "escritas", rotulo: "Com comentário", cabe: (n) => !!n.comentario },
 ];
 
 function ondeVeio(n) {
+  /* A ORIGEM REMOVIDA VEM PRIMEIRO: "de lugar nenhum" e "de um lugar que não
+     existe mais" são coisas diferentes, e a `DEC-0021 §15` manda dizer qual. */
+  if (n.origem_removida_em) return `${n.origem || "um livro"} · removido da estante`;
   if (n.fonte === "solta") return "escrita no Canvas";
   if (n.fonte === "kindle") return n.origem ? `Kindle · ${n.origem}` : "do Kindle";
   return n.origem || "de um livro seu";

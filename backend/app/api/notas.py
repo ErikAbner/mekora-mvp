@@ -144,6 +144,11 @@ def _fora(n: Nota) -> dict:
         # vez de "escrita no Canvas, sem livro" — são coisas diferentes, e sem
         # este campo elas ficam idênticas.
         "origem_removida_em": n.origem_removida_em,
+        # A MARCA, e o que a derruba. A tela não recebe "está para revisar": ela
+        # recebe as duas datas e compara, porque o critério é do produto e
+        # esconder o critério é esconder de que a saída é derivada.
+        "revisar_desde": n.revisar_desde,
+        "atualizada_em": n.atualizada_em,
         # O estado da nota — hoje `"rascunho"` ou nulo. A tela precisa dele para
         # o recorte do nó 895:7631 e para explicar por que a nota não entra num
         # estudo.
@@ -175,7 +180,23 @@ def todas(
         .order_by(Nota.criada_em.desc())
         .all()
     )
-    return [_fora(n) for n in notas]
+
+    # QUANTAS LIGAÇÕES CADA UMA TEM — para o recorte "Sem ligação".
+    #
+    # Contado aqui, numa consulta só, e não com um pedido por nota: a tela lista
+    # o acervo inteiro, e N+1 pedidos numa lista de trezentas é o jeito de fazer
+    # a página demorar por uma pergunta que o servidor responde de uma vez.
+    from app.models.canvas import Ligacao
+
+    quantas = {}
+    for a, b in db.query(Ligacao.de_id, Ligacao.para_id).filter(
+        Ligacao.pessoa_id == pessoa.id,
+        Ligacao.de_tipo == "nota", Ligacao.para_tipo == "nota",
+    ):
+        quantas[a] = quantas.get(a, 0) + 1
+        quantas[b] = quantas.get(b, 0) + 1
+
+    return [{**_fora(n), "ligadas": quantas.get(n.id, 0)} for n in notas]
 
 
 @router.get("/notas/agrupadas")
@@ -521,6 +542,160 @@ class GrupoParaCalar(BaseModel):
     notas: list[int]
 
 
+class NotaMudada(BaseModel):
+    """O que se muda numa nota, sem falar de trabalho nenhum."""
+
+    comentario: Optional[str] = None
+    cor: Optional[str] = None
+    estado: Optional[str] = None
+    # `true` marca com a data de agora; `false` desmarca. `None` não mexe.
+    revisar: Optional[bool] = None
+
+    @field_validator("cor")
+    @classmethod
+    def cor_do_sistema(cls, v):
+        if v is not None and v not in CORES:
+            raise ValueError(f"cor fora do sistema: {v}. Use uma de {', '.join(CORES)}.")
+        return v
+
+
+def _minha_nota(db: Session, pessoa, nota_id: int) -> Nota:
+    n = db.query(Nota).filter(Nota.id == nota_id, Nota.pessoa_id == pessoa.id).first()
+    if n is None:
+        raise HTTPException(status_code=404, detail="Nota não encontrada.")
+    return n
+
+
+@router.patch("/notas/{nota_id}")
+def mudar_nota(
+    nota_id: int,
+    troca: NotaMudada,
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Muda uma nota — QUALQUER nota, inclusive a que não tem livro.
+
+    POR QUE ESTA ROTA EXISTE, e é conserto e não conveniência: as outras duas
+    ficam em `/jobs/{job_id}/notas/{nota_id}`, e a nota escrita no Canvas e a
+    trazida do Kindle têm `job_id` NULO. A tela chamava com `job_id ?? 0`, o
+    filtro `Nota.job_id == 0` não casava com NULL, e o servidor respondia 404.
+
+    Medido em 03/09: `PATCH /jobs/0/notas/47807` → 404, `DELETE` idem. **Editar
+    ou apagar uma nota do Canvas pela página dela era impossível**, e ninguém
+    tinha percebido porque a página funciona para as notas de leitura, que são a
+    maioria.
+
+    A identidade da nota é o `id` dela; o trabalho nunca foi necessário para
+    achá-la, só para escopar. Aqui o escopo é o dono, que é o que importa.
+    """
+    pessoa = _quem(db, mekora_sessao)
+    n = _minha_nota(db, pessoa, nota_id)
+
+    if troca.comentario is not None:
+        n.comentario = troca.comentario
+    if troca.cor is not None:
+        n.cor = troca.cor
+    if troca.estado is not None:
+        n.estado = troca.estado or None
+    if troca.revisar is not None:
+        if troca.revisar:
+            # O MESMO INSTANTE NOS DOIS CAMPOS, e escrito à mão nos dois.
+            #
+            # `atualizada_em` tem `onupdate`, então qualquer escrita a move — e a
+            # marca nasceria um milésimo ATRÁS dela, isto é, já vencida pelo
+            # critério que a derruba. Medido: `revisar_desde` 11.998875 contra
+            # `atualizada_em` 11.999906.
+            #
+            # Escrever `atualizada_em` explicitamente vence o `onupdate`, e os
+            # dois saem iguais: a marca vale até a PRÓXIMA edição, que é o que
+            # ela quer dizer.
+            quando = agora()
+            n.revisar_desde = quando
+            n.atualizada_em = quando
+        else:
+            n.revisar_desde = None
+
+    db.commit()
+    db.refresh(n)
+    return _fora(n)
+
+
+@router.delete("/notas/{nota_id}", status_code=204)
+def apagar_nota(
+    nota_id: int,
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> None:
+    """Apaga uma nota, com ou sem livro. Mesma razão da rota acima."""
+    pessoa = _quem(db, mekora_sessao)
+    db.delete(_minha_nota(db, pessoa, nota_id))
+    db.commit()
+    return None
+
+
+@router.post("/notas/{nota_id}/dispensar/{outra_id}", status_code=204)
+def dispensar(
+    nota_id: int,
+    outra_id: int,
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> None:
+    """A pessoa recusou esta sugestão, e ela não volta.
+
+    O `SISTEMA.md` já declarava isto como forma vigente — *"uma sugestão que
+    volta na próxima visita deixa de ser sugestão e vira insistência"* —, e
+    existia só para grupos, nos Estudos. No nível da nota as candidatas voltavam
+    para sempre, e a única saída era ligar: o oposto do que a pessoa quis dizer.
+
+    O PAR É NORMALIZADO. Sem isso, dispensar A→B e depois receber B→A traria de
+    volta exatamente o que foi recusado.
+
+    Idempotente: dispensar de novo o mesmo par não é erro, é a mesma dispensa.
+    """
+    from app.models.dispensa import SugestaoDispensada, par
+
+    pessoa = _quem(db, mekora_sessao)
+    _minha_nota(db, pessoa, nota_id)
+    _minha_nota(db, pessoa, outra_id)
+
+    a, b = par(nota_id, outra_id)
+    ja = db.query(SugestaoDispensada).filter(
+        SugestaoDispensada.pessoa_id == pessoa.id,
+        SugestaoDispensada.a_id == a, SugestaoDispensada.b_id == b,
+    ).first()
+    if ja is None:
+        db.add(SugestaoDispensada(pessoa_id=pessoa.id, a_id=a, b_id=b))
+        db.commit()
+    return None
+
+
+@router.delete("/notas/{nota_id}/dispensar/{outra_id}", status_code=204)
+def desfazer_dispensa(
+    nota_id: int,
+    outra_id: int,
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> None:
+    """Devolve a sugestão dispensada.
+
+    Sem isto, dispensar seria silencioso E permanente: um clique errado mataria a
+    sugestão para sempre e a pessoa nunca saberia. A tela oferece o desfazer no
+    mesmo instante, no aviso — o padrão que o Canvas já usa.
+    """
+    from app.models.dispensa import SugestaoDispensada, par
+
+    pessoa = _quem(db, mekora_sessao)
+    a, b = par(nota_id, outra_id)
+    linha = db.query(SugestaoDispensada).filter(
+        SugestaoDispensada.pessoa_id == pessoa.id,
+        SugestaoDispensada.a_id == a, SugestaoDispensada.b_id == b,
+    ).first()
+    if linha is not None:
+        db.delete(linha)
+        db.commit()
+    return None
+
+
 @router.post("/notas/agrupadas/ignorar", status_code=204)
 def ignorar_grupo(
     qual: GrupoParaCalar,
@@ -611,6 +786,18 @@ def sugestoes(
         Ligacao.de_tipo == "nota",
         Ligacao.para_tipo == "nota",
         (Ligacao.de_id == nota_id) | (Ligacao.para_id == nota_id),
+    ):
+        ligadas.add(a)
+        ligadas.add(b)
+
+    # E AS DISPENSADAS SAEM JUNTO. Sugerir de novo o que a pessoa recusou é a
+    # insistência que o `SISTEMA.md` proíbe com todas as letras: "uma sugestão
+    # que volta na próxima visita deixa de ser sugestão e vira insistência".
+    from app.models.dispensa import SugestaoDispensada
+
+    for a, b in db.query(SugestaoDispensada.a_id, SugestaoDispensada.b_id).filter(
+        SugestaoDispensada.pessoa_id == pessoa.id,
+        (SugestaoDispensada.a_id == nota_id) | (SugestaoDispensada.b_id == nota_id),
     ):
         ligadas.add(a)
         ligadas.add(b)

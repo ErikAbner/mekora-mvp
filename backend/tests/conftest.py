@@ -76,6 +76,7 @@ def test_engine(tmp_path):
     from app.models.preferencia import Preferencia  # noqa: F401 — registra as preferências
     from app.models.progresso import Progresso  # noqa: F401 — registra onde a pessoa parou
     from app.models.marcador import Marcador  # noqa: F401 — registra os marcadores
+    from app.models.dispensa import SugestaoDispensada  # noqa: F401 — registra as dispensas
     from app.models.processing_job import ProcessingJob  # noqa: F401 — registra modelo
     from app.models.stage_metric import StageMetric  # noqa: F401 — registra modelo Fase L
     from app.models.grupo_ignorado import GrupoIgnorado  # noqa: F401 — registra os grupos calados

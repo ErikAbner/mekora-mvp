@@ -383,7 +383,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
           soltas, cada bloco com sua própria rolagem.
 
           Os itens são MONTADOS DO QUE EXISTE, e não fixos: uma conta sem fio
-          nenhum não deve ter "Você ligou" na coluna, apontando para uma seção
+          nenhum não deve ter "Parecem do mesmo assunto" na coluna, apontando para uma seção
           que não está lá. */}
       <div className="estudos-com-trilha">
       <section className="estudos">
@@ -611,7 +611,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
             adicionar nav como uma rádio de música antiga em todo lugar, sendo
             que existem lugares que ela é válida e outros que você SIMPLESMENTE
             forçou". O `895:8849` a põe numa fileira só — a de baixo, ao lado de
-            "Você ligou" —, e não como coluna da página inteira. Em cima ela não
+            "Parecem do mesmo assunto" —, e não como coluna da página inteira. Em cima ela não
             tem o que indexar: título, busca, recortes e quadro se veem de uma
             olhada.
             
@@ -622,7 +622,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
         <TrilhaDaPagina
           rotulo="Nesta parte"
           itens={[
-            ...(ligou?.grupos?.length ? [{ id: "estudos-ligou", rotulo: "Você ligou" }] : []),
+            ...(ligou?.grupos?.length ? [{ id: "estudos-ligou", rotulo: "Parecem do mesmo assunto" }] : []),
             ...(soltas.length ? [{ id: "estudos-soltas", rotulo: "Fora de estudo" }] : []),
             /* OS RÓTULOS SE DESEMPATAM SOZINHOS. Medido antes: a trilha saía
                com "O que separa…" quatro vezes — notas parecidas cortadas no
@@ -637,13 +637,27 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
 
         <div className="estudos-de-baixo">
 
-        {/* A SEÇÃO SÓ EXISTE QUANDO HÁ GRUPO. Uma seção "Você ligou" vazia
+        {/* O NOME DIZ QUEM AGRUPOU, e até 03/09 ele dizia o contrário.
+            
+            A seção se chamava "Você ligou" e vem de `/notas/agrupadas`, que é
+            VARREDURA: quem agrupou foi o sistema, e o corpo dela já admitia isso
+            três linhas abaixo do título — "Nada foi organizado por você". Título
+            e corpo se contradiziam, e o título atribuía à pessoa um ato que não
+            foi dela.
+            
+            "Parecem do mesmo assunto" casa com o tom das faixas de Conexões —
+            "Parecem próximas", "Talvez" —, e a divisão de trabalho é a que o
+            `CLAUDE.md` pede: o TÍTULO carrega a postura (é palpite, pode ser
+            discordado) e o CORPO carrega o critério (N notas, M livros, P
+            palavras). "Palavras em comum" nomearia o critério e perderia a
+            ressalva. */}
+        {/* A SEÇÃO SÓ EXISTE QUANDO HÁ GRUPO. Uma seção vazia
             afirma que o acervo não tem fio nenhum — e o que ela quer dizer é
             que ainda não há notas suficientes para atravessar livros. Calar é
             mais honesto que anunciar ausência. */}
         {ligou?.grupos?.length > 0 && (
           <section className="estudos-ligou" id="estudos-ligou">
-            <h2>Você ligou</h2>
+            <h2>Parecem do mesmo assunto</h2>
             <p className="estudos-ligou-criterio">
               Grupos de <span className="dado">{ligou.criterios.notas}</span> notas
               ou mais que dividem pelo menos{" "}

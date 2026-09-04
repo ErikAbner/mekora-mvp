@@ -5,9 +5,11 @@ import { Botao } from "../componentes/Botao.jsx";
 import { Folha } from "../componentes/Folha.jsx";
 import { DESTAQUES } from "./Leitura.jsx";
 import {
-  apagarNota, criarEstudo, desligarNotas, editarNota, lerEstudos, lerNota,
-  lerSugestoes, lerTodasAsNotas, ligarNotas, reunirNoEstudo, tirarDoEstudo,
+  apagarNotaPorId, criarEstudo, desfazerDispensa, desligarNotas, dispensarSugestao,
+  lerEstudos, lerNota, lerSugestoes, lerTodasAsNotas, ligarNotas, mudarNota,
+  reunirNoEstudo, tirarDoEstudo,
 } from "../../../contrato/api.js";
+import { paraRevisar } from "./Notas.jsx";
 import "./nota.css";
 
 /* Uma nota, aberta.
@@ -66,6 +68,8 @@ export function Nota() {
   const [erro, setErro] = useState(null);
   const [escrevendo, setEscrevendo] = useState(false);
   const [copiado, setCopiado] = useState(null);
+  /* A última dispensada, para o desfazer. `null` é "não há o que desfazer". */
+  const [dispensada, setDispensada] = useState(null);
   const [texto, setTexto] = useState("");
   const [outras, setOutras] = useState([]);
   const [estudos, setEstudos] = useState([]);
@@ -177,7 +181,11 @@ export function Nota() {
               <Botao
                 tom="primaria"
                 onClick={async () => {
-                  await editarNota(nota.job_id ?? 0, nota.id, { comentario: texto });
+                  /* PELA ROTA DA NOTA, e não pela do trabalho: `job_id ?? 0`
+                     não casava com as notas de `job_id` NULO — as do Canvas e as
+                     do Kindle —, e o servidor respondia 404. Editar uma nota do
+                     Canvas por esta página era impossível até 03/09. */
+                  await mudarNota(nota.id, { comentario: texto });
                   setEscrevendo(false);
                   buscar();
                 }}
@@ -246,10 +254,31 @@ export function Nota() {
           >
             Copiar com origem
           </Botao>
+          {/* REVISAR DEPOIS — `895:8659`, e ele só entrou com o piso que faltava.
+              
+              Marcar é EXPLÍCITO, porque é intenção, e intenção não se deduz:
+              adivinhar o que alguém quer reler é a "IA mágica" que o `CLAUDE.md`
+              proíbe. Limpar é DERIVADO: a nota sai da lista quando é editada
+              depois da marca. Assim o estado nunca envelhece — a condição de
+              saída é um fato, e não uma tarefa que alguém tem de lembrar.
+              
+              E existe VISTA: o recorte "Para revisar", em `/notas`. Sem os dois,
+              a marca seria promessa que o produto não cumpre — a pessoa marca e
+              nunca mais vê. */}
           <Botao
             tom="secundaria"
             onClick={async () => {
-              await apagarNota(nota.job_id ?? 0, nota.id);
+              const marcada = paraRevisar(nota);
+              await mudarNota(nota.id, { revisar: !marcada });
+              buscar();
+            }}
+          >
+            {paraRevisar(nota) ? "Não revisar depois" : "Revisar depois"}
+          </Botao>
+          <Botao
+            tom="secundaria"
+            onClick={async () => {
+              await apagarNotaPorId(nota.id);
               navegar("/notas");
             }}
           >
@@ -438,6 +467,25 @@ export function Nota() {
           </section>
         )}
 
+        {/* O AVISO COM DESFAZER — o padrão que o Canvas já usa para o que não
+            se pode reconstruir sozinho. Ele diz O QUE saiu, e não "pronto". */}
+        {dispensada && (
+          <p className="nota-dispensada" role="status">
+            Dispensada: “{dispensada.trecho.slice(0, 60)}
+            {dispensada.trecho.length > 60 ? "…" : ""}”.{" "}
+            <button
+              type="button"
+              onClick={async () => {
+                await desfazerDispensa(nota.id, dispensada.id);
+                setDispensada(null);
+                lerSugestoes(id).then(setSugestoes).catch(() => {});
+              }}
+            >
+              Desfazer
+            </button>
+          </p>
+        )}
+
         {sugestoes && (sugestoes.proximas?.length || sugestoes.talvez?.length) ? (
           <>
             {[
@@ -499,6 +547,31 @@ export function Nota() {
                           <Link to={`/nota/${sug.id}`} className="candidata-ir">
                             Ir para nota
                           </Link>
+                          {/* DISPENSAR — a norma pedia e a tela não tinha.
+                              
+                              O `SISTEMA.md` declara a relação "dispensada" como
+                              forma vigente: *"uma sugestão que volta na próxima
+                              visita deixa de ser sugestão e vira insistência"*.
+                              Aqui as candidatas voltavam para sempre, e a única
+                              saída era LIGAR — o oposto do que a pessoa quis
+                              dizer.
+                              
+                              É texto, e não caixa: dispensar não tem a mesma
+                              altura que confirmar. E vem com desfazer no mesmo
+                              instante, abaixo — sem ele o gesto seria silencioso
+                              E permanente, e um clique errado mataria a sugestão
+                              sem ninguém saber. */}
+                          <button
+                            type="button"
+                            className="candidata-dispensar"
+                            onClick={async () => {
+                              await dispensarSugestao(nota.id, sug.id);
+                              setDispensada({ id: sug.id, trecho: sug.trecho });
+                              lerSugestoes(id).then(setSugestoes).catch(() => {});
+                            }}
+                          >
+                            Dispensar
+                          </button>
                         </div>
                       </li>
                     ))}

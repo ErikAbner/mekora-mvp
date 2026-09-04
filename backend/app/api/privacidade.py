@@ -38,6 +38,7 @@ from app.db.database import get_db
 from app.models.aparelho import Aparelho
 from app.models.canvas import GrupoCanvas, Ligacao, LivroCanvas, MidiaCanvas, NoCanvas
 from app.models.grupo_ignorado import GrupoIgnorado
+from app.models.dispensa import SugestaoDispensada
 from app.models.marcador import Marcador
 from app.models.estudo import Estudo, EstudoNota
 from app.models.nota import Nota
@@ -89,6 +90,7 @@ O_QUE_GUARDAMOS = [
     ("ligacoes", "ligações", Ligacao, "As ligações que você fez entre notas e livros."),
     ("midias_do_canvas", "imagens no Canvas", MidiaCanvas, "As fotos que você pôs no Canvas."),
     ("livros_do_canvas", "livros no Canvas", LivroCanvas, "Quais livros você pôs no Canvas, e onde cada um está. O livro em si está acima, com os arquivos."),
+    ("sugestoes_dispensadas", "sugestões que você recusou", SugestaoDispensada, "Os pares de notas que o Mekora sugeriu ligar e você dispensou. Guardados para não sugerir de novo."),
     ("grupos_calados", "grupos que você mandou parar", GrupoIgnorado, "Os grupos de notas parecidas que você pediu para o Mekora não sugerir mais."),
     ("sessoes", "sessões", Sessao, "Os navegadores em que você entrou."),
     ("links", "links de entrada", Chave, "Links de entrada pedidos e ainda não vencidos. Guardados como resumo, nunca em texto."),

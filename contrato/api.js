@@ -393,6 +393,44 @@ export function apagarNota(jobId, notaId) {
   return pede(`/jobs/${jobId}/notas/${notaId}`, { method: "DELETE" });
 }
 
+/* ─── A nota, sem falar de livro ─────────────────────────────────────────────
+ *
+ * As duas de cima ficam sob `/jobs/{id}/`, e a nota escrita no Canvas e a trazida
+ * do Kindle tem `job_id` NULO. A tela chamava com `job_id ?? 0`, o filtro nao
+ * casava com NULL, e o servidor respondia 404: editar ou apagar uma nota do
+ * Canvas pela pagina dela era impossivel. Medido em 03/09.
+ *
+ * A identidade da nota e o id dela. O trabalho nunca foi necessario para acha-la.
+ */
+
+/** PATCH /notas/{id} — comentario, cor, estado e a marca de revisar. */
+export function mudarNota(notaId, troca) {
+  return pede(`/notas/${notaId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(troca),
+  });
+}
+
+/** DELETE /notas/{id} — com ou sem livro. */
+export function apagarNotaPorId(notaId) {
+  return pede(`/notas/${notaId}`, { method: "DELETE" });
+}
+
+/** POST /notas/{a}/dispensar/{b} — a pessoa recusou a sugestao, e ela nao volta.
+ *
+ * O par e normalizado no servidor: dispensar A→B vale para B→A tambem, senao a
+ * sugestao recusada voltaria pelo outro lado. */
+export function dispensarSugestao(notaId, outraId) {
+  return pede(`/notas/${notaId}/dispensar/${outraId}`, { method: "POST" });
+}
+
+/** DELETE /notas/{a}/dispensar/{b} — devolve a sugestao. Sem isto, dispensar
+ *  seria silencioso E permanente. */
+export function desfazerDispensa(notaId, outraId) {
+  return pede(`/notas/${notaId}/dispensar/${outraId}`, { method: "DELETE" });
+}
+
 /* ─── Os marcadores ─────────────────────────────────────────────────────────
  *
  * A dobra de pagina: o lugar para onde se quer voltar. Mesma ancora das notas e
