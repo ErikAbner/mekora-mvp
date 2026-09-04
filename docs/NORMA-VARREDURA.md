@@ -10,10 +10,16 @@ e a única forma de saber é percorrer.
 As três marcas:
 
 ```
-VIGENTE                a norma descreve o que existe
-NORMA NÃO CONSTRUÍDA   a norma manda, o código não faz
-DESCREVE ERRADO        o documento afirma o que o código não faz — e o errado é o documento
+VIGENTE                    a norma descreve o que existe
+NORMA NÃO CONSTRUÍDA       a norma manda, o código não faz
+DESCREVE ERRADO            o documento afirma o que o código não faz — e o errado é o documento
+ESBOÇO CITADO COMO NORMA   nenhuma DEC decidiu; um documento a jusante o listou, e a
+                           lista fez parecer obrigação
+RESOLVIDA POR OUTRO CAMINHO  o produto já faz a coisa, com outro nome
 ```
+
+As duas últimas nasceram do teste de 03/09, e a primeira delas é o mecanismo que
+já tinha mordido no §6 de Conexões.
 
 ---
 
@@ -115,6 +121,37 @@ de ponto de partida vira especificação por citação.
 
 ---
 
+## Teste de norma: Tag, Território e Coleção — 03/09, veredito só
+
+As três estavam marcadas como "norma não construída". **O teste de quatro
+perguntas diz que duas delas nunca foram norma**, e a terceira é a única com
+quadro. Nenhuma foi construída, e nenhuma deve ser pelo que está escrito hoje.
+
+| pergunta | **Tag** | **Território** | **Coleção** |
+|---|---|---|---|
+| **a.** DEC de origem, e com ressalva? | **nenhuma DEC define Tag como entidade.** As oito ocorrências de "tag" no corpus são falso positivo — con**tag**em, e-**tag**ueta | **zero ocorrências de "territ" em todo o corpus de DECs** | uma só, na `DEC-0037:119`, e em sentido de DESENHO: *"superfície de marca — destaque, etiqueta, coleção — não tinta"*. Não é a entidade |
+| **b.** documento a jusante citou sem ressalva? | **sim, e é a origem inteira da "norma"** — o `SISTEMA.md` a lista entre as entidades, e o diagrama de entidades lê-se como norma | **sim, idem** | **sim, idem** |
+| **c.** quadro no Figma? | **SIM** — `895:8663` no computador e o par no telefone: rótulo "Tag" e um chip. Duas ocorrências em cada quadro de Conexões | **não** | **não** |
+| **d.** o produto resolve por outro caminho? | não | **SIM** — "assunto que apareceu sozinho, por se repetir em itens diferentes" é literalmente o que `/notas/agrupadas` faz: acha grupos que dividem palavras entre livros, oferece virar Estudo, e pode ser calado (`grupos_ignorados`). **Nomear um território = criar um Estudo** | não |
+| **VEREDITO** | **esboço citado como norma — mas com quadro** | **resolvida por outro caminho** | **esboço citado como norma** |
+
+**O que isto muda no saldo:** a varredura contava três "normas não construídas"
+que não eram normas. **A regra do próprio `SISTEMA.md` já dizia**, no preâmbulo:
+*"Onde uma seção não tiver nenhuma das duas marcas, ela está aberta — e está
+listada em `ABERTO.md`. Este documento não preenche buraco com invenção."* As
+três seções não têm marca nenhuma — nem `DEC-XXXX`, nem "Forma vigente".
+
+É o mesmo mecanismo do §6 de Conexões: **o diagrama de entidades faz três
+esboços parecerem obrigação**, porque o formato de uma lista de entidades não
+distingue o que foi decidido do que foi anotado.
+
+**Nenhuma das três foi construída, e nenhuma deve ser por causa deste documento.**
+Tag tem quadro, então quando houver razão de produto ela entra pelo desenho —
+com a regra do B8-e já escrita: oferta, nunca etapa. Território sai da lista.
+Coleção precisa de decisão antes de código.
+
+---
+
 ## O resto da varredura
 
 ### `SISTEMA.md`
@@ -132,9 +169,9 @@ de ponto de partida vira especificação por citação.
 | Destaque e nota são o mesmo registro *(forma vigente)* | **vigente** — uma tabela, `comentario` vazio distingue |
 | Relação: uma só, duas maneiras de fazer `DEC-0030 §2` | **vigente** — `ligacoes` serve Canvas e Conexões |
 | Relação **dispensada** *(forma vigente)* | **vigente desde 03/09** — `sugestoes_dispensadas`, com o par normalizado e desfazer imediato |
-| **Tag** — palavra colada na nota | **NORMA NÃO CONSTRUÍDA** — sem modelo, tabela, rota ou tela. É o B8-e |
-| **Território** — assunto que apareceu sozinho | **NORMA NÃO CONSTRUÍDA** — não há entidade nem tela; o que existe é a varredura de `/notas/agrupadas` |
-| **Coleção** — agrupa itens na Estante | **NORMA NÃO CONSTRUÍDA** — a Estante tem recortes (Tudo/Com nota/No Kindle/Quadrinhos), que são filtros derivados, não coleções |
+| **Tag** — palavra colada na nota | **esboço citado como norma** — nenhuma DEC a define; tem quadro (`895:8663`). Ver o teste acima |
+| **Território** — assunto que apareceu sozinho | **resolvida por outro caminho** — é o que `/notas/agrupadas` faz, e nomear um território é criar um Estudo. Ver o teste acima |
+| **Coleção** — agrupa itens na Estante | **esboço citado como norma** — a única menção em DEC é de desenho, não de entidade. Os recortes da Estante são filtros derivados, e não coleções: o buraco existe, a norma não |
 | **Marcador** — um lugar para voltar | **vigente desde 03/09** |
 | Âncora semântica, cinco degraus `DEC-0016` | **vigente desde 03/09** |
 | Conteúdo não sai para serviços externos `DEC-0032` | **vigente** — a tradução é local (Argos/NLLB), e a privacidade declara |
