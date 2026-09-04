@@ -9,6 +9,7 @@ import { Folha } from "../componentes/Folha.jsx";
 import { DESTAQUES } from "./Leitura.jsx";
 import { linkDe, usarPrevia } from "./previa.js";
 import "./canvas.css";
+import { CapaDeReserva } from "../componentes/CapaDeReserva.jsx";
 
 /* O Canvas: onde as notas se ligam umas às outras.
  *
@@ -908,7 +909,7 @@ function LivroCrua({ livro, aoMover, aoTirar, aoLigarDaLista, aoEscolher, aoEsco
         {livro.capa && !semCapa ? (
           <img src={livro.capa} alt="" draggable="false" loading="lazy" onError={() => setSemCapa(true)} />
         ) : (
-          <span className="livro-capa-vazia">{livro.titulo}</span>
+          <CapaDeReserva className="livro-capa-vazia" titulo={livro.titulo} chave={livro.chave ?? livro.id} />
         )}
       </span>
       <span className="livro-texto">

@@ -887,3 +887,37 @@ uma nota do Mekora de um arquivo de texto.
 
 O botão do desenho existe, e faz a coisa honesta: **leva ao Canvas**, o lugar
 onde aquilo se escreve.
+
+## As capas de reserva — `1016:31030`, lido em 04/09
+
+O conjunto chama-se **"Capa para arquivos sem capa predefinida pelo proprio"** e
+existe para o caso que a Estante tinha em aberto: livro cujo arquivo não traz
+capa. Antes de conhecê-lo, o produto emitia URL para uma capa que não existia, e
+o `.capa-vazia` era uma caixa cinza com o título em 16px no meio — inventado,
+sem quadro nenhum por trás.
+
+São **14 capas de 420×594** — a mesma proporção que a grade já usa — e **14
+lombadas de 58×594**, que no Figma se chamam `Property 1=Background`. Não são
+fundos decorativos: cada uma é um GABARITO que recebe o título, com lombada à
+esquerda e o texto girado nela.
+
+A paleta inteira tem três valores: `#f4f2ec` (papel), `#101010` (preto),
+`#d9d9d9` (cinza). A arte é meio-tom e marca geométrica.
+
+**A regra do Erik, 04/09:** *"em caso de não haver borda ou lateral a gente
+segue o padrão de cor sólida principal do livro"*.
+
+| variante | nó | variante | nó |
+|---|---|---|---|
+| 1 | `1016:31028` | 8 | `1016:31015` |
+| 2 | `1016:31018` | 9 | `1016:31021` |
+| 3 | `1016:31014` | 10 | `1016:31024` |
+| 4 | `1016:31027` | 11 | `1016:31013` |
+| 5 | `1016:31017` | 12 | `1016:31006` |
+| 6 | `1016:31019` | 13 | `1016:31023` |
+| 7 | `1016:31022` | 14 | `1016:31012` |
+
+Os ids ficam aqui pela mesma razão que os das telas: **o `get_metadata` da
+página vem truncado** e não devolve os filhos, então achar o conjunto de novo
+custa um clique do Erik. Com o id do conjunto em mãos, `get_metadata` nele
+devolve os catorze — foi assim que esta tabela nasceu.

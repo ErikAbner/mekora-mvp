@@ -11,6 +11,7 @@ import { DESTAQUES } from "./Leitura.jsx";
 import { analisar, apagarNota, criarNota, editarNota, enviarAoKindle, lerNotas, lerProgresso } from "../../../contrato/api.js";
 import { tamanhoLegivel } from "../../../contrato/tamanho.js";
 import "./livro.css";
+import { CapaDeReserva } from "../componentes/CapaDeReserva.jsx";
 
 /* A ficha de um livro, inteira.
  *
@@ -178,7 +179,7 @@ export function Livro() {
             ) : (
               /* Livro sem capa não vira buraco: a caixa fica, com o título
                  dentro. Uma lacuna parece defeito de carregamento. */
-              <span className="livro-pagina-capa-vazia">{titulo}</span>
+              <CapaDeReserva className="livro-pagina-capa-vazia" titulo={titulo} chave={id} />
             )}
           </div>
 

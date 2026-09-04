@@ -62,6 +62,21 @@
   object-fit: cover; display: block;
   border: 2px solid transparent;
   border-radius: 2px;
+  /* A CAPA NÃO RECEBE CLIQUE — ela é imagem, não alvo.
+   *
+   * `.livro-alvo` e `.capa` estavam ambas em `z-index: 1`, e `.capa-caixa` é
+   * `position: relative` SEM `z-index`, logo não abre contexto de empilhamento
+   * próprio: as duas disputam o mesmo, empatam, e a ordem do DOM desempata —
+   * a capa vem depois, então ficava por cima e comia o clique. É o R-02 do
+   * Erik: "o click só funciona na div inferior à da capa, usuários tendem a
+   * clicar na capa".
+   *
+   * O conserto é aqui e não `z-index: 2` no alvo: subir o alvo o poria na
+   * frente da imagem, e com ele o véu de 4% do `:hover` — justamente o véu
+   * sobre a capa que a regra do escolhido, logo abaixo, tirou por apagar o que
+   * se está tentando mostrar. Sem receber clique, a capa continua pintada por
+   * cima e o alvo continua embaixo; só o acerto do ponteiro atravessa. */
+  pointer-events: none;
 }
 
 /* O marcador de notas e forma, nao icone: a mascara vai no PROPRIO marcador, com
@@ -105,12 +120,33 @@
 }
 
 .livro-texto { display: flex; flex-direction: column; gap: 16px; padding: 12px; margin: -12px; }
+/* O TÍTULO PARA EM DUAS LINHAS.
+ *
+ * Ele não tinha limite nenhum: um nome de arquivo longo — e nome de arquivo é
+ * longo com frequência, porque vem de scanner, de e-mail ou de download —
+ * crescia sem parar e empurrava a linha inteira da grade. O Erik pediu limite
+ * em 04/09: "vai ter texto enorme quebrando o layout e fazendo a tela perder o
+ * sentido".
+ *
+ * Duas linhas, e não um número de caracteres. O corte por contagem não sabe a
+ * largura do glifo: "IIIIIIIIIIIIIIIIIIII" e "WWWWWWWWWWWWWWWWWWWW" têm vinte
+ * caracteres e larguras muito diferentes, então um limite que serve para um
+ * corta cedo demais o outro. O `line-clamp` corta onde a caixa acaba, que é o
+ * lugar de que a grade precisa.
+ *
+ * O `title` no elemento devolve o nome inteiro no repouso do ponteiro — cortar
+ * sem deixar como ler é esconder, não resumir. Mesmo par que a lista do
+ * "Trazer para a superfície" já usa no Canvas. */
 .livro-texto h3 {
   margin: 0;
   font-size: 24px; line-height: 32px;   /* Body/Large */
   font-weight: 400;
   color: var(--muted-foreground);
   text-wrap: pretty;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 .livro-texto p {
   margin: 0;
@@ -243,6 +279,14 @@
   color: var(--muted-foreground);
   font-size: 16px; line-height: 24px; text-align: center;
   text-wrap: pretty;
+}
+/* Dentro da capa o corte é mais generoso — a caixa tem a altura de uma capa
+   inteira, e ali o título é a única coisa que identifica o livro. */
+.capa-vazia > span {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
+  overflow: hidden;
 }
 
 /* A estante sem nada dentro. Ocupa o lugar da grade, e não flutua no meio: o

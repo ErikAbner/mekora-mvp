@@ -24,6 +24,7 @@ import { Botao } from "../componentes/Botao.jsx";
 import { Folha } from "../componentes/Folha.jsx";
 import { DESTAQUES } from "./Leitura.jsx";
 import "./estante.css";
+import { CapaDeReserva } from "../componentes/CapaDeReserva.jsx";
 
 const marcador = "/icones/marcador-notas.svg";
 const RECORTES = [
@@ -145,7 +146,7 @@ function Estante3D({ livros, selecionado, aoEscolher }) {
   );
 }
 
-function Livro({ titulo, autor, notas, capa, aoEscolher, escolhido }) {
+function Livro({ chave, titulo, autor, notas, capa, aoEscolher, escolhido }) {
   return (
     <li className={`livro${escolhido ? " escolhido" : ""}`}>
       {/* O livro inteiro é o alvo do clique, e é um `button` de verdade: o
@@ -178,13 +179,13 @@ function Livro({ titulo, autor, notas, capa, aoEscolher, escolhido }) {
         {capa ? (
           <img src={capa} alt={`Capa de ${titulo}`} className="capa" />
         ) : (
-          <div className="capa capa-vazia" aria-hidden="true">
-            <span>{titulo}</span>
-          </div>
+          <CapaDeReserva className="capa" titulo={titulo} chave={chave} />
         )}
       </div>
       <div className="livro-texto">
-        <h3>{titulo}</h3>
+        {/* `title` porque o nome para em duas linhas no CSS: cortar sem deixar
+            como ler seria esconder o livro em vez de resumir o nome dele. */}
+        <h3 title={titulo}>{titulo}</h3>
         <p>{autor}</p>
       </div>
     </li>

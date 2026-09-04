@@ -1,0 +1,44 @@
+/* A capa de reserva. Ver `CapaDeReserva.jsx` para o porquê de existir uma só.
+ *
+ * As três cores do conjunto `1016:31030` e nada mais: papel, preto, cinza.
+ * Enquanto a arte das catorze não entra, `[data-capa]` já separa os livros —
+ * e, quando entrar, entra aqui embaixo sem mexer no componente. */
+.capa-de-reserva {
+  display: grid;
+  align-content: start;
+  inline-size: 100%;
+  block-size: 100%;
+  padding: 24px;
+  background: #f4f2ec;
+  color: #101010;
+  overflow: hidden;
+}
+
+.capa-de-reserva-titulo {
+  font-size: 24px;
+  line-height: 32px;
+  text-wrap: pretty;
+  /* Seis linhas dentro da capa, contra duas embaixo dela: aqui a caixa tem a
+     altura de uma capa inteira, e o título é a única coisa que identifica o
+     livro. Cortar cedo aqui esconderia o livro. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
+  overflow: hidden;
+}
+
+/* AS CATORZE, POR ENQUANTO SÓ NO CHÃO.
+ *
+ * Metade do conjunto assenta em preto e metade em papel — dá para ler isso da
+ * captura do conjunto sem inventar nada. A arte de cada uma NÃO está aqui de
+ * propósito: ela sai de `get_design_context` em cada nó, e chutá-la a partir
+ * de uma miniatura é como as telas ficaram erradas da primeira vez. */
+.capa-de-reserva[data-capa="2"],
+.capa-de-reserva[data-capa="5"],
+.capa-de-reserva[data-capa="8"],
+.capa-de-reserva[data-capa="10"],
+.capa-de-reserva[data-capa="12"],
+.capa-de-reserva[data-capa="13"] {
+  background: #101010;
+  color: #f4f2ec;
+}
