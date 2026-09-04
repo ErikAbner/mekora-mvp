@@ -91,16 +91,23 @@ def test_batch_jobs_tolerates_null_str_fields(client, test_engine, tmp_storage: 
     causando ResponseValidationError e travando toda a página de Lote.
     """
     from sqlalchemy.orm import sessionmaker
+    from app.models.pessoa import Pessoa
     from app.models.processing_job import ProcessingJob
 
     Session = sessionmaker(bind=test_engine)
     db = Session()
     try:
+        # COM DONO, e a conta é a do `client`. Desde 03/09 `GET /batch/jobs`
+        # lista só o que é de quem pede — antes listava a instalação inteira, e
+        # um registro sem dono aparecia para qualquer visitante com conta.
+        # Este teste fala da coerção de NULL, e não da porta.
+        dono = db.query(Pessoa).filter(Pessoa.email == "teste@mekora.local").first()
         job = ProcessingJob(
             original_filename="legacy.pdf",
             status="uploaded",
             input_format=None,
             processing_mode=None,
+            dono_id=dono.id if dono else None,
         )
         db.add(job)
         db.commit()

@@ -172,13 +172,29 @@ def _leitura_de(db: Session, job: ProcessingJob) -> dict:
     return fora
 
 
-def _destino_de(db: Session, job: ProcessingJob) -> str | None:
-    """Para qual Kindle este trabalho vai.
+def _exigir_destino(db: Session, job: ProcessingJob) -> str | None:
+    """Para qual Kindle este trabalho vai — ou 403, quando não vai para nenhum.
 
-    O aparelho PRINCIPAL de quem é dono. Sem dono — trabalho anônimo, que a
-    DEC-0018 permite — ou sem aparelho ligado, devolve `None`, e o envio cai no
-    `KINDLE_EMAIL` do `.env`. Isso mantém a instalação de uma pessoa só
-    funcionando como sempre funcionou, sem cadastrar nada.
+    TRABALHO SEM DONO NÃO TEM DESTINO, e esta é a linha inteira do conserto de
+    03/09.
+
+    Antes, sem dono a função devolvia `None` e o envio caía no `KINDLE_EMAIL` do
+    `.env` — o Kindle de quem cuida da instalação. A intenção estava certa e
+    escrita: manter a instalação de uma pessoa só funcionando sem cadastrar
+    aparelho. O que mudou foi o de sempre, e já mudou três vezes neste
+    repositório: o que era "o dono do computador" virou "qualquer um na
+    internet".
+
+    A cadeia não pedia conta em passo nenhum. `/upload` é público por garantia
+    da DEC-0018; a resposta devolve o `token_publico`; o token passa em
+    `exigir_acesso` pelo cabeçalho `X-Mekora-Chave`; e `/jobs/{id}/send`
+    entregava o arquivo de um estranho no aparelho de leitura do Erik, **enviado
+    pela conta SMTP dele**. O segundo estrago é o pior dos dois: reputação de
+    remetente não volta com correção.
+
+    O padrão do `.env` continua servindo a quem TEM dono e não cadastrou
+    aparelho — ali há uma pessoa identificada, e é dela o trabalho. Sem dono não
+    há ninguém, e "ninguém" não é sinônimo de "o dono da máquina".
 
     Também marca o último envio no aparelho: é o que permite a tela dizer
     "último envio ontem" sem que alguém mantenha esse campo à mão — e campo de
@@ -187,7 +203,17 @@ def _destino_de(db: Session, job: ProcessingJob) -> str | None:
     from app.models.aparelho import Aparelho
 
     if not job.dono_id:
-        return None
+        # 403 e não 404: a chave do trabalho é válida e provou o que tinha de
+        # provar — quem a tem alcança o arquivo. O que falta não é acesso, é
+        # para onde mandar, e esconder isso deixaria quem converteu sem conta
+        # sem entender por que o botão não funciona.
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Enviar ao Kindle pede conta: é ela que diz para qual aparelho. "
+                "Entre e ligue um Kindle em Conta › Aparelhos."
+            ),
+        )
     a = (
         db.query(Aparelho)
         .filter(Aparelho.pessoa_id == job.dono_id, Aparelho.principal.is_(True))
@@ -1709,7 +1735,11 @@ def _resolve_send_path(job: ProcessingJob) -> Path:
 @router.post("/jobs/{job_id}/send", response_model=JobResponse)
 def send_job(job_id: int, db: Session = Depends(get_db)) -> dict:
     """
-    Envia o EPUB ao endereço KINDLE_EMAIL configurado no .env.
+    Envia o EPUB ao Kindle de quem é dono do trabalho.
+
+    O destino sai de `_exigir_destino`: o aparelho principal do dono, e o
+    `KINDLE_EMAIL` do `.env` só quando há dono e ele não cadastrou aparelho.
+    Trabalho SEM dono não tem destino e recebe 403 — ver a docstring de lá.
 
     Política de seleção do arquivo: ver _resolve_send_path (comic traduzido
     NUNCA envia o EPUB do original; exige o export final).
@@ -1717,6 +1747,12 @@ def send_job(job_id: int, db: Session = Depends(get_db)) -> dict:
     job = _get_or_404(db, job_id)
 
     path_to_send = _resolve_send_path(job)
+
+    # O DESTINO É RESOLVIDO ANTES DE QUALQUER ESCRITA. `_exigir_destino` recusa
+    # o trabalho sem dono, e recusar depois de `send_status = "in_progress"`
+    # deixaria o trabalho preso num estado que ninguém desfaz — a tela diria
+    # "enviando" para sempre.
+    destino = _exigir_destino(db, job)
 
     if job.send_status == "sent":
         raise HTTPException(status_code=400, detail="EPUB já foi enviado ao Kindle.")
@@ -1747,7 +1783,7 @@ def send_job(job_id: int, db: Session = Depends(get_db)) -> dict:
     send_pending_detail: str | None = None
 
     try:
-        send_epub_to_kindle(path_to_send, job.final_title or "", destino=_destino_de(db, job))
+        send_epub_to_kindle(path_to_send, job.final_title or "", destino=destino)
         job.send_status = "sent"
         job.kindle_sent = True
         job.status = "done"
@@ -1898,6 +1934,11 @@ def retry_pending_send(job_id: int, db: Session = Depends(get_db)) -> dict:
     # Mesma política de seleção do envio normal (sem fallback ao original)
     path_to_send = _resolve_send_path(job)
 
+    # E A MESMA PORTA DO ENVIO NORMAL. Reenviar é enviar: sem esta linha, um
+    # trabalho sem dono que ficou pendente por falta de rede sairia por aqui,
+    # e a correção teria fechado uma porta de duas.
+    destino = _exigir_destino(db, job)
+
     if not is_smtp_reachable():
         pending_msg = (
             "Sem conexão com o servidor SMTP. "
@@ -1919,7 +1960,7 @@ def retry_pending_send(job_id: int, db: Session = Depends(get_db)) -> dict:
     send_pending_detail: str | None = None
 
     try:
-        send_epub_to_kindle(path_to_send, job.final_title or "", destino=_destino_de(db, job))
+        send_epub_to_kindle(path_to_send, job.final_title or "", destino=destino)
         job.send_status = "sent"
         job.kindle_sent = True
         job.status = "done"

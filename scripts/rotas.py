@@ -117,6 +117,29 @@ def escrever_js(exatas, com_sub):
     return destino, corpo
 
 
+# A BORDA É AUTORITATIVA SOBRE QUEM ESTÁ PEDINDO, e este bloco é essa frase.
+#
+# `reverse_proxy` sozinho ACRESCENTA o IP do cliente ao `X-Forwarded-For` que
+# veio no pedido, em vez de substituí-lo. Quem manda o cabeçalho de fora faz o
+# backend receber `<forjado>, <ip real>` — e o `_de_onde` do `vazao.py` lia o
+# PRIMEIRO elemento, que é justamente o que o visitante escolheu.
+#
+# O efeito medido em 03/09: girando o primeiro elemento, o teto de dez envios
+# por hora sem conta simplesmente não existe — doze envios, nenhum 429. O teto é
+# a única coisa entre a internet e o disco cheio.
+#
+# `header_up` com `{remote_host}` SOBRESCREVE: o que o backend lê passa a ser o
+# que esta borda viu abrir a conexão, e nada do que veio de fora sobrevive. O
+# `vazao.py` foi corrigido junto, para ler o último elemento em vez do primeiro
+# — as duas metades se seguram sozinhas, e é de propósito: uma borda trocada um
+# dia não pode reabrir o buraco calada.
+PROXY = (
+    "\t\treverse_proxy backend:8000 {\n"
+    "\t\t\theader_up X-Forwarded-For {remote_host}\n"
+    "\t\t}\n"
+)
+
+
 def escrever_caddy(exatas, com_sub):
     destino = RAIZ / "Caddyfile"
     atual = destino.read_text(encoding="utf-8")
@@ -125,12 +148,12 @@ def escrever_caddy(exatas, com_sub):
     bloco = inicio
     if com_sub:
         bloco += "\thandle " + " ".join(f"{p}/*" for p in com_sub) + " {\n"
-        bloco += "\t\treverse_proxy backend:8000\n\t}\n"
+        bloco += PROXY + "\t}\n"
     if exatas:
         # Sem barra: /health responde em /health. E `/entrar` NÃO está aqui —
         # o backend não responde nele, quem responde é a tela.
         bloco += "\thandle " + " ".join(exatas) + " {\n"
-        bloco += "\t\treverse_proxy backend:8000\n\t}\n"
+        bloco += PROXY + "\t}\n"
     bloco += fim
 
     if inicio in atual:

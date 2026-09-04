@@ -427,11 +427,28 @@ def test_convert_comic_omits_title_author_by_default(monkeypatch, tmp_path) -> N
 # ---------------------------------------------------------------------------
 
 def _make_db_job(test_engine, **kwargs):
+    """Um trabalho no banco, DA CONTA DE TESTE.
+
+    O dono não é enfeite: desde 03/09 `/jobs/{id}/send` recusa trabalho sem dono
+    com 403, porque sem dono o envio caía no `KINDLE_EMAIL` da instalação — o
+    Kindle do Erik, alcançável por quem subisse um arquivo sem conta nenhuma.
+
+    Um trabalho de teste sem dono faria os testes de POLÍTICA DE ARQUIVO
+    (qual EPUB sai) baterem na porta de ENVIO, que é outro assunto. É a mesma
+    razão que faz o `client` do `conftest` entrar numa conta: a porta fica de pé,
+    e o teste continua falando do que ele fala.
+
+    Quem prova que a porta existe é `test_envio_sem_dono.py`, com um trabalho
+    deliberadamente sem dono.
+    """
     from sqlalchemy.orm import sessionmaker
+    from app.models.pessoa import Pessoa
     from app.models.processing_job import ProcessingJob
 
     Session = sessionmaker(bind=test_engine)
     db = Session()
+    dono = db.query(Pessoa).filter(Pessoa.email == "teste@mekora.local").first()
+    kwargs.setdefault("dono_id", dono.id if dono else None)
     job = ProcessingJob(original_filename=kwargs.pop("original_filename", "x.cbz"), **kwargs)
     db.add(job)
     db.commit()
