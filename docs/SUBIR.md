@@ -215,15 +215,31 @@ quem cuida da instalação — pela conta SMTP dela. Quem TEM dono e não cadast
 aparelho continua caindo no `.env`, que é a instalação de uma pessoa só
 funcionando como sempre funcionou.
 
-`tests/test_superficie.py` verifica as portas. Os três consertos de 03/09 têm
-teste próprio, e cada um foi aceito reproduzindo o defeito e ficando vermelho:
+**A guarda de caminho não vê o corpo, e há um portão para isso.** `exigir_acesso`
+lê `request.path_params`, então uma rota que receba `job_ids` num JSON passa por
+ela sem nada ser conferido. Foi assim que as seis rotas de `/batch` operaram
+sobre trabalho de qualquer um até 03/09. Elas agora filtram por dono, e
+`tests/test_portao_de_dono.py` varre o app a cada rodada: rota nova com
+identificador no corpo reprova até ser declarada.
+
+`tests/test_superficie.py` verifica as portas. Os consertos de 03/09 têm teste
+próprio, e cada um foi aceito reproduzindo o defeito e ficando vermelho:
 
     test_envio_sem_dono.py      trabalho sem dono não sai para Kindle nenhum
     test_vazao_cabecalho.py     o X-Forwarded-For forjado não escapa do teto
     test_pedido_de_link.py      trocar de endereço não zera a contagem
+    test_portao_de_dono.py      identificador no corpo também prova dono
+    test_cookie_de_sessao.py    o cookie sai com Secure quando há domínio
 
 Proteção sem teste é proteção que some no próximo refactor, e verde sem a prova
 do vermelho não conta.
+
+O último da lista é de um tipo próprio: ele não existia porque **não dava**. O
+`Secure` do cookie saía de uma constante lida no import, e uma constante lida no
+import congela no primeiro `import main` da suíte — nenhum `monkeypatch` alcança
+depois disso. Virou `em_producao()`, lida na hora da chamada. Vale como aviso
+geral: comportamento que só existe com variável de produção precisa ser lido no
+momento do uso, ou a bancada nunca o executa.
 
 ### Onde ficam os recados
 

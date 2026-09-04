@@ -22,11 +22,32 @@ router = APIRouter()
 
 COOKIE = "mekora_sessao"
 
-# Fora de desenvolvimento o cookie é `Secure`: o navegador não o manda por
-# conexão sem TLS. Em desenvolvimento isso o tornaria inútil, porque o servidor
-# local é http — e um cookie que não chega faz a sessão parecer quebrada quando
-# o que está errado é a configuração.
-EM_PRODUCAO = os.getenv("MEKORA_DOMINIO", "").strip() not in ("", "localhost")
+def em_producao() -> bool:
+    """Fora de desenvolvimento o cookie é `Secure`.
+
+    Em produção o navegador não manda o cookie por conexão sem TLS. Em
+    desenvolvimento isso o tornaria inútil, porque o servidor local é http — e
+    um cookie que não chega faz a sessão parecer quebrada quando o que está
+    errado é a configuração.
+
+    FUNÇÃO, E NÃO CONSTANTE DE MÓDULO — e a troca é o conserto de 03/09.
+    ===================================================================
+    Isto era `EM_PRODUCAO = os.getenv(...)`, avaliado no IMPORT. A diferença não
+    é de estilo: uma constante de módulo lida no import é **intestável por
+    construção**. Quando o primeiro teste importa `main`, o valor já está
+    congelado, e `monkeypatch.setenv` depois disso não alcança mais nada. O ramo
+    de produção — o cookie com `Secure` — nunca rodava em teste nenhum, e não
+    havia como fazê-lo rodar sem reimportar o módulo.
+
+    É o membro mais duro da família descrita no achado 10 da auditoria de 03/09:
+    caminho de código que só existe com variável de ambiente de produção, e que
+    a bancada não executa. Os outros membros ao menos aceitam `monkeypatch`;
+    este não aceitava.
+
+    Lida na hora da chamada, os dois lados passam a ser alcançáveis — e
+    `test_cookie_de_sessao.py` roda os dois.
+    """
+    return os.getenv("MEKORA_DOMINIO", "").strip() not in ("", "localhost")
 
 
 class PedidoDeEntrada(BaseModel):
@@ -42,7 +63,7 @@ def _gravar_cookie(resposta: Response, token: str) -> None:
         # ele, uma única falha de XSS em qualquer canto do produto entrega a
         # conta — e é por isso que sessão não mora em localStorage (DEC-0039 §4).
         httponly=True,
-        secure=EM_PRODUCAO,
+        secure=em_producao(),
         # `lax` deixa o cookie ir quando a pessoa CLICA num link vindo de fora,
         # que é exatamente como o link do e-mail funciona, e não deixa ir em
         # pedido que outro site dispare sozinho.

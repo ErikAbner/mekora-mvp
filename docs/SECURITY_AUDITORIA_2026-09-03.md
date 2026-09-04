@@ -1,7 +1,7 @@
 # Auditoria de segurança — 03/09/2026
 
-**Estado:** os três ALTOs (1, 2, 3) estão **corrigidos** e com teste; 4 a 8
-continuam abertos; 9 e 10 foram encontrados durante o conserto e nascem abertos
+**Estado:** 1, 2, 3 e 9 estão **corrigidos** e com teste; o 10 está corrigido no
+membro que era intestável e **aberto** no resto; 4 a 8 continuam abertos
 **Método:** leitura do código, mais **uma** prova dinâmica local — o achado 3,
 metade do app, num servidor isolado na porta 8299 (ver *Anexo: a prova do achado
 3*). Todo o resto se lê no código e **não** foi reproduzido contra um Mekora
@@ -281,7 +281,45 @@ por completude; a correção não é prioritária.
   `porta.py:exigir_dono`). O `SUBIR.md` está mais fechado do que descreve, que é
   o lado certo de errar — mas continua sendo duas verdades sobre a mesma coisa.
 
-### 9 — O router `/batch` opera sobre trabalho de qualquer um · ALTO · ABERTO
+### 9 — Identificador no CORPO não é visto pela guarda que lê o CAMINHO · ALTO · CORRIGIDO 03/09
+
+> **Conserto, e ele é da família e não do caso.** O achado nasceu como "o
+> `/batch` não filtra por dono" e virou o que realmente é depois da varredura
+> que o Erik pediu: `exigir_acesso` lê `request.path_params`, então **toda** rota
+> que receba identificador no corpo é cega para ela — o `/batch` era só onde a
+> forma tinha membros.
+>
+> A varredura do app montado, atrás de rota cujo corpo declara `job_id`,
+> `job_ids`, `upload_id` ou `upload_ids`, achou **seis**:
+>
+>     POST /batch/apply-preset         job_ids     sem filtro de dono
+>     POST /batch/apply-suggestions    job_ids     sem filtro de dono
+>     POST /batch/export               job_ids     sem filtro de dono
+>     POST /batch/retry-send           job_ids     sem filtro de dono
+>     POST /batch/set-final-variant    job_ids     sem filtro de dono
+>     POST /canvas/livros              job_id      JÁ correto — dono_id no filtro
+>
+> A sexta é a que interessa: o `canvas.py` faz certo, e tem o comentário
+> dizendo por quê. Não era ignorância do time, era um arquivo que ficou de fora
+> de duas revisões.
+>
+> As cinco passaram por `_meu(db, pessoa, job_id)`, com o `dono_id` no FILTRO.
+> `GET /batch/jobs` — que não tem corpo, e por isso não aparece na varredura —
+> passou a filtrar por dono na consulta. `POST /batch/retry-send` teve o destino
+> corrigido: chamava `send_epub_to_kindle(epub, cfg)`, com `cfg` na posição do
+> `title` e o destino em `None`, o que mandava para o `KINDLE_EMAIL`. Era a
+> terceira porta do achado 1, e agora está fechada.
+>
+> **A versão permanente é `backend/tests/test_portao_de_dono.py`**: ele varre o
+> app a cada rodada e reprova rota nova com identificador no corpo que não esteja
+> declarada, com a mensagem dizendo o que fazer. Mais os testes de comportamento
+> — trabalho de outra pessoa responde "não encontrado" nas cinco rotas, não é
+> enviado, e não aparece na listagem.
+>
+> Controle negativo: tirando o `dono_id` dos filtros, sete casos ficam vermelhos.
+> O decisivo é `assert [('/nao/importa.epub', None)] == []` — com o defeito, o
+> lote envia o livro de outra pessoa, e o `None` no destino é o `KINDLE_EMAIL`.
+
 
 `backend/app/api/batch.py:72` (`GET /batch/jobs`), `:118`, `:167`, `:241`,
 `:321` (`retry-send`), `:381`. Achado em 03/09, **durante o conserto do achado
@@ -328,12 +366,20 @@ posição do `title`, e o `destino` fica em `None` — manda para o `KINDLE_EMAI
 sempre, para qualquer trabalho, inclusive os sem dono. A diferença para o achado
 1 é que aqui é preciso ter conta; a semelhança é o destino.
 
-**Não foi corrigido, e a razão é de combinado, não de dificuldade.** O conserto
-desta rodada foi acordado nos arquivos `jobs.py`, `acesso_service.py`,
-`vazao.py` e `Caddyfile`. O `batch.py` está fora, e sair do combinado sem avisar
-é o que faz duas frentes colidirem. Fica como a próxima da fila, e ela é curta:
-`exigir_conta` já devolve a pessoa, então falta pôr `dono_id` no filtro das seis
-consultas e passar o destino no `retry-send`.
+**O que a varredura ensinou, e que consertar as seis não ensinaria.** A guarda
+por caminho é boa e deve continuar — o `porta.py` explica por que conferir
+acesso dentro de 41 rotas seria "41 lugares para acertar hoje e um para esquecer
+depois". O que faltava era a mesma ideia para a outra forma. Hoje são duas
+listas curtas, e cada uma é a definição de "isto aqui é um trabalho":
+
+    porta.py            NOMES = ("job_id", "upload_id")               no caminho
+    test_portao_de_dono NOMES_NO_CORPO = (+ "job_ids", "upload_ids")  no corpo
+
+A diferença é que a primeira protege sozinha e a segunda apenas ACUSA — ela não
+tem como filtrar consulta que não escreveu. Uma dependência genérica que lesse o
+corpo e conferisse dono é possível e não foi feita: ela teria de saber, para
+cada rota, qual entidade o número nomeia, e isso é conhecimento de cada rota. O
+portão que reprova o esquecimento é a troca honesta.
 
 ### 10 — O comportamento que só existe em produção não é testado por construção · MÉDIO · ABERTO
 
@@ -352,7 +398,7 @@ Antes de 03/09, **nenhum teste do repositório mencionava `MEKORA_DOMINIO`**. O
 | Onde | Variável | O que muda, e o que nunca foi executado em teste |
 |---|---|---|
 | `vazao.py:107` `_de_onde` | `MEKORA_DOMINIO` | lê ou ignora o `X-Forwarded-For`. **Era o achado 3.** Hoje coberto, nos dois lados |
-| `acesso.py:29` `EM_PRODUCAO` | `MEKORA_DOMINIO` | o cookie de sessão sai com `Secure` ou sem. **Lido no import**, então nem `monkeypatch.setenv` alcança — é o pior caso da lista |
+| ~~`acesso.py:29` `EM_PRODUCAO`~~ **CORRIGIDO** | `MEKORA_DOMINIO` | virou `em_producao()`, lida na hora da chamada. Era **intestável por construção**: constante avaliada no import congela no primeiro `import main` da suíte, e nenhum `monkeypatch` alcança depois disso. `test_cookie_de_sessao.py` roda os dois lados, e o `localhost` |
 | `acesso.py:109` `_base_publica` | `MEKORA_DOMINIO` | o endereço que vai DENTRO do e-mail. Errado aqui, ninguém entra, e a suíte não vê |
 | `acesso_service.py:99` `_em_producao` | `MEKORA_DOMINIO` | sem SMTP, produção levanta `RuntimeError`; fora dela o link de entrada é IMPRESSO no log do servidor |
 | `email_service.py:81` | `KINDLE_EMAIL` | o padrão de destino. Vazio na bancada, então "foi para o `.env`" e "não foi para lugar nenhum" tinham a mesma cara. **Era metade do achado 1** |
