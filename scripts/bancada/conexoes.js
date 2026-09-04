@@ -126,5 +126,62 @@
     return { ok: linhas.length > 0 && temDesfazer, medida: `${linhas.length} em "Ligadas", desfazer: ${temDesfazer}` };
   });
 
+  /* ── AS DUAS ACOES DA LINHA DA NOTA — nos `895:8657` e `895:8848` ──────── */
+
+  await passo('o chip do estudo TIRA, e nao so soma', async () => {
+    const chips = () => [...document.querySelectorAll('.nota-chips .chip')];
+    if (!chips().length) return { ok: false, medida: 'a conta nao tem estudo nenhum' };
+
+    /* COMECA TIRANDO, e nao reunindo: era o clique que morria, e o acervo
+       semeado ja pode ter a nota em todos os estudos — a primeira versao deste
+       passo reprovou por isso, sem o produto ter nada de errado. */
+    let aceso = chips().find(c => c.classList.contains('dentro'));
+    if (!aceso) {
+      chips()[0].click();
+      await esperar(1500);
+      aceso = chips().find(c => c.classList.contains('dentro'));
+      if (!aceso) return { ok: false, medida: 'nenhum chip acendeu depois de reunir' };
+    }
+    const nome = aceso.textContent.trim();
+    const rotulo = aceso.getAttribute('title');
+    const antes = (await doServidor()).estudos.length;
+    aceso.click();
+    await esperar(1500);
+    const depois = (await doServidor()).estudos.length;
+
+    /* E VOLTA: o mesmo chip, agora apagado, tem de reunir de novo. Uma coisa que
+       so tira e um caminho sem volta. */
+    const apagado = chips().find(c => c.textContent.trim() === nome && !c.classList.contains('dentro'));
+    if (apagado) { apagado.click(); await esperar(1500); }
+    const devolta = (await doServidor()).estudos.length;
+
+    return {
+      ok: depois === antes - 1 && devolta === antes && rotulo === 'Remover dos estudos',
+      medida: `"${nome}": estudos ${antes} -> ${depois} -> ${devolta}; title: "${rotulo}"`,
+    };
+  });
+
+  await passo('"Copiar com origem" copia a citacao E de onde ela veio', async () => {
+    const botao_ = [...document.querySelectorAll('.npag-acoes button')]
+      .find(b => /Copiar com origem/i.test(b.textContent || ''));
+    if (!botao_) return { ok: false, medida: 'sem botao' };
+    /* A area de transferencia real depende de permissao e de foco; o que se
+       mede aqui e O TEXTO MONTADO, capturado no lugar por onde ele passa. */
+    let copiado = null;
+    const antes = navigator.clipboard.writeText;
+    navigator.clipboard.writeText = (t) => { copiado = t; return Promise.resolve(); };
+    botao_.click();
+    await esperar(900);
+    navigator.clipboard.writeText = antes;
+    const dito = document.querySelector('.npag-copiado')?.textContent || '';
+    const nota_ = await doServidor();
+    const temTrecho = Boolean(nota_.trecho) && copiado?.includes(nota_.trecho);
+    const temOrigem = /—\s+\S/.test(copiado || '');
+    return {
+      ok: temTrecho && temOrigem && /Copiado com a origem/.test(dito),
+      medida: `${JSON.stringify((copiado || '').slice(0, 70))} · diz: "${dito}"`,
+    };
+  });
+
   return { passos, verdes: passos.filter(p => p.ok).length, de: passos.length };
 })()

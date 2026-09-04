@@ -6,7 +6,7 @@ import { Folha } from "../componentes/Folha.jsx";
 import { DESTAQUES } from "./Leitura.jsx";
 import {
   apagarNota, criarEstudo, desligarNotas, editarNota, lerEstudos, lerNota,
-  lerSugestoes, lerTodasAsNotas, ligarNotas, reunirNoEstudo,
+  lerSugestoes, lerTodasAsNotas, ligarNotas, reunirNoEstudo, tirarDoEstudo,
 } from "../../../contrato/api.js";
 import "./nota.css";
 
@@ -65,6 +65,7 @@ export function Nota() {
   const [nota, setNota] = useState(null);
   const [erro, setErro] = useState(null);
   const [escrevendo, setEscrevendo] = useState(false);
+  const [copiado, setCopiado] = useState(null);
   const [texto, setTexto] = useState("");
   const [outras, setOutras] = useState([]);
   const [estudos, setEstudos] = useState([]);
@@ -183,6 +184,9 @@ export function Nota() {
           nota.comentario && <p className="npag-escrita">{nota.comentario}</p>
         )}
 
+        {/* O RECADO DO COPIAR fica junto das ações, e some sozinho. */}
+        {copiado && <p className="npag-copiado" role="status">{copiado}</p>}
+
         <div className="npag-acoes">
           {nota.livro && (
             <Botao tom="secundaria" onClick={() => navegar(`/leitura/${nota.livro.id}`)}>
@@ -194,6 +198,45 @@ export function Nota() {
               {nota.comentario ? "Editar o que escrevi" : "Escrever ao lado"}
             </Botao>
           )}
+          {/* COPIAR COM ORIGEM — nó `895:8848`.
+              
+              "Com origem" é a coisa toda: um trecho colado sem de onde veio vira
+              uma frase órfã no documento de alguém, e reencontrar a fonte depois
+              é trabalho que ninguém faz. Vai a citação, o livro e o capítulo — e
+              o que a pessoa escreveu ao lado, quando escreveu, porque é dela.
+              
+              A nota do Kindle não tem livro daqui, e a `origem` dela é o título
+              que o Kindle escreveu; a nota solta do Canvas não tem nenhum dos
+              dois, e aí a origem é essa: escrita aqui. Nenhum dos três casos
+              inventa procedência.
+              
+              E o produto DIZ quando não conseguiu, como a paleta da leitura já
+              fazia: `clipboard.write` é recusado por permissão, por documento
+              sem foco, por navegador antigo. */}
+          <Botao
+            tom="secundaria"
+            onClick={async () => {
+              const de = nota.livro
+                ? `${nota.livro.titulo}, capítulo ${(nota.capitulo ?? 0) + 1}`
+                : nota.origem
+                  ? `${nota.origem} · trazida do Kindle`
+                  : "escrita no Canvas, sem livro";
+              const texto = [
+                nota.trecho ? `“${nota.trecho}”` : null,
+                `— ${de}`,
+                nota.comentario ? `\n${nota.comentario}` : null,
+              ].filter(Boolean).join("\n");
+              try {
+                await navigator.clipboard.writeText(texto);
+                setCopiado("Copiado com a origem.");
+              } catch {
+                setCopiado("O navegador não deixou copiar. Use Ctrl+C.");
+              }
+              setTimeout(() => setCopiado(null), 2500);
+            }}
+          >
+            Copiar com origem
+          </Botao>
           <Botao
             tom="secundaria"
             onClick={async () => {
@@ -211,21 +254,41 @@ export function Nota() {
             A mesma nota pode estar em mais de um — ela não escolhe um assunto.
           </p>
           <div className="nota-chips">
-            {estudos.map((e) => (
-              <button
-                key={e.id}
-                type="button"
-                className={`chip${nosEstudos.has(e.id) ? " dentro" : ""}`}
-                aria-pressed={nosEstudos.has(e.id) ? "true" : "false"}
-                onClick={async () => {
-                  if (nosEstudos.has(e.id)) return;
-                  await reunirNoEstudo(e.id, nota.id);
-                  buscar();
-                }}
-              >
-                {e.nome}
-              </button>
-            ))}
+            {/* O CHIP TIRA TAMBÉM — e até 03/09 ele só somava.
+                
+                `if (nosEstudos.has(e.id)) return;` fazia o chip de um estudo em
+                que a nota JÁ ESTÁ aceitar o clique e não responder, que é o
+                defeito que o `CLAUDE.md` nomeia: botão que não responde ensina a
+                não clicar. E não havia outro caminho — a rota
+                `DELETE /estudos/{id}/notas/{id}` existia sem nada que a
+                chamasse.
+                
+                O QUADRO PÕE "Remover dos estudos" COMO AÇÃO SEPARADA, na linha
+                das ações da nota, e aqui ele não serve: a mesma nota pode estar
+                em vários estudos — a linha logo acima diz isso —, e uma ação só
+                teria de tirar de todos sem dizer quais, ou abrir um escolhedor
+                que o quadro não tem. O chip já mostra de quais ela é; tirar é o
+                mesmo gesto no mesmo lugar. A divergência está no DESVIOS.md, com
+                as palavras do quadro no `title`. */}
+            {estudos.map((e) => {
+              const dentro = nosEstudos.has(e.id);
+              return (
+                <button
+                  key={e.id}
+                  type="button"
+                  className={`chip${dentro ? " dentro" : ""}`}
+                  aria-pressed={dentro ? "true" : "false"}
+                  title={dentro ? "Remover dos estudos" : `Reunir em ${e.nome}`}
+                  onClick={async () => {
+                    if (dentro) await tirarDoEstudo(e.id, nota.id);
+                    else await reunirNoEstudo(e.id, nota.id);
+                    buscar();
+                  }}
+                >
+                  {e.nome}
+                </button>
+              );
+            })}
             {!estudos.length && (
               <p className="nota-aviso">
                 Nenhum estudo ainda. <Link to="/estudos">Começar um</Link>.

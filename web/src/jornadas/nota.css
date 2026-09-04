@@ -172,3 +172,12 @@
  * LIGACAO como as outras duas: propoe que um grupo vire uma gaveta, e por isso
  * traz um botao em vez de uma lista clicavel. */
 .nota-talvez-estudo { display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
+
+/* O recado do "Copiar com origem". Ele diz o que aconteceu — copiou, ou o
+ * navegador recusou — e some em dois segundos e meio. Fingir que copiou quando
+ * a área de transferência foi negada é a tela mentindo sobre o que ela fez. */
+.npag-copiado {
+  margin: 0 0 12px;
+  color: var(--muted-foreground);
+  font-size: 14px; line-height: 22px;
+}

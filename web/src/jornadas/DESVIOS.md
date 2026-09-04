@@ -1363,3 +1363,24 @@ pede um link, ele chega por e-mail, vale quinze minutos."*
 **O quadro não foi corrigido, foi datado** — a política está em
 `docs/TELAS-FIGMA.md`. Ele registra que o produto já planejou senha, que é o
 contexto de por que a tela de Segurança precisa dizer o contrário em voz alta.
+
+## "Remover dos estudos" virou o próprio chip · 03/09/2026
+
+**O que o frame tem:** o `895:8657` põe *"Remover dos estudos"* como ação de
+texto na linha de ações da nota, ao lado de "Revisar depois".
+
+**O que foi construído:** o chip do estudo passou a TIRAR além de somar, com as
+palavras do quadro no `title` do chip aceso.
+
+**A razão, e ela é do próprio produto:** a mesma nota pode estar em vários
+estudos — a linha logo acima dos chips diz isso com todas as letras: *"A mesma
+nota pode estar em mais de um — ela não escolhe um assunto."* Uma ação única
+"Remover dos estudos" teria de tirar de TODOS sem dizer quais, que é destrutivo e
+mudo, ou abrir um escolhedor que o quadro não tem. O chip já mostra de quais ela
+é; tirar é o mesmo gesto, no mesmo lugar onde a informação está.
+
+**E havia um defeito embaixo disso.** O chip de um estudo em que a nota JÁ
+ESTAVA aceitava o clique e não fazia nada (`if (nosEstudos.has(e.id)) return;`) —
+botão que não responde, que o `CLAUDE.md` nomeia como o jeito de ensinar alguém a
+não clicar. A rota `DELETE /estudos/{id}/notas/{id}` existia sem nada que a
+chamasse.
