@@ -284,7 +284,7 @@ export function Nota() {
             value={procura}
             onChange={(e) => setProcura(e.target.value)}
           />
-          <ul className="nota-candidatas">
+          <ul className="nota-candidatas nota-candidatas-folha">
             {candidatas.map((o) => (
               <li key={o.id}>
                 <button
@@ -384,20 +384,50 @@ export function Nota() {
                   <ul className="nota-candidatas">
                     {sugestoes[chave].map((sug) => (
                       <li key={sug.id}>
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            await ligarNotas(nota.id, sug.id);
-                            buscar();
-                            lerSugestoes(id).then(setSugestoes).catch(() => {});
-                          }}
-                        >
+                        {/* DUAS AÇÕES, e não um cartão que liga ao ser tocado.
+                          
+                          O nó `895:8780` põe as duas lado a lado —
+                          "Confirmar a ligação" e "Ir para nota" —, e a diferença
+                          não é de arranjo: até 03/09 o cartão INTEIRO era um
+                          botão que ligava no primeiro clique. Não havia como ler
+                          a candidata antes de afirmar que ela se liga, e ligar é
+                          o ato de quem diz que duas notas se falam. O produto
+                          fazia a pessoa dizer isso sobre um trecho de duas
+                          linhas que ela não podia abrir.
+                          
+                          "Confirmar" é o verbo do quadro, e ele está certo aqui:
+                          a sugestão já foi feita pelo sistema; o que falta é o
+                          aceite. */}
+                        <div className="candidata">
                           <span className="marca-cor" style={{ background: DESTAQUES[sug.cor] }} />
-                          <span className="candidata-texto">{sug.trecho}</span>
-                          <span className="candidata-origem">
-                            {sug.quantas} em comum: {sug.palavras.join(", ")}
-                          </span>
-                        </button>
+                          <div className="candidata-corpo">
+                            <span className="candidata-texto">{sug.trecho}</span>
+                            {/* A CONTAGEM FICA AO LADO, que é o que o
+                                `CLAUDE.md` exige de toda sugestão: ela precisa
+                                poder ser discordada, e para isso a pessoa tem de
+                                ver com base em quê. */}
+                            <span className="candidata-origem">
+                              {sug.quantas} em comum: {sug.palavras.join(", ")}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="candidata-acoes">
+                          <Botao
+                            tom="secundaria"
+                            onClick={async () => {
+                              await ligarNotas(nota.id, sug.id);
+                              buscar();
+                              lerSugestoes(id).then(setSugestoes).catch(() => {});
+                            }}
+                          >
+                            Confirmar a ligação
+                          </Botao>
+                          {/* IR PARA NOTA é navegação, e não ato: ela abre a
+                              candidata para ser lida, e não liga nada. */}
+                          <Link to={`/nota/${sug.id}`} className="candidata-ir">
+                            Ir para nota
+                          </Link>
+                        </div>
                       </li>
                     ))}
                   </ul>

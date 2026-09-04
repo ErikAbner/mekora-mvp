@@ -89,7 +89,16 @@
 
 .nota-ligadas li { display: flex; align-items: center; gap: 12px; }
 
-.nota-ligadas a, .nota-candidatas button {
+/* A REGRA DEIXOU DE FALAR DE `button`, e a razão é a mesma que já custou uma
+ * rodada na lista de "Trazer": um seletor amplo pega o filho errado quando a
+ * marcação muda. Aqui a candidata ganhou duas AÇÕES, e `.nota-candidatas button`
+ * cairia nelas — dando a um botão de ação o grid de 14px de um item de lista.
+ * Cada uma tem nome próprio agora. */
+/* A LISTA DA FOLHA "Ligar esta nota a qual?" continua sendo um item clicável:
+ * ali o gesto é ESCOLHER entre quarenta notas, e o cartão inteiro é o alvo. A
+ * candidata da sugestão é outra coisa — ver as duas ações, abaixo — e por isso
+ * as duas listas deixaram de dividir o seletor. */
+.nota-ligadas a, .candidata, .nota-candidatas-folha button {
   flex: 1 1 auto;
   display: grid;
   grid-template-columns: 14px minmax(0, 1fr);
@@ -104,16 +113,31 @@
   line-height: 24px;
   text-align: start;
   text-decoration: none;
-  cursor: pointer;
 }
 
-.nota-ligadas a:hover, .nota-candidatas button:hover { border-color: var(--foreground); }
-.nota-ligadas a:focus-visible, .nota-candidatas button:focus-visible,
+.nota-ligadas a:hover, .nota-candidatas-folha button:hover { border-color: var(--foreground); }
+.nota-ligadas a:focus-visible, .nota-candidatas-folha button:focus-visible,
 .nota-ligadas li > button:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
 
 .marca-cor { inline-size: 14px; block-size: 14px; }
-.candidata-texto { font-size: 16px; line-height: 24px; }
-.candidata-origem { grid-column: 2; font-size: 14px; line-height: 20px; color: var(--muted-foreground); }
+/* O CORPO É QUEM ENCOLHE — `min-inline-size: 0` desfaz o mínimo automático, que
+ * é a peça que faltava na lista de Trazer e o motivo de o título estourar lá. */
+.candidata-corpo { min-inline-size: 0; display: flex; flex-direction: column; gap: 4px; }
+.candidata-texto { font-size: 16px; line-height: 24px; text-wrap: pretty; }
+.candidata-origem { font-size: 14px; line-height: 22px; color: var(--muted-foreground); }
+
+/* AS DUAS AÇÕES DO NÓ `895:8780`, lado a lado. "Confirmar a ligação" é o ato;
+ * "Ir para nota" é navegação, e por isso é texto sublinhado e não caixa — a
+ * terceira categoria de interação do `CLAUDE.md` não empata com a primeira. */
+.nota-candidatas li { display: flex; flex-direction: column; gap: 12px; }
+.candidata-acoes { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.candidata-ir {
+  color: var(--muted-foreground);
+  font-size: 16px; line-height: 24px;
+  text-decoration: underline;
+}
+.candidata-ir:hover { color: var(--foreground); }
+.candidata-ir:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
 
 .nota-ligadas li > button {
   flex: 0 0 auto;

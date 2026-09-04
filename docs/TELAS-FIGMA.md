@@ -247,6 +247,19 @@ Então a política, e ela vale para todos os casos que vierem:
 | `966:25321` · M · Conta | um campo de **Senha** | **`DEC-0039`** — a entrada é por link no e-mail, e não há senha. A tela de Segurança diz isso com todas as letras. Retrato e Nome, do mesmo quadro, **foram construídos** em 02/09 |
 | `895:8545` e `966:30269` · Conexões | o **cabeçalho** da seção de ligações, escrito **"Relacionadas"** | **Só o cabeçalho é superado; a AÇÃO do mesmo quadro é mantida.** A seção continua sendo a do quadro, com a ação do quadro — "Conectar outra nota" → *"Ligar esta nota a qual?"* —, e o produto a chama de **"Ligadas"**. Ver a razão abaixo |
 
+### Conexões · construído em 03/09: as duas ações da candidata
+
+O nó `895:8780` põe **duas** ações lado a lado em cada sugestão — *"Confirmar a
+ligação"* e *"Ir para nota"*. O produto tinha uma só, e nem era botão: **o cartão
+inteiro era clicável e ligava no primeiro toque.**
+
+Não havia como LER a candidata antes de afirmar que ela se liga — e ligar é o ato
+de quem diz que duas notas se falam. O produto fazia a pessoa dizer isso sobre um
+trecho de duas linhas que ela não podia abrir.
+
+As duas são de categorias de interação diferentes, e o desenho respeita isso:
+"Confirmar" é botão (ato), "Ir para nota" é texto sublinhado (navegação).
+
 ### Por que o cabeçalho de Conexões é o único superado
 
 **O quadro se contradiz, e o produto escolheu o sinal mais forte dele.** O

@@ -69,3 +69,18 @@ Para o React reler o que entrou pela API, sai-se pelo roteador e volta-se com
 E a escada tem prova unitária separada, no navegador, junto do resto do leitor:
 
     node scripts/medir.mjs http://localhost:5180 1440 900 web/src/leitor/prova.js
+
+## A jornada de Conexões
+
+`conexoes.js` — as duas ações da candidata, 8 passos. Ela afirma o que cada uma
+NÃO faz, que é onde estava o defeito: tocar o corpo do cartão não liga, e "Ir
+para nota" navega sem ligar.
+
+    node scripts/medir.mjs "http://localhost:5180/entrar/$K" 1440 1000 \
+      scripts/bancada/conexoes.js --depois="http://localhost:5180/notas"
+
+**Duas listas usam `.nota-candidatas`** — a das sugestões e a da folha "Ligar
+esta nota a qual?". A medida precisa do escopo `.nota-sugestoes`: sem ele a
+primeira versão pegou as 12 notas da folha, disse "12 candidatas" e reprovou
+quatro passos por não achar botão nenhum. Mediu a lista errada e reprovou o
+produto certo.
