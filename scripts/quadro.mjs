@@ -122,14 +122,36 @@ function palpitar(rota) {
   return alvos;
 }
 
+/* CARIMBO CONTRA CARIMBO, e não carimbo contra data.
+ *
+ * A primeira versão comparava `%cI` do git — `2026-09-04T13:22:07-03:00` — com
+ * o que estava no livro, que podia ser só `2026-09-04`. Em texto,
+ * `"2026-09-04T13:22:07-03:00" > "2026-09-04"` é SEMPRE verdadeiro: qualquer
+ * commit no mesmo dia vencia a conferência feita naquele dia.
+ *
+ * Isso não é rigor a mais: é ruído. Uma tela conferida hoje nunca conseguiria
+ * ficar verde hoje, e portão que não consegue ficar verde é portão que se
+ * aprende a ignorar — a mesma morte de sempre.
+ *
+ * Conferência com data solta passa a valer até o FIM daquele dia; com carimbo,
+ * vale a partir do instante. Quem confere de verdade grava carimbo. */
 function mudouDepois(arquivos, data) {
+  /* Sem hora no livro, compara-se DIA com DIA — e em texto, porque `%cI` já
+     começa com a data local no formato certo. A tentativa anterior somava um
+     fim-de-dia com fuso `+14:00`, o que em UTC ADIANTA o limite em vez de
+     atrasá-lo: um commit das 12:29 local passou a "vencer" uma conferência do
+     mesmo dia. Aritmética de fuso é onde se erra o sinal; comparar o texto da
+     data não tem sinal para errar. */
+  const comHora = data.includes('T');
   const depois = [];
   for (const arq of arquivos) {
     let quando;
     try {
       quando = execFileSync('git', ['log', '-1', '--format=%cI', '--', arq], { cwd: RAIZ, encoding: 'utf8' }).trim();
     } catch { continue; }
-    if (quando && quando > data) depois.push(`${arq} (${quando.slice(0, 10)})`);
+    if (!quando) continue;
+    const passou = comHora ? new Date(quando) > new Date(data) : quando.slice(0, 10) > data;
+    if (passou) depois.push(`${arq} (${quando.slice(0, 16).replace('T', ' ')})`);
   }
   return depois;
 }
