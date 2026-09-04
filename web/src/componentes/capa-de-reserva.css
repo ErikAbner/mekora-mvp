@@ -12,8 +12,16 @@
   inline-size: 100%;
   block-size: 100%;
   aspect-ratio: 420 / 594;
-  background: #f4f2ec;
-  color: #111;
+  /* AS TRÊS CORES SAEM DE VARIÁVEL, e não à toa: o Erik quer que a pessoa
+     possa trocá-las — "são placeholders pra eles" —, e ele mesmo disse que os
+     valores ainda não foram refinados. Com variável, refinar é uma linha e
+     deixar a pessoa escolher é passar outra. Sem, seria caçar hex em quinze
+     lugares. */
+  --capa-papel: #f4f2ec;
+  --capa-tinta: #111111;
+  --capa-trama: #d9d9d9;
+  background: var(--capa-papel);
+  color: var(--capa-tinta);
   overflow: hidden;
   container-type: inline-size;
   /* Tudo em `cqw` — a capa vive em 420px no desenho e em 252px na grade a 1440.
@@ -27,7 +35,20 @@
 .cr-titulo {
   font-family: var(--fonte-titulo, "Zodiak Variable", Georgia, serif);
   font-weight: 900;
-  font-size: var(--corpo-titulo);
+  /* O CORPO DO TÍTULO É DEGRAU, e não proporção pura.
+   *
+   * O desenho fixa 32px numa capa de 420 — uma PROPORÇÃO. A escala tipográfica
+   * fixa degraus discretos (14, 16, 18, 20, 22, 24…). Proporção pura quase
+   * nunca cai em degrau: medido, a capa de 252px do computador punha o título
+   * em 19px, e o portão acusou `corpo_fora_da_escala`, degrau mais perto 18.
+   *
+   * Aqui o desenho e o sistema se contradizem, e o sistema vence: 19px não é um
+   * corpo, é um acidente de divisão. 20 é o degrau vizinho e o mais próximo dos
+   * 19,2 que a proporção pedia. No telefone a capa mede ~159 e a proporção
+   * pediria 12; o degrau é 14.
+   *
+   * `--corpo-titulo` continua existindo para as variantes que precisem dele. */
+  font-size: 20px;
   line-height: 1.375;
   /* O desenho põe `nowrap` porque lá o título é escolhido e curto. Aqui é NOME
      DE ARQUIVO. Com `nowrap` ele vazaria pela lateral — a mesma classe que o
@@ -88,8 +109,8 @@
 .capa-de-reserva[data-capa="1"] .cr-rodape {
   grid-area: rodape;
   padding: 3.81cqw var(--pad);
-  background: #000;
-  color: #f4f2ec;
+  background: var(--capa-tinta);
+  color: var(--capa-papel);
 }
 .capa-de-reserva[data-capa="1"] .cr-formato {
   font-family: var(--fonte-mono, "IBM Plex Mono", ui-monospace, monospace);
@@ -112,7 +133,7 @@
 .capa-de-reserva[data-capa="2"] .cr-credito { align-self: flex-end; }
 .capa-de-reserva[data-capa="2"] .cr-arte {
   grid-area: arte;
-  background: #d9d9d9 url("/capas/trama.png") center / cover no-repeat;
+  background: var(--capa-trama) url("/capas/trama.png") center / cover no-repeat;
 }
 .capa-de-reserva[data-capa="2"] .cr-rodape {
   grid-area: rodape;
@@ -135,7 +156,7 @@
 }
 .capa-de-reserva[data-capa="3"] .cr-arte {
   grid-area: arte;
-  background: #d9d9d9 url("/capas/trama.png") center / cover no-repeat;
+  background: var(--capa-trama) url("/capas/trama.png") center / cover no-repeat;
   /* Três ladrilhos com vão de 8px: as faixas de papel entre eles são feitas com
      gradiente sobre a mesma trama, para não pedir três nós ao DOM. */
   -webkit-mask-image: linear-gradient(#000 0 0);
@@ -147,7 +168,7 @@
 .capa-de-reserva[data-capa="3"] .cr-arte::before,
 .capa-de-reserva[data-capa="3"] .cr-arte::after {
   content: ""; position: absolute; inset-inline: 0; block-size: 1.9cqw;
-  background: #f4f2ec;
+  background: var(--capa-papel);
 }
 .capa-de-reserva[data-capa="3"] .cr-arte::before { inset-block-start: calc(33.33% - 0.95cqw); }
 .capa-de-reserva[data-capa="3"] .cr-arte::after  { inset-block-start: calc(66.66% - 0.95cqw); }
@@ -194,7 +215,7 @@
   grid-area: arte; align-self: end;
   inline-size: calc(100% - 2 * var(--pad));
   aspect-ratio: 356 / 403;
-  background: #000;
+  background: var(--capa-tinta);
   mix-blend-mode: saturation;
 }
 .capa-de-reserva[data-capa="12"] .cr-rodape {
@@ -219,7 +240,7 @@
 @container (max-width: 200px) {
   .capa-de-reserva .cr-credito,
   .capa-de-reserva .cr-rodape { display: none; }
-  .capa-de-reserva .cr-titulo { font-size: max(14px, var(--corpo-titulo)); }
+  .capa-de-reserva .cr-titulo { font-size: 14px; }
 }
 
 /* O MESMO, POR LARGURA DE JANELA — porque a consulta de contêiner não pegou.
@@ -234,5 +255,5 @@
 @media (max-width: 767px) {
   .capa-de-reserva .cr-credito,
   .capa-de-reserva .cr-rodape { display: none; }
-  .capa-de-reserva .cr-titulo { font-size: max(14px, var(--corpo-titulo)); }
+  .capa-de-reserva .cr-titulo { font-size: 14px; }
 }

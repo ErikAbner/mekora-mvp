@@ -191,22 +191,36 @@ Estado de cada um: `docs/RETORNO-2026-09-02.md`.
 **Onde:** todas
 **Medido em 04/09:** Medido na Leitura: ha computados com `text-box-trim: trim-both`. Continua aplicado.
 **Medido em 04/09, na Estante:** vivo em `web/src/estilo/base.css:117`, global. Um título de uma linha mede `clientHeight` 17 onde a linha pede 32; de duas linhas, 57 onde pede 64. **Quinze pixels por linha a menos do que o texto ocupa.** Consequência para a Fase 2a: varredura de transbordo que compare `scrollHeight` com `clientHeight` acusa FALSO em toda tela enquanto ele estiver lá — aconteceu aqui hoje, seis títulos "cortados" que não estavam cortados.
+
+**Medido de novo em 04/09, e não é só a varredura: o trim CORTA TINTA.** `text-box-edge: cap alphabetic` fecha a caixa na linha de base, e descendente mora abaixo dela. No `.livro-texto h3` da Estante, que tem `overflow: hidden` por causa do corte em duas linhas do R-46, a conta fecha assim: Zodiak Variable 24px tem `actualBoundingBoxDescent` de **4,8px**, a base da última linha cai em 698,7 e o fundo da caixa em 698,2 — **5,3px de tinta abaixo do recorte**. Na captura, o "p" de "campo", o "q" de "Sequência" e o "ç" de "Apresentação" saem cortados.
+
+Isso muda a ordem: enquanto o trim estiver lá, todo bloco que ganhar `overflow: hidden` — e o corte em duas linhas do R-46 é um — passa a raspar descendente. **A varredura de transbordo é a segunda vítima, não a primeira.**
+
+O escopo é grande, e está escrito no próprio `base.css`: o trim entrou junto com a decisão de tirar os vãos que eram meia-entrelinha sobrando, e removê-lo devolve 654px à Ajuda, 703px às Atualizações e 431px aos Termos — três telas que voltam a ter vão sem decisão. Tirar o trim sem pôr o vão do Figma no lugar troca um defeito por outro.
+**DECIDIDO pelo Erik em 04/09:** o trim FICA por enquanto, e o R-27 vira item da Fase 4. Tirá-lo agora devolve 654px à Ajuda, 703px às Atualizações e 431px aos Termos — três telas que voltam a ter vão sem decisão, e a decisão do vão é justamente o que a leitura do quadro vai dar. Tirar antes trocaria um defeito por três telas redesenhadas às cegas. Sai quando o substituto do vão vier junto, do Figma.
+**Consequência enquanto ficar:** todo bloco de h1..h6/p/li que ganhar `overflow: hidden` precisa de `text-box-edge: cap text` + `padding-block-end: 0.2em`, senão corta descendente. E a varredura de transbordo da Fase 2a usa a MESMA CAIXA contra ela mesma (antes e depois), e não `scrollHeight` contra `clientHeight` — o critério do r46, o único dos três que sobreviveu ao controle negativo.
 **Prova:** sem-prova
 
-### R-46 · 2026-09-04 · aberto
+### R-46 · 2026-09-04 · fechado
 **Erik:** "limitar a quantidade de caracteres do titulo do arquivo aparecendo na estante, se nao, vai ter texto enorme quebrando o layout e fazendo a tela perder o sentido"
 **Onde:** /estante
 **Feito em 04/09:** corte em DUAS LINHAS, não em número de caracteres — contagem não sabe a largura do glifo, e `IIIIIIIIIIIIIIIIIIII` e `WWWWWWWWWWWWWWWWWWWW` têm vinte caracteres e larguras muito diferentes. `title` no elemento devolve o nome inteiro. Veneno de 140 caracteres: o cartão cresceu **0px**, o título parou em 2 linhas, 6 cartões com 1 altura só (467px).
-**Falta:** a prova entra no `scripts/provas.mjs` — precisa da bancada de pé.
-**Prova:** sem-prova
+**Provado em 04/09, com a bancada de pé:** o nome longo entra na própria medida — prova que só vê nome curto não sabe dizer nada sobre nome comprido. Limpo, a caixa do nome cresceu **0px** e os 6 cartões ficaram com uma altura só; com o corte removido, ela esticou **192px**.
 
-### R-47 · 2026-09-04 · aberto
+**O instrumento errou duas vezes antes de acertar, e as duas por ler altura absoluta.** `Range.getClientRects()` devolve uma caixa por linha DIAGRAMADA, e o `-webkit-line-clamp` esconde as de baixo sem tirá-las do fluxo: 7 linhas no limpo e 7 no envenenado, com a tela cortando em 2 nos dois casos — controle negativo verde dos dois lados, que é o mesmo que não medir. Dividir altura por entrelinha erra pelo motivo do R-27. O que serve é a diferença da MESMA caixa antes e depois, que não carrega nem o corte nem o trim.
+**Prova:** `node scripts/provas.mjs r46`
+
+### R-47 · 2026-09-04 · fechado
 **Erik:** "tem um component set no figma com varias capas que criei justamente pro usuario n ficar sem capa caso o arquivo dele n tivesse uma... em caso de n haver borda ou lateral a gente segue o padrao de cor solida principal do livro"
 **Onde:** /estante, /canvas, /estante/:id
 **Lido em 04/09:** conjunto `1016:31030` — 14 capas de 420×594 e 14 lombadas de 58×594, mapeadas em `docs/TELAS-FIGMA.md`. São gabaritos que recebem o título, não fundos. Paleta: `#f4f2ec`, `#101010`, `#d9d9d9`.
 **Feito:** uma peça só (`componentes/CapaDeReserva.jsx`) no lugar de TRÊS implementações divergentes — `.capa-vazia`, `.livro-capa-vazia`, `.livro-pagina-capa-vazia` —, com a variante saindo do token do trabalho: mesmo livro, mesma capa, sempre.
-**Falta:** a ARTE das catorze. Cada variante tem nó próprio; entra como regra `[data-capa]`, sem tocar no componente.
-**Prova:** sem-prova
+**Falta:** a ARTE das catorze. Cada variante tem nó próprio; entra como regra `[data-capa]`, sem tocar no componente. Isso não segura o fechamento: o que o item cobra é o livro sem capa não virar buraco, e isso está na tela e medido.
+
+**Visto na tela em 04/09, e não só em processo.** O caminho estava provado em teste com controle negativo nos dois sentidos, e mesmo assim nunca tinha aparecido: a estante de prova tinha 6 livros e os 6 tinham capa. **`scripts/semear.py` passou a semear um sem capa de propósito** — "Cadernos de campo" — e a razão está escrita lá: acervo de prova onde todo arquivo é perfeito é acervo que só sabe dizer que está tudo bem. Foi assim que três implementações divergentes do mesmo estado conviveram sem nenhuma chegar à tela.
+
+Medido: o cartão sem capa desenha `.capa-de-reserva` com variante `1`, papel `rgb(244, 242, 236)`, o título dentro, e a caixa **252×356 — razão 0,707, a mesma 420/594 da capa de verdade**, com a mesma largura dos outros cinco. Nenhuma moldura quebrada na estante. Envenenado (o gabarito trocado pela `<img>` sem arquivo, que é o estado anterior), a prova acusa: *capa quebrada na estante, e nao o gabarito: Cadernos de campo*.
+**Prova:** `node scripts/provas.mjs r47`
 
 ### R-28 · 2026-09-01 · aberto
 **Erik:** "Clico em adicionar cor (criar destaque, não nota) e o texto da leitura não muda de cor — botão que não pressiona, não muda, não dá feedback"
@@ -309,7 +323,7 @@ Estado de cada um: `docs/RETORNO-2026-09-02.md`.
 **Medido em 04/09:** A causa não era do produto: cada cartão apontava para o seu próprio arquivo. Errado estava o DADO — `scripts/semear.py` tinha **quatro** imagens de exemplo para **seis** livros, e `exemplo-1` servia a dois títulos (Malha Urbana e Relatório de pesquisa), `exemplo-3` a outros dois. E havia um segundo defeito embaixo: a lista pedia `exemplo-1.png` e o que existe em disco é `.webp`, então o `if origem.exists()` pulava a cópia **em silêncio** — as capas que apareciam eram restos de uma rodada antiga. Agora cada livro ganha uma capa distinta, com o título escrito nela, e arquivo de exemplo faltando é erro que fala.
 **Prova:** `node scripts/provas.mjs r44`
 
-### R-45 · 2026-09-04 · aberto
+### R-45 · 2026-09-04 · fechado
 **Erik:** (não é dele — saiu de medir a outra metade do R-44, a pedido dele: "quando a extração de capa de um livro REAL falha, o cartão cai em `.capa-vazia` ou fica com imagem de outro livro?")
 **Onde:** /estante · `backend/app/api/jobs.py`
 **Medido em 04/09:** Nenhuma das duas. A resposta é uma terceira: o cartão fica com um `<img class="capa">` **quebrado** — `naturalWidth: 0`, `complete: true`, e **sem** `.capa-vazia`. Imagem de outro livro não acontece: `serve_thumbnail` resolve o token para o `job_id` e lê de `STORAGE_TEMP/{job_id}`, então cada cartão só pode servir o próprio diretório. O que acontece é que `jobs.py` monta `cover_url` de `token_publico` + número da página **sempre que há `page_count`**, sem olhar se o arquivo existe — e a tela confia: `capa: e.cover_url ?? null`, e `capa ? <img> : <div class="capa capa-vazia">`. Um `cover_url` não-nulo apontando para 404 é justamente o caso em que o `.capa-vazia` existe e não é usado.
@@ -320,5 +334,18 @@ O `scripts/semear.py` já sabia disso e contornou: *"TODOS OS LIVROS TÊM CAPA..
 
 **Isto não reabre o R-44.** O R-44 diz "capa do livro errado", e capa de outro livro está medida como impossível por construção. Este é outro defeito, com outro sintoma, e por isso outro número.
 
-**Conserto de uma linha, quando for a vez:** `jobs.py` conferir o arquivo em disco antes de emitir `cover_url` — sem arquivo, `None`, e a tela já cai sozinha no `.capa-vazia`, que existe exatamente para isto.
+**Consertado em 04/09, e maior do que a linha que eu previ.** Eram CINCO emissores — a Estante (`api/jobs.py`), a busca, os Estudos, o Canvas e as miniaturas (`services/pdf_service.py`) —, e nenhum conferia o arquivo. `services/capa_service.py` passou a ser o único, e ele devolve `None` sem arquivo em disco.
+
+**E havia um segundo defeito embaixo, que eu não tinha visto:** a capa morava em `storage/temp/{id}`, e o `cleanup_old_jobs` faz `rmtree` de `temp` depois de `retention_days`. Está escrito no próprio limpador que a pasta de saída fica de propósito, porque apagá-la "apagaria o EPUB da estante de alguém trinta dias depois" — a capa não tinha tido a mesma consideração. Ela estava na pasta que a política existe para apagar, enquanto a estante que a mostra é permanente. Agora a capa é **promovida** para `storage/covers/{id}/capa.png` no fim da análise e a cada troca; `backend/scripts/promover_capas.py` faz o acervo que já existia (medido: 1 com miniatura em disco, 13 com PDF de origem, o resto sem de onde tirar — e sem de onde tirar é `.capa-de-reserva`, não moldura vazia).
+
+**A prova cobre os dois**, e cada metade foi alcançada sozinha no controle negativo: apontar uma capa para arquivo que não existe dá *"capa emitida sem arquivo, e a moldura sai quebrada"*; reescrever as cinco de `/storage/covers/` para `/storage/temp/` — com arquivo vivo, 0 quebradas — dá *"capa fora de /storage/covers, na pasta que a limpeza por idade apaga"*.
+**Prova:** `node scripts/provas.mjs r45`
+
+### R-48 · 2026-09-04 · aberto
+**Erik:** "seria interessante se o usuario pudesse trocar as cores, afinal, sao placeholders pra eles"
+**Onde:** capas de reserva — `componentes/CapaDeReserva.jsx`
+**Contexto:** o conjunto `1016:31030` desenha catorze capas para arquivos sem capa própria. Elas são do LEITOR, não do produto — daí a ideia de ele escolher a cor.
+**Preparado em 04/09:** as três cores saíram para variável (`--capa-papel`, `--capa-tinta`, `--capa-trama`) num lugar só, e a família `capa-reserva/*` entrou no portão como superfície própria. Trocar por pessoa passa a ser escrever as três variáveis em vez de caçar hex.
+**O que falta é produto, não CSS:** onde a pessoa escolhe, se a escolha é por livro ou geral, e onde ela é guardada — provavelmente ao lado das preferências de leitura. Não implementado: é recurso novo, e a fila do lançamento vem antes.
+**Nota do Erik, no mesmo dia:** "as cores tao erradas pq n refinei elas" — os valores atuais são os do quadro, e são provisórios por decisão dele.
 **Prova:** sem-prova

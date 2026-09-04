@@ -42,6 +42,12 @@
     '#2f7d55': 'estado/ok',
     '#976519': 'estado/atencao',
     '#b23b2a': 'estado/perigo',
+    // A tinta das capas de reserva. Ver a nota na tabela de superficies: a capa
+    // e conteudo, nao cromo, e o par papel/tinta dela foi conferido — #101010
+    // sobre #f4f2ec da 17,3:1, e o inverso o mesmo.
+    '#101010': 'capa-reserva/tinta',
+    '#111111': 'capa-reserva/tinta (do no)',
+    '#f4f2ec': 'capa-reserva/papel (sobre tinta)',
     // ESCURO. A primeira versão só conhecia o claro e reprovava a tela inteira
     // no escuro, acusando valores que ERAM do sistema — só não estavam na lista
     // dela. Mesma falha que o instrumento de token teve no mesmo dia: medida que
@@ -76,6 +82,24 @@
     '#ffbfc0': 'capa/rosa',
     '#fff8bf': 'capa/amarelo',
     '#bfdfff': 'capa/azul',
+    // AS CAPAS DE RESERVA SAO SUPERFICIE PROPRIA, decidido pelo Erik em 04/09.
+    //
+    // O conjunto `1016:31030` do Figma desenha capas para arquivos que nao
+    // trazem capa. Elas vieram com papel, tinta e trama que nao eram token
+    // nenhum, e o portao reprovou — com razao, porque hex solto e como a paleta
+    // volta a crescer sem ninguem decidir.
+    //
+    // A decisao foi a segunda saida das duas que estavam na mesa: capa de livro
+    // NAO E CROMO DE INTERFACE. Ela e conteudo com regra propria, como a nota
+    // colorida logo acima, e por isso entra como familia e nao como excecao.
+    //
+    // O ERIK DISSE QUE OS VALORES AINDA NAO FORAM REFINADOS. Estao aqui porque
+    // uma cor sem token e invisivel para toda medida; quando ele refinar, muda
+    // aqui e em `capa-de-reserva.css`, que e o unico lugar que as usa.
+    '#f4f2ec': 'capa-reserva/papel',
+    '#101010': 'capa-reserva/tinta',
+    '#111111': 'capa-reserva/tinta (do no)',
+    '#d9d9d9': 'capa-reserva/trama',
     // escuro: o fundo reusa surface/inverse, e os degraus sobem a partir dele
     '#1c1c1c': 'surface/sunken (escuro)',
     '#232323': 'surface/deep (escuro)',
