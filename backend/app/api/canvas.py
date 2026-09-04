@@ -13,7 +13,7 @@ from app.models.canvas import GrupoCanvas, Ligacao, LivroCanvas, MidiaCanvas, No
 from app.models.nota import CORES, Nota
 from app.models.processing_job import ProcessingJob
 from app.models.pessoa import Pessoa
-from app.services import acesso_service
+from app.services import acesso_service, capa_service
 
 router = APIRouter()
 
@@ -208,10 +208,11 @@ def superficie(
                 "titulo": j.final_title or j.detected_title or j.original_filename,
                 "autor": j.final_author or j.detected_author or "",
                 "paginas": j.page_count,
-                # A CAPA VEM POR TOKEN, e não por id — a mesma regra do resto do
-                # storage. Sem `token_publico` não há endereço, e o cartão cai no
-                # título, como o Preparo já faz.
-                "capa": f"/storage/temp/{j.token_publico}/page_0.png" if j.token_publico else None,
+                # A CAPA VEM DE UM LUGAR SÓ, e ele confere o arquivo.
+                # Cinco emissores montavam a URL sem olhar o disco; ver
+                # `services/capa_service.py`. Sem arquivo, `None`, e o cartão
+                # cai no título — como o Preparo já faz.
+                "capa": capa_service.url(j),
             }
             for lc, j in (
                 db.query(LivroCanvas, ProcessingJob)

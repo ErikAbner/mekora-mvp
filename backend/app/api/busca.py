@@ -34,7 +34,7 @@ from app.models.estudo import Estudo
 from app.models.nota import Nota
 from app.models.pessoa import Pessoa
 from app.models.processing_job import ProcessingJob
-from app.services import acesso_service
+from app.services import acesso_service, capa_service
 
 router = APIRouter()
 
@@ -132,7 +132,7 @@ def buscar(
                 "titulo": _titulo(j),
                 "autor": j.final_author or j.detected_author or "",
                 "formato": (j.input_format or "").upper(),
-                "capa": f"/storage/temp/{j.token_publico}/page_0.png" if j.token_publico else None,
+                "capa": capa_service.url(j),
             }
             for j in livros
         ],

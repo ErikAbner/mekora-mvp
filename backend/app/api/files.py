@@ -208,6 +208,32 @@ def serve_thumbnail(
     return _serve_validated(STORAGE_TEMP / str(job_id), [filename])
 
 
+@router.get("/storage/covers/{ref}/{filename}")
+def serve_cover(
+    ref: str,
+    filename: str,
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> FileResponse:
+    """Serve a capa PROMOVIDA — `storage/covers/{id}/capa.png`.
+
+    Mesma porta que a miniatura, e pela mesma razão: a capa é a primeira página
+    do documento, e a primeira página costuma trazer título, autor e às vezes o
+    nome de quem recebeu.
+
+    Ela existe separada de `/storage/temp/` porque a limpeza por idade apaga
+    `temp/{id}` e deixa `output/{id}` — a capa estava do lado errado dessa
+    linha, ilustrando uma estante permanente a partir de uma pasta que a
+    política existe para apagar. Ver `services/capa_service.py`.
+    """
+    from app.core.config import STORAGE_COVERS  # lazy p/ testes
+
+    if filename != "capa.png":
+        raise _not_found()
+    job_id = _autorizar(ref, mekora_sessao, db)
+    return _serve_validated(STORAGE_COVERS / str(job_id), [filename])
+
+
 @router.get("/storage/{rest:path}")
 def storage_catch_all(rest: str) -> None:
     """Qualquer outro caminho de /storage (db, config, input, backups…) → 404."""

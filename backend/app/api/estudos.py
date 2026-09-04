@@ -12,7 +12,7 @@ from app.db.database import get_db
 from app.models.estudo import Estudo, EstudoNota
 from app.models.nota import Nota
 from app.models.pessoa import Pessoa
-from app.services import acesso_service
+from app.services import acesso_service, capa_service
 
 router = APIRouter()
 
@@ -73,7 +73,7 @@ def _capas(db: Session, notas) -> dict:
         if pagina is None and (j.page_count or 0) > 0:
             pagina = 0
         if pagina is not None and j.token_publico:
-            fora[j.id] = f"/storage/temp/{j.token_publico}/page_{pagina}.png"
+            fora[j.id] = capa_service.url(j)
     return fora
 
 

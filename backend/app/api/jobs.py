@@ -40,6 +40,7 @@ from app.services.input_router_service import (
     detect_processing_mode,
     is_accepted,
 )
+from app.services import capa_service
 from app.services.pdf_service import analyze_pdf, get_thumbnail_urls
 
 router = APIRouter(tags=["jobs"])
@@ -56,7 +57,7 @@ def _to_job(record: ProcessingJob) -> dict:
     data["endereco"] = record.token_publico
     data["leitura_url"] = _leitura_url(record)
     data["epub_url"] = _epub_url(record)
-    data["thumbnails"] = get_thumbnail_urls(record.token_publico or "", data.get("page_count") or 0)
+    data["thumbnails"] = get_thumbnail_urls(record.token_publico or "", data.get("page_count") or 0, record.id)
     _sem_buracos(data)
     return data
 
@@ -251,7 +252,35 @@ def _leitura_url(record: ProcessingJob) -> str | None:
     # O `epub_path` continua sendo o que vai para o Kindle: a escolha e por
     # DESTINO, e nao por preferencia. O Kindle nao le WebP de forma confiavel.
     arquivo = record.epub_web_path or record.epub_path
-    return f"/storage/output/{record.token_publico}/{Path(arquivo).name}"
+    return _url_de_saida(record, arquivo)
+
+
+def _url_de_saida(record: ProcessingJob, arquivo: str) -> str | None:
+    """A URL de um arquivo em `output/{id}` — e `None` quando ele não está lá.
+
+    A METADE QUE FALTAVA DA CLASSE DA CAPA. Em 04/09 os cinco emissores de capa
+    passaram a conferir o disco (`services/capa_service.py`); estes dois não, e
+    ficaram certos por acidente: a migração de caminhos arrumou o que estava
+    quebrado, então hoje os catorze `leitura_url` apontam para arquivos que
+    existem. Amanhã não é garantido — a limpeza por idade e um disco cheio
+    fazem sumir sem avisar ninguém.
+
+    O `_leitura_url` já tinha a lição escrita no próprio docstring: "uma URL que
+    existe mas ainda não responde faz a tela abrir um leitor vazio, em vez de
+    dizer que o livro ainda está sendo preparado". Ele guardava contra o
+    `epub_path` estar VAZIO, que é o campo do banco, e não contra o arquivo
+    estar AUSENTE, que é o disco. São perguntas diferentes.
+
+    O caminho é montado pelo NOME do arquivo e pelo token, e não pelo caminho
+    guardado: o token é o que a rota `/storage/output/{ref}/…` sabe resolver.
+    Conferir, porém, é em `output/{id}` — é lá que o arquivo mora.
+    """
+    from app.core.config import STORAGE_OUTPUT
+
+    nome = Path(arquivo).name
+    if not (STORAGE_OUTPUT / str(record.id) / nome).exists():
+        return None
+    return f"/storage/output/{record.token_publico}/{nome}"
 
 
 def _bytes_de(caminho) -> int | None:
@@ -281,7 +310,7 @@ def _epub_url(record: ProcessingJob) -> str | None:
 
     if not record.epub_path or not record.token_publico:
         return None
-    return f"/storage/output/{record.token_publico}/{Path(record.epub_path).name}"
+    return _url_de_saida(record, record.epub_path)
 
 
 def _to_history(record: ProcessingJob) -> dict:
@@ -297,17 +326,17 @@ def _to_history(record: ProcessingJob) -> dict:
     #
     # Sem capa escolhida, a primeira página serve — um livro sem capa nenhuma na
     # estante parece defeito, e a primeira página é o que o leitor reconhece.
-    pagina = data.get("selected_cover_page")
-    if pagina is None and (data.get("page_count") or 0) > 0:
-        pagina = 0
-    # O ENDEREÇO USA O TOKEN, e não o número. Pelo número a capa só abriria
-    # para quem estivesse logado E fosse o dono — e um trabalho recém-enviado,
-    # sem conta, não é de ninguém ainda. A estante mostraria molduras vazias.
-    data["cover_url"] = (
-        f"/storage/temp/{record.token_publico}/page_{pagina}.png"
-        if pagina is not None and record.token_publico
-        else None
-    )
+    # A CAPA SAI DE UM LUGAR SÓ, E ELE CONFERE O ARQUIVO.
+    #
+    # Aqui a URL era montada de `page_count` + token sem olhar o disco, e o
+    # mesmo era feito em `busca.py`, `estudos.py` e `canvas.py` — cinco
+    # emissores, nenhum conferindo. Medido em 04/09: 32 de 37 trabalhos com
+    # `cover_url` não-nulo e dois diretórios em `storage/temp`.
+    #
+    # `capa_service.url` devolve `None` sem arquivo, e aí a tela usa o
+    # `.capa-vazia` — que existe no CSS desde sempre e nunca tinha sido
+    # alcançado, porque `cover_url` nunca era nulo.
+    data["cover_url"] = capa_service.url(record)
     data["endereco"] = record.token_publico
     data["leitura_url"] = _leitura_url(record)
     return data
@@ -420,6 +449,16 @@ def _bg_analyze(job_id: int, operation_id: str | None = None) -> None:
         thumbnails_dir = STORAGE_TEMP / str(job_id)
         passo("analyze", "Lendo o arquivo e contando as páginas")
         result = analyze_pdf(job.input_path, thumbnails_dir)
+
+        # A CAPA SAI DE `temp` ASSIM QUE EXISTE.
+        #
+        # `analyze_pdf` acabou de escrever `page_0..4.png` em `temp/{id}`, que é
+        # a pasta que `cleanup_old_jobs` apaga por idade. A estante que mostra a
+        # capa é permanente. Promover aqui é o que põe as duas do mesmo lado.
+        #
+        # Antes de `page_count` ser gravado no registro: `_origem` cai na
+        # página 0 quando não há escolha, e não precisa da contagem para isso.
+        capa_service.promover(job)
 
         # O ARQUIVO QUE ESPERA VOCÊ — "Precisa de você", do nó 895:9348.
         #
@@ -1208,9 +1247,15 @@ def update_cover(
                 detail="O índice de página deve estar entre 0 e 4.",
             )
         job.selected_cover_page = body.selected_cover_page
-        thumb = STORAGE_TEMP / str(job_id) / f"page_{body.selected_cover_page}.png"
-        if thumb.exists():
-            job.cover_path = str(thumb)
+        # `cover_path` PASSA A APONTAR PARA O PERMANENTE.
+        #
+        # Ele era o caminho dentro de `temp/{id}`, e é o que a conversão manda
+        # para o Calibre (`cover = Path(job.cover_path)`, mais acima). Depois da
+        # limpeza por idade esse caminho some, e uma reconversão perdia a capa
+        # em silêncio. Promovido, ele aponta para onde o arquivo fica.
+        promovida = capa_service.promover(job)
+        if promovida is not None:
+            job.cover_path = str(promovida)
 
     job.updated_at = datetime.utcnow()
     db.commit()

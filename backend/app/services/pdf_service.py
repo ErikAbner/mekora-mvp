@@ -116,14 +116,29 @@ def analyze_pdf(pdf_path: str, thumbnails_dir: Path) -> dict:
     }
 
 
-def get_thumbnail_urls(endereco: str, page_count: int) -> list[str]:
-    """Retorna as URLs relativas dos thumbnails gerados para um upload.
+def get_thumbnail_urls(endereco: str, page_count: int, job_id: int) -> list[str]:
+    """Retorna as URLs das miniaturas QUE ESTÃO EM DISCO.
 
-    Recebe o ENDEREÇO PÚBLICO do trabalho, não o número dele. A miniatura é
-    vista durante a análise, que acontece antes de existir conta — e pelo número
-    ela só abriria para um dono que ainda não há (DEC-0039 §5).
+    Recebe o ENDEREÇO PÚBLICO do trabalho, não o número dele, para montar a
+    URL: a miniatura é vista durante a análise, que acontece antes de existir
+    conta — e pelo número ela só abriria para um dono que ainda não há
+    (DEC-0039 §5). O número entra para achar a pasta, e não a URL.
+
+    A CONFERÊNCIA EM DISCO É NOVA, e é o motivo de o número ter passado a ser
+    exigido. A lista saía de `page_count` sozinho: cinco URLs para um trabalho
+    de cinco páginas, existissem os arquivos ou não. `cleanup_old_jobs` apaga
+    `temp/{id}` por idade, então para todo trabalho velho esta função devolvia
+    cinco endereços que dão 404 — e a tela de escolher capa mostrava cinco
+    molduras quebradas em vez de dizer que as miniaturas não estão mais lá.
+
+    Lista vazia é uma resposta: significa "não há miniatura", que é diferente de
+    "há cinco e todas falham".
     """
+    from app.core.config import STORAGE_TEMP
+
+    pasta = STORAGE_TEMP / str(job_id)
     return [
         f"/storage/temp/{endereco}/page_{i}.png"
         for i in range(min(5, page_count))
+        if (pasta / f"page_{i}.png").exists()
     ]
