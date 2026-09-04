@@ -1252,3 +1252,35 @@ No telefone o recheio era 40/24 e o vão 24, contra `py-64 px-16` e vão 64 do
 
 **Batem sem tocar:** coluna de prosa em 680 exatos, prosa 20/30 com recuo 32,
 título 64/72 peso 700 com tracking -2,5%. Portão passa a 1920 e a 390.
+
+## `895:6938` — D · Canvas, primeira medida contra o nó · 04/09
+
+**O que BATE, e é a maior parte:** o Dock em 86 de largura, encostado a 16 da
+esquerda, com três botões, recheio 16 e vão 16 — o `900:52962` inteiro. A nota
+em 375. A prosa da nota em Body/Medium 20/30. A seção com borda tracejada de
+1px e rótulo em 20/30. A posição do zoom (`bottom-16 right-16`).
+
+**Corrigido:** o dentro do controle de zoom. Recheio 4 e vão 4 com o valor em
+16px, onde o `895:7014` põe recheio 16, vão 24 e Body/Medium. A posição já
+estava certa; o que divergia era o interior — um controle apertado onde o
+desenho põe um respirado.
+
+**Aberto, e é decisão do Erik:** o recheio da nota. O nó `895:7033` põe 40; a
+folha põe 24, e a razão está escrita nela:
+
+> *"Antes: 40px de recheio e uma sombra dupla forte que fazia o cartão ler como
+> bloco flutuante, não como artefato de estudo. Agora: recheio na grade (24px, o
+> passo da malha), um filete fino e uma sombra sussurrada."*
+
+Isso não é descuido: é uma decisão tomada com argumento, contra o quadro. Não
+reverti. Ou o quadro se data, ou a folha volta aos 40 — e quem escolhe é quem
+desenhou.
+
+**QUATRO SELETORES MEUS ERRARAM NESTA TELA**, e a regra do `CLAUDE.md` pegou os
+quatro antes de virarem conserto: o Dock "não existia" (procurei por `dock` e
+`doca`, e ele é `.canvas-ferramentas`); a seção "não tinha borda" (ela está no
+filho `.canvas-secao-area`); o fundo "não batia" (a bancada estava em tema
+escuro, e `rgb(28,28,28)` é o `surface/inverse`, não ausência de fundo).
+
+Nenhuma das três era defeito do produto. Sem a regra, teriam virado três
+consertos de coisas que já estavam certas.

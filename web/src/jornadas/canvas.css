@@ -172,11 +172,18 @@
 }
 
 /* O controle de zoom, do canto do desenho. */
+/* O NÓ `895:7014` PÕE RECHEIO 16 E VÃO 24, e o texto em Body/Medium.
+ *
+ * Aqui eram 4 e 4, com o valor em 16px — um controle apertado num canto, onde o
+ * desenho põe um respirado. A posição já batia (`bottom-16 right-16`); o que
+ * divergia era o dentro.
+ *
+ * Medido em 04/09 contra o quadro, a 1920. */
 .canvas-zoom {
   position: absolute; inset-block-end: 16px; inset-inline-end: 16px;
   z-index: 3;
-  display: flex; align-items: center; gap: 4px;
-  padding: 4px;
+  display: flex; align-items: center; gap: 24px;
+  padding: 16px;
   background: var(--background);
   border: 1px solid var(--border);
 }
@@ -184,11 +191,11 @@
   min-inline-size: 36px; block-size: 36px;
   border: 0; background: none; cursor: pointer;
   color: var(--foreground);
-  font-size: 16px; line-height: 24px;
+  font-size: 20px; line-height: 30px;   /* Body/Medium, como o nó */
 }
 .canvas-zoom button:hover { background: var(--surface-hover); }
 .canvas-zoom button:focus-visible { outline: 1px solid var(--foreground); outline-offset: -2px; }
-.canvas-zoom-valor { min-inline-size: 56px; font-variant-numeric: tabular-nums; }
+.canvas-zoom-valor { min-inline-size: 56px; font-size: 20px; line-height: 30px; font-variant-numeric: tabular-nums; }
 
 .canvas-vazio {
   position: absolute;
