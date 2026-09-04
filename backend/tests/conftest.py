@@ -204,10 +204,16 @@ def client(test_engine, tmp_storage, monkeypatch):
 
     app.dependency_overrides[get_db] = override_get_db
 
-    # A janela de envios é um dicionário de módulo: sem limpar, um teste que
+    # As janelas de vazão são dicionários de módulo: sem limpar, um teste que
     # sobe muitos arquivos faz o próximo receber 429 sem ter feito nada.
+    #
+    # `_links` entrou em 03/09, com o teto de pedidos de link POR ORIGEM. Sob o
+    # `TestClient` a origem é sempre a mesma, então sem esta linha a suíte
+    # inteira divide uma janela só — e 40 testes caíram de uma vez, todos com
+    # `assert 429`.
     from app.api import vazao
     vazao._envios.clear()
+    vazao._links.clear()
 
     # A CONTA DE TESTE É A DONA DA INSTALAÇÃO DE TESTE.
     #
@@ -248,6 +254,13 @@ def client_cru(test_engine, tmp_storage, monkeypatch):
 
     from main import app  # noqa
     from app.db.database import get_db
+
+    # As mesmas duas janelas do `client`, e pela mesma razão. Aqui elas pesam
+    # mais: é o `client_cru` que testa as portas, e teste de porta chama a rota
+    # muitas vezes seguidas — que é exatamente o que os tetos contam.
+    from app.api import vazao
+    vazao._envios.clear()
+    vazao._links.clear()
 
     app.dependency_overrides[get_db] = override_get_db
     with TestClient(app) as c:
