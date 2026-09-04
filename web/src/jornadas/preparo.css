@@ -297,7 +297,11 @@
 .preparo-pagina-sem-traducao {
   grid-column: 2; grid-row: 1 / -1; align-self: center;
   max-inline-size: 22ch;
-  font-size: 13px; line-height: 18px;
+  /* CATORZE, que é o degrau mais baixo da escala. Treze não é corpo, é um número
+     que alguém escolheu por parecer pequeno o bastante — e o portão acusou os
+     dois em 04/09, `degrau_mais_perto: 14`. A entrelinha sobe junto, de 18 para
+     22, que é o par de Label/Small no sistema. */
+  font-size: 14px; line-height: 22px;
   color: var(--muted-foreground);
   text-align: end; text-wrap: pretty;
 }
@@ -312,6 +316,10 @@
 .preparo-andando-costuma {
   grid-column: 1;
   margin: 8px 0 0 !important;
-  font-size: 13px; line-height: 18px;
+  /* CATORZE, que é o degrau mais baixo da escala. Treze não é corpo, é um número
+     que alguém escolheu por parecer pequeno o bastante — e o portão acusou os
+     dois em 04/09, `degrau_mais_perto: 14`. A entrelinha sobe junto, de 18 para
+     22, que é o par de Label/Small no sistema. */
+  font-size: 14px; line-height: 22px;
   color: var(--muted-foreground);
 }
