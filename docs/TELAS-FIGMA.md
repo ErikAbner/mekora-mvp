@@ -921,3 +921,44 @@ Os ids ficam aqui pela mesma razão que os das telas: **o `get_metadata` da
 página vem truncado** e não devolve os filhos, então achar o conjunto de novo
 custa um clique do Erik. Com o id do conjunto em mãos, `get_metadata` nele
 devolve os catorze — foi assim que esta tabela nasceu.
+
+## `964:24606` — M · Estante, conferida por DADO DE NÓ · 04/09
+
+A primeira das cinquenta e uma. O inventário dizia **"comparada · corrigida"** —
+por captura, que era o único método na época. Dez divergências.
+
+**Bate:** grade de 2 colunas · vão 24 entre colunas e 40 entre linhas · capa em
+420/594 · vão de 24 entre a capa e o texto · sem transbordo horizontal.
+
+**Divergia:**
+
+| medida | nó | produto | |
+|---|---|---|---|
+| vão título→autor | 16 (`966:25142`) | 8 | corrigido |
+| título | 24/32, peso 500 (`966:25145`) | 20/28, peso 400 | corrigido |
+| autor | 20/30 (`966:25146`) | 18/27 | corrigido |
+| regra duplicada | — | `.livro-texto h3` e `p` duas vezes no mesmo `@media` | removida |
+| recheio do alternador | 10 (`966:25072`) | 8 | **aberto** |
+| botão do alternador | 14/24 (`966:25075`) | 12/16 | **aberto** |
+| largura do funil | 58 (`966:25080`) | 85 | **aberto** |
+| recheio do funil | 17 | 12/16 | **aberto** |
+| barra inferior | recheio 12, item 16 (`964:24800`) | 8 e 8/4 | **aberto** |
+| vão alternador→grade | 40 (`964:24611`) | 48 | **aberto** |
+
+**A pergunta da regra duplicada tinha uma terceira resposta: nenhuma das duas.**
+Havia `h3` em 20/30 e depois 20/28, `p` em 16/24 e depois 18/27. A segunda
+vencia, a primeira era morta — e o nó põe 24/32 e 20/30. O desenho do telefone
+**não encolhe** a tipografia; quem encolheu foi a folha, e depois encolheu de
+novo por cima.
+
+**Duas cores do desenho não estão no sistema.** O portão reprova `#111111` e
+`#f4f2ec`, que são a tinta e o papel das capas de reserva do conjunto
+`1016:31030`. Elas vieram do quadro e não são token. Decisão do Erik: ou a
+paleta das capas entra no sistema como superfície própria — capa de livro não é
+cromo de interface —, ou as capas passam a usar tokens e divergem do desenho.
+
+**O corpo das capas também bateu no sistema.** O desenho põe crédito, formato e
+data em 10px numa capa de 420. O produto mostra a capa em 252 no computador e
+159 no telefone, onde os 10 viram 6 e 3,7 — o degrau mais baixo da escala é 14.
+Os três saíram do desenhado; o CSS deles fica escrito para quando houver um
+lugar que mostre a capa em 420.

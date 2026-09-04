@@ -140,7 +140,11 @@
 .livro-texto h3 {
   margin: 0;
   font-size: 24px; line-height: 32px;   /* Body/Large */
-  font-weight: 400;
+  /* PESO 500, e o desenho é explícito: o nó `966:25145` traz `font-medium` no
+     título do cartão, contra `font-normal` no autor logo abaixo. Aqui estavam
+     os dois em 400, e a diferença entre o nome do livro e o nome de quem o
+     escreveu ficava só no corpo. */
+  font-weight: 500;
   color: var(--muted-foreground);
   text-wrap: pretty;
   display: -webkit-box;
@@ -258,11 +262,18 @@
    * livros. O desenho mostra duas, e duas é o que faz a grade ser uma grade:
    * dá para comparar as capas lado a lado, que é como se acha um livro. */
   .grade { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 24px; }
-  .livro-texto { gap: 8px; }
-  .livro-texto h3 { font-size: 20px; line-height: 30px; }   /* Body/Medium */
-  .livro-texto p { font-size: 16px; line-height: 24px; }
-  .livro-texto h3 { font-size: 20px; line-height: 28px; }
-  .livro-texto p { font-size: 18px; line-height: 27px; }
+  /* O QUADRO DECIDE, E AS DUAS REGRAS DUPLICADAS ESTAVAM ERRADAS.
+   *
+   * Havia dois pares aqui dentro do mesmo `@media`: h3 em 20/30 e depois 20/28,
+   * p em 16/24 e depois 18/27. A segunda vencia e a primeira era código morto,
+   * e a pergunta "qual das duas é a certa" tinha uma terceira resposta:
+   * NENHUMA. O nó `966:25145` põe o título em Body/Large — 24/32, peso 500,
+   * `#666668` — e o `966:25146` põe o autor em Body/Medium, 20/30, `#727274`.
+   * O desenho do telefone NÃO encolhe a tipografia; quem encolheu foi esta
+   * folha, e depois encolheu de novo por cima.
+   *
+   * O vão também: `966:25142` pede 16, e aqui estava 8. */
+  .livro-texto { gap: 16px; }
   .ficha-caixa h2 { font-size: 24px; line-height: 32px; }
   /* O ALTERNADOR SOBE, e a ficha do livro escolhido DESCE.
    *
@@ -408,29 +419,19 @@
   color: var(--muted-foreground);
 }
 
-/* O envio ao Kindle fica abaixo das ações de leitura, separado: ele age FORA
-   da tela — manda um arquivo para um aparelho — e as duas de cima agem dentro
-   dela. Misturá-los faria "Enviar" parecer tão reversível quanto "Notas". */
-.ficha-kindle {
-  margin-block-start: 20px;
-  padding-block-start: 20px;
-  border-block-start: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  align-items: flex-start;
-}
+/* O `.ficha-kindle` SAIU com o botão (R-05). Ele existia para separar a ação
+   que age fora da tela das duas que agem dentro dela — e a separação que o Erik
+   pediu é maior: o envio saiu da ficha inteiro, para a tela do livro.
 
-.ficha-nota, .ficha-erro {
+   O `.ficha-erro` foi junto: ele só existia para a mensagem do servidor no
+   envio, e classe sem uso é a próxima a ser reaproveitada errado. */
+.ficha-nota {
   margin: 0;
   font-size: 14px;
   line-height: 20px;
   text-wrap: pretty;
+  color: var(--muted-foreground);
 }
-
-.ficha-nota { color: var(--muted-foreground); }
-/* O erro pede o degrau de tinta que o sistema reserva para ele. */
-.ficha-erro { color: var(--destructive, var(--foreground)); }
 
 /* O NÚMERO DENTRO DO RECORTE HERDA A COR DO BOTÃO.
    `.dado` fixa `color: var(--foreground)`, e o recorte ativo pinta o FUNDO com

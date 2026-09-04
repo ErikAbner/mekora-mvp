@@ -16,14 +16,15 @@
     "964:24606": {
       "tela": "M · Estante — grade",
       "rota": "/estante",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-04",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/estante.jsx",
+        "web/src/jornadas/Estante.jsx",
         "web/src/jornadas/estante.css",
-        "web/src/jornadas/Estante.jsx"
+        "web/src/componentes/CapaDeReserva.jsx",
+        "web/src/componentes/capa-de-reserva.css"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "primeira tela conferida por dado de no. 6 medidas batem, 10 divergiam; 4 corrigidas, 6 registradas em TELAS-FIGMA.md. Pendencia: a paleta das capas de reserva nao esta no sistema de tokens."
     },
     "966:25321": {
       "tela": "M · Conta",

@@ -202,3 +202,37 @@
   padding: 3.81cqw var(--pad);
   font-style: italic;
 }
+
+/* ── A CAPA EM MINIATURA NÃO MOSTRA LETRA MIÚDA ──────────────────────────
+ *
+ * Tudo aqui é proporcional à largura da capa, e isso está certo para o desenho
+ * — mas a capa mede 420px no Figma, 252px na grade a 1440 e ~163px nas duas
+ * colunas a 390. A 163, os 32px do título viram 12px e os 10px do crédito viram
+ * QUATRO. O portão pegou os dois: `corpo_fora_da_escala`, degrau mais perto 14.
+ *
+ * Quatro pixels de texto não é capa pequena: é texto que ninguém lê e que o
+ * leitor de tela anuncia mesmo assim. E o nome do livro já está no `h3` embaixo
+ * do cartão — a capa o repete como ARTE, não como informação.
+ *
+ * Então abaixo de 200px de capa a letra miúda sai e o título ganha piso. Acima,
+ * a proporção do desenho vale inteira. */
+@container (max-width: 200px) {
+  .capa-de-reserva .cr-credito,
+  .capa-de-reserva .cr-rodape { display: none; }
+  .capa-de-reserva .cr-titulo { font-size: max(14px, var(--corpo-titulo)); }
+}
+
+/* O MESMO, POR LARGURA DE JANELA — porque a consulta de contêiner não pegou.
+ *
+ * Medido: com só o `@container`, o portão continuou acusando `corpo 4` no
+ * "PDF" do rodapé. A regra de contêiner existe e está certa; ela não bastou
+ * aqui, e descobrir POR QUE ela não pega custa mais do que a rede de segurança
+ * custa. A grade tem duas colunas abaixo de 768, logo a capa nunca passa de
+ * ~170px nessa faixa — a condição é a mesma, escrita na unidade que funciona.
+ *
+ * Quando a de contêiner passar a pegar sozinha, esta sai e a medida diz. */
+@media (max-width: 767px) {
+  .capa-de-reserva .cr-credito,
+  .capa-de-reserva .cr-rodape { display: none; }
+  .capa-de-reserva .cr-titulo { font-size: max(14px, var(--corpo-titulo)); }
+}

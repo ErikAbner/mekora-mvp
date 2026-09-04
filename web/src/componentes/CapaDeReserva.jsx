@@ -30,6 +30,26 @@ import "./capa-de-reserva.css";
  * as feitas: mostrar uma variante pela metade seria pior que repetir uma
  * inteira.
  */
+/* O CRÉDITO, O FORMATO E A DATA NÃO SÃO DESENHADOS, E A RAZÃO É UM CONFLITO.
+ *
+ * O desenho põe os três em 10px — numa capa de 420px de largura. O produto
+ * nunca mostra uma capa de 420: são 252 na grade a 1440 e 159 nas duas colunas
+ * a 390. Proporcionalmente, os 10px viram 6px no computador e 3,7px no
+ * telefone, e o degrau mais baixo da escala tipográfica é 14.
+ *
+ * Escondê-los com `display: none` não resolveu: o portão lê o corpo computado e
+ * continuou acusando "PDF" em 3,689px — texto que ninguém vê e que o leitor de
+ * tela anuncia. Dar piso de 14px resolveria a medida e quebraria a proporção do
+ * desenho em todos os tamanhos, que é trocar um defeito visível por um
+ * silencioso.
+ *
+ * Então eles saem, e o conflito fica anotado para o Erik: ou os três sobem para
+ * a escala — e a proporção do desenho muda —, ou a capa mostra só o título nos
+ * tamanhos que o produto usa. O título sobrevive porque tem piso próprio, e
+ * porque é o que identifica o livro.
+ *
+ * As peças e o CSS deles continuam escritos: quando houver um lugar que mostre
+ * a capa em 420, eles voltam sem serem reinventados. */
 export function CapaDeReserva({ titulo, autor, formato, data, chave, className = "" }) {
   return (
     <span
@@ -40,11 +60,6 @@ export function CapaDeReserva({ titulo, autor, formato, data, chave, className =
       <span className="cr-arte" aria-hidden="true" />
       <span className="cr-alto">
         <span className="cr-titulo">{titulo}</span>
-        {autor ? <span className="cr-credito">{autor}</span> : null}
-      </span>
-      <span className="cr-rodape">
-        <span className="cr-formato">{formato || ""}</span>
-        <span className="cr-data">{data || ""}</span>
       </span>
     </span>
   );
