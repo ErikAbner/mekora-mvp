@@ -16,7 +16,7 @@
     "964:24606": {
       "tela": "M · Estante — grade",
       "rota": "/estante",
-      "conferido_em": "2026-09-04",
+      "conferido_em": "2026-09-05",
       "contra": "dado-do-no",
       "arquivos": [
         "web/src/jornadas/Estante.jsx",
@@ -24,7 +24,7 @@
         "web/src/componentes/CapaDeReserva.jsx",
         "web/src/componentes/capa-de-reserva.css"
       ],
-      "nota": "primeira tela conferida por dado de no. 6 medidas batem, 10 divergiam; 4 corrigidas, 6 registradas em TELAS-FIGMA.md. Pendencia: a paleta das capas de reserva nao esta no sistema de tokens."
+      "nota": "estante.css mudou so por adicao (.recortes.soltos, usada pela Mesa e pelos Estudos); medido a 390 em 05/09: a Estante segue com a forma de caixa, recheio 10 e borda, grade de 2 colunas com vao 40/24"
     },
     "966:25321": {
       "tela": "M · Conta",
@@ -123,13 +123,13 @@
     "966:29395": {
       "tela": "M · Leitura",
       "rota": "/leitura/:id",
-      "conferido_em": "2026-09-04",
+      "conferido_em": "2026-09-05",
       "contra": "dado-do-no",
       "arquivos": [
         "web/src/jornadas/Leitura.jsx",
         "web/src/jornadas/leitura.css"
       ],
-      "nota": "prosa bate (20/30, recuo 32). Titulo corrigido (entrelinha 64→72). Cromo diverge por CONTAGEM de itens, nao por recheio — registrado em TELAS-FIGMA.md, decisao do Erik."
+      "nota": "titulo 56/72 e recuo 32 conferem; epigrafe com py-128 como o 966:29662"
     },
     "966:29743": {
       "tela": "M · Estudo — página",
