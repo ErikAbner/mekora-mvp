@@ -597,6 +597,18 @@ export function Preparo() {
       <div className="mesa">
         <Cabecalho lugar="mesa" />
         <main className="preparo-pagina">
+          {/* O TOPO CONTINUA AQUI — nó `895:8164`, e o comentário do `Topo` já
+              dizia isto: "nos nós 895:8164 (pronto) e 895:8029 (em andamento) o
+              topo é o MESMO da tela de análise". Só o "em andamento" tinha
+              ganhado. Esta tela ficou de fora, e ninguém notou por dois meses
+              porque ela era INALCANÇÁVEL por navegação (R-53) — uma tela que
+              ninguém vê acumula defeito em silêncio.
+
+              `inerte` porque a conversão acabou: os dois botões do alternador
+              continuam à vista, marcando a escolha que foi feita, e não aceitam
+              clique. */}
+          <Topo job={j} titulo={titulo} ajustando={ajustando} aoTrocar={setAjustando} inerte />
+
           <section className="preparo-fim">
             <p className="preparo-fim-marca">Pronto</p>
             <h1>{titulo} está na estante.</h1>

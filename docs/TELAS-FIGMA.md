@@ -1726,3 +1726,31 @@ nenhum: vetor à mão é invenção com cara de fidelidade.
 
 **O "Por quê" não foi visto em tela**: a bancada não tem arquivo digitalizado, e
 a linha só existe quando `is_scanned` é verdadeiro. Mesmo buraco do R-50.
+
+### Preparo — pronto, `895:8164` (computador)
+
+**Esta tela só pôde ser conferida depois do R-53**, que a tornou alcançável. E o
+primeiro achado é o que uma tela invisível acumula: **ela não tinha o topo.**
+
+O comentário do próprio `Topo` já dizia, desde que foi escrito: *"nos nós
+895:8164 (pronto) e 895:8029 (em andamento) o topo é o MESMO da tela de análise:
+a capa à esquerda, o título, os selos do arquivo e o alternador"*. Só o "em
+andamento" tinha ganhado. A tela de pronto ficou de fora, e ninguém notou —
+porque ninguém chegava nela. **Uma tela que não se vê acumula defeito em
+silêncio, e é isso que faz o R-53 valer mais que o conserto de uma rota.**
+
+Consertado: o topo volta, com `inerte` — os dois botões do alternador continuam
+à vista, marcando a escolha que foi feita, e não aceitam clique.
+
+#### As divergências que ficam
+
+- **A faixa do veredito.** O nó escreve uma linha só: *"Pronto. Diário 02.epub ·
+  8,4 MB"*, com a explicação abaixo. A tela separa em três — a marca "PRONTO", o
+  título *"X está na estante."* e o nome do arquivo numa faixa própria. A forma
+  da tela diz mais (o livro está na estante, e não só que o arquivo saiu), e por
+  isso não mexi: é escolha de conteúdo, não de geometria.
+- **"O que foi feito neste arquivo"**, o link à direita dos botões no nó, não
+  existe na tela. Ele abriria o relatório do que foi decidido — e o produto já
+  tem essa informação na tela de análise, que agora não é mais alcançável depois
+  de pronto.
+- **"Preparar outro"** existe na tela e não no nó.
