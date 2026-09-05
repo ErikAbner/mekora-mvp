@@ -120,3 +120,13 @@
     block-size: 164px;
   }
 }
+
+/* A SEÇÃO SEM VOLTA — nó `895:10909`, onde "Apagar a conta" é a única das cinco
+   com a borda em vermelho. `--destructive` é o token do sistema; o nó usa um
+   vermelho cru, e a decisão do Erik em 04/09 vale aqui como valeu nos chips da
+   Mesa: cor semântica vem do sistema. */
+.conta-secao-perigo { border-color: var(--destructive); }
+
+/* O controle e o estado, lado a lado: o botão diz o que vai acontecer, a marca
+   diz o que é agora. Um botão "Desligar" sozinho não responde "está ligado?". */
+.conta-interruptor { display: inline-flex; align-items: center; gap: 12px; }

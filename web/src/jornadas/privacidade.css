@@ -52,6 +52,12 @@
 
 /* O titulo com a marca na ponta: o texto ocupa a coluna, a marca fica na borda
  * de fim, como no desenho. */
-.guardado-conta:has(> .marca-arquivo) {
+/* A LINHA VIRA FILEIRA quando tem QUALQUER coisa à direita — a marca ou o
+   controle. A regra só conhecia `.marca-arquivo`, e o interruptor da medição,
+   que entrou em 05/09 no lugar da marca naquela linha, caía por cima do título:
+   sem `display: flex` o `<p>` continua parágrafo, e o `<span>` do controle se
+   comporta como texto no meio dele. */
+.guardado-conta:has(> .marca-arquivo),
+.guardado-conta:has(> .conta-interruptor) {
   display: flex; justify-content: space-between; align-items: center; gap: 16px;
 }

@@ -224,6 +224,17 @@ def o_que_existe(
                     "resposta pode ser mudada aqui a qualquer momento."
                 ),
                 "marca": "Só com o seu sim",
+                # ESTA LINHA GANHA UM CONTROLE NA TELA, e a explicação acima é
+                # quem exige: ela promete que "a resposta pode ser mudada aqui a
+                # qualquer momento", e até 05/09 não havia onde. Uma tela de
+                # privacidade que promete um controle que não existe é pior que
+                # uma que não promete nada.
+                #
+                # O interruptor é do NAVEGADOR, e não do servidor: quem guarda a
+                # resposta é o `localStorage` do `web/src/medir.js`, porque são
+                # os scripts do cliente que sobem ou não sobem. O servidor só
+                # diz QUAL linha tem controle; o valor mora lá.
+                "interruptor": "medicao",
             },
             {
                 "titulo": "O que essas gravações NÃO mostram",

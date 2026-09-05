@@ -1944,3 +1944,37 @@ só. A informação estava a uma ferramenta de distância.
 **Kindle e Segurança continuam sem ilustração**, e agora por um motivo diferente:
 não há nó de tela para elas com uma. Escolher da biblioteca sem nó seria eu
 decidindo o desenho da tela.
+
+### Conta — privacidade, `895:10909`
+
+**A tela prometia um controle que não existia.** A linha "Quem mede a navegação,
+e só depois de você deixar" termina dizendo, palavra por palavra, que *"a
+resposta pode ser mudada aqui a qualquer momento"* — e não havia onde. O nó põe
+um interruptor ali; o código tinha um comentário afirmando que *"não existe
+interruptor, e fingir um seria pior que não ter"*.
+
+**Isso era verdade quando foi escrito, e deixou de ser.** A máquina entrou junto
+com as três ferramentas de fora, em 03/09: o `medir.js` guarda a resposta no
+`localStorage` e só sobe os scripts depois de um "sim". Faltava expor.
+Consentimento que não se pode retirar não é consentimento — e numa tela de
+privacidade a distância entre o texto e o que ele pode fazer é o defeito inteiro.
+
+Construído: o servidor marca a linha com `interruptor: "medicao"` (o valor mora
+no navegador, porque são os scripts do cliente que sobem ou não sobem), e a tela
+troca a marca pelo par **botão + estado** — "Ligar / Desligado". Um botão
+"Desligar" sozinho não responde "está ligado?".
+
+**E "Apagar a conta" ganhou a borda vermelha** do nó. Era a única ação sem volta
+da tela e tinha a mesma borda neutra das outras quatro seções. Cor da borda com
+`--destructive`, pela mesma decisão que o Erik deu para os chips da Mesa: cor
+semântica vem do sistema.
+
+**Um defeito de layout que o controle novo revelou:** a linha só virava fileira
+com `:has(> .marca-arquivo)`, e o interruptor — que entra no LUGAR da marca —
+caía por cima do título. A regra passou a reconhecer os dois.
+
+#### O que fica
+
+- **"O que é medido" e "Quantas visitas houve"** seguem com "Sem interruptor":
+  são medidas do **servidor**, e desligá-las é decisão de arquitetura, não um
+  botão. As marcas dizem isso, e dizem a verdade.

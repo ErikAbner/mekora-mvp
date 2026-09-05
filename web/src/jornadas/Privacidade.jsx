@@ -3,6 +3,7 @@ import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
 import { Folha } from "../componentes/Folha.jsx";
 import { apagarMinhaConta, lerPrivacidade, levarMeusDados } from "../../../contrato/api.js";
+import { respostaSobreMedicao, responderSobreMedicao } from "../medir.js";
 import "./conta.css";
 import "./privacidade.css";
 
@@ -13,6 +14,32 @@ import "./privacidade.css";
  * mais uma coisa e o texto continua listando as antigas, virando uma promessa
  * que ninguém confere.
  */
+/* O CONTROLE DA MEDIÇÃO DE NAVEGAÇÃO.
+ *
+ * Ele não pergunta ao servidor: quem guarda a resposta é o `localStorage`, pelo
+ * `medir.js`, porque são os scripts do CLIENTE que sobem ou não sobem. Ler do
+ * servidor aqui daria uma tela que discorda do que o navegador faz.
+ *
+ * Desligar tem efeito imediato para as próximas aberturas — o `ligarMedicao` só
+ * corre depois de um "sim" —, e não desfaz o que já subiu nesta aba. A frase
+ * diz isso, porque prometer que some tudo seria a mesma mentira que este
+ * controle veio consertar. */
+function BotaoDaMedicao() {
+  const [resposta, setResposta] = useState(() => respostaSobreMedicao());
+  const ligado = resposta === "sim";
+  return (
+    <span className="conta-interruptor">
+      <Botao
+        tom="secundaria"
+        onClick={() => { const nova = ligado ? "nao" : "sim"; responderSobreMedicao(nova); setResposta(nova); }}
+      >
+        {ligado ? "Desligar" : "Ligar"}
+      </Botao>
+      <span className="marca-arquivo">{ligado ? "Ligado" : "Desligado"}</span>
+    </span>
+  );
+}
+
 export function Privacidade({ pessoa, aoSair, aoApagarConta }) {
   const [dados, setDados] = useState(null);
   const [erro, setErro] = useState(null);
@@ -137,10 +164,22 @@ export function Privacidade({ pessoa, aoSair, aoApagarConta }) {
                     <p className="guardado-conta">
                       {u.titulo}
                       {/* A marca à direita é do desenho — "Regra fixa" ao lado
-                          do que nunca muda. Onde ele põe um interruptor
-                          desligado, aqui está o que é verdade: não existe
-                          interruptor, e fingir um seria pior que não ter. */}
-                      {u.marca && <span className="marca-arquivo">{u.marca}</span>}
+                          do que nunca muda. Onde a linha TEM controle, o
+                          controle aparece no lugar da marca.
+
+                          O comentário aqui dizia, até 05/09, que "não existe
+                          interruptor, e fingir um seria pior que não ter". Era
+                          verdade para as linhas do servidor, e deixou de ser
+                          para a da medição de navegação: a máquina existe desde
+                          que as três ferramentas de fora entraram — o
+                          `medir.js` guarda a resposta e só sobe os scripts
+                          depois de um "sim" —, e a própria explicação da linha
+                          PROMETE que "a resposta pode ser mudada aqui a
+                          qualquer momento". Prometer um controle que não existe
+                          é pior que não ter marca nenhuma. */}
+                      {u.interruptor === "medicao"
+                        ? <BotaoDaMedicao />
+                        : u.marca && <span className="marca-arquivo">{u.marca}</span>}
                     </p>
                     <p className="guardado-explicacao">{u.explicacao}</p>
                   </li>
@@ -159,7 +198,12 @@ export function Privacidade({ pessoa, aoSair, aoApagarConta }) {
             <Botao tom="secundaria" onClick={levar}>Baixar tudo em JSON</Botao>
           </section>
 
-          <section className="conta-secao">
+          {/* A ÚNICA AÇÃO SEM VOLTA DA TELA, e ela é a única com borda vermelha —
+              nó `895:10909`. As outras quatro seções têm a borda neutra; esta
+              não, porque o que ela faz não se desfaz. Marcar destrutivo pela
+              cor da BORDA, e não só pelo texto, é o que separa "eu li o aviso"
+              de "eu vi que aqui é diferente". */}
+          <section className="conta-secao conta-secao-perigo">
             <h2>Apagar a conta</h2>
             <p className="conta-nota">
               Apaga sua conta, suas notas, seus livros e os arquivos no
