@@ -492,3 +492,17 @@ A saída passa por perguntar a **situação** antes de disparar a análise — `
 
 **A bancada também não produz o estado**, e essa é a terceira vez: não há trabalho com `active_operation` semeado, então a tela de "em andamento" (`895:8029`, `967:31833`) continua sem conferência contra o nó. Marquei um à mão para medir e desfiz depois — a bancada está limpa.
 **Prova:** sem-prova (item aberto)
+
+### R-55 · 2026-09-05 · aberto
+**Erik:** (não é dele — é da BANCADA, e é a quarta vez)
+**Onde:** `scripts/sessao-de-prova.sh` · /canvas · /estudo/:id · /nota/:id
+**Medido em 05/09:** o **Canvas não pode ser conferido contra o nó** porque a bancada não entrega notas de canvas para a pessoa da sessão. O banco tem **763 nós de canvas e 5502 notas** — todos de pessoas de rodadas anteriores, porque o `sessao-de-prova.sh` cria uma pessoa NOVA a cada chamada e semeia só livros.
+
+A tela abre com "Nada aqui ainda", que é o estado vazio — e medir o Canvas vazio é o mesmo que mediu o contraste dele em 3,42 e deu verde: **19 nós olhados numa tela que cheia tem 32**.
+
+**A quarta vez, e o padrão já tem nome.** R-50: a bancada não produzia `analyzed`. R-53: o estado existia no banco e a tela não o lia. R-54: a bancada não produz conversão em curso. Agora: a bancada produz o dado, e ele fica com a pessoa errada.
+
+**O que não resolve:** rodar o `scripts/medidas/ir-para.js` como setup. Ele cria as notas pela API com a sessão em curso, e a tela continua vazia — não apurei se o `fetch` relativo do setup chega ao backend (portas 5181/8200) ou morre no servidor de arquivos.
+
+**O que isto bloqueia:** `895:6938` (Canvas), `895:8260` (Estudo — página), `895:8545` (Conexões), `966:29743`, `966:30269` e o painel `941:23108`. Seis quadros, e o Canvas é justamente onde moram três itens abertos do Erik — R-16, R-43 e R-48.
+**Prova:** sem-prova (item aberto)
