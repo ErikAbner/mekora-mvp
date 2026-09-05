@@ -48,3 +48,11 @@ MEKORA_PROVA="$PROVA" MEKORA_EMAIL="$EMAIL" "$PY_" scripts/semear.py >/dev/null 
 # E O PRIMEIRO LIVRO DESTA CONTA, na segunda linha — o mesmo contrato do
 # `entrar-como-dono.sh`, para quem chama não precisar saber qual dos dois usou.
 "$PY_" scripts/_sessao.py "$BANCO" "$EMAIL" livro
+
+# NA TERCEIRA LINHA, O TRABALHO PARADO EM `analyzed`.
+#
+# É o do Preparo "o que encontrei" (nó 966:31504), a tela que a bancada nunca
+# mostrou. Ele não é o "primeiro livro": é o único que ainda não foi convertido,
+# e apontar a medida para o livro levaria de volta à tela de espera — que foi
+# exatamente como esta tela ficou sem medida por tanto tempo.
+"$PY_" scripts/_sessao.py "$BANCO" "$EMAIL" analisado

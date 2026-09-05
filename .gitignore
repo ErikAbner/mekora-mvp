@@ -78,6 +78,10 @@ web/dist/
 
 # o acervo semeado para ver a interface
 .ver/
+# a segunda bancada, para duas sessoes medirem sem se derrubar (portas 5181/8200)
+.ver2/
+# o venv de 3.9 do macOS, quando o de 3.11 nao esta disponivel localmente
+.venv-3.9/
 
 # Assets que o get_design_context exige escrever em disco. Descartáveis: eles
 # se refazem a cada leitura, e o que vale do desenho vira código ou vira nota

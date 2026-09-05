@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """As duas metades do `sessao-de-prova.sh`, num arquivo que não é heredoc.
 
-    python3 scripts/_sessao.py <banco> <email> criar    # imprime o token
-    python3 scripts/_sessao.py <banco> <email> livro    # imprime o primeiro livro
+    python3 scripts/_sessao.py <banco> <email> criar      # imprime o token
+    python3 scripts/_sessao.py <banco> <email> livro      # imprime o primeiro livro
+    python3 scripts/_sessao.py <banco> <email> analisado  # o parado em `analyzed`
 
 POR QUE É UM ARQUIVO E NÃO UM HEREDOC: a primeira versão embutia este código no
 `.sh` com `<<'PY'`, e o texto dentro dele continha `<<'PY'` de novo — o
@@ -79,6 +80,27 @@ elif oque == "livro":
             ).fetchone()
     c.close()
     print(livro[0] if livro else 0)
+
+elif oque == "analisado":
+    # O TRABALHO PARADO EM `analyzed` — o do Preparo "o que encontrei".
+    #
+    # Ele existe por causa de uma tela que a bancada nunca mostrou: todo
+    # trabalho semeado nascia em `converted`, e `/preparo/{id}` caía na tela de
+    # espera. Quem mede precisa apontar para ESTE, e não para o primeiro livro —
+    # e por isso ele tem endereço próprio aqui, em vez de a prova adivinhar.
+    #
+    # Zero quando não há: a prova que o pedir vai reprovar dizendo que a bancada
+    # não tem o estado, que é a resposta certa — e não medir a tela errada.
+    c = sqlite3.connect(f"file:{banco}?mode=ro", uri=True)
+    p = c.execute("SELECT id FROM pessoas WHERE email = ?", (email,)).fetchone()
+    achado = None
+    if p:
+        achado = c.execute(
+            "SELECT id FROM processing_jobs WHERE dono_id = ? AND status = 'analyzed' ORDER BY id LIMIT 1",
+            (p[0],),
+        ).fetchone()
+    c.close()
+    print(achado[0] if achado else 0)
 
 else:
     print(f"não sei fazer {oque!r}", file=sys.stderr)

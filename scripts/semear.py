@@ -291,6 +291,70 @@ if not c.execute("SELECT 1 FROM canvas_nos WHERE pessoa_id = ?", (pessoa,)).fetc
                          "como": "mao", "criada_em": agora})
 
 
+# UM TRABALHO PARADO EM `analyzed` — a tela que a bancada nunca mostrou.
+#
+# O nó `966:31504` é o Preparo "o que encontrei": a análise terminou e a pessoa
+# ainda não decidiu. Todo trabalho semeado nascia em `converted`, então pedir
+# `/preparo/{id}` na bancada caía em "Analisando o arquivo…", que é OUTRA tela
+# (`967:31833`). Uma tela inteira do produto sem nenhuma medida.
+#
+# E o custo não era só a medida faltando. Varredura que roda "em todas as rotas"
+# passava por `/preparo/:id`, media a tela de espera e ficava VERDE — a
+# cobertura dizia que a rota tinha sido visitada. Verde por omissão, com o
+# instrumento certo e o dado errado.
+#
+# NÃO PRECISA DE ARQUIVO EM DISCO, e é isso que torna a linha barata: o
+# `GET /analyze/{id}` devolve o trabalho em cache assim que `status != "uploaded"`
+# (`api/jobs.py`), então um trabalho gravado já em `analyzed` chega à tela sem
+# nada em `input/`. O que ele NÃO faz é converter — `converter()` precisa do
+# arquivo, e o botão "Preparar" desta linha vai falhar de propósito. A tela sob
+# medida é a de ANTES da decisão.
+#
+# OS VALORES SÃO OS DO NÓ, e por isso são estes:
+#   11,5 MB      o selo do canto — 11.5 * 1024 * 1024
+#   14 capítulos "a partir dos 14 títulos de capítulo que encontrei"
+#   sem capa     o veredito do 895:7856 — "UMA coisa eu resolvi sozinho e vale
+#                você conferir: o arquivo não tem capa". UMA, no singular: por
+#                isso este trabalho TEM título e autor detectados. Sem eles, a
+#                tela decidiria duas coisas sozinha e a frase mudaria de número.
+#   pt           idioma declarado, para a linha "Nada é traduzido a não ser que
+#                você peça" aparecer — ela é a única da lista que promete uma
+#                ausência.
+#
+# Digitalização não: `is_scanned` falso faz a tela dizer "O texto já está no
+# arquivo", que é o caso do nó. O acervo já tem digitalizações do outro lado.
+if not c.execute(
+    "SELECT 1 FROM processing_jobs WHERE dono_id = ? AND status = 'analyzed'", (pessoa,)
+).fetchone():
+    inserir("processing_jobs", {
+        "dono_id": pessoa,
+        "original_filename": "estrategia-de-ux-oreilly.pdf",
+        "detected_title": "Estratégia de UX",
+        "detected_author": "Jaime Levy",
+        "page_count": 312,
+        "detected_language": "pt",
+        "input_format": "pdf",
+        "input_bytes": int(11.5 * 1024 * 1024),
+        "is_scanned": False,
+        # Zero e nulo dizem coisas diferentes, e a tela sabe a diferença: zero é
+        # "contei e não achei", nulo é "ninguém contou". Aqui foi contado.
+        "paginas_ilegiveis": 0,
+        "paginas_sem_texto": 0,
+        "capitulos_declarados": 14,
+        "avg_chars_per_page": 1840.0,
+        # SEM CAPA, e sem miniatura: nenhum arquivo é escrito para este id. É o
+        # caso que o veredito do nó descreve, e o que faz a `CapaDeReserva`
+        # aparecer no topo do Preparo.
+        "selected_cover_page": None,
+        "cover_path": None,
+        "status": "analyzed",
+        "conversion_status": "not_started",
+        "created_at": agora,
+        "updated_at": agora,
+        "token_publico": f"analisado-{int(agora.timestamp())}",
+    })
+
+
 # Um estudo, com notas reunidas.
 if not c.execute("SELECT 1 FROM estudos WHERE pessoa_id = ?", (pessoa,)).fetchone():
     estudo = inserir("estudos", {
@@ -305,4 +369,6 @@ c.commit()
 n = c.execute("SELECT COUNT(*) FROM processing_jobs WHERE dono_id = ?", (pessoa,)).fetchone()[0]
 m = c.execute("SELECT COUNT(*) FROM notas WHERE pessoa_id = ?", (pessoa,)).fetchone()[0]
 g = c.execute("SELECT COUNT(*) FROM canvas_nos WHERE pessoa_id = ?", (pessoa,)).fetchone()[0]
-print(f"  semeado: {n} livros (todos com EPUB), {m} notas, {g} no Canvas, 1 aparelho, 1 estudo")
+a = c.execute("SELECT id FROM processing_jobs WHERE dono_id = ? AND status = 'analyzed'", (pessoa,)).fetchone()
+print(f"  semeado: {n} trabalhos ({n - 1} livros com EPUB), {m} notas, {g} no Canvas, 1 aparelho, 1 estudo")
+print(f"  o parado em analyzed, para o Preparo 'o que encontrei':  /preparo/{a[0] if a else '?'}")
