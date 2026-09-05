@@ -353,26 +353,24 @@
     "895:10599": {
       "tela": "D · Conta — visão geral",
       "rota": "/conta",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-05",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/conta.jsx",
-        "web/src/jornadas/conta.css",
-        "web/src/jornadas/Conta.jsx"
+        "web/src/jornadas/ContaVisao.jsx",
+        "web/src/jornadas/conta-visao.css"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "divergencias de conteudo e ilustracoes em docs/TELAS-FIGMA.md"
     },
     "895:10715": {
       "tela": "D · Conta — preferências",
       "rota": "/conta/preferencias",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-05",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/conta.jsx",
-        "web/src/jornadas/conta.css",
-        "web/src/jornadas/Conta.jsx"
+        "web/src/jornadas/Conta.jsx",
+        "web/src/jornadas/conta.css"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "divergencias de conteudo e ilustracoes em docs/TELAS-FIGMA.md"
     },
     "895:10909": {
       "tela": "D · Conta — dados",
