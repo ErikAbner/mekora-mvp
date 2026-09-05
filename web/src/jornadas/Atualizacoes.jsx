@@ -202,6 +202,9 @@ export function Atualizacoes() {
           {/* O "principalmente" é do desenho, e ele é a tese da página: a
               segunda metade vale mais que a primeira. */}
           <p>O que mudou e, principalmente, o que ainda não é confiável.</p>
+          {/* A ILUSTRAÇÃO — `1016:30623`, "business balance". O nó `895:11060` a põe
+              abaixo do subtítulo, antes da primeira data. */}
+          <img className="atualizacoes-desenho" src="/icones/ilustracao-atualizacoes.svg" alt="" aria-hidden="true" />
         </header>
 
         {MUDANCAS.map((lote) => (

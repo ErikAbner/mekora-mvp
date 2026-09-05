@@ -67,6 +67,13 @@ export function Privacidade({ pessoa, aoSair, aoApagarConta }) {
        ficaria presa à rolagem dele. */
     <>
     <main className="conta-painel">
+      {/* A ILUSTRAÇÃO DESTA TELA — `1016:30615`, "exploring new horizons", do
+          component set que o Erik mandou em 05/09. Ela não saía pelo
+          `get_design_context`, que exporta cada vetor separado (77, nesta), e
+          sai inteira pelo `download_assets` com `defaultFormat: svg`. O
+          retângulo `#F5F5F5` que vem junto é o artboard do component set, e não
+          o desenho: sai na gravação. */}
+      <img className="conta-desenho" src="/icones/ilustracao-privacidade.svg" alt="" aria-hidden="true" />
           <section className="conta-secao">
             <h2>O que o Mekora guarda</h2>
 

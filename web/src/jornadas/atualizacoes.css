@@ -116,3 +116,11 @@
   .atualizacoes-lote li { gap: 16px; }
   .atualizacoes-pendente { padding: 24px 20px; }
 }
+
+/* A ilustração do topo — nó `895:11060`, abaixo do subtítulo e antes da
+   primeira data. Ela é ornamento: centrada, sem ocupar coluna de texto. */
+.atualizacoes-desenho {
+  display: block;
+  inline-size: 264px; block-size: 264px;
+  margin: 24px auto 0;
+}

@@ -1911,3 +1911,36 @@ o marcador de "você está aqui" no índice, como o `941:23112` pede.
   Duas das três faixas já existiam; a de estudo nunca existiu.
 - **A página do estudo** não tem **"Notas semelhantes"**, **"Podem
   complementar"**, a **busca dentro do estudo** nem **"Ver rede neural"**.
+
+### As ilustrações, resolvidas — component set `1016:30664`
+
+O Erik mandou o component set com as **56 ilustrações nomeadas**, e ele resolve a
+pendência que eu tinha registrado como dele.
+
+**A ferramenta era outra.** O `get_design_context` sempre quebra a ilustração em
+vetores separados — 77 na de Privacidade —, e foi por isso que escrevi que elas
+"não saem do Figma como arquivo". Saem: `download_assets` com
+`defaultFormat: "svg"` devolve o campo **`export`**, que é o nó inteiro num SVG
+só. A informação estava a uma ferramenta de distância.
+
+| tela | nó no component set | nome |
+|---|---|---|
+| Conta — privacidade | `1016:30615` | exploring new horizons |
+| Atualizações | `1016:30623` | business balance |
+| Conta — preferências | `1016:30662` | business process setup |
+
+**Duas sujeiras do exportador, as duas removidas na gravação:**
+
+- um `<rect width="264" height="264" fill="#F5F5F5">`, que é o **artboard** do
+  component set e não o desenho;
+- um `<rect stroke="#8A38F5" stroke-dasharray="10 5">` de **1783×2967** dentro de
+  um SVG de 264×264 — a **moldura tracejada** que o Figma desenha em volta de um
+  component set. Ela fica fora da vista e não aparece na tela, e continua sendo
+  tinta que não é do produto. **Quem a pegou foi o portão**, no campo
+  `tinta_cravada_em_asset`: `#8A38F5` num desenho que só tem `#262B09`. Um roxo
+  invisível não muda um pixel, e é exatamente o tipo de coisa que entra sem
+  ninguém decidir.
+
+**Kindle e Segurança continuam sem ilustração**, e agora por um motivo diferente:
+não há nó de tela para elas com uma. Escolher da biblioteca sem nó seria eu
+decidindo o desenho da tela.
