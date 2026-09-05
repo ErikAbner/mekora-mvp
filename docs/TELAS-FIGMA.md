@@ -1789,3 +1789,26 @@ SVG achatado, como a de Preferências e a da visão geral já estão.
   "Editar" e "Desligar", sem data de último envio e sem o conceito de principal.
 - **Preferências bate palavra por palavra** — três seções, mesmos títulos,
   mesmas opções, mesmas explicações. Nada a fazer ali além da ilustração.
+
+### Ajuda — `895:11193` (computador)
+
+**A tela inteira estava um degrau abaixo**, e é o mesmo padrão do Preparo: cada
+peça um passo menor que o desenho, e o efeito somado é uma tela que parece de
+outro produto.
+
+| o que | nó | estava |
+|---|---|---|
+| cabeçalho de categoria | 28/36 (`895:11296`) | 24/32 |
+| pergunta | 24/32 (`895:11301`) | 20/30 |
+| explicação | 20/30 (`895:11302`) | 16/24 |
+| vão dentro do item | 24 (`895:11300`) | 6 |
+| vão entre itens | 40 (`895:11299`) | 0, só o filete |
+| vão entre categorias | 64 (`895:11294`) | 48 |
+
+Estrutura, ordem e palavras batem: título, busca, os quatro cartões numerados,
+a trilha lateral, e as quatro categorias com as mesmas perguntas.
+
+**Fica:** o nó põe um chevron (`918:17241`) à direita de cada pergunta, e a tela
+não tem. Ele sugere que a pergunta ABRE — e na tela ela leva a outra página em
+vez de expandir. Um chevron ali prometeria expansão; a seta certa depende de o
+Erik decidir qual dos dois comportamentos vale.

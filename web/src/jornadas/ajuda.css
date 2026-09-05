@@ -77,31 +77,42 @@
 }
 .ajuda-trilha a:hover { color: var(--foreground); text-decoration: underline; }
 
-.ajuda-listas { display: flex; flex-direction: column; gap: 48px; flex: 1 1 0; min-inline-size: 0; }
+.ajuda-listas { display: flex; flex-direction: column; gap: 64px; flex: 1 1 0; min-inline-size: 0; }
 
-.ajuda-categoria { display: flex; flex-direction: column; gap: 8px; scroll-margin-top: 32px; }
+/* A ESCALA DESTA TELA ESTAVA UM DEGRAU ABAIXO — nós `895:11296` a `895:11302`,
+   conferidos em 05/09. É o mesmo padrão que o Preparo tinha: cada peça um
+   degrau menor que o desenho, e o efeito somado é uma tela que parece de outro
+   produto.
+
+     cabeçalho de categoria   28/36, e não 24/32   (`895:11296`)
+     pergunta                 24/32, e não 20/30   (`895:11301`)
+     explicação               20/30, e não 16/24   (`895:11302`)
+     vão dentro do item       24,   e não 6        (`895:11300`)
+     vão entre as categorias  64,   e não 48       (`895:11294`) */
+.ajuda-categoria { display: flex; flex-direction: column; gap: 40px; scroll-margin-top: 32px; }
 .ajuda-categoria > h2 {
-  margin: 0 0 8px;
+  margin: 0;
   padding-inline-start: 16px;
   border-inline-start: 2px solid var(--foreground);
-  font-size: 24px; line-height: 32px; font-weight: 540;
+  font-size: 28px; line-height: 36px; font-weight: 540;
   color: var(--foreground);
 }
 .ajuda-categoria ul { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
 .ajuda-categoria li {
-  display: flex; flex-direction: column; gap: 6px; align-items: flex-start;
-  padding: 20px 0;
+  display: flex; flex-direction: column; gap: 24px; align-items: flex-start;
+  padding: 0 0 40px;
   border-bottom: 1px solid var(--separator);
 }
+.ajuda-categoria li + li { padding-block-start: 40px; }
 .ajuda-categoria h3 {
   margin: 0;
-  font-size: 20px; line-height: 30px; font-weight: 400;   /* Body/Medium */
+  font-size: 24px; line-height: 32px; font-weight: 400;   /* Body/Large */
   color: var(--foreground);
   text-wrap: pretty;
 }
 .ajuda-categoria p {
   margin: 0;
-  font-size: 16px; line-height: 24px;   /* Body/Small */
+  font-size: 20px; line-height: 30px;   /* Body/Medium */
   color: var(--muted-foreground);
   text-wrap: pretty;
 }
