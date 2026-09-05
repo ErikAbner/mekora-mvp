@@ -72,6 +72,15 @@ export function Conta({ pessoa , aoSair }) {
     /* `chao` no lugar do fundo liso: a Conta se abre POR CIMA do chão
        pontilhado, e é o que o `895:10599` mostra. */
     <main className="conta-painel">
+          {/* A ILUSTRAÇÃO DESTA TELA — nó `934:11083`, 200,6×224 com 26 de
+              encavalamento sobre o card.
+
+              O comentário do `.conta-desenho` já dizia que ela vem "do nó de
+              CADA tela de conta". Só a visão geral tinha ganhado a sua: medido
+              em 05/09, `/conta` traz um desenho de 272×224 e `/conta/preferencias`,
+              `/conta/privacidade` e `/conta/kindle` não trazem nenhum. A regra
+              estava escrita e aplicada num lugar só. */}
+          <img className="conta-desenho" src="/icones/ilustracao-preferencias.svg" alt="" aria-hidden="true" />
           {erro && <p className="conta-erro" role="alert">{erro}</p>}
           {GRUPOS.map((g) => (
             <section key={g.secao} className="conta-secao">

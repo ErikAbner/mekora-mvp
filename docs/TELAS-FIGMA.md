@@ -1754,3 +1754,38 @@ Consertado: o topo volta, com `inerte` — os dois botões do alternador continu
   tem essa informação na tela de análise, que agora não é mais alcançável depois
   de pronto.
 - **"Preparar outro"** existe na tela e não no nó.
+
+### Conta — as quatro telas, `895:10599` e `895:10715`
+
+**A ilustração vinha faltando em três das quatro.** O `.conta-desenho` já traz o
+comentário — *"o desenho acima do painel, do nó de CADA tela de conta"* — e a
+regra estava aplicada num lugar só: medido em 05/09, `/conta` tem um desenho de
+272×224 e `/conta/preferencias`, `/conta/privacidade` e `/conta/kindle` não têm
+nenhum.
+
+**Preferências ganhou a sua** (`934:11083`, 200,6×224, com os mesmos 26 de
+encavalamento sobre o card).
+
+**As outras duas dependem do Erik.** A de Privacidade (`937:20283`, "exploring
+new horizons") não sai do Figma como arquivo: ela é uma composição de **77
+vetores posicionados um a um**, e o `get_design_context` exporta cada um
+separado. Montá-la aqui seria redesenhar o traço dele em código, que é o oposto
+do que o `Icone.jsx` manda fazer. **Pedido:** exportar Privacidade e Kindle como
+SVG achatado, como a de Preferências e a da visão geral já estão.
+
+#### As divergências de conteúdo, e são decisão dele
+
+- **A trilha da conta tem 5 itens na tela e 4 no nó.** A tela acrescenta
+  **Segurança**, e mais **"Sair desta conta"** abaixo do filete. O nó
+  (`900:53581`) lista Conta, Dispositivos Kindle, Preferências, Privacidade.
+- **O que a aba "Conta" mostra.** No nó `895:10599` — que se chama "Conta —
+  visão geral" — o painel da direita mostra os **aparelhos Kindle**: "Kindle de
+  Erik", "Scribe do escritório", "Conectar outro kindle". Na tela, `/conta`
+  mostra o perfil (e-mail, retrato, nome) e os aparelhos vivem em
+  `/conta/kindle`. **São duas arquiteturas diferentes**, e nenhuma está errada:
+  ou a visão geral é a dos aparelhos, ou é a do perfil.
+- **Os botões do aparelho.** Nó: "Tornar principal" e "Editar", com "Último
+  envio hoje, 09:12" e a explicação de o que é o aparelho principal. Tela:
+  "Editar" e "Desligar", sem data de último envio e sem o conceito de principal.
+- **Preferências bate palavra por palavra** — três seções, mesmos títulos,
+  mesmas opções, mesmas explicações. Nada a fazer ali além da ilustração.
