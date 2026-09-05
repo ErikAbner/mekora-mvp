@@ -101,22 +101,24 @@
     "966:28476": {
       "tela": "M · Mesa",
       "rota": "/mesa",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
-      "arquivos": [],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "conferido_em": "2026-09-05",
+      "contra": "dado-do-no",
+      "arquivos": [
+        "web/src/jornadas/MesaCheia.jsx",
+        "web/src/jornadas/mesa-cheia.css"
+      ],
+      "nota": "pendencias abertas listadas em docs/TELAS-FIGMA.md"
     },
     "966:29052": {
       "tela": "M · Livro — o que ficou",
       "rota": "/estante/:id",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-05",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/estante.jsx",
-        "web/src/jornadas/estante.css",
-        "web/src/jornadas/Estante.jsx"
+        "web/src/jornadas/Livro.jsx",
+        "web/src/jornadas/livro.css"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "pendencias abertas listadas em docs/TELAS-FIGMA.md"
     },
     "966:29395": {
       "tela": "M · Leitura",
@@ -412,18 +414,24 @@
     "895:9348": {
       "tela": "D · Mesa — cheia",
       "rota": "/mesa",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
-      "arquivos": [],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "conferido_em": "2026-09-05",
+      "contra": "dado-do-no",
+      "arquivos": [
+        "web/src/jornadas/MesaCheia.jsx",
+        "web/src/jornadas/mesa-cheia.css"
+      ],
+      "nota": "pendencias abertas listadas em docs/TELAS-FIGMA.md"
     },
     "895:9981": {
       "tela": "D · Mesa — variação",
       "rota": "/mesa",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
-      "arquivos": [],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "conferido_em": "2026-09-05",
+      "contra": "dado-do-no",
+      "arquivos": [
+        "web/src/jornadas/MesaCheia.jsx",
+        "web/src/jornadas/mesa-cheia.css"
+      ],
+      "nota": "pendencias abertas listadas em docs/TELAS-FIGMA.md"
     },
     "895:10286": {
       "tela": "D · Mesa — vazia",
@@ -444,14 +452,13 @@
     "895:7631": {
       "tela": "D · Livro — o que ficou",
       "rota": "/estante/:id",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-05",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/estante.jsx",
-        "web/src/jornadas/estante.css",
-        "web/src/jornadas/Estante.jsx"
+        "web/src/jornadas/Livro.jsx",
+        "web/src/jornadas/livro.css"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "pendencias abertas listadas em docs/TELAS-FIGMA.md"
     },
     "895:10472": {
       "tela": "D · Leitura",
