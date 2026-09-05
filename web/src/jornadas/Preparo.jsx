@@ -500,6 +500,34 @@ export function Preparo() {
       setJob(j);
       setTitulo(j.final_title || j.detected_title || j.original_filename || "");
       setAutor(j.final_author || j.detected_author || "");
+      /* UM TRABALHO QUE JÁ TEM EPUB ABRE NA TELA DE PRONTO.
+       *
+       * `feito` era estado de sessão e nascia falso: ele só virava verdadeiro
+       * depois de a pessoa clicar em "Preparar" NESTA aba. Quem fechasse a aba
+       * durante a conversão e voltasse em `/preparo/:id` via a tela de análise
+       * outra vez, com o botão "Preparar com recomendações" — como se nada
+       * tivesse acontecido —, enquanto o livro já estava na estante.
+       *
+       * Medido em 05/09: nenhum dos doze trabalhos convertidos da bancada
+       * chegava à tela de pronto. Ela existia e era inalcançável por navegação,
+       * que é o mesmo buraco do R-50 visto de outro lado — lá o estado faltava
+       * no banco, aqui ele existe no banco e a tela não o lê.
+       *
+       * O SINAL É O EPUB, e não o `status`: é ele que sustenta o nome do
+       * arquivo, o tamanho e o download que a tela oferece. Um trabalho com
+       * status de convertido e sem EPUB cairia numa tela que promete um arquivo
+       * que não existe.
+       *
+       * E O CAMPO É `epub_url`, NÃO `epub_path`. O `JobResponse` expõe
+       * `epub_url` e `epub_bytes`; `epub_path` é coluna do banco e nunca chega
+       * ao navegador. Minha primeira versão testou `epub_path` e não abriu a
+       * tela em nenhum dos doze trabalhos convertidos — e o `arquivoPronto`
+       * abaixo lia o MESMO campo inexistente, o que teria deixado a tela de
+       * pronto sem o nome do arquivo mesmo depois de alcançada. */
+      if (j.epub_url) {
+        setConvertido(j);
+        setFeito(true);
+      }
     } catch (e) {
       setErro(e.message);
     }
@@ -545,7 +573,9 @@ export function Preparo() {
     /* O nome do EPUB sai do `epub_path`, que e caminho no servidor: o que
        interessa a pessoa e o ultimo pedaco. */
     const j = convertido ?? job;
-    const arquivoPronto = j?.epub_path ? j.epub_path.split("/").pop() : null;
+    const arquivoPronto = (j?.epub_path || j?.epub_url)
+      ? (j.epub_path || j.epub_url).split("?")[0].split("/").pop()
+      : null;
     /* O download passa pelo `endereco` — o token publico do trabalho —, que e o
        que a rota de arquivo aceita sem sessao. Sem ele, sem botao: melhor faltar
        o botao do que oferecer um que responde 404.

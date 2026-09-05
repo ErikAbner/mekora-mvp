@@ -453,3 +453,19 @@ O corte de 767px saiu para `estreito.js` porque o CSS já respondia a ele em 40 
 
 Antes de dizer "o Canvas não está lá", ela prova que sabe achar: a Estante tem de aparecer na barra nos dois tamanhos, senão a resposta é INDETERMINADA (97) e não aprovação.
 **Prova:** `node scripts/provas.mjs r52`
+
+### R-53 · 2026-09-05 · fechado
+**Erik:** (não é dele — apareceu ao tentar conferir o nó `895:8164`, a tela de Preparo pronta)
+**Onde:** /preparo/:id · `web/src/jornadas/Preparo.jsx`
+**Medido em 05/09:** **a tela de "pronto" era inalcançável por navegação.** Nenhum dos doze trabalhos convertidos da bancada a abria; todos caíam de volta na tela de análise, com o botão "Preparar com recomendações" — como se nada tivesse acontecido —, enquanto o livro já estava na estante.
+
+**A causa:** `feito` era `useState(false)` e só virava verdadeiro quando a pessoa clicava em "Preparar" **naquela aba**. Quem fechasse a aba durante a conversão e voltasse ao mesmo endereço via a proposta de novo. O estado existia no banco e a tela não o lia.
+
+É o **R-50 visto do outro lado**: lá o estado faltava no banco e a tela nunca era exercitada; aqui o estado está no banco e a tela não pergunta por ele. Nos dois casos o resultado é o mesmo — uma tela inteira que nenhum instrumento mediu, porque nenhum instrumento conseguia chegar nela.
+
+**Consertado:** um trabalho que já tem EPUB abre direto na tela de pronto.
+
+**E o campo certo é `epub_url`, não `epub_path`** — o `JobResponse` expõe `epub_url` e `epub_bytes`; `epub_path` é coluna do banco e nunca chega ao navegador. A primeira versão do conserto testou `epub_path` e não abriu a tela em trabalho nenhum. **Pior:** o `arquivoPronto`, que escreve o nome do EPUB na tela, lia esse mesmo campo inexistente — a tela de pronto teria aparecido sem o nome do arquivo mesmo depois de alcançada. Dois defeitos pelo mesmo engano, e o segundo estava lá desde que a tela foi escrita, invisível porque ninguém chegava a vê-la.
+
+O sinal é o EPUB e não o `status`: é ele que sustenta o nome do arquivo, o tamanho e o download que a tela oferece. Um trabalho com status de convertido e sem EPUB cairia numa tela que promete um arquivo que não existe.
+**Prova:** sem-prova (pendente)
