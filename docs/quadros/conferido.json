@@ -381,14 +381,14 @@
     "895:10909": {
       "tela": "D · Conta — dados",
       "rota": "/conta/privacidade",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-05",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/conta.jsx",
-        "web/src/jornadas/conta.css",
-        "web/src/jornadas/Conta.jsx"
+        "web/src/jornadas/Privacidade.jsx",
+        "web/src/jornadas/privacidade.css",
+        "web/src/jornadas/conta.css"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "interruptor da medicao construido; borda vermelha na secao sem volta"
     },
     "895:11060": {
       "tela": "D · Atualizações",
