@@ -324,7 +324,14 @@
   padding: 32px;
   background: var(--background-secondary);
 }
-.estudos-metade-marca {
+/* `.estudos-metade .estudos-metade-marca`, E NÃO SÓ A CLASSE.
+   O `.estudos-metade p` logo abaixo declara `margin: 0` e tem especificidade
+   (0,1,1) contra (0,1,0) desta — a marca é um `<p>`, então ela PERDIA os 12px
+   para a regra genérica do irmão. Com `text-box-trim` ligado, vão 0 deixou de
+   ser folgado e passou a ser colisão: medido em 04/09, o descendente de
+   "O que ficou pela metade" caía dentro do título logo abaixo.
+   Achado pelo `scripts/amassado.mjs`. */
+.estudos-metade .estudos-metade-marca {
   margin: 0 0 12px;
   font-size: 14px; line-height: 20px;
   color: var(--muted-foreground);

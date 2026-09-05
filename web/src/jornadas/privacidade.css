@@ -16,8 +16,14 @@
 
 .guardado li:last-child { border-block-end: 0; padding-block-end: 0; }
 
+/* 8, E NÃO 4 — o mesmo conserto que o `preparo.css` já fez pelo mesmo motivo,
+   e que ninguém tinha vindo fazer aqui. Com a caixa aparada, o vão entre o
+   título e a explicação é SÓ o que a regra declara: não sobra meia entrelinha
+   para disfarçar um valor curto. Medido em 04/09: a 4px o descendente de "O
+   original" (3,4px) e o ascendente da linha de baixo (3,1px) somavam 6,5 — os
+   dois textos se tocavam. Achado pelo `scripts/amassado.mjs`. */
 .guardado-conta {
-  margin: 0 0 4px;
+  margin: 0 0 8px;
   font-size: 16px;
   line-height: 24px;
   color: var(--foreground);

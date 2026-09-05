@@ -83,6 +83,41 @@ lista de divergências e mexi no que não estava nela — o texto dizia, com tod
 as letras, que aquele valor estava certo. Ler menos não é economia quando o que
 se pula é a parte que impede o trabalho errado.
 
+## A caixa aparada cobra o vão escrito
+
+`text-box-trim: trim-both` está ligado em todo bloco de texto desde 03/09. Ele
+fecha a caixa entre a altura de maiúscula e a linha de base, e o efeito é que
+**o vão entre dois blocos passa a ser SÓ o que a regra declara** — não há mais
+meia entrelinha sobrando de cada lado para disfarçar um valor curto.
+
+Uma tela escrita antes disso, e não refeita depois, tem os vãos antigos. Eles
+eram folgados quando havia sobra; agora são o vão inteiro, e o texto — que
+continua sendo desenhado no tamanho do glifo — transborda a própria caixa e cai
+no vizinho. No Livro isso pintou "Origem · malha-urbana.pdf" por cima dos selos.
+
+**Nenhum instrumento daqui via.** O portão mede cor, contraste e escala; a
+cobertura conta rotas visitadas. As caixas não se sobrepõem — só o desenho
+delas. Uma tela assim passa em tudo e chega quebrada na tela da pessoa.
+
+`scripts/amassado.mjs` é quem vê. Ele mede o transbordo REAL do glifo (um canvas
+com a mesma fonte devolve `actualBoundingBoxAscent` e `actualBoundingBoxDescent`)
+contra o vão entre as caixas de CONTEÚDO dos vizinhos. Duas versões erradas
+antes desta, as duas pegas antes de virar relatório:
+
+- estimar o transbordo como `(entrelinha − altura) / 2` conta o vão da
+  entrelinha como se fosse desenhado. Acusou 13 colisões na Ajuda, que é uma das
+  telas já refeitas.
+- usar a caixa do elemento em vez da de conteúdo conta o recheio como texto. Um
+  `h2` com 32px de recheio embaixo encosta no vizinho sem que o texto chegue
+  perto. Acusou quatro falsas na Privacidade.
+
+E um veneno errado: zerar só as margens não envenena uma tela que separa os
+blocos com `gap` — o controle passou por ela sem mudar um pixel e teria provado
+que a medida funciona numa tela que ele não chegou a envenenar.
+
+Ao refazer qualquer tela contra o nó: o vão vem do desenho, escrito. E rode o
+`amassado.mjs` depois.
+
 ## Armadilhas de implementação já pagas
 
 - **Arrastar não mexe no DOM.** Mover o nó libera a captura de ponteiro no
