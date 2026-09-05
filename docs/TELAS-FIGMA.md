@@ -1812,3 +1812,37 @@ a trilha lateral, e as quatro categorias com as mesmas perguntas.
 não tem. Ele sugere que a pergunta ABRE — e na tela ela leva a outra página em
 vez de expandir. Um chevron ali prometeria expansão; a seta certa depende de o
 Erik decidir qual dos dois comportamentos vale.
+
+### Apresentação e Atualizações — `895:7063` e `895:11060`
+
+**As duas batem em estrutura, ordem e palavras.** A Apresentação percorre título,
+área de soltar, "PDF não é um livro", a faixa de capas, "Quatro passos", "O livro
+não terminou quando o arquivo fica pronto", a captura da Estante, o convite
+final e o rodapé — na mesma ordem do nó. A lista de formatos é maior que a do
+desenho porque vem do servidor, que é a fonte certa.
+
+Atualizações traz título, subtítulo, as datas, os itens com o selo vertical
+(Novo / Melhorado / Corrigido) e o bloco "O que ainda não está de pé".
+
+**Falta a ilustração das Atualizações** (`937:20482`, "business balance"), abaixo
+do subtítulo — e ela cai no mesmo caso das duas telas de conta.
+
+### As ilustrações que não saem do Figma como arquivo
+
+Três das cinco ilustrações do produto **não podem ser exportadas por aqui**:
+
+| tela | nó | por quê |
+|---|---|---|
+| Conta — privacidade | `937:20283` "exploring new horizons" | 77 vetores posicionados |
+| Atualizações | `937:20482` "business balance" | dezenas de vetores |
+| Conta — Kindle | (não conferido) | — |
+
+O `get_design_context` exporta **cada vetor separado**, com a posição em
+`ml`/`mt` no código gerado. Remontá-las aqui seria transcrever o desenho do Erik
+para CSS — dezenas de `<div>` posicionados à mão —, e qualquer erro de um pixel
+vira um traço torto num desenho que é dele. É a mesma regra que o `Icone.jsx`
+escreve: *"desenhar vetor à mão é inventar com cara de fidelidade"*.
+
+**Pedido ao Erik:** exportar as três como SVG achatado, como a de Preferências
+(`934:11083`) e a da visão geral já estão. No Figma é selecionar a moldura e
+exportar como SVG com "outline text" — o traço e o efeito vêm junto.

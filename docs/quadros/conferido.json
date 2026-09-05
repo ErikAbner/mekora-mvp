@@ -310,14 +310,13 @@
     "895:7063": {
       "tela": "D · Apresentação",
       "rota": "/",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-05",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/apresentacao.jsx",
-        "web/src/jornadas/apresentacao.css",
-        "web/src/jornadas/Apresentacao.jsx"
+        "web/src/jornadas/Apresentacao.jsx",
+        "web/src/jornadas/apresentacao.css"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "bate; lista de formatos vem do servidor"
     },
     "895:7315": {
       "tela": "D · Estante — grade",
@@ -387,14 +386,13 @@
     "895:11060": {
       "tela": "D · Atualizações",
       "rota": "/atualizacoes",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-05",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/atualizacoes.jsx",
-        "web/src/jornadas/atualizacoes.css",
-        "web/src/jornadas/Atualizacoes.jsx"
+        "web/src/jornadas/Atualizacoes.jsx",
+        "web/src/jornadas/atualizacoes.css"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "bate; falta a ilustracao 937:20482, que nao sai como arquivo"
     },
     "895:11193": {
       "tela": "D · Ajuda — início",
