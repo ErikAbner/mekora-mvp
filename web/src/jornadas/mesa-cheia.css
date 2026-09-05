@@ -83,13 +83,63 @@
 
 .preparo-caixa .botao { align-self: flex-start; }
 
-/* O TOTAL NA OUTRA PONTA. O nó `895:9523` é um `justify-between`: os recortes de
-   estado de um lado, "N arquivos adicionados" do outro. `margin-inline-start:
-   auto` faz isso sem tirar o botão da caixa nem mexer no `.recortes` que a
-   Estante também usa — a forma solta dos chips do nó vem junto com bordas
-   coloridas por estado que o sistema de tokens não tem, e isso é decisão do
-   Erik, não conserto meu. Ver `docs/TELAS-FIGMA.md`. */
-.preparo .recortes button:last-child { margin-inline-start: auto; }
+/* OS RECORTES DA MESA TÊM FORMA PRÓPRIA — nó `895:9523` e filhos.
+ *
+ * Na Estante o `.recortes` é uma caixa só com botões sem borda dentro. Aqui o
+ * desenho pede o contrário: chips SOLTOS, cada um com sua borda, 24 de vão, e o
+ * total sozinho na outra ponta. A regra fica escopada em `.preparo` justamente
+ * para a Estante não mudar junto — é o mesmo componente com duas formas, e o
+ * `scripts/classes.mjs` recusaria uma segunda definição solta.
+ *
+ * AS CORES SÃO AS DO SISTEMA, e essa foi a decisão do Erik em 04/09: "pode
+ * seguir as cores que já definimos pro sistema, sem adicionar cores semânticas
+ * novas". O nó pede `#e2791e`, `#1da832` e `#dd2525`, três valores que não
+ * existem aqui; `--warning`, `--success` e `--destructive` são os equivalentes
+ * decididos, e vivem nos dois temas.
+ *
+ * O ÚNICO QUE NÃO SAI DO NÓ é "Precisa de você": o desenho não o tem como
+ * recorte — lá ele é uma SEÇÃO própria, com peso muito maior que um chip. Ele
+ * recebe a tinta forte, que não é cor semântica nova e diz "aqui é com você"
+ * sem tomar emprestada a cor de outro estado. Se ele virar seção, esta linha
+ * sai junto. */
+.preparo .recortes {
+  align-self: stretch;
+  display: flex; align-items: center; gap: 24px;
+  padding: 0; border: 0; background: none;
+}
+.preparo .recortes button {
+  padding: 17px 25px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  /* O nó põe `whitespace-nowrap` em cada recorte. Sem isso "Precisa de você" e
+     "Com erro" quebram em duas linhas e a fileira deixa de ser uma fileira. */
+  white-space: nowrap;
+}
+/* `button.recorte-*`, E NÃO SÓ `.recorte-*`: a regra acima é (0,2,1) e a da
+   classe sozinha seria (0,2,0) — a genérica ganharia e a borda voltaria a ser
+   neutra. É o MESMO defeito de especificidade que o `.estudos-metade-marca`
+   tinha, achado no mesmo dia. Ele reaparece sempre que uma regra de elemento
+   dentro de um contexto compete com uma de classe de fora. */
+.preparo .recortes button.recorte-precisa { border-color: var(--foreground); }
+.preparo .recortes button.recorte-fila    { border-color: var(--warning); }
+.preparo .recortes button.recorte-pronto  { border-color: var(--success); }
+.preparo .recortes button.recorte-erro    { border-color: var(--destructive); }
+/* "Enviando" fica com a borda neutra, como o `#e0e0e0` do nó: estar em curso
+   não é um estado sobre o qual haja algo a fazer. */
+
+/* O TOTAL NA OUTRA PONTA — o nó é um `justify-between`. Ele não é recorte de
+   estado: os outros dividem a fila, ele mostra a fila inteira. Daí o fundo
+   cheio, e não a borda. */
+.preparo .recortes button.recorte-tudo {
+  margin-inline-start: auto;
+  padding: 16px 24px;
+  border-color: transparent;
+  background: var(--foreground);
+  color: var(--primary-foreground);
+}
+/* Um recorte vazio não é clicável, e continua legível: o apagado vem da tinta,
+   e não de sumir com a borda que diz de que estado ele é. */
+.preparo .recortes button:disabled { opacity: 0.45; cursor: default; }
 
 @media (max-width: 1023px) {
   .preparo { padding: 24px; }

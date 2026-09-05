@@ -1326,23 +1326,21 @@ contrário do desenho. **Consertado.**
 
 #### O que NÃO foi consertado, e por quê
 
-- **A forma dos recortes.** No nó (`895:9525`–`895:9532`) cada recorte é um chip
-  solto, com borda de 1px **colorida por estado** — `#e2791e` em Na fila,
-  `#1da832` em Pronto, `#dd2525` em Com erro —, fundo `rgba(255,255,255,0.8)`,
-  recheio 25/17 e 24 de vão, **sem caixa em volta**. A tela tem uma caixa única
-  com borda, e botões sem borda dentro dela.
-  **Três dessas cores não existem no sistema de tokens** — o produto tem
-  `estado/ok #2f7d55`, `estado/atencao #976519`, `estado/perigo #b23b2a`, todos
-  mais escuros. Implementar o nó aqui é acrescentar três cores fora do sistema,
-  que é exatamente o que o Erik proibiu para componentes de fora e não faria
-  sentido liberar para o próprio desenho sem ele decidir. **É decisão dele:** ou
-  o desenho passa a usar os tokens de estado, ou o sistema ganha esses três
-  valores. Enquanto não, a forma da tela fica como está.
+- ~~**A forma dos recortes.**~~ **RESOLVIDO em 04/09.** No nó
+  (`895:9525`–`895:9532`) cada recorte é um chip solto, com borda de 1px
+  colorida por estado, fundo quase branco, recheio 25/17 e 24 de vão, **sem
+  caixa em volta**. As três cores do desenho — `#e2791e`, `#1da832`, `#dd2525` —
+  não existem no sistema. **Erik decidiu:** *"pode seguir as cores que já
+  definimos pro sistema, sem adicionar cores semânticas novas"*. Construído com
+  `--warning`, `--success` e `--destructive`, que vivem nos dois temas.
+  A regra fica escopada em `.preparo` para a Estante — que usa o mesmo
+  `.recortes` na forma de caixa — não mudar junto.
+  **"Precisa de você" é o único que não sai do nó:** lá ele é uma seção, não um
+  recorte. Recebeu a tinta forte, que não é cor semântica nova. Se ele virar
+  seção, a linha sai junto.
 - **A caixa em volta de "Em preparo"** (`background: var(--card)`, 1096 de
   largura). Nos dois nós de computador o título é solto sobre o fundo da página
-  e só os cartões da fila têm caixa; a coluna mede 876. Isto anda junto com a
-  forma dos recortes acima — tirar a caixa sem resolver os chips deixa a seção
-  no meio do caminho.
+  e só os cartões da fila têm caixa; a coluna mede 876.
 - **A largura da coluna.** O nó traz 1096 na área de soltar (que a tela acerta),
   e 876/888 nas outras seções; a tela usa 1096 em todas e 760 nas faixas. Os
   876/888 são medidas do Figma, não tokens — e escolher entre eles seria
@@ -1392,13 +1390,25 @@ vertical de "Ler": três ações de frequências muito diferentes lidas como lis
 
 #### O que NÃO foi consertado, e por quê
 
-- **A largura da capa.** O nó traz 427; medido, 427 não cabe — os selos quebram
-  em duas linhas e os três botões se amassam. O motivo é estrutural: **no nó a
-  trilha lateral pertence ao bloco "O que ficou"**, e o topo tem os 1222
-  inteiros. Nesta tela a trilha corre ao lado da PÁGINA e come ~250px do topo.
-  Pôr 427 sem mover a trilha é meia mudança, e meia mudança aqui é pior que
-  nenhuma. Mover a trilha é decisão de navegação, e o Erik já disse uma vez
-  (R-17) que ela anda enfiada onde não precisa.
+- ~~**A largura da capa.**~~ **RESOLVIDO em 04/09.** O nó traz 427, e ela não
+  cabia: a trilha lateral comia 248px do topo. **Erik decidiu:** *"pode remover
+  essa navegação, que nem era pra existir nessa tela"*. A trilha saiu, a capa
+  está em 427 e o topo tem os 1222 do nó — 427 de capa, 48 de vão, 747 de texto.
+  Duas larguras vinham junto e estavam erradas pelo mesmo motivo: o
+  `max-inline-size: 1222px` da página contava o recheio por dentro (dando 1094
+  de conteúdo), e o `.livro-pagina-corpo` guardava um teto de 900px que era a
+  medida de leitura de uma coluna que dividia a página com a trilha.
+
+  **Uma coisa fica em aberto, e é do desenho.** O `895:7631` tem, à esquerda do
+  bloco "O que ficou", uma coluna de linhas com "Início / O que ficou / Isso
+  serve para… / Que método de… / Solto no livro… / Escreva sobr…". Foi ela que
+  eu li como trilha e construí. O Erik diz que aquilo não é navegação e não era
+  para existir. **Ela continua no nó** — resta ele dizer o que é, porque muda o
+  que se constrói ali. A decisão de tirar a que existia não depende disso.
+- **A mesma trilha existe em outras três telas** — `EstudoPagina`, `Estudos` e
+  `Sistema` — pelo mesmo componente (`TrilhaDaPagina`). Só a do Livro foi
+  removida, porque só dela o Erik falou. As outras três precisam da mesma
+  pergunta.
 - **O rótulo do botão principal.** O nó diz **"Ler"**; a tela diz "Continuar
   lendo". Palavra é decisão dele, e "Continuar lendo" carrega uma informação que
   "Ler" não carrega — que você já começou.

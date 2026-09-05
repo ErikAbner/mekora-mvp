@@ -472,6 +472,10 @@ export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberA
               <button
                 key={id}
                 type="button"
+                /* A CLASSE DO ESTADO VIAJA ATÉ O CHIP. O nó 895:9525–9532 dá a
+                   cada recorte uma borda da cor do estado; sem a classe aqui,
+                   o CSS não teria como distinguir "Pronto" de "Com erro". */
+                className={id === "tudo" ? "recorte-tudo" : `recorte-${ESTADOS[id]?.classe || id}`}
                 aria-pressed={id === recorte ? "true" : "false"}
                 disabled={quantos === 0 && id !== recorte}
                 title={quantos === 0 && id !== recorte ? `Nenhum arquivo em ${String(rotulo).toLowerCase()}` : null}

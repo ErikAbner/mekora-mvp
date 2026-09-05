@@ -1,9 +1,19 @@
 /* DUAS COLUNAS: a trilha de ancoras e o conteudo. A trilha some abaixo de 1024
  * (regra dela), e ai a pagina volta a ser uma coluna so. */
-/* 1222 e 64 saem do nó 895:7683 — a coluna e o recheio do `hero`. Estava em
-   1140 com 40 de lado. */
-.livro-pagina { max-inline-size: 1222px; margin: 0 auto; padding: 32px 64px 80px; display: flex; gap: 48px; align-items: flex-start; }
-.livro-pagina-corpo { flex: 1 1 0; min-inline-size: 0; max-inline-size: 900px; display: flex; flex-direction: column; gap: 48px; }
+/* 1222 É A COLUNA, E O RECHEIO VEM POR FORA — nó `895:7683`: um `hero` com 64
+   de recheio cujo conteúdo mede 1222. Com `box-sizing: border-box`, escrever
+   1222 aqui dá 1094 de conteúdo, e a conta do topo não fecha: 427 de capa mais
+   48 de vão deixariam 619 para o texto, e não os 747 do desenho. Medido: os
+   selos quebravam em duas linhas e "Ver o preparo" saía da vista.
+   Daí o `calc`, com os dois números à vista em vez de um 1350 que ninguém
+   saberia de onde veio. */
+.livro-pagina { max-inline-size: calc(1222px + 2 * 64px); margin: 0 auto; padding: 32px 64px 80px; display: flex; gap: 48px; align-items: flex-start; }
+/* 1222, E NÃO 900. O 900 era a medida de leitura de uma coluna que dividia a
+   página com a trilha; sem ela o corpo É a página, e o nó `895:7683` mede 1222.
+   Medido em 04/09: com 900 a capa de 427 deixava 425 para a identidade, os
+   selos quebravam em duas linhas e "Ver o preparo" caía para baixo dos outros
+   dois botões. */
+.livro-pagina-corpo { flex: 1 1 0; min-inline-size: 0; max-inline-size: 1222px; display: flex; flex-direction: column; gap: 48px; }
 /* A ancora nao pode encostar no topo da janela: sem isto o titulo da secao fica
  * colado na borda e parece cortado. */
 .livro-pagina-secao, .livro-pagina-topo { scroll-margin-top: 32px; }
@@ -22,23 +32,20 @@
 /* 48 entre a capa e a identidade — nó 895:7683. */
 .livro-pagina-topo { display: flex; gap: 48px; align-items: flex-start; flex-wrap: wrap; }
 
-/* A RAZÃO DA CAPA, consertada; a LARGURA, não — e a diferença importa.
+/* 427 DE LARGURA E A RAZÃO DA CAPA — nó `895:7684`.
  *
  * A razão estava errada em dois sentidos: 2/3 é 0,667, e a capa deste produto é
  * 420/594 = 0,707, o mesmo número que a prova r47 cobra na Estante. A ficha e a
  * Estante desenhavam o mesmo objeto com duas formas diferentes, e quem abre um
- * livro vem justamente da Estante. Isso é conserto, e está feito.
+ * livro vem justamente da Estante.
  *
- * A LARGURA do nó (`895:7684`) é 427, e ela NÃO cabe aqui — medido em 04/09:
- * com 427 os selos quebram em duas linhas e os três botões se amassam. O motivo
- * é estrutural: no nó a trilha lateral pertence ao bloco "O que ficou", e o
- * topo tem os 1222 inteiros para capa e texto. Nesta tela a trilha corre ao
- * lado da PÁGINA e come ~250px do topo. Pôr 427 sem mover a trilha é meia
- * mudança, e meia mudança aqui é pior que nenhuma. Mover a trilha é decisão de
- * navegação — ver `docs/TELAS-FIGMA.md`. */
+ * A LARGURA só coube depois que a trilha saiu. Ela comia 248px do topo, e com
+ * 427 os selos quebravam em duas linhas e os três botões se amassavam — medido
+ * em 04/09, antes de o Erik mandar remover a trilha. Agora o topo tem os 1222
+ * inteiros que o desenho pede: 427 de capa, 48 de vão, 747 de texto. */
 .livro-pagina-capa {
   flex: 0 0 auto;
-  inline-size: 180px;
+  inline-size: 427px;
   aspect-ratio: 420 / 594;
   border: 1px solid var(--border);
   background: var(--card);

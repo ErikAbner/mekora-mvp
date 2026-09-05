@@ -5,8 +5,7 @@ import { Botao } from "../componentes/Botao.jsx";
 import { ConfiguracoesArquivo } from "../componentes/ConfiguracoesArquivo.jsx";
 import { Campo } from "../componentes/Campo.jsx";
 import { Icone } from "../componentes/Icone.jsx";
-import { TrilhaDaPagina } from "../componentes/TrilhaDaPagina.jsx";
-import { achatar, comecosDistintos } from "../../../contrato/texto.js";
+import { achatar } from "../../../contrato/texto.js";
 import { DESTAQUES } from "./Leitura.jsx";
 import { analisar, apagarNota, criarNota, editarNota, enviarAoKindle, lerNotas, lerProgresso } from "../../../contrato/api.js";
 import { tamanhoLegivel } from "../../../contrato/tamanho.js";
@@ -135,40 +134,18 @@ export function Livro() {
       <Cabecalho lugar="estante" />
 
       <main className="livro-pagina">
-        {/* A TRILHA DE ÂNCORAS — nó 895:7631. A ficha de um livro com trinta
-            notas rola por muito tempo sem dizer onde se está, e o desenho põe
-            esta coluna à esquerda com o traço marcando a seção que está sendo
-            lida. Ela some no telefone, onde rolar já é o gesto natural. */}
-        {/* A TRILHA LISTA AS NOTAS, e não os nomes das seções.
-            
-            Eu tinha feito um sumário de cabeçalhos: "Início / O que ficou /
-            Escrever sobre / Este arquivo". O `895:7631` lista outra coisa —
-            "Início / O que ficou / Isso serve para… / Que método de… / Solto no
-            livro… / Escreva sobr…" —, e as quatro do meio são as PRÓPRIAS NOTAS
-            da pessoa, cortadas nas primeiras palavras.
-            
-            A diferença é o que a trilha serve para fazer. Um sumário de seções
-            diz que a página tem quatro partes, o que a pessoa já vê rolando.
-            Listar as notas deixa ela pular para UMA delas lendo o começo — e num
-            livro com dezenas de notas é a única forma de achar aquela. */}
-        <TrilhaDaPagina
-          rotulo="Nesta ficha"
-          itens={[
-            { id: "livro-inicio", rotulo: "Início" },
-            { id: "livro-o-que-ficou", rotulo: "O que ficou" },
-            /* O QUE APARECE É O QUE A PESSOA ESCREVEU, e o trecho vem antes do
-               comentário: é ele que ela reconhece. Nota escrita sobre o livro
-               não tem trecho, e aí o comentário é tudo o que há.
-               Os rótulos se desempatam sozinhos — ver `comecosDistintos`. */
-            ...(() => {
-              const rotulos = comecosDistintos(visiveis.map((n) => n.trecho || n.comentario));
-              return visiveis.map((n, k) => ({ id: `nota-${n.id}`, rotulo: rotulos[k] }));
-            })(),
-            { id: "livro-escrever", rotulo: "Escrever sobre" },
-            { id: "livro-arquivo", rotulo: "Este arquivo" },
-          ]}
-        />
+        {/* NÃO HÁ TRILHA NESTA FICHA. Decisão do Erik, 04/09: "pode remover essa
+            navegação, que nem era pra existir nessa tela".
 
+            Ela custava 248px da largura do topo — a coluna mais o vão —, e era
+            por causa dela que a capa não cabia nos 427 do nó `895:7684`. Sem a
+            trilha, o topo tem os 1222 inteiros que o desenho pede.
+
+            O QUE EU TINHA VISTO NO NÓ era uma coluna de linhas à esquerda do
+            bloco "O que ficou", e li como trilha. Ela continua lá no `895:7631`;
+            o Erik diz que não é navegação. Fica anotado em
+            `docs/TELAS-FIGMA.md` para ele dizer o que aquilo é — a diferença
+            muda o que se constrói ali, e não muda a decisão de tirar esta. */}
         <div className="livro-pagina-corpo">
         <Link to="/estante" className="livro-pagina-volta">← Estante</Link>
 
