@@ -1561,3 +1561,44 @@ rótulo que não existia. Passei a comparar texto com texto.
 - **O botão "Reler"** nos cartões da terceira coluna: a bancada não tem nenhum
   livro terminado, então a coluna está vazia e a medida não pode dizer se ele
   falta. Buraco de dado, como o do R-50.
+
+### Leitura — `895:10472` (computador)
+
+A tela onde a pessoa passa o tempo, e a que mais confere: coluna de prosa **680**
+(68 caracteres por linha), corpo 20/30, recuo de primeira linha 32, título
+64/72 com -2,5% de entreletra — que é exatamente o `tracking-[-1.6px]` do nó,
+porque -2,5% de 64 dá 1,6 —, autoria 20/30, abertura de 564 com recheio e vão
+de 64, ornamento em 169×78. Todos conferem.
+
+**Dois consertos, os dois na epígrafe** — o bloco escuro que abre o capítulo.
+
+- **Recheio vertical 128, e não 64** (`895:10569`, `px-32 py-128`). Com metade do
+  ar a faixa preta parecia um aviso empurrado entre dois parágrafos, em vez do
+  respiro que ela é.
+- **O fundo sangra, o texto não.** O texto herdava a sangria junto com o fundo e
+  corria **1856px de ponta a ponta** — uma linha desse comprimento não se lê, e o
+  olho perde o começo da seguinte. No nó o bloco preto ocupa a largura inteira e
+  o conteúdo dentro dele é `items-center`, numa caixa estreita.
+
+  A primeira tentativa pôs `max-inline-size: 680` no próprio bloco, e isso
+  encolheu o elemento junto com o texto: o preto deixou de sangrar. A saída é o
+  recuo CALCULADO — `padding-inline: max(var(--borda), calc((100% - 680px) / 2))`
+  —, que mantém o elemento na largura cheia e deixa a coluna de 680 no meio.
+  Medido: a 1920 o bloco tem 1920 de largura com 620 de recuo de cada lado; a
+  390 ele cai para os 16 da borda, sem nunca ficar menor que ela.
+
+#### As divergências que ficam
+
+- **A cor do corpo do texto.** O nó pede `text/secondary #6a6a6a` para a prosa; a
+  tela usa `--foreground #151515`. **Não mexi**, e aqui a razão não é o token: um
+  produto de leitura escurece o texto do livro, não o clareia. `#6a6a6a` sobre
+  `#f9f9f9` passa em AA por pouco; `#151515` dá quatro vezes mais contraste. Se
+  o cinza for mesmo a intenção, é decisão do Erik e vale rever no escuro também.
+- **O rodapé preto com "Link link link" e a marca gigante.** O `Rodape.jsx` já
+  registra que essas quatro colunas são marcador de posição no desenho, e que
+  reproduzi-las daria quatro colunas de âncoras que não vão a lugar nenhum. Vale
+  aqui pelo mesmo motivo — e um rodapé de site no fim de um capítulo é mais
+  estranho ainda que numa tela de produto.
+- **A epígrafe do nó é um VETOR**, e não texto: `895:10570` é uma imagem de
+  317×188 dentro do bloco preto. A tela põe texto de verdade, declarado pelo
+  livro (`epub:type="epigraph"`), que é o que permite qualquer livro ter a sua.

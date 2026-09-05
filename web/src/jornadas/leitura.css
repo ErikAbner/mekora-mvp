@@ -262,7 +262,23 @@
 .prosa .epigrafe {
   grid-column: cheia-inicio / cheia-fim;
   margin: 40px 0;
-  padding: 64px var(--borda, 32px);
+  /* 128 EM CIMA E EMBAIXO — nó `895:10569`, `px-32 py-128`. Estava em 64, e a
+     metade do ar faz a faixa preta parecer um aviso empurrado entre dois
+     parágrafos em vez do respiro que ela é. A epígrafe abre o capítulo: o
+     branco em volta dela é parte do gesto. */
+  /* O FUNDO SANGRA, O TEXTO NÃO. No nó `895:10569` o bloco preto ocupa a largura
+     inteira e o conteúdo dentro dele é `items-center`, com a caixa do texto
+     estreita. Aqui o texto herdava a sangria junto com o fundo e corria 1856px
+     de ponta a ponta — uma linha desse comprimento não se lê, e o olho perde o
+     começo da seguinte.
+
+     O RECUO É CALCULADO, e não uma caixa interna com `max-inline-size`: essa
+     encolhia o elemento junto com o texto e o preto deixava de sangrar. Aqui o
+     elemento continua da largura cheia e o recheio horizontal cresce até sobrar
+     a coluna de 680 no meio — o `max()` garante que em tela estreita ele nunca
+     fique menor que a borda de 32. */
+  padding-block: 128px;
+  padding-inline: max(var(--borda, 32px), calc((100% - 680px) / 2));
   text-indent: 0;
   border: 0;
   background: var(--foreground);
