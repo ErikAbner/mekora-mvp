@@ -7,9 +7,15 @@
 }
 
 .preparo-topo { display: flex; flex-direction: column; gap: 16px; }
+/* HEADING/LG, e não MD. Conferido contra o nó em 04/09: o `895:9520` traz
+   `corpo/heading-lg` 40px sobre `entre/heading-lg` 48px, com -0.6px de
+   entreletra. Estava em 32/40 — um degrau abaixo —, e o efeito era "Em preparo"
+   pesar menos que "Ficaram prontos" e "Na estante" logo abaixo, que já estavam
+   em 40/48. A tela hierarquizava ao contrário do desenho. */
 .preparo-topo h2 {
   margin: 0;
-  font-size: 32px; line-height: 40px; font-weight: 540;   /* Heading/MD */
+  font-size: 40px; line-height: 48px; font-weight: 540;   /* Heading/LG */
+  letter-spacing: -0.6px;
   color: var(--foreground);
 }
 
@@ -76,6 +82,14 @@
 .arquivo-detalhe .dado { font-size: 14px; line-height: 22px; }  /* Dado/Medida */
 
 .preparo-caixa .botao { align-self: flex-start; }
+
+/* O TOTAL NA OUTRA PONTA. O nó `895:9523` é um `justify-between`: os recortes de
+   estado de um lado, "N arquivos adicionados" do outro. `margin-inline-start:
+   auto` faz isso sem tirar o botão da caixa nem mexer no `.recortes` que a
+   Estante também usa — a forma solta dos chips do nó vem junto com bordas
+   coloridas por estado que o sistema de tokens não tem, e isso é decisão do
+   Erik, não conserto meu. Ver `docs/TELAS-FIGMA.md`. */
+.preparo .recortes button:last-child { margin-inline-start: auto; }
 
 @media (max-width: 1023px) {
   .preparo { padding: 24px; }

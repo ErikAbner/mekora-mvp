@@ -1284,3 +1284,71 @@ escuro, e `rgb(28,28,28)` é o `surface/inverse`, não ausência de fundo).
 
 Nenhuma das três era defeito do produto. Sem a regra, teriam virado três
 consertos de coisas que já estavam certas.
+
+## 04/09 — a Mesa e o Livro, conferidas contra o NÓ
+
+As duas estavam marcadas "comparadas" no quadro, e o quadro as recusava por
+INSTRUMENTO ERRADO: a comparação tinha sido feita contra **captura**. Numa
+miniatura de 1024 no lado maior, 32px e 40px são o mesmo pixel. Refeitas contra
+`get_design_context`, com duas medidas novas (`scripts/medidas/mesa-contra-no.js`
+e `livro-contra-no.js`) que colhem do navegador o que ele compôs, em número.
+
+**Uma armadilha do método, e ela vale para tudo que já foi comparado aqui:** o
+Chrome da bancada herda o tema do macOS, que está escuro. As duas primeiras
+capturas do produto saíram em tema escuro e os nós são claros — comparação de
+cor entre telas de cores diferentes. As capturas de comparação agora forçam
+`data-tema="claro"` antes de fotografar.
+
+### Mesa — `895:9348` (cheia), `895:9981` (variação), `966:28476` (telefone)
+
+**A ORDEM ESTAVA INVERTIDA, e os três nós concordam.** O desenho põe o cartão
+**Continue** logo abaixo da área de soltar, e **Em preparo** em seguida. A tela
+fazia o contrário. O comentário no `MesaCheia.jsx` citava só o `895:9981` para
+justificar o Continue no fim — e o `895:9981` mostra o Continue no começo, como
+os outros dois. Não era conflito entre desenhos: era a tela invertida, com um
+comentário que afirmava o oposto do nó que ele citava. **Consertado.**
+
+A ordem tem razão, e ela sobrevive a quem não viu o desenho: quem chega na Mesa
+quase sempre volta para o que estava lendo. A fila é o que já foi mandado fazer.
+
+**"N arquivos adicionados" ficava em primeiro, colado nos recortes de estado.**
+No `895:9523` a faixa é um `justify-between`: os recortes de estado numa ponta,
+o total na outra. Colado nos outros, ele se lê como mais um recorte de estado —
+e não é: os outros dividem a fila, ele mostra a fila inteira. **Consertado**
+(`margin-inline-start: auto` no último, sem tocar no `.recortes` que a Estante
+também usa).
+
+**O título "Em preparo" estava um degrau abaixo.** O `895:9520` traz
+`corpo/heading-lg` 40 sobre `entre/heading-lg` 48, entreletra -0.6px; a tela
+tinha 32/40. O efeito era "Em preparo" pesar MENOS que "Ficaram prontos" e "Na
+estante" logo abaixo, que já estavam em 40/48 — a tela hierarquizava ao
+contrário do desenho. **Consertado.**
+
+#### O que NÃO foi consertado, e por quê
+
+- **A forma dos recortes.** No nó (`895:9525`–`895:9532`) cada recorte é um chip
+  solto, com borda de 1px **colorida por estado** — `#e2791e` em Na fila,
+  `#1da832` em Pronto, `#dd2525` em Com erro —, fundo `rgba(255,255,255,0.8)`,
+  recheio 25/17 e 24 de vão, **sem caixa em volta**. A tela tem uma caixa única
+  com borda, e botões sem borda dentro dela.
+  **Três dessas cores não existem no sistema de tokens** — o produto tem
+  `estado/ok #2f7d55`, `estado/atencao #976519`, `estado/perigo #b23b2a`, todos
+  mais escuros. Implementar o nó aqui é acrescentar três cores fora do sistema,
+  que é exatamente o que o Erik proibiu para componentes de fora e não faria
+  sentido liberar para o próprio desenho sem ele decidir. **É decisão dele:** ou
+  o desenho passa a usar os tokens de estado, ou o sistema ganha esses três
+  valores. Enquanto não, a forma da tela fica como está.
+- **A caixa em volta de "Em preparo"** (`background: var(--card)`, 1096 de
+  largura). Nos dois nós de computador o título é solto sobre o fundo da página
+  e só os cartões da fila têm caixa; a coluna mede 876. Isto anda junto com a
+  forma dos recortes acima — tirar a caixa sem resolver os chips deixa a seção
+  no meio do caminho.
+- **A largura da coluna.** O nó traz 1096 na área de soltar (que a tela acerta),
+  e 876/888 nas outras seções; a tela usa 1096 em todas e 760 nas faixas. Os
+  876/888 são medidas do Figma, não tokens — e escolher entre eles seria
+  inventar uma coluna. Precisa de um número decidido.
+- **O recorte "Precisa de você".** A tela tem seis recortes, o nó tem quatro
+  mais o total: no desenho, "Precisa de você" é uma **seção própria** entre a
+  fila e as capas, e não um recorte. A seção existe na tela (`PrecisaDeVoce`), e
+  a bancada não semeava nenhum arquivo nesse estado — o mesmo buraco do R-50.
+  Ter as duas coisas pode ser certo; é decisão de produto.

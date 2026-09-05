@@ -376,6 +376,57 @@ export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberA
         </section>
       )}
 
+      {/* O CARTÃO "CONTINUE" — nós 895:9348, 895:9981 e 966:28476.
+          A Mesa terminava na fila, e o desenho a continua: o livro em curso, e
+          depois as duas faixas de capas. Sem isso a Mesa é só uma fila de
+          espera — e a promessa do topo é "uma estante para aquilo que ainda
+          está em movimento".
+
+          ELE VEM ANTES DA FILA, e isto foi conferido contra o NÓ em 04/09.
+          O comentário anterior citava só o 895:9981 e o punha DEPOIS — e os
+          três nós põem o Continue logo abaixo da área de soltar, com "Em
+          preparo" em seguida. Não é conflito entre desenhos: os três
+          concordam, e a tela é que estava invertida.
+
+          E a ordem não é arbitrária. Quem chega na Mesa quase sempre volta
+          para o que estava lendo; a fila é o que ele já mandou fazer e não
+          precisa olhar. O desenho põe primeiro o que se procura. */}
+      {continuar && (
+        <section className="continue">
+          <div className="continue-capa">
+            {continuar.capa ? <img src={continuar.capa} alt="" /> : <span>{continuar.titulo}</span>}
+          </div>
+          <div className="continue-texto">
+            <p className="continue-marca">Continue</p>
+            <h2>{continuar.titulo}</h2>
+            {typeof continuar.fracao === "number" && (
+              <p className="continue-onde">
+                Você parou em <span className="dado">{Math.round(continuar.fracao * 100)}%</span>.
+              </p>
+            )}
+            {/* O filete marca a citação, e aqui marca o que o livro tem de seu:
+                as notas e quem escreveu. O autor só entra quando existe. */}
+            <p className="continue-dados">
+              {continuar.notas === 1 ? "1 nota neste livro" : `${continuar.notas} notas neste livro`}
+              {continuar.autor ? ` · ${continuar.autor}` : ""}
+            </p>
+            {outrosAbertos > 0 && (
+              <p className="continue-outros">
+                {outrosAbertos === 1 ? "Mais um aberto" : `Mais ${outrosAbertos} abertos`}
+              </p>
+            )}
+            <div className="continue-acoes">
+              <Link to={`/leitura/${continuar.chave}`} className="botao primaria">
+                Continuar lendo
+              </Link>
+              <Link to={`/estante/${continuar.chave}`} className="botao secundaria">
+                Ver as notas
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
       <section className="preparo">
         <div className="preparo-caixa">
           <header className="preparo-topo">
@@ -409,8 +460,14 @@ export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberA
               Recorte vazio não é clicável: levar alguém a uma lista em branco é
               pior que dizer antes que não há nada nela. */}
           <nav className="recortes" aria-label="Recortes da mesa">
-            {[["tudo", `${arquivos.length} ${arquivos.length === 1 ? "arquivo adicionado" : "arquivos adicionados"}`, arquivos.length],
-              ...Object.entries(c).map(([k, n]) => [k, ESTADOS[k].rotulo, n])
+            {/* "N ARQUIVOS ADICIONADOS" VEM POR ÚLTIMO, e à direita.
+                Conferido contra o nó em 04/09: no `895:9523` a faixa é um
+                `justify-between` com os recortes de estado à esquerda e o total
+                sozinho na outra ponta. Aqui ele era o PRIMEIRO da fila, colado
+                nos outros — o que o lê como mais um recorte de estado, e ele
+                não é: os outros dividem a fila, ele mostra a fila inteira. */}
+            {[...Object.entries(c).map(([k, n]) => [k, ESTADOS[k].rotulo, n]),
+              ["tudo", `${arquivos.length} ${arquivos.length === 1 ? "arquivo adicionado" : "arquivos adicionados"}`, arquivos.length],
             ].map(([id, rotulo, quantos]) => (
               <button
                 key={id}
@@ -464,45 +521,6 @@ export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberA
         />
       )}
 
-      {/* O CARTÃO "CONTINUE", do nó 895:9981. A Mesa terminava na fila, e o
-          desenho a continua: o livro em curso, e depois as duas faixas de capas.
-          Sem isso a Mesa é só uma fila de espera — e a promessa do topo é
-          "uma estante para aquilo que ainda está em movimento". */}
-      {continuar && (
-        <section className="continue">
-          <div className="continue-capa">
-            {continuar.capa ? <img src={continuar.capa} alt="" /> : <span>{continuar.titulo}</span>}
-          </div>
-          <div className="continue-texto">
-            <p className="continue-marca">Continue</p>
-            <h2>{continuar.titulo}</h2>
-            {typeof continuar.fracao === "number" && (
-              <p className="continue-onde">
-                Você parou em <span className="dado">{Math.round(continuar.fracao * 100)}%</span>.
-              </p>
-            )}
-            {/* O filete marca a citação, e aqui marca o que o livro tem de seu:
-                as notas e quem escreveu. O autor só entra quando existe. */}
-            <p className="continue-dados">
-              {continuar.notas === 1 ? "1 nota neste livro" : `${continuar.notas} notas neste livro`}
-              {continuar.autor ? ` · ${continuar.autor}` : ""}
-            </p>
-            {outrosAbertos > 0 && (
-              <p className="continue-outros">
-                {outrosAbertos === 1 ? "Mais um aberto" : `Mais ${outrosAbertos} abertos`}
-              </p>
-            )}
-            <div className="continue-acoes">
-              <Link to={`/leitura/${continuar.chave}`} className="botao primaria">
-                Continuar lendo
-              </Link>
-              <Link to={`/estante/${continuar.chave}`} className="botao secundaria">
-                Ver as notas
-              </Link>
-            </div>
-          </div>
-        </section>
-      )}
 
       <Faixa
         titulo="Ficaram prontos"

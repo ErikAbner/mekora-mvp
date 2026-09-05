@@ -62,11 +62,22 @@
     .sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top)
     .map((s) => {
       const t = s.querySelector("h1, h2, h3");
+      /* A LARGURA DE CONTEÚDO, e não a da seção: no nó as seções são de sangria
+         inteira com 64 de recheio, e o que a comparação cobra é a coluna de
+         dentro — 1096 na área de soltar, 876/888 nas outras. */
+      /* A MAIOR largura entre os filhos diretos, e não a do primeiro: em
+         "Cadernos de campo" o primeiro filho é a CAPA (368px), e ler ele deu
+         "368 contra 888 do nó" — divergência inventada por escolher o elemento
+         errado. A coluna é o filho mais largo. */
+      const filhos = [...s.children].map((c) => c.getBoundingClientRect().width).filter((w) => w > 0);
+      const dentro = filhos.length ? { getBoundingClientRect: () => ({ width: Math.max(...filhos) }) } : null;
       return {
         classe: s.className || null,
         titulo: t ? t.textContent.trim() : null,
         tituloTipo: tipo(t),
         caixa: caixa(s),
+        conteudoLargura: dentro ? Math.round(dentro.getBoundingClientRect().width) : null,
+        tituloLargura: t ? Math.round(t.getBoundingClientRect().width) : null,
       };
     });
 
