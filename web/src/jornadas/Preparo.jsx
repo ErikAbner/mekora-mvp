@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { Icone } from "../componentes/Icone.jsx";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
@@ -29,6 +30,45 @@ import { CapaDeReserva } from "../componentes/CapaDeReserva.jsx";
  * é uma nota fiscal; isto é uma proposta, e por isso tem dois botões.
  */
 
+/* O ÍCONE DE CADA ITEM — o quadrado de 32×32 do nó `895:7947` e irmãos.
+ *
+ * No Figma ele é um retângulo `#d9d9d9` sem nome de camada, que é a cor de um
+ * retângulo recém-criado: um lugar reservado, e não um desenho. O Erik pediu
+ * uma recomendação, e ela sai da biblioteca que já existe em `publico/icones`.
+ *
+ * A regra que usei: o ícone diz O QUE A LINHA É, e não o que ela faz. Cada item
+ * aqui é uma coisa que o Mekora encontrou ou vai fazer com o arquivo, e o
+ * desenho ajuda a varrer a lista sem ler tudo.
+ *
+ *   nota-imagem   o texto que é imagem — literalmente uma imagem no lugar de letra
+ *   caderno       o texto que já está lá, dentro do documento
+ *   paginas       o que se conta por página
+ *   defeito       a página que não abriu
+ *   buscar        o reconhecimento: achar letra onde só havia mancha
+ *   refazer       a conversão, que é o mesmo texto noutra forma
+ *   indice        o sumário navegável — é literalmente uma lista de linhas
+ *   estante       a capa, que é como o livro vai aparecer lá
+ *   copiar        o idioma: traduzir é produzir um SEGUNDO texto, e a folha
+ *                 dupla diz isso melhor que uma bandeira diria
+ *   renomear      o título, que se edita
+ *   conta         o autor, que é uma pessoa
+ *
+ * NÃO HÁ ÍCONE DE IDIOMA na biblioteca, e não desenhei um: vetor à mão é
+ * invenção com cara de fidelidade, e o `Icone.jsx` já registra essa regra. */
+const ICONE = {
+  imagem: "/icones/icone-nota-imagem.svg",
+  texto: "/icones/icone-caderno.svg",
+  paginas: "/icones/icone-paginas.svg",
+  defeito: "/icones/icone-defeito.svg",
+  reconhecer: "/icones/icone-buscar.svg",
+  converter: "/icones/icone-refazer.svg",
+  sumario: "/icones/icone-indice.svg",
+  capa: "/icones/icone-estante.svg",
+  idioma: "/icones/icone-copiar.svg",
+  titulo: "/icones/icone-renomear.svg",
+  autor: "/icones/icone-conta.svg",
+};
+
 /* Cada achado tem três partes: o que é, por que importa, e o número que
  * sustenta. Sem o número vira opinião do produto sobre o arquivo de alguém. */
 function achados(job) {
@@ -37,6 +77,12 @@ function achados(job) {
 
   if (job.is_scanned === true) {
     fora.push({
+      icone: ICONE.imagem,
+      /* `porque` marca a linha que ganha o botão "Por quê" do nó `895:7951`.
+         Ela é a única desta seção que afirma uma CONSEQUÊNCIA — o Kindle não
+         busca palavras —, e consequência sem explicação é o produto pedindo
+         confiança sem dar motivo. */
+      porque: true,
       titulo: "Texto em imagem",
       diz: paginas
         ? `As ${paginas} páginas são digitalizações. Sem reconhecimento, o Kindle não busca palavras nem ajusta o tamanho da letra.`
@@ -44,6 +90,7 @@ function achados(job) {
     });
   } else if (job.is_scanned === false) {
     fora.push({
+      icone: ICONE.texto,
       titulo: "O texto já está no arquivo",
       diz: "Não é digitalização — nada precisa ser reconhecido, e o texto vai inteiro para o aparelho.",
     });
@@ -63,10 +110,12 @@ function achados(job) {
     fora.push(
       job.paginas_ilegiveis === 0
         ? {
+            icone: ICONE.paginas,
             titulo: "Nenhuma página corrompida",
             diz: `${abriram} de ${paginas} abriram sem erro.`,
           }
         : {
+            icone: ICONE.defeito,
             titulo:
               job.paginas_ilegiveis === 1
                 ? "1 página não abriu"
@@ -84,6 +133,7 @@ function achados(job) {
    * linha não diz nada que a de cima já não tenha dito. */
   if (job.paginas_sem_texto > 0 && !job.is_scanned) {
     fora.push({
+      icone: ICONE.paginas,
       titulo:
         job.paginas_sem_texto === 1
           ? "1 página ficou sem texto"
@@ -116,6 +166,7 @@ function planos(job) {
          qual linha está acontecendo agora, em vez de a tela adivinhar pela
          ordem em que as escreveu. */
       passo: "ocr",
+      icone: ICONE.reconhecer,
       titulo: `Reconhecer o texto${job.detected_language ? ` em ${nomeDoIdioma(job.detected_language)}` : ""}`,
       diz: "Depois disso o Kindle acha palavras e você pode mudar o corpo da letra.",
     });
@@ -123,6 +174,7 @@ function planos(job) {
 
   fora.push({
     passo: "convert",
+    icone: ICONE.converter,
     titulo: "Converter para EPUB",
     diz: "No EPUB o texto reflui: você muda o corpo da letra e o conteúdo se ajusta. Em PDF, não.",
   });
@@ -147,6 +199,7 @@ function planos(job) {
    * antigo). */
   const capitulos = job.capitulos_declarados;
   fora.push({
+    icone: ICONE.sumario,
     titulo: "Gerar um sumário navegável",
     diz:
       typeof capitulos !== "number"
@@ -162,6 +215,7 @@ function planos(job) {
          do nó 895:7856 as nomeia — "Uma coisa eu resolvi sozinho e vale você
          conferir: o arquivo não tem capa" —, e é a diferença entre um relatório
          e um pedido de conferência. */
+      icone: ICONE.titulo,
       sozinho: "o arquivo não traz título",
       titulo: "Usar o nome do arquivo como título",
       diz: "O arquivo não traz título próprio. Dá para trocar abaixo.",
@@ -183,10 +237,17 @@ function planos(job) {
   fora.push(
     typeof escolhida === "number"
       ? {
+          icone: ICONE.capa,
           titulo: `Usar a página ${escolhida + 1} como capa`,
           diz: "Foi a que você escolheu.",
         }
       : {
+          icone: ICONE.capa,
+          /* `verCapa` marca a linha que ganha o botão "Ver" do nó `895:7993`.
+             Esta é a única decisão da lista que produz uma IMAGEM, e descrever
+             uma imagem em texto é justamente o que a tela não deveria pedir que
+             a pessoa faça. */
+          verCapa: true,
           sozinho: "o arquivo não tem capa",
           titulo: "Capa gerada",
           diz: "Montar uma com o título, o autor e o formato, na linguagem da estante.",
@@ -210,6 +271,7 @@ function planos(job) {
          aparece quando o servidor tem para onde traduzir — a tela decide isso
          na hora de desenhar, com a lista de pares instalados. */
       traducao: true,
+      icone: ICONE.idioma,
       titulo: `Idioma: ${nomeDoIdioma(job.detected_language)}, como no original`,
       diz: "Nada é traduzido a não ser que você peça.",
     });
@@ -392,6 +454,8 @@ export function Preparo() {
   const [motores, setMotores] = useState(null);
   const [traduzindo, setTraduzindo] = useState(false);
   const [escolhendoIdioma, setEscolhendoIdioma] = useState(false);
+  const [vendoCapa, setVendoCapa] = useState(false);
+  const [explicandoImagem, setExplicandoImagem] = useState(false);
   /* QUANTO CADA ETAPA COSTUMA LEVAR — o "01:10" do nó 895:8029, que ficou de
      fora por ser previsão. Agora é MEDIDA: a mediana das execuções que
      terminaram nesta máquina. Vazio enquanto não houver histórico bastante, e aí
@@ -805,8 +869,14 @@ export function Preparo() {
           <ul className="preparo-pagina-lista">
             {achados(job).map((a) => (
               <li key={a.titulo}>
+                {a.icone && <Icone src={a.icone} tamanho={32} />}
                 <h3>{a.titulo}</h3>
                 <p>{a.diz}</p>
+                {a.porque && (
+                  <Botao tom="secundaria" onClick={() => setExplicandoImagem(true)}>
+                    Por quê
+                  </Botao>
+                )}
               </li>
             ))}
           </ul>
@@ -817,6 +887,7 @@ export function Preparo() {
           <ul className="preparo-pagina-lista">
             {oQueVouFazer.map((p) => (
               <li key={p.titulo}>
+                {p.icone && <Icone src={p.icone} tamanho={32} />}
                 <h3>{p.titulo}</h3>
                 <p>{p.diz}</p>
                 {/* O "TRADUZIR" do nó 895:7856, e ele só existe quando há para
@@ -832,6 +903,9 @@ export function Preparo() {
                   ) : (
                     <span className="preparo-pagina-sem-traducao">{porQueNaoTraduz}</span>
                   )
+                )}
+                {p.verCapa && (
+                  <Botao tom="secundaria" onClick={() => setVendoCapa(true)}>Ver</Botao>
                 )}
               </li>
             ))}
@@ -919,6 +993,62 @@ export function Preparo() {
           )}
         </div>
         </AvisoPreferencias>
+
+        {/* A CAPA QUE VAI SER MONTADA — botão "Ver" do nó `895:7993`.
+            Ela é gerada com os mesmos dados e o mesmo gabarito que a Estante
+            usa (`CapaDeReserva`), então o que a folha mostra é a capa, e não uma
+            prévia parecida com ela. A pessoa está sendo convidada a conferir uma
+            decisão que o Mekora tomou sozinho: mostrar o resultado é o mínimo. */}
+        <Folha
+          aberta={vendoCapa}
+          titulo="A capa que vou montar"
+          aoFechar={() => setVendoCapa(false)}
+        >
+          <p>
+            O arquivo não traz capa. Esta é montada com o título, o autor e o
+            formato, na mesma linguagem das outras capas da sua estante.
+          </p>
+          <div className="preparo-pagina-capa-amostra">
+            <CapaDeReserva
+              titulo={titulo}
+              autor={job.detected_author || job.final_author || null}
+              formato={(job.input_format || "").toUpperCase() || null}
+              chave={id}
+            />
+          </div>
+          <p className="preparo-pagina-nota">
+            Para usar uma página do documento no lugar dela, escolha
+            "Ajustar manualmente" e selecione a página.
+          </p>
+        </Folha>
+
+        {/* POR QUE UMA DIGITALIZAÇÃO PRECISA DE RECONHECIMENTO — botão "Por quê"
+            do nó `895:7951`. A linha ao lado afirma uma consequência ("o Kindle
+            não busca palavras"), e uma consequência sem motivo é o produto
+            pedindo confiança sem dar razão. */}
+        <Folha
+          aberta={explicandoImagem}
+          titulo="Por que o texto está em imagem"
+          aoFechar={() => setExplicandoImagem(false)}
+        >
+          <p>
+            Este arquivo foi digitalizado: cada página é uma FOTO do papel. Para
+            os seus olhos é texto; para o aparelho é uma imagem, e dentro de uma
+            imagem não há letra nenhuma.
+          </p>
+          <p>
+            É isso que faz o Kindle não achar palavras na busca, não deixar você
+            mudar o corpo da letra, e não conseguir ler em voz alta. O texto não
+            reflui porque não existe texto — existe um desenho de texto.
+          </p>
+          <p>
+            O reconhecimento (OCR) lê essas imagens e escreve o texto por baixo
+            delas. A página continua igual na tela, e agora tem letra dentro.
+            Ele erra às vezes, sobretudo em papel manchado, letra pequena ou
+            coluna torta — e é por isso que o Mekora diz que vai fazer, em vez de
+            fazer calado.
+          </p>
+        </Folha>
 
         {/* A ESCOLHA DO IDIOMA, numa folha. O que ela diz antes de traduzir é o
             que separa esta tela de um botão mágico: a tradução é feita por um

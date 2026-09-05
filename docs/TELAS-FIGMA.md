@@ -1647,3 +1647,66 @@ quando ficou maior que o conteúdo**.
 - **O recheio do telefone** foi posto em 16, que é o que os nós de telefone da
   Leitura (`966:29655`) e da Mesa usam nos seus heroes. **Não conferi o
   `966:31504`**, que é o nó de telefone desta tela.
+
+### Preparo — os quadrados vazios, e uma correção minha
+
+**Eu disse que "Traduzir", "Ver" e "Alterar" não existiam. Dois dos três
+existem, e um deles inteiro.**
+
+- **"Traduzir" está construído**, ponta a ponta: o botão, a folha com a escolha
+  de idioma de destino, o aviso de que a tradução é automática e o original fica
+  intacto, a gravação dos idiomas antes da chamada (o `/translate` os LÊ do
+  trabalho, não os recebe no corpo), o acompanhamento e o tratamento de falha.
+  Ele **não aparece na bancada** porque o servidor de prova não tem pacote de
+  idioma instalado — e nesse caso a tela mostra o motivo em vez do botão, que é
+  a regra certa: *"numa instalação sem o motor ou sem o par, o botão abriria um
+  caminho que responde 409"*.
+- **"Alterar" no título e no autor está construído** — é o `Ajustar
+  manualmente`, que troca a seção por campos.
+- **"Ver" e "Por quê" não existiam.** Foram construídos agora.
+
+**O erro foi de método, e é o mesmo que este arquivo já registra três vezes:** eu
+li a AUSÊNCIA NA TELA como ausência no produto, sem abrir o código. A bancada não
+tem pacote de idioma, e o arquivo semeado não é digitalização — então nem o botão
+de traduzir nem a linha de "texto em imagem" tinham como aparecer. Medir a tela é
+medir a tela mais os dados que ela recebeu.
+
+#### Os ícones dos itens
+
+O quadrado de 32×32 do nó (`895:7947` e irmãos) é `#d9d9d9` numa camada sem
+nome — lugar reservado, não desenho. O Erik pediu uma recomendação; ela sai da
+biblioteca que já existe, e a regra que usei é que **o ícone diz o que a linha
+É**, não o que ela faz:
+
+| linha | ícone | por quê |
+|---|---|---|
+| Texto em imagem | `nota-imagem` | é literalmente imagem no lugar de letra |
+| O texto já está no arquivo | `caderno` | o texto dentro do documento |
+| Nenhuma página corrompida / sem texto | `paginas` | o que se conta por página |
+| N páginas não abriram | `defeito` | é o caso que deu errado |
+| Reconhecer o texto | `buscar` | achar letra onde só havia mancha |
+| Converter para EPUB | `refazer` | o mesmo texto noutra forma |
+| Gerar um sumário navegável | `indice` | é literalmente uma lista de linhas |
+| Capa gerada / usar página N | `estante` | é como o livro vai aparecer lá |
+| Idioma | `copiar` | traduzir produz um SEGUNDO texto |
+| Título | `renomear` | edita-se |
+| Autor | `conta` | é uma pessoa |
+
+**Falta um ícone de idioma na biblioteca**, e não desenhei um: vetor à mão é
+invenção com cara de fidelidade, e o `Icone.jsx` já registra essa regra. O
+`copiar` — duas folhas — foi o mais próximo, e casa com o que a própria folha de
+tradução diz: *"o que sai é um segundo texto"*.
+
+#### O que foi construído
+
+- **"Ver"**, na capa gerada. Abre a capa que vai ser montada, com o mesmo
+  gabarito e os mesmos dados que a Estante usa — então é a capa, e não uma prévia
+  parecida com ela. É a única decisão da lista que produz uma IMAGEM, e descrever
+  imagem em texto é justamente o que esta tela não deveria pedir.
+- **"Por quê"**, no texto em imagem. A linha ao lado afirma uma consequência — o
+  Kindle não busca palavras —, e consequência sem motivo é o produto pedindo
+  confiança sem dar razão. A folha explica que cada página é uma foto do papel,
+  o que isso impede, o que o reconhecimento faz e onde ele erra.
+
+**O "Por quê" não foi visto em tela**: a bancada não tem arquivo digitalizado, e
+a linha só existe quando `is_scanned` é verdadeiro. Mesmo buraco do R-50.
