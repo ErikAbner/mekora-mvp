@@ -208,16 +208,14 @@
  * O desenho tem os dois, e a tela não tinha nenhum: ela mostrava o que já foi
  * reunido e escondia o material de onde um estudo se monta.
  */
-.estudos-recortes {
-  display: flex; align-self: flex-start; flex-wrap: wrap;
-  padding: 12px;
-  border: 1px solid var(--border);
-  background: var(--card);
-}
+/* A FORMA VEM DO `.recortes.soltos` (ver `estante.css`): o nó `895:8910` põe os
+   três como chips soltos com 24 de vão, e não como botões dentro de uma caixa.
+   Aqui fica só o que é desta tela — a quebra de linha. */
+.estudos-recortes { flex-wrap: wrap; }
 .estudos-recortes button {
-  padding: 14px 24px; border: 0;
-  background: transparent; color: var(--muted-foreground);
-  font: inherit; font-size: 16px; line-height: 24px; cursor: pointer;
+  font: inherit;
+  color: var(--muted-foreground);
+  font-size: 16px; line-height: 24px; cursor: pointer;
 }
 .estudos-recortes button[aria-pressed="true"] {
   background: var(--foreground);
@@ -351,6 +349,12 @@
 
 /* O alternador Lista / Leitura. Mesma forma dos outros do sistema: uma caixa,
  * dois botoes, o ativo em tinta cheia. */
+/* Os dois na mesma linha, com os 56 do nó `895:8930`. */
+.estudos-fileira-vistas {
+  display: flex; align-items: center; gap: 56px;
+  align-self: flex-start;
+}
+
 .estudos-vistas {
   display: flex; align-self: flex-start; inline-size: fit-content;
   padding: 12px;

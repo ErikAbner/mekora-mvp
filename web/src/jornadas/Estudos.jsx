@@ -448,7 +448,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
         {/* A FILEIRA DE CONTROLE: os recortes à esquerda, a ação na ponta —
             como os dois nós a desenham. O botão saiu do cabeçalho para cá. */}
         <div className="estudos-fileira">
-          <nav className="estudos-recortes" aria-label="O que mostrar">
+          <nav className="recortes soltos estudos-recortes" aria-label="O que mostrar">
             {RECORTES.map((r) => (
               <button
                 key={r.id}
@@ -495,7 +495,10 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
         {/* O ALTERNADOR LISTA / LEITURA — nós 900:56142 e 895:8849. Mesma forma
             dos outros alternadores do sistema: uma caixa, dois botões, o ativo
             em tinta cheia. */}
+        {/* A FILEIRA DO ALTERNADOR — nó `895:8930`: a caixa de Lista/Leitura e o
+            botão de criar na MESMA linha, com 56 entre eles. */}
         {recorte === "estudos" && livros.length > 0 && (
+        <div className="estudos-fileira-vistas">
           <nav className="estudos-vistas" aria-label="Como ver os estudos">
             {[["lista", "Lista"], ["leitura", "Leitura"]].map(([id, rotulo]) => (
               <button
@@ -507,10 +510,13 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                 {rotulo}
               </button>
             ))}
-            <Botao tom="secundaria" onClick={() => { setNome(""); setSobre(""); setCriando(true); }}>
-              Criar novo estudo
-            </Botao>
           </nav>
+          {/* FORA DA CAIXA. Dentro dela ele se lia como uma terceira VISTA, ao
+              lado de Lista e Leitura, e não como a ação que é. */}
+          <Botao tom="secundaria" onClick={() => { setNome(""); setSobre(""); setCriando(true); }}>
+            Criar novo estudo
+          </Botao>
+        </div>
         )}
 
         {recorte === "estudos" && vista === "leitura" && (

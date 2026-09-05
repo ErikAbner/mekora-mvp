@@ -459,7 +459,7 @@ export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberA
 
               Recorte vazio não é clicável: levar alguém a uma lista em branco é
               pior que dizer antes que não há nada nela. */}
-          <nav className="recortes" aria-label="Recortes da mesa">
+          <nav className="recortes soltos" aria-label="Recortes da mesa">
             {/* "N ARQUIVOS ADICIONADOS" VEM POR ÚLTIMO, e à direita.
                 Conferido contra o nó em 04/09: no `895:9523` a faixa é um
                 `justify-between` com os recortes de estado à esquerda e o total

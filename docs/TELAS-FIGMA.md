@@ -1518,20 +1518,41 @@ rótulo que não existia. Passei a comparar texto com texto.
 
 #### As divergências que ficam
 
-- **O recheio dos recortes.** Aqui o nó pede `px-32 py-16` (`895:8911`); na
-  Estante o mesmo componente é `px-24 py-14` (`895:7371`), que é o que o código
-  usa nas duas. **É o desenho que diverge de si mesmo**, e mudar só nesta tela
-  produziria duas formas do mesmo componente no código — exatamente o que o
-  `scripts/inventario.mjs` existe para recusar. Precisa de uma decisão só.
-- **"Criar novo estudo" mora dentro da caixa do alternador.** No nó
-  (`895:8930`) ele é um botão separado, a 56 de distância, e a caixa do
-  alternador tem 587 de largura só para Lista e Leitura. Dentro da caixa, uma
-  AÇÃO se lê como uma terceira VISTA.
-- **"Você ligou" virou "Parecem do mesmo assunto"** em 03/09, e a razão está
-  escrita no código: a seção vem de uma varredura, e o título antigo atribuía à
-  pessoa um ato que foi do sistema — o corpo já dizia "Nada foi organizado por
-  você" três linhas abaixo. **O nó e o produto discordam com argumento dos dois
-  lados; é decisão do Erik.**
+- ~~**O recheio dos recortes.**~~ **RESOLVIDO em 05/09** — e o desenho não
+  divergia de si mesmo: **eu é que tratava dois componentes como um.**
+
+  Na Estante os nós pedem uma CAIXA com os botões dentro (`895:7369`, `p-12`,
+  botões `px-24 py-14`, sem borda por botão). Na Mesa e nos Estudos pedem CHIPS
+  SOLTOS, cada um com a sua borda, separados por 24 (`895:9524`, `895:8910`). São
+  papéis diferentes: a caixa é escolha exclusiva entre modos de ver a mesma coisa
+  (Capas ou 3D, Lista ou Leitura); o chip é recorte de conteúdo.
+
+  **O recheio do chip é 16/24, e o número saiu de uma conta.** Na Mesa o nó
+  escreve `px-25 py-17` no chip e `px-24 py-16` no total ao lado — 25 = 24+1,
+  17 = 16+1: o Figma somou a borda de 1px para as duas caixas terminarem do
+  mesmo tamanho. O recheio de projeto é 24/16. Nos Estudos o nó pede `px-32`;
+  24 aparece nas outras três instâncias e no alternador, então 24 é o horizontal
+  do produto e 32 é o caso isolado.
+
+  A forma mora em `.recortes.soltos` (`estante.css`), usada pela Mesa e pelos
+  Estudos. O Erik passou a decisão: *"é uma mudança tranquila de você decidir"*.
+- ~~**"Criar novo estudo" dentro da caixa do alternador.**~~ **RESOLVIDO.** No nó
+  (`895:8930`) ele é um botão separado, a 56 de distância, e a caixa tem 587 só
+  para Lista e Leitura. Dentro dela uma AÇÃO se lia como uma terceira VISTA.
+- **"Você ligou" virou "Parecem do mesmo assunto"** em 03/09, e **fica assim.**
+  O Erik passou a decisão em 05/09 perguntando o que eu achava.
+
+  Não é sutil, e o que muda é de quem é o gesto. A seção vem de
+  `/notas/agrupadas`, que é varredura: quem juntou foi o sistema. Um produto que
+  diz "Você ligou" sobre um agrupamento que a pessoa não fez ensina que os
+  rótulos dele não são para levar a sério — e o custo não fica nesta seção, cai
+  em cima de todo palpite que o Mekora dá depois: as faixas de Conexões, o "Fora
+  de estudo", o "O que ficou pela metade". O título antigo também contradizia o
+  próprio corpo, que dizia "Nada foi organizado por você" três linhas abaixo.
+
+  O `CLAUDE.md` já pede essa divisão: o TÍTULO carrega a postura (é palpite,
+  pode ser discordado) e o CORPO carrega o critério (N notas, M livros, P
+  palavras).
 - **"Ver as outras"**, o link do cartão "O que ficou pela metade" (`895:8919`),
   não existe na tela. O destino não está no nó, e o produto não tem uma vista
   dessas anotações — construir seria inventar para onde ele leva.
