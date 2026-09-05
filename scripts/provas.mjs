@@ -281,6 +281,40 @@ const PROVAS = {
       return null;
     },
   },
+  'r53': {
+    erik: '(nao e dele — a tela de Preparo pronta era inalcancavel por navegacao)',
+    /* O VENENO REFAZ O ESTADO ANTERIOR: a tela de pronto some e a de analise
+       volta no lugar dela, que e exatamente o que a pessoa via ao reabrir
+       `/preparo/:id` de um trabalho ja convertido. */
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.preparo-fim{display:none !important}';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/preparo/{LIVRO}', `
+        await new Promise(r2 => setTimeout(r2, 900));
+        const fim = document.querySelector('.preparo-fim');
+        const arquivo = document.querySelector('.preparo-fim-arquivo');
+        return {
+          temFim: !!fim && fim.getBoundingClientRect().height > 0,
+          titulo: fim ? (fim.querySelector('h1') || { textContent: '' }).textContent.trim() : null,
+          /* O NOME DO ARQUIVO E PARTE DO ITEM, e nao enfeite: ele lia
+             epub_path, que o servidor nunca manda, e teria vindo vazio mesmo
+             depois de a tela ficar alcancavel. Sem crase neste comentario: ele
+             mora dentro de um literal de template. */
+          arquivo: arquivo ? arquivo.textContent.trim() : null,
+          /* CONTROLE: sem a pagina montada, "sem tela de pronto" e cegueira. */
+          temPagina: !!document.querySelector('.preparo-pagina'),
+          temProposta: !!document.querySelector('.preparo-pagina-lista'),
+        };`, veneno);
+      if (!d.temPagina) {
+        throw new NaoPodeMedir('a pagina de preparo nao montou — nao da para dizer em que tela ela abriu');
+      }
+      if (!d.temFim) return 'um trabalho ja convertido nao abre na tela de pronto: ele volta para a proposta';
+      if (!d.titulo || !/na estante/.test(d.titulo)) return `a tela de pronto abriu sem a frase do no 895:8164 (leu "${d.titulo}")`;
+      if (!d.arquivo || !/\.epub/i.test(d.arquivo)) return `a tela de pronto nao traz o nome do EPUB (leu "${d.arquivo}") — o campo do servidor e epub_url, e nao epub_path`;
+      return null;
+    },
+  },
   'r52': {
     erik: 'canvas n vai existir no telefone, ja falamos sobre isso',
     /* O VENENO REFAZ O QUE FOI MEDIDO EM 04/09: a 390 o Canvas renderizava

@@ -465,7 +465,13 @@ Antes de dizer "o Canvas não está lá", ela prova que sabe achar: a Estante te
 
 **Consertado:** um trabalho que já tem EPUB abre direto na tela de pronto.
 
-**E o campo certo é `epub_url`, não `epub_path`** — o `JobResponse` expõe `epub_url` e `epub_bytes`; `epub_path` é coluna do banco e nunca chega ao navegador. A primeira versão do conserto testou `epub_path` e não abriu a tela em trabalho nenhum. **Pior:** o `arquivoPronto`, que escreve o nome do EPUB na tela, lia esse mesmo campo inexistente — a tela de pronto teria aparecido sem o nome do arquivo mesmo depois de alcançada. Dois defeitos pelo mesmo engano, e o segundo estava lá desde que a tela foi escrita, invisível porque ninguém chegava a vê-la.
-
 O sinal é o EPUB e não o `status`: é ele que sustenta o nome do arquivo, o tamanho e o download que a tela oferece. Um trabalho com status de convertido e sem EPUB cairia numa tela que promete um arquivo que não existe.
-**Prova:** sem-prova (pendente)
+
+**UMA CORREÇÃO A ESTE PRÓPRIO ITEM.** A primeira versão dele afirmava um segundo defeito que **não existe**: que `epub_path` não chegava ao navegador e que o nome do arquivo na tela lia um campo inexistente. Perguntei à API depois, e a resposta de `/analyze/{id}` traz `epub_path`, `epub_url` e `epub_bytes` — os três.
+
+O que tinha falhado no meu primeiro teste era a **sessão**: pedi o trabalho `1182`, que é de outra pessoa da bancada, a rota respondeu 404 e a tela nunca carregou o trabalho. Eu li a tela vazia como campo ausente, e escrevi um item sobre isso.
+
+**O erro é da mesma família que este arquivo já registra**: conclusão sobre AUSÊNCIA tirada de um instrumento que não conseguia achar. Inferi de um `grep` parcial no schema em vez de perguntar ao servidor — e a resposta estava a um `curl` de distância.
+
+Fica `epub_url` no código porque é o que a tela consome: o caminho público, o mesmo do download. O `epub_path` é absoluto no disco do servidor.
+**Prova:** `node scripts/provas.mjs r53`

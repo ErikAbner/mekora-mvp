@@ -518,12 +518,17 @@ export function Preparo() {
        * status de convertido e sem EPUB cairia numa tela que promete um arquivo
        * que não existe.
        *
-       * E O CAMPO É `epub_url`, NÃO `epub_path`. O `JobResponse` expõe
-       * `epub_url` e `epub_bytes`; `epub_path` é coluna do banco e nunca chega
-       * ao navegador. Minha primeira versão testou `epub_path` e não abriu a
-       * tela em nenhum dos doze trabalhos convertidos — e o `arquivoPronto`
-       * abaixo lia o MESMO campo inexistente, o que teria deixado a tela de
-       * pronto sem o nome do arquivo mesmo depois de alcançada. */
+       * O `epub_url` E NÃO O `epub_path`, e a razão não é a que eu escrevi da
+       * primeira vez. Cheguei a registrar que `epub_path` não chegava ao
+       * navegador; ele chega — perguntei à API depois, e a resposta traz os
+       * dois. O que tinha falhado no meu primeiro teste era a SESSÃO: pedi um
+       * trabalho de outra pessoa, a rota respondeu 404, e eu li a tela vazia
+       * como campo ausente. Inferi de um `grep` no schema em vez de perguntar
+       * ao servidor.
+       *
+       * Fica o `epub_url` porque é o que a tela consome — o caminho público, o
+       * mesmo que o download usa. O `epub_path` é absoluto no disco do
+       * servidor e não serve para nada aqui. */
       if (j.epub_url) {
         setConvertido(j);
         setFeito(true);

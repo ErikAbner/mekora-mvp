@@ -118,6 +118,25 @@ que a medida funciona numa tela que ele não chegou a envenenar.
 Ao refazer qualquer tela contra o nó: o vão vem do desenho, escrito. E rode o
 `amassado.mjs` depois.
 
+## Pergunte ao servidor, não ao schema
+
+Duas vezes em 05/09 concluí que um campo não existia lendo o código em vez de
+pedir a resposta. Na segunda, escrevi um item inteiro no livro de recusas sobre
+um defeito que não existia: `epub_path` chega ao navegador, e o que tinha
+falhado no meu teste era a SESSÃO — pedi um trabalho de outra pessoa da bancada,
+a rota respondeu 404, e eu li a tela vazia como campo ausente.
+
+É a mesma família de "a busca também precisa de controle negativo", noutra
+superfície: uma conclusão sobre AUSÊNCIA tirada de um instrumento que não
+conseguia achar. O `grep` no schema mostra o que está nas linhas que ele leu; a
+API mostra o que ela manda.
+
+    curl -s -b "mekora_sessao=$TOKEN" "$API/analyze/$ID" | python3 -m json.tool
+
+O nome do biscoito é `mekora_sessao`, e o trabalho tem de ser DA PESSOA da
+sessão — `sessao-de-prova.sh` semeia por pessoa, e um id de outra rodada
+responde 404 sem dizer que o motivo é dono, e não campo.
+
 ## Armadilhas de implementação já pagas
 
 - **Arrastar não mexe no DOM.** Mover o nó libera a captura de ponteiro no
