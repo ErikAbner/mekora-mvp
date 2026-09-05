@@ -1872,3 +1872,42 @@ Os três itens abertos do Erik sobre esta tela — R-16 (travado, animações,
 interação), R-43 (nota que diz "escrita aqui" e não deixa editar) e R-48 (trocar
 as cores) — **continuam abertos**: são sobre comportamento e cor, e nenhum deles
 se responde com uma captura parada.
+
+### O bloco final — telefone, Estudo, Nota, Mesa vazia
+
+**A borda do telefone era duas, e virou uma** (R-20). Medido a 390: a coluna dava
+358 em nove telas e 342 em três — Mesa, Livro e Estudos usavam 24 de lado onde as
+outras usam 16. Os nós de telefone põem `px-16` nos seus heroes. Uma borda só.
+
+**O 22 saiu da escala.** Ele não existe em token nenhum do Figma — a escala de lá
+é 14, 16, 18, 20, 24, 28, 32, 40, 48, 56, 64 — e vivia em cinco lugares do
+código, com duas entrelinhas diferentes para a mesma peça. O portão deixou de
+aceitá-lo: um portão que aceita o degrau inventado só porque o código o usa não
+é portão, é espelho.
+
+**Os números do telefone saem do nó, e não da escala vizinha.** Minha primeira
+correção do 22 levou a seção do Livro para 24/32 por ser o degrau vizinho; o
+`966:29052` pede **32/40**. E "Em preparo" na Mesa não encolhe no telefone — o
+`966:28578` traz `heading-lg` 40, o mesmo do computador. O telefone deste produto
+reduz alguns títulos e mantém outros, e quem decide é o nó.
+
+**A página de um estudo estava três degraus abaixo** (`895:8260`): título 24/32
+onde o nó pede 40/48, "Livros" 16/24 e "Como isso se formou" 20/30 onde ele pede
+32/40. O cartão do estudo e a página dele compartilham o `.estudo`, e é certo que
+compartilhem — mas os tamanhos não são os mesmos.
+
+**A Mesa vazia bate** (`895:10286`), incluindo a ilustração da área de soltar e a
+de "A mesa está limpa". A lista de formatos é maior porque vem do servidor.
+
+**Os três painéis da Leitura existem e abrem** — Índice (464 de largura, à
+esquerda), Notas e destaques (380, à esquerda), Aparência (384, à direita) —, com
+o marcador de "você está aqui" no índice, como o `941:23112` pede.
+
+#### O que falta e é FUNCIONALIDADE, não fidelidade
+
+- **A tela da nota** (`895:8545`) tem, no nó, cinco peças que o produto não tem:
+  as **tags**, o painel **"Ligar esta nota a qual?"** com busca, e as três seções
+  de sugestão — **"Talvez um estudo"**, **"Parecem próximas"** e **"Talvez"**.
+  Duas das três faixas já existiam; a de estudo nunca existiu.
+- **A página do estudo** não tem **"Notas semelhantes"**, **"Podem
+  complementar"**, a **busca dentro do estudo** nem **"Ver rede neural"**.

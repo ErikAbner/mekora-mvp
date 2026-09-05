@@ -257,26 +257,35 @@
     "941:23110": {
       "tela": "Leitura · aparência",
       "rota": "painel da leitura",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
-      "arquivos": [],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "conferido_em": "2026-09-05",
+      "contra": "dado-do-no",
+      "arquivos": [
+        "web/src/jornadas/Leitura.jsx",
+        "web/src/jornadas/leitura.css"
+      ],
+      "nota": "abre a 384 a direita"
     },
     "941:23111": {
       "tela": "Leitura · notas e destaques",
       "rota": "painel da leitura",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
-      "arquivos": [],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "conferido_em": "2026-09-05",
+      "contra": "dado-do-no",
+      "arquivos": [
+        "web/src/jornadas/Leitura.jsx",
+        "web/src/jornadas/leitura.css"
+      ],
+      "nota": "abre a 380 a esquerda"
     },
     "941:23112": {
       "tela": "Leitura · índice",
       "rota": "painel da leitura",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
-      "arquivos": [],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "conferido_em": "2026-09-05",
+      "contra": "dado-do-no",
+      "arquivos": [
+        "web/src/jornadas/Leitura.jsx",
+        "web/src/jornadas/leitura.css"
+      ],
+      "nota": "abre a 464 com o marcador de onde se esta"
     },
     "941:23113": {
       "tela": "Nota · cartão",
@@ -428,10 +437,13 @@
     "895:10286": {
       "tela": "D · Mesa — vazia",
       "rota": "/mesa",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
-      "arquivos": [],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "conferido_em": "2026-09-05",
+      "contra": "dado-do-no",
+      "arquivos": [
+        "web/src/jornadas/MesaVazia.jsx",
+        "web/src/jornadas/mesa-cheia.css"
+      ],
+      "nota": "bate; formatos vem do servidor"
     },
     "895:9736": {
       "tela": "D · Mesa — primeira vez",
@@ -466,10 +478,13 @@
     "895:8260": {
       "tela": "D · Estudo — página",
       "rota": "/estudo/:id",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
-      "arquivos": [],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "conferido_em": "2026-09-05",
+      "contra": "dado-do-no",
+      "arquivos": [
+        "web/src/jornadas/Estudos.jsx",
+        "web/src/jornadas/estudos.css"
+      ],
+      "nota": "escala corrigida; Notas semelhantes / Podem complementar / busca sao funcionalidade ausente"
     },
     "895:8545": {
       "tela": "D · Conexões — sugestões",
