@@ -283,7 +283,10 @@
   border: 0;
   background: var(--foreground);
   color: var(--background);
-  font-size: 22px; line-height: 32px; font-weight: 540;
+  /* 24/32, e não 22/32: o 22 não é degrau do Figma — a escala de lá vai de 20
+     para 24. Aqui o nó não ajuda, porque no `895:10569` a epígrafe é um VETOR e
+     não texto; então vale a escala, que é a única evidência que existe. */
+  font-size: 24px; line-height: 32px; font-weight: 540;
   letter-spacing: 0.02em;
   text-transform: uppercase;
   text-wrap: pretty;

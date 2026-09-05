@@ -129,7 +129,13 @@
    * leitura, e a escala ia 48 → 64: o degrau que faltava é justamente o do meio,
    * e a cauda da escala anda de 8 em 8 (32, 40, 48, [56], 64). Acrescentá-lo
    * torna a sequência regular em vez de abrir uma exceção. */
-  const CORPOS = [14, 16, 18, 20, 22, 24, 28, 32, 40, 48, 56, 64];
+  /* 22 SAIU EM 05/09. Ele nunca esteve nos tokens do Figma — a escala de lá é
+     label-small 14, label-medium 16, label-large 18, body-medium 20, body-large
+     e heading-xs 24, heading-sm 28, heading-md 32, heading-lg 40, display 64 —
+     e entrou aqui porque o código o usava em cinco lugares. Um portão que
+     aceita o degrau inventado só porque ele existe no código não é portão: é
+     espelho. Os cinco viraram 24. */
+  const CORPOS = [14, 16, 18, 20, 24, 28, 32, 40, 48, 56, 64];
 
   const hex = (c) => {
     const m = c.match(

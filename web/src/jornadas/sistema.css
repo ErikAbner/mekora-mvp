@@ -94,7 +94,7 @@
 @media (max-width: 1023px) {
   .sistema { display: block; padding: 24px 20px 80px; }
   .sistema-topo h1 { font-size: 28px; line-height: 36px; }
-  .peca h2 { font-size: 22px; line-height: 32px; }
+  .peca h2 { font-size: 24px; line-height: 32px; }
 }
 
 /* O espécime da gaveta. Ele existe só no catálogo, e o espaçamento aqui é o

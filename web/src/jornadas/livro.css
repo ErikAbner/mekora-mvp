@@ -99,7 +99,11 @@
 .livro-pagina-acoes { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; }
 
 .livro-pagina-secao { padding-block-start: 32px; border-block-start: 1px solid var(--border); }
-.livro-pagina-secao h2 { margin: 0 0 8px; font-size: 22px; line-height: 28px; color: var(--foreground); }
+/* 24/32, E NÃO 22/28. O 22 não existe em token nenhum do Figma — a escala de lá
+   é 14, 16, 18, 20, 24, 28, 32, 40, 48, 56, 64 (`label-small` a `display-large`),
+   e o 22 entrou só no código. Onde ele estava, entra o degrau vizinho que os nós
+   usam para título de seção: `body-large` / `heading-xs`, 24/32. */
+.livro-pagina-secao h2 { margin: 0 0 8px; font-size: 24px; line-height: 32px; color: var(--foreground); }
 .livro-pagina-secao h2 .dado { color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
 .livro-pagina-nota { margin: 0 0 20px; max-inline-size: 60ch; font-size: 16px; line-height: 24px; color: var(--muted-foreground); text-wrap: pretty; }
 
@@ -269,7 +273,7 @@
 /* Abaixo de 1024 a trilha some (regra dela), e a pagina volta a ser uma coluna
  * so — sem o `gap` de 48 sobrando onde nao ha mais duas colunas. */
 @media (max-width: 1023px) {
-  .livro-pagina { gap: 0; padding: 32px 24px 80px; }
+  .livro-pagina { gap: 0; padding: 32px 16px 80px; }
 }
 
 @media (max-width: 767px) {

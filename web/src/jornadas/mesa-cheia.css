@@ -142,7 +142,12 @@
 }
 
 @media (max-width: 1023px) {
-  .preparo { padding: 24px; }
+  /* 16 É A BORDA DO TELEFONE, e é uma só — R-20 do Erik, "div central com 2
+     larguras sem necessidade". Medido a 390 em 05/09: a coluna media 358 em
+     nove telas e 342 em três (Mesa, Livro, Estudos), porque estas usavam 24 de
+     lado. Os nós de telefone põem `px-16` nos seus heroes — `966:29655` na
+     Leitura, `966:28577` na Mesa, `966:29056` no Livro. Uma borda só. */
+  .preparo { padding: 24px 16px; }
   .preparo-topo h2 { font-size: 24px; line-height: 32px; }
   .arquivo-nome { font-size: 18px; line-height: 27px; }
 }
@@ -257,10 +262,10 @@
 }
 
 @media (max-width: 1023px) {
-  .continue { flex-direction: column; align-items: stretch; gap: 32px; padding: 40px 24px; }
+  .continue { flex-direction: column; align-items: stretch; gap: 32px; padding: 40px 16px; }
   .continue-capa { inline-size: 100%; }
   .continue-texto h2 { font-size: 24px; line-height: 32px; }
-  .faixa { padding: 0 24px 40px; }
+  .faixa { padding: 0 16px 40px; }
   .faixa-topo h2 { font-size: 28px; line-height: 36px; }
   .faixa-capas { gap: 24px; }
   .faixa-capas li { inline-size: 156px; }
