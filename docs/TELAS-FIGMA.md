@@ -1671,47 +1671,47 @@ tem pacote de idioma, e o arquivo semeado não é digitalização — então nem
 de traduzir nem a linha de "texto em imagem" tinham como aparecer. Medir a tela é
 medir a tela mais os dados que ela recebeu.
 
-#### Os ícones dos itens: a condição do Erik elimina a biblioteca
+#### Os ícones dos itens
 
-Ele autorizou com uma condição — *"desde que o usuário não confunda com outra
-possível tela ou nav, evitar ruído na comunicação / navegação"*. A condição é
-**verificável**, e verificar de memória foi como escolhi errado da primeira vez:
-usei `estante` e `conta`, que são os dois itens da barra de lugares.
+O quadrado de 32×32 do nó (`895:7947` e irmãos) é `#d9d9d9` numa camada sem
+nome — lugar reservado, não desenho. **O mesmo problema já tinha sido resolvido
+neste repositório:** o `941:23118` desenha as cinco ações da ficha de arquivo com
+o quadrado vazio, e o `ConfiguracoesArquivo.jsx` o preencheu reusando glifo que
+já existia, *"sem arte nova, sem inventar glifo"*. Esta lista segue a regra.
 
-`scripts/icones.mjs` varre a biblioteca e classifica cada ícone em três degraus:
-**LUGAR** (identifica item de navegação — `lugares.js`, cabeçalho, menu da
-conta), **AÇÃO** (nomeia ação de alguma tela) e **LIVRE**. Resultado: **10 de
-lugar, 16 de ação, 1 livre**.
+**A condição do Erik é verificável, e a primeira tentativa reprovou nela.** Ele
+autorizou *"desde que o usuário não confunda com outra possível tela ou nav"*.
+`scripts/icones.mjs` classifica a biblioteca em **LUGAR** (identifica item de
+navegação — `lugares.js`, cabeçalho, menu da conta), **AÇÃO** e **LIVRE**: 10, 16
+e 1. Minha primeira escolha usava `estante` e `conta`, que são dois itens da
+barra de lugares, e mais `buscar`, que é a busca global. A varredura pegou.
 
-Dos onze que eu tinha escolhido, **seis já significam outra coisa**:
+Entre os de AÇÃO a regra é que o glifo signifique a **mesma coisa** nos dois
+lugares, ou coisa vizinha o bastante para o rótulo ao lado desambiguar:
 
-- `estante`, `conta`, `buscar` — navegação. Os dois primeiros estão no
-  `lugares.js` e no cabeçalho; o terceiro é a busca global, presente em toda
-  tela. Um ícone de lugar decorando conteúdo ensina que aquilo leva a algum
-  lugar.
-- `caderno`, `copiar`, `nota-imagem` — ações de outras telas (abrir o caderno de
-  notas na Leitura, copiar com origem, criar nota de imagem no Canvas), e aqui
-  significariam coisas diferentes das que significam lá.
+| linha | ícone | onde mais aparece, e por que serve |
+|---|---|---|
+| Texto em imagem | `nota-imagem` | Canvas: nota de imagem. Aqui: o texto que É imagem |
+| O texto já está no arquivo | `caderno` | Leitura: o caderno. Aqui: o texto dentro do documento |
+| Página corrompida / sem texto | `paginas` | o que se conta por página |
+| N páginas não abriram | `defeito` | Livro: o aviso de defeito |
+| Reconhecer o texto | `camadas` | Ficha: a pilha de páginas. Aqui: o OCR escreve uma camada de texto POR BAIXO da imagem — a mesma pilha, de perfil |
+| Converter para EPUB | `refazer` | Ficha: reprocessar |
+| Gerar um sumário navegável | `indice` | Leitura: o índice. Aqui: o sumário que vai VIRAR aquele índice |
+| Capa | `marcador` | Leitura: a fita. Aqui: o que identifica o livro de longe |
+| Idioma | `copiar` | Leitura: copiar com origem. Aqui: traduzir produz um SEGUNDO texto |
+| Título | `renomear` | Ficha: renomear |
+| Autor | `nota-nova` | Canvas e Leitura: escrever. Aqui: quem escreveu |
 
-Sobravam cinco que passam — `paginas`, `refazer`, `renomear`, `defeito`,
-`indice`. **E uma lista com metade dos itens marcados é pior que uma sem marca
-nenhuma:** o ícone deixa de ser categoria e vira acaso. Removi todos.
+**Nenhum é de LUGAR**, e isso é cobrado por medida e não por memória: uma
+verificação cruza os ícones usados no `Preparo.jsx` com a lista de navegação que
+o `icones.mjs` produz.
 
-A biblioteca deste produto é de **lugares e ações**. Ela não tem — e não deveria
-ganhar só para isto — um vocabulário de substantivos para decorar lista.
-
-#### O que o quadrado deve ser, e é recomendação, não conserto
-
-A leitura mais econômica do desenho: **ele é o lugar do progresso**. Esta lista
-já carrega `passo`, o mesmo nome de etapa que o servidor manda no
-`report_progress`, e a tela de "em andamento" já o usa para marcar qual linha
-está acontecendo. Um quadrado que se preenche é a forma natural disso — e
-explica por que no desenho eles estão todos iguais e neutros: ali nada começou.
-
-**Não implementei:** o quadrado muda o que a tela DIZ — ela passaria de proposta
-a proposta-com-progresso —, e os itens de "O que encontrei" não são etapas, então
-ou eles ficam sem quadrado (e a lista perde o alinhamento) ou ganham um quadrado
-que nunca enche. É decisão do Erik.
+**Não há ícone de idioma na biblioteca** — nem globo, nem bandeira, nem scanner.
+Procurei no arquivo do Figma, inclusive nos assets que o `get_design_context`
+exporta, e o que existe é o que já está em `publico/icones` mais o grafo das
+Conexões (`solar:share-circle-outline`) e os óculos da abertura. Não desenhei
+nenhum: vetor à mão é invenção com cara de fidelidade.
 
 #### O que foi construído
 
