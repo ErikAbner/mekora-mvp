@@ -53,14 +53,13 @@
     "966:25786": {
       "tela": "M · Conta — Preferências",
       "rota": "/conta/preferencias",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-05",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/conta.jsx",
-        "web/src/jornadas/conta.css",
-        "web/src/jornadas/Conta.jsx"
+        "web/src/jornadas/Conta.jsx",
+        "web/src/jornadas/conta.css"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "bate palavra por palavra; ilustracao 934:11083 ligada"
     },
     "966:26643": {
       "tela": "M · Conta — Privacidade",
@@ -107,7 +106,7 @@
         "web/src/jornadas/MesaCheia.jsx",
         "web/src/jornadas/mesa-cheia.css"
       ],
-      "nota": "pendencias abertas listadas em docs/TELAS-FIGMA.md"
+      "nota": "corpos conferidos contra o no: promessa 32, soltar 24, fila 40; borda 16"
     },
     "966:29052": {
       "tela": "M · Livro — o que ficou",
@@ -118,7 +117,7 @@
         "web/src/jornadas/Livro.jsx",
         "web/src/jornadas/livro.css"
       ],
-      "nota": "pendencias abertas listadas em docs/TELAS-FIGMA.md"
+      "nota": "titulo 40, secoes 32, botoes empilhados com items-start; borda 16"
     },
     "966:29395": {
       "tela": "M · Leitura",
@@ -129,7 +128,7 @@
         "web/src/jornadas/Leitura.jsx",
         "web/src/jornadas/leitura.css"
       ],
-      "nota": "titulo 56/72 e recuo 32 conferem; epigrafe com py-128 como o 966:29662"
+      "nota": "titulo 56/72, recuo 32, epigrafe py-128"
     },
     "966:29743": {
       "tela": "M · Estudo — página",
