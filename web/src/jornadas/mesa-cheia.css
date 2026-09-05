@@ -148,7 +148,12 @@
      lado. Os nós de telefone põem `px-16` nos seus heroes — `966:29655` na
      Leitura, `966:28577` na Mesa, `966:29056` no Livro. Uma borda só. */
   .preparo { padding: 24px 16px; }
-  .preparo-topo h2 { font-size: 24px; line-height: 32px; }
+  /* "EM PREPARO" NÃO ENCOLHE NO TELEFONE. O `966:28578` traz `heading-lg` — 40,
+     o MESMO do computador —, e a tela caía para 24/32. O telefone deste produto
+     reduz alguns títulos e mantém outros, e quem decide é o nó: no mesmo
+     `966:28476` a promessa do topo cai para `heading-md` 32 e a área de soltar
+     para `heading-xs` 24, enquanto esta fica em 40. */
+  .preparo-topo h2 { font-size: 40px; line-height: 48px; }
   .arquivo-nome { font-size: 18px; line-height: 27px; }
 }
 
