@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { Icone } from "../componentes/Icone.jsx";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
@@ -30,44 +29,44 @@ import { CapaDeReserva } from "../componentes/CapaDeReserva.jsx";
  * é uma nota fiscal; isto é uma proposta, e por isso tem dois botões.
  */
 
-/* O ÍCONE DE CADA ITEM — o quadrado de 32×32 do nó `895:7947` e irmãos.
+/* O QUADRADO DE 32×32 DO NÓ `895:7947` FICA VAZIO, e a razão é uma varredura.
  *
- * No Figma ele é um retângulo `#d9d9d9` sem nome de camada, que é a cor de um
- * retângulo recém-criado: um lugar reservado, e não um desenho. O Erik pediu
- * uma recomendação, e ela sai da biblioteca que já existe em `publico/icones`.
+ * No Figma ele é um retângulo `#d9d9d9` numa camada sem nome — a cor de um
+ * retângulo recém-criado, ou seja, um lugar reservado. O Erik pediu uma
+ * recomendação de ícone e aceitou, com uma condição: "desde que o usuário não
+ * confunda com outra possível tela ou nav, evitar ruído na comunicação /
+ * navegação".
  *
- * A regra que usei: o ícone diz O QUE A LINHA É, e não o que ela faz. Cada item
- * aqui é uma coisa que o Mekora encontrou ou vai fazer com o arquivo, e o
- * desenho ajuda a varrer a lista sem ler tudo.
+ * A CONDIÇÃO ELIMINA A BIBLIOTECA INTEIRA, e isso foi medido, não achado. Dos
+ * onze ícones que eu tinha escolhido, seis já significam outra coisa no produto:
  *
- *   nota-imagem   o texto que é imagem — literalmente uma imagem no lugar de letra
- *   caderno       o texto que já está lá, dentro do documento
- *   paginas       o que se conta por página
- *   defeito       a página que não abriu
- *   buscar        o reconhecimento: achar letra onde só havia mancha
- *   refazer       a conversão, que é o mesmo texto noutra forma
- *   indice        o sumário navegável — é literalmente uma lista de linhas
- *   estante       a capa, que é como o livro vai aparecer lá
- *   copiar        o idioma: traduzir é produzir um SEGUNDO texto, e a folha
- *                 dupla diz isso melhor que uma bandeira diria
- *   renomear      o título, que se edita
- *   conta         o autor, que é uma pessoa
+ *   estante, conta, buscar   são NAVEGAÇÃO — os dois primeiros estão no
+ *                            `lugares.js` e no cabeçalho, o terceiro é a busca
+ *                            global, presente em toda tela. Um ícone de lugar
+ *                            decorando conteúdo ensina que aquilo leva a algum
+ *                            lugar.
+ *   caderno, copiar,         são AÇÕES de outras telas — abrir o caderno de
+ *   nota-imagem              notas na Leitura, copiar com origem, criar nota de
+ *                            imagem no Canvas — e aqui significariam coisas
+ *                            diferentes das que significam lá.
  *
- * NÃO HÁ ÍCONE DE IDIOMA na biblioteca, e não desenhei um: vetor à mão é
- * invenção com cara de fidelidade, e o `Icone.jsx` já registra essa regra. */
-const ICONE = {
-  imagem: "/icones/icone-nota-imagem.svg",
-  texto: "/icones/icone-caderno.svg",
-  paginas: "/icones/icone-paginas.svg",
-  defeito: "/icones/icone-defeito.svg",
-  reconhecer: "/icones/icone-buscar.svg",
-  converter: "/icones/icone-refazer.svg",
-  sumario: "/icones/icone-indice.svg",
-  capa: "/icones/icone-estante.svg",
-  idioma: "/icones/icone-copiar.svg",
-  titulo: "/icones/icone-renomear.svg",
-  autor: "/icones/icone-conta.svg",
-};
+ * Sobravam cinco que passam (paginas, refazer, renomear, defeito, indice), e uma
+ * lista com metade dos itens marcados e metade não é pior que uma lista sem
+ * marca nenhuma: o ícone deixa de ser categoria e vira acaso.
+ *
+ * A biblioteca deste produto é de LUGARES e AÇÕES. Ela não tem — e não deveria
+ * ter, só para isto — um vocabulário de substantivos para decorar lista.
+ *
+ * O QUE O QUADRADO É, ENTÃO. A leitura mais econômica do desenho: ele é o lugar
+ * do PROGRESSO. Esta lista já carrega `passo`, o mesmo nome de etapa que o
+ * servidor manda no `report_progress`, e a tela de "em andamento" já o usa para
+ * marcar qual linha está acontecendo. Um quadrado que se preenche é a forma
+ * natural disso — e explica por que no desenho eles estão todos iguais e
+ * neutros: ali nada começou ainda.
+ *
+ * Fica como recomendação escrita, e não implementada de surpresa: o quadrado
+ * vazio muda o que a tela DIZ, e isso é decisão do Erik. Ver
+ * `docs/TELAS-FIGMA.md`. */
 
 /* Cada achado tem três partes: o que é, por que importa, e o número que
  * sustenta. Sem o número vira opinião do produto sobre o arquivo de alguém. */
@@ -77,7 +76,6 @@ function achados(job) {
 
   if (job.is_scanned === true) {
     fora.push({
-      icone: ICONE.imagem,
       /* `porque` marca a linha que ganha o botão "Por quê" do nó `895:7951`.
          Ela é a única desta seção que afirma uma CONSEQUÊNCIA — o Kindle não
          busca palavras —, e consequência sem explicação é o produto pedindo
@@ -90,7 +88,6 @@ function achados(job) {
     });
   } else if (job.is_scanned === false) {
     fora.push({
-      icone: ICONE.texto,
       titulo: "O texto já está no arquivo",
       diz: "Não é digitalização — nada precisa ser reconhecido, e o texto vai inteiro para o aparelho.",
     });
@@ -110,12 +107,10 @@ function achados(job) {
     fora.push(
       job.paginas_ilegiveis === 0
         ? {
-            icone: ICONE.paginas,
             titulo: "Nenhuma página corrompida",
             diz: `${abriram} de ${paginas} abriram sem erro.`,
           }
         : {
-            icone: ICONE.defeito,
             titulo:
               job.paginas_ilegiveis === 1
                 ? "1 página não abriu"
@@ -133,7 +128,6 @@ function achados(job) {
    * linha não diz nada que a de cima já não tenha dito. */
   if (job.paginas_sem_texto > 0 && !job.is_scanned) {
     fora.push({
-      icone: ICONE.paginas,
       titulo:
         job.paginas_sem_texto === 1
           ? "1 página ficou sem texto"
@@ -166,7 +160,6 @@ function planos(job) {
          qual linha está acontecendo agora, em vez de a tela adivinhar pela
          ordem em que as escreveu. */
       passo: "ocr",
-      icone: ICONE.reconhecer,
       titulo: `Reconhecer o texto${job.detected_language ? ` em ${nomeDoIdioma(job.detected_language)}` : ""}`,
       diz: "Depois disso o Kindle acha palavras e você pode mudar o corpo da letra.",
     });
@@ -174,7 +167,6 @@ function planos(job) {
 
   fora.push({
     passo: "convert",
-    icone: ICONE.converter,
     titulo: "Converter para EPUB",
     diz: "No EPUB o texto reflui: você muda o corpo da letra e o conteúdo se ajusta. Em PDF, não.",
   });
@@ -199,7 +191,6 @@ function planos(job) {
    * antigo). */
   const capitulos = job.capitulos_declarados;
   fora.push({
-    icone: ICONE.sumario,
     titulo: "Gerar um sumário navegável",
     diz:
       typeof capitulos !== "number"
@@ -215,7 +206,6 @@ function planos(job) {
          do nó 895:7856 as nomeia — "Uma coisa eu resolvi sozinho e vale você
          conferir: o arquivo não tem capa" —, e é a diferença entre um relatório
          e um pedido de conferência. */
-      icone: ICONE.titulo,
       sozinho: "o arquivo não traz título",
       titulo: "Usar o nome do arquivo como título",
       diz: "O arquivo não traz título próprio. Dá para trocar abaixo.",
@@ -237,12 +227,10 @@ function planos(job) {
   fora.push(
     typeof escolhida === "number"
       ? {
-          icone: ICONE.capa,
           titulo: `Usar a página ${escolhida + 1} como capa`,
           diz: "Foi a que você escolheu.",
         }
       : {
-          icone: ICONE.capa,
           /* `verCapa` marca a linha que ganha o botão "Ver" do nó `895:7993`.
              Esta é a única decisão da lista que produz uma IMAGEM, e descrever
              uma imagem em texto é justamente o que a tela não deveria pedir que
@@ -271,7 +259,6 @@ function planos(job) {
          aparece quando o servidor tem para onde traduzir — a tela decide isso
          na hora de desenhar, com a lista de pares instalados. */
       traducao: true,
-      icone: ICONE.idioma,
       titulo: `Idioma: ${nomeDoIdioma(job.detected_language)}, como no original`,
       diz: "Nada é traduzido a não ser que você peça.",
     });
@@ -869,7 +856,6 @@ export function Preparo() {
           <ul className="preparo-pagina-lista">
             {achados(job).map((a) => (
               <li key={a.titulo}>
-                {a.icone && <Icone src={a.icone} tamanho={32} />}
                 <h3>{a.titulo}</h3>
                 <p>{a.diz}</p>
                 {a.porque && (
@@ -887,7 +873,6 @@ export function Preparo() {
           <ul className="preparo-pagina-lista">
             {oQueVouFazer.map((p) => (
               <li key={p.titulo}>
-                {p.icone && <Icone src={p.icone} tamanho={32} />}
                 <h3>{p.titulo}</h3>
                 <p>{p.diz}</p>
                 {/* O "TRADUZIR" do nó 895:7856, e ele só existe quando há para

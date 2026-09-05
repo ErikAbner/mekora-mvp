@@ -1671,31 +1671,47 @@ tem pacote de idioma, e o arquivo semeado não é digitalização — então nem
 de traduzir nem a linha de "texto em imagem" tinham como aparecer. Medir a tela é
 medir a tela mais os dados que ela recebeu.
 
-#### Os ícones dos itens
+#### Os ícones dos itens: a condição do Erik elimina a biblioteca
 
-O quadrado de 32×32 do nó (`895:7947` e irmãos) é `#d9d9d9` numa camada sem
-nome — lugar reservado, não desenho. O Erik pediu uma recomendação; ela sai da
-biblioteca que já existe, e a regra que usei é que **o ícone diz o que a linha
-É**, não o que ela faz:
+Ele autorizou com uma condição — *"desde que o usuário não confunda com outra
+possível tela ou nav, evitar ruído na comunicação / navegação"*. A condição é
+**verificável**, e verificar de memória foi como escolhi errado da primeira vez:
+usei `estante` e `conta`, que são os dois itens da barra de lugares.
 
-| linha | ícone | por quê |
-|---|---|---|
-| Texto em imagem | `nota-imagem` | é literalmente imagem no lugar de letra |
-| O texto já está no arquivo | `caderno` | o texto dentro do documento |
-| Nenhuma página corrompida / sem texto | `paginas` | o que se conta por página |
-| N páginas não abriram | `defeito` | é o caso que deu errado |
-| Reconhecer o texto | `buscar` | achar letra onde só havia mancha |
-| Converter para EPUB | `refazer` | o mesmo texto noutra forma |
-| Gerar um sumário navegável | `indice` | é literalmente uma lista de linhas |
-| Capa gerada / usar página N | `estante` | é como o livro vai aparecer lá |
-| Idioma | `copiar` | traduzir produz um SEGUNDO texto |
-| Título | `renomear` | edita-se |
-| Autor | `conta` | é uma pessoa |
+`scripts/icones.mjs` varre a biblioteca e classifica cada ícone em três degraus:
+**LUGAR** (identifica item de navegação — `lugares.js`, cabeçalho, menu da
+conta), **AÇÃO** (nomeia ação de alguma tela) e **LIVRE**. Resultado: **10 de
+lugar, 16 de ação, 1 livre**.
 
-**Falta um ícone de idioma na biblioteca**, e não desenhei um: vetor à mão é
-invenção com cara de fidelidade, e o `Icone.jsx` já registra essa regra. O
-`copiar` — duas folhas — foi o mais próximo, e casa com o que a própria folha de
-tradução diz: *"o que sai é um segundo texto"*.
+Dos onze que eu tinha escolhido, **seis já significam outra coisa**:
+
+- `estante`, `conta`, `buscar` — navegação. Os dois primeiros estão no
+  `lugares.js` e no cabeçalho; o terceiro é a busca global, presente em toda
+  tela. Um ícone de lugar decorando conteúdo ensina que aquilo leva a algum
+  lugar.
+- `caderno`, `copiar`, `nota-imagem` — ações de outras telas (abrir o caderno de
+  notas na Leitura, copiar com origem, criar nota de imagem no Canvas), e aqui
+  significariam coisas diferentes das que significam lá.
+
+Sobravam cinco que passam — `paginas`, `refazer`, `renomear`, `defeito`,
+`indice`. **E uma lista com metade dos itens marcados é pior que uma sem marca
+nenhuma:** o ícone deixa de ser categoria e vira acaso. Removi todos.
+
+A biblioteca deste produto é de **lugares e ações**. Ela não tem — e não deveria
+ganhar só para isto — um vocabulário de substantivos para decorar lista.
+
+#### O que o quadrado deve ser, e é recomendação, não conserto
+
+A leitura mais econômica do desenho: **ele é o lugar do progresso**. Esta lista
+já carrega `passo`, o mesmo nome de etapa que o servidor manda no
+`report_progress`, e a tela de "em andamento" já o usa para marcar qual linha
+está acontecendo. Um quadrado que se preenche é a forma natural disso — e
+explica por que no desenho eles estão todos iguais e neutros: ali nada começou.
+
+**Não implementei:** o quadrado muda o que a tela DIZ — ela passaria de proposta
+a proposta-com-progresso —, e os itens de "O que encontrei" não são etapas, então
+ou eles ficam sem quadrado (e a lista perde o alinhamento) ou ganham um quadrado
+que nunca enche. É decisão do Erik.
 
 #### O que foi construído
 

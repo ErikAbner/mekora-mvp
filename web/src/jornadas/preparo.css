@@ -117,21 +117,18 @@
  * botao secundario na ponta ("Por que", "Ver", "Alterar"). O texto ocupa a
  * coluna, o botao fica alinhado ao topo dela: com duas linhas de texto, um botao
  * centrado verticalmente flutua no meio do nada. */
-/* TRÊS COLUNAS: o ícone, o texto, e a ação. O nó `895:7946` põe o quadrado de
-   32 a 24 do texto, e o bloco inteiro a 64 do botão da ponta. */
 .preparo-pagina-lista li {
   background: var(--card); padding: 40px;
-  display: grid; grid-template-columns: auto 1fr auto; align-items: start;
-  column-gap: 24px;
+  display: grid; grid-template-columns: 1fr auto; align-items: start;
+  column-gap: 64px;
 }
-.preparo-pagina-lista li > .icone { grid-column: 1; grid-row: 1 / -1; color: var(--muted-foreground); }
 /* O TEXTO EMPILHA NA PRIMEIRA COLUNA. Sem dizer isto, a colocacao automatica
  * poe o `h3` em (1,1) e o `p` em (1,2) — titulo e explicacao lado a lado, cada
  * um espremido em meia coluna. */
 .preparo-pagina-lista li > h3,
-.preparo-pagina-lista li > p { grid-column: 2; }
+.preparo-pagina-lista li > p { grid-column: 1; }
 .preparo-pagina-lista li > .botao,
-.preparo-pagina-lista li > .preparo-pagina-sem-traducao { grid-column: 3; grid-row: 1 / -1; align-self: center; margin-inline-start: 40px; }
+.preparo-pagina-lista li > .preparo-pagina-sem-traducao { grid-column: 2; grid-row: 1 / -1; align-self: center; }
 /* 8, E NAO 4. Com a caixa aparada — `text-box-trim`, que o Erik escolheu —, o
  * espaco entre o titulo e a explicacao e SO o que a regra declara: nao ha mais
  * meia entrelinha sobrando para disfarcar um valor curto. A 4px os dois se
