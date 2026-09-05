@@ -1444,3 +1444,46 @@ e **`items-start`**: cada botão mede o próprio conteúdo.
 com recheio 13/17, origem 16/24, autor 20/30, citação 20/30, botões 16/24. Só o
 vão dos botões muda, de 24 para 16. Não há uma escala de telefone: há uma escala,
 e um arranjo por tamanho.
+
+### Estante — grade, `895:7315` (computador)
+
+**Ela bate.** É a primeira tela desta rodada em que a medida não achou defeito de
+geometria nenhum, e vale registrar o que foi conferido para a próxima pessoa não
+refazer: coluna 1221, quatro colunas, vão 64 nas linhas e 48 nas colunas, capa
+em 420/594, título do cartão 24/32 peso 500, autor 20/30, recortes com recheio
+12 e botões 24/14 em 16/24, ficha de 476 com vão 40, título dela 32/40 peso 540,
+botões de 58 com recheio 16/32. Todos conferem com o nó.
+
+**Um falso positivo que quase virou conserto.** O nó põe `text-center` no título
+de cada cartão, e a tela alinha à esquerda. Só que ali o `text-center` é
+**inerte**: o bloco tem `whitespace-nowrap` e `shrink-0`, então ele mede o
+próprio texto, e centralizar dentro de uma caixa do tamanho do conteúdo não move
+nada. Na captura do nó os títulos estão à esquerda, como na tela. Eu ia
+"consertar" um alinhamento que o desenho não pede.
+
+**E um segundo:** o primeiro cartão da bancada não tem marcador de notas, e a
+medida leu isso como peça faltando. É o trabalho em `analyzed` do R-51 — ele não
+tem notas. A medida passou a clicar num livro que TENHA nota antes de olhar a
+ficha, senão ela mede "0 notas, sem barra, sem citação" e eu leio três peças
+ausentes onde há um dado vazio.
+
+#### As divergências, e nenhuma é de geometria
+
+- **Os recortes têm número na tela e não no nó** — "Tudo 7", "Com nota 5". O
+  `895:7369` traz só os rótulos. Na Mesa o nó TEM os números, então isto não é
+  regra do sistema: é uma tela que diverge da outra. O número aqui não é enfeite
+  — é ele que sustenta o recorte vazio ficar desabilitado. **Decisão de produto.**
+- **"Filtrar" no alternador.** A tela tem três botões onde o nó (`917:8198`) tem
+  dois: Capas e Estante em 3D.
+- **A cor do título da ficha.** O nó pede `text/primary #535353`; a tela usa
+  `--foreground #151515`. **Não mexi:** `#535353` não existe como variável no
+  produto, e criá-la é acrescentar cor — o oposto do que o Erik decidiu em 04/09.
+- **A etiqueta `#Design`** (pílula de `rounded-[32px]` no `917:8379`). O produto
+  não tem etiquetas de nota — não é fidelidade que falta, é funcionalidade que
+  não existe.
+- **"Ver detalhes do arquivo"**, o expansor da ficha, não está no nó.
+
+**O que esta conferência NÃO cobriu:** o estado de hover dos cartões (R-01, que
+continua aberto — "hover nos livros é muito feio"), a vista Estante em 3D
+(`895:7506`) e o telefone (`964:24606`, já conferido em 04/09 contra o dado do
+nó).
