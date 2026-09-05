@@ -83,6 +83,32 @@ lista de divergências e mexi no que não estava nela — o texto dizia, com tod
 as letras, que aquele valor estava certo. Ler menos não é economia quando o que
 se pula é a parte que impede o trabalho errado.
 
+## O número do nó é o CONTEÚDO, e o recheio vem por fora
+
+O Figma escreve a largura da coluna dentro de um `hero` que tem o próprio
+recheio: `895:7683` diz `w-[1222px]` num pai com `p-[64px]`. Em CSS, com o
+`box-sizing: border-box` que o produto usa, escrever `max-inline-size: 1222px`
+com `padding: 64px` dá **1094 de conteúdo** — 128 a menos do que o desenho pede.
+
+A forma que este repositório passou a usar deixa os dois números à vista:
+
+    max-inline-size: calc(1222px + 2 * 64px);
+    padding-inline: 64px;
+
+Está em três telas — Livro, Preparo e Mesa —, e nas três o defeito só apareceu
+quando o número CRESCEU: enquanto o teto era menor que o texto, o conteúdo batia
+nele por acaso e a conta parecia certa. **Um teto que o conteúdo não alcança
+mente em silêncio.**
+
+Duas armadilhas irmãs, as duas pagas no mesmo dia:
+
+- **Filho de flex mede o conteúdo, não o teto.** O `.preparo-pagina` tinha
+  `max-inline-size` e parava em 1028 dos 1350, porque o `.mesa` é flex e ele não
+  esticava. Faltava `inline-size: 100%`.
+- **Seções da mesma página com modelos diferentes desalinham.** Na Mesa, as
+  faixas declaravam 888 com o recheio por dentro (760 de conteúdo) e a fila 876
+  sem recheio: duas bordas na mesma tela, que é o R-20 visto no computador.
+
 ## A caixa aparada cobra o vão escrito
 
 `text-box-trim: trim-both` está ligado em todo bloco de texto desde 03/09. Ele
