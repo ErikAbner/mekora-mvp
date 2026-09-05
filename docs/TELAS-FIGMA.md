@@ -1420,3 +1420,27 @@ vertical de "Ler": três ações de frequências muito diferentes lidas como lis
   "Capítulo X" abaixo. Isso encosta no R-48 — o Erik já disse que as cores são
   provisórias e quer poder trocá-las.
 - **A ilustração de "Escrever sobre o livro"**, presente no nó e ausente na tela.
+
+### O telefone das duas, conferido depois — `966:28476` e `966:29052`
+
+Mexer no computador quebrou o telefone das duas, e as duas só apareceram na
+captura a 390.
+
+**Mesa.** Os chips soltos herdavam o `flex: 1 0 auto` que o `estante.css` põe em
+`.recortes button` abaixo de 767 — cada um esticava para a largura inteira e a
+fileira virava uma pilha de seis blocos, de 61px para mais de 400px de altura. O
+nó (`966:28582`, `966:28591`) tem os quatro estados num `wrap` de **16** de vão
+(e não os 24 do computador), com "N arquivos adicionados" como bloco **irmão**,
+32 abaixo. Construído assim.
+
+**Livro.** Os três botões estavam com `align-items: stretch` e
+`inline-size: 100%` — barras de largura inteira, dando a "Enviar ao Kindle" e a
+"Ver o preparo" o mesmo peso de "Ler". É o mesmo defeito que o computador tinha
+antes de eles irem para uma linha só. O nó (`966:29084`) é `flex-col` com vão 16
+e **`items-start`**: cada botão mede o próprio conteúdo.
+
+**O resto do telefone bate com o computador, e isso foi o achado.** O
+`966:29052` mantém os MESMOS números do `895:7631` — título 40/48, selos 14/22
+com recheio 13/17, origem 16/24, autor 20/30, citação 20/30, botões 16/24. Só o
+vão dos botões muda, de 24 para 16. Não há uma escala de telefone: há uma escala,
+e um arranjo por tamanho.

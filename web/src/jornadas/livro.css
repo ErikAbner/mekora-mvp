@@ -168,8 +168,13 @@
   .livro-pagina-topo { gap: 24px; }
   .livro-pagina-capa { inline-size: 100%; aspect-ratio: 420 / 594; }
   .livro-pagina-identidade { inline-size: 100%; }
-  .livro-pagina-acoes { flex-direction: column; align-items: stretch; }
-  .livro-pagina-acoes .botao { inline-size: 100%; justify-content: center; }
+  /* EMPILHADOS, MAS NÃO ESTICADOS — nó `966:29084`: `flex-col`, vão 16,
+     `items-start`. Cada botão mede o próprio conteúdo.
+     Estava com `stretch` e `inline-size: 100%`, o que dava a "Enviar ao Kindle"
+     e a "Ver o preparo" a mesma barra de largura inteira de "Ler" — três ações
+     de frequências muito diferentes com o mesmo peso, que é o mesmo defeito que
+     o computador tinha antes de os botões irem para uma linha só. */
+  .livro-pagina-acoes { flex-direction: column; align-items: flex-start; gap: 16px; }
 }
 
 /* ---- O título com o ⋮, e os selos — nó 966:29052 --------------------------- */

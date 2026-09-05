@@ -141,6 +141,26 @@
    e não de sumir com a borda que diz de que estado ele é. */
 .preparo .recortes button:disabled { opacity: 0.45; cursor: default; }
 
+/* NO TELEFONE ELES EMBRULHAM, e o total desce — nó `966:28582` e `966:28591`.
+ *
+ * Lá o contêiner dos quatro estados é um `wrap` com 16 de vão (e não os 24 do
+ * computador), e "N arquivos adicionados" é um bloco IRMÃO, 32 abaixo.
+ *
+ * Sem esta regra o telefone herdava o `flex: 1 0 auto` que o `estante.css` põe
+ * em `.recortes button` abaixo de 767 — cada chip esticava para a largura
+ * inteira e a fileira virava uma pilha de seis blocos. Medido a 390 em 04/09:
+ * a faixa passava de 61px de altura para mais de 400. */
+@media (max-width: 767px) {
+  .preparo .recortes { flex-wrap: wrap; gap: 16px; }
+  .preparo .recortes button { flex: 0 0 auto; }
+  /* O total ocupa a linha inteira e ganha os 32 do nó — 16 vêm do vão. */
+  .preparo .recortes button.recorte-tudo {
+    flex: 1 0 100%;
+    margin-inline-start: 0;
+    margin-block-start: 16px;
+  }
+}
+
 @media (max-width: 1023px) {
   .preparo { padding: 24px; }
   .preparo-topo h2 { font-size: 24px; line-height: 32px; }
