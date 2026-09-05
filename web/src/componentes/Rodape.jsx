@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { gruposDeLugares } from "../menu.js";
+import { useEstreito } from "../estreito.js";
 import { abrirRecado } from "../recado.js";
 
 const marca = "/icones/marca-mekora.svg";
@@ -16,6 +17,7 @@ import "./rodape.css";
  * site — sobre, contato, o que for —, ele entra aqui.
  */
 export function Rodape() {
+  const estreito = useEstreito();
   return (
     <footer className="rodape">
       {/* AS COLUNAS SAEM DE `menu.js`, e não daqui.
@@ -26,7 +28,7 @@ export function Rodape() {
        * exatamente o que aconteceu com "Dispositivos Kindle", que apontava para
        * `/conta` desde antes de a tela de aparelhos existir. */}
       <div className="rodape-colunas">
-        {gruposDeLugares().map((g) => (
+        {gruposDeLugares(estreito).map((g) => (
           <nav key={g.titulo} aria-label={g.titulo}>
             <h2>{g.titulo}</h2>
             <ul>

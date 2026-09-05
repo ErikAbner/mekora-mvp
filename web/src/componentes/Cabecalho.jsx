@@ -33,6 +33,7 @@ import { MenuDaConta } from "./MenuDaConta.jsx";
 import { quemSouEu } from "../../../contrato/api.js";
 import { Folha } from "./Folha.jsx";
 import { gruposDeLugares } from "../menu.js";
+import { useEstreito } from "../estreito.js";
 import { abrirRecado } from "../recado.js";
 
 import "./cabecalho.css";
@@ -72,11 +73,16 @@ export function Cabecalho() {
   useEffect(() => { lembrarLugar(pathname); }, [pathname]);
   const aqui = daRota ?? lugarDoRastro();
   const [menuAberto, setMenuAberto] = useState(false);
+  /* O CANVAS NÃO APARECE NO TELEFONE. Ver `menu.js` e `SoNoComputador.jsx`: ele
+     é de computador, e a barra de baixo do telefone é justamente o lugar onde
+     um item que não leva a lugar nenhum mais custa. */
+  const estreito = useEstreito();
+  const lugares = LUGARES.filter((l) => !(estreito && l.soNoComputador));
   const [menuConta, setMenuConta] = useState(false);
   return (
     <header className="cabecalho">
       <nav className="cabecalho-lugares" aria-label="Lugares do Mekora">
-        {LUGARES.map((l) => (
+        {lugares.map((l) => (
           /* `Link`, E NÃO `NavLink`. O `NavLink` marca sozinho conforme a rota
              CASA com o `to` dele, e ignora um `aria-current` vindo de fora — foi
              assim que a gaveta de Conta apareceu sem lugar nenhum marcado, com o
@@ -161,7 +167,7 @@ export function Cabecalho() {
         titulo="Ir para"
         aoFechar={() => setMenuAberto(false)}
       >
-        {gruposDeLugares().map((g) => (
+        {gruposDeLugares(estreito).map((g) => (
           <nav key={g.titulo} className="menu-grupo" aria-label={g.titulo}>
             <h3>{g.titulo}</h3>
             <ul>

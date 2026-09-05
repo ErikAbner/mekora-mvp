@@ -281,6 +281,18 @@ Medido depois do conserto, em conta nova: `POST` com `capitulo: 0` — o do par�
 ### R-34 · 2026-09-01 · aberto
 **Erik:** "Bem errada também, não condizendo com o Figma"
 **Onde:** /preparo/:id
+**Medido em 04/09 — o único dos 38 que ninguém tinha conseguido nem olhar.** A tela é o nó `966:31504`, o estado `analyzed`, e a bancada não o produzia: todo trabalho semeado nascia em `converted`, e `/preparo/{id}` abria a tela de espera (`967:31833`). Agora o `semear.py` grava um parado em `analyzed`, e a comparação das **catorze linhas** que o nó pede está em `docs/TELAS-FIGMA.md`.
+
+**Três batem, onze divergem.** Batem: o fundo da faixa do veredito (`#f3f3f3`), o fundo do cartão (`#f9f9f9`) e a altura do botão do cartão (58). Divergem, entre outras: o título é **28/40 peso 700 `#151515`** onde o nó pede **32/40 peso 540 `#535353`**; o vão título→selos é **12** onde ele pede **32**; selos→alternador é **20** onde ele pede **64**; os selos têm raio **999px** (cápsula) onde ele pede **24**; e os botões finais têm **80** de altura onde ele pede **58**. Nenhuma rolagem horizontal.
+
+**Duas divergências não são número, são peça:**
+
+1. **O botão ⋮ não existe.** O nó o desenha 56×56, girado −90°, ao lado do título. A tela não tem nada ali.
+2. **A faixa do veredito não tem filete à esquerda.** O nó pede `border-l-2 #6a6a6a`, e é ele que faz aquele parágrafo ser uma faixa em vez de um bloco cinza — a regra que este repositório já escreveu ao contrário uma vez: *"o chão marca o conteúdo; o filete marca a citação"*.
+
+**E uma terceira, que só apareceu porque agora existe um trabalho sem capa:** a capa do Preparo cai para `<span>{titulo}</span>` dentro de `.preparo-pagina-capa` — **a quarta implementação divergente do "sem capa"**, depois das três que a `CapaDeReserva` unificou no R-47.
+
+**Fica aberto porque o conserto é a Fase 4**, e não a medida: as catorze linhas estão escritas, o item agora tem número em vez de adjetivo. Os **ícones desta tela continuam em branco no quadro** — oito quadrados `32×32` em `#d9d9d9` —, e preencher por conta própria é como o ícone de "ver todas as páginas" nasceu clonado do Canvas. Ver o R-49.
 **Prova:** sem-prova
 
 ### R-35 · 2026-09-01 · aberto
@@ -392,3 +404,52 @@ São dois nomes para um desenho, em quatro lugares da tela: o índice do leitor 
 
 **O resto da biblioteca passou.** 25 desenhos distintos, cada um legível como o rótulo ao lado — aparelho, baixar, buscar, caderno, conta, copiar, defeito, dúvidas, enviar, estante, estudos, mais-ações, marcador, mesa, nota-imagem, nota-nova, preferências, privacidade, refazer, remover, renomear. Duas observações que são de desenho e não de defeito, e por isso não viram item: o `baixar` põe a barra ACIMA da seta enquanto o `enviar` põe a bandeja ABAIXO — o par não espelha; e o `marcador` é um hexágono com um ponto, que é o glifo de nó ou de ajuste, e não o da fita que marca a página.
 **Prova:** sem-prova
+
+### R-50 · 2026-09-04 · fechado
+**Erik:** (não é dele — é defeito da BANCADA, e o pior tipo: ele fazia o instrumento passar verde na tela errada)
+**Onde:** `scripts/semear.py` · /preparo/:id
+**Medido em 04/09:** o `semear.py` gravava trabalhos em `converted` e `done`. O nó `966:31504` — Preparo, "o que encontrei" — é o estado **`analyzed`**, e pedir `/preparo/{id}` na bancada abria "Analisando o arquivo…", que é outra tela (`967:31833`).
+
+**O custo não era a medida faltando, era a medida MENTINDO.** Qualquer varredura que rode "em todas as rotas" passava por `/preparo/:id`, media a tela de espera e ficava verde; a cobertura registrava a rota como visitada. Instrumento certo, dado errado — a mesma família dos três "verde por omissão" que o `CLAUDE.md` já lista, e a razão de uma tela inteira do produto nunca ter sido medida por ninguém.
+
+**Consertado:** um trabalho parado em `analyzed` no semeador (312 páginas, `pt`, 14 capítulos, 11,5 MB, sem capa e sem miniatura), e um endereço para ele — `_sessao.py … analisado` imprime o id, o `sessao-de-prova.sh` o devolve na terceira linha, e as provas o pedem por `{ANALISADO}`. **Apontar para "o primeiro livro" era o erro:** o primeiro livro já está convertido, e a rota sobre ele volta para a tela de espera.
+
+Sem arquivo em disco: `GET /analyze/{id}` devolve o trabalho em cache assim que `status != "uploaded"`. O que ele não faz é converter, e isso está dito no semeador.
+
+**A prova reprova pelo defeito, e não por perto dele:** envenenada, ela troca o relatório pela tela de espera — exatamente o que a varredura via — e acusa *"a rota abriu na tela de ESPERA, e nao no relatorio"*. Ela também recusa a bancada sem o estado: sem trabalho em `analyzed`, o `_sessao.py` devolve `0`, a rota vira `/preparo/0` e a prova diz que o semeador precisa gravar um — em vez de medir a tela errada em silêncio.
+**Prova:** `node scripts/provas.mjs r50`
+
+### R-51 · 2026-09-04 · aberto
+**Erik:** (não é dele — apareceu no minuto em que a bancada ganhou um trabalho que ainda não é livro)
+**Onde:** /estante · `web/src/estado/useJornada.js`
+**Medido em 04/09:** o trabalho parado em `analyzed` **aparece como cartão na Estante**, ao lado dos seis livros convertidos — com o nome do arquivo no lugar do título (`estrategia-de-ux-oreilly.pdf`), sem capa, e sem leitura para abrir. `livros` é o `historico()` inteiro, sem nenhum filtro de estado.
+
+**As duas intenções escritas no repositório discordam, e é por isso que isto é pendência e não conserto.**
+
+- O `useJornada.js` diz, uma função acima: *"O que entra na Mesa é o que AINDA NÃO ESTÁ PRONTO: **pronto é livro, e livro mora na estante**. Quem decide isso é o `estadoDe` do contrato."* Por essa regra, a Estante deveria mostrar só `pronto`, e este cartão está sobrando.
+- O `Estante.jsx` diz o contrário pela ação: a ficha tem um ramo `!selecionado.leituraUrl` que escreve *"Ainda em preparo. O texto abre quando a conversão terminar."* — texto que só faz sentido para um livro NÃO pronto visível na Estante.
+
+Uma das duas está errada, e escolher entre elas é decisão de produto: ou a Estante é só o acervo pronto (e a Mesa é onde o preparo aparece), ou ela mostra tudo e o cartão em preparo precisa de um estado visual próprio — hoje ele é indistinguível de um livro, com nome de arquivo em vez de título.
+
+**Nunca tinha aparecido porque a bancada não produzia o caso:** todo trabalho semeado nascia `converted`. É o mesmo buraco do R-50, visto de outra tela — dado de prova onde tudo já está pronto só sabe dizer que está tudo bem.
+**Prova:** sem-prova
+
+### R-52 · 2026-09-04 · fechado
+**Erik:** *"canvas n vai existir no telefone, ja falamos sobre isso"*
+**Onde:** /canvas · `web/src/lugares.js` · `web/src/componentes/Cabecalho.jsx` · `web/src/menu.js`
+**Medido em 04/09:** a 390px a rota `/canvas` renderizava o Canvas **inteiro** — plano infinito, notas, ferramentas — e "Canvas" aparecia na barra de lugares e no menu do telefone como qualquer outro lugar.
+
+**O "já falamos sobre isso" é o achado, e não o defeito.** A decisão era antiga e o produto nunca soube dela: ela vivia na conversa, e conversa não é executável. É a mesma família dos 38 itens que voltaram como defeito — não porque alguém discordou, mas porque a decisão nunca chegou ao código. O `lugares.js` já carregava `pronto` para dizer "este lugar ainda não existe"; não havia nada para dizer "este lugar não existe **aqui**".
+
+**Consertado em três peças, e a divisão entre elas é o ponto:**
+
+- `soNoComputador` + `porqueSoNoComputador` no `lugares.js`, ao lado de `pronto`. A decisão passa a ser dado, e o motivo viaja com ela.
+- **Sai do menu e da barra no telefone** (`Cabecalho.jsx`, `menu.js`). Oferecer o que não funciona ensina que o produto está quebrado, e a barra de baixo é onde a pessoa aprende o que ele faz.
+- **A rota continua respondendo** (`SoNoComputador.jsx`), com a explicação no lugar da tela. Quem guardou o endereço, ou abriu no computador e voltou pelo histórico, recebe o motivo — não uma página em branco. Não anunciado onde não serve; não quebrado onde for pedido.
+
+O corte de 767px saiu para `estreito.js` porque o CSS já respondia a ele em 40 pontos, e dois cortes que ninguém garante iguais é como o Canvas some da barra num tamanho em que ele ainda abre.
+
+**A prova mede nos dois sentidos, e o segundo não é zelo:** a 390 ela cobra o Canvas ausente da barra, ausente do menu, e a explicação servida; a 1920 ela cobra o Canvas **presente** na barra e a rota abrindo o Canvas. Sem essa metade, eu fecharia o item apagando o Canvas de todo tamanho de tela e a prova aplaudiria. Verificado injetando esse exato erro no produto — `!l.soNoComputador` sem o `estreito` — e a prova respondeu *"a 1920 o Canvas sumiu da barra de lugares — o conserto do telefone levou o computador junto"*.
+
+Antes de dizer "o Canvas não está lá", ela prova que sabe achar: a Estante tem de aparecer na barra nos dois tamanhos, senão a resposta é INDETERMINADA (97) e não aprovação.
+**Prova:** `node scripts/provas.mjs r52`

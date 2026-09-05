@@ -14,12 +14,22 @@
  */
 import { LUGARES } from "./lugares.js";
 
-export function gruposDeLugares() {
+/* `estreito` é o telefone (ver `estreito.js`). Ele entra como argumento, e não
+   como leitura de janela aqui dentro, porque esta função não é componente: quem
+   sabe o tamanho da tela é quem desenha, e passar o valor mantém a lista pura e
+   testável nos dois tamanhos. */
+export function gruposDeLugares(estreito = false) {
   return [
     {
       titulo: "No Mekora",
       itens: [
-        ...LUGARES.filter((l) => l.pronto).map((l) => ({ rota: l.rota, rotulo: l.rotulo })),
+        /* O CANVAS NÃO ENTRA NO TELEFONE. Decisão do Erik, reafirmada em 04/09:
+           "canvas n vai existir no telefone". Um item que abre uma explicação em
+           vez do lugar é um item morto no menu principal — e o menu principal é
+           onde a pessoa aprende o que o produto faz. A rota continua respondendo
+           para quem chegar por link guardado; ver `SoNoComputador.jsx`. */
+        ...LUGARES.filter((l) => l.pronto && !(estreito && l.soNoComputador))
+          .map((l) => ({ rota: l.rota, rotulo: l.rotulo })),
         { rota: "/notas", rotulo: "Notas" },
       ],
     },

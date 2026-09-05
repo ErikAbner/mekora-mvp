@@ -40,13 +40,21 @@ function sessao() {
     cwd: RAIZ, encoding: 'utf8', timeout: 90000,
     env: { ...process.env, MEKORA_PROVA: process.env.MEKORA_PROVA || RAIZ + '.ver' },
   });
-  const [token, livro] = saida.trim().split('\n');
-  sessaoGuardada = { token, livro };
+  /* TRES LINHAS: token, livro, e o trabalho parado em `analyzed`. O terceiro
+     existe porque `/preparo/:id` medido sobre um livro ja convertido cai na
+     tela de espera, e foi assim que o no 966:31504 ficou sem medida nenhuma:
+     a rota era visitada, a cobertura ficava verde, e a tela medida era outra. */
+  const [token, livro, analisado] = saida.trim().split('\n');
+  sessaoGuardada = { token, livro, analisado };
   return sessaoGuardada;
 }
 
-function medir(rota, corpo, veneno = '') {
-  const { token, livro } = sessao();
+/* `tamanho` existe porque uma decisao pode ser SOBRE o tamanho da tela.
+   O Canvas e de computador, e uma prova que so sabe medir a 1440 nao consegue
+   nem ver o defeito nem provar que o conserto nao apagou o Canvas do
+   computador. O padrao continua 1440x1000: nenhuma prova antiga muda. */
+function medir(rota, corpo, veneno = '', tamanho = {}) {
+  const { token, livro, analisado } = sessao();
   const dir = join(tmpdir(), 'mekora-provas');
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
   const alvo = join(dir, `m-${Date.now()}.js`);
@@ -66,10 +74,12 @@ function medir(rota, corpo, veneno = '') {
          espaco: a prova do R-05 reprovou limpa e envenenada, com a tela certa
          nos dois casos. Escreva `\\s`, ou nao precise dela. */
   writeFileSync(alvo, `(async () => {\n  const esperar = ms => new Promise(r => setTimeout(r, ms));\n  await esperar(3200);\n  {\n${veneno}\n  }\n  ${corpo}\n})()`);
-  const url = `${WEB}${rota.replace('{LIVRO}', livro)}`;
+  const url = `${WEB}${rota.replace('{LIVRO}', livro).replace('{ANALISADO}', analisado)}`;
   let bruto;
   try {
-    bruto = execFileSync('node', ['scripts/medir.mjs', url, '1440', '1000', alvo, `--sessao=${token}`],
+    const largura = String(tamanho.largura || 1440);
+    const altura = String(tamanho.altura || 1000);
+    bruto = execFileSync('node', ['scripts/medir.mjs', url, largura, altura, alvo, `--sessao=${token}`],
       { cwd: RAIZ, encoding: 'utf8', timeout: 110000, stdio: ['ignore', 'pipe', 'pipe'] });
   } catch (e) {
     throw new NaoPodeMedir(`nao consegui medir ${url} — o servidor de desenvolvimento esta em pe? (${String(e.message).slice(0, 90)})`);
@@ -178,6 +188,7 @@ const PROVAS = {
         if (!cartoes.length) return { vazio: true };
         const h = cartoes[0].querySelector('.livro-texto h3');
         const antes = h.getBoundingClientRect().height;
+        const alturaAntes = cartoes[0].getBoundingClientRect().height;
         const inteiro = 'Um nome de arquivo desses que vem de exportador automatico e nao acaba nunca, com data e versao no fim 2026-09-04 v3';
         h.textContent = inteiro;
         h.setAttribute('title', inteiro);
@@ -198,11 +209,20 @@ const PROVAS = {
            e a grade se desmanchando. */
         const linha = parseFloat(getComputedStyle(h).lineHeight) || 32;
         const cresceu = Math.round(h.getBoundingClientRect().height - antes);
-        const alturas = [...new Set(cartoes.map(c => Math.round(c.getBoundingClientRect().height)))];
-        return { cresceu, linha, alturas, guardaOInteiro: h.getAttribute('title') === inteiro };`, veneno);
+        /* O CARTAO SE COMPARA CONSIGO MESMO, e nao com os outros.
+           A primeira versao exigia UMA altura para todos os cartoes, e ela
+           passava por sorte: com seis livros a grade fecha duas fileiras
+           cheias, e fileira de grade estica todos os irmaos ate o mais alto.
+           No dia em que a bancada ganhou um setimo trabalho — o parado em
+           analyzed —, a ultima fileira ficou com um cartao sozinho, sem
+           irmao para estica-lo: 472 e 439, e a prova acusou o corte do titulo
+           por causa da aritmetica da grade. Medir o mesmo cartao antes e depois
+           nao carrega a fileira. */
+        const cresceuCartao = Math.round(cartoes[0].getBoundingClientRect().height - alturaAntes);
+        return { cresceu, cresceuCartao, linha, guardaOInteiro: h.getAttribute('title') === inteiro };`, veneno);
       if (d.vazio) return 'a estante nao tem cartao para medir — semeie antes';
       if (d.cresceu > d.linha) return `o titulo longo esticou a caixa do nome em ${d.cresceu}px — mais de uma linha de ${d.linha}px, entao o corte em 2 nao segurou`;
-      if (d.alturas.length > 1) return `o titulo longo mudou a altura do cartao: ${d.alturas.join('px, ')}px`;
+      if (d.cresceuCartao > 0) return `o titulo longo esticou o proprio cartao em ${d.cresceuCartao}px — a grade se desmancha`;
       if (!d.guardaOInteiro) return 'o cartao corta o nome e nao guarda o inteiro no `title` — isso e esconder, nao resumir';
       return null;
     },
@@ -258,6 +278,55 @@ const PROVAS = {
       }
       const larguras = [...new Set(d.cartoes.map((c) => c.largura))];
       if (larguras.length > 1) return `gabarito e capa ocupam larguras diferentes: ${larguras.join('px, ')}px`;
+      return null;
+    },
+  },
+  'r52': {
+    erik: 'canvas n vai existir no telefone, ja falamos sobre isso',
+    /* O VENENO REFAZ O QUE FOI MEDIDO EM 04/09: a 390 o Canvas renderizava
+       inteiro e aparecia na barra de lugares como qualquer outro. Ele devolve
+       as duas metades do defeito — o item oferecido e a tela servida — porque
+       consertar so uma deixaria a outra passar. */
+    veneno: `const barra = document.querySelector('nav[aria-label="Lugares do Mekora"]');
+             if (barra) { const a = document.createElement('a'); a.setAttribute('href', '/canvas');
+                          a.textContent = 'Canvas'; barra.appendChild(a); }
+             const exp = document.querySelector('section.ainda-nao');
+             if (exp) { const c = document.createElement('section'); c.className = 'canvas'; exp.replaceWith(c); }`,
+    async correr(veneno) {
+      const olhar = `
+        document.querySelector('.cabecalho-menu') && document.querySelector('.cabecalho-menu').click();
+        await new Promise(r2 => setTimeout(r2, 500));
+        const barra = document.querySelector('nav[aria-label="Lugares do Mekora"]');
+        const naBarra = barra ? [...barra.querySelectorAll('a')].map(a => a.textContent.trim()) : [];
+        const noMenu = [...document.querySelectorAll('.menu-grupo a')].map(a => a.textContent.trim());
+        return {
+          naBarra, noMenu,
+          canvasNaBarra: naBarra.some(t => /canvas/i.test(t)),
+          canvasNoMenu: noMenu.some(t => /canvas/i.test(t)),
+          telaDoCanvas: !!document.querySelector('section.canvas'),
+          telaDeExplicacao: !!document.querySelector('section.ainda-nao'),
+          /* CONTROLE NEGATIVO: sem a Estante na barra, o seletor nao acha nada e
+             "o Canvas nao esta la" nao e resposta, e cegueira. */
+          estanteNaBarra: naBarra.some(t => /estante/i.test(t)),
+        };`;
+
+      const tel = medir('/canvas', olhar, veneno, { largura: 390, altura: 844 });
+      if (!tel.estanteNaBarra) {
+        throw new NaoPodeMedir('a 390 a medida nao achou nem a Estante na barra — o seletor esta errado, e nao o produto');
+      }
+      if (tel.canvasNaBarra) return `a 390 o Canvas continua na barra de lugares (${tel.naBarra.join(', ')})`;
+      if (tel.canvasNoMenu) return 'a 390 o Canvas continua no menu do telefone';
+      if (tel.telaDoCanvas) return 'a 390 a rota /canvas ainda serve o Canvas, e ele e de computador';
+      if (!tel.telaDeExplicacao) return 'a 390 a rota /canvas nao serve nem o Canvas nem a explicacao — quem guardou o endereco cai no vazio';
+
+      /* O OUTRO SENTIDO, e ele nao e zelo: sem esta metade eu fecho o item
+         apagando o Canvas de todo tamanho de tela, e a prova aplaude. */
+      const pc = medir('/canvas', olhar, '', { largura: 1920, altura: 1080 });
+      if (!pc.estanteNaBarra) {
+        throw new NaoPodeMedir('a 1920 a medida nao achou nem a Estante na barra — instrumento cego');
+      }
+      if (!pc.canvasNaBarra) return 'a 1920 o Canvas sumiu da barra de lugares — o conserto do telefone levou o computador junto';
+      if (!pc.telaDoCanvas) return 'a 1920 a rota /canvas nao abre o Canvas';
       return null;
     },
   },
@@ -382,13 +451,56 @@ const PROVAS = {
       return null;
     },
   },
+  'r50': {
+    erik: '(nao e dele) a varredura passava por /preparo/:id, media a tela de espera e ficava VERDE',
+    /* O VENENO REFAZ A BANCADA DE ANTES: a tela de espera no lugar do relatorio.
+       Nao e um enfeite — e exatamente o que qualquer varredura "em todas as
+       rotas" via ate 04/09, com a cobertura dizendo que a rota tinha sido
+       visitada. Verde por omissao, com o instrumento certo e o dado errado. */
+    veneno: `const alvo = document.querySelector('.preparo-pagina');
+             if (alvo) {
+               alvo.innerHTML = '';
+               const h = document.createElement('h2');
+               h.setAttribute('role', 'status');
+               h.textContent = 'Analisando o arquivo…';
+               alvo.appendChild(h);
+             }`,
+    async correr(veneno) {
+      const d = medir('/preparo/{ANALISADO}', `
+        await esperar(2200);
+        const txt = (s) => { const e = document.querySelector(s); return e ? e.textContent.trim() : null; };
+        return {
+          rota: location.pathname,
+          veredito: txt('.preparo-pagina-veredito'),
+          secoes: [...document.querySelectorAll('.preparo-pagina-secao h2')].map(e => e.textContent.trim()),
+          esperando: [...document.querySelectorAll('h2[role="status"], h1')]
+            .map(e => e.textContent.trim()).filter(s => /analisando|preparando/i.test(s)),
+          achados: document.querySelectorAll('.preparo-pagina-lista li').length,
+        };`, veneno);
+      if (/\/preparo\/0$/.test(d.rota || '')) return 'a bancada nao tem trabalho parado em analyzed — o semeador precisa gravar um, senao esta rota mede a tela errada';
+      if (d.esperando.length) return `a rota abriu na tela de ESPERA, e nao no relatorio: "${d.esperando[0]}"`;
+      if (!d.secoes.includes('O que encontrei')) return `a secao "O que encontrei" nao esta na tela (achei: ${d.secoes.join(', ') || 'nenhuma'})`;
+      if (!d.veredito) return 'a tela abriu sem o veredito — o paragrafo que diz o que foi decidido sem perguntar';
+      if (!d.achados) return 'a lista de achados saiu vazia';
+      return null;
+    },
+  },
   'r03': {
     erik: 'o marcador vaza da capa e invade o filtro',
     veneno: `document.querySelectorAll('.marcador').forEach(m => { m.style.zIndex = '5'; m.style.position = 'absolute'; });
              document.querySelectorAll('.capa').forEach(c => c.style.zIndex = '0');`,
     async correr(veneno) {
       const d = medir('/estante', `
-        const l = document.querySelector('.livro'), c = l.querySelector('.capa'), m = l.querySelector('.marcador');
+        /* O CARTAO E O PRIMEIRO COM MARCADOR, e nao o primeiro da grade.
+           Isto era document.querySelector('.livro'), e o marcador so existe em
+           livro COM nota: no dia em que a bancada ganhou um trabalho sem nota
+           na frente da fila, o m veio nulo e a prova estourou com
+           "Cannot read properties of null" — que chega aqui como "nao consegui
+           medir", isto e, como falta de servidor. A prova media a sobreposicao
+           de um cartao que nao tem sobreposicao para medir. */
+        const l = [...document.querySelectorAll('.livro')].find(e => e.querySelector('.marcador'));
+        if (!l) return { semMarcador: true };
+        const c = l.querySelector('.capa'), m = l.querySelector('.marcador');
         const rc = c.getBoundingClientRect(), rm = m.getBoundingClientRect();
         const filtros = document.querySelector('.recortes');
         /* QUEM ESTA NA FRENTE E CONTA DE PINTURA, e nao de ponteiro.
@@ -407,6 +519,7 @@ const PROVAS = {
         return { na_frente, z_marca: String(zm), z_capa: String(zc),
                  cruzam: rm.bottom > rc.top && rm.top < rc.bottom,
                  invade_filtros: filtros ? rm.top < filtros.getBoundingClientRect().bottom : false };`, veneno);
+      if (d.semMarcador) return 'nenhum livro da estante tem marcador de notas — sem ele nao ha a sobreposicao que este item mede';
       if (d.invade_filtros) return `o marcador alcanca a barra de recortes`;
       if (!String(d.na_frente || '').includes('capa')) return `na sobreposicao quem esta na frente e "${d.na_frente}", e nao a capa (z marca ${d.z_marca}, z capa ${d.z_capa})`;
       return null;

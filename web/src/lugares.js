@@ -17,7 +17,18 @@ export const LUGARES = [
     oQueE: "Onde o arquivo chega e é preparado." },
   { id: "estante", rotulo: "Estante", rota: "/estante", icone: "/icones/icone-estante.svg", pronto: true,
     oQueE: "Os livros prontos, com notas e leitura." },
+  /* O CANVAS É DE COMPUTADOR, decidido pelo Erik e reafirmado em 04/09: "canvas
+     n vai existir no telefone, ja falamos sobre isso".
+     A decisão vivia só na conversa, e o produto não a conhecia: medido a 390, o
+     Canvas renderizava inteiro e aparecia no dock como qualquer outro lugar.
+     Decisão que mora só na memória volta — foi assim que trinta e oito críticas
+     voltaram como defeito em 02/09. */
   { id: "canvas", rotulo: "Canvas", rota: "/canvas", icone: "/icones/icone-canvas.svg", pronto: true,
+    soNoComputador: true,
+    porqueSoNoComputador:
+      "O Canvas é um plano infinito com notas que se ligam. Num telefone não " +
+      "cabe o suficiente para ver a ligação entre duas notas, que é a única " +
+      "razão de ele existir.",
     oQueE: "O espaço onde as notas se ligam umas às outras." },
   { id: "estudos", rotulo: "Estudos", rota: "/estudos", icone: "/icones/icone-estudos.svg", pronto: true,
     oQueE: "Os recortes que você monta a partir do que leu." },

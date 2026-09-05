@@ -24,6 +24,7 @@ import { MesaCheia } from "./jornadas/MesaCheia.jsx";
 import { Estante } from "./jornadas/Estante.jsx";
 import { Leitura } from "./jornadas/Leitura.jsx";
 import { AindaNao } from "./jornadas/AindaNao.jsx";
+import { SoNoComputador } from "./componentes/SoNoComputador.jsx";
 import { Conta } from "./jornadas/Conta.jsx";
 import { Entrar } from "./jornadas/Entrar.jsx";
 import { CriarConta } from "./jornadas/CriarConta.jsx";
@@ -747,7 +748,9 @@ export function App() {
             e listar tudo seria mostrar a estante de todo mundo. */}
         <Route path="/estante" element={<SoParaQuemEntrou acesso={acesso} lugar="a Estante"><PaginaEstante /></SoParaQuemEntrou>} />
         <Route path="/leitura/:id" element={<PaginaLeitura />} />
-        <Route path="/canvas" element={<SoParaQuemEntrou acesso={acesso} lugar="o Canvas"><PaginaCanvas /></SoParaQuemEntrou>} />
+        {/* O Canvas é de computador (ver `lugares.js`). No telefone a rota abre a
+            explicação, e não a tela: o lugar existe, só não neste tamanho. */}
+        <Route path="/canvas" element={<SoParaQuemEntrou acesso={acesso} lugar="o Canvas"><SoNoComputador lugar={LUGARES.find((l) => l.id === "canvas")}><PaginaCanvas /></SoNoComputador></SoParaQuemEntrou>} />
         <Route path="/estudos" element={<SoParaQuemEntrou acesso={acesso} lugar="os Estudos"><PaginaEstudos /></SoParaQuemEntrou>} />
         <Route path="/estudo/:id" element={<SoParaQuemEntrou acesso={acesso} lugar="um Estudo"><PaginaEstudo /></SoParaQuemEntrou>} />
         <Route path="/notas" element={<SoParaQuemEntrou acesso={acesso} lugar="as suas notas"><PaginaNotas /></SoParaQuemEntrou>} />
