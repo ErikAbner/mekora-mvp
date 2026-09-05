@@ -1,16 +1,31 @@
-.preparo-pagina { max-inline-size: 760px; margin: 0 auto; padding: 32px 40px 80px; display: flex; flex-direction: column; gap: 28px; }
+/* 1222 E 64, do nó `895:7907`/`900:56497` — a mesma coluna do Livro e da
+   Estante. A tela estava em 760 com 40 de lado, e não era um número um pouco
+   menor: era a escala inteira reduzida. Com 760 a capa cabia em 120, os
+   cartões viravam linhas e o título caía dois degraus. Um número errado no
+   topo puxa todos os outros. */
+/* `inline-size: 100%` PORQUE O PAI É FLEX. O `.mesa` é um flex container, e um
+   filho flex mede o CONTEÚDO, não o teto: com `max-inline-size` sozinho a
+   página parava em 1028 dos 1350 declarados. Isso passou despercebido enquanto
+   o teto era 760, porque o conteúdo batia nele por acaso — o valor só começou a
+   mentir quando ficou maior que o texto. */
+.preparo-pagina { inline-size: 100%; max-inline-size: calc(1222px + 2 * 64px); margin: 0 auto; padding: 32px 64px 128px; display: flex; flex-direction: column; gap: 48px; }
 
 .preparo-pagina-volta { align-self: flex-start; font-size: 16px; line-height: 24px; color: var(--muted-foreground); text-decoration: none; }
 .preparo-pagina-volta:hover { color: var(--foreground); }
 .preparo-pagina-volta:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
 
-.preparo-pagina-pagina-topo { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
+/* 48 de vão entre a capa e a identidade — nó `895:7908`. */
+.preparo-pagina-pagina-topo { display: flex; gap: 48px; align-items: flex-start; flex-wrap: wrap; }
 .preparo-pagina-pagina-topo > div:last-child { flex: 1 1 320px; min-inline-size: 0; }
 
 .preparo-pagina-capa {
+  /* 270 DE LARGURA E 427/645 — nó `895:7909`/`895:7910`. A 120 a capa era um
+     selo ao lado do título, e o Preparo é justamente a tela onde a pessoa
+     confere se o arquivo que ela mandou é o que ela pensa que é: a capa
+     precisa ser reconhecível. */
   flex: 0 0 auto;
-  inline-size: 120px;
-  aspect-ratio: 2 / 3;
+  inline-size: 270px;
+  aspect-ratio: 427 / 645;
   border: 1px solid var(--border);
   background: var(--card);
   display: flex;
@@ -38,7 +53,9 @@
   block-size: 100%;
 }
 
-.preparo-pagina h1 { margin: 0 0 12px; font-size: 28px; line-height: 40px; letter-spacing: -0.01em; color: var(--foreground); text-wrap: balance; }
+/* Heading/LG 40/48 com -0.6px — nó `895:7915`. Estava em 28/40, um degrau e
+   meio abaixo, e o título do arquivo pesava menos que o título de uma seção. */
+.preparo-pagina h1 { margin: 0 0 32px; font-size: 40px; line-height: 48px; letter-spacing: -0.6px; color: var(--foreground); text-wrap: balance; }
 
 .preparo-pagina-marcas { margin: 0; display: flex; gap: 8px; flex-wrap: wrap; }
 
@@ -67,7 +84,8 @@
  * Body/Small 16/24. */
 .preparo-pagina-veredito {
   margin: 0;
-  padding: 40px 24px;
+  /* 40 EM VOLTA, e não 40/24 — nó `895:7937`, `p-[40px]`. */
+  padding: 40px;
   /* `--card` É o `surface/sunken` (#f3f3f3), e o nó pede esse. Troquei para
      `--muted` (#ebebeb) sem conferir e piorei uma medida que já batia — o
      terminal tinha reportado o fundo como CERTO. Conferido depois: 235,235,235
@@ -83,18 +101,26 @@
 .preparo-pagina-veredito span { font-size: 16px; line-height: 24px; color: var(--muted-foreground); text-wrap: pretty; }
 
 .preparo-pagina-secao { padding-block-start: 8px; }
-.preparo-pagina-secao h2 { margin: 0 0 16px; font-size: 22px; line-height: 28px; color: var(--foreground); }
+/* Heading/MD 32/40 — nó `895:7943`. Estava em 22/28. */
+.preparo-pagina-secao h2 { margin: 0 0 48px; font-size: 32px; line-height: 40px; color: var(--foreground); }
 
-.preparo-pagina-lista { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+/* OS ITENS SÃO CARTÕES, e não linhas de uma tabela — nó `895:7944`, `gap-24`
+   entre cartões de `p-40`, cada um com o próprio chão.
+   A tela os colava numa caixa única separada por filetes de 1px, com 16/20 de
+   recheio. A diferença não é de gosto: cada item aqui é uma DECISÃO que o
+   produto tomou sobre o arquivo da pessoa, e uma lista de linhas lê como
+   propriedades de um registro. Separados, cada um se lê como um item para
+   conferir — que é o que a tela pede que se faça. */
+.preparo-pagina-lista { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 24px; }
 
 /* A LINHA COM ACAO A DIREITA — nos 895:7856 e 895:8164, onde cada item traz um
  * botao secundario na ponta ("Por que", "Ver", "Alterar"). O texto ocupa a
  * coluna, o botao fica alinhado ao topo dela: com duas linhas de texto, um botao
  * centrado verticalmente flutua no meio do nada. */
 .preparo-pagina-lista li {
-  background: var(--background); padding: 16px 20px;
+  background: var(--card); padding: 40px;
   display: grid; grid-template-columns: 1fr auto; align-items: start;
-  column-gap: 16px;
+  column-gap: 64px;
 }
 /* O TEXTO EMPILHA NA PRIMEIRA COLUNA. Sem dizer isto, a colocacao automatica
  * poe o `h3` em (1,1) e o `p` em (1,2) — titulo e explicacao lado a lado, cada
@@ -106,8 +132,11 @@
  * espaco entre o titulo e a explicacao e SO o que a regra declara: nao ha mais
  * meia entrelinha sobrando para disfarcar um valor curto. A 4px os dois se
  * encostavam, e o item lia como um paragrafo so. */
-.preparo-pagina-lista h3 { margin: 0 0 8px; font-size: 16px; line-height: 24px; font-weight: 540; color: var(--foreground); }
-.preparo-pagina-lista p { margin: 0; font-size: 14px; line-height: 20px; color: var(--muted-foreground); text-wrap: pretty; }
+/* Body/Large 24/32 peso 500 no título e Body/Small 16/24 na explicação — nós
+   `895:7949` e `895:7950` —, com os 24 de vão do `895:7948`. Estavam em 16/24 e
+   14/20 com 8 de vão: o item inteiro cabia na tipografia de uma legenda. */
+.preparo-pagina-lista h3 { margin: 0 0 24px; font-size: 24px; line-height: 32px; font-weight: 500; color: var(--foreground); }
+.preparo-pagina-lista p { margin: 0; font-size: 16px; line-height: 24px; color: var(--muted-foreground); text-wrap: pretty; }
 
 .preparo-pagina-ajuste { display: flex; flex-direction: column; gap: 16px; }
 .preparo-pagina-ajuste .campo { inline-size: 100%; }
@@ -223,6 +252,15 @@
 .preparo-fim-acoes { display: flex; flex-wrap: wrap; gap: 16px; }
 
 @media (max-width: 767px) {
+  /* 16 DE BORDA NO TELEFONE. Os 64 do computador comiam 128 dos 390 e deixavam
+     262 de conteúdo; com os cartões em `p-40` sobravam 182 para o texto. O 16 é
+     o que os nós de telefone da Leitura (`966:29655`) e da Mesa usam nos seus
+     heroes — não conferi o `966:31504` deste Preparo em particular, e está
+     anotado em `docs/TELAS-FIGMA.md`. */
+  .preparo-pagina { padding-inline: 16px; }
+  .preparo-pagina-lista li { padding: 24px; column-gap: 24px; }
+  .preparo-pagina-veredito { padding: 24px; }
+  .preparo-pagina-capa { inline-size: 100%; }
   .preparo-fim { margin-block: 40px; }
   .preparo-fim h1 { font-size: 32px; line-height: 40px; }
   .preparo-andando-card { padding: 16px 16px 16px 20px; }

@@ -516,14 +516,13 @@
     "895:7856": {
       "tela": "D · Preparo — o que encontrei",
       "rota": "/preparo/:id",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-05",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/preparo.jsx",
-        "web/src/jornadas/preparo.css",
-        "web/src/jornadas/Preparo.jsx"
+        "web/src/jornadas/Preparo.jsx",
+        "web/src/jornadas/preparo.css"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "escala inteira corrigida; quadrado de 32 e botoes por item em aberto (docs/TELAS-FIGMA.md)"
     },
     "895:8029": {
       "tela": "D · Preparo — em andamento",

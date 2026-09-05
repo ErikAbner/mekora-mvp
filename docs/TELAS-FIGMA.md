@@ -1602,3 +1602,48 @@ de 64, ornamento em 169×78. Todos conferem.
 - **A epígrafe do nó é um VETOR**, e não texto: `895:10570` é uma imagem de
   317×188 dentro do bloco preto. A tela põe texto de verdade, declarado pelo
   livro (`epub:type="epigraph"`), que é o que permite qualquer livro ter a sua.
+
+### Preparo — o que encontrei, `895:7856` (computador)
+
+**A tela inteira estava numa escala menor**, e um número errado no topo puxou
+todos os outros: a coluna era **760** onde o nó pede **1222**. Com 760 a capa
+cabia em 120, os cartões viravam linhas de tabela e o título caía dois degraus.
+
+| o que | nó | estava |
+|---|---|---|
+| coluna e recheio | 1222 / 64 (`900:56497`, `895:7907`) | 760 / 40 |
+| vão entre capa e identidade | 48 (`895:7908`) | 24 |
+| capa | 270, razão 427/645 (`895:7909`) | 120, razão 2/3 |
+| título do arquivo | Heading/LG 40/48, -0.6px (`895:7915`) | 28/40 |
+| título de seção | Heading/MD 32/40 (`895:7943`) | 22/28 |
+| os itens | **cartões** de `p-40`, 24 entre eles (`895:7944`) | linhas de 16/20 coladas por filetes de 1px |
+| título do item | Body/Large 24/32 peso 500 (`895:7949`) | 16/24 |
+| explicação do item | Body/Small 16/24 (`895:7950`) | 14/20 |
+| veredito | `p-40` em volta (`895:7937`) | 40/24 |
+
+A diferença dos itens não é de gosto. Cada um deles é uma **decisão que o
+produto tomou sobre o arquivo da pessoa** — reconhecer o texto, gerar um
+sumário, montar uma capa. Colados numa caixa única, leem-se como propriedades de
+um registro; separados, cada um se lê como algo a conferir, que é o que a tela
+pede que se faça.
+
+**Um defeito de layout que só apareceu porque o número cresceu.** Com
+`max-inline-size: 1350px` a página continuou parando em 1028. O `.mesa` é um
+flex container, e um filho flex mede o CONTEÚDO, não o teto: faltava
+`inline-size: 100%`. Isso passou despercebido durante todo o tempo em que o teto
+era 760, porque o texto batia nele por acaso — **o valor só começou a mentir
+quando ficou maior que o conteúdo**.
+
+#### O que ficou
+
+- **O quadrado cinza de 32×32** à esquerda de cada item (`895:7947` e irmãos).
+  Ele é `#d9d9d9`, que é a cor de um retângulo recém-criado no Figma, e a camada
+  não tem nome. **Não implementei:** ou é um lugar reservado para ícone que
+  ficou por preencher, ou é uma caixa de marcar — e a diferença muda o que a
+  tela faz, não só como ela parece. É pergunta para o Erik.
+- **Os botões por item** — "Por quê" no texto em imagem, "Ver" na capa gerada,
+  "Traduzir" no idioma. A tela só tem "Alterar" no título e no autor. Cada um
+  desses abre algo que precisa existir.
+- **O recheio do telefone** foi posto em 16, que é o que os nós de telefone da
+  Leitura (`966:29655`) e da Mesa usam nos seus heroes. **Não conferi o
+  `966:31504`**, que é o nó de telefone desta tela.
