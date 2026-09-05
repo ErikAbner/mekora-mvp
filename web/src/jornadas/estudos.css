@@ -544,3 +544,19 @@
 .estudos-reler:hover:not(:disabled) { background: var(--muted); color: var(--foreground); }
 .estudos-reler:disabled { cursor: progress; }
 .estudos-reler:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+
+
+/* ── A PÁGINA DE UM ESTUDO — nó `895:8260` ──────────────────────────────────
+ *
+ * O cartão do estudo e a PÁGINA dele compartilham o `.estudo`, e é certo que
+ * compartilhem: é o mesmo objeto. Mas os tamanhos não são os mesmos, e o nó diz
+ * quais são os da página — `heading-lg` no título e `heading-md` nas seções,
+ * contra os 24/32 e 16/24 que a lista usa.
+ *
+ * Medido em 05/09: título 24/32 onde o nó pede 40/48; "Livros" 16/24 e "Como
+ * isso se formou" 20/30 onde ele pede 32/40 nos dois. Três degraus de
+ * diferença, e o efeito é a página do estudo parecer um cartão grande em vez de
+ * uma página. */
+.estudo-pagina .estudo h2 { font-size: 40px; line-height: 48px; letter-spacing: -0.6px; }
+.estudo-pagina .estudo-livros h3,
+.estudo-pagina .estudo-formou h3 { font-size: 32px; line-height: 40px; color: var(--foreground); margin: 0 0 24px; }
