@@ -475,3 +475,20 @@ O que tinha falhado no meu primeiro teste era a **sessão**: pedi o trabalho `11
 
 Fica `epub_url` no código porque é o que a tela consome: o caminho público, o mesmo do download. O `epub_path` é absoluto no disco do servidor.
 **Prova:** `node scripts/provas.mjs r53`
+
+### R-54 · 2026-09-05 · aberto
+**Erik:** (não é dele — irmão do R-53, achado ao conferir a terceira tela do Preparo)
+**Onde:** /preparo/:id · `web/src/jornadas/Preparo.jsx` · `backend/app/api/jobs.py`
+**Medido em 05/09:** `preparando` tem a mesma falha que o `feito` tinha: **é estado de sessão**. Quem fecha a aba durante a conversão e volta ao mesmo endereço vê a **proposta**, com "Preparar com recomendações" clicável — enquanto o servidor já está convertendo aquele arquivo.
+
+**O custo é maior que no R-53.** Lá a pessoa só perdia a notícia de que terminou. Aqui ela pode mandar converter de novo o que já está sendo convertido.
+
+**Escrevi o conserto e ele não funciona, e isso também está medido.** `active_operation` é o campo que diria que há operação em curso, e ele **chega ao navegador** — conferido por `curl`. Mas o `analisar(id)` que abre a tela **dispara** a análise, e disparar limpa o campo: a mesma resposta que traz `convert:teste` pelo `curl` traz `null` para a página, porque a página perguntou depois de disparar.
+
+    curl → active_operation = 'convert:teste'
+    página → active_operation = null
+
+A saída passa por perguntar a **situação** antes de disparar a análise — `/jobs/{id}/status`, que é o que o `acompanhar` já usa —, e isso mexe na ordem do carregamento desta tela. **Removi o ramo que escrevi:** um caminho que promete e não cumpre é pior que a ausência dele, e fica um comentário no lugar dizendo por quê.
+
+**A bancada também não produz o estado**, e essa é a terceira vez: não há trabalho com `active_operation` semeado, então a tela de "em andamento" (`895:8029`, `967:31833`) continua sem conferência contra o nó. Marquei um à mão para medir e desfiz depois — a bancada está limpa.
+**Prova:** sem-prova (item aberto)

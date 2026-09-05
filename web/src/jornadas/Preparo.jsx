@@ -532,7 +532,29 @@ export function Preparo() {
       if (j.epub_url) {
         setConvertido(j);
         setFeito(true);
+        return;
       }
+      /* UMA CONVERSÃO EM CURSO AINDA NÃO VOLTA PARA A TELA DE ANDAMENTO, e o
+       * motivo está medido — ver R-54.
+       *
+       * `preparando` tem a mesma falha que o `feito` tinha: é estado de sessão.
+       * Quem fecha a aba durante a conversão e volta vê a PROPOSTA, com
+       * "Preparar com recomendações" clicável, enquanto o servidor já está
+       * convertendo aquele arquivo. Aqui o custo é maior que na tela de pronto:
+       * lá a pessoa só perdia a notícia; aqui ela pode mandar converter de novo
+       * o que já está sendo convertido.
+       *
+       * ESCREVI O CONSERTO E ELE NÃO FUNCIONA. `active_operation` é o campo que
+       * diria isso, e ele chega ao navegador — conferido por `curl`. Mas o
+       * `analisar(id)` logo acima DISPARA a análise, e disparar limpa o campo:
+       * a mesma resposta que traz `convert:teste` pelo `curl` traz `null` para a
+       * página, porque a página perguntou depois de disparar.
+       *
+       * A saída passa por perguntar a SITUAÇÃO antes de disparar a análise
+       * (`/jobs/{id}/status`, que é o que o `acompanhar` já usa), e isso mexe na
+       * ordem do carregamento desta tela. Fica como item aberto em vez de um
+       * ramo que promete e não cumpre. */
+
     } catch (e) {
       setErro(e.message);
     }
