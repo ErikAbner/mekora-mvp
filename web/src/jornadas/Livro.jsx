@@ -200,12 +200,11 @@ export function Livro() {
                 <span aria-hidden="true">⋮</span>
               </button>
             </div>
-            {autor && <p className="livro-pagina-autor">{autor}</p>}
-
             {/* OS SELOS: o que o arquivo é, e em que pé ele está. O desenho os
                 põe logo abaixo do título. Cada um só aparece quando há o que
                 dizer — uma fileira de "—" descreve a ausência com a ênfase da
                 informação. */}
+            <div className="livro-pagina-dados">
             {(() => {
               const selos = [
                 livro.input_format && livro.input_format.toUpperCase(),
@@ -230,6 +229,7 @@ export function Livro() {
                 Origem · <span className="livro-pagina-origem-nome">{livro.original_filename}</span>
               </p>
             )}
+            </div>
 
             {/* A BARRA DE LEITURA — o desenho mostra "Epub · 80% lido" com uma
                 barra cheia abaixo do autor. A tela dizia só "capítulo 2 de 6",
@@ -239,8 +239,18 @@ export function Livro() {
                 A fração continua podendo faltar — leitura registrada antes de
                 ela existir —, e aí a frase do capítulo é o que sobra. Nulo não
                 é zero. */}
+            {/* O AUTOR MORA AQUI, e não debaixo do título. No nó 895:7700 ele
+                divide um bloco de 16 de vão com "Epub · 80% lido" e a barra:
+                quem escreveu e onde você parou são a mesma pergunta — de quem é
+                este livro e quanto dele já é seu.
+
+                O BLOCO EXISTE MESMO SEM LEITURA. Pôr o autor dentro do ramo da
+                barra o faria sumir em todo livro ainda não aberto — e é
+                justamente aí que saber de quem é o livro mais importa. */}
+            <div className="livro-pagina-leitura">
+              {autor && <p className="livro-pagina-autor">{autor}</p>}
             {typeof onde?.fracao === "number" ? (
-              <div className="livro-pagina-leitura">
+              <>
                 <p className="livro-pagina-onde">
                   {(livro.leitura_url ? "EPUB" : livro.input_format?.toUpperCase()) || "Arquivo"} ·{" "}
                   <span className="dado">{Math.round(onde.fracao * 100)}%</span> lido
@@ -255,13 +265,14 @@ export function Livro() {
                 >
                   <span style={{ inlineSize: `${Math.round(onde.fracao * 100)}%` }} />
                 </div>
-              </div>
+              </>
             ) : onde?.capitulos > 0 ? (
               <p className="livro-pagina-onde">
                 Você está no capítulo <span className="dado">{onde.capitulo + 1}</span> de{" "}
                 <span className="dado">{onde.capitulos}</span>
               </p>
             ) : null}
+            </div>
 
             {/* A ÚLTIMA COISA MARCADA, logo abaixo — a citação com filete do
                 desenho. É o que faz a ficha lembrar do livro em vez de só

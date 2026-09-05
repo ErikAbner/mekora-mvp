@@ -1,6 +1,8 @@
 /* DUAS COLUNAS: a trilha de ancoras e o conteudo. A trilha some abaixo de 1024
  * (regra dela), e ai a pagina volta a ser uma coluna so. */
-.livro-pagina { max-inline-size: 1140px; margin: 0 auto; padding: 32px 40px 80px; display: flex; gap: 48px; align-items: flex-start; }
+/* 1222 e 64 saem do nó 895:7683 — a coluna e o recheio do `hero`. Estava em
+   1140 com 40 de lado. */
+.livro-pagina { max-inline-size: 1222px; margin: 0 auto; padding: 32px 64px 80px; display: flex; gap: 48px; align-items: flex-start; }
 .livro-pagina-corpo { flex: 1 1 0; min-inline-size: 0; max-inline-size: 900px; display: flex; flex-direction: column; gap: 48px; }
 /* A ancora nao pode encostar no topo da janela: sem isto o titulo da secao fica
  * colado na borda e parece cortado. */
@@ -17,12 +19,27 @@
 .livro-pagina-volta:hover { color: var(--foreground); }
 .livro-pagina-volta:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
 
-.livro-pagina-topo { display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap; }
+/* 48 entre a capa e a identidade — nó 895:7683. */
+.livro-pagina-topo { display: flex; gap: 48px; align-items: flex-start; flex-wrap: wrap; }
 
+/* A RAZÃO DA CAPA, consertada; a LARGURA, não — e a diferença importa.
+ *
+ * A razão estava errada em dois sentidos: 2/3 é 0,667, e a capa deste produto é
+ * 420/594 = 0,707, o mesmo número que a prova r47 cobra na Estante. A ficha e a
+ * Estante desenhavam o mesmo objeto com duas formas diferentes, e quem abre um
+ * livro vem justamente da Estante. Isso é conserto, e está feito.
+ *
+ * A LARGURA do nó (`895:7684`) é 427, e ela NÃO cabe aqui — medido em 04/09:
+ * com 427 os selos quebram em duas linhas e os três botões se amassam. O motivo
+ * é estrutural: no nó a trilha lateral pertence ao bloco "O que ficou", e o
+ * topo tem os 1222 inteiros para capa e texto. Nesta tela a trilha corre ao
+ * lado da PÁGINA e come ~250px do topo. Pôr 427 sem mover a trilha é meia
+ * mudança, e meia mudança aqui é pior que nenhuma. Mover a trilha é decisão de
+ * navegação — ver `docs/TELAS-FIGMA.md`. */
 .livro-pagina-capa {
   flex: 0 0 auto;
   inline-size: 180px;
-  aspect-ratio: 2 / 3;
+  aspect-ratio: 420 / 594;
   border: 1px solid var(--border);
   background: var(--card);
   display: flex;
@@ -42,12 +59,37 @@
   text-wrap: pretty;
 }
 
-.livro-pagina-identidade { flex: 1 1 320px; }
-.livro-pagina h1 { margin: 0 0 8px; font-size: 32px; line-height: 40px; letter-spacing: -0.01em; color: var(--foreground); text-wrap: balance; }
-.livro-pagina-autor { margin: 0 0 16px; font-size: 18px; line-height: 28px; color: var(--muted-foreground); }
-.livro-pagina-onde { margin: 0 0 20px; font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
+/* O TOPO DA FICHA, com os vãos ESCRITOS — nó 895:7683 e filhos, conferido em
+   04/09.
+ *
+ * POR QUE ISTO MUDOU DE MARGEM PARA VÃO. O `base.css` ligou `text-box-trim` em
+ * 03/09, e ele já avisa o preço: "o vão de cada bloco está no desenho, escrito.
+ * Cada tela recebe o número de lá conforme for refeita". Esta tela ainda não
+ * tinha sido refeita. As margens daqui (8, 16, 20) foram escritas quando a
+ * meia-entrelinha ainda sobrava de cada lado do texto; com a caixa aparada elas
+ * viraram o vão INTEIRO, e o resultado era "Origem · malha-urbana.pdf" e
+ * "EPUB · 80% lido" desenhados por cima dos selos. As caixas não se
+ * sobrepunham — cada uma media metade da entrelinha (autor 13px de 28, origem
+ * 10px de 20, "lido" 11px de 24) —, mas o TEXTO transbordava a sua e caía na
+ * vizinha. Foto no relatório de 04/09.
+ *
+ * Os números vêm do nó, e não de mim: 32 entre o título e os dados
+ * (`895:7688`), 24 entre os selos e a origem (`895:7693`), 16 entre os selos
+ * (`895:7694`), 16 entre autor, "lido" e a barra (`895:7700`). */
+.livro-pagina-identidade {
+  flex: 1 1 320px;
+  display: flex; flex-direction: column; gap: 32px;
+}
+.livro-pagina h1 { margin: 0; font-size: 40px; line-height: 48px; letter-spacing: -0.01em; color: var(--foreground); text-wrap: balance; }
+.livro-pagina-dados { display: flex; flex-direction: column; gap: 24px; }
+.livro-pagina-autor { margin: 0; font-size: 20px; line-height: 30px; color: var(--muted-foreground); }
+.livro-pagina-onde { margin: 0; font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
 .livro-pagina-onde .dado { color: var(--foreground); font-variant-numeric: tabular-nums; }
-.livro-pagina-acoes { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+/* OS TRÊS BOTÕES EM LINHA, com 24 de vão — nó 895:7709. Estavam empilhados com
+   10, o que dá a "Enviar ao Kindle" e a "Ver o preparo" o mesmo peso vertical
+   de "Ler": três ações de frequências muito diferentes lidas como uma lista.
+   `wrap` porque numa coluna estreita eles ainda precisam caber. */
+.livro-pagina-acoes { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; }
 
 .livro-pagina-secao { padding-block-start: 32px; border-block-start: 1px solid var(--border); }
 .livro-pagina-secao h2 { margin: 0 0 8px; font-size: 22px; line-height: 28px; color: var(--foreground); }
@@ -140,12 +182,14 @@
 .livro-pagina-mais:hover { background: var(--muted); color: var(--foreground); }
 .livro-pagina-mais:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
 
+/* Vão 16 e recheio 13/17 — nós 895:7694 e 895:7695. O 8 e o 6/14 apertavam o
+   selo até ele parecer etiqueta de sistema, e não a ficha do arquivo. */
 .livro-pagina-selos {
-  display: flex; flex-wrap: wrap; gap: 8px;
-  margin: 16px 0 0; padding: 0; list-style: none;
+  display: flex; flex-wrap: wrap; gap: 16px;
+  margin: 0; padding: 0; list-style: none;
 }
 .livro-pagina-selos li {
-  padding: 6px 14px;
+  padding: 13px 17px;
   border: 1px solid var(--border);
   color: var(--muted-foreground);
   font-size: 14px; line-height: 22px;   /* Label/Small */
@@ -173,14 +217,15 @@
 
 /* De onde este livro veio. O nome do arquivo enviado sumia assim que o titulo
  * era detectado, e e ele que responde "qual dos meus PDFs virou este livro". */
+/* 16/24, e não 14/20 — nó 895:7699. */
 .livro-pagina-origem {
   margin: 0;
-  font-size: 14px; line-height: 20px;
+  font-size: 16px; line-height: 24px;
   color: var(--muted-foreground);
 }
 .livro-pagina-origem-nome { color: var(--foreground); }
 
-.livro-pagina-leitura { display: flex; flex-direction: column; gap: 8px; }
+.livro-pagina-leitura { display: flex; flex-direction: column; gap: 16px; }
 /* A barra e um degrau de superficie sobre outro, como todo estado do sistema. */
 .livro-pagina-barra { block-size: 8px; background: var(--background-tertiary); }
 .livro-pagina-barra > span { display: block; block-size: 100%; background: var(--foreground); }

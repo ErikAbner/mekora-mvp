@@ -1352,3 +1352,61 @@ contrário do desenho. **Consertado.**
   fila e as capas, e não um recorte. A seção existe na tela (`PrecisaDeVoce`), e
   a bancada não semeava nenhum arquivo nesse estado — o mesmo buraco do R-50.
   Ter as duas coisas pode ser certo; é decisão de produto.
+
+### Livro — `895:7631` (computador), `966:29052` (telefone)
+
+**O topo estava com o texto amassado, e a causa é de classe.** Na captura de
+04/09, "Origem · malha-urbana.pdf" e "EPUB · 80% lido" apareciam desenhados por
+cima dos selos. As caixas não se sobrepunham — cada uma media **metade da
+entrelinha**: autor 13px de 28, origem 10px de 20, "lido" 11px de 24 —, e o
+texto transbordava a sua e caía na vizinha.
+
+A causa é o `text-box-trim` que o `base.css` ligou em 03/09, e ele já avisa o
+preço com todas as letras: *"o vão de cada bloco está no desenho, escrito. Cada
+tela recebe o número de lá conforme for refeita."* Esta tela ainda não tinha
+sido refeita. As margens dela (8, 16, 20) foram escritas quando a meia-entrelinha
+ainda sobrava dos dois lados do texto; com a caixa aparada elas viraram o vão
+inteiro. **Toda tela ainda não refeita depois de 03/09 tem esse defeito à
+espera** — a Ajuda, as Atualizações e os Termos já foram; o resto não.
+
+**Consertado, com os números vindos do nó e não de mim:**
+
+| o que | nó | estava |
+|---|---|---|
+| vãos do bloco de identidade | 32 título→dados, 24 selos→origem, 16 entre selos, 16 no bloco da leitura (`895:7688`, `7693`, `7694`, `7700`) | margens de 8/16/20, escritas antes do trim |
+| título | 40/48 (`895:7690`) | 32/40 |
+| autor | 20/30, **junto com a barra** (`895:7700`) | 18/28, logo abaixo do título |
+| origem | 16/24 (`895:7699`) | 14/20 |
+| selos | recheio 13/17, vão 16 (`895:7694`, `7695`) | recheio 6/14, vão 8 |
+| os três botões | **em linha**, vão 24 (`895:7709`) | empilhados, vão 10 |
+| capa e identidade | 48 de vão (`895:7683`) | 32 |
+| coluna e recheio | 1222 / 64 (`895:7683`) | 1140 / 40 |
+| razão da capa | 420/594 = 0,707 | **2/3 = 0,667** |
+
+A razão da capa merece nota: a ficha e a Estante desenhavam o **mesmo objeto**
+com formas diferentes — a prova r47 cobra 0,707 na Estante, e aqui era 2/3. Quem
+abre um livro vem justamente da Estante.
+
+Os botões empilhados davam a "Enviar ao Kindle" e a "Ver o preparo" o mesmo peso
+vertical de "Ler": três ações de frequências muito diferentes lidas como lista.
+
+#### O que NÃO foi consertado, e por quê
+
+- **A largura da capa.** O nó traz 427; medido, 427 não cabe — os selos quebram
+  em duas linhas e os três botões se amassam. O motivo é estrutural: **no nó a
+  trilha lateral pertence ao bloco "O que ficou"**, e o topo tem os 1222
+  inteiros. Nesta tela a trilha corre ao lado da PÁGINA e come ~250px do topo.
+  Pôr 427 sem mover a trilha é meia mudança, e meia mudança aqui é pior que
+  nenhuma. Mover a trilha é decisão de navegação, e o Erik já disse uma vez
+  (R-17) que ela anda enfiada onde não precisa.
+- **O rótulo do botão principal.** O nó diz **"Ler"**; a tela diz "Continuar
+  lendo". Palavra é decisão dele, e "Continuar lendo" carrega uma informação que
+  "Ler" não carrega — que você já começou.
+- **Quantos selos.** O nó tem dois (`EPUB`, `93 de 96 páginas`); a tela tem
+  quatro (formato, tamanho, páginas, estado) e pode ter cinco. Nenhum deles é
+  ruído, mas quatro é outra coisa que dois.
+- **As faixas coloridas das notas.** A tela pinta cada nota com a cor do
+  marcador; no nó as notas são cartões brancos com o texto em negrito e
+  "Capítulo X" abaixo. Isso encosta no R-48 — o Erik já disse que as cores são
+  provisórias e quer poder trocá-las.
+- **A ilustração de "Escrever sobre o livro"**, presente no nó e ausente na tela.
