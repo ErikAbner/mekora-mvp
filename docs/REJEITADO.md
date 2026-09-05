@@ -493,16 +493,20 @@ A saída passa por perguntar a **situação** antes de disparar a análise — `
 **A bancada também não produz o estado**, e essa é a terceira vez: não há trabalho com `active_operation` semeado, então a tela de "em andamento" (`895:8029`, `967:31833`) continua sem conferência contra o nó. Marquei um à mão para medir e desfiz depois — a bancada está limpa.
 **Prova:** sem-prova (item aberto)
 
-### R-55 · 2026-09-05 · aberto
-**Erik:** (não é dele — é da BANCADA, e é a quarta vez)
-**Onde:** `scripts/sessao-de-prova.sh` · /canvas · /estudo/:id · /nota/:id
-**Medido em 05/09:** o **Canvas não pode ser conferido contra o nó** porque a bancada não entrega notas de canvas para a pessoa da sessão. O banco tem **763 nós de canvas e 5502 notas** — todos de pessoas de rodadas anteriores, porque o `sessao-de-prova.sh` cria uma pessoa NOVA a cada chamada e semeia só livros.
+### R-55 · 2026-09-05 · fechado
+**Erik:** (não é dele — é da BANCADA, e o defeito acabou sendo do INSTRUMENTO)
+**Onde:** `scripts/medir.mjs` · /canvas
+**Medido em 05/09:** a captura do Canvas saía **vazia**, com "Nada aqui ainda", e eu escrevi um item inteiro dizendo que a bancada não entregava notas para a pessoa da sessão.
 
-A tela abre com "Nada aqui ainda", que é o estado vazio — e medir o Canvas vazio é o mesmo que mediu o contraste dele em 3,42 e deu verde: **19 nós olhados numa tela que cheia tem 32**.
+**Ela entrega.** O `semear.py` cria três nós de canvas por pessoa e diz isso na saída — *"semeado: 7 trabalhos, 22 notas, 3 no Canvas"* —, a API devolve os três em `/canvas/superficie`, e a medida os encontra no DOM: visíveis, opacidade 1, dentro da vista, com o texto certo. **Medido por nove segundos seguidos: três notas o tempo todo, e nenhum recado de vazio.**
 
-**A quarta vez, e o padrão já tem nome.** R-50: a bancada não produzia `analyzed`. R-53: o estado existia no banco e a tela não o lia. R-54: a bancada não produz conversão em curso. Agora: a bancada produz o dado, e ele fica com a pessoa errada.
+**A FOTO É QUE MENTIA.** O `medir.mjs` capturava com `captureBeyondViewport: true` para pegar a página inteira, e isso redimensiona a área de composição por baixo. Numa página que só empilha conteúdo, tudo bem. **No Canvas, não:** ele desenha em função do tamanho da janela, e a captura estendida devolvia a tela vazia meio segundo depois de a medida ter visto três notas.
 
-**O que não resolve:** rodar o `scripts/medidas/ir-para.js` como setup. Ele cria as notas pela API com a sessão em curso, e a tela continua vazia — não apurei se o `fetch` relativo do setup chega ao backend (portas 5181/8200) ou morre no servidor de arquivos.
+**Consertado:** `--vista` captura só a janela, sem estender. Com ele o Canvas fotografa as três notas, as ligações entre elas e o preview de link.
 
-**O que isto bloqueia:** `895:6938` (Canvas), `895:8260` (Estudo — página), `895:8545` (Conexões), `966:29743`, `966:30269` e o painel `941:23108`. Seis quadros, e o Canvas é justamente onde moram três itens abertos do Erik — R-16, R-43 e R-48.
-**Prova:** sem-prova (item aberto)
+**O que este item custou, e é a lição:** eu vi uma foto, escrevi um item de bancada, e a bancada estava certa. Foi a **quarta vez no dia** que confundi "não consegui ver" com "não existe" — e a única em que o instrumento errado era o meu próprio. As três anteriores (R-50, R-53, R-54) tinham defeito real por trás; esta não tinha nenhum.
+**Prova:** sem-prova (o conserto é do instrumento)
+
+### R-55-nota · o texto original deste item, mantido
+**O que eu tinha escrito, e estava errado:** que o banco tinha "763 nós de canvas e 5502 notas, todos de pessoas de rodadas anteriores" e que por isso o Canvas não podia ser conferido. Os números eram reais; a conclusão, não — a pessoa da sessão TEM os seus três nós, e o `sessao-de-prova.sh` chama o semeador que os cria. Fica registrado porque o erro de leitura é mais instrutivo que o conserto.
+

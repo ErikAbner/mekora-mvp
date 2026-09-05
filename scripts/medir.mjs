@@ -322,9 +322,22 @@ try {
   console.log(JSON.stringify(await avalia(readFileSync(arqMedida, 'utf8')), null, 2));
   if (png) {
     await espera(500);
-    const alt2 = await avalia('Math.min(document.documentElement.scrollHeight,12000)');
+    /* `--vista` CAPTURA SÓ A JANELA, sem `captureBeyondViewport`.
+     *
+     * O padrão estende a captura além da viewport para pegar a página inteira, e
+     * isso REDIMENSIONA a área de composição por baixo. Numa página que só
+     * empilha conteúdo, tudo bem. No Canvas, não: ele desenha em função do
+     * tamanho da janela, e a captura estendida saiu com "Nada aqui ainda"
+     * enquanto a medida, meio segundo antes, via três notas visíveis e nenhum
+     * recado de vazio. Medido em 05/09, e por nove segundos seguidos: 3 notas o
+     * tempo todo. A tela estava certa e a FOTO mentia.
+     *
+     * Cheguei a registrar um item (R-55) dizendo que a bancada não entregava as
+     * notas. Entregava. O instrumento é que não sabia fotografar esta tela. */
+    const soAVista = bruto.includes('--vista');
+    const alt2 = soAVista ? +alt : await avalia('Math.min(document.documentElement.scrollHeight,12000)');
     const r = await manda('Page.captureScreenshot',
-      { format: 'png', captureBeyondViewport: true,
+      { format: 'png', captureBeyondViewport: !soAVista,
         clip: { x: 0, y: 0, width: +larg, height: alt2, scale: 1 } });
     writeFileSync(png, Buffer.from(r.data, 'base64'));
     console.error(`captura: ${png} (${larg}×${alt2})`);

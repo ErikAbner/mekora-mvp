@@ -1846,3 +1846,29 @@ escreve: *"desenhar vetor à mão é inventar com cara de fidelidade"*.
 **Pedido ao Erik:** exportar as três como SVG achatado, como a de Preferências
 (`934:11083`) e a da visão geral já estão. No Figma é selecionar a moldura e
 exportar como SVG com "outline text" — o traço e o efeito vêm junto.
+
+### Canvas — `895:6938` (computador)
+
+**A tela está certa; o instrumento é que não sabia fotografá-la.** Ver R-55: a
+captura saía vazia porque o `medir.mjs` estendia a viewport para pegar a página
+inteira, e o Canvas desenha em função do tamanho da janela. Com `--vista` ele
+fotografa as três notas, as ligações e o preview de link.
+
+Conferido com o nó: nota com texto, autor e data; ligação desenhada entre duas
+notas; preview de link dentro da nota; barra de ferramentas à esquerda; zoom no
+canto inferior direito; chão pontilhado.
+
+**O que não deu para conferir, e é falta de dado na bancada:**
+
+- **As capas de livro no Canvas.** O nó põe duas — "Malha Urbana" e "Diário 02" —
+  ancoradas à esquerda, com o marcador de fita em cima. A API devolve
+  `livros: 0` para a pessoa da sessão: o semeador não põe livro no Canvas.
+- **A seção nomeada.** O nó tem "Design & Tecnologia" com a moldura tracejada em
+  volta do grupo. A tela tem a peça (`.canvas-secao-area`, medida em 620×366),
+  e a bancada não cria nenhuma seção.
+- **O cartão de imagem com "Ver transcrição"**, que o nó mostra à direita.
+
+Os três itens abertos do Erik sobre esta tela — R-16 (travado, animações,
+interação), R-43 (nota que diz "escrita aqui" e não deixa editar) e R-48 (trocar
+as cores) — **continuam abertos**: são sobre comportamento e cor, e nenhum deles
+se responde com uma captura parada.
