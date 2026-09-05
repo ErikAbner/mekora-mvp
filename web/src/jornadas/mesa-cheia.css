@@ -1,9 +1,20 @@
 .preparo { display: flex; justify-content: center; padding: 40px 64px 128px; }
 
+/* SEM CAIXA, E COLUNA DE 876 — nós `895:9519`/`895:9521` e `895:9981`.
+ *
+ * A seção tinha `background: var(--card)`, 1096 de largura e 40/32 de recheio.
+ * Nos dois nós de computador o título "Em preparo" é solto sobre o fundo da
+ * página, a coluna mede 876 numa seção e 888 em três — 888 é o mais representado, e é o que alinha, e só os CARTÕES da fila têm caixa. Uma caixa em
+ * volta de tudo faz a fila parecer um painel de sistema; solta, ela é uma parte
+ * da página como as outras.
+ *
+ * Isto estava esperando os chips: a forma dos recortes vinha com as cores, e as
+ * cores eram decisão do Erik. Ele decidiu em 04/09 — cores do sistema —, os
+ * chips viraram soltos, e a caixa deixou de ter o que segurar. */
 .preparo-caixa {
   display: flex; flex-direction: column; gap: 32px;
-  width: 100%; max-width: 1096px; padding: 40px 32px;
-  background: var(--card);
+  width: 100%; max-width: 888px; padding: 0;
+  background: none;
 }
 
 .preparo-topo { display: flex; flex-direction: column; gap: 16px; }
@@ -206,7 +217,7 @@
  */
 .continue {
   display: flex; gap: 48px; align-items: center;
-  inline-size: 100%; max-inline-size: 888px;
+  inline-size: 100%; max-inline-size: calc(888px + 2 * 64px);
   margin: 0 auto; padding: 64px;
 }
 .continue-capa {
@@ -236,7 +247,11 @@
 .continue-acoes { display: flex; flex-direction: column; gap: 16px; margin-block-start: 16px; }
 .continue-acoes .botao { inline-size: 100%; justify-content: center; }
 
-.faixa { inline-size: 100%; max-inline-size: 888px; margin: 0 auto; padding: 0 64px 64px; }
+/* 888 É O CONTEÚDO, e o recheio vem por fora — o mesmo modelo do Livro.
+   Com `max-inline-size: 888px` e `padding: 0 64px`, o conteúdo ficava em 760 e
+   a faixa desalinhava da seção "Em preparo", que mede 876 sem recheio. Duas
+   seções da mesma página com bordas diferentes é o R-20 visto no computador. */
+.faixa { inline-size: 100%; max-inline-size: calc(888px + 2 * 64px); margin: 0 auto; padding: 0 64px 64px; }
 .faixa-topo { display: flex; align-items: baseline; justify-content: space-between; gap: 24px; margin-block-end: 40px; }
 .faixa-topo h2 {
   margin: 0;
