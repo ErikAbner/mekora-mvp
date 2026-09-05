@@ -494,14 +494,13 @@
     "895:8849": {
       "tela": "D · Estudos — lista",
       "rota": "/estudos",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-05",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/estudos.jsx",
-        "web/src/jornadas/estudos.css",
-        "web/src/jornadas/Estudos.jsx"
+        "web/src/jornadas/Estudos.jsx",
+        "web/src/jornadas/estudos.css"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "vao do quadro e capa consertados; divergencias em docs/TELAS-FIGMA.md"
     },
     "900:56142": {
       "tela": "D · Estudos — lista (variação)",

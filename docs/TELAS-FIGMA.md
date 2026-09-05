@@ -1487,3 +1487,56 @@ ausentes onde há um dado vazio.
 continua aberto — "hover nos livros é muito feio"), a vista Estante em 3D
 (`895:7506`) e o telefone (`964:24606`, já conferido em 04/09 contra o dado do
 nó).
+
+### Estudos — lista, `895:8849` (computador)
+
+**O quadro de três colunas existe, e eu quase escrevi que não.** A primeira
+comparação pôs a captura do nó ao lado da captura da tela e concluiu: "o kanban
+não está no produto". O nó mostra o alternador com **"Leitura"** marcado; a tela
+abre em **"Lista"**. Duas telas, dois estados, e a diferença lida como peça
+faltando. É o R-50 outra vez — instrumento certo, estado errado —, e desta vez
+comparando com o desenho em vez do banco.
+
+Com a vista certa aberta, o quadro está lá: "A ler", "Lendo", "Lido", com
+contador em cada título, capa, nome, autor, e a porcentagem com barra na coluna
+do meio. A medida agora clica em "Leitura" antes de olhar.
+
+**Dois números consertados**, com os do nó:
+
+- vão entre as colunas **48**, e não 32 (`895:8945`). A 32 o vão entre colunas
+  era igual ao vão entre a coluna e o cartão dentro dela, e nada dizia onde uma
+  acaba.
+- capa do cartão **93**, e não 56 (`895:8953` e irmãos). A 56 ela vira miniatura
+  de lista e deixa de ser reconhecível — e é pelo desenho da capa que a pessoa
+  acha o livro, como acha na Estante.
+
+**E um erro de leitura meu, do tipo que este arquivo já documenta.** Li "Por
+pesquisa" no terceiro recorte a partir da captura reduzida; a tela diz **"Por
+pergunta"**, que é o que o nó pede. O próprio `Estudos.jsx` registra que uma
+leitura de captura pequena demais já me fez fazer ao Erik uma pergunta sobre um
+rótulo que não existia. Passei a comparar texto com texto.
+
+#### As divergências que ficam
+
+- **O recheio dos recortes.** Aqui o nó pede `px-32 py-16` (`895:8911`); na
+  Estante o mesmo componente é `px-24 py-14` (`895:7371`), que é o que o código
+  usa nas duas. **É o desenho que diverge de si mesmo**, e mudar só nesta tela
+  produziria duas formas do mesmo componente no código — exatamente o que o
+  `scripts/inventario.mjs` existe para recusar. Precisa de uma decisão só.
+- **"Criar novo estudo" mora dentro da caixa do alternador.** No nó
+  (`895:8930`) ele é um botão separado, a 56 de distância, e a caixa do
+  alternador tem 587 de largura só para Lista e Leitura. Dentro da caixa, uma
+  AÇÃO se lê como uma terceira VISTA.
+- **"Você ligou" virou "Parecem do mesmo assunto"** em 03/09, e a razão está
+  escrita no código: a seção vem de uma varredura, e o título antigo atribuía à
+  pessoa um ato que foi do sistema — o corpo já dizia "Nada foi organizado por
+  você" três linhas abaixo. **O nó e o produto discordam com argumento dos dois
+  lados; é decisão do Erik.**
+- **"Ver as outras"**, o link do cartão "O que ficou pela metade" (`895:8919`),
+  não existe na tela. O destino não está no nó, e o produto não tem uma vista
+  dessas anotações — construir seria inventar para onde ele leva.
+- **"Virar um estudo"** no nó contra **"Juntar as N num estudo"** na tela, e
+  **"Buscar em livros, rotas e contexto"** contra **"Buscar nos estudos"**.
+- **O botão "Reler"** nos cartões da terceira coluna: a bancada não tem nenhum
+  livro terminado, então a coluna está vazia e a medida não pode dizer se ele
+  falta. Buraco de dado, como o do R-50.

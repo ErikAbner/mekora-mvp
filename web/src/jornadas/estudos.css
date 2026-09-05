@@ -367,8 +367,11 @@
 }
 .estudos-vistas button:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
 
-/* As tres colunas por estado de leitura. */
-.estudos-quadro { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+/* As tres colunas por estado de leitura — nó `895:8945`, vão 48.
+   Estava em 32, e o efeito era as três colunas lidas como uma faixa contínua de
+   cartões: o vão entre elas era igual ao vão entre a coluna e o cartão de
+   dentro, e nada dizia onde uma acaba. */
+.estudos-quadro { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 48px; }
 .estudos-coluna h2 {
   margin: 0 0 24px; padding-block-end: 12px;
   border-block-end: 1px solid var(--border);
@@ -385,7 +388,11 @@
 .estudos-coluna a:hover { background: var(--background-secondary); }
 .estudos-coluna img,
 .estudos-livro-vazio {
-  flex: 0 0 auto; inline-size: 56px; aspect-ratio: 420 / 594;
+  /* 93, e não 56 — nó `895:8953` e irmãos. A 56 a capa vira miniatura de lista
+     e deixa de ser reconhecível como o livro; o desenho a mantém grande o
+     bastante para a pessoa achar pelo desenho da capa, que é como ela acha na
+     Estante. */
+  flex: 0 0 auto; inline-size: 93px; aspect-ratio: 420 / 594;
   object-fit: cover;
   border: 1px solid var(--border); background: var(--card);
   display: flex; align-items: center; justify-content: center;
