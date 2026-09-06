@@ -479,13 +479,13 @@
     "895:8260": {
       "tela": "D · Estudo — página",
       "rota": "/estudo/:id",
-      "conferido_em": "2026-09-05",
+      "conferido_em": "2026-09-06",
       "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/Estudos.jsx",
+        "web/src/jornadas/EstudoPagina.jsx",
         "web/src/jornadas/estudos.css"
       ],
-      "nota": "escala corrigida; Notas semelhantes / Podem complementar / busca sao funcionalidade ausente"
+      "nota": "escala corrigida; Notas semelhantes / Podem complementar / busca sao funcionalidade ausente | 06/09: a entrada listava Estudos.jsx, que nao desenha esta tela — quem desenha e EstudoPagina.jsx. Lista corrigida. estudos.css mudou de verdade, entao remedi: h2 segue 40/48 -0.6px."
     },
     "895:8545": {
       "tela": "D · Conexões — sugestões",
@@ -502,13 +502,13 @@
     "895:8849": {
       "tela": "D · Estudos — lista",
       "rota": "/estudos",
-      "conferido_em": "2026-09-05",
+      "conferido_em": "2026-09-06",
       "contra": "dado-do-no",
       "arquivos": [
         "web/src/jornadas/Estudos.jsx",
         "web/src/jornadas/estudos.css"
       ],
-      "nota": "vao do quadro e capa consertados; divergencias em docs/TELAS-FIGMA.md"
+      "nota": "vao do quadro e capa consertados; divergencias em docs/TELAS-FIGMA.md | 06/09: reconferido depois da mudanca de escala e ordem. O no diz heading-xl 48/56 -0.96px, frase 20/30, hero pt-128 pb-64 gap-128 e os recortes antes do cartao — os mesmos numeros do 900:56142, e agora os do produto."
     },
     "900:56142": {
       "tela": "D · Estudos — lista (variação)",
