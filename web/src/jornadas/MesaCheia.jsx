@@ -300,6 +300,13 @@ function Faixa({ titulo, quando, livros, verTudo }) {
 
 export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberArquivos, aoDestravar, backend }) {
   const [recorte, setRecorte] = useState("tudo");
+  /* PRIMEIRA VEZ É TER ARQUIVO E NENHUM LIVRO PRONTO — ver a nota na seção
+     `promessa`.
+     O `livros` NÃO serve como está: ele é o histórico inteiro e inclui o que
+     ainda está em preparo (é o R-51). Medido em 05/09 numa conta recém-criada
+     com um único arquivo em `analyzed`: `livros.length` valia 1 e a primeira
+     vez nunca acontecia. Quem conta aqui é o ESTADO de cada um. */
+  const primeiraVez = arquivos.length > 0 && !livros.some((l) => l.estado === "pronto");
   const c = contar(arquivos);
   /* A lista filtrada pelo recorte. `tudo` é o padrão, e é o que o desenho marca. */
   const visiveis = recorte === "tudo" ? arquivos : arquivos.filter((a) => a.estado === recorte);
@@ -362,12 +369,31 @@ export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberA
        *
        * É o mesmo componente das outras duas telas. Uma segunda cópia aqui seria
        * a lista de formatos divergindo em um dos três lugares. */}
+      {/* A PRIMEIRA VEZ TEM OUTRO TÍTULO — nó `895:9736`.
+          Quem já tem livro na estante lê a promessa: "uma estante para aquilo
+          que ainda está em movimento". Quem soltou o primeiro arquivo e ainda
+          não tem livro nenhum lê uma instrução — "Comece soltando um arquivo" —,
+          porque prometer uma estante a quem ainda não tem uma é descrever um
+          lugar que ela não viu.
+
+          O estado é derivado, e não guardado: há arquivo em preparo e nenhum
+          livro pronto. A tela já recebe as duas listas. */}
       <section className="promessa">
-        <h1>
-          Uma estante para aquilo
-          <br />
-          que ainda está em movimento.
-        </h1>
+        {primeiraVez ? (
+          <>
+            <h1>Comece soltando um arquivo</h1>
+            <p className="promessa-diz">
+              O Mekora abre, vê o que tem dentro e prepara para leitura. Você
+              confirma uma vez.
+            </p>
+          </>
+        ) : (
+          <h1>
+            Uma estante para aquilo
+            <br />
+            que ainda está em movimento.
+          </h1>
+        )}
       </section>
 
       {aoReceberArquivos && (

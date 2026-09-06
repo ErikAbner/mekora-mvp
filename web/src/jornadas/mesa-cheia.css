@@ -342,3 +342,15 @@
   .precisa-de-voce-forma { align-items: stretch; }
   .precisa-de-voce-forma .botao { inline-size: 100%; justify-content: center; }
 }
+
+/* O subtítulo da primeira vez — nó `895:9736`, alinhado à direita do título e
+   num corpo abaixo dele. Ele só existe nesse estado: quem já tem estante lê a
+   promessa, e promessa não precisa de explicação. */
+.promessa-diz {
+  margin: 24px 0 0;
+  max-inline-size: 46ch;
+  margin-inline-start: auto;
+  font-size: 20px; line-height: 30px;   /* Body/Medium */
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
