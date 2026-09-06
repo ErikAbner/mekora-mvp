@@ -125,6 +125,14 @@
 .nota-ligadas a:focus-visible, .nota-candidatas-folha button:focus-visible,
 .nota-ligadas li > button:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
 
+/* A ORIGEM VAI NA SEGUNDA COLUNA, e isto não é enfeite: nesta variante ela é
+   filha direta da grade (`Nota.jsx`, a lista da folha não a embrulha num
+   `.candidata-corpo` como a de baixo faz), e a colocação automática a jogava
+   na primeira coluna — 14px de largura. "Estudo de Viabilidade" saía uma
+   palavra por linha. Visto na captura da folha de ligar nota. */
+.nota-candidatas-folha button > .candidata-texto,
+.nota-candidatas-folha button > .candidata-origem { grid-column: 2; }
+
 .marca-cor { inline-size: 14px; block-size: 14px; }
 /* O CORPO É QUEM ENCOLHE — `min-inline-size: 0` desfaz o mínimo automático, que
  * é a peça que faltava na lista de Trazer e o motivo de o título estourar lá. */
@@ -158,8 +166,10 @@
 
 .nota-procura {
   inline-size: 100%;
-  margin-block-end: 12px;
-  padding: 10px 14px;
+  /* O campo de busca das folhas é `px-25 py-18` — `895:12453`, e o mesmo no
+     campo da Ajuda (`966:27941`). O `margin` sai: quem separa os blocos do
+     corpo agora é o `gap: 48` da folha. */
+  padding: 18px 25px;
   border: 1px solid var(--border);
   background: transparent;
   color: var(--foreground);

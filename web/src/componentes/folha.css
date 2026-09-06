@@ -33,11 +33,16 @@
 
 .folha-topo {
   display: flex; align-items: flex-start; justify-content: space-between; gap: 24px;
-  padding: 32px 40px;
+  /* 32 EM VOLTA, e não 32 por 40. Dois nós de folha dizem o mesmo — o de
+     conectar nota (`895:12444`) e o de aparência da leitura (`973:32415`) —,
+     e os 40 dos lados eram medida de página, não de painel. */
+  padding: 32px;
 }
+/* O TÍTULO DA FOLHA É Body/Large 24/32 peso 500. Ele não é o título de uma
+   página: é o rótulo do painel, e Heading/SM o punha acima do que ele nomeia. */
 .folha-topo h2 {
   margin: 0;
-  font-size: 28px; line-height: 36px; font-weight: 540;   /* Heading/SM */
+  font-size: 24px; line-height: 32px; font-weight: 500;   /* Body/Large */
   color: var(--card-foreground);
 }
 
@@ -59,9 +64,10 @@
  * alcançável numa folha longa sem precisar chegar ao fim dela. */
 .folha-topo, .folha-acoes { flex: 0 0 auto; }
 .folha-conteudo {
-  display: flex; flex-direction: column; gap: 24px;
+  /* 48 entre os blocos do corpo — `895:12452`. */
+  display: flex; flex-direction: column; gap: 48px;
   flex: 1 1 auto; min-block-size: 0; overflow-y: auto;
-  padding: 0 40px 32px;
+  padding: 0 32px 32px;
   font-size: 20px; line-height: 30px;
   color: var(--muted-foreground);
 }
@@ -69,7 +75,7 @@
 
 .folha-acoes {
   display: flex; gap: 16px; justify-content: flex-end;
-  padding: 0 40px 40px;
+  padding: 0 32px 32px;
 }
 
 /* `flex` só quando aberta: `<dialog>` fechado é `display: none`, e declarar o

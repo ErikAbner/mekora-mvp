@@ -235,10 +235,14 @@
     "941:23108": {
       "tela": "Conectar nota",
       "rota": "folha da página da nota",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
-      "arquivos": [],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "conferido_em": "2026-09-06",
+      "contra": "dado-do-no",
+      "arquivos": [
+        "web/src/jornadas/Nota.jsx",
+        "web/src/jornadas/nota.css",
+        "web/src/componentes/folha.css"
+      ],
+      "nota": "a folha COMPARTILHADA passou a 32 em volta (era 32x40), titulo Body/Large 24/32 peso 500 (era Heading/SM 28/36) e 48 entre os blocos do corpo — dois nos de folha dizem o mesmo, este e o 973:32415. Campo de busca px-25 py-18. DIVERGENCIA DEIXADA DE PROPOSITO: as linhas da lista seguem o 895:8780, que e o no especifico delas e ja foi conferido — com marca de cor e as duas acoes. O 941:23108 desenha uma versao simplificada, sem elas. DEFEITO ACHADO E CORRIGIDO: nesta lista a origem e filha direta da grade, e a colocacao automatica a punha na coluna de 14px — 'Estudo de Viabilidade' saia uma palavra por linha."
     },
     "941:23109": {
       "tela": "Aviso · preferência fora do padrão",
