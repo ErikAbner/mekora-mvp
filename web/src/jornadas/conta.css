@@ -69,7 +69,7 @@
      24 de lado que estavam aqui, a coluna media 310 numa tela de 390 — o nó
      pede 326, que é 358 menos os dois 16. */
   .conta { flex-direction: column; gap: 32px; padding: 56px 16px 64px; align-items: stretch; }
-  .conta-secao h2 { padding: 24px; font-size: 24px; line-height: 32px; }
+  .conta-secao h2 { padding: 24px; font-size: 24px; line-height: 36px; }  /* 24/36 no `966:26643`, e nao 24/32 */
   .conta-escolhas { padding: 0 24px 32px; }
 }
 

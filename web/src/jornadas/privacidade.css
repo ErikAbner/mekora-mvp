@@ -22,17 +22,22 @@
    para disfarçar um valor curto. Medido em 04/09: a 4px o descendente de "O
    original" (3,4px) e o ascendente da linha de baixo (3,1px) somavam 6,5 — os
    dois textos se tocavam. Achado pelo `scripts/amassado.mjs`. */
+/* A ESCALA É A DOS DOIS NÓS, e ela é maior do que estava aqui. `895:10909` e
+   `966:26643` escrevem os mesmos itens — "O original", "O resultado",
+   "Conteúdo", "O que é medido" — em body-medium 20/30, com a explicação em
+   body-small 16/24. O produto usava 16/24 e 14/20, um passo abaixo nos dois,
+   nas duas larguras. */
 .guardado-conta {
   margin: 0 0 8px;
-  font-size: 16px;
-  line-height: 24px;
+  font-size: 20px;
+  line-height: 30px;
   color: var(--foreground);
 }
 
 .guardado-explicacao {
   margin: 0;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 16px;
+  line-height: 24px;
   color: var(--muted-foreground);
   text-wrap: pretty;
 }

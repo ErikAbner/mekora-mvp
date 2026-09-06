@@ -63,14 +63,14 @@
     "966:26643": {
       "tela": "M · Conta — Privacidade",
       "rota": "/conta/privacidade",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-06",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/conta.jsx",
-        "web/src/jornadas/conta.css",
-        "web/src/jornadas/Conta.jsx"
+        "web/src/jornadas/Privacidade.jsx",
+        "web/src/jornadas/privacidade.css",
+        "web/src/jornadas/conta.css"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "titulo de secao 24/36 no telefone (era 24/32). Item e explicacao subiram para body-medium 20/30 e body-small 16/24, que e o que os DOIS nos escrevem — o produto usava 16/24 e 14/20 nas duas larguras. As secoes 'O que o Mekora guarda' e 'Levar seus dados' sao acrescimo do produto e seguem os mesmos componentes."
     },
     "966:27160": {
       "tela": "M · Atualizações",
@@ -385,7 +385,7 @@
         "web/src/jornadas/privacidade.css",
         "web/src/jornadas/conta.css"
       ],
-      "nota": "interruptor da medicao construido; borda vermelha na secao sem volta | 06/09: a largura das ilustracoes deixou de ser cravada em 272 e passou a seguir a proporcao de cada desenho — esta vinha esticada. Nada mais desta tela mudou."
+      "nota": "interruptor da medicao construido; borda vermelha na secao sem volta | 06/09: a largura das ilustracoes deixou de ser cravada em 272 e passou a seguir a proporcao de cada desenho — esta vinha esticada. Nada mais desta tela mudou. | 06/09: a conferencia anterior olhou o interruptor e a borda e passou por cima da escala dos itens: eles eram 16/24 e 14/20 contra os 20/30 e 16/24 do no. Corrigido."
     },
     "895:11060": {
       "tela": "D · Atualizações",
