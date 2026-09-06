@@ -75,14 +75,13 @@
     "966:27160": {
       "tela": "M · Atualizações",
       "rota": "/atualizacoes",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-06",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/atualizacoes.jsx",
-        "web/src/jornadas/atualizacoes.css",
-        "web/src/jornadas/Atualizacoes.jsx"
+        "web/src/jornadas/Atualizacoes.jsx",
+        "web/src/jornadas/atualizacoes.css"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "etiqueta do tipo deitada no telefone (o no do computador gira -90, o do telefone nao) e em heading-xs-italic 24/32, caixa px-32 py-16; era 14/22 girada nos dois. Data em label-small-caps 20/28 italica com 4px de entreletra, frase de abertura body-large 24/32, titulo do item heading-sm 28/36, vaos 40 e 24. A entreletra de 23,8px do no do computador NAO foi copiada: e o Figma esticando a linha, e como valor fixo quebra a data em duas."
     },
     "966:27747": {
       "tela": "M · Ajuda — início",
@@ -389,13 +388,13 @@
     "895:11060": {
       "tela": "D · Atualizações",
       "rota": "/atualizacoes",
-      "conferido_em": "2026-09-05",
+      "conferido_em": "2026-09-06",
       "contra": "dado-do-no",
       "arquivos": [
         "web/src/jornadas/Atualizacoes.jsx",
         "web/src/jornadas/atualizacoes.css"
       ],
-      "nota": "bate; falta a ilustracao 937:20482, que nao sai como arquivo"
+      "nota": "bate; falta a ilustracao 937:20482, que nao sai como arquivo | 06/09: 'bate' era otimista — a data era 14/22 reta contra label-small-caps 20/28 italica, a etiqueta 14/22 contra 24/32, o titulo Body/Large contra Heading/SM e a frase de abertura 20/30 contra 24/32. Corrigido."
     },
     "895:11193": {
       "tela": "D · Ajuda — início",

@@ -14,18 +14,30 @@
   letter-spacing: -2%;
   color: var(--foreground);
 }
+/* A frase de abertura é body-large 24/32 nos dois nós (`895:11060`, `966:27160`),
+   e não body-medium. */
 .atualizacoes-topo p {
   margin: 0;
-  font-size: 20px; line-height: 30px;
+  font-size: 24px; line-height: 32px;
   color: var(--muted-foreground);
   text-wrap: pretty;
 }
 
 .atualizacoes-lote { display: flex; flex-direction: column; gap: 24px; }
+/* A DATA DO LOTE é uma faixa, e não um rótulo miúdo: `label-small-caps` 20/28
+   em itálico, caixa alta, esparramada pela largura da coluna. O nó do
+   computador escreve 23,8px de entreletra com `min-w-full`, e esse número não
+   é entreletra: é o Figma ESTICANDO a linha até a largura da coluna. Aplicado
+   como valor fixo, "2 DE SETEMBRO DE 2026" quebra em duas linhas e fica pior
+   do que estava — medido e visto. Fica o 4px que o nó do telefone escreve para
+   o mesmo elemento, que é a entreletra que dá o ar de versalete sem quebrar.
+   Estava 14/22 reto, do tamanho de uma legenda. */
 .atualizacoes-lote h2 {
   margin: 0;
-  font-size: 14px; line-height: 22px;   /* Label/Small */
+  font-size: 20px; line-height: 28px;   /* Label/Small-caps */
   font-weight: 400;
+  font-style: italic;
+  letter-spacing: 4px;
   color: var(--muted-foreground);
   text-transform: uppercase;
 }
@@ -36,9 +48,11 @@
   border-bottom: 1px solid var(--separator);
 }
 .atualizacoes-lote li:first-child { padding-block-start: 0; }
+/* Heading/SM 28/36 nos dois nós — era Body/Large no computador e 20/30 no
+   telefone. */
 .atualizacoes-lote h3 {
   margin: 0;
-  font-size: 24px; line-height: 32px; font-weight: 540;   /* Body/Large */
+  font-size: 28px; line-height: 36px; font-weight: 540;   /* Heading/SM */
   color: var(--foreground);
   text-wrap: pretty;
 }
@@ -53,22 +67,36 @@
 @media (max-width: 767px) {
   .atualizacoes { gap: 40px; padding: 40px 16px 80px; }
   .atualizacoes-topo h1 { font-size: 32px; line-height: 40px; }
-  .atualizacoes-lote h3 { font-size: 20px; line-height: 30px; }
+  .atualizacoes-lote h2 { line-height: 24px; }
 }
 
 /* A etiqueta do tipo. Vertical no desenho, e ela nao e decoracao: "corrigido"
  * diz que algo estava errado, que e informacao diferente de "novo". */
-.atualizacoes-lote li { flex-direction: row; gap: 24px; align-items: flex-start; }
-.atualizacoes-texto { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; min-inline-size: 0; }
+/* 40 entre a etiqueta e o texto, 24 entre título e parágrafo — `895:11060`. */
+.atualizacoes-lote li { flex-direction: row; gap: 40px; align-items: flex-start; }
+.atualizacoes-texto { display: flex; flex-direction: column; gap: 24px; align-items: flex-start; min-inline-size: 0; }
 .atualizacoes-tipo {
   flex: none;
   writing-mode: vertical-rl;
   transform: rotate(180deg);
-  padding: 12px 6px;
+  padding: 32px 24px;
   border: 1px solid var(--border);
   color: var(--muted-foreground);
-  font-size: 14px; line-height: 22px;   /* Label/Small */
+  /* Heading/XS-italic 24/32, e não uma etiqueta de 14. A palavra é do tamanho
+     de um subtítulo porque ela diz que tipo de mudança foi. */
+  font-size: 24px; line-height: 32px;
+  font-style: italic;
   text-transform: uppercase;
+}
+/* NO TELEFONE ELA NÃO GIRA. `966:27160` põe a mesma caixa deitada, com
+   `px-32 py-16`, acima do texto — girar num vão de 358 gasta a altura toda. */
+@media (max-width: 767px) {
+  .atualizacoes-tipo {
+    writing-mode: horizontal-tb;
+    transform: none;
+    padding: 16px 32px;
+  }
+  .atualizacoes-lote li { flex-direction: column; gap: 24px; }
 }
 /* Degrau de superficie para o que foi corrigido, nunca matiz: um vermelho aqui
  * gastaria o alarme que o erro de verdade vai precisar. */
