@@ -271,7 +271,7 @@ body {
 /* Mobile: o corpo cai para 18 e a entrelinha o acompanha em RAZAO, nao em
  * numero. Copiar o 30 daria 1,67, frouxo e desperdicando tela. */
 @media (max-width: 767px) {
-  body { font-size: 18px; line-height: 27px; }
+  body { font-size: 18px; line-height: 26px; }
 }
 
 /* Raio zero em acao e estrutura. Pilula e circulo sao os 5% que quebram a

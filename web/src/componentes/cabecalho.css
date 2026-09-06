@@ -279,7 +279,7 @@ a.acao.active { background: var(--muted); color: var(--foreground); }
   padding: 14px 0;
   border-block-end: 1px solid var(--border);
   color: var(--foreground);
-  font-size: 18px; line-height: 27px;
+  font-size: 18px; line-height: 26px;
   text-decoration: none;
 }
 .menu-grupo li:last-child a,

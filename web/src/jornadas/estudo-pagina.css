@@ -32,11 +32,11 @@
 }
 .estudo-pagina-nao p {
   margin: 0;
-  font-size: 18px; line-height: 27px;
+  font-size: 18px; line-height: 26px;
   color: var(--muted-foreground);
   text-wrap: pretty;
 }
-.estudo-pagina-nao a { color: var(--foreground); font-size: 18px; line-height: 27px; }
+.estudo-pagina-nao a { color: var(--foreground); font-size: 18px; line-height: 26px; }
 
 @media (max-width: 767px) {
   /* 64 acima e 16 dos lados — `966:29743` põe `py-64 px-16` no hero desta

@@ -910,7 +910,7 @@
   padding: 16px 0;
   border: 0; border-block-end: 1px solid var(--border);
   background: none; color: var(--foreground);
-  font: inherit; font-size: 18px; line-height: 27px;
+  font: inherit; font-size: 18px; line-height: 26px;
   text-align: start; cursor: pointer;
 }
 .estante-filtros button[aria-pressed="true"] { font-weight: 540; }

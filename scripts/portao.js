@@ -137,6 +137,29 @@
      espelho. Os cinco viraram 24. */
   const CORPOS = [14, 16, 18, 20, 24, 28, 32, 40, 48, 56, 64];
 
+  /* O PAR, e não só o corpo. Um portão que aceita 14 e cala sobre a entrelinha
+     deixa passar `14/20` — que não é degrau nenhum: Label/Small é 14/22. Foi
+     assim que 14/20 chegou a 66 lugares da folha sem nenhuma medida acusar, e
+     com ele 18/28 e 20/28, que também não existem.
+
+     A tabela é a dos tokens do Figma, e cada corpo tem UMA entrelinha:
+
+       label-small 14/22 · label-medium 16/24 · label-large 18/26
+       body-medium 20/30 · body-large e heading-xs 24/32 · heading-sm 28/36
+       heading-md 32/40  · heading-lg 40/48 · heading-xl 48/56
+       display-large 64/72
+
+     DUAS EXCEÇÕES MEDIDAS, e não abertas por conforto:
+       · 24/36 — o título de seção da Conta no telefone (`966:26643`), que o nó
+         escreve com corpo cru e entrelinha de heading-sm.
+       · 20/28 — `label-small-caps`, a data dos lotes em Atualizações
+         (`895:11060`), que é um token próprio com o corpo de body-medium.
+     Ambas vêm de nó, não de código. */
+  const PARES = {
+    14: [22], 16: [24], 18: [26], 20: [30, 28], 24: [32, 36],
+    28: [36], 32: [40], 40: [48], 48: [56], 56: [64], 64: [72],
+  };
+
   const hex = (c) => {
     const m = c.match(
       /rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\)/
@@ -175,6 +198,7 @@
   const corFora = [],
     contraste = [],
     corpoFora = [],
+    parFora = [],
     escondidoDeQuemOuve = [];
   let medidos = 0;
 
@@ -243,6 +267,13 @@
           Math.abs(b - corpo) < Math.abs(a - corpo) ? b : a
         )
       });
+    else {
+      /* `line-height: normal` não é medida e não é julgado: quem não declarou
+         herdou, e herdar é o padrão do sistema. */
+      const entre = Math.round(parseFloat(cs.lineHeight));
+      if (Number.isFinite(entre) && !PARES[corpo].includes(entre))
+        parFora.push({ corpo, entre, pede: PARES[corpo][0], texto: amostra });
+    }
 
     if (tinta && tinta !== 'transparente' && fundo) {
       const r = raz(tinta, fundo);
@@ -443,6 +474,7 @@
     cor_fora_do_sistema: unico(corFora, (x) => x.valor + x.papel),
     contraste_abaixo: unico(contraste, (x) => x.tinta + x.fundo + x.corpo),
     corpo_fora_da_escala: unico(corpoFora, (x) => x.corpo),
+    par_fora_dos_tokens: unico(parFora, (x) => x.corpo + '/' + x.entre),
     assets_conferidos: fontes.size,
     tinta_cravada_em_asset: tintaEmAsset,
     texto_sem_acento: unico(semAcento, (x) => x.palavra + x.trecho),
@@ -499,6 +531,7 @@
       corFora.length === 0 &&
       contraste.length === 0 &&
       corpoFora.length === 0 &&
+      parFora.length === 0 &&
       semAcento.length === 0 &&
       tintaEmAsset.every((a) => a.fora_do_sistema.length === 0),
     nota: 'Filete e traço decorativo não são julgados: a WCAG cobra 3,0 de componente de interface, não de separador.'

@@ -217,7 +217,7 @@
    * muda o que ele faz. Acrescentar 56 a escala mexeria no sistema inteiro por
    * causa de uma tela, e essa e uma decisao do Erik — fica para o pente fino. */
   .abertura h1 { font-size: 48px; line-height: 56px; }
-  .autoria { font-size: 18px; line-height: 27px; }
+  .autoria { font-size: 18px; line-height: 26px; }
   /* 16 DE RESPIRO, e nao 32. O desenho mobile usa `px-[16px]` em todas as
    * faixas, o que da uma coluna de 358px num telefone de 390 — a minha media
    * 326. Trinta e dois pixels de cada lado numa tela de 390 e desenho de
@@ -925,7 +925,7 @@
      "o corpo caiu, logo a entrelinha cai" é o encolhimento automático que já
      tinha errado na Estante, onde a folha reduziu o que o desenho mantinha.
      Conferido por dado de nó em 04/09. */
-  .abertura h1 { font-size: 56px; line-height: 72px; }
+  .abertura h1 { font-size: 56px; line-height: 64px; }
 }
 
 /* ---- Nota · cartão — nó 941:23113 -----------------------------------------

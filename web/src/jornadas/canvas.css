@@ -1308,7 +1308,7 @@
   margin-block-start: 12px;
 }
 .livro-canvas .livro-titulo {
-  font-size: 18px; line-height: 28px;
+  font-size: 18px; line-height: 26px;
   /* Duas linhas e corta: um titulo de sete linhas empurraria o cartao inteiro. */
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }

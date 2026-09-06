@@ -22,7 +22,7 @@
 .entrar-conta {
   margin: 0;
   font-size: 18px;
-  line-height: 28px;
+  line-height: 26px;
   color: var(--muted-foreground);
   text-wrap: pretty;
 }

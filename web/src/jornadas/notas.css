@@ -67,7 +67,7 @@
      sobre eles mede 3,4 — abaixo dos 4,5 de AA. */
   color: var(--foreground);
   font-size: 18px;
-  line-height: 28px;
+  line-height: 26px;
   text-wrap: pretty;
 }
 

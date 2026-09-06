@@ -160,7 +160,7 @@
   margin: 8px 0 0;
   max-inline-size: 54ch;
   font-size: 18px;
-  line-height: 28px;
+  line-height: 26px;
   color: var(--foreground);
   text-wrap: pretty;
 }
@@ -529,7 +529,7 @@
 
 @media (max-width: 767px) {
   .estudos-fios > li { padding: 24px 16px; }
-  .estudos-fio-conta { font-size: 18px; line-height: 27px; }
+  .estudos-fio-conta { font-size: 18px; line-height: 26px; }
 }
 
 .estudos-fio-acoes { display: flex; flex-wrap: wrap; gap: 12px; }

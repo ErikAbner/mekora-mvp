@@ -142,7 +142,7 @@
 }
 .ajuda-resto p {
   margin: 0;
-  font-size: 18px; line-height: 27px;
+  font-size: 18px; line-height: 26px;
   color: var(--muted-foreground);
   text-wrap: pretty;
 }

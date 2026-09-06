@@ -239,7 +239,7 @@
 .preparo-andando-nota,
 .preparo-fim-diz {
   margin: 0;
-  font-size: 18px; line-height: 27px;
+  font-size: 18px; line-height: 26px;
   color: var(--muted-foreground);
   text-wrap: pretty;
 }
@@ -321,7 +321,7 @@
   padding: 16px 20px;
   background: var(--card);
   color: var(--muted-foreground);
-  font-size: 18px; line-height: 27px;
+  font-size: 18px; line-height: 26px;
   text-wrap: pretty;
 }
 /* O "Baixar EPUB" e uma ancora com cara de botao: precisa do que so o <button>

@@ -58,11 +58,11 @@
 }
 .atualizacoes-lote p {
   margin: 0;
-  font-size: 18px; line-height: 27px;
+  font-size: 18px; line-height: 26px;
   color: var(--muted-foreground);
   text-wrap: pretty;
 }
-.atualizacoes-lote a { color: var(--foreground); font-size: 18px; line-height: 27px; }
+.atualizacoes-lote a { color: var(--foreground); font-size: 18px; line-height: 26px; }
 
 @media (max-width: 767px) {
   .atualizacoes { gap: 40px; padding: 40px 16px 80px; }
@@ -131,14 +131,14 @@
 }
 .atualizacoes-pendente p {
   margin: 0;
-  font-size: 18px; line-height: 27px;
+  font-size: 18px; line-height: 26px;
   color: var(--muted-foreground);
   text-wrap: pretty;
 }
 /* SEM ISTO O LINK NASCE AZUL. O portao pegou `#9e9eff`, que e o padrao do
  * navegador no tema escuro e nao existe na paleta — o mesmo descuido apareceria
  * em qualquer bloco novo que esquecesse a cor. */
-.atualizacoes-pendente a { color: var(--foreground); font-size: 18px; line-height: 27px; }
+.atualizacoes-pendente a { color: var(--foreground); font-size: 18px; line-height: 26px; }
 
 @media (max-width: 767px) {
   .atualizacoes-lote li { gap: 16px; }

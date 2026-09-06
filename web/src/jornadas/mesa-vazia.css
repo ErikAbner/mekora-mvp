@@ -65,5 +65,5 @@
   .entrada { padding: 0 24px 40px; }
   .vazio { flex-direction: column; gap: 32px; padding: 40px 24px 80px; }
   .vazio-texto h2 { font-size: 24px; line-height: 32px; }
-  .vazio-texto p { font-size: 18px; line-height: 27px; } /* a excecao como RAZAO */
+  .vazio-texto p { font-size: 18px; line-height: 26px; } /* a excecao como RAZAO */
 }

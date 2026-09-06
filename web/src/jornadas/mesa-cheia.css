@@ -165,7 +165,7 @@
      `966:28476` a promessa do topo cai para `heading-md` 32 e a área de soltar
      para `heading-xs` 24, enquanto esta fica em 40. */
   .preparo-topo h2 { font-size: 40px; line-height: 48px; }
-  .arquivo-nome { font-size: 18px; line-height: 27px; }
+  .arquivo-nome { font-size: 18px; line-height: 26px; }
 }
 
 /* O input nativo escondido, acionado pelo botão. `sr-only` em vez de
