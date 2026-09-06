@@ -129,10 +129,14 @@
     "966:29743": {
       "tela": "M · Estudo — página",
       "rota": "/estudo/:id",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
-      "arquivos": [],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "conferido_em": "2026-09-06",
+      "contra": "dado-do-no",
+      "arquivos": [
+        "web/src/jornadas/EstudoPagina.jsx",
+        "web/src/jornadas/estudo-pagina.css",
+        "web/src/jornadas/estudos.css"
+      ],
+      "nota": "hero com py-64 no telefone (era 32, o desktop dividido por dois) e Label/Small em 14/22 no resumo e no vazio (era 14/20, par que nao existe nos tokens). FUNCIONALIDADE AUSENTE, a mesma do 895:8260: 'Notas semelhantes', 'Podem complementar', busca dentro do estudo e 'Ver rede neural' nao existem no produto."
     },
     "966:30269": {
       "tela": "M · Conexões — sugestões",

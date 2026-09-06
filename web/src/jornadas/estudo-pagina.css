@@ -39,7 +39,9 @@
 .estudo-pagina-nao a { color: var(--foreground); font-size: 18px; line-height: 27px; }
 
 @media (max-width: 767px) {
-  .estudo-pagina { gap: 24px; padding: 32px 16px 80px; }
+  /* 64 acima e 16 dos lados — `966:29743` põe `py-64 px-16` no hero desta
+     tela no telefone; o 32 daqui era o desktop dividido por dois. */
+  .estudo-pagina { gap: 24px; padding: 64px 16px 80px; }
   .estudo-pagina-nao h1 { font-size: 24px; line-height: 32px; }
 }
 

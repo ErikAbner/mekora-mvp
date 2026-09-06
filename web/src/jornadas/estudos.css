@@ -174,7 +174,8 @@
   color: var(--muted-foreground);
 }
 
-.estudo-resumo { margin: 16px 0 0; font-size: 14px; line-height: 20px; color: var(--muted-foreground); }
+/* Label/Small é 14/22, e não 14/20 — o par 14/20 não existe nos tokens. */
+.estudo-resumo { margin: 16px 0 0; font-size: 14px; line-height: 22px; color: var(--muted-foreground); }
 
 .estudo-notas { margin: 20px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 20px; }
 .estudo-notas li { padding-block-end: 20px; border-block-end: 1px solid var(--border); }
@@ -223,7 +224,7 @@
 
 .estudo-nota-acoes a:hover, .estudo-nota-acoes button:hover { border-color: var(--foreground); }
 
-.estudo-vazio { margin: 16px 0 0; max-inline-size: 52ch; font-size: 14px; line-height: 20px; color: var(--muted-foreground); text-wrap: pretty; }
+.estudo-vazio { margin: 16px 0 0; max-inline-size: 52ch; font-size: 14px; line-height: 22px; color: var(--muted-foreground); text-wrap: pretty; }
 .estudo-acoes { margin-block-start: 20px; padding-block-start: 20px; border-block-start: 1px solid var(--border); display: flex; gap: 10px; flex-wrap: wrap; }
 
 .reunir-lista { margin: 16px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
