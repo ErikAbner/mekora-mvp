@@ -152,10 +152,20 @@ export function Ajuda() {
             <li key={t.n}>
               {/* O número é figura: o `<ol>` numeraria de novo para quem ouve, e
                   "1 1 Conectar meu Kindle" é o que sai disso. */}
+              {/* OS DOIS GRUPOS DO NÓ (`895:11255` e `966:27948`): o algarismo
+                  solto, e abaixo dele um bloco com o par título+texto e o botão.
+                  Isso não é arrumação por arrumação — os vãos do desenho são 40
+                  do algarismo até o título, 24 do título até o texto e 40 até o
+                  botão, e uma coluna só, de vão único, não sabe dizer três
+                  números diferentes. */}
               <span className="ajuda-numero" aria-hidden="true">{t.n}</span>
-              <h2>{t.titulo}</h2>
-              <p>{t.diz}</p>
-              <Link to={t.rota} className="botao primaria">{t.acao}</Link>
+              <div className="ajuda-tarefa-corpo">
+                <div className="ajuda-tarefa-dizer">
+                  <h2>{t.titulo}</h2>
+                  <p>{t.diz}</p>
+                </div>
+                <Link to={t.rota} className="botao primaria">{t.acao}</Link>
+              </div>
             </li>
           ))}
         </ul>

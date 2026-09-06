@@ -85,16 +85,15 @@
       "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
     },
     "966:27747": {
-      "tela": "M · Ajuda e recursos",
+      "tela": "M · Ajuda — início",
       "rota": "/ajuda",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-06",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/ajuda.jsx",
-        "web/src/jornadas/ajuda.css",
-        "web/src/jornadas/Ajuda.jsx"
+        "web/src/jornadas/Ajuda.jsx",
+        "web/src/jornadas/ajuda.css"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "cartao de tarefa refeito contra os dois nos: algarismo em display-large-capitular 64/72 italico -1,6px (era 40/48 reto, e 32/40 no telefone), titulo heading-sm 28/36, texto body-medium 20/30, botao de largura cheia. Vaos 40/24/40, que precisaram dos dois grupos do no. Recheio 40 no computador e 24 no telefone; vao entre cartoes 24."
     },
     "966:28476": {
       "tela": "M · Mesa",
@@ -401,13 +400,13 @@
     "895:11193": {
       "tela": "D · Ajuda — início",
       "rota": "/ajuda",
-      "conferido_em": "2026-09-05",
+      "conferido_em": "2026-09-06",
       "contra": "dado-do-no",
       "arquivos": [
         "web/src/jornadas/Ajuda.jsx",
         "web/src/jornadas/ajuda.css"
       ],
-      "nota": "escala corrigida; chevron da pergunta em aberto"
+      "nota": "escala corrigida; chevron da pergunta em aberto | 06/09: o cartao de tarefa estava com recheio 32, vao 12 e o algarismo em 40/48 reto — o no pede 40, 40 e o capitular italico de 64/72. Corrigido junto com o do telefone."
     },
     "895:9348": {
       "tela": "D · Mesa — cheia",

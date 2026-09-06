@@ -38,27 +38,43 @@
   display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px;
   margin: 0; padding: 0; list-style: none;
 }
+/* O CARTÃO DE TAREFA, com os números dos dois nós (`895:11193` e `966:27747`):
+   recheio 40 no computador e 24 no telefone, e 40 entre o algarismo e o bloco
+   de baixo. O produto tinha 32 de recheio e 12 de vão, e o algarismo — que no
+   desenho é a peça grande da página — vinha menor que o título de uma seção. */
 .ajuda-tarefas li {
-  display: flex; flex-direction: column; gap: 12px; align-items: flex-start;
-  padding: 32px;
+  display: flex; flex-direction: column; gap: 40px; align-items: flex-start;
+  padding: 40px;
   border: 1px solid var(--border);
   background: var(--background);
 }
 /* O numero e capitular, como nos passos da Apresentacao: e o mesmo papel — a
  * contagem que nao disputa com o titulo. */
+.ajuda-tarefa-corpo {
+  display: flex; flex-direction: column; gap: 40px; align-items: flex-start;
+  inline-size: 100%;
+}
+/* Nos dois nós o botão do cartão é `w-full` — o vão de 40 acima dele e a barra
+   inteira embaixo é o que dá ao cartão a cara de passo, e não de aviso com um
+   link no canto. */
+.ajuda-tarefa-dizer { display: flex; flex-direction: column; gap: 24px; }
+.ajuda-tarefa-corpo > .botao { align-self: stretch; }
+
 .ajuda-numero {
-  font-size: 40px; line-height: 48px;   /* Heading/LG */
+  font-size: 64px; line-height: 72px;   /* Display/Large/Capitular */
+  font-style: italic;
+  letter-spacing: -1.6px;
   color: var(--muted-foreground);
 }
 .ajuda-tarefas h2 {
   margin: 0;
-  font-size: 24px; line-height: 32px; font-weight: 540;   /* Body/Large */
+  font-size: 28px; line-height: 36px; font-weight: 540;   /* Heading/SM */
   color: var(--foreground);
   text-wrap: pretty;
 }
 .ajuda-tarefas p {
   margin: 0;
-  font-size: 18px; line-height: 27px;
+  font-size: 20px; line-height: 30px;   /* Body/Medium, nos dois nós */
   color: var(--muted-foreground);
   text-wrap: pretty;
 }
@@ -147,11 +163,10 @@
 @media (max-width: 767px) {
   .ajuda { gap: 40px; padding: 40px 16px 80px; }
   .ajuda-topo h1 { font-size: 32px; line-height: 40px; text-align: start; }
-  .ajuda-tarefas { grid-template-columns: minmax(0, 1fr); gap: 16px; }
-  .ajuda-tarefas li { padding: 24px 20px; }
-  .ajuda-numero { font-size: 32px; line-height: 40px; }
-  .ajuda-tarefas h2 { font-size: 20px; line-height: 30px; }
-  .ajuda-tarefas .botao { align-self: stretch; }
+  .ajuda-tarefas { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  /* O ALGARISMO NÃO ENCOLHE: `966:27747` repete 64/72 no telefone. O que muda
+     é o recheio do cartão, 24 em vez de 40, e o vão entre cartões, 24. */
+  .ajuda-tarefas li { padding: 24px; }
 }
 
 /* A BUSCA DA AJUDA — no 895:11193. Larga, sob o titulo, centrada com ele. */
