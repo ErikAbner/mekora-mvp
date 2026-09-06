@@ -253,9 +253,10 @@
 .progresso-feito { block-size: 100%; background: var(--foreground); }
 
 .ficha-notas { display: flex; flex-direction: column; gap: 16px; }
+/* Body/Large é peso 500 no token, e `917:8412` usa esse peso na contagem. */
 .ficha-notas h3 {
   margin: 0;
-  font-size: 24px; line-height: 32px; font-weight: 400;
+  font-size: 24px; line-height: 32px; font-weight: 500;
   color: var(--muted-foreground);
 }
 /* TINTA CHEIA SOBRE O DESTAQUE, e nao a secundaria.
@@ -480,10 +481,11 @@
 
    O `.ficha-erro` foi junto: ele só existia para a mensagem do servidor no
    envio, e classe sem uso é a próxima a ser reaproveitada errado. */
+/* Label/Small é 14/22. */
 .ficha-nota {
   margin: 0;
   font-size: 14px;
-  line-height: 20px;
+  line-height: 22px;
   text-wrap: pretty;
   color: var(--muted-foreground);
 }

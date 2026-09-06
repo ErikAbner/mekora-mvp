@@ -339,10 +339,13 @@
     "895:7506": {
       "tela": "D · Livro — ficha / estante 3D",
       "rota": "/estante (vista 3D)",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
-      "arquivos": [],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "conferido_em": "2026-09-06",
+      "contra": "dado-do-no",
+      "arquivos": [
+        "web/src/jornadas/Estante.jsx",
+        "web/src/jornadas/estante.css"
+      ],
+      "nota": "a vista 3D existe e bate: pilha, trilha de lombadas a esquerda e ficha de 476 a direita com o cartao em p-40 gap-32, titulo heading-md 32/40, meta body-medium 20/30, citacao 20/30 com filete a esquerda e botoes de 58 em largura cheia com 16 entre eles. Corrigidos: contagem de notas em peso 500 (Body/Large e 500 no token) e o vazio em Label/Small 14/22 (era 14/20). DIFERENCA DE LARGURA ASSUMIDA: o no e desenhado a 1920 (293+128+831+128+476+64=1920) e o vao de 128 entre colunas nao cabe a 1440 — o produto usa 48 e as colunas crescem com a tela. A ficha fica em 476 nas duas."
     },
     "895:6938": {
       "tela": "D · Canvas",
