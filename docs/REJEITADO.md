@@ -276,16 +276,35 @@ fixa e a largura segue a proporção de cada desenho.
 **Medido em 04/09:** Nao ha popover nem hot spot nas telas de conta.
 **Prova:** sem-prova
 
-### R-31 · 2026-09-01 · aberto
+### R-31 · 2026-09-01 · fechado
 **Erik:** "Na tela de dados de uso você modificou tudo — se não havia outra forma, siga o Figma"
 **Onde:** /conta/privacidade
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r32`
 
-### R-32 · 2026-09-01 · aberto
+**Fechado em 06/09, junto com o R-32.** "Siga o Figma" virou verificável: a
+tela foi conferida contra os dois nós — `895:10909` no computador e `966:26643`
+no telefone — e o quadro registra `dado-do-no`, não mais `captura`.
+
+O que estava fora, e é o que a prova `r32` guarda: o item da lista em 16/24 e a
+explicação em 14/20, contra os `body-medium 20/30` e `body-small 16/24` que os
+dois nós escrevem — um passo abaixo nos dois, nas duas larguras. O título de
+seção no telefone estava 24/32 contra os 24/36 do nó.
+
+A conferência anterior desta tela olhou o interruptor da medição e a borda da
+seção sem volta e passou por cima da escala. É o tipo de verde que este
+repositório já paga caro: a medida passou porque mediu outra coisa.
+
+### R-32 · 2026-09-01 · fechado
 **Erik:** "Tela de privacidade completamente quebrada"
 **Onde:** /conta/privacidade
 **Medido em 04/09:** Medido: cinco blocos `.conta-secao`, todos com 863px, nenhum bloco vazio com altura. Nao achei quebra estrutural — o que responde e o quadro.
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r32`
+
+**Fechado em 06/09.** A medida de 04/09 já dizia que não havia quebra
+estrutural — cinco blocos de 863px, nenhum vazio — e que "o que responde é o
+quadro". O quadro respondeu: `895:10909` e `966:26643` conferidos contra o dado
+do nó em 06/09, com a escala dos itens corrigida. Ver o R-31, que é a mesma
+tela pela outra frase.
 
 ### R-33 · 2026-09-01 · aberto
 **Erik:** "Espaçamento bugado, não segue o grid do Figma, navegação errada"
@@ -337,10 +356,19 @@ fixa e a largura segue a proporção de cada desenho.
 
 ## 02/09 — o que ele achou andando pelo produto
 
-### R-39 · 2026-09-02 · aberto
+### R-39 · 2026-09-02 · fechado
 **Erik:** "padding bugado" (nas seções)
 **Onde:** /conta e filhas
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r39`
+
+**Fechado em 06/09.** O recheio das seções da conta era meu, não do nó: 40 em
+cima, 24 dos lados e 80 embaixo, e com isso a coluna media 310 numa tela de 390.
+`966:25321` pede 56 / 16 / 64, o que dá os 326 que o nó desenha.
+
+Junto veio o recheio das folhas, que tinha o mesmo problema por outro caminho:
+32 por 40 nas estreitas contra os 32 em volta que dois nós escrevem
+(`895:12444`, `973:32415`), e a folha ampla — Configurações de arquivo — com o
+mesmo número das estreitas, quando `895:12217` pede 40 e 56.
 
 ### R-40 · 2026-09-02 · fechado
 **Erik:** "falta os desenhos das configurações"

@@ -387,6 +387,67 @@ const PROVAS = {
     },
   },
 
+  'r32': {
+    erik: '"Tela de privacidade completamente quebrada" · "Na tela de dados de uso voce modificou tudo — se nao havia outra forma, siga o Figma"',
+    /* O VENENO DEVOLVE A ESCALA ANTIGA: 16/24 no item e 14/20 na explicacao,
+       que e o que a tela tinha antes de ser conferida contra o no. Nao e
+       "quebrada" no sentido de layout partido — os dois nos escrevem
+       body-medium 20/30 e body-small 16/24, e o produto escrevia um passo
+       abaixo nos dois, nas duas larguras. */
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.guardado-conta{font-size:16px !important;line-height:24px !important}'
+                           + '.guardado-explicacao{font-size:14px !important;line-height:20px !important}';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/conta/privacidade', `
+        const px = (e, p) => e ? Math.round(parseFloat(getComputedStyle(e)[p])) : 0;
+        const item = document.querySelector('.guardado-conta');
+        const sobre = document.querySelector('.guardado-explicacao');
+        const h2 = document.querySelector('.conta-secao h2');
+        return {
+          temPainel: !!document.querySelector('.conta-painel'),
+          secoes: document.querySelectorAll('.conta-secao').length,
+          item: px(item, 'fontSize') + '/' + px(item, 'lineHeight'),
+          sobre: px(sobre, 'fontSize') + '/' + px(sobre, 'lineHeight'),
+          titulo: px(h2, 'fontSize') + '/' + px(h2, 'lineHeight'),
+        };`, veneno);
+      if (!d.temPainel) throw new NaoPodeMedir('a tela de privacidade nao montou');
+      if (d.secoes < 3) return `a tela abriu com ${d.secoes} secao(oes) — o no 895:10909 tem tres alem das do produto`;
+      if (d.item !== '20/30') return `o item da lista esta em ${d.item}, e os dois nos escrevem Body/Medium 20/30`;
+      if (d.sobre !== '16/24') return `a explicacao esta em ${d.sobre}, e os dois nos escrevem Body/Small 16/24`;
+      if (d.titulo !== '28/36') return `o titulo de secao esta em ${d.titulo}, e o no escreve Heading/SM 28/36`;
+      return null;
+    },
+  },
+
+  'r39': {
+    erik: '"padding bugado" (nas secoes)',
+    /* O VENENO REFAZ O RECHEIO ANTIGO do card da conta no telefone: 40 em cima,
+       24 dos lados, 80 embaixo — numeros meus, nao do no. Com eles a coluna
+       media 310 numa tela de 390; o `966:25321` pede 326. */
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.conta{padding:40px 24px 80px !important}';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/conta', `
+        const px = (e, p) => e ? Math.round(parseFloat(getComputedStyle(e)[p])) : 0;
+        const conta = document.querySelector('.conta');
+        const painel = document.querySelector('.conta-painel');
+        return {
+          temPainel: !!painel,
+          cima: px(conta, 'paddingTop'),
+          lado: px(conta, 'paddingLeft'),
+          baixo: px(conta, 'paddingBottom'),
+          coluna: painel ? Math.round(painel.getBoundingClientRect().width) : 0,
+        };`, veneno, { largura: 390, altura: 844 });
+      if (!d.temPainel) throw new NaoPodeMedir('a tela de conta nao montou');
+      const tem = `${d.cima}/${d.lado}/${d.baixo}`;
+      if (tem !== '56/16/64') return `o card da conta no telefone esta com ${tem}, e o no 966:25321 pede 56/16/64`;
+      if (d.coluna !== 326) return `a coluna mede ${d.coluna} no telefone, e o no pede 326`;
+      return null;
+    },
+  },
+
   'r53': {
     erik: '(nao e dele — a tela de Preparo pronta era inalcancavel por navegacao)',
     /* O VENENO REFAZ O ESTADO ANTERIOR: a tela de pronto some e a de analise
