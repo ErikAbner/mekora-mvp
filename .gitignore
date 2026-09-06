@@ -87,3 +87,6 @@ web/dist/
 # se refazem a cada leitura, e o que vale do desenho vira código ou vira nota
 # em docs/TELAS-FIGMA.md.
 .figma-tmp/
+/* Despejo do exportador do Figma: SVG por vetor, dezenas de megabytes por nó.
+   O que vale fica em `web/publico/icones/`, limpo do retângulo de prancheta. */
+.figma-assets/
