@@ -422,26 +422,12 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
 
         {erro && <p className="estudos-erro" role="alert">{erro}</p>}
 
-        {/* O QUE FICOU PELA METADE — o cartão cinza do desenho. Ele não é um
-            aviso: é o lembrete de que escrever e arquivar são gestos
-            diferentes, e que o segundo é sempre da pessoa. */}
-        {escritasESoltas.length > 0 && (
-          <aside className="estudos-metade" id="estudos-metade">
-            <p className="estudos-metade-marca">
-              O que ficou pela metade <span className="dado">{escritasESoltas.length}</span>
-            </p>
-            <h2>
-              {escritasESoltas.length === 1
-                ? "1 anotação escrita e ainda não levada"
-                : `${escritasESoltas.length} anotações escritas e ainda não levadas`}
-            </h2>
-            <p>
-              Elas estão no livro. Levar é um gesto seu, e é o que faz esta área
-              valer.
-            </p>
-          </aside>
-        )}
-
+        {/* A ORDEM É A DOS DOIS NÓS: os recortes vêm ANTES do cartão do que
+            ficou pela metade, e não depois. `900:56142` e `966:30771` escrevem
+            os dois na mesma ordem — "Todas as notas / Por pergunta / Escrever
+            uma nota" e só então "O que ficou pela metade". O produto tinha o
+            cartão colado no cabeçalho, o que fazia o lembrete parecer o assunto
+            da página em vez do filtro do que se vê. */}
         {/* A contagem ao lado de cada recorte vem da MESMA lista que ele filtra:
             um recorte vazio se anuncia antes de ser clicado, em vez de levar a
             uma tela em branco sem explicação. */}
@@ -490,6 +476,26 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
           <p className="estudos-vazio">
             Nenhum estudo neste recorte. Os outros continuam nos seus.
           </p>
+        )}
+
+        {/* O QUE FICOU PELA METADE — o cartão cinza do desenho. Ele não é um
+            aviso: é o lembrete de que escrever e arquivar são gestos
+            diferentes, e que o segundo é sempre da pessoa. */}
+        {escritasESoltas.length > 0 && (
+          <aside className="estudos-metade" id="estudos-metade">
+            <p className="estudos-metade-marca">
+              O que ficou pela metade <span className="dado">{escritasESoltas.length}</span>
+            </p>
+            <h2>
+              {escritasESoltas.length === 1
+                ? "1 anotação escrita e ainda não levada"
+                : `${escritasESoltas.length} anotações escritas e ainda não levadas`}
+            </h2>
+            <p>
+              Elas estão no livro. Levar é um gesto seu, e é o que faz esta área
+              valer.
+            </p>
+          </aside>
         )}
 
         {/* O ALTERNADOR LISTA / LEITURA — nós 900:56142 e 895:8849. Mesma forma

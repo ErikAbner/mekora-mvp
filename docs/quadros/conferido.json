@@ -153,26 +153,24 @@
     "966:30771": {
       "tela": "M · Estudos — lista",
       "rota": "/estudos",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-06",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/estudos.jsx",
         "web/src/jornadas/estudos.css",
         "web/src/jornadas/Estudos.jsx"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "h1 heading-md 32/40 sem entreletra no telefone, contra heading-xl 48/56 -0.96px no computador (900:56142); frase em body-medium 20/30 nos dois. Respiro vertical NAO encolhe abaixo de 1024: o no do telefone repete pt-128 e gap-128. Ordem das faixas corrigida nos dois tamanhos: recortes antes do cartao do que ficou pela metade. .estudos-fileira-vistas media 397 na coluna de 358 e agora quebra linha."
     },
     "966:31095": {
       "tela": "M · Estudos — lista (variação)",
       "rota": "/estudos",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-06",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/estudos.jsx",
         "web/src/jornadas/estudos.css",
         "web/src/jornadas/Estudos.jsx"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "mesma tela e mesmos numeros do 966:30771, conferidos juntos; a variacao muda o conteudo mostrado (capa ao lado do trecho, ja no .estudo-nota-corpo), nao a forma."
     },
     "966:31504": {
       "tela": "M · Preparo — o que encontrei",

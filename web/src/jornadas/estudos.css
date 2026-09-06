@@ -34,11 +34,16 @@
 
 @media (max-width: 1023px) {
   /* A trilha some sozinha abaixo de 1024, pela regra dela. A fileira volta a
-   * ser uma coluna, e o recheio encolhe: 128px de respiro num telefone é meia
-   * tela antes de qualquer coisa. */
+   * ser uma coluna.
+   *
+   * O RESPIRO NÃO ENCOLHE. Esta regra encolhia: 128 virava 32 acima e 64 entre
+   * as faixas, com o argumento de que meia tela de ar num telefone é desperdício.
+   * O argumento era meu. `966:30771` é o mesmo desenho no telefone e repete
+   * `pt-128` e `gap-128`, iguais aos do `900:56142` no computador. A página
+   * abre com ar nos dois, e é assim que ela abre. */
   .estudos-fileira-de-baixo { display: block; }
-  .estudos { gap: 64px; padding: 32px 16px 64px; }
-  .estudos-de-baixo { gap: 64px; }
+  .estudos { padding-inline: 16px; }
+  .estudos-de-baixo { gap: 128px; }
 }
 
 /* O TOPO E CENTRADO, e nao uma barra com o botao puxado para a direita.
@@ -48,15 +53,24 @@
  * Com o botao colado no titulo, "Comecar um estudo" pesa igual ao nome da area
  * toda vez que alguem abre a pagina — e comecar um estudo se faz de vez em
  * quando. */
+/* Os dois vãos do nó: 48 entre o bloco do título e a busca, 32 entre o título
+   e a frase. Parecem largos escritos, e não são vistos: `text-box-trim` já
+   comeu a folga de fonte que o desenho não conta. O produto tinha 24 e 6, que
+   é o vão de antes da aparagem. */
 .estudos-topo {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: 48px;
   text-align: center;
   padding-block-end: 8px;
 }
-.estudos-topo > div { max-inline-size: 56ch; }
+.estudos-topo > div {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  max-inline-size: 56ch;
+}
 .estudos-topo .campo { inline-size: 100%; max-inline-size: 560px; }
 
 /* A fileira de controle: recortes a esquerda, acao na ponta. */
@@ -65,13 +79,24 @@
   gap: 24px; flex-wrap: wrap;
 }
 
-.estudos h1 { margin: 0 0 6px; font-size: 32px; line-height: 40px; letter-spacing: -0.01em; color: var(--foreground); }
+/* O NÓ DECIDE A ESCALA, e ele decide diferente por largura. `900:56142` põe o
+   título em heading-xl 48/56 com -0.96px de entreletra; `966:30771`, o mesmo
+   título no telefone, em heading-md 32/40 e sem entreletra. O produto usava
+   32/40 nas duas — certo no telefone por acaso, um passo e meio abaixo no
+   computador. */
+.estudos h1 {
+  margin: 0;
+  font-size: 48px;
+  line-height: 56px;
+  letter-spacing: -0.96px;
+  color: var(--foreground);
+}
 
 .estudos-sobre {
   margin: 0;
   max-inline-size: 52ch;
-  font-size: 16px;
-  line-height: 24px;
+  font-size: 20px;
+  line-height: 30px;
   color: var(--muted-foreground);
   text-wrap: pretty;
 }
@@ -273,6 +298,10 @@
 @media (max-width: 767px) {
   .estudos-recortes { align-self: stretch; }
   .estudos-recortes button { flex: 1 1 auto; padding: 12px 16px; }
+
+  /* `966:30771` baixa o título para heading-md e tira a entreletra. O respiro
+     vertical, esse não muda — ver a regra de 1023. */
+  .estudos h1 { font-size: 32px; line-height: 40px; letter-spacing: normal; }
 }
 
 /* A capa ao lado do trecho — nó 966:31095. */
@@ -373,7 +402,13 @@
 .estudos-fileira-vistas {
   display: flex; align-items: center; gap: 56px;
   align-self: flex-start;
+  /* `flex-wrap` não é enfeite: com 56 de vão, a caixa de Lista/Leitura e o
+     botão de criar medem 397 dentro da coluna de 358 do telefone, e a linha
+     saía pela borda. Medido a 390. */
+  flex-wrap: wrap;
+  max-inline-size: 100%;
 }
+@media (max-width: 767px) { .estudos-fileira-vistas { gap: 24px; } }
 
 .estudos-vistas {
   display: flex; align-self: flex-start; inline-size: fit-content;
