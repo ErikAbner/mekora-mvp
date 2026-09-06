@@ -43,7 +43,9 @@
 
 .ak h2 {
   margin: 0;
-  font-size: 40px; line-height: 48px; font-weight: 540;   /* Heading/LG */
+  /* Heading/LG é peso 600 no token, e é o peso que o `941:23103` escreve — o
+     mesmo que a tela de criar conta já usa no h1 dela. */
+  font-size: 40px; line-height: 48px; font-weight: 600;   /* Heading/LG */
   letter-spacing: -1.5%;
   color: var(--foreground);
   text-wrap: pretty;
@@ -107,9 +109,11 @@
   padding-inline-start: 8px;
 }
 
+/* 32 EM VOLTA E 32 DENTRO — `895:11805`. A caixa do endereço é o que a pessoa
+   veio copiar; com 24 ela ficava do tamanho de um aviso. */
 .ak-remetente {
-  display: flex; flex-direction: column; gap: 24px; align-items: stretch;
-  padding: 24px;
+  display: flex; flex-direction: column; gap: 32px; align-items: stretch;
+  padding: 32px;
   border: 1px solid var(--border);
 }
 .ak-endereco {

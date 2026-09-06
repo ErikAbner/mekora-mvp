@@ -205,16 +205,15 @@
       "nota": "folha com 32 em volta (era 24), titulo Body/Large 24/32 peso 500 (era Heading/SM 28/36), botao de fechar 56 (era 44), rotulo do grupo Body/Medium 20/30 (era 16/24), 24 entre rotulo e amostras e entre amostras (eram 16 e 12), amostra com p-16 e 16 dentro (era 16x8 e 8). O tema e a unica fileira que quebra: o no desenha dois e o produto tem quatro, e quatro numa fileira de 319 dao 29px de conteudo por amostra."
     },
     "941:23103": {
-      "tela": "Kindle · assistente",
+      "tela": "Kindle · assistente (passo 3)",
       "rota": "/conta/kindle",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-06",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/conta.jsx",
-        "web/src/jornadas/conta.css",
-        "web/src/jornadas/Conta.jsx"
+        "web/src/jornadas/AssistenteKindle.jsx",
+        "web/src/jornadas/assistente-kindle.css"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "754 com p-40, marca Label/Large 18/26, fechar 56, 'Passo 3 de 4' Body/Medium 20/30, barra p-6 gap-6 com tiras de 24, titulo Heading/LG 40/48, fala com filete e pl-32 em Body/Large 24/32, endereco 24/32, botao de largura cheia, caminho com caixas px-32 py-24 e 16 entre elas — tudo isso ja batia. Corrigidos: peso do titulo (540 para 600, que e o token e o que a tela de criar conta ja usa) e a caixa do endereco (24 para 32 em volta e dentro). FICA POR REFINAR: o no aninha os vaos (56 entre conteudo e acoes, 40 e 48 dentro) e o produto usa 40 numa coluna so. Medido com um setup que abre o assistente, preenche o endereco com um @kindle.com unico e avanca ate o passo 3 — com endereco repetido o passo 2 nao passa."
     },
     "941:23106": {
       "tela": "Criar conta",
