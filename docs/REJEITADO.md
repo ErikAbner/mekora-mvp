@@ -205,10 +205,31 @@ Não deu para medir a sobreposição na tela: **o acervo semeado traz uma seçã
 **Onde:** /leitura/:id
 **Prova:** sem-prova
 
-### R-24 · 2026-09-01 · aberto
+### R-24 · 2026-09-01 · fechado
 **Erik:** "Menu errado: itens abrem do lado contrário ao do ícone; dropdowns e modais abrem errado, com largura errada, ícones apertados"
 **Onde:** /leitura/:id
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r24`
+
+**Fechado em 06/09, e uma das três frases não reproduzia mais.**
+
+*"Itens abrem do lado contrário ao do ícone"* — medido nos cinco painéis do
+leitor, e os cinco abrem do lado do botão que os chama: Índice, Notas e
+Marcadores à esquerda (botões em x=21, 85 e 149), Aparência e Buscar à direita
+(x=1301 e 1363). Alguém já tinha consertado isso antes desta rodada; a medida
+fica aqui para não voltar.
+
+*"Largura errada"* — essa reproduzia. Cinco painéis abertos pelo mesmo tipo de
+botão da mesma barra tinham **três larguras**: Índice, Marcadores e Buscar em
+464, o Caderno em 380 e a Aparência em 384. O `941:23110` põe os painéis do
+leitor em 464. Agora são cinco em 464.
+
+*"Ícones apertados"* — os botões da barra são 56×56 com ícone de 24, que é o
+`938:22282` do sistema: 56 com `p-8` em volta de um glifo de 23,867. Não
+reproduz.
+
+A prova `r24` abre os três painéis principais, um por vez, e cobra as duas
+coisas em cada um: que o lado do painel seja o lado do botão, e que a largura
+seja 464.
 
 ### R-25 · 2026-09-01 · aberto
 **Erik:** "Notas e destaques você coloriu demais"

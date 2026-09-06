@@ -338,6 +338,57 @@ const PROVAS = {
     },
   },
 
+  'r24': {
+    erik: '"Menu errado: itens abrem do lado contrario ao do icone; dropdowns e modais abrem errado, com largura errada, icones apertados"',
+    /* O VENENO REFAZ AS DUAS LARGURAS SOLTAS: o caderno em 380 e a aparencia em
+       384, enquanto os tres irmaos ficavam em 464. Cinco paineis abertos pelo
+       mesmo tipo de botao da mesma barra, com tres larguras. */
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.aparencia{inline-size:384px !important}.caderno{inline-size:380px !important}';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/leitura/{LIVRO}', `
+        const esperar2 = ms => new Promise(r3 => setTimeout(r3, ms));
+        const clicar = async (rotulo) => {
+          const b = [...document.querySelectorAll('button')]
+            .find(e => (e.getAttribute('aria-label') || '').startsWith(rotulo));
+          if (!b) return null;
+          b.click();
+          await esperar2(500);
+          const p = document.querySelector('.indice, .caderno, .aparencia');
+          if (!p) return null;
+          const r = p.getBoundingClientRect();
+          const rb = b.getBoundingClientRect();
+          const fora = { larg: Math.round(r.width),
+                         ladoDoPainel: r.x < innerWidth / 2 ? 'esquerda' : 'direita',
+                         ladoDoBotao: rb.x < innerWidth / 2 ? 'esquerda' : 'direita' };
+          const x = [...document.querySelectorAll('button')]
+            .find(e => /Fechar/i.test(e.getAttribute('aria-label') || ''));
+          if (x) { x.click(); await esperar2(400); }
+          return fora;
+        };
+        const fora = {};
+        for (const nome of ['Indice do livro', 'Notas', 'Aparencia da leitura']) fora[nome] = null;
+        fora.indice = await clicar('Índice do livro');
+        fora.notas = await clicar('Notas');
+        fora.aparencia = await clicar('Aparência da leitura');
+        return fora;`, veneno);
+      const nomes = ['indice', 'notas', 'aparencia'];
+      if (nomes.some((n) => !d[n])) {
+        throw new NaoPodeMedir('nao consegui abrir os tres paineis da leitura');
+      }
+      for (const n of nomes) {
+        if (d[n].ladoDoPainel !== d[n].ladoDoBotao) {
+          return `o painel "${n}" abre a ${d[n].ladoDoPainel} e o botao dele esta a ${d[n].ladoDoBotao}`;
+        }
+        if (d[n].larg !== 464) {
+          return `o painel "${n}" mede ${d[n].larg}, e o no 941:23110 poe os paineis do leitor em 464`;
+        }
+      }
+      return null;
+    },
+  },
+
   'r29': {
     erik: '"Ha imagens ilustrativas nas secoes, cuidadosamente posicionadas para ficar em cima do container ... e ainda assim voce fez errado"',
     /* O VENENO ESCONDE O DESENHO, que e o estado de 04/09: a tela nao tinha

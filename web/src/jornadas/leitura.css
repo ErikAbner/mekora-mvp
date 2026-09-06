@@ -482,7 +482,7 @@
   inset-block: 0;
   inset-inline-start: 0;
   z-index: 15;
-  inline-size: min(380px, 92vw);
+  inline-size: min(464px, 92vw);   /* `941:23110`, como os irmãos */
   padding: 24px;
   overflow-y: auto;
   background: var(--card, var(--background));
@@ -661,7 +661,10 @@
  * ser detalhe: a gaveta sai de onde o dedo tocou. */
 .aparencia {
   position: fixed; inset-block: 0; inset-inline-end: 0;
-  inline-size: min(384px, 100%);
+  /* 464, como os outros painéis do leitor — `941:23110`. Ele estava em 384 e
+     o índice em 464: dois painéis irmãos, abertos pelo mesmo tipo de botão da
+     mesma barra, com larguras diferentes. É a "largura errada" do R-24. */
+  inline-size: min(464px, 100%);
   z-index: 40;
   display: flex; flex-direction: column; gap: 32px;
   /* 32 EM VOLTA — `973:32415` e `973:32420` põem `p-32` no cabeçalho e
