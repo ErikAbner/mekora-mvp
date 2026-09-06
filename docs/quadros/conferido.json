@@ -118,13 +118,13 @@
     "966:29395": {
       "tela": "M · Leitura",
       "rota": "/leitura/:id",
-      "conferido_em": "2026-09-05",
+      "conferido_em": "2026-09-06",
       "contra": "dado-do-no",
       "arquivos": [
         "web/src/jornadas/Leitura.jsx",
         "web/src/jornadas/leitura.css"
       ],
-      "nota": "titulo 56/72, recuo 32, epigrafe py-128"
+      "nota": "titulo 56/72, recuo 32, epigrafe py-128 | 06/09: a folha de aparencia mudou (recheio, escala e vaos, contra 973:32414). As classes `.aparencia*` so aparecem naquele <aside>; nada desta tela foi tocado."
     },
     "966:29743": {
       "tela": "M · Estudo — página",
@@ -252,35 +252,35 @@
     "941:23110": {
       "tela": "Leitura · aparência",
       "rota": "painel da leitura",
-      "conferido_em": "2026-09-05",
+      "conferido_em": "2026-09-06",
       "contra": "dado-do-no",
       "arquivos": [
         "web/src/jornadas/Leitura.jsx",
         "web/src/jornadas/leitura.css"
       ],
-      "nota": "abre a 384 a direita"
+      "nota": "abre a 384 a direita | 06/09: e o MESMO painel do 973:32414, conferido contra o dado do no junto com ele — recheio 32, titulo Body/Large 24/32, fechar 56, rotulo 20/30, vaos 24."
     },
     "941:23111": {
       "tela": "Leitura · notas e destaques",
       "rota": "painel da leitura",
-      "conferido_em": "2026-09-05",
+      "conferido_em": "2026-09-06",
       "contra": "dado-do-no",
       "arquivos": [
         "web/src/jornadas/Leitura.jsx",
         "web/src/jornadas/leitura.css"
       ],
-      "nota": "abre a 380 a esquerda"
+      "nota": "abre a 380 a esquerda | 06/09: a folha de aparencia mudou (recheio, escala e vaos, contra 973:32414). As classes `.aparencia*` so aparecem naquele <aside>; nada desta tela foi tocado."
     },
     "941:23112": {
       "tela": "Leitura · índice",
       "rota": "painel da leitura",
-      "conferido_em": "2026-09-05",
+      "conferido_em": "2026-09-06",
       "contra": "dado-do-no",
       "arquivos": [
         "web/src/jornadas/Leitura.jsx",
         "web/src/jornadas/leitura.css"
       ],
-      "nota": "abre a 464 com o marcador de onde se esta"
+      "nota": "abre a 464 com o marcador de onde se esta | 06/09: a folha de aparencia mudou (recheio, escala e vaos, contra 973:32414). As classes `.aparencia*` so aparecem naquele <aside>; nada desta tela foi tocado."
     },
     "941:23113": {
       "tela": "Nota · cartão",
@@ -465,13 +465,13 @@
     "895:10472": {
       "tela": "D · Leitura",
       "rota": "/leitura/:id",
-      "conferido_em": "2026-09-05",
+      "conferido_em": "2026-09-06",
       "contra": "dado-do-no",
       "arquivos": [
         "web/src/jornadas/Leitura.jsx",
         "web/src/jornadas/leitura.css"
       ],
-      "nota": "epigrafe consertada; cor da prosa e rodape registrados em docs/TELAS-FIGMA.md"
+      "nota": "epigrafe consertada; cor da prosa e rodape registrados em docs/TELAS-FIGMA.md | 06/09: a folha de aparencia mudou (recheio, escala e vaos, contra 973:32414). As classes `.aparencia*` so aparecem naquele <aside>; nada desta tela foi tocado."
     },
     "895:8260": {
       "tela": "D · Estudo — página",
