@@ -78,6 +78,14 @@
   padding: 0 32px 32px;
 }
 
+/* A FOLHA AMPLA TEM OUTRO RECHEIO, e isso vem do nó, não de gosto:
+   `895:12217` (Configurações de arquivo, 1082 de largura) põe `p-40` no
+   cabeçalho, `px-40 pb-56` no corpo e 56 entre os blocos; as folhas estreitas
+   (`895:12444`, `973:32415`) põem 32. Painel maior, respiro maior. */
+.folha.ampla .folha-topo { padding: 40px; }
+.folha.ampla .folha-conteudo { gap: 56px; padding: 0 40px 56px; }
+.folha.ampla .folha-acoes { padding: 0 40px 56px; }
+
 /* `flex` só quando aberta: `<dialog>` fechado é `display: none`, e declarar o
  * display fora do `[open]` deixaria a folha visível o tempo todo. */
 .folha[open] { display: flex; }

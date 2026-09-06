@@ -305,10 +305,14 @@
     "941:23118": {
       "tela": "Arquivo · configurações",
       "rota": "ficha do livro",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
-      "arquivos": [],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "conferido_em": "2026-09-06",
+      "contra": "dado-do-no",
+      "arquivos": [
+        "web/src/componentes/ConfiguracoesArquivo.jsx",
+        "web/src/componentes/configuracoes-arquivo.css",
+        "web/src/componentes/folha.css"
+      ],
+      "nota": "as cinco linhas ja batiam: 1082 de largura, linha p-40 com 40 entre as partes, 24 entre linhas, titulo Body/Large 24/32 e sobre Body/Medium 20/30, quadrado de 40 a esquerda e acao a direita. A folha AMPLA ganhou recheio proprio — p-40 no topo e px-40 pb-56 com 56 entre blocos (`895:12217`) —, contra os 32 das estreitas. UMA MEDIDA DO NO NAO FOI COPIADA: o titulo dele e text-[32px] com leading-[24px], que e entrelinha MENOR que o corpo — artefato de texto de altura automatica no Figma. Fica o Body/Large 24/32 que os outros dois nos de folha escrevem."
     },
     "941:23120": {
       "tela": "Seleção · ações",
