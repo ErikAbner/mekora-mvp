@@ -338,6 +338,31 @@ const PROVAS = {
     },
   },
 
+  'r20': {
+    erik: '"Div central com 2 larguras sem necessidade" (/estudos)',
+    /* O VENENO ACRESCENTA UMA TERCEIRA largura ao corpo — 1100 numa faixa que
+       deveria medir 1222 —, que e o defeito que o item descreve: bloco de
+       largura propria sem motivo estrutural. As duas larguras que ficam tem
+       motivo, e o veneno nao as toca. */
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.estudos-metade{inline-size:1100px !important}';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/estudos', `
+        const faixas = [...document.querySelectorAll('.estudos > *, .estudos-de-baixo > *')]
+          .filter(e => e.getBoundingClientRect().height > 24 && !e.className.includes('fileira-vistas'))
+          .map(e => Math.round(e.getBoundingClientRect().width));
+        return { temTela: faixas.length > 3, larguras: [...new Set(faixas)].sort((a, b) => a - b) };`, veneno);
+      if (!d.temTela) throw new NaoPodeMedir('a tela de estudos nao mostrou faixas bastante');
+      /* DUAS, E SO DUAS: 1222 acima da trilha e 974 ao lado dela. Ambas do no
+         `900:56142`, que so poe a trilha ao lado da parte de baixo. */
+      const esperadas = [974, 1222];
+      const iguais = d.larguras.length === 2 && d.larguras.every((v, i) => v === esperadas[i]);
+      if (!iguais) return `as faixas medem ${d.larguras.join(', ')}, e o no da duas: 1222 acima da trilha e 974 ao lado dela`;
+      return null;
+    },
+  },
+
   'r22': {
     erik: '"Nao seguiu o Figma — inventou coisa que nem devia existir" (detalhes do arquivo)',
     /* O VENENO DEVOLVE O RECHEIO DAS FOLHAS ESTREITAS a esta, que e a AMPLA:

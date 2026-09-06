@@ -86,6 +86,24 @@ elemento sem apertar, e a prova `r01` mede o estado de verdade.
 **Medido em 04/09:** Medido a 1440: a ficha ocupa 476px, 33% da janela, com fundos `rgb(28,28,28)`, `rgb(22,22,22)` e `rgb(97,114,47)` dentro.
 **Prova:** sem-prova
 
+**Medido de novo em 06/09, e a frase se parte em duas.**
+
+*"O item de detalhes do lado direito está gigante"* — **não reproduz.** A ficha
+mede 476, e 476 é o número do nó: `895:7315` e `895:7506` desenham a coluna da
+direita com essa largura exata, nas duas vistas da Estante. Os 33% da janela
+vêm de o nó ser desenhado a 1920, onde 476 são 25%.
+
+*"A cor nesses destaques / notas não funciona — pesado, puxa toda a atenção"* —
+**continua aberto, e agora com o motivo localizado.** O `rgb(97,114,47)` que a
+medida de 04/09 achou é `--nota-verde` no tema ESCURO. As quatro cores claras
+são do nó (`941:23120`: `#efffbf`, `#fff8bf`, `#bfdfff`, `#ffbfc0`); **as quatro
+escuras não têm nó** — foram escolhidas aqui, medindo contraste, porque no
+escuro o pastel sobre tinta clara dava 1,19 e era ilegível.
+
+Então o peso que ele viu é de valores que nós inventamos, e trocá-los é decisão
+dele: ou outros quatro tons, ou o destaque deixa de ser preenchimento no escuro
+e vira filete. Não dá para tirar do Figma, porque o Figma não tem tema escuro.
+
 ### R-05 · 2026-09-01 · fechado
 **Erik:** "Não precisa do botão enviar ao Kindle na Estante — o usuário faz isso na tela do livro"
 **Onde:** /estante
@@ -203,11 +221,21 @@ A lista de estudos virou duas colunas, que é como o nó a desenha.
 
 A frase é sobre a tela inteira, e uma tela inteira não cabe numa prova. O que a prova guarda são as medidas que estavam ERRADAS quando ele escreveu — envenená-la com os números antigos a faz reprovar nomeando qual número e qual nó. Se ele olhar e ainda discordar, o item reabre: é para isso que o livro serve.
 
-### R-20 · 2026-09-01 · aberto
+### R-20 · 2026-09-01 · fechado
 **Erik:** "Div central com 2 larguras sem necessidade"
 **Onde:** /estudos
 **Medido em 04/09:** Medido a 1440: NOVE larguras distintas entre os blocos maiores que 240px — 389, 411, 514, 910, 974, 1172, 1180, 1222, 1440. Ele escreveu "2".
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r20`
+
+**Fechado em 06/09.** Ele escreveu "2" e a medida de 04/09 achou **nove**
+larguras. Hoje são **duas**, e as duas vêm do nó: 1222 nas faixas acima da
+trilha e 974 nas que ficam ao lado dela — `900:56142` só põe a trilha ao lado da
+parte de baixo, e 1222 − 200 de trilha − 48 de vão dá exatamente 974.
+
+A prova conta as larguras distintas e exige que sejam essas duas. Envenenada com
+uma terceira — uma faixa de 1100 sem motivo estrutural —, ela reprova nomeando
+as três. É esse o defeito que o item descreve: bloco com largura própria sem
+razão. As duas que ficam têm razão, e ela é do desenho.
 
 ### R-21 · 2026-09-01 · aberto
 **Erik:** "Navegação onde não deveria ter, e errada"
@@ -271,6 +299,14 @@ seja 464.
 **Onde:** /leitura/:id
 **Medido em 04/09:** Medido em /notas: quatro familias de cor fora do neutro, e a azeitona `rgb(116,108,47)` em 111 elementos.
 **Prova:** sem-prova
+
+**Medido de novo em 06/09 — é o mesmo caso do R-04, pela outra ponta.** A
+azeitona `rgb(116,108,47)` é `--nota-amarelo` no tema escuro. As quatro cores
+existem como token nomeado por papel desde então, e as claras são exatamente as
+quatro do `941:23120`. As escuras são nossas.
+
+Fica aberto pela mesma razão: quanto peso o destaque deve ter no escuro é
+escolha de desenho, e o desenho não cobre o tema escuro.
 
 ### R-26 · 2026-09-01 · fechado
 **Erik:** "Os temas têm 1 cor e justamente um tem 2 palavras — é ele que quebra o layout. Remover o 'do'"
