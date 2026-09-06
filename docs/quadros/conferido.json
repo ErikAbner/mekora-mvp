@@ -100,13 +100,13 @@
     "966:28476": {
       "tela": "M · Mesa",
       "rota": "/mesa",
-      "conferido_em": "2026-09-05",
+      "conferido_em": "2026-09-06",
       "contra": "dado-do-no",
       "arquivos": [
         "web/src/jornadas/MesaCheia.jsx",
         "web/src/jornadas/mesa-cheia.css"
       ],
-      "nota": "corpos conferidos contra o no: promessa 32, soltar 24, fila 40; borda 16"
+      "nota": "remedido apos a primeira vez: a 1920 os titulos dao 48/56, 32/40, 32/40 e 40/48 com coluna 1096 na area de soltar; a 390 dao 32/40, 24/32, 24/32 e 40/48 com coluna 358 — os mesmos numeros dos nos"
     },
     "966:29052": {
       "tela": "M · Livro — o que ficou",
@@ -415,46 +415,46 @@
     "895:9348": {
       "tela": "D · Mesa — cheia",
       "rota": "/mesa",
-      "conferido_em": "2026-09-05",
+      "conferido_em": "2026-09-06",
       "contra": "dado-do-no",
       "arquivos": [
         "web/src/jornadas/MesaCheia.jsx",
         "web/src/jornadas/mesa-cheia.css"
       ],
-      "nota": "pendencias abertas listadas em docs/TELAS-FIGMA.md"
+      "nota": "remedido apos a primeira vez: a 1920 os titulos dao 48/56, 32/40, 32/40 e 40/48 com coluna 1096 na area de soltar; a 390 dao 32/40, 24/32, 24/32 e 40/48 com coluna 358 — os mesmos numeros dos nos"
     },
     "895:9981": {
       "tela": "D · Mesa — variação",
       "rota": "/mesa",
-      "conferido_em": "2026-09-05",
+      "conferido_em": "2026-09-06",
       "contra": "dado-do-no",
       "arquivos": [
         "web/src/jornadas/MesaCheia.jsx",
         "web/src/jornadas/mesa-cheia.css"
       ],
-      "nota": "pendencias abertas listadas em docs/TELAS-FIGMA.md"
+      "nota": "remedido apos a primeira vez: a 1920 os titulos dao 48/56, 32/40, 32/40 e 40/48 com coluna 1096 na area de soltar; a 390 dao 32/40, 24/32, 24/32 e 40/48 com coluna 358 — os mesmos numeros dos nos"
     },
     "895:10286": {
       "tela": "D · Mesa — vazia",
       "rota": "/mesa",
-      "conferido_em": "2026-09-05",
+      "conferido_em": "2026-09-06",
       "contra": "dado-do-no",
       "arquivos": [
         "web/src/jornadas/MesaVazia.jsx",
         "web/src/jornadas/mesa-cheia.css"
       ],
-      "nota": "bate; formatos vem do servidor"
+      "nota": "remedido apos a primeira vez: a 1920 os titulos dao 48/56, 32/40, 32/40 e 40/48 com coluna 1096 na area de soltar; a 390 dao 32/40, 24/32, 24/32 e 40/48 com coluna 358 — os mesmos numeros dos nos"
     },
     "895:9736": {
       "tela": "D · Mesa — primeira vez",
       "rota": "/mesa",
-      "conferido_em": "2026-09-05",
+      "conferido_em": "2026-09-06",
       "contra": "dado-do-no",
       "arquivos": [
         "web/src/jornadas/MesaCheia.jsx",
         "web/src/jornadas/mesa-cheia.css"
       ],
-      "nota": "titulo e subtitulo da primeira vez; barras da fila ja tinham as cores do no"
+      "nota": "remedido apos a primeira vez: a 1920 os titulos dao 48/56, 32/40, 32/40 e 40/48 com coluna 1096 na area de soltar; a 390 dao 32/40, 24/32, 24/32 e 40/48 com coluna 358 — os mesmos numeros dos nos"
     },
     "895:7631": {
       "tela": "D · Livro — o que ficou",
