@@ -49,22 +49,27 @@ export function CriarConta({ lugar }) {
       <Cabecalho />
 
       <main className="criar-conta">
-        <p className="criar-conta-etiqueta">Criação de conta</p>
+        {/* O CABEÇALHO É UM BLOCO, e não quatro irmãos soltos: `895:11594` separa
+            as suas partes por 32 e o separa da lista e das ações por 40. Uma
+            coluna de vão único não sabe dizer os dois números. */}
+        <div className="criar-conta-topo">
+          <p className="criar-conta-etiqueta">Criação de conta</p>
 
-        <h1>Criar conta no Mekora</h1>
-        <p className="titulo-24 discreto criar-conta-abre">
-          Converter não exige conta e não vai exigir.
-          <br />
-          A conta serve para o que vem depois:
-        </p>
-
-        {/* Diz QUAL lugar pediu conta. O desenho não tem esta linha, e sem ela a
-            folha explica o geral e cala sobre o clique que a abriu. */}
-        {lugar && (
-          <p className="criar-conta-porque">
-            Você pediu {lugar}. É um dos três.
+          <h1>Criar conta no Mekora</h1>
+          <p className="titulo-24 discreto criar-conta-abre">
+            Converter não exige conta e não vai exigir.
+            <br />
+            A conta serve para o que vem depois:
           </p>
-        )}
+
+          {/* Diz QUAL lugar pediu conta. O desenho não tem esta linha, e sem ela a
+              folha explica o geral e cala sobre o clique que a abriu. */}
+          {lugar && (
+            <p className="criar-conta-porque">
+              Você pediu {lugar}. É um dos três.
+            </p>
+          )}
+        </div>
 
         <ol className="criar-conta-razoes">
           {RAZOES.map((r) => (

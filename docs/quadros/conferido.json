@@ -219,10 +219,13 @@
     "941:23106": {
       "tela": "Criar conta",
       "rota": "gate de quem não entrou",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
-      "arquivos": [],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "conferido_em": "2026-09-06",
+      "contra": "dado-do-no",
+      "arquivos": [
+        "web/src/jornadas/CriarConta.jsx",
+        "web/src/jornadas/criar-conta.css"
+      ],
+      "nota": "754 com p-40, etiqueta Label/Large 18/26, titulo Heading/LG 40/48 peso 600, frase de abertura Body/Large 24/32, linhas em p-32 com 40 entre o capitular e o texto, capitular 64/72 italico, titulo 24/32 e sobre 20/30 com 16 entre eles — tudo isso ja batia. Corrigido: 40 entre cabecalho, lista e acoes (era 32 em tudo), com 32 dentro do cabecalho, que precisou de um bloco proprio. A linha 'Voce pediu X' e acrescimo do produto e nao esta no no."
     },
     "941:23107": {
       "tela": "Estudo · seletor",
