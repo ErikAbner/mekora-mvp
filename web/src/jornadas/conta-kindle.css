@@ -39,7 +39,7 @@
 }
 
 @media (max-width: 1023px) {
-  .aparelhos { padding: 0 24px 24px; }
+  .aparelhos { padding: 0 16px 24px; }   /* 16 de lado, como o card do nó do telefone */
   .aparelho { flex-direction: column; align-items: flex-start; padding: 24px; }
   .aparelho-acoes { inline-size: 100%; flex-direction: column; }
   .aparelho-acoes .botao { inline-size: 100%; }

@@ -101,6 +101,12 @@ export function ContaKindle({ pessoa, aoSair }) {
        dela. Aqui só o painel desta seção e as folhas que ela abre. */
     <>
     <main className="conta-painel">
+          {/* A ILUSTRAÇÃO DESTA TELA — `966:25687`, "secure profile settings",
+              199,185x164 encostada à direita e sobrepondo o card em 26px.
+              Registrei antes que o Kindle não tinha desenho nenhum; tinha, e
+              está no nó do telefone, que eu ainda não havia lido. Como nas
+              outras telas de conta, é ornamento: `aria-hidden`. */}
+          <img className="conta-desenho" src="/icones/ilustracao-kindle.svg" alt="" aria-hidden="true" />
           <section className="conta-secao">
             <h2>Dispositivos Kindle</h2>
             {/* A CONDIÇÃO QUE O PRODUTO NÃO CONTROLA, dita antes de qualquer

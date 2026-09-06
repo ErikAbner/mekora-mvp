@@ -64,7 +64,11 @@
 }
 
 @media (max-width: 1023px) {
-  .conta { flex-direction: column; gap: 32px; padding: 40px 24px 80px; align-items: stretch; }
+  /* O RECHEIO É O DO NÓ DO TELEFONE (`966:25321`), e não um arredondamento meu:
+     o card abre com 56 acima, fecha com 64 abaixo e tem 16 de lado. Com os
+     24 de lado que estavam aqui, a coluna media 310 numa tela de 390 — o nó
+     pede 326, que é 358 menos os dois 16. */
+  .conta { flex-direction: column; gap: 32px; padding: 56px 16px 64px; align-items: stretch; }
   .conta-secao h2 { padding: 24px; font-size: 24px; line-height: 32px; }
   .conta-escolhas { padding: 0 24px 32px; }
 }
@@ -90,7 +94,11 @@
   inset-block-start: calc(var(--ate-o-primeiro-item) + 26px - 224px);
   inset-inline-end: 34px;
   z-index: 1;
-  inline-size: 272px;
+  /* A ALTURA É FIXA, A LARGURA SEGUE O DESENHO. Cada tela de conta tem a sua
+     ilustração e elas não têm a mesma proporção — 272x224 na visão geral,
+     199,185x164 no Kindle (`966:25687`). Com a largura cravada, a do Kindle
+     saía espremida. `auto` deixa cada SVG usar a proporção que ele tem. */
+  inline-size: auto;
   block-size: 224px;
 }
 /* No escuro ele clareia junto com as outras ilustracoes — a regra do base.css e
@@ -116,7 +124,7 @@
     display: block;
     margin-inline-start: auto;
     margin-block-end: -26px;
-    inline-size: 138.22px;
+    inline-size: auto;
     block-size: 164px;
   }
 }

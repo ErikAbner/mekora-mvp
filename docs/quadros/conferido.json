@@ -29,26 +29,25 @@
     "966:25321": {
       "tela": "M · Conta",
       "rota": "/conta",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-06",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/conta.jsx",
-        "web/src/jornadas/conta.css",
-        "web/src/jornadas/Conta.jsx"
+        "web/src/jornadas/ContaVisao.jsx",
+        "web/src/jornadas/conta.css"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "card do telefone com pt-56 px-16 pb-64 (a coluna vira 326, e nao 310). DIVERGENCIA DE CONTEUDO ASSUMIDA: o no traz Nome/E-mail/SENHA, e o Mekora entra por link — nao ha senha para mostrar. A estrutura do produto (Sua conta / como voce quer ser chamado / o que existe na conta) fica. PENDENTE ERIK: o no do telefone usa OUTRA ilustracao (magic password, 138,22x164) e nao a do computador; hoje o produto usa uma so, redimensionada."
     },
     "966:25554": {
       "tela": "M · Conta — Dispositivos Kindle",
       "rota": "/conta/kindle",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-06",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/conta.jsx",
-        "web/src/jornadas/conta.css",
-        "web/src/jornadas/Conta.jsx"
+        "web/src/jornadas/ContaKindle.jsx",
+        "web/src/jornadas/conta-kindle.css",
+        "web/src/jornadas/conta.css"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "a ilustracao desta tela EXISTE — 966:25687 'secure profile settings', 199,185x164 — e eu havia registrado que nao existia; instalada. Lista de aparelhos com 16 de lado no telefone, como o card do no."
     },
     "966:25786": {
       "tela": "M · Conta — Preferências",
