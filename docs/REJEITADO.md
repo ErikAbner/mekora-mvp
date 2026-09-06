@@ -130,10 +130,20 @@ elemento sem apertar, e a prova `r01` mede o estado de verdade.
 **Medido em 04/09:** Medido: clicar nao muda a rota, `aria-expanded` vai a `true`, e o menu abre com cinco itens.
 **Prova:** `node scripts/provas.mjs r10`
 
-### R-11 · 2026-09-01 · aberto
+### R-11 · 2026-09-01 · fechado
 **Erik:** "O espaçamento entre itens está errado"
 **Onde:** /estante
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r11`
+
+**Fechado em 06/09 — medido contra o nó, e não reproduz.** `895:7382` põe 64
+entre as linhas da grade, `895:7383` põe 48 entre as colunas, `895:7384` põe 24
+entre a capa e o texto do item e `895:7390` põe 16 entre título e autor. O
+produto tem exatamente esses quatro números, e a prova `r11` os cobra um a um.
+
+**O que difere, e não é vão:** o nó é desenhado a 1920 e a coluna da estante lá
+tem 1221, com quatro livros por linha. A 1440 sobram 852 depois da ficha de 476,
+e cabem três. O vão entre eles continua sendo 48 — o que muda é quantos cabem,
+que é o que uma grade responsiva faz.
 
 ### R-12 · 2026-09-01 · fechado
 **Erik:** "A única coisa certa são os pontos no fundo — e até isso está errado, porque na parte superior simplesmente tem fundo branco"
@@ -427,10 +437,15 @@ repetido, seria o mesmo defeito voltando de outro jeito.
 desenho de `/conta`, e duas abas vizinhas com o mesmo ornamento leem como
 defeito. Está registrado no quadro `966:25554` e é trocável numa linha.
 
-### R-41 · 2026-09-02 · aberto
+### R-41 · 2026-09-02 · fechado
 **Erik:** "espaçamento na estante incoerente com o figma"
 **Onde:** /estante — mesmo defeito que o R-08 e o R-11
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r11`
+
+**Fechado em 06/09, com o R-11.** É a mesma frase pela segunda vez, e a
+resposta é a mesma: os vãos da grade são os do nó, medida a medida. Ver o R-11
+para os números e para a diferença de largura, que vem de o nó ser desenhado a
+1920.
 
 ### R-42 · 2026-09-02 · fechado
 **Erik:** "sistema de destaque de livro na estante continua péssimo apesar dos meus feedbacks"

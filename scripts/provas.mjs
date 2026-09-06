@@ -338,6 +338,34 @@ const PROVAS = {
     },
   },
 
+  'r11': {
+    erik: '"O espacamento entre itens esta errado" · "espacamento na estante incoerente com o figma"',
+    /* O VENENO TROCA OS VAOS por numeros redondos que parecem certos e nao sao:
+       32 em volta na grade, 16 dentro do item. E o tipo de valor que entra
+       quando alguem arredonda a olho em vez de ler o no. */
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.grade{gap:32px !important}.livro{gap:16px !important}';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/estante', `
+        const px = (e, p) => e ? Math.round(parseFloat(getComputedStyle(e)[p])) : -1;
+        const g = document.querySelector('.grade');
+        const li = document.querySelector('.grade .livro');
+        return {
+          temGrade: !!g && g.children.length > 1,
+          linha: px(g, 'rowGap'),
+          coluna: px(g, 'columnGap'),
+          item: px(li, 'rowGap'),
+          texto: px(li ? li.querySelector('.livro-texto') : null, 'rowGap'),
+        };`, veneno);
+      if (!d.temGrade) throw new NaoPodeMedir('a estante nao mostrou grade com mais de um livro');
+      if (d.linha !== 64 || d.coluna !== 48) return `a grade tem vao ${d.linha}/${d.coluna}, e o no 895:7382 e 895:7383 pedem 64 entre linhas e 48 entre colunas`;
+      if (d.item !== 24) return `o item tem ${d.item} entre a capa e o texto, e o no 895:7384 pede 24`;
+      if (d.texto !== 16) return `o texto do item tem ${d.texto} entre titulo e autor, e o no 895:7390 pede 16`;
+      return null;
+    },
+  },
+
   'r24': {
     erik: '"Menu errado: itens abrem do lado contrario ao do icone; dropdowns e modais abrem errado, com largura errada, icones apertados"',
     /* O VENENO REFAZ AS DUAS LARGURAS SOLTAS: o caderno em 380 e a aparencia em
