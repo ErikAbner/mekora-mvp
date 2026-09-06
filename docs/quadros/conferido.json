@@ -543,13 +543,13 @@
     "895:8164": {
       "tela": "D · Preparo — pronto",
       "rota": "/preparo/:id",
-      "conferido_em": "2026-09-05",
+      "conferido_em": "2026-09-06",
       "contra": "dado-do-no",
       "arquivos": [
         "web/src/jornadas/Preparo.jsx",
         "web/src/jornadas/preparo.css"
       ],
-      "nota": "topo devolvido; faixa do veredito e link 'o que foi feito' em aberto"
+      "nota": "topo devolvido; faixa do veredito e link 'o que foi feito' em aberto | 06/09: so as marcas do arquivo mudaram de forma (13x17, 14/22) junto com o 966:31504. O resto da tela nao foi tocado."
     }
   }
 }
