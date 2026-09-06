@@ -146,6 +146,16 @@ export function analisar(uploadId) {
   return pede(`/analyze/${uploadId}`);
 }
 
+/** GET /jobs/{id} — jobs.py:1349. Os dados do trabalho SEM re-executar nada.
+ *
+ * `analisar()` acima não é isto: ela bate em `/analyze/{id}`, que DISPARA a
+ * análise. Chamá-la para "só ler" tem efeito colateral — e um deles custou o
+ * R-54: disparar limpa `active_operation`, o campo que diria que já há uma
+ * conversão em curso. Quem quer ler lê aqui. */
+export function trabalho(jobId) {
+  return pede(`/jobs/${jobId}`);
+}
+
 /** GET /jobs/{id}/status — jobs.py:827. A resposta leve, feita para polling. */
 export async function situacao(jobId) {
   const bruto = await pede(`/jobs/${jobId}/status`);

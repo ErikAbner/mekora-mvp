@@ -4,6 +4,8 @@
     python3 scripts/_sessao.py <banco> <email> criar      # imprime o token
     python3 scripts/_sessao.py <banco> <email> livro      # imprime o primeiro livro
     python3 scripts/_sessao.py <banco> <email> analisado  # o parado em `analyzed`
+    python3 scripts/_sessao.py <banco> <email> convertendo [id]  # põe em conversão
+    python3 scripts/_sessao.py <banco> <email> parado [id]       # desfaz o de cima
 
 POR QUE É UM ARQUIVO E NÃO UM HEREDOC: a primeira versão embutia este código no
 `.sh` com `<<'PY'`, e o texto dentro dele continha `<<'PY'` de novo — o
@@ -99,6 +101,52 @@ elif oque == "analisado":
             "SELECT id FROM processing_jobs WHERE dono_id = ? AND status = 'analyzed' ORDER BY id LIMIT 1",
             (p[0],),
         ).fetchone()
+    c.close()
+    print(achado[0] if achado else 0)
+
+elif oque in ("convertendo", "parado"):
+    # UM TRABALHO COM CONVERSÃO EM CURSO — o do R-54.
+    #
+    # A bancada nunca teve um: o conversor de teste falha na hora, e a única
+    # forma de a tela de andamento existir por meio segundo era clicar. Quem
+    # mede o R-54 precisa do outro caso — CHEGAR no endereço com a conversão já
+    # rodando, sem ter clicado nada nesta aba.
+    #
+    # Ele é ESCRITO, e não semeado: pega o trabalho parado em `analyzed` e põe
+    # `conversion_status = 'converting'` com uma operação em curso, que é o que
+    # o servidor teria escrito. Imprime o id, ou zero se não houver em que
+    # escrever — e a prova que o pedir reprova dizendo isso.
+    # O ID PODE VIR DE FORA, e vem quando quem chama já sabe qual trabalho é —
+    # a prova, por exemplo, tem o `analisado` em mãos e não precisa procurar de
+    # novo. Sem ele, procura pelo dono do e-mail.
+    dado = sys.argv[4] if len(sys.argv) > 4 else None
+    c = sqlite3.connect(banco)
+    achado = (int(dado),) if dado else None
+    if achado is None:
+        p = c.execute("SELECT id FROM pessoas WHERE email = ?", (email,)).fetchone()
+        if p:
+            achado = c.execute(
+                "SELECT id FROM processing_jobs WHERE dono_id = ? AND status = 'analyzed'"
+                " ORDER BY id LIMIT 1",
+                (p[0],),
+            ).fetchone()
+    if achado:
+        if oque == "convertendo":
+            c.execute(
+                "UPDATE processing_jobs SET conversion_status = 'converting',"
+                " active_operation = 'convert:prova' WHERE id = ?",
+                (achado[0],),
+            )
+        else:
+            # DESFAZER É PARTE DA PROVA: a bancada tem UMA pessoa por rodada, e
+            # deixar o trabalho em conversão faria a prova seguinte medir outra
+            # tela sem saber por quê.
+            c.execute(
+                "UPDATE processing_jobs SET conversion_status = 'not_started',"
+                " active_operation = NULL WHERE id = ?",
+                (achado[0],),
+            )
+        c.commit()
     c.close()
     print(achado[0] if achado else 0)
 

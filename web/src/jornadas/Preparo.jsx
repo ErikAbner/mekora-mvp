@@ -6,7 +6,8 @@ import { AvisoPreferencias } from "../componentes/AvisoPreferencias.jsx";
 import { Campo } from "../componentes/Campo.jsx";
 import {
   acompanhar, analisar, cancelarOperacao, converter, enviarAoKindle, escolherIdiomas,
-  esperarAnalise, motoresDeTraducao, paresDeTraducao, quantoCostumaLevar, traduzir,
+  esperarAnalise, motoresDeTraducao, paresDeTraducao, quantoCostumaLevar, situacao,
+  trabalho, traduzir,
 } from "../../../contrato/api.js";
 import { nomeDoIdioma, paraOndeTraduzir } from "../../../contrato/idiomas.js";
 import { comoSeDiz } from "../../../contrato/duracao.js";
@@ -481,6 +482,43 @@ export function Preparo() {
 
   const buscar = useCallback(async () => {
     try {
+      /* PERGUNTA A SITUAÇÃO ANTES DE DISPARAR QUALQUER COISA — R-54.
+       *
+       * `analisar(id)` logo abaixo dispara a análise, e disparar limpa
+       * `active_operation`. Enquanto esta tela começava por ele, a resposta que
+       * pelo `curl` dizia "convert:teste" chegava aqui com `null`: a página
+       * perguntava DEPOIS de disparar. `GET /jobs/{id}/status` só lê, e é o
+       * mesmo que o `acompanhar` já usa.
+       *
+       * Quem fechou a aba durante a conversão e voltou a este endereço via a
+       * PROPOSTA, com "Preparar com recomendações" clicável, enquanto o
+       * servidor já convertia aquele arquivo — e podia mandar converter de
+       * novo o que já estava sendo convertido. Agora volta para a espera. */
+      const situ = await situacao(id);
+      if (situ.estado === "trabalhando" && situ.etapa === "convertendo") {
+        /* `trabalho(id)` e não `analisar(id)`: os dados do arquivo sem
+           re-executar nada em cima de uma conversão em curso. */
+        const jAndando = await trabalho(id);
+        setJob(jAndando);
+        setTitulo(jAndando.final_title || jAndando.detected_title || jAndando.original_filename || "");
+        setAutor(jAndando.final_author || jAndando.detected_author || "");
+        setPreparando(true);
+        setInicio(Date.now());
+        setAgora(0);
+        setAndamento(situ);
+        const fim = await acompanhar(id, setAndamento);
+        setAndamento(null);
+        setPreparando(false);
+        if (fim.estado === "erro") {
+          setErro(fim.motivo || "A conversão não terminou.");
+          return;
+        }
+        const pronto = await trabalho(id);
+        setConvertido(pronto);
+        setFeito(true);
+        return;
+      }
+
       /* A análise é assíncrona: `analisar` só a DISPARA. Perguntar uma vez e
        * desenhar devolveria uma tela sem páginas, sem idioma e sem saber se é
        * digitalização — que é justamente o que ela existe para contar. */
@@ -534,27 +572,6 @@ export function Preparo() {
         setFeito(true);
         return;
       }
-      /* UMA CONVERSÃO EM CURSO AINDA NÃO VOLTA PARA A TELA DE ANDAMENTO, e o
-       * motivo está medido — ver R-54.
-       *
-       * `preparando` tem a mesma falha que o `feito` tinha: é estado de sessão.
-       * Quem fecha a aba durante a conversão e volta vê a PROPOSTA, com
-       * "Preparar com recomendações" clicável, enquanto o servidor já está
-       * convertendo aquele arquivo. Aqui o custo é maior que na tela de pronto:
-       * lá a pessoa só perdia a notícia; aqui ela pode mandar converter de novo
-       * o que já está sendo convertido.
-       *
-       * ESCREVI O CONSERTO E ELE NÃO FUNCIONA. `active_operation` é o campo que
-       * diria isso, e ele chega ao navegador — conferido por `curl`. Mas o
-       * `analisar(id)` logo acima DISPARA a análise, e disparar limpa o campo:
-       * a mesma resposta que traz `convert:teste` pelo `curl` traz `null` para a
-       * página, porque a página perguntou depois de disparar.
-       *
-       * A saída passa por perguntar a SITUAÇÃO antes de disparar a análise
-       * (`/jobs/{id}/status`, que é o que o `acompanhar` já usa), e isso mexe na
-       * ordem do carregamento desta tela. Fica como item aberto em vez de um
-       * ramo que promete e não cumpre. */
-
     } catch (e) {
       setErro(e.message);
     }

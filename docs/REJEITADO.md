@@ -476,7 +476,7 @@ O que tinha falhado no meu primeiro teste era a **sessão**: pedi o trabalho `11
 Fica `epub_url` no código porque é o que a tela consome: o caminho público, o mesmo do download. O `epub_path` é absoluto no disco do servidor.
 **Prova:** `node scripts/provas.mjs r53`
 
-### R-54 · 2026-09-05 · aberto
+### R-54 · 2026-09-05 · fechado 06/09
 **Erik:** (não é dele — irmão do R-53, achado ao conferir a terceira tela do Preparo)
 **Onde:** /preparo/:id · `web/src/jornadas/Preparo.jsx` · `backend/app/api/jobs.py`
 **Medido em 05/09:** `preparando` tem a mesma falha que o `feito` tinha: **é estado de sessão**. Quem fecha a aba durante a conversão e volta ao mesmo endereço vê a **proposta**, com "Preparar com recomendações" clicável — enquanto o servidor já está convertendo aquele arquivo.
@@ -492,6 +492,28 @@ A saída passa por perguntar a **situação** antes de disparar a análise — `
 
 **A bancada também não produz o estado**, e essa é a terceira vez: não há trabalho com `active_operation` semeado, então a tela de "em andamento" (`895:8029`, `967:31833`) continua sem conferência contra o nó. Marquei um à mão para medir e desfiz depois — a bancada está limpa.
 **Prova:** sem-prova (item aberto)
+
+**Fechado em 06/09.** A saída era a que estava escrita aqui: perguntar a
+SITUAÇÃO antes de disparar. `buscar()` agora começa por `situacao(id)` —
+`GET /jobs/{id}/status`, que só lê — e, se a resposta diz `trabalhando` com
+etapa `convertendo`, vai direto para a tela de espera e acompanha dali. Os
+dados do arquivo vêm de `trabalho(id)` (`GET /jobs/{id}`, "retorna todos os
+dados de um job sem re-executar a análise") e não de `analisar(id)`, que
+dispararia uma análise por cima de uma conversão em curso.
+
+**A bancada aprendeu a semear o caso.** Ela nunca teve um trabalho em conversão
+— o conversor de teste falha na hora, e a tela só existia por meio segundo
+depois de um clique. `scripts/_sessao.py <banco> <email> convertendo [id]`
+escreve `conversion_status = 'converting'`, e `parado` desfaz; a prova desfaz
+sempre, num `finally`, porque a bancada tem UMA pessoa por rodada e deixar o
+trabalho em conversão faria a prova seguinte medir outra tela sem saber por quê.
+
+**Prova `r54`**, com controle negativo nos dois sentidos: limpa passa,
+envenenada (escondendo `.preparo-andando`) devolve *"uma conversao em curso nao
+abre na tela de espera: ela volta para a proposta"*. Ela também verifica o custo
+do defeito, e não só o sintoma: que "Preparar com recomendações" não fique
+clicável por cima de uma conversão em curso.
+
 
 ### R-55 · 2026-09-05 · fechado
 **Erik:** (não é dele — é da BANCADA, e o defeito acabou sendo do INSTRUMENTO)

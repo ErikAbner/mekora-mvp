@@ -53,6 +53,14 @@ function sessao() {
    O Canvas e de computador, e uma prova que so sabe medir a 1440 nao consegue
    nem ver o defeito nem provar que o conserto nao apagou o Canvas do
    computador. O padrao continua 1440x1000: nenhuma prova antiga muda. */
+/* Escreve o estado de conversão de um trabalho direto no banco da bancada.
+   `_sessao.py` faz a escrita; aqui só se diz qual trabalho e para qual lado. */
+function mudaEstado(jobId, lado) {
+  const banco = join(process.env.MEKORA_PROVA || RAIZ + '.ver', 'storage', 'kindle_tool.db');
+  execFileSync('python3', ['scripts/_sessao.py', banco, 'nao-importa@teste.local', lado, String(jobId)],
+    { cwd: RAIZ, encoding: 'utf8', timeout: 30000 });
+}
+
 function medir(rota, corpo, veneno = '', tamanho = {}) {
   const { token, livro, analisado } = sessao();
   const dir = join(tmpdir(), 'mekora-provas');
@@ -74,7 +82,15 @@ function medir(rota, corpo, veneno = '', tamanho = {}) {
          espaco: a prova do R-05 reprovou limpa e envenenada, com a tela certa
          nos dois casos. Escreva `\\s`, ou nao precise dela. */
   writeFileSync(alvo, `(async () => {\n  const esperar = ms => new Promise(r => setTimeout(r, ms));\n  await esperar(3200);\n  {\n${veneno}\n  }\n  ${corpo}\n})()`);
-  const url = `${WEB}${rota.replace('{LIVRO}', livro).replace('{ANALISADO}', analisado)}`;
+  /* `{CONVERTENDO}` ESCREVE NO BANCO ANTES DE MEDIR, e DESFAZ depois.
+     
+     É o caso do R-54: chegar no endereço com o servidor já convertendo, sem ter
+     clicado nada nesta aba. O trabalho é o mesmo `analisado` — a bancada tem uma
+     pessoa por rodada, e deixá-lo em conversão faria a prova seguinte medir
+     outra tela sem saber por quê. Daí o `finally` lá embaixo. */
+  const emConversao = rota.includes('{CONVERTENDO}');
+  if (emConversao) mudaEstado(analisado, 'convertendo');
+  const url = `${WEB}${rota.replace('{LIVRO}', livro).replace('{ANALISADO}', analisado).replace('{CONVERTENDO}', analisado)}`;
   let bruto;
   try {
     const largura = String(tamanho.largura || 1440);
@@ -83,6 +99,8 @@ function medir(rota, corpo, veneno = '', tamanho = {}) {
       { cwd: RAIZ, encoding: 'utf8', timeout: 110000, stdio: ['ignore', 'pipe', 'pipe'] });
   } catch (e) {
     throw new NaoPodeMedir(`nao consegui medir ${url} — o servidor de desenvolvimento esta em pe? (${String(e.message).slice(0, 90)})`);
+  } finally {
+    if (emConversao) mudaEstado(analisado, 'parado');
   }
   const i = bruto.indexOf('{');
   if (i < 0) throw new Error('a medida nao devolveu JSON: ' + bruto.trim().slice(-120));
@@ -281,6 +299,41 @@ const PROVAS = {
       return null;
     },
   },
+  'r54': {
+    erik: '(nao e dele — irmao do R-53: uma conversao em curso nao voltava para a tela de espera)',
+    /* O VENENO REFAZ A ORDEM ANTIGA: esconder a tela de andamento devolve a
+       PROPOSTA no lugar dela, que e exatamente o que a pessoa via ao reabrir
+       `/preparo/:id` com o servidor ja convertendo aquele arquivo — com
+       "Preparar com recomendacoes" clicavel, e podendo mandar converter de novo
+       o que ja estava sendo convertido. */
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.preparo-andando{display:none !important}';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/preparo/{CONVERTENDO}', `
+        await new Promise(r2 => setTimeout(r2, 900));
+        const espera = document.querySelector('.preparo-andando');
+        const cabeca = document.querySelector('.preparo-andando-card h2');
+        return {
+          temEspera: !!espera && espera.getBoundingClientRect().height > 0,
+          etapa: cabeca ? cabeca.textContent.trim() : null,
+          /* CONTROLE: sem a pagina montada, "sem tela de espera" e cegueira. */
+          temPagina: !!document.querySelector('.preparo-pagina'),
+          /* O BOTAO QUE NAO PODE ESTAR CLICAVEL: mandar converter de novo o que
+             ja esta convertendo e o custo do defeito, e nao um detalhe. */
+          convidaDeNovo: [...document.querySelectorAll('button')]
+            .some(b => /Preparar com recomenda/.test(b.textContent || '') && !b.disabled),
+        };`, veneno);
+      if (!d.temPagina) {
+        throw new NaoPodeMedir('a pagina de preparo nao montou — nao da para dizer em que tela ela abriu');
+      }
+      if (!d.temEspera) return 'uma conversao em curso nao abre na tela de espera: ela volta para a proposta';
+      if (d.convidaDeNovo) return 'a tela de espera abriu, mas "Preparar com recomendacoes" continua clicavel por cima de uma conversao em curso';
+      if (!d.etapa || !/Preparando/.test(d.etapa)) return `a tela de espera abriu sem dizer a etapa (leu "${d.etapa}")`;
+      return null;
+    },
+  },
+
   'r53': {
     erik: '(nao e dele — a tela de Preparo pronta era inalcancavel por navegacao)',
     /* O VENENO REFAZ O ESTADO ANTERIOR: a tela de pronto some e a de analise
