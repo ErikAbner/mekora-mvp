@@ -405,6 +405,30 @@ São dois nomes para um desenho, em quatro lugares da tela: o índice do leitor 
 **O resto da biblioteca passou.** 25 desenhos distintos, cada um legível como o rótulo ao lado — aparelho, baixar, buscar, caderno, conta, copiar, defeito, dúvidas, enviar, estante, estudos, mais-ações, marcador, mesa, nota-imagem, nota-nova, preferências, privacidade, refazer, remover, renomear. Duas observações que são de desenho e não de defeito, e por isso não viram item: o `baixar` põe a barra ACIMA da seta enquanto o `enviar` põe a bandeja ABAIXO — o par não espelha; e o `marcador` é um hexágono com um ponto, que é o glifo de nó ou de ajuste, e não o da fita que marca a página.
 **Prova:** sem-prova
 
+**06/09 — medido, e metade do conserto está fora do meu alcance.**
+
+O `scripts/icones.mjs` passou a contar DESENHOS, e não arquivos: *"27 arquivos,
+25 desenhos distintos"*, com os dois pares nomeados. O par seguinte não entra
+sem alguém ver, que era o risco real de um item que ninguém consegue fechar.
+
+Saiu daqui o que era só sujeira: o `iconeMenu` do `Leitura.jsx` estava declarado
+e **nunca usado** — a tela de leitura só desenha o índice. Sem ele, o hambúrguer
+do menu e o do índice não aparecem juntos em tela nenhuma hoje.
+
+**O que falta é desenho, e desenho é do Erik.** Duas ideias precisam de glifo
+próprio, e não há candidato na biblioteca que não crie outra confusão:
+
+- **índice** (o sumário do leitor). Hoje é o hambúrguer, que é o glifo da
+  navegação. Precisa de uma LISTA.
+- **páginas** (o achado "nenhuma página corrompida", no Preparo). Hoje é o grid
+  do Canvas — de novo um glifo de navegação. A tela de Configurações de arquivo
+  já resolveu o mesmo problema com `icone-camadas`, mas no Preparo o `camadas`
+  já está em "Reconhecer o texto", **na mesma tela**: dar o mesmo desenho aos
+  dois trocaria uma duplicata invisível por uma visível.
+
+Fica aberto porque o que falta não é decisão nem código.
+
+
 ### R-50 · 2026-09-04 · fechado
 **Erik:** (não é dele — é defeito da BANCADA, e o pior tipo: ele fazia o instrumento passar verde na tela errada)
 **Onde:** `scripts/semear.py` · /preparo/:id

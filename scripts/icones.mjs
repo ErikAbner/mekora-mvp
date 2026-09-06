@@ -26,6 +26,7 @@
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 
 const RAIZ = new URL('..', import.meta.url).pathname;
 const PASTA = RAIZ + 'web/publico/icones/';
@@ -72,7 +73,30 @@ if (process.argv.includes('--provar')) {
   process.exit(serve ? 0 : 1);
 }
 
-console.log(`icones: ${icones.length} na biblioteca\n`);
+/* DOIS NOMES PARA UM DESENHO — o R-49.
+ *
+ * A biblioteca tem 27 arquivos e menos de 27 desenhos: pares byte a byte
+ * iguais. O custo não é o disco, é a promessa: o código escreve
+ * `icone-indice.svg` e a tela mostra o hambúrguer do menu — o glifo da
+ * NAVEGAÇÃO servindo de rótulo de conteúdo, que é exatamente o que o Erik
+ * proibiu. E o `Leitura.jsx` chegava a explicar a distinção que não existe.
+ *
+ * Isto só MEDE. Fechar o par pede desenho novo, e desenho é do Erik. O que
+ * esta contagem impede é o par seguinte entrar sem ninguém ver. */
+const porDesenho = new Map();
+for (const f of icones) {
+  const h = createHash('sha256').update(readFileSync(PASTA + f)).digest('hex');
+  if (!porDesenho.has(h)) porDesenho.set(h, []);
+  porDesenho.get(h).push(f);
+}
+const gemeos = [...porDesenho.values()].filter((g) => g.length > 1);
+
+console.log(`icones: ${icones.length} arquivos, ${porDesenho.size} desenhos distintos\n`);
+if (gemeos.length) {
+  console.log(`  NOMES SEM DESENHO PROPRIO  (${gemeos.length} par(es)) — R-49`);
+  for (const g of gemeos) console.log(`      ${g.join('  ==  ')}`);
+  console.log('');
+}
 for (const [classe, titulo, aviso] of [
   ['lugar', 'LUGAR', 'nunca decoram conteudo — quem os ve aprende que aquilo leva a algum lugar'],
   ['acao', 'ACAO', 'podem reaparecer, desde que signifiquem a mesma coisa'],

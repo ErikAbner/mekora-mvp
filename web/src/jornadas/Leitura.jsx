@@ -27,7 +27,6 @@ import { blocosDoCapitulo } from "../leitor/abrir.js";
 import "./leitura.css";
 import { medir } from "../medir.js";
 
-const iconeMenu = "/icones/icone-menu.svg";
 const iconeCaderno = "/icones/icone-caderno.svg";
 /* O ícone do índice é uma LISTA, e não o da estante: aquele é o lugar onde os
  * livros ficam, e usá-lo aqui fazia o botão do sumário parecer um atalho para
