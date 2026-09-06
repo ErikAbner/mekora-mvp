@@ -107,13 +107,13 @@
     "966:29052": {
       "tela": "M · Livro — o que ficou",
       "rota": "/estante/:id",
-      "conferido_em": "2026-09-05",
+      "conferido_em": "2026-09-06",
       "contra": "dado-do-no",
       "arquivos": [
         "web/src/jornadas/Livro.jsx",
         "web/src/jornadas/livro.css"
       ],
-      "nota": "titulo 40, secoes 32, botoes empilhados com items-start; borda 16"
+      "nota": "titulo 40, secoes 32, botoes empilhados com items-start; borda 16 | 06/09: das telas mudou SÓ entrelinha, na varredura dos pares fora dos tokens — 14/20 para 14/22 e 18/27/18/28 para 18/26. Conferido pelo diff: nenhuma outra propriedade foi tocada nesses arquivos, e o portao (que agora cobra o par) passa nas duas larguras."
     },
     "966:29395": {
       "tela": "M · Leitura",
@@ -364,24 +364,24 @@
     "895:6938": {
       "tela": "D · Canvas",
       "rota": "/canvas",
-      "conferido_em": "2026-09-05",
+      "conferido_em": "2026-09-06",
       "contra": "dado-do-no",
       "arquivos": [
         "web/src/jornadas/Canvas.jsx",
         "web/src/jornadas/canvas.css"
       ],
-      "nota": "estrutura confere; capas, secao nomeada e cartao de imagem sem dado na bancada"
+      "nota": "estrutura confere; capas, secao nomeada e cartao de imagem sem dado na bancada | 06/09: das telas mudou SÓ entrelinha, na varredura dos pares fora dos tokens — 14/20 para 14/22 e 18/27/18/28 para 18/26. Conferido pelo diff: nenhuma outra propriedade foi tocada nesses arquivos, e o portao (que agora cobra o par) passa nas duas larguras."
     },
     "895:10599": {
       "tela": "D · Conta — visão geral",
       "rota": "/conta",
-      "conferido_em": "2026-09-05",
+      "conferido_em": "2026-09-06",
       "contra": "dado-do-no",
       "arquivos": [
         "web/src/jornadas/ContaVisao.jsx",
         "web/src/jornadas/conta-visao.css"
       ],
-      "nota": "divergencias de conteudo e ilustracoes em docs/TELAS-FIGMA.md"
+      "nota": "divergencias de conteudo e ilustracoes em docs/TELAS-FIGMA.md | 06/09: das telas mudou SÓ entrelinha, na varredura dos pares fora dos tokens — 14/20 para 14/22 e 18/27/18/28 para 18/26. Conferido pelo diff: nenhuma outra propriedade foi tocada nesses arquivos, e o portao (que agora cobra o par) passa nas duas larguras."
     },
     "895:10715": {
       "tela": "D · Conta — preferências",
@@ -475,13 +475,13 @@
     "895:7631": {
       "tela": "D · Livro — o que ficou",
       "rota": "/estante/:id",
-      "conferido_em": "2026-09-05",
+      "conferido_em": "2026-09-06",
       "contra": "dado-do-no",
       "arquivos": [
         "web/src/jornadas/Livro.jsx",
         "web/src/jornadas/livro.css"
       ],
-      "nota": "pendencias abertas listadas em docs/TELAS-FIGMA.md"
+      "nota": "pendencias abertas listadas em docs/TELAS-FIGMA.md | 06/09: das telas mudou SÓ entrelinha, na varredura dos pares fora dos tokens — 14/20 para 14/22 e 18/27/18/28 para 18/26. Conferido pelo diff: nenhuma outra propriedade foi tocada nesses arquivos, e o portao (que agora cobra o par) passa nas duas larguras."
     },
     "895:10472": {
       "tela": "D · Leitura",
