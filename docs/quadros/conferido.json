@@ -227,10 +227,13 @@
     "941:23107": {
       "tela": "Estudo · seletor",
       "rota": "busca do cabeçalho",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
-      "arquivos": [],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "conferido_em": "2026-09-06",
+      "contra": "dado-do-no",
+      "arquivos": [
+        "web/src/componentes/Busca.jsx",
+        "web/src/componentes/busca.css"
+      ],
+      "nota": "bate medida a medida: painel p-12, linha p-24 com 24 entre capa e texto, capa 47x60, 16 entre titulo e sub, titulo Body/Large 24/32 e sub Body/Medium 20/30, e o fio ENTRE as linhas. O nome do quadro engana — nao e um seletor de estudo, e o resultado da busca do cabecalho. Medido com scripts/medir.mjs --espera=2500 digitando no campo."
     },
     "941:23108": {
       "tela": "Conectar nota",
