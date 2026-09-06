@@ -312,19 +312,23 @@
   .apresentacao-passos h2,
   .apresentacao-depois h2,
   .apresentacao-chamada h2 { font-size: 32px; line-height: 40px; }
+  /* A citação continua Body/Large 24/32 — `964:24178` não a encolhe. */
   .apresentacao-problema blockquote,
-  .apresentacao-depois blockquote { font-size: 20px; line-height: 30px; }
+  .apresentacao-depois blockquote { font-size: 24px; line-height: 32px; }
 
   /* Tres capas lado a lado viram tres tiras. Uma so, inteira, diz o que a secao
      precisa dizer — e as outras duas continuam roláveis. */
   .capas-fila { overflow-x: auto; }
   .capas-fila li { flex: 0 0 78%; }
 
+  /* O CAPITULAR NÃO ENCOLHE, e os títulos não descem um degrau. `964:24178` é
+     esta mesma página no telefone e repete os números do computador: o
+     algarismo em display-large-capitular 64/72, o título do passo em
+     Body/Large 24/32 e o título de "O livro não termina" em Heading/SM 28/36.
+     O que estava aqui era o desktop encolhido a olho. */
   .passos-lista li { gap: 24px; padding: 24px 8px; }
-  .passo-numero { width: 40px; font-size: 40px; line-height: 48px; }
-  .passo-dizer h3 { font-size: 20px; line-height: 30px; }
+  .passo-numero { width: 64px; }
   .depois-lista li { padding: 24px 8px; }
-  .depois-lista h3 { font-size: 24px; line-height: 32px; }
   .chamada-botoes { flex-direction: column; gap: 16px; }
 }
 

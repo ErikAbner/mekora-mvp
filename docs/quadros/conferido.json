@@ -4,14 +4,13 @@
     "964:24178": {
       "tela": "M · Apresentação",
       "rota": "/",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-06",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/apresentacao.jsx",
-        "web/src/jornadas/apresentacao.css",
-        "web/src/jornadas/Apresentacao.jsx"
+        "web/src/jornadas/Apresentacao.jsx",
+        "web/src/jornadas/apresentacao.css"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "o telefone estava com o desktop encolhido a olho: capitular dos quatro passos em 40/48 contra os 64/72 que o no repete, titulo do passo 20/30 contra Body/Large 24/32, citacao 20/30 contra 24/32 e 'A estante' 24/32 contra Heading/SM 28/36. Corrigidos. So a entreletra do h1 fica diferente: o no escreve -1,6px fixo nas duas larguras e o produto usa -2,5%, que da exatamente -1,6px a 64 e -1,0 a 40 — percentagem e a escolha sistemica e a diferenca e de 0,6px."
     },
     "964:24606": {
       "tela": "M · Estante — grade",
