@@ -163,6 +163,32 @@ O nome do biscoito é `mekora_sessao`, e o trabalho tem de ser DA PESSOA da
 sessão — `sessao-de-prova.sh` semeia por pessoa, e um id de outra rodada
 responde 404 sem dizer que o motivo é dono, e não campo.
 
+## Abra a tela antes de dizer que falta
+
+Três vezes escrevi que uma funcionalidade não existia, e nas três ela existia.
+
+1. **Tradução** (05/09): dei por ausente o botão de traduzir. Está completo, de
+   ponta a ponta — botão, folha, escolha de idioma, progresso e erro. Ele se
+   esconde porque a bancada não tem pacote de idioma, e a tela explica isso no
+   lugar dele, que é a regra certa.
+2. **`epub_path`** (05/09): ver a seção acima.
+3. **"Ligar esta nota a qual?" e as sugestões da nota** (06/09): anotei que a
+   tela da nota não tinha nem o painel nem as três seções. Tem os dois —
+   `Nota.jsx:377` e a seção "Parecem próximas", com candidatas e a ação de
+   juntar num estudo. O que falta de verdade naquela tela é só a etiqueta.
+
+O padrão é sempre o mesmo: eu concluo AUSÊNCIA a partir de um instrumento que
+não estava olhando para onde a coisa está — memória, um `grep` de nome errado,
+uma tela que não abri. É "verde por omissão" com o sinal trocado: **vermelho
+por omissão**, e ele custa caro de um jeito diferente — o Erik lê o relatório e
+pede para construir o que já está construído.
+
+Antes de escrever "não existe": abra a rota com sessão e MEÇA. O
+`scripts/medidas/tela.js` dá a lista do que está na tela sem depender de eu
+adivinhar o nome da classe.
+
+    node scripts/medir.mjs "$WEB/nota/$ID" 1440 1000 scripts/medidas/tela.js --sessao=$TOKEN
+
 ## Armadilhas de implementação já pagas
 
 - **Arrastar não mexe no DOM.** Mover o nó libera a captura de ponteiro no
