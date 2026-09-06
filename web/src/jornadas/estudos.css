@@ -89,7 +89,26 @@
 
 .estudos-erro { border-inline-start-color: var(--destructive, var(--foreground)); }
 
-.estudos-lista { display: flex; flex-direction: column; gap: 32px; }
+/* DUAS COLUNAS, e não uma pilha — nó `900:56142`, a variação da lista.
+ *
+ * O desenho põe os estudos numa grade de dois, com o cartão medindo cerca de
+ * metade da coluna. A tela empilhava um por linha em 1222 de largura, e um
+ * cartão de 1222 com três linhas de texto dentro é uma faixa, não um cartão:
+ * ele se lê como seção da página em vez de como um item entre vários.
+ *
+ * `auto-fill` com mínimo em vez de `repeat(2, 1fr)` fixo: abaixo de ~1024 a
+ * trilha some e a coluna encolhe, e aí dois cartões de 590 não cabem. A grade
+ * cai para um sozinha, sem media query. */
+.estudos-lista {
+  display: grid;
+  /* `min(440px, 100%)` E NÃO 440 CRU: um mínimo maior que a coluna faz a grade
+     estourar a tela em vez de cair para uma. Medido a 390, com o mínimo cru: o
+     cartão media 440 numa coluna de 358. O `min` deixa o mínimo virar a largura
+     disponível quando ela é menor. */
+  grid-template-columns: repeat(auto-fill, minmax(min(440px, 100%), 1fr));
+  gap: 32px;
+  align-items: start;
+}
 
 .estudo {
   padding: 24px;
