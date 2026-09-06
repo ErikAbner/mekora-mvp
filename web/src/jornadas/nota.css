@@ -1,6 +1,8 @@
 .nota-pagina { max-inline-size: 760px; margin: 0 auto; padding: 32px 40px 80px; display: flex; flex-direction: column; gap: 20px; }
 
-.trilha-nota { font-size: 14px; line-height: 20px; color: var(--muted-foreground); }
+/* A TRILHA É Body/Medium 20/30 no nó (`895:8545`): "Conhecimentos / Método de
+   campo / Diário 02 / 14 de agosto" é o caminho da nota, não uma legenda. */
+.trilha-nota { font-size: 20px; line-height: 30px; color: var(--muted-foreground); }
 .trilha-nota a { color: inherit; text-decoration: none; }
 .trilha-nota a:hover { color: var(--foreground); text-decoration: underline; text-underline-offset: 3px; }
 .trilha-nota a:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
@@ -15,21 +17,23 @@
   text-wrap: pretty;
 }
 
-.nota-de-onde { margin: 0; font-size: 14px; line-height: 20px; color: var(--muted-foreground); }
+/* Label/Small é 14/22 — a origem, `Capítulo 3 · Ana Duarte`. */
+.nota-de-onde { margin: 0; font-size: 14px; line-height: 22px; color: var(--muted-foreground); }
 
 /* O filete marca a fala sobre a fala. */
 .npag-escrita {
   margin: 0;
   padding: 8px 0 8px 24px;
   border-inline-start: 1px solid var(--border);
-  font-size: 18px;
-  line-height: 28px;
+  /* Body/Medium 20/30. O par 18/28 que estava aqui não existe nos tokens. */
+  font-size: 20px;
+  line-height: 30px;
   color: var(--muted-foreground);
   text-wrap: pretty;
 }
 
 .nota-escrever { display: flex; flex-direction: column; gap: 10px; }
-.nota-escrever label { font-size: 14px; line-height: 20px; color: var(--muted-foreground); }
+.nota-escrever label { font-size: 14px; line-height: 22px; color: var(--muted-foreground); }
 
 .nota-escrever textarea {
   inline-size: 100%;
@@ -49,7 +53,9 @@
 .npag-acoes { display: flex; gap: 10px; flex-wrap: wrap; padding-block-end: 8px; }
 
 .nota-secao { padding-block-start: 28px; border-block-start: 1px solid var(--border); }
-.nota-secao h2 { margin: 0 0 8px; font-size: 20px; line-height: 28px; color: var(--foreground); }
+/* Body/Medium 20/30, peso normal — é como o nó escreve "Tag" e "Relacionadas".
+   O par 20/28 não existe nos tokens, e o peso 700 vinha do `h2` do navegador. */
+.nota-secao h2 { margin: 0 0 8px; font-size: 20px; line-height: 30px; font-weight: 400; color: var(--foreground); }
 .nota-secao h2 .dado { color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
 
 .nota-aviso { margin: 0 0 16px; max-inline-size: 60ch; font-size: 16px; line-height: 24px; color: var(--muted-foreground); text-wrap: pretty; }

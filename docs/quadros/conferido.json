@@ -141,14 +141,13 @@
     "966:30269": {
       "tela": "M · Conexões — sugestões",
       "rota": "/nota/:id",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-06",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/nota.jsx",
-        "web/src/jornadas/nota.css",
-        "web/src/jornadas/Nota.jsx"
+        "web/src/jornadas/Nota.jsx",
+        "web/src/jornadas/nota.css"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "trilha em Body/Medium 20/30 (era 14/20), origem em Label/Small 14/22 (era 14/20), a nota escrita em 20/30 (era 18/28, par que nao existe) e os titulos de secao em 20/30 peso normal (eram 20/28 peso 700, herdado do h2 do navegador). O QUE EU TINHA REGISTRADO COMO AUSENTE E NAO ESTA: o painel 'Ligar esta nota a qual?' existe (Nota.jsx:377) e as sugestoes existem ('Parecem proximas', com candidatas e acao de juntar num estudo). FALTA DE VERDADE: a secao 'Tag' do no — uma etiqueta livre por nota, com 'Criar um estudo' ao lado. Nao existe modelo de tag de nota no backend."
     },
     "966:30771": {
       "tela": "M · Estudos — lista",
@@ -494,14 +493,13 @@
     "895:8545": {
       "tela": "D · Conexões — sugestões",
       "rota": "/nota/:id",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-06",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/nota.jsx",
-        "web/src/jornadas/nota.css",
-        "web/src/jornadas/Nota.jsx"
+        "web/src/jornadas/Nota.jsx",
+        "web/src/jornadas/nota.css"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "trilha em Body/Medium 20/30 (era 14/20), origem em Label/Small 14/22 (era 14/20), a nota escrita em 20/30 (era 18/28, par que nao existe) e os titulos de secao em 20/30 peso normal (eram 20/28 peso 700, herdado do h2 do navegador). O QUE EU TINHA REGISTRADO COMO AUSENTE E NAO ESTA: o painel 'Ligar esta nota a qual?' existe (Nota.jsx:377) e as sugestoes existem ('Parecem proximas', com candidatas e acao de juntar num estudo). FALTA DE VERDADE: a secao 'Tag' do no — uma etiqueta livre por nota, com 'Criar um estudo' ao lado. Nao existe modelo de tag de nota no backend."
     },
     "895:8849": {
       "tela": "D · Estudos — lista",
