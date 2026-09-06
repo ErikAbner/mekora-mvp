@@ -41,11 +41,14 @@ const ornamentoAbertura = "/icones/ornamento-abertura.svg";
 
 /* As quatro cores de destaque. O nome diz o papel, e o valor é o conjunto claro
  * — o único em que a prosa continua legível por cima. */
+/* A ORDEM É A DO NÓ `941:23120`: verde, amarelo, azul, rosa. Ela não é
+   alfabética nem arbitrária — é a que a paleta desenha, e a paleta é montada a
+   partir das chaves deste objeto. */
 export const DESTAQUES = {
   verde: "var(--nota-verde, #efffbf)",
   amarelo: "var(--nota-amarelo, #fff8bf)",
-  rosa: "var(--nota-rosa, #ffbfc0)",
   azul: "var(--nota-azul, #bfdfff)",
+  rosa: "var(--nota-rosa, #ffbfc0)",
 };
 
 /* O bloco do EPUB e o parágrafo do exemplo passam pelo MESMO componente: os dois
@@ -1307,9 +1310,16 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
       {/* A PALETA, junto do que foi marcado. Em canto fixo obrigaria a olhar
           para longe do texto e voltar — e num leitor o olho está no texto. */}
       {paleta && (
+        /* PARA BAIXO QUANDO NÃO CABE PARA CIMA. O painel tem duas fileiras e
+           fica em torno de 236px de altura; abaixo de 280 do topo da janela ele
+           sairia pela borda. Aí ele abre sob o trecho, ancorado no fim da
+           seleção. */
         <div
-          className="paleta"
-          style={{ left: paleta.onde.x, top: paleta.onde.y }}
+          className={`paleta${paleta.onde.y < 280 ? " paleta-abaixo" : ""}`}
+          style={{
+            left: paleta.onde.x,
+            top: paleta.onde.y < 280 ? (paleta.onde.yBaixo ?? paleta.onde.y) : paleta.onde.y,
+          }}
           role="group"
           aria-label="O que fazer com o trecho"
         >

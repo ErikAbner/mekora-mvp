@@ -124,7 +124,12 @@ export function lerSelecao(raiz) {
     antes,
     depois,
     capitulo,
-    onde: { x: caixa.left + caixa.width / 2, y: caixa.top },
+    /* AS DUAS BORDAS, e não só a de cima. A paleta é desenhada ACIMA do
+       trecho, e um trecho perto do topo da janela empurrava o painel para fora
+       da tela — medido: com a seleção a 108px do topo, as cores e metade dos
+       botões ficavam cortados. Quem desenha decide para que lado abrir, e para
+       isso precisa saber onde o trecho termina. */
+    onde: { x: caixa.left + caixa.width / 2, y: caixa.top, yBaixo: caixa.bottom },
   };
 }
 

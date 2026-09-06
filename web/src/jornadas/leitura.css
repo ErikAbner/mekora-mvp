@@ -403,22 +403,29 @@
   position: fixed;
   z-index: 20;
   transform: translate(-50%, calc(-100% - 12px));
-  display: flex; flex-direction: column; gap: 24px;
-  inline-size: min(560px, calc(100vw - 32px));
-  padding: 24px;
+
+  /* `941:23120`: 672 de largura, 32 de recheio e 32 entre a fileira de cores e
+     a de ações. Estava 560/24/24. O `min()` fica: 672 num telefone de 390
+     transbordaria. */
+  display: flex; flex-direction: column; gap: 32px;
+  inline-size: min(672px, calc(100vw - 32px));
+  padding: 32px;
   background: var(--card, var(--background));
   border: 1px solid var(--border);
   box-shadow: 0 21px 10px rgb(0 0 0 / 0.03), 0 5px 6px rgb(0 0 0 / 0.04);
 }
 
-.paleta-cores { display: flex; gap: 16px; }
+/* AS CORES NÃO OCUPAM A LARGURA TODA: no nó a fileira mede 372 dentro de um
+   painel de 672, encostada à esquerda. Esticá-las até a borda transformava
+   quatro amostras em quatro botões grandes. */
+.paleta-cores { display: flex; gap: 24px; inline-size: min(372px, 100%); }
 
 .paleta-acoes { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.paleta-acoes-fazer { display: flex; gap: 16px; }
+.paleta-acoes-fazer { display: flex; gap: 24px; }
 
 .paleta-botao {
   display: inline-flex; align-items: center; gap: 16px;
-  padding: 14px 24px;
+  padding: 17px 24px;   /* `895:12846` */
   border: 1px solid var(--border);
   background: transparent;
   color: var(--muted-foreground);
@@ -427,7 +434,9 @@
 }
 .paleta-botao:hover { background: var(--muted); }
 .paleta-botao:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
-.paleta-cancelar { background: var(--background-secondary, var(--muted)); }
+/* Cancelar é a única com superfície e recheio próprios — `895:12850` põe `p-24`
+   e a borda em `border/subtle`. */
+.paleta-cancelar { padding: 24px; background: var(--background-secondary, var(--muted)); }
 
 .paleta-recado {
   margin: 0;
@@ -435,9 +444,12 @@
   font-size: 14px; line-height: 22px;
 }
 
+/* Aberta para baixo, quando o trecho está perto do topo da janela. */
+.paleta.paleta-abaixo { transform: translate(-50%, 12px); }
+
 .paleta-cor {
   flex: 1 0 0;
-  block-size: 48px;
+  block-size: 64px;
   padding: 0;
   border: 1px solid var(--borda-controle, var(--border));
   cursor: pointer;

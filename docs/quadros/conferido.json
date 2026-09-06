@@ -304,14 +304,14 @@
     "941:23120": {
       "tela": "Seleção · ações",
       "rota": "leitura",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-06",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/leitura.jsx",
+        "web/src/jornadas/Leitura.jsx",
         "web/src/jornadas/leitura.css",
-        "web/src/jornadas/Leitura.jsx"
+        "web/src/leitor/selecao.js"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "painel 672 com p-32 e 32 entre fileiras (era 560/24/24), amostras de 64 com 24 de vao numa fileira de 372 (eram 48/16 esticadas ate a borda), acoes com 24, botao py-17 e Cancelar com p-24 e superficie propria. Ordem das cores do no: verde, amarelo, azul, rosa. DEFEITO ACHADO E CORRIGIDO: com o trecho perto do topo da janela o painel saia pela borda de cima — medido, cortava as cores e metade dos botoes. Agora abre para baixo, ancorado no fim da selecao; `selecao.js` passou a devolver as duas bordas."
     },
     "895:7063": {
       "tela": "D · Apresentação",
