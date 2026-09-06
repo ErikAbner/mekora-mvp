@@ -76,7 +76,7 @@
     0 4px 3px rgb(0 0 0 / 0.04),
     0 1px 2px rgb(0 0 0 / 0.06);
   font-size: 14px;
-  line-height: 20px;
+  line-height: 22px;
   color: var(--foreground);
   white-space: nowrap;
   animation: canvas-recado-entra 160ms var(--saida);
@@ -395,7 +395,7 @@
   padding-block-start: 8px;
   border-block-start: 1px solid color-mix(in srgb, var(--foreground) 20%, transparent);
   font-size: 14px;
-  line-height: 20px;
+  line-height: 22px;
   font-style: italic;
 }
 
@@ -425,7 +425,7 @@
 .nota-canvas .nota-quando {
   color: var(--muted-foreground);
   font-size: 14px;
-  line-height: 20px;
+  line-height: 22px;
 }
 .nota-canvas .nota-quando { font-variant-numeric: tabular-nums; }
 
@@ -475,7 +475,7 @@
   color: var(--muted-foreground);
   font: inherit;
   font-size: 14px;
-  line-height: 20px;
+  line-height: 22px;
   letter-spacing: 1px;
   cursor: pointer;
   transition: background-color 160ms var(--saida), color 160ms var(--saida), transform 160ms var(--saida);
@@ -515,7 +515,7 @@
   background: none;
   font: inherit;
   font-size: 14px;
-  line-height: 20px;
+  line-height: 22px;
   color: var(--foreground);
   text-align: start;
   text-decoration: none;
@@ -536,7 +536,7 @@
   justify-content: space-between;
   gap: 16px;
   font-size: 14px;
-  line-height: 20px;
+  line-height: 22px;
   color: var(--muted-foreground);
 }
 
@@ -773,14 +773,14 @@
 .nota-previa-texto { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 
 .nota-previa-titulo {
-  font-size: 14px; line-height: 20px;
+  font-size: 14px; line-height: 22px;
   /* Duas linhas e corta: o cartão vive numa nota de 220px, e um título de sete
      linhas empurraria o rodapé da nota para fora. */
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
   overflow: hidden;
 }
 .nota-previa-site {
-  font-size: 14px; line-height: 20px;
+  font-size: 14px; line-height: 22px;
   opacity: 0.75;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
@@ -848,7 +848,7 @@
   inset-block-start: 2px; inset-inline-end: 2px;
   min-inline-size: 20px; padding: 0 4px;
   background: var(--foreground); color: var(--background);
-  font-size: 14px; line-height: 20px; text-align: center;
+  font-size: 14px; line-height: 22px; text-align: center;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1215,7 +1215,7 @@
     0 10px 4px rgb(0 0 0 / 0.02),
     0 4px 3px rgb(0 0 0 / 0.04),
     0 1px 2px rgb(0 0 0 / 0.06);
-  font-size: 14px; line-height: 20px;
+  font-size: 14px; line-height: 22px;
   color: var(--foreground);
   white-space: nowrap;
   animation: canvas-recado-entra 160ms var(--saida);
@@ -1241,7 +1241,7 @@
   border: 0; border-radius: var(--radius, 0);
   padding: 7px 12px;
   background: none;
-  font: inherit; font-size: 14px; line-height: 20px;
+  font: inherit; font-size: 14px; line-height: 22px;
   color: var(--foreground);
   cursor: pointer;
   transition: background-color 120ms var(--saida);
@@ -1312,7 +1312,7 @@
   /* Duas linhas e corta: um titulo de sete linhas empurraria o cartao inteiro. */
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
-.livro-canvas .livro-autor { font-size: 14px; line-height: 20px; color: var(--muted-foreground); }
+.livro-canvas .livro-autor { font-size: 14px; line-height: 22px; color: var(--muted-foreground); }
 
 .livro-canvas .nota-acoes {
   display: flex; justify-content: flex-end;
@@ -1333,7 +1333,7 @@
  * precisam dizer qual e qual — sem isso, livro e nota viram uma pilha so. */
 .trazer-titulo {
   margin: 20px 0 8px;
-  font-size: 14px; line-height: 20px;
+  font-size: 14px; line-height: 22px;
   color: var(--muted-foreground);
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -1580,7 +1580,7 @@
 }
 .canvas-achados button:hover { background: var(--muted); }
 .canvas-achado-tipo {
-  font-size: 14px; line-height: 20px;
+  font-size: 14px; line-height: 22px;
   color: var(--muted-foreground);
   text-transform: uppercase; letter-spacing: 0.06em;
 }
@@ -1592,6 +1592,6 @@
   margin: 8px 0 0; padding: 12px;
   border-radius: var(--radius, 0);
   background: var(--popover, var(--card));
-  font-size: 14px; line-height: 20px;
+  font-size: 14px; line-height: 22px;
   color: var(--muted-foreground);
 }

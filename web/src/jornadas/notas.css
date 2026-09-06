@@ -83,7 +83,7 @@
 }
 
 .nota-pe { margin-block-start: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.nota-origem { flex: 1 0 auto; font-size: 14px; line-height: 20px; color: var(--muted-foreground); }
+.nota-origem { flex: 1 0 auto; font-size: 14px; line-height: 22px; color: var(--muted-foreground); }
 
 .nota-pe a, .nota-pe button {
   padding: 4px 10px;
@@ -92,7 +92,7 @@
   color: var(--foreground);
   font-family: inherit;
   font-size: 14px;
-  line-height: 20px;
+  line-height: 22px;
   text-decoration: none;
   cursor: pointer;
 }

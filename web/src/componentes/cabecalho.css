@@ -255,7 +255,7 @@ a.acao.active { background: var(--muted); color: var(--foreground); }
 .menu-grupo + .menu-grupo { margin-block-start: 24px; }
 .menu-grupo h3 {
   margin: 0 0 8px;
-  font-size: 14px; line-height: 20px;   /* Label/Small */
+  font-size: 14px; line-height: 22px;   /* Label/Small */
   text-transform: uppercase; letter-spacing: 0.06em;
   color: var(--muted-foreground);
 }

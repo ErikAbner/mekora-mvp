@@ -25,7 +25,7 @@
 .rodape h2 {
   margin: 0 0 16px;
   font-size: 14px;
-  line-height: 20px;
+  line-height: 22px;
   font-weight: 540;
   /* A tinta secundária do rodapé é o fundo da página misturado à superfície
      dele — o mesmo degrau que `--muted-foreground` faz do outro lado. */

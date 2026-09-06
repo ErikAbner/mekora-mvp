@@ -35,7 +35,7 @@
   padding: 10px;
   text-align: center;
   font-size: 14px;
-  line-height: 20px;
+  line-height: 22px;
   color: var(--muted-foreground);
 }
 
@@ -148,7 +148,7 @@
 .preparo-pagina-ajuste { display: flex; flex-direction: column; gap: 16px; }
 .preparo-pagina-ajuste .campo { inline-size: 100%; }
 
-.preparo-pagina-nota { margin: 0; max-inline-size: 60ch; font-size: 14px; line-height: 20px; color: var(--muted-foreground); text-wrap: pretty; }
+.preparo-pagina-nota { margin: 0; max-inline-size: 60ch; font-size: 14px; line-height: 22px; color: var(--muted-foreground); text-wrap: pretty; }
 
 .preparo-pagina-erro {
   margin: 0;

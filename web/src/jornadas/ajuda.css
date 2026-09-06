@@ -173,6 +173,6 @@
 .ajuda-topo .campo { max-inline-size: 520px; margin-inline: auto; inline-size: 100%; }
 .ajuda-resultado {
   margin: 12px 0 0;
-  font-size: 14px; line-height: 20px;
+  font-size: 14px; line-height: 22px;
   color: var(--muted-foreground);
 }

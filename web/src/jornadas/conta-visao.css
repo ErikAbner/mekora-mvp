@@ -99,7 +99,7 @@
 .visao-nome { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
 .visao-nome .campo { flex: 1 1 260px; }
 
-.visao-recado { margin: 0; font-size: 14px; line-height: 20px; color: var(--muted-foreground); }
+.visao-recado { margin: 0; font-size: 14px; line-height: 22px; color: var(--muted-foreground); }
 
 @media (max-width: 767px) {
   .visao-retrato { flex-direction: column; }

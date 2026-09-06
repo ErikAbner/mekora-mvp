@@ -167,7 +167,7 @@
 }
 .marcador-numero {
   color: var(--primary-foreground);
-  font-size: 16px; line-height: 20px;   /* como o no 895:7388 */
+  font-size: 16px; line-height: 24px;   /* como o no 895:7388 */
 }
 
 .livro-texto { display: flex; flex-direction: column; gap: 16px; padding: 12px; margin: -12px; }
@@ -471,7 +471,7 @@
 .ficha-aviso {
   margin: 12px 0 0;
   font-size: 14px;
-  line-height: 20px;
+  line-height: 22px;
   color: var(--muted-foreground);
 }
 
@@ -512,7 +512,7 @@
   flex-direction: column;
   gap: 4px;
   font-size: 14px;
-  line-height: 20px;
+  line-height: 22px;
   color: var(--muted-foreground);
 }
 

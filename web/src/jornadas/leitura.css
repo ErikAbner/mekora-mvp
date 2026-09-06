@@ -59,7 +59,7 @@
   border: 1px solid var(--border);
   background: var(--popover, var(--card));
   color: var(--foreground);
-  font-size: 14px; line-height: 20px;
+  font-size: 14px; line-height: 22px;
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
@@ -388,7 +388,7 @@
 .virar-conta {
   margin: 0;
   font-size: 14px;
-  line-height: 20px;
+  line-height: 22px;
   color: var(--muted-foreground);
   font-variant-numeric: tabular-nums;
 }
@@ -523,7 +523,7 @@
   color: var(--foreground);
   font-family: inherit;
   font-size: 14px;
-  line-height: 20px;
+  line-height: 22px;
   cursor: pointer;
 }
 
@@ -593,7 +593,7 @@
   color: var(--foreground);
   font-family: inherit;
   font-size: 14px;
-  line-height: 20px;
+  line-height: 22px;
   resize: vertical;
 }
 
@@ -617,7 +617,7 @@
   border: 1px solid var(--destructive, var(--foreground));
   color: var(--foreground);
   font-size: 14px;
-  line-height: 20px;
+  line-height: 22px;
 }
 
 /* ---- rolagem continua ------------------------------------------------------
