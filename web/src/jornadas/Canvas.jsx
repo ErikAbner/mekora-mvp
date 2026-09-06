@@ -3808,8 +3808,11 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
             neste passo, que é onde a pessoa já está.
             
             Só aparece quando há o que trazer. Um caminho para lista vazia é uma
-            porta que se abre num quarto sem nada. */}
-        {deFora.length > 0 && (
+            porta que se abre num quarto sem nada.
+            
+            E não aparece EDITANDO: quem está mudando o texto de uma nota que já
+            está na superfície não tem o que trazer para lá. */}
+        {!editando && deFora.length > 0 && (
           <p className="canvas-ou-trazer">
             Ou{" "}
             <button
