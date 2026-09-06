@@ -183,14 +183,13 @@
     "967:31833": {
       "tela": "M · Preparo — em andamento",
       "rota": "/preparo/:id",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-06",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/preparo.jsx",
-        "web/src/jornadas/preparo.css",
-        "web/src/jornadas/Preparo.jsx"
+        "web/src/jornadas/Preparo.jsx",
+        "web/src/jornadas/preparo.css"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "tela medida com scripts/medidas/andando-de-mentira.js — o conversor da bancada falha na hora e ela nunca aparece por si. Corrigidos: 15px (que nao existe na escala) para 16/24 na frase e 20/30 na contagem, barra de 8 para 16 dentro de caixa de 6, cartao com 40x24 e 24 entre titulo e frase, titulo 24/32 tambem no telefone. NAO FEITO, e de proposito: a lista de passos do no traz previsao de tempo por etapa ('01:10'), e esta tela se recusa a inventar previsao — o codigo ja diz isso. PENDENTE ERIK: o no tem 'Cancelar' ao lado de 'Continuar navegando'; o endpoint existe (/jobs/{id}/operations/{op}/cancel) e o produto nao oferece."
     },
     "973:32414": {
       "tela": "M · Leitura · aparência",
@@ -531,14 +530,13 @@
     "895:8029": {
       "tela": "D · Preparo — em andamento",
       "rota": "/preparo/:id",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-06",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/preparo.jsx",
-        "web/src/jornadas/preparo.css",
-        "web/src/jornadas/Preparo.jsx"
+        "web/src/jornadas/Preparo.jsx",
+        "web/src/jornadas/preparo.css"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "tela medida com scripts/medidas/andando-de-mentira.js — o conversor da bancada falha na hora e ela nunca aparece por si. Corrigidos: 15px (que nao existe na escala) para 16/24 na frase e 20/30 na contagem, barra de 8 para 16 dentro de caixa de 6, cartao com 40x24 e 24 entre titulo e frase, titulo 24/32 tambem no telefone. NAO FEITO, e de proposito: a lista de passos do no traz previsao de tempo por etapa ('01:10'), e esta tela se recusa a inventar previsao — o codigo ja diz isso. PENDENTE ERIK: o no tem 'Cancelar' ao lado de 'Continuar navegando'; o endpoint existe (/jobs/{id}/operations/{op}/cancel) e o produto nao oferece."
     },
     "895:8164": {
       "tela": "D · Preparo — pronto",

@@ -190,7 +190,8 @@
  * marca de citacao do resto do sistema: uma barra de tinta cheia na borda de
  * inicio, e nenhuma cor nova. */
 .preparo-andando-card {
-  padding: 24px 24px 24px 32px;
+  /* 40 em cima e embaixo, 24 dos lados — `967:31869`. Tinha 24 em volta. */
+  padding: 40px 24px;
   background: var(--background-secondary);
     /* DOIS, e nao quatro. A barra de acento do desenho tem 2px: o no `966:31540`,
      a faixa do veredito do Preparo, usa `border-l-2`. O codigo tinha 4px em
@@ -199,25 +200,31 @@
      Achado pelo `scripts/borda.mjs` em 04/09. */
   border-inline-start: 2px solid var(--foreground);
 }
+/* 24 entre o título e a frase — `967:31870`. Com 8 e a caixa aparada os dois
+   liam como um parágrafo só. */
 .preparo-andando-card h2 {
-  margin: 0 0 8px;
+  margin: 0 0 24px;
   font-size: 24px; line-height: 32px; font-weight: 540;   /* Body/Large */
   color: var(--foreground);
   text-wrap: pretty;
 }
+/* 16, E NÃO 15. Quinze não existe na escala — nem como corpo nem como token —,
+   e o nó (`967:31872`) diz Body/Small 16/24. */
 .preparo-andando-card p {
   margin: 0;
-  font-size: 15px; line-height: 24px;
+  font-size: 16px; line-height: 24px;
   color: var(--muted-foreground);
   text-wrap: pretty;
 }
 .preparo-andando-recado { margin-block-start: 8px !important; }
 
 /* A LINHA DE MEDIDA: contagem a esquerda, relogio a direita — como no desenho. */
+/* A contagem e o relógio são Body/Medium 20/30 no nó (`967:31877`), nas duas
+   pontas da linha. Estavam em 15/24, fora da escala. */
 .preparo-andando-medida {
   display: flex; justify-content: space-between; gap: 16px;
   margin: 0;
-  font-size: 15px; line-height: 24px;
+  font-size: 20px; line-height: 30px;
   color: var(--muted-foreground);
 }
 .preparo-andando-medida > span:last-child { font-variant-numeric: tabular-nums; }
@@ -240,12 +247,18 @@
 /* A barra e um DEGRAU de superficie sobre outro, como todo estado do sistema.
  * Ela so aparece quando o servidor manda porcentagem: barra que anda sozinha
  * sem dado por tras e a mentira mais comum desta tela em qualquer produto. */
+/* A BARRA TEM 16, dentro de uma caixa de 6 de recheio — `967:31875` e
+   `967:31876`. Com 8 e sem caixa ela lia como um filete de separação, e não
+   como a única coisa desta tela que sabe contar. */
 .preparo-barra {
-  block-size: 8px;
-  background: var(--background-tertiary);
+  block-size: 28px;
+  padding: 6px;
+  background: var(--background);
+  border: 1px solid var(--border);
 }
+.preparo-barra > span { block-size: 16px; }
 .preparo-barra > span {
-  display: block; block-size: 100%;
+  display: block;
   background: var(--foreground);
   transition: inline-size var(--d1, 160ms) cubic-bezier(.16, 1, .3, 1);
 }
@@ -285,12 +298,10 @@
   }
   .preparo-pagina h1 { font-size: 32px; line-height: 40px; }
 
-  .preparo-pagina-veredito { padding: 24px; }
+  .preparo-pagina-veredito { padding: 40px 24px; }   /* `966:31540`: px-24 py-40 */
   .preparo-pagina-capa { inline-size: 100%; }
   .preparo-fim { margin-block: 40px; }
   .preparo-fim h1 { font-size: 32px; line-height: 40px; }
-  .preparo-andando-card { padding: 16px 16px 16px 20px; }
-  .preparo-andando-card h2 { font-size: 20px; line-height: 30px; }
   .preparo-fim-acoes { flex-direction: column; align-items: stretch; }
 }
 
