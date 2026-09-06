@@ -41,6 +41,7 @@ const LIVRO = RAIZ + 'docs/REJEITADO.md';
 /* ### R-01 · 2026-09-01 · aberto  →  campos em linhas `**Campo:** valor` */
 function ler(texto) {
   const itens = [];
+  const tortos = [];
   let atual = null, cerca = false;
   for (const linha of texto.split('\n')) {
     /* O bloco cercado do cabecalho e o EXEMPLO do formato. Sem esta linha o
@@ -49,11 +50,19 @@ function ler(texto) {
     if (linha.trim().startsWith('```')) { cerca = !cerca; continue; }
     if (cerca) continue;
     const cab = /^###\s+(R-\d+)\s*·\s*([\d-]+)\s*·\s*(aberto|fechado)\s*$/.exec(linha.trim());
+    /* CABEÇALHO TORTO NÃO SOME EM SILÊNCIO. Escrevi `· fechado 06/09` em três
+       itens e os três CAÍRAM FORA da contagem — 54 viraram 52 e ninguém acusou.
+       Um livro de recusas que perde item quando o cabeçalho não bate é pior que
+       não ter livro: ele diz um número menor e parece progresso. */
+    if (!cab && /^###\s+R-\d+/.test(linha.trim()) && !/^###\s+R-\d+-/.test(linha.trim())) {
+      tortos.push(linha.trim());
+    }
     if (cab) { atual = { id: cab[1], data: cab[2], estado: cab[3], campos: {} }; itens.push(atual); continue; }
     if (!atual) continue;
     const campo = /^\*\*([^:*]+):\*\*\s*(.*)$/.exec(linha.trim());
     if (campo) atual.campos[campo[1].toLowerCase()] = campo[2].trim();
   }
+  itens.tortos = tortos;
   return itens;
 }
 
@@ -117,6 +126,11 @@ if (!itens.length) { console.log('rejeitado: livro sem itens legiveis. Confira o
 const { faltas, abertos, indeterminados } = julgar(itens);
 const fechados = itens.length - abertos.length;
 console.log(`rejeitado: ${itens.length} itens · ${fechados} fechados · ${abertos.length} abertos\n`);
+if (itens.tortos?.length) {
+  console.log(`  CABECALHO TORTO  (${itens.tortos.length}) — o item existe no arquivo e NAO entra na conta`);
+  for (const t of itens.tortos) console.log(`      ${t}`);
+  console.log('      formato: ### R-NN · AAAA-MM-DD · aberto|fechado   (a data do FECHAMENTO vai no corpo)\n');
+}
 if (abertos.length) {
   console.log(`  ABERTO  (${abertos.length}) — divida conhecida, nao derruba`);
   for (const i of abertos) console.log(`      ${i.id}  ${(i.campos.erik || '').slice(0, 88)}`);

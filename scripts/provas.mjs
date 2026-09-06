@@ -334,6 +334,59 @@ const PROVAS = {
     },
   },
 
+  'r29': {
+    erik: '"Ha imagens ilustrativas nas secoes, cuidadosamente posicionadas para ficar em cima do container ... e ainda assim voce fez errado"',
+    /* O VENENO ESCONDE O DESENHO, que e o estado de 04/09: a tela nao tinha
+       imagem nenhuma maior que 24px porque o SVG exportado era o no ERRADO — um
+       bloco de texto branco — e tinha sido apagado. */
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.conta-desenho{display:none !important}';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/conta/privacidade', `
+        const im = document.querySelector('.conta-desenho');
+        const painel = document.querySelector('.conta-painel');
+        const r = im ? im.getBoundingClientRect() : null;
+        const p = painel ? painel.getBoundingClientRect() : null;
+        return {
+          temPainel: !!painel,
+          alto: r ? Math.round(r.height) : 0,
+          largo: r ? Math.round(r.width) : 0,
+          /* EM CIMA DO CONTAINER, que e a metade da frase do Erik que uma
+             imagem presente mas empilhada nao cumpre: a base do desenho cai
+             DENTRO do card, e nao acima dele. */
+          entra: r && p ? Math.round(r.bottom - p.top) : null,
+        };`, veneno);
+      if (!d.temPainel) throw new NaoPodeMedir('a tela de privacidade nao montou');
+      if (d.alto <= 24) return `a secao nao tem desenho nenhum maior que 24px (mediu ${d.alto})`;
+      if (!(d.entra > 0)) return `o desenho existe mas nao encosta no card: a base dele fica ${-d.entra}px acima do topo`;
+      return null;
+    },
+  },
+
+  'r40': {
+    erik: '"falta os desenhos das configuracoes"',
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.conta-desenho{display:none !important}';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/conta/preferencias', `
+        const im = document.querySelector('.conta-desenho');
+        const r = im ? im.getBoundingClientRect() : null;
+        return {
+          temPainel: !!document.querySelector('.conta-painel'),
+          alto: r ? Math.round(r.height) : 0,
+          arquivo: im ? (im.getAttribute('src') || '') : null,
+        };`, veneno);
+      if (!d.temPainel) throw new NaoPodeMedir('a tela de preferencias nao montou');
+      if (d.alto <= 24) return `a tela de configuracoes nao tem desenho (mediu ${d.alto}px de altura)`;
+      /* O DESENHO E O DELA, e nao o de outra tela: quatro telas de conta, quatro
+         desenhos. Um so, repetido, e o defeito voltando de outro jeito. */
+      if (!/preferencias/.test(d.arquivo || '')) return `a tela de configuracoes usa o desenho de outra tela (${d.arquivo})`;
+      return null;
+    },
+  },
+
   'r53': {
     erik: '(nao e dele — a tela de Preparo pronta era inalcancavel por navegacao)',
     /* O VENENO REFAZ O ESTADO ANTERIOR: a tela de pronto some e a de analise

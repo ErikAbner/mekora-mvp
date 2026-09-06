@@ -250,11 +250,25 @@ Medido: o cartão sem capa desenha `.capa-de-reserva` com variante `1`, papel `r
 Medido depois do conserto, em conta nova: `POST` com `capitulo: 0` — o do parágrafo, e não `1`, o de entrada — e **uma** marca na tela, com fundo `rgb(239, 255, 191)`.
 **Prova:** `node scripts/provas.mjs r28`
 
-### R-29 · 2026-09-01 · aberto
+### R-29 · 2026-09-01 · fechado
 **Erik:** "Há imagens ilustrativas nas seções, cuidadosamente posicionadas para ficar em cima do container, com layout e ordem de layers pensados para não dar problema na implementação — e ainda assim você fez errado"
 **Onde:** /conta e filhas
 **Medido em 04/09:** Medido em /conta/privacidade: nenhuma imagem maior que 24px. O `Privacidade.jsx:50` registra por que — o SVG exportado era o no ERRADO, um bloco de texto branco, e foi apagado.
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r29`
+
+**Fechado em 06/09.** As quatro telas de conta têm desenho, e cada uma tem o
+seu: `/conta` 272×224, `/conta/kindle` 190×224, `/conta/preferencias` 201×224 e
+`/conta/privacidade` 224×224. A medida de 04/09 — "nenhuma imagem maior que
+24px" — não reproduz mais.
+
+A segunda metade da frase do Erik é a que a prova cobra junto: *"posicionadas
+para ficar em cima do container"*. Um desenho presente mas empilhado acima do
+card não cumpre o que ele descreveu, então `r29` mede a sobreposição e não só a
+presença — a base do desenho tem de cair DENTRO do card.
+
+Fica dito o que ainda não é do jeito dele: a largura seguia cravada em 272 para
+todos, e a de Preferências (200,601×224) vinha esticada 1,36×. Agora a altura é
+fixa e a largura segue a proporção de cada desenho.
 
 ### R-30 · 2026-09-01 · aberto
 **Erik:** "As letras pequenas podiam virar hot spot: bolinha clicável que abre popup informativo, em vez de texto quebrado e minúsculo por toda parte"
@@ -328,10 +342,19 @@ Medido depois do conserto, em conta nova: `POST` com `capitulo: 0` — o do par�
 **Onde:** /conta e filhas
 **Prova:** sem-prova
 
-### R-40 · 2026-09-02 · aberto
+### R-40 · 2026-09-02 · fechado
 **Erik:** "falta os desenhos das configurações"
 **Onde:** /conta e filhas — mesmo defeito que o R-29
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r40`
+
+**Fechado em 06/09.** A tela de configurações tem o desenho dela —
+`ilustracao-preferencias.svg`, 201×224 —, e a prova cobra as duas coisas: que
+exista, e que seja o DELA. Quatro telas de conta, quatro desenhos; um só,
+repetido, seria o mesmo defeito voltando de outro jeito.
+
+É por isso que o Kindle não usa o do nó: `966:25687` manda repetir ali o mesmo
+desenho de `/conta`, e duas abas vizinhas com o mesmo ornamento leem como
+defeito. Está registrado no quadro `966:25554` e é trocável numa linha.
 
 ### R-41 · 2026-09-02 · aberto
 **Erik:** "espaçamento na estante incoerente com o figma"
@@ -500,7 +523,7 @@ O que tinha falhado no meu primeiro teste era a **sessão**: pedi o trabalho `11
 Fica `epub_url` no código porque é o que a tela consome: o caminho público, o mesmo do download. O `epub_path` é absoluto no disco do servidor.
 **Prova:** `node scripts/provas.mjs r53`
 
-### R-54 · 2026-09-05 · fechado 06/09
+### R-54 · 2026-09-05 · fechado
 **Erik:** (não é dele — irmão do R-53, achado ao conferir a terceira tela do Preparo)
 **Onde:** /preparo/:id · `web/src/jornadas/Preparo.jsx` · `backend/app/api/jobs.py`
 **Medido em 05/09:** `preparando` tem a mesma falha que o `feito` tinha: **é estado de sessão**. Quem fecha a aba durante a conversão e volta ao mesmo endereço vê a **proposta**, com "Preparar com recomendações" clicável — enquanto o servidor já está convertendo aquele arquivo.
