@@ -172,14 +172,13 @@
     "966:31504": {
       "tela": "M · Preparo — o que encontrei",
       "rota": "/preparo/:id",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-06",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/preparo.jsx",
-        "web/src/jornadas/preparo.css",
-        "web/src/jornadas/Preparo.jsx"
+        "web/src/jornadas/Preparo.jsx",
+        "web/src/jornadas/preparo.css"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "o cartao vira COLUNA no telefone (icone, texto, botao de largura cheia): em grade de tres o texto ficava com 230 de 358. Recheio do cartao 40x24, h1 32/40, alternador de modo de largura cheia. As marcas do arquivo viraram 13x17 com Label/Small 14/22 (eram 4x12 e 14/20) e o vao entre elas 16 — nas DUAS larguras, porque a pilula e componente."
     },
     "967:31833": {
       "tela": "M · Preparo — em andamento",
@@ -521,13 +520,13 @@
     "895:7856": {
       "tela": "D · Preparo — o que encontrei",
       "rota": "/preparo/:id",
-      "conferido_em": "2026-09-05",
+      "conferido_em": "2026-09-06",
       "contra": "dado-do-no",
       "arquivos": [
         "web/src/jornadas/Preparo.jsx",
         "web/src/jornadas/preparo.css"
       ],
-      "nota": "escala inteira corrigida; quadrado de 32 e botoes por item em aberto (docs/TELAS-FIGMA.md)"
+      "nota": "escala inteira corrigida; quadrado de 32 e botoes por item em aberto (docs/TELAS-FIGMA.md) | 06/09: as marcas do arquivo mudaram de forma junto com o telefone: 13x17 e 14/22, do 966:31504."
     },
     "895:8029": {
       "tela": "D · Preparo — em andamento",

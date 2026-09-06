@@ -57,16 +57,19 @@
    meio abaixo, e o título do arquivo pesava menos que o título de uma seção. */
 .preparo-pagina h1 { margin: 0 0 32px; font-size: 40px; line-height: 48px; letter-spacing: -0.6px; color: var(--foreground); text-wrap: balance; }
 
-.preparo-pagina-marcas { margin: 0; display: flex; gap: 8px; flex-wrap: wrap; }
+.preparo-pagina-marcas { margin: 0; display: flex; gap: 16px; flex-wrap: wrap; }
 
 /* As marcas do arquivo são PÍLULA: `tag, chip, trilho e interruptor são
    pílula`, e a regra de raio zero governa ação e estrutura. */
+/* O recheio e a entrelinha são os do nó (`966:31504`): 13 por 17, e Label/Small
+   é 14/22 e não 14/20. Com 4 por 12 a pílula era um selo miúdo colado no texto;
+   é a mesma forma que os selos do Livro já usam. */
 .marca-arquivo {
-  padding: 4px 12px;
+  padding: 13px 17px;
   border: 1px solid var(--border);
   border-radius: 999px;
   font-size: 14px;
-  line-height: 20px;
+  line-height: 22px;
   color: var(--muted-foreground);
 }
 
@@ -259,10 +262,29 @@
   /* 16 DE BORDA NO TELEFONE. Os 64 do computador comiam 128 dos 390 e deixavam
      262 de conteúdo; com os cartões em `p-40` sobravam 182 para o texto. O 16 é
      o que os nós de telefone da Leitura (`966:29655`) e da Mesa usam nos seus
-     heroes — não conferi o `966:31504` deste Preparo em particular, e está
-     anotado em `docs/TELAS-FIGMA.md`. */
+     heroes — e agora também o que o `966:31504`, deste Preparo, confirma. */
   .preparo-pagina { padding-inline: 16px; }
-  .preparo-pagina-lista li { padding: 24px; column-gap: 24px; }
+
+  /* O CARTÃO VIRA COLUNA. Em grade de três, numa tela de 390, o texto ficava
+     com 230 entre o ícone e o botão. `966:31504` empilha: o quadrado de 32 na
+     primeira linha, título e explicação abaixo, e o botão de largura cheia no
+     fim, com 40 acima dele. */
+  .preparo-pagina-lista li {
+    display: flex; flex-direction: column; align-items: stretch;
+    gap: 24px;
+    padding: 40px 24px;
+  }
+  .preparo-pagina-lista li > .icone { align-self: flex-start; }
+  .preparo-pagina-lista h3 { margin: 0; }
+  .preparo-pagina-lista li > .botao,
+  .preparo-pagina-lista li > .preparo-pagina-sem-traducao {
+    margin-inline-start: 0;
+    margin-block-start: 16px;   /* 24 do vão + 16 = os 40 do nó */
+    align-self: stretch;
+    text-align: center;
+  }
+  .preparo-pagina h1 { font-size: 32px; line-height: 40px; }
+
   .preparo-pagina-veredito { padding: 24px; }
   .preparo-pagina-capa { inline-size: 100%; }
   .preparo-fim { margin-block: 40px; }
@@ -345,7 +367,10 @@
 .preparo-pagina-modo button:focus-visible { outline: 1px solid var(--foreground); outline-offset: -2px; }
 
 @media (max-width: 619px) {
-  .preparo-pagina-modo { align-self: stretch; }
+  /* `align-self: stretch` sozinho não estica nada aqui: a regra de cima crava
+     `inline-size: fit-content`, e largura vence alinhamento. Media a 390 com o
+     alternador ainda em 263 numa coluna de 358. `966:31529` é `w-full`. */
+  .preparo-pagina-modo { align-self: stretch; inline-size: auto; }
   .preparo-pagina-modo button { flex: 1 1 0; padding: 12px 16px; }
 }
 
