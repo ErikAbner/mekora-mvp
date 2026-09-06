@@ -11,6 +11,7 @@ import { linkDe, usarPrevia } from "./previa.js";
 import "./canvas.css";
 import { CapaDeReserva } from "../componentes/CapaDeReserva.jsx";
 
+
 /* O Canvas: onde as notas se ligam umas às outras.
  *
  *     Canvas organiza. Conexões descobre.  (DEC-0030)
@@ -342,7 +343,7 @@ function contarDesenho(tipo) {
   contas[tipo] += 1;
 }
 
-function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, aoEscolher, aoEscolherSozinho, aoInscrever, fio, alvoDoFio, carregada, escolhido, entreVarios, escala = 1 }) {
+function NotaCrua({ no, aoMover, aoTirar, aoEditar, aoLigarDaLista, aoMedir, aoSeguir, aoEscolher, aoEscolherSozinho, aoInscrever, fio, alvoDoFio, carregada, escolhido, entreVarios, escala = 1 }) {
   contarDesenho("nota");
   const quando = dataCurta(no.criada_em);
   const caixa = useRef(null);
@@ -727,6 +728,24 @@ function NotaCrua({ no, aoMover, aoTirar, aoLigarDaLista, aoMedir, aoSeguir, aoE
             <button type="button" role="menuitem" onClick={() => aoLigarDaLista(`nota:${no.nota_id}`)}>
               Ligar a…
             </button>
+            {/* EDITAR SÓ NA NOTA QUE NASCEU AQUI — R-43.
+                
+                O Erik: "itens no canvas que diz escrita aqui mas n da pra
+                escrever nem alterar o que tem na nota". Não dava mesmo: o menu
+                tinha "Abrir no livro", "Ligar a…" e "Tirar", e nenhuma outra
+                tela editava o texto de uma nota do Canvas — o "Editar o que
+                escrevi" da página da nota mexe no `comentario`, que numa nota
+                daqui está vazio.
+                
+                Não aparece na nota de leitura porque lá o texto é a CITAÇÃO do
+                livro. Editar aquilo faria o Mekora guardar, com origem e
+                página, uma frase que o autor não escreveu — e para o que a
+                pessoa tem a dizer já existe o comentário. */}
+            {!no.job_id && !no.midia && (
+              <button type="button" role="menuitem" onClick={() => aoEditar?.(no)}>
+                Editar
+              </button>
+            )}
             {/* TIRAR não apaga: a nota continua na estante e no caderno. O rótulo
                 diz "tirar" e não "apagar" por isso. */}
             <button type="button" role="menuitem" onClick={() => aoTirar(no.id)}>
@@ -1231,7 +1250,7 @@ function Secao({ secao, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
   );
 }
 
-export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acervo = [], notas = [], erro, aoTrazer, aoTrazerMidia, aoTrazerLivro, aoMoverLivro, aoTirarLivro, aoMover, aoTirar, aoLigar, aoDesligar, aoCriarSecao, aoMudarSecao, aoDissolverSecao, aoDevolverSecao }) {
+export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acervo = [], notas = [], erro, aoTrazer, aoTrazerMidia, aoTrazerLivro, aoMoverLivro, aoTirarLivro, aoMover, aoTirar, aoLigar, aoDesligar, aoCriarSecao, aoMudarSecao, aoDissolverSecao, aoDevolverSecao, aoEditarNota }) {
   /* PERFIL SOB DEMANDA. Ligado por `window.__canvasPerfil = true`, mede o corpo
    * do desenho ate o commit — que e onde o custo de um gesto com 123 objetos
    * aparece, e nao dentro do meu manipulador. Desligado, custa uma comparacao. */
@@ -1248,10 +1267,18 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
   /* Qual nota está esperando a segunda ponta, quando a ligação vem do teclado. */
   const [ligandoDaLista, setLigandoDaLista] = useState(null);
   const [escrevendo, setEscrevendo] = useState(false);
+  /* EDITANDO guarda a nota que está sendo mudada, ou nulo. A mesma folha serve
+     aos dois casos: escrever é editar uma nota que ainda não existe. */
+  const [editando, setEditando] = useState(null);
   const [pondoMidia, setPondoMidia] = useState(false);
   const [endereco, setEndereco] = useState("");
   const [foto, setFoto] = useState(null);
   const [texto, setTexto] = useState("");
+  const abrirEdicao = useCallback((no) => {
+    setTexto(no.texto || "");
+    setEditando(no);
+    setEscrevendo(true);
+  }, []);
   const [trazendo, setTrazendo] = useState(false);
 
   const naSuperficie = new Set(nos.map((n) => n.nota_id));
@@ -3603,6 +3630,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
               no={no}
               aoMover={aoMover}
               aoTirar={aoTirar}
+              aoEditar={abrirEdicao}
               fio={maoDoFio}
               aoLigarDaLista={setLigandoDaLista}
               aoMedir={anotarMedida}
@@ -3726,13 +3754,23 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
 
       <Folha
         aberta={escrevendo}
-        titulo="Escrever uma nota"
-        aoFechar={() => setEscrevendo(false)}
+        titulo={editando ? "Editar a nota" : "Escrever uma nota"}
+        aoFechar={() => { setEscrevendo(false); setEditando(null); }}
         acoes={
           <Botao
             tom="primaria"
-            porque={!texto.trim() ? "Escreva alguma coisa para pôr na superfície" : null}
+            porque={!texto.trim()
+              ? (editando ? "Uma nota vazia não diz nada" : "Escreva alguma coisa para pôr na superfície")
+              : null}
             onClick={async () => {
+              /* EDITAR PASSA POR AQUI TAMBÉM, e a folha é a mesma de propósito:
+                 escrever é editar uma nota que ainda não existe. Duas folhas
+                 para o mesmo gesto seriam duas coisas para manter iguais. */
+              if (editando) {
+                const deu = await aoEditarNota?.(editando, texto.trim());
+                if (deu) { setEscrevendo(false); setEditando(null); }
+                return;
+              }
               /* A NOTA NASCE ONDE A PESSOA ESTÁ OLHANDO.
                *
                * Era `x: 40, y: 40` — fixo, no canto do PLANO. Quem tivesse
@@ -3746,13 +3784,14 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
               if (feito?.length) setEscrevendo(false);
             }}
           >
-            Pôr na superfície
+            {editando ? "Guardar" : "Pôr na superfície"}
           </Botao>
         }
       >
         <p>
-          Uma nota que nasce aqui, sem livro. Ela vale o mesmo que as outras: dá
-          para ligar, mover e encontrar depois.
+          {editando
+            ? "O que você escreveu aqui. As ligações e o lugar dela na superfície não mudam."
+            : "Uma nota que nasce aqui, sem livro. Ela vale o mesmo que as outras: dá para ligar, mover e encontrar depois."}
         </p>
         <Campo
           rotulo="A nota"

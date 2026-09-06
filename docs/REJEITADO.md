@@ -556,12 +556,37 @@ escrito para o estado escolhido.
 O R-03 — o marcador de notas atrás da capa — já estava fechado com prova desde
 04/09. Com este, os três feedbacks dele sobre a Estante têm medida.
 
-### R-43 · 2026-09-02 · aberto
+### R-43 · 2026-09-02 · fechado
 **Erik:** "itens no canvas que diz escrita aqui mas n da pra escrever nem alterar o que tem na nota"
 **Onde:** /canvas
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r43`
 
 ## 04/09 — o que ele achou nas onze capturas
+
+**Fechado em 06/09, e a frase dele estava inteira certa.** Uma nota escrita no
+Canvas não podia ser alterada em lugar nenhum:
+
+- **no Canvas**, o menu tinha "Abrir no livro", "Ligar a…" e "Tirar" — nenhuma
+  ação de editar;
+- **na página da nota**, "Editar o que escrevi" mexe no `comentario`. Numa nota
+  do Canvas o texto mora no `trecho`, e o `comentario` está vazio: editar ali
+  acrescentava um comentário embaixo em vez de mudar o que estava escrito;
+- **no servidor**, `PATCH /notas/{id}` aceitava `comentario`, `cor`, `estado` e
+  `revisar`. `trecho` não estava na lista.
+
+Os três consertados: o modelo aceita `trecho`, o menu da nota ganhou "Editar", e
+a mesma folha de escrever serve para os dois — escrever é editar uma nota que
+ainda não existe.
+
+**A guarda é do produto, e não minha:** o servidor recusa mudar o `trecho`
+quando a nota tem livro. Ali ele é a CITAÇÃO, e deixar editá-la faria o Mekora
+guardar, com origem e página, uma frase que o autor não escreveu — para o que a
+pessoa tem a dizer já existe o comentário. Medido: `PATCH` com `trecho` numa
+nota de leitura responde **400** com essa frase; com `comentario`, **200**.
+
+A prova `r43` faz o gesto inteiro no navegador — abre o menu, clica em Editar,
+troca o texto, guarda, e confere que a superfície mudou. Envenenada sem o item
+do menu, ela reprova nomeando o que sobrou.
 
 ### R-44 · 2026-09-04 · fechado
 **Erik:** "capa do livro errado — o cartão Relatório de pesquisa renderiza a capa de Malha Urbana"

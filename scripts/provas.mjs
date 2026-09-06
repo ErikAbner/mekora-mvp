@@ -338,6 +338,53 @@ const PROVAS = {
     },
   },
 
+  'r43': {
+    erik: '"itens no canvas que diz escrita aqui mas n da pra escrever nem alterar o que tem na nota"',
+    /* O VENENO TIRA O "EDITAR" do menu, que e o estado em que a tela estava:
+       o menu da nota tinha "Abrir no livro", "Ligar a..." e "Tirar", e nenhuma
+       outra tela editava o texto de uma nota do Canvas — o "Editar o que
+       escrevi" da pagina da nota mexe no comentario, que ali esta vazio. */
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.nota-menu-lista button:nth-child(2){display:none !important}';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/canvas', `
+        const esperar2 = ms => new Promise(r3 => setTimeout(r3, ms));
+        for (let i = 0; i < 30 && !document.querySelector('.nota-canvas'); i++) await esperar2(200);
+        const b = document.querySelector('.nota-canvas [aria-label="Ações da nota"]');
+        if (!b) return { temNota: false };
+        b.click(); await esperar2(400);
+        const itens = [...document.querySelectorAll('.nota-menu-lista button')]
+          .filter(e => e.getBoundingClientRect().height > 4)
+          .map(e => (e.textContent || '').trim());
+        const editar = [...document.querySelectorAll('.nota-menu-lista button')]
+          .find(e => /Editar/.test(e.textContent || '') && e.getBoundingClientRect().height > 4);
+        if (!editar) return { temNota: true, itens, temEditar: false };
+        editar.click(); await esperar2(800);
+        const campo = [...document.querySelectorAll('dialog[open] textarea, dialog[open] input')]
+          .find(e => e.getBoundingClientRect().height > 10);
+        if (!campo) return { temNota: true, itens, temEditar: true, abriu: false };
+        const novo = 'medida ' + Date.now();
+        const proto = campo.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;
+        Object.getOwnPropertyDescriptor(proto, 'value').set.call(campo, novo);
+        campo.dispatchEvent(new Event('input', { bubbles: true }));
+        await esperar2(300);
+        const guardar = [...document.querySelectorAll('button')]
+          .find(e => (e.textContent || '').trim() === 'Guardar');
+        if (!guardar) return { temNota: true, itens, temEditar: true, abriu: true, temGuardar: false };
+        guardar.click(); await esperar2(1800);
+        const naTela = [...document.querySelectorAll('.nota-canvas .nota-texto')].map(e => (e.textContent || '').trim());
+        return { temNota: true, itens, temEditar: true, abriu: true, temGuardar: true,
+                 guardou: naTela.includes(novo) };`, veneno);
+      if (!d.temNota) throw new NaoPodeMedir('a superficie do Canvas nao mostrou nota nenhuma');
+      if (!d.temEditar) return `o menu da nota nao tem "Editar" (tem: ${d.itens.join(', ')})`;
+      if (!d.abriu) return 'o "Editar" nao abriu a folha com o texto da nota';
+      if (!d.temGuardar) return 'a folha de editar abriu sem botao de guardar';
+      if (!d.guardou) return 'guardar nao trocou o texto da nota na superficie';
+      return null;
+    },
+  },
+
   'r20': {
     erik: '"Div central com 2 larguras sem necessidade" (/estudos)',
     /* O VENENO ACRESCENTA UMA TERCEIRA largura ao corpo — 1100 numa faixa que

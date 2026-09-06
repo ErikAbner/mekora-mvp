@@ -502,6 +502,24 @@ def editar(
 
     if troca.cor is not None:
         n.cor = troca.cor
+    # O TEXTO SÓ MUDA NA NOTA QUE NÃO VEIO DE LIVRO, e a distinção não é
+    # burocracia: numa nota de leitura o `trecho` é a CITAÇÃO — o que o livro
+    # diz —, e o que a pessoa escreveu está no `comentario`. Deixar editar a
+    # citação faria o Mekora guardar, com origem e página, uma frase que o autor
+    # não escreveu. Na nota nascida no Canvas o `trecho` é o texto dela: não há
+    # livro atrás, e é a única coisa que a pessoa escreveu.
+    #
+    # O R-43 é os dois lados disto: "não dá pra escrever nem alterar o que tem
+    # na nota". Não dava mesmo, em lugar nenhum — nem no Canvas, que não tinha
+    # ação de editar, nem na página da nota, cujo "Editar o que escrevi" mexe no
+    # `comentario`, que numa nota do Canvas está vazio.
+    if troca.trecho is not None:
+        if n.job_id is not None:
+            raise HTTPException(
+                status_code=400,
+                detail="O trecho de uma nota de leitura é a citação do livro, e não se edita.",
+            )
+        n.trecho = troca.trecho[:2000]
     if troca.comentario is not None:
         n.comentario = troca.comentario
     if troca.estado is not None:
@@ -550,6 +568,8 @@ class NotaMudada(BaseModel):
     estado: Optional[str] = None
     # `true` marca com a data de agora; `false` desmarca. `None` não mexe.
     revisar: Optional[bool] = None
+    # O TEXTO DA NOTA ESCRITA NO CANVAS — e SÓ dela. Ver a guarda em `mudar_nota`.
+    trecho: Optional[str] = None
 
     @field_validator("cor")
     @classmethod
@@ -591,6 +611,24 @@ def mudar_nota(
     pessoa = _quem(db, mekora_sessao)
     n = _minha_nota(db, pessoa, nota_id)
 
+    # O TEXTO SÓ MUDA NA NOTA QUE NÃO VEIO DE LIVRO, e a distinção não é
+    # burocracia: numa nota de leitura o `trecho` é a CITAÇÃO — o que o livro
+    # diz —, e o que a pessoa escreveu está no `comentario`. Deixar editar a
+    # citação faria o Mekora guardar, com origem e página, uma frase que o autor
+    # não escreveu. Na nota nascida no Canvas o `trecho` é o texto dela: não há
+    # livro atrás, e é a única coisa que a pessoa escreveu.
+    #
+    # O R-43 é os dois lados disto: "não dá pra escrever nem alterar o que tem
+    # na nota". Não dava mesmo, em lugar nenhum — nem no Canvas, que não tinha
+    # ação de editar, nem na página da nota, cujo "Editar o que escrevi" mexe no
+    # `comentario`, que numa nota do Canvas está vazio.
+    if troca.trecho is not None:
+        if n.job_id is not None:
+            raise HTTPException(
+                status_code=400,
+                detail="O trecho de uma nota de leitura é a citação do livro, e não se edita.",
+            )
+        n.trecho = troca.trecho[:2000]
     if troca.comentario is not None:
         n.comentario = troca.comentario
     if troca.cor is not None:

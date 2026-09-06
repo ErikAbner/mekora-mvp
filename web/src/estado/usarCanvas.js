@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   apagarGrupo, criarGrupo, desligarNotas, lerCanvas, ligar as ligarNoServidor, moverNoCanvas,
-  moverLivroNoCanvas, mudarGrupo, porLivroNoCanvas, voltarGrupo, porMidiaNoCanvas, porNoCanvas,
+  moverLivroNoCanvas, mudarGrupo, mudarNota, porLivroNoCanvas, voltarGrupo, porMidiaNoCanvas, porNoCanvas,
   tirarDoCanvas, tirarLivroDoCanvas,
 } from "../../../contrato/api.js";
 
@@ -180,6 +180,30 @@ export function usarCanvas() {
     }
   }, [recarregar]);
 
+  /* EDITAR O TEXTO DE UMA NOTA DA SUPERFÍCIE — R-43.
+   *
+   * Mesma forma do `tirar`: muda a lista na hora e desfaz se o servidor
+   * recusar. Sem o passo otimista a nota só mudava depois de recarregar a
+   * superfície, e "guardar" parecia não ter feito nada — foi o que a primeira
+   * medida mostrou.
+   *
+   * `mudarNota` e não `editarNota`: a nota do Canvas tem `job_id` nulo, e a
+   * rota com trabalho no caminho responde 404 para ela. O servidor só aceita
+   * mudar o `trecho` quando não há livro atrás — numa nota de leitura ele é a
+   * citação. */
+  const editarTexto = useCallback(async (no, texto) => {
+    const antes = nosVivos.current;
+    setNos((atual) => atual.map((n) => (n.id === no.id ? { ...n, texto } : n)));
+    try {
+      await mudarNota(no.nota_id, { trecho: texto });
+      return true;
+    } catch (e) {
+      setNos(antes);
+      setErro(e.message);
+      return false;
+    }
+  }, []);
+
   const ligar = useCallback(async (a, b) => {
     setErro(null);
     try {
@@ -246,7 +270,7 @@ export function usarCanvas() {
 
   return {
     nos, ligacoes, secoes, livros, erro, carregando,
-    trazer, trazerMidia, trazerLivro, mover, moverLivro, tirar, tirarLivro, ligar, desligar, recarregar,
+    trazer, trazerMidia, trazerLivro, mover, moverLivro, tirar, editarTexto, tirarLivro, ligar, desligar, recarregar,
     criarSecao, mudarSecao, dissolverSecao, devolverSecao,
   };
 }
