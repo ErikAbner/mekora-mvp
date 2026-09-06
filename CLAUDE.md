@@ -189,6 +189,33 @@ adivinhar o nome da classe.
 
     node scripts/medir.mjs "$WEB/nota/$ID" 1440 1000 scripts/medidas/tela.js --sessao=$TOKEN
 
+## A bancada precisa saber produzir o caso
+
+Dado de prova onde tudo já está pronto só sabe dizer que está tudo bem.
+
+Três defeitos reais ficaram abertos por semanas porque a bancada não conseguia
+MOSTRÁ-LOS, e nos três a nota do item dizia isso com todas as letras:
+
+| item | o que faltava semear | quem fechou |
+|---|---|---|
+| R-53 | trabalho parado em `analyzed` | `_sessao.py analisado` |
+| R-54 | conversão em curso | `_sessao.py convertendo [id]` |
+| R-15 | uma seção dentro de outra | `_sessao.py secao-coberta` |
+
+O R-51 é o mesmo buraco visto de outra tela, e continua aberto: *"nunca tinha
+aparecido porque a bancada não produzia o caso — todo trabalho semeado nascia
+`converted`"*.
+
+O padrão: a semente nasce no estado FELIZ, a rota é visitada, a cobertura fica
+verde, e a tela que ninguém consegue abrir é a que tem o defeito. É verde por
+omissão com outro disfarce — a medida não mente, ela só nunca chegou lá.
+
+**Antes de escrever "não deu para medir", ensine a bancada a produzir o caso.**
+Semear é escrever no banco, e leva minutos; um item que ninguém consegue fechar
+custa meses. E quem semeia um estado tem de saber DESFAZER: a bancada tem uma
+pessoa por rodada, e deixar o trabalho em conversão faz a prova seguinte medir
+outra tela sem saber por quê — daí o `finally` no `provas.mjs`.
+
 ## Armadilhas de implementação já pagas
 
 - **Arrastar não mexe no DOM.** Mover o nó libera a captura de ponteiro no
