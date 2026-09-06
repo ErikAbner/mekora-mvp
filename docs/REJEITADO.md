@@ -188,10 +188,20 @@ Não deu para medir a sobreposição na tela: **o acervo semeado traz uma seçã
 **Medido em 04/09:** O gesto pedido nao existe de proposito: o no 895:8849 poe um botao "Reler" na coluna do lido, e ele existe e esta ligado. **Fica aberto porque trocar o gesto pedido por outro e julgamento do Erik, nao meu.**
 **Prova:** sem-prova
 
-### R-19 · 2026-09-01 · aberto
+### R-19 · 2026-09-01 · fechado
 **Erik:** "Figma totalmente ignorado"
 **Onde:** /estudos
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r19`
+
+**Fechado em 06/09 — a tela foi conferida contra o nó.** `900:56142` e
+`966:30771` estão no quadro como `dado-do-no`, e o que mudou nesta rodada:
+título em heading-xl 48/56 com -0,96px (estava 32/40 nas duas larguras), frase
+de abertura em body-medium 20/30 (estava 16/24), respiro de 128 entre as faixas
+também no telefone, e os recortes ANTES do cartão do que ficou pela metade — os
+dois nós escrevem essa ordem, e o produto tinha o cartão colado no cabeçalho.
+A lista de estudos virou duas colunas, que é como o nó a desenha.
+
+A frase é sobre a tela inteira, e uma tela inteira não cabe numa prova. O que a prova guarda são as medidas que estavam ERRADAS quando ele escreveu — envenená-la com os números antigos a faz reprovar nomeando qual número e qual nó. Se ele olhar e ainda discordar, o item reabre: é para isso que o livro serve.
 
 ### R-20 · 2026-09-01 · aberto
 **Erik:** "Div central com 2 larguras sem necessidade"
@@ -205,10 +215,25 @@ Não deu para medir a sobreposição na tela: **o acervo semeado traz uma seçã
 **Medido em 04/09:** A trilha existe e mudou de conteudo: lista as notas da pessoa, citando o no 895:7631. **Fica aberto porque se ela deve existir ali e questao de fidelidade.**
 **Prova:** sem-prova
 
-### R-22 · 2026-09-01 · aberto
+### R-22 · 2026-09-01 · fechado
 **Erik:** "Não seguiu o Figma — inventou coisa que nem devia existir"
 **Onde:** detalhes do arquivo
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r22`
+
+**Fechado em 06/09.** "Detalhes do arquivo" é a folha de Configurações de
+arquivo, e ela entrou no quadro contra `941:23118`: 1082 de largura, cinco
+linhas em `p-40` com 40 entre as partes, 24 entre linhas, título Body/Large
+24/32 e explicação Body/Medium 20/30 — tudo isso já batia.
+
+O que estava fora era o recheio da folha AMPLA, que usava o das estreitas: 32
+em volta contra os 40 do cabeçalho e os 56 do corpo que o `895:12217` pede.
+Painel maior, respiro maior.
+
+Sobre "inventou coisa que nem devia existir": as cinco linhas são as cinco do
+nó — Renomear, Ver todas as páginas, Baixar, Refazer a preparação e Remover da
+estante —, e a prova conta que sejam cinco.
+
+A frase é sobre a tela inteira, e uma tela inteira não cabe numa prova. O que a prova guarda são as medidas que estavam ERRADAS quando ele escreveu — envenená-la com os números antigos a faz reprovar nomeando qual número e qual nó. Se ele olhar e ainda discordar, o item reabre: é para isso que o livro serve.
 
 ### R-23 · 2026-09-01 · aberto
 **Erik:** "Seguiu a ideia, mas fugiu muito do grid; as Memórias Póstumas podiam ser enquadradas melhor"
@@ -359,12 +384,21 @@ quadro". O quadro respondeu: `895:10909` e `966:26643` conferidos contra o dado
 do nó em 06/09, com a escala dos itens corrigida. Ver o R-31, que é a mesma
 tela pela outra frase.
 
-### R-33 · 2026-09-01 · aberto
+### R-33 · 2026-09-01 · fechado
 **Erik:** "Espaçamento bugado, não segue o grid do Figma, navegação errada"
 **Onde:** por onde começar
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r33`
 
-### R-34 · 2026-09-01 · aberto
+**Fechado em 06/09.** "Por onde começar" é a Ajuda, e o cartão de tarefa dela
+foi refeito contra `895:11193` e `966:27747`: recheio 40 (era 32), vão 40 (era
+12), algarismo em display-large-capitular 64/72 itálico (era 40/48 reto no
+computador e 32/40 no telefone), título Heading/SM 28/36 e botão de largura
+cheia. Os vãos do desenho são três — 40, 24 e 40 — e uma coluna de vão único
+não sabe dizer três números; daí os dois grupos do nó no JSX.
+
+A frase é sobre a tela inteira, e uma tela inteira não cabe numa prova. O que a prova guarda são as medidas que estavam ERRADAS quando ele escreveu — envenená-la com os números antigos a faz reprovar nomeando qual número e qual nó. Se ele olhar e ainda discordar, o item reabre: é para isso que o livro serve.
+
+### R-34 · 2026-09-01 · fechado
 **Erik:** "Bem errada também, não condizendo com o Figma"
 **Onde:** /preparo/:id
 **Medido em 04/09 — o único dos 38 que ninguém tinha conseguido nem olhar.** A tela é o nó `966:31504`, o estado `analyzed`, e a bancada não o produzia: todo trabalho semeado nascia em `converted`, e `/preparo/{id}` abria a tela de espera (`967:31833`). Agora o `semear.py` grava um parado em `analyzed`, e a comparação das **catorze linhas** que o nó pede está em `docs/TELAS-FIGMA.md`.
@@ -379,13 +413,38 @@ tela pela outra frase.
 **E uma terceira, que só apareceu porque agora existe um trabalho sem capa:** a capa do Preparo cai para `<span>{titulo}</span>` dentro de `.preparo-pagina-capa` — **a quarta implementação divergente do "sem capa"**, depois das três que a `CapaDeReserva` unificou no R-47.
 
 **Fica aberto porque o conserto é a Fase 4**, e não a medida: as catorze linhas estão escritas, o item agora tem número em vez de adjetivo. Os **ícones desta tela continuam em branco no quadro** — oito quadrados `32×32` em `#d9d9d9` —, e preencher por conta própria é como o ícone de "ver todas as páginas" nasceu clonado do Canvas. Ver o R-49.
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r34`
 
-### R-35 · 2026-09-01 · aberto
+**Fechado em 06/09.** As três telas do Preparo entraram no quadro como
+`dado-do-no` — `895:7856`, `966:31504`, `967:31833` e `895:8164`. O que a prova
+guarda: a marca do arquivo em 13 por 17 com Label/Small 14/22 (era 4 por 12 com
+14/20, do tamanho de um selo), o cartão de achado com 40 de recheio, o título em
+40/48 e o de seção em heading-md 32/40.
+
+A tela de andamento foi medida pela primeira vez nesta rodada — a bancada nunca
+a mostrava, porque o conversor de teste falha na hora. Ver o R-54.
+
+A frase é sobre a tela inteira, e uma tela inteira não cabe numa prova. O que a prova guarda são as medidas que estavam ERRADAS quando ele escreveu — envenená-la com os números antigos a faz reprovar nomeando qual número e qual nó. Se ele olhar e ainda discordar, o item reabre: é para isso que o livro serve.
+
+### R-35 · 2026-09-01 · fechado
 **Erik:** "Continua completamente bugada"
 **Onde:** estante 3D
 **Medido em 04/09:** Medido: o alternador existe, muda para a pilha, seis livros deitados, nenhum fora da janela e nenhum com altura zero.
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r35`
+
+**Fechado em 06/09.** A medida de 04/09 já dizia que a vista monta, muda para
+a pilha e desenha os livros deitados. O que faltava era conferi-la contra o nó,
+e `895:7506` entrou no quadro nesta rodada: pilha, trilha de lombadas à
+esquerda e ficha de 476 com o cartão em `p-40 gap-32` e título heading-md 32/40.
+
+Duas medidas estavam fora e foram corrigidas: a contagem de notas em peso 400
+quando Body/Large é 500, e o vazio em 14/20 quando Label/Small é 14/22.
+
+**Uma diferença de largura fica, e não é defeito:** o nó é desenhado a 1920 —
+293 + 128 + 831 + 128 + 476 + 64 fecham exatamente 1920 — e o vão de 128 entre
+colunas não cabe a 1440.
+
+A frase é sobre a tela inteira, e uma tela inteira não cabe numa prova. O que a prova guarda são as medidas que estavam ERRADAS quando ele escreveu — envenená-la com os números antigos a faz reprovar nomeando qual número e qual nó. Se ele olhar e ainda discordar, o item reabre: é para isso que o livro serve.
 
 ### R-36 · 2026-09-01 · aberto
 **Erik:** "Popups grandes até demais, fontes enormes. Coisas que deveriam caber numa tela única precisam de scroll. Grandes e legíveis, mas pecam no exagero"

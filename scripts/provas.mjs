@@ -338,6 +338,171 @@ const PROVAS = {
     },
   },
 
+  'r22': {
+    erik: '"Nao seguiu o Figma — inventou coisa que nem devia existir" (detalhes do arquivo)',
+    /* O VENENO DEVOLVE O RECHEIO DAS FOLHAS ESTREITAS a esta, que e a AMPLA:
+       32 em volta contra os 40 e 56 que o `895:12217` pede para ela. */
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.folha.ampla .folha-topo{padding:32px !important}'
+                           + '.folha.ampla .folha-conteudo{gap:48px !important;padding:0 32px 32px !important}';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/estante/{LIVRO}', `
+        const esperar2 = ms => new Promise(r3 => setTimeout(r3, ms));
+        const b = [...document.querySelectorAll('button')]
+          .find(e => /Configura/.test(e.getAttribute('aria-label') || ''));
+        if (!b) return { temBotao: false };
+        b.click();
+        await esperar2(700);
+        const px = (e, p) => e ? Math.round(parseFloat(getComputedStyle(e)[p])) : -1;
+        const folha = document.querySelector('.folha.ampla');
+        const linha = document.querySelector('.arquivo-linha');
+        return {
+          temBotao: true,
+          temFolha: !!folha,
+          larg: folha ? Math.round(folha.getBoundingClientRect().width) : 0,
+          topo: px(document.querySelector('.folha.ampla .folha-topo'), 'paddingTop'),
+          corpo: px(document.querySelector('.folha.ampla .folha-conteudo'), 'rowGap'),
+          linhaRecheio: px(linha, 'paddingTop'),
+          linhas: document.querySelectorAll('.arquivo-linha').length,
+        };`, veneno);
+      if (!d.temBotao) throw new NaoPodeMedir('a ficha do livro nao tem o botao de configuracoes');
+      if (!d.temFolha) throw new NaoPodeMedir('a folha de configuracoes nao abriu');
+      if (d.larg !== 1082) return `a folha mede ${d.larg}, e o 941:23118 pede 1082`;
+      if (d.topo !== 40) return `o cabecalho da folha ampla tem ${d.topo} de recheio, e o 895:12217 pede 40`;
+      if (d.corpo !== 56) return `o corpo da folha ampla tem ${d.corpo} entre blocos, e o no pede 56`;
+      if (d.linhaRecheio !== 40) return `a linha tem ${d.linhaRecheio} de recheio, e o no pede 40`;
+      if (d.linhas !== 5) return `a folha tem ${d.linhas} linhas, e o no desenha cinco`;
+      return null;
+    },
+  },
+
+  'r35': {
+    erik: '"Continua completamente bugada" (estante 3D)',
+    /* A VISTA 3D MORA EM `/estante`, e nao em `/estante/:id` — aquela e a
+       ficha do livro. Apontei para a errada na primeira escrita e a prova
+       respondeu "a vista 3D nao montou a pilha", que era verdade sobre a
+       outra tela. */
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.ficha-caixa{padding:24px !important;gap:16px !important}';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/estante', `
+        const px = (e, p) => e ? Math.round(parseFloat(getComputedStyle(e)[p])) : -1;
+        const esperar2 = ms => new Promise(r3 => setTimeout(r3, ms));
+        const b = [...document.querySelectorAll('.recortes.vista button')]
+          .find(e => /3D/.test(e.textContent || ''));
+        if (b) { b.click(); await esperar2(700); }
+        const pilha = document.querySelector('.pilha');
+        const ficha = document.querySelector('.ficha');
+        const caixa = document.querySelector('.ficha-caixa');
+        return {
+          temPilha: !!pilha,
+          deitados: document.querySelectorAll('.livro-deitado').length,
+          fichaLarg: ficha ? Math.round(ficha.getBoundingClientRect().width) : 0,
+          caixaRecheio: px(caixa, 'paddingTop'),
+          caixaVao: px(caixa, 'rowGap'),
+          titulo: px(caixa ? caixa.querySelector('h2') : null, 'fontSize'),
+        };`, veneno);
+      if (!d.temPilha) throw new NaoPodeMedir('a vista 3D nao montou a pilha');
+      if (d.deitados < 2) return `a pilha tem ${d.deitados} livro(s) deitado(s)`;
+      if (d.fichaLarg !== 476) return `a ficha mede ${d.fichaLarg}, e o 895:7506 pede 476`;
+      if (d.caixaRecheio !== 40) return `o cartao da ficha tem ${d.caixaRecheio} de recheio, e o 917:8399 pede 40`;
+      if (d.caixaVao !== 32) return `o cartao da ficha tem ${d.caixaVao} de vao, e o no pede 32`;
+      if (d.titulo !== 32) return `o titulo da ficha esta em ${d.titulo}, e o no pede heading-md 32`;
+      return null;
+    },
+  },
+
+  'r19': {
+    erik: '"Figma totalmente ignorado" (/estudos)',
+    /* O VENENO DEVOLVE A ESCALA E A ORDEM ANTIGAS: titulo em 32/40 e o cartao
+       do que ficou pela metade colado no cabecalho, antes dos recortes. Era
+       assim que a tela estava quando ele escreveu a frase. */
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.estudos h1{font-size:32px !important;line-height:40px !important}'
+                           + '.estudos-metade{order:-1}';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/estudos', `
+        const px = (e, p) => e ? Math.round(parseFloat(getComputedStyle(e)[p])) : -1;
+        const h1 = document.querySelector('.estudos h1');
+        const sobre = document.querySelector('.estudos-sobre');
+        const filhos = [...document.querySelectorAll('.estudos > *')].map(e => e.className);
+        return {
+          temTela: !!h1,
+          titulo: px(h1, 'fontSize') + '/' + px(h1, 'lineHeight'),
+          frase: px(sobre, 'fontSize') + '/' + px(sobre, 'lineHeight'),
+          respiro: px(document.querySelector('.estudos'), 'rowGap'),
+          recortesAntes: filhos.indexOf('estudos-fileira') < filhos.indexOf('estudos-metade'),
+        };`, veneno);
+      if (!d.temTela) throw new NaoPodeMedir('a tela de estudos nao montou');
+      if (d.titulo !== '48/56') return `o titulo esta em ${d.titulo}, e o 900:56142 pede heading-xl 48/56`;
+      if (d.frase !== '20/30') return `a frase de abertura esta em ${d.frase}, e o no pede body-medium 20/30`;
+      if (d.respiro !== 128) return `o respiro entre faixas e ${d.respiro}, e o no pede 128`;
+      if (!d.recortesAntes) return 'o cartao do que ficou pela metade vem ANTES dos recortes; os dois nos poem os recortes primeiro';
+      return null;
+    },
+  },
+
+  'r33': {
+    erik: '"Espacamento bugado, nao segue o grid do Figma, navegacao errada" (por onde comecar)',
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.ajuda-tarefas li{padding:32px !important;gap:12px !important}'
+                           + '.ajuda-numero{font-size:40px !important;line-height:48px !important}';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/ajuda', `
+        const px = (e, p) => e ? Math.round(parseFloat(getComputedStyle(e)[p])) : -1;
+        const li = document.querySelector('.ajuda-tarefas li');
+        const n = document.querySelector('.ajuda-numero');
+        return {
+          temTela: !!li,
+          recheio: px(li, 'paddingTop'),
+          vao: px(li, 'rowGap'),
+          algarismo: px(n, 'fontSize') + '/' + px(n, 'lineHeight'),
+          italico: n ? getComputedStyle(n).fontStyle : null,
+          titulo: px(li ? li.querySelector('h2') : null, 'fontSize'),
+        };`, veneno);
+      if (!d.temTela) throw new NaoPodeMedir('a tela de ajuda nao mostrou cartao de tarefa');
+      if (d.recheio !== 40) return `o cartao tem ${d.recheio} de recheio, e o 895:11255 pede 40`;
+      if (d.vao !== 40) return `o cartao tem ${d.vao} de vao, e o no pede 40`;
+      if (d.algarismo !== '64/72') return `o algarismo esta em ${d.algarismo}, e o no pede display-large-capitular 64/72`;
+      if (d.italico !== 'italic') return 'o algarismo nao esta em italico, e o capitular do no e italico';
+      if (d.titulo !== 28) return `o titulo do cartao esta em ${d.titulo}, e o no pede Heading/SM 28`;
+      return null;
+    },
+  },
+
+  'r34': {
+    erik: '"Bem errada tambem, nao condizendo com o Figma" (/preparo/:id)',
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.marca-arquivo{padding:4px 12px !important;line-height:20px !important}'
+                           + '.preparo-pagina-lista li{padding:24px !important}';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/preparo/{ANALISADO}', `
+        const px = (e, p) => e ? Math.round(parseFloat(getComputedStyle(e)[p])) : -1;
+        const marca = document.querySelector('.marca-arquivo');
+        const li = document.querySelector('.preparo-pagina-lista li');
+        const h1 = document.querySelector('.preparo-pagina h1');
+        const h2 = document.querySelector('.preparo-pagina-secao h2');
+        return {
+          temTela: !!li,
+          pilula: px(marca, 'paddingTop') + '/' + px(marca, 'paddingLeft') + ' ' + px(marca, 'lineHeight'),
+          cartao: px(li, 'paddingTop'),
+          titulo: px(h1, 'fontSize') + '/' + px(h1, 'lineHeight'),
+          secao: px(h2, 'fontSize') + '/' + px(h2, 'lineHeight'),
+        };`, veneno);
+      if (!d.temTela) throw new NaoPodeMedir('a tela de preparo nao mostrou a lista de achados');
+      if (d.pilula !== '13/17 22') return `a marca do arquivo esta em ${d.pilula}, e o 966:31521 pede 13 por 17 com Label/Small 14/22`;
+      if (d.cartao !== 40) return `o cartao de achado tem ${d.cartao} de recheio, e o 895:7946 pede 40`;
+      if (d.titulo !== '40/48') return `o titulo esta em ${d.titulo}, e o no pede 40/48`;
+      if (d.secao !== '32/40') return `o titulo de secao esta em ${d.secao}, e o no pede heading-md 32/40`;
+      return null;
+    },
+  },
+
   'r11': {
     erik: '"O espacamento entre itens esta errado" · "espacamento na estante incoerente com o figma"',
     /* O VENENO TROCA OS VAOS por numeros redondos que parecem certos e nao sao:
