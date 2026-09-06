@@ -288,10 +288,13 @@
     "941:23113": {
       "tela": "Nota · cartão",
       "rota": "popup de escrever a nota",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
-      "arquivos": [],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "conferido_em": "2026-09-06",
+      "contra": "dado-do-no",
+      "arquivos": [
+        "web/src/jornadas/Leitura.jsx",
+        "web/src/jornadas/leitura.css"
+      ],
+      "nota": "626 de largura e p-32 ja batiam; corrigidos o vao das tres partes (32 para 40), o trecho citado (filete de 1 com 16 em volta, era filete de 2 e 24 so a esquerda) e o recheio do campo (24 para 32). Medido com scripts/medir.mjs --espera=3000: com os 400ms de sempre a tela era medida ANTES de a nota voltar do servidor, e eu li 'o cartao nao abre' de uma tela que ainda estava esperando."
     },
     "941:23118": {
       "tela": "Arquivo · configurações",

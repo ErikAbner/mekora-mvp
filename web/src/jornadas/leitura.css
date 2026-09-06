@@ -941,8 +941,9 @@
   background: color-mix(in srgb, var(--foreground) 55%, transparent);
 }
 
+/* 40 entre as três partes do cartão — `941:23113`. */
 .cartao-nota {
-  display: flex; flex-direction: column; gap: 32px;
+  display: flex; flex-direction: column; gap: 40px;
   inline-size: min(626px, 100%);
   max-block-size: calc(100dvh - 48px);
   overflow-y: auto;
@@ -977,8 +978,10 @@
 /* O filete leva a cor da nota — é o que diz de qual destaque este cartão fala. */
 .cartao-nota blockquote {
   margin: 0;
-  padding-inline-start: 24px;
-  border-inline-start: 2px solid var(--cor-da-nota, var(--border));
+  /* `895:13121`: filete de 1, 16 à esquerda e 16 em cima e embaixo. Sem o
+     respiro vertical o trecho encostava no filete. */
+  padding: 16px 0 16px 16px;
+  border-inline-start: 1px solid var(--cor-da-nota, var(--border));
   color: var(--card-foreground);
   font-size: 24px; line-height: 32px;                     /* Body/Large */
   text-wrap: pretty;
@@ -987,7 +990,7 @@
 .cartao-nota textarea {
   inline-size: 100%;
   min-block-size: 132px;
-  padding: 24px;
+  padding: 32px;   /* `895:13123` */
   border: 0;
   background: var(--muted, color-mix(in srgb, var(--foreground) 5%, transparent));
   color: var(--foreground);
@@ -1002,7 +1005,7 @@
 .cartao-nota footer .botao { min-inline-size: 132px; justify-content: center; }
 
 @media (max-width: 767px) {
-  .cartao-nota { gap: 24px; padding: 24px; }
+  .cartao-nota { gap: 32px; padding: 24px; }
   .cartao-nota blockquote { font-size: 20px; line-height: 30px; }
   .cartao-nota-x { inline-size: 44px; block-size: 44px; }
   .cartao-nota footer .botao { inline-size: 100%; }

@@ -9,9 +9,12 @@
  *
  * Sem dependência: Node 18+ já tem fetch e WebSocket globais.
  *
- *   node scripts/medir.mjs <url> [largura] [altura] [setup.js] <medida.js> [--png=arq] [--gesto=arq] [--dentro=seletor] [--sessao=token]
+ *   node scripts/medir.mjs <url> [largura] [altura] [setup.js] <medida.js> [--png=arq] [--gesto=arq] [--dentro=seletor] [--sessao=token] [--espera=ms]
  *
  * setup.js  roda antes da medida (põe o protótipo no estado que interessa)
+ * --espera= quanto esperar DEPOIS do setup, em milissegundos (padrão 400). Um
+ *           setup que só clica cabe nos 400; um que espera resposta do
+ *           servidor, não.
  * medida.js é uma expressão avaliada na página; o valor volta como JSON
  * --gesto=  arquivo avaliado na página que devolve pontos [{x,y},...]; o Chrome
  *           anda por eles com o botão apertado, entre o setup e a medida
@@ -222,7 +225,16 @@ try {
     throw new Error(`a página respondeu mas não montou (título "${carregou.t}", ${carregou.n} nós renderizados) — ${url}`);
   }
 
-  if (arqSetup) { await avalia(readFileSync(arqSetup, 'utf8')); await espera(400); }
+  if (arqSetup) {
+    /* 400ms BASTAM PARA UM CLIQUE, e não para um ida-e-volta ao servidor.
+     * O setup que abre a paleta da Leitura media bem — ela aparece no mesmo
+     * quadro. O que clica em "Adicionar nota" media a tela ANTES de a nota
+     * voltar do backend, e eu li "o cartão não abre" de uma tela que ainda
+     * estava esperando. `--espera=` diz quanto tempo dar. */
+    await avalia(readFileSync(arqSetup, 'utf8'));
+    const pedida = (bruto.find((a) => a.startsWith('--espera=')) || '').split('=')[1];
+    await espera(Math.min(30000, Math.max(0, +pedida || 400)));
+  }
 
   if (depois) {
     const nav2 = await manda('Page.navigate', { url: depois });
