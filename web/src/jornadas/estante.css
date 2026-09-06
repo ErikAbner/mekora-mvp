@@ -465,8 +465,49 @@
   padding-inline-start: 12px;
   margin-inline-start: -14px;
 }
-.livro-alvo:hover { background: color-mix(in srgb, var(--foreground) 4%, transparent); }
+/* O HOVER NÃO É UM VÉU — R-01 e R-42, que o Erik escreveu três vezes.
+ *
+ * O que estava aqui era `background: 4%` no alvo, e o alvo pinta POR CIMA da
+ * capa: passar o mouse lavava a arte com um cinza de 4%. Ele chamou de "muito
+ * feio e não dá o devido destaque, pode passar facilmente despercebido", e as
+ * duas metades da frase saem do mesmo defeito — 4% é pouco para ver e é demais
+ * para a arte.
+ *
+ * A REGRA JÁ ESTAVA ESCRITA NESTE ARQUIVO, trinta linhas acima, sobre o estado
+ * ESCOLHIDO: "o véu de 8% sobre a imagem saiu: ele apagava a capa para marcar a
+ * escolha, que é gastar justamente o que se está tentando mostrar". O hover
+ * ficou de fora daquela decisão. Agora ele a segue.
+ *
+ * O QUE ELE FAZ: a capa sobe 4px e ganha sombra e uma borda de meia-tinta —
+ * um degrau ABAIXO do escolhido, que usa tinta cheia. Levantar é o gesto que
+ * diz "isto se pega" sem gastar cor, e o escolhido continua sendo o único com
+ * borda cheia.
+ *
+ * SÓ `transform` E SOMBRA, e 160ms: hover é visto dezenas de vezes por dia, e
+ * o que se vê tanto tem de ser rápido e barato. `--saida` é a curva do
+ * sistema. Atrás de `hover: hover`, senão o toque acende o estado e ele fica
+ * aceso; e o bloco de `prefers-reduced-motion` do `base.css` já zera a duração
+ * de quem pediu menos movimento — a sombra e a borda continuam, que é o certo:
+ * menos movimento não é menos informação. */
 .livro-alvo:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+
+@media (hover: hover) and (pointer: fine) {
+  .capa,
+  .capa-caixa { transition: transform 160ms var(--saida), border-color 160ms var(--saida), box-shadow 160ms var(--saida); }
+
+  .livro:hover .capa-caixa { transform: translateY(-4px); }
+  .livro:hover .capa {
+    border-color: color-mix(in srgb, var(--foreground) 45%, transparent);
+    box-shadow: 0 10px 12px rgb(0 0 0 / 0.04), 0 3px 6px rgb(0 0 0 / 0.05);
+  }
+  /* O TÍTULO SUBLINHA, e isso não é enfeite: o cartão inteiro é um botão, e o
+     sublinhado é como o sistema diz "isto leva a algum lugar". */
+  .livro:hover .livro-texto h3 { text-decoration: underline; text-underline-offset: 3px; }
+
+  /* O ESCOLHIDO NÃO SOBE. Ele já está marcado com tinta cheia, e levantá-lo de
+     novo no hover faria o estado mais alto parecer o mais baixo. */
+  .livro.escolhido:hover .capa-caixa { transform: none; }
+}
 
 .ficha-aviso {
   margin: 12px 0 0;

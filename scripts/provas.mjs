@@ -61,6 +61,9 @@ function mudaEstado(jobId, lado) {
     { cwd: RAIZ, encoding: 'utf8', timeout: 30000 });
 }
 
+/* `tamanho.mouse` LEVA O PONTEIRO a um seletor antes da medida. Existe porque
+   `:hover` não se alcança de outro jeito: `--gesto` aperta o botão, e apertar um
+   cartão da Estante o seleciona — outro estado. Ver `medir.mjs --mouse=`. */
 function medir(rota, corpo, veneno = '', tamanho = {}) {
   const { token, livro, analisado } = sessao();
   const dir = join(tmpdir(), 'mekora-provas');
@@ -95,7 +98,8 @@ function medir(rota, corpo, veneno = '', tamanho = {}) {
   try {
     const largura = String(tamanho.largura || 1440);
     const altura = String(tamanho.altura || 1000);
-    bruto = execFileSync('node', ['scripts/medir.mjs', url, largura, altura, alvo, `--sessao=${token}`],
+    const extras = tamanho.mouse ? [`--mouse=${tamanho.mouse}`] : [];
+    bruto = execFileSync('node', ['scripts/medir.mjs', url, largura, altura, alvo, `--sessao=${token}`, ...extras],
       { cwd: RAIZ, encoding: 'utf8', timeout: 110000, stdio: ['ignore', 'pipe', 'pipe'] });
   } catch (e) {
     throw new NaoPodeMedir(`nao consegui medir ${url} — o servidor de desenvolvimento esta em pe? (${String(e.message).slice(0, 90)})`);
@@ -444,6 +448,47 @@ const PROVAS = {
       const tem = `${d.cima}/${d.lado}/${d.baixo}`;
       if (tem !== '56/16/64') return `o card da conta no telefone esta com ${tem}, e o no 966:25321 pede 56/16/64`;
       if (d.coluna !== 326) return `a coluna mede ${d.coluna} no telefone, e o no pede 326`;
+      return null;
+    },
+  },
+
+  'r01': {
+    erik: '"Hover nos livros e muito feio e nao da o devido destaque, pode passar facilmente despercebido"',
+    /* O VENENO REFAZ O VEU: 4% de tinta no alvo, que pinta POR CIMA da capa, e
+       nada de levantar. E o que a tela tinha nas tres vezes em que ele
+       reclamou — pouco para ver e demais para a arte. */
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.livro:hover .capa-caixa{transform:none !important}'
+                           + '.livro:hover .capa{border-color:transparent !important;box-shadow:none !important}'
+                           + '.livro-alvo:hover{background:color-mix(in srgb, var(--foreground) 4%, transparent)}';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/estante', `
+        const li = [...document.querySelectorAll('.grade .livro')].find(e => !e.classList.contains('escolhido'));
+        if (!li) return { temGrade: false };
+        const capa = li.querySelector('.capa');
+        const caixa = li.querySelector('.capa-caixa');
+        const cs = getComputedStyle(capa);
+        const m = getComputedStyle(caixa).transform;
+        /* A ALTURA DO SALTO sai da matriz: translateY e o sexto numero. */
+        const sobe = m && m !== 'none' ? Math.abs(parseFloat(m.split(',')[5])) : 0;
+        return {
+          temGrade: true,
+          sobe,
+          /* SEM REGEX AQUI, e o motivo esta no cabecalho deste arquivo: barra
+             invertida dentro do literal de template e comida, e a expressao
+             fica com parentese solto. O arquivo inteiro deixa de rodar e o erro
+             chega como "nao consegui medir". Cai nela duas vezes seguidas. */
+          temBorda: cs.borderTopColor !== 'rgba(0, 0, 0, 0)' && !cs.borderTopColor.endsWith(', 0'.concat(String.fromCharCode(41))),
+          temSombra: cs.boxShadow !== 'none',
+          /* CONTROLE DE DIRECAO: o alvo NAO pode pintar fundo por cima da arte. */
+          veu: getComputedStyle(li.querySelector('.livro-alvo')).backgroundColor,
+        };`, veneno, { mouse: '.grade .livro:not(.escolhido) .capa' });
+      if (!d.temGrade) throw new NaoPodeMedir('a estante nao mostrou grade de livros');
+      if (!(d.sobe >= 3)) return `o livro sob o ponteiro nao levanta (subiu ${d.sobe}px)`;
+      if (!d.temBorda) return 'o livro sob o ponteiro nao ganha borda';
+      if (!d.temSombra) return 'o livro sob o ponteiro nao ganha sombra';
+      if (!/rgba\(0, 0, 0, 0\)|transparent/.test(d.veu)) return `o alvo pinta um veu (${d.veu}) por cima da arte da capa`;
       return null;
     },
   },

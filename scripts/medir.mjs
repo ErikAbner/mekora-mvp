@@ -9,7 +9,7 @@
  *
  * Sem dependência: Node 18+ já tem fetch e WebSocket globais.
  *
- *   node scripts/medir.mjs <url> [largura] [altura] [setup.js] <medida.js> [--png=arq] [--gesto=arq] [--dentro=seletor] [--sessao=token] [--espera=ms]
+ *   node scripts/medir.mjs <url> [largura] [altura] [setup.js] <medida.js> [--png=arq] [--gesto=arq] [--mouse=seletor] [--dentro=seletor] [--sessao=token] [--espera=ms]
  *
  * setup.js  roda antes da medida (põe o protótipo no estado que interessa)
  * --espera= quanto esperar DEPOIS do setup, em milissegundos (padrão 400). Um
@@ -96,6 +96,19 @@ const gesto = (bruto.find(x => x.startsWith('--gesto=')) || '').slice(8) || null
  * bancada ja tinha pago.
  */
 const dentro = (bruto.find(x => x.startsWith('--dentro=')) || '').slice(9) || null;
+
+/* --mouse=<seletor> LEVA O PONTEIRO até o centro do elemento, sem apertar.
+ *
+ * POR QUE ISTO EXISTE: `:hover` é um estado que nenhuma medida daqui alcançava.
+ * `--gesto` sempre aperta o botão — ele foi feito para arrasto —, e apertar num
+ * cartão da Estante o SELECIONA, que é outro estado. Sem isto, a única forma de
+ * "medir" o hover era ler a folha de estilo e acreditar, e foi assim que o R-01
+ * atravessou três rodadas: o Erik via a tela, eu lia a regra, e nós dois
+ * estávamos falando de coisas diferentes.
+ *
+ * `dispatchEvent` sintético não serve: `:hover` do CSS responde ao ponteiro
+ * real do navegador, não a um evento fabricado em JavaScript. Por isso é CDP. */
+const passaOMouse = (bruto.find(x => x.startsWith('--mouse=')) || '').slice(8) || null;
 /* --sessao=<token> POE O BISCOITO direto, em vez de abrir um link de entrada.
  *
  * O link e de uso unico e tem teto — 20 por origem por hora desde 03/09 —, e a
@@ -306,6 +319,19 @@ try {
     for (let i = 1; i < pts.length; i++) { await bota('mouseMoved', pts[i]); await espera(24); }
     await bota('mouseReleased', pts[pts.length - 1]);
     await espera(260);
+  }
+
+  if (passaOMouse) {
+    const onde = await avalia(`(() => { const e = document.querySelector(${JSON.stringify(passaOMouse)});
+      if (!e) return null; const r = e.getBoundingClientRect();
+      return { x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2) }; })()`);
+    if (!onde) throw new Error(`--mouse: nao achei "${passaOMouse}" na tela`);
+    await manda('Input.dispatchMouseEvent',
+      { type: 'mouseMoved', x: onde.x, y: onde.y, button: 'none', buttons: 0, pointerType: 'mouse' });
+    /* Um quadro para a transição começar, e o resto dela para terminar: 160ms
+       é a duração do hover no sistema, e medir no meio mede um valor que não é
+       nem o de repouso nem o de destino. */
+    await espera(400);
   }
 
   if (teclas) {

@@ -39,11 +39,33 @@ quem lê achou que ela era — e foi assim que o destaque da estante voltou.
 
 Estado de cada um: `docs/RETORNO-2026-09-02.md`.
 
-### R-01 · 2026-09-01 · aberto
+### R-01 · 2026-09-01 · fechado
 **Erik:** "Hover nos livros é muito feio e não dá o devido destaque, pode passar facilmente despercebido"
 **Onde:** /estante
 **Medido em 04/09:** Medido em 04/09: a unica regra de hover e `background: color-mix(--foreground 4%)`. E ela quase nao dispara — a capa e pintada por cima do alvo, entao passar o mouse sobre a capa nao acende nada.
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r01`
+
+**Fechado em 06/09.** O que estava lá era `background: 4%` no alvo, e o alvo
+pinta POR CIMA da capa: passar o mouse LAVAVA a arte com um cinza de 4%. As
+duas metades da frase dele saem do mesmo defeito — 4% é pouco para ver e é
+demais para a arte.
+
+**A regra já estava escrita neste mesmo arquivo, trinta linhas acima**, sobre o
+estado escolhido: *"o véu de 8% sobre a imagem saiu: ele apagava a capa para
+marcar a escolha, que é gastar justamente o que se está tentando mostrar"*. O
+hover ficou de fora daquela decisão.
+
+Agora a capa sobe 4px e ganha sombra e borda de meia-tinta — um degrau ABAIXO
+do escolhido, que usa tinta cheia —, e o título sublinha, que é como o sistema
+diz "isto leva a algum lugar". Só `transform` e sombra, 160ms na curva `--saida`,
+atrás de `hover: hover` para o toque não deixar o estado aceso. O escolhido não
+sobe: ele já está no degrau de cima.
+
+**O instrumento precisou aprender a passar o mouse**, e é por isso que este item
+atravessou três rodadas sem prova: `:hover` não se alcança com evento
+sintético, e o `--gesto` aperta o botão — apertar um cartão o SELECIONA, que é
+outro estado. `medir.mjs --mouse=<seletor>` leva o ponteiro até o centro do
+elemento sem apertar, e a prova `r01` mede o estado de verdade.
 
 ### R-02 · 2026-09-01 · fechado
 **Erik:** "O click só funciona na div inferior à da capa, usuários tendem a clicar na capa"
@@ -389,11 +411,19 @@ defeito. Está registrado no quadro `966:25554` e é trocável numa linha.
 **Onde:** /estante — mesmo defeito que o R-08 e o R-11
 **Prova:** sem-prova
 
-### R-42 · 2026-09-02 · aberto
+### R-42 · 2026-09-02 · fechado
 **Erik:** "sistema de destaque de livro na estante continua péssimo apesar dos meus feedbacks"
 **Onde:** /estante — é o R-01 e o R-03, na terceira vez
 **Nota:** este é o item que fez este arquivo existir.
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r01`
+
+**Fechado em 06/09, com o R-01.** É a terceira vez que ele escreve a mesma
+coisa, e é o item que fez este arquivo existir. Ver o R-01: o defeito era o véu
+de 4% sobre a arte, e a correção segue a regra que o próprio arquivo já tinha
+escrito para o estado escolhido.
+
+O R-03 — o marcador de notas atrás da capa — já estava fechado com prova desde
+04/09. Com este, os três feedbacks dele sobre a Estante têm medida.
 
 ### R-43 · 2026-09-02 · aberto
 **Erik:** "itens no canvas que diz escrita aqui mas n da pra escrever nem alterar o que tem na nota"
