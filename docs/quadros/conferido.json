@@ -310,13 +310,13 @@
     "895:7063": {
       "tela": "D · Apresentação",
       "rota": "/",
-      "conferido_em": "2026-09-05",
+      "conferido_em": "2026-09-06",
       "contra": "dado-do-no",
       "arquivos": [
         "web/src/jornadas/Apresentacao.jsx",
         "web/src/jornadas/apresentacao.css"
       ],
-      "nota": "bate; lista de formatos vem do servidor"
+      "nota": "bate; lista de formatos vem do servidor | 06/09: so o bloco de <=1023 mudou; medido a 1440 antes e depois, os numeros do computador sao os mesmos (64/72, 40/48, 24/32, 28/36)."
     },
     "895:7315": {
       "tela": "D · Estante — grade",
