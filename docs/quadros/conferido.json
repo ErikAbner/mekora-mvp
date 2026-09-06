@@ -448,10 +448,13 @@
     "895:9736": {
       "tela": "D · Mesa — primeira vez",
       "rota": "/mesa",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
-      "arquivos": [],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "conferido_em": "2026-09-05",
+      "contra": "dado-do-no",
+      "arquivos": [
+        "web/src/jornadas/MesaCheia.jsx",
+        "web/src/jornadas/mesa-cheia.css"
+      ],
+      "nota": "titulo e subtitulo da primeira vez; barras da fila ja tinham as cores do no"
     },
     "895:7631": {
       "tela": "D · Livro — o que ficou",
