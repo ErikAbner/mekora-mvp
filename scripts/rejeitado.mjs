@@ -59,7 +59,13 @@ function ler(texto) {
 
 function prova(item) {
   const bruto = (item.campos.prova || '').replace(/^`|`$/g, '').trim();
-  return bruto && bruto !== 'sem-prova' ? bruto : null;
+  /* `sem-prova` COM PARÊNTESE AINDA É SEM PROVA. Dois itens fechados dizem
+     "sem-prova (o conserto é do instrumento)" e "sem-prova (item aberto)", e a
+     comparação exata não os reconhecia: o texto virava comando, o shell
+     respondia `syntax error near unexpected token`, e o relatório os anunciava
+     como REGREDIU. Duas regressões que não existiam, por causa de um parêntese. */
+  if (/^sem-prova\b/.test(bruto)) return null;
+  return bruto || null;
 }
 
 const INDETERMINADA = 97;   /* contrato com o scripts/provas.mjs: nao deu para medir */

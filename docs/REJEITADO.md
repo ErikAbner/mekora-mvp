@@ -515,7 +515,7 @@ Fica `epub_url` no código porque é o que a tela consome: o caminho público, o
 A saída passa por perguntar a **situação** antes de disparar a análise — `/jobs/{id}/status`, que é o que o `acompanhar` já usa —, e isso mexe na ordem do carregamento desta tela. **Removi o ramo que escrevi:** um caminho que promete e não cumpre é pior que a ausência dele, e fica um comentário no lugar dizendo por quê.
 
 **A bancada também não produz o estado**, e essa é a terceira vez: não há trabalho com `active_operation` semeado, então a tela de "em andamento" (`895:8029`, `967:31833`) continua sem conferência contra o nó. Marquei um à mão para medir e desfiz depois — a bancada está limpa.
-**Prova:** sem-prova (item aberto)
+**Prova:** `node scripts/provas.mjs r54`
 
 **Fechado em 06/09.** A saída era a que estava escrita aqui: perguntar a
 SITUAÇÃO antes de disparar. `buscar()` agora começa por `situacao(id)` —
@@ -551,7 +551,7 @@ clicável por cima de uma conversão em curso.
 **Consertado:** `--vista` captura só a janela, sem estender. Com ele o Canvas fotografa as três notas, as ligações entre elas e o preview de link.
 
 **O que este item custou, e é a lição:** eu vi uma foto, escrevi um item de bancada, e a bancada estava certa. Foi a **quarta vez no dia** que confundi "não consegui ver" com "não existe" — e a única em que o instrumento errado era o meu próprio. As três anteriores (R-50, R-53, R-54) tinham defeito real por trás; esta não tinha nenhum.
-**Prova:** sem-prova (o conserto é do instrumento)
+**Prova:** `node scripts/captura-nao-mente.mjs`
 
 ### R-55-nota · o texto original deste item, mantido
 **O que eu tinha escrito, e estava errado:** que o banco tinha "763 nós de canvas e 5502 notas, todos de pessoas de rodadas anteriores" e que por isso o Canvas não podia ser conferido. Os números eram reais; a conclusão, não — a pessoa da sessão TEM os seus três nós, e o `sessao-de-prova.sh` chama o semeador que os cria. Fica registrado porque o erro de leitura é mais instrutivo que o conserto.
