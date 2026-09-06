@@ -6,6 +6,7 @@
     python3 scripts/_sessao.py <banco> <email> analisado  # o parado em `analyzed`
     python3 scripts/_sessao.py <banco> <email> convertendo [id]  # põe em conversão
     python3 scripts/_sessao.py <banco> <email> parado [id]       # desfaz o de cima
+    python3 scripts/_sessao.py <banco> <email> secao-coberta     # uma secao dentro de outra
 
 POR QUE É UM ARQUIVO E NÃO UM HEREDOC: a primeira versão embutia este código no
 `.sh` com `<<'PY'`, e o texto dentro dele continha `<<'PY'` de novo — o
@@ -149,6 +150,38 @@ elif oque in ("convertendo", "parado"):
         c.commit()
     c.close()
     print(achado[0] if achado else 0)
+
+elif oque == "secao-coberta":
+    # UMA SEÇÃO INTEIRAMENTE DENTRO DE OUTRA — o caso do R-15.
+    #
+    # O acervo semeado traz UMA seção só ("Design & Tecnologia", 620x420), e por
+    # isso a sobreposição que o Erik descreveu nunca pôde ser medida: a nota de
+    # 04/09 diz, com todas as letras, "não deu para medir a sobreposição na
+    # tela". Um defeito que a bancada não consegue mostrar é um defeito que
+    # ninguém consegue fechar.
+    #
+    # Esta escreve a segunda, cabendo dentro da primeira. Imprime o id, ou zero
+    # se não houver seção em que caber.
+    c = sqlite3.connect(banco)
+    p = c.execute("SELECT id FROM pessoas WHERE email = ?", (email,)).fetchone()
+    nova = None
+    if p:
+        mae = c.execute(
+            "SELECT x, y, largura, altura FROM canvas_grupos"
+            " WHERE pessoa_id = ? AND apagado_em IS NULL ORDER BY id LIMIT 1",
+            (p[0],),
+        ).fetchone()
+        if mae:
+            x, y, larg, alt = mae
+            cur = c.execute(
+                "INSERT INTO canvas_grupos (pessoa_id, nome, x, y, largura, altura)"
+                " VALUES (?, ?, ?, ?, ?, ?)",
+                (p[0], "Coberta", x + 60, y + 60, max(200.0, larg / 3), max(160.0, alt / 3)),
+            )
+            nova = (cur.lastrowid,)
+            c.commit()
+    c.close()
+    print(nova[0] if nova else 0)
 
 else:
     print(f"não sei fazer {oque!r}", file=sys.stderr)

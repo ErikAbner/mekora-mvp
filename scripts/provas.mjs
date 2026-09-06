@@ -64,6 +64,21 @@ function mudaEstado(jobId, lado) {
 /* `tamanho.mouse` LEVA O PONTEIRO a um seletor antes da medida. Existe porque
    `:hover` não se alcança de outro jeito: `--gesto` aperta o botão, e apertar um
    cartão da Estante o seleciona — outro estado. Ver `medir.mjs --mouse=`. */
+/* Semeia uma seção dentro de outra na bancada. O acervo traz UMA seção só, e
+   sem a segunda a sobreposição do R-15 não tem como aparecer na tela. */
+function semearSecaoCoberta() {
+  const banco = join(process.env.MEKORA_PROVA || RAIZ + '.ver', 'storage', 'kindle_tool.db');
+  const { token } = sessao();
+  const email = execFileSync('python3', ['-c',
+    `import sqlite3,sys
+c = sqlite3.connect(sys.argv[1])
+print(c.execute("SELECT email FROM pessoas ORDER BY id DESC LIMIT 1").fetchone()[0])`, banco],
+    { cwd: RAIZ, encoding: 'utf8', timeout: 30000 }).trim();
+  void token;
+  return execFileSync('python3', ['scripts/_sessao.py', banco, email, 'secao-coberta'],
+    { cwd: RAIZ, encoding: 'utf8', timeout: 30000 }).trim();
+}
+
 function medir(rota, corpo, veneno = '', tamanho = {}) {
   const { token, livro, analisado } = sessao();
   const dir = join(tmpdir(), 'mekora-provas');
@@ -381,6 +396,82 @@ const PROVAS = {
       if (!d.abriu) return 'o "Editar" nao abriu a folha com o texto da nota';
       if (!d.temGuardar) return 'a folha de editar abriu sem botao de guardar';
       if (!d.guardou) return 'guardar nao trocou o texto da nota na superficie';
+      return null;
+    },
+  },
+
+  'r15': {
+    erik: '"Os grupos se sobrepoem e nao sao como o que eu criei no Figma"',
+    /* O VENENO DEVOLVE O EMPATE: as duas secoes com o mesmo `z-index`, que e
+       como elas nasciam. Com o empate quem ganha e a ordem do DOM, que e a
+       ordem de criacao — e uma secao inteiramente dentro de outra fica
+       INALCANCAVEL. */
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.canvas-secao{z-index:0 !important}';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const nova = semearSecaoCoberta();
+      if (!nova || nova === '0') {
+        throw new NaoPodeMedir('a bancada nao tem secao em que caber uma segunda');
+      }
+      const d = medir('/canvas', `
+        const esperar2 = ms => new Promise(r3 => setTimeout(r3, ms));
+        for (let i = 0; i < 30 && !document.querySelector('.canvas-secao'); i++) await esperar2(200);
+        const secs = [...document.querySelectorAll('.canvas-secao')].map(e => {
+          const r = e.getBoundingClientRect();
+          return { el: e, x: r.x, y: r.y, w: r.width, h: r.height };
+        });
+        let par = null;
+        for (const a of secs) for (const b of secs) {
+          if (a === b) continue;
+          if (b.x >= a.x && b.y >= a.y && b.x + b.w <= a.x + a.w && b.y + b.h <= a.y + a.h) par = { fora: a, dentro: b };
+        }
+        if (!par) return { achouPar: false, quantas: secs.length };
+        const b = par.dentro;
+        const alvo2 = document.elementFromPoint(Math.round(b.x + b.w / 2), Math.round(b.y + 6));
+        return {
+          achouPar: true,
+          zDentro: parseInt(getComputedStyle(b.el).zIndex) || 0,
+          zFora: parseInt(getComputedStyle(par.fora.el).zIndex) || 0,
+          pega: !!alvo2 && (alvo2 === b.el || b.el.contains(alvo2)),
+        };`, veneno);
+      if (!d.achouPar) throw new NaoPodeMedir(`o Canvas mostrou ${d.quantas} secao(oes) e nenhuma dentro de outra`);
+      if (!(d.zDentro > d.zFora)) return `a secao de dentro pinta em ${d.zDentro} e a de fora em ${d.zFora}: a menor tem de ficar por cima`;
+      if (!d.pega) return 'a secao coberta nao pega o ponteiro: uma area que nao se pode pegar nao existe para quem usa';
+      return null;
+    },
+  },
+
+  'r17': {
+    erik: '"Navegacao enfiada onde nao precisa — em alguns lugares e valida, em outros foi forcada sem necessidade e nao seguiu o Figma"',
+    /* O VENENO DEVOLVE A TRILHA PARA CIMA: solta ela da fileira de baixo e a
+       poe ao lado da pagina inteira, que e onde ela estava quando ele
+       reclamou — indexando titulo, busca e recortes, que se veem de uma
+       olhada. */
+    veneno: `const s = document.createElement('style');
+             const t = document.querySelector('.estudos-fileira-de-baixo .trilha-pagina');
+             const topo = document.querySelector('.estudos-topo');
+             if (t && topo && topo.parentNode) topo.parentNode.insertBefore(t, topo);
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/estudos', `
+        const fileira = document.querySelector('.estudos-fileira-de-baixo');
+        const trilha = document.querySelector('.trilha-pagina');
+        if (!trilha) return { temTrilha: false };
+        const r = trilha.getBoundingClientRect();
+        const topo = document.querySelector('.estudos-topo');
+        return {
+          temTrilha: true,
+          dentroDaFileira: !!fileira && fileira.contains(trilha),
+          larg: Math.round(r.width),
+          /* A TRILHA COMECA DEPOIS DO TOPO: se ela indexasse a pagina inteira,
+             o comeco dela estaria na altura do titulo. */
+          abaixoDoTopo: !!topo && r.top >= topo.getBoundingClientRect().bottom,
+        };`, veneno);
+      if (!d.temTrilha) throw new NaoPodeMedir('a tela de estudos nao mostrou trilha');
+      if (!d.dentroDaFileira) return 'a trilha esta fora da fileira de baixo: ela indexa a pagina inteira, e o 895:8849 so a poe ao lado de "Voce ligou"';
+      if (!d.abaixoDoTopo) return 'a trilha comeca na altura do titulo — em cima nao ha o que indexar';
+      if (d.larg !== 200) return `a trilha mede ${d.larg}, e a coluna dela e de 200`;
       return null;
     },
   },

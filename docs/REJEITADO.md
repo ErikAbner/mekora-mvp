@@ -180,7 +180,7 @@ que é o que uma grade responsiva faz.
 **Medido em 04/09:** Medido: arrasto de 140x90 move a nota 139x92. A causa antiga esta escrita no `Canvas.jsx:415` — o chao roubava a captura de ponteiro, e a guarda procurava `.canvas-nota`, classe que nao existe.
 **Prova:** `node scripts/provas.mjs r14`
 
-### R-15 · 2026-09-01 · aberto
+### R-15 · 2026-09-01 · fechado
 **Erik:** "Os grupos se sobrepõem e não são como o que eu criei no Figma"
 **Onde:** /canvas
 **Medido em 04/09:** **nada no produto impede duas seções de se sobreporem**, e a tolerância é deliberada — está escrita no `Canvas.jsx`: a contenção é por VÍNCULO e não por geometria, e a versão que perguntava "quem está por cima?" foi testada e reprovou justamente "com duas áreas sobrepostas". O `organizar()` desfaz sobreposição de **notas** (`conjunto = alvos || nos`), e não toca em seção. E a seção nasce em volta do que está selecionado — se duas seleções se cruzam no plano, as duas áreas se cruzam.
@@ -188,17 +188,56 @@ que é o que uma grade responsiva faz.
 Não deu para medir a sobreposição na tela: **o acervo semeado traz uma seção só** ("Design & Tecnologia", 620×420), e sobreposição precisa de duas.
 
 **Pendência do Erik, e é uma regra que falta:** seção pode encostar em seção? Se não pode, o produto deve *impedir* (empurrar como o `organizar` faz com as notas) ou apenas *avisar*? Isso não está no repositório e não se deduz do código — a segunda metade da queixa ("não são como o que eu criei no Figma") é do quadro, na Fase 4.
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r15`
+
+**Fechado em 06/09, e a bancada precisou aprender a mostrar o defeito.**
+
+A nota de 04/09 termina com *"não deu para medir a sobreposição na tela"* — o
+acervo semeado traz UMA seção só. Um defeito que a bancada não consegue mostrar
+é um defeito que ninguém consegue fechar. `scripts/_sessao.py secao-coberta`
+escreve a segunda, cabendo dentro da primeira.
+
+**Com ela na tela, o defeito apareceu, e é pior que estético:** as duas seções
+nasciam com `z-index: 0`, e no empate quem ganha é a ordem do DOM, que é a
+ordem de criação. Uma seção INTEIRAMENTE dentro de outra ficava **inalcançável**
+— `elementFromPoint` no topo dela devolvia o que estava embaixo. Uma área que
+não se pode pegar não existe para quem usa.
+
+A regra agora é de ÁREA e não de idade: quanto menor, mais alto. Uma seção que
+cobre outra por inteiro é sempre a maior das duas, então a coberta sobe sozinha.
+
+**Isto não mexe na contenção.** Quem está dentro de quem continua sendo vínculo,
+e não geometria — a versão que perguntava "quem está por cima?" para decidir
+pertencimento foi testada e reprovou exatamente com duas áreas sobrepostas. Aqui
+só se decide quem PINTA na frente.
+
+**Fica dito o que não foi feito:** nada impede duas seções de se cruzarem, e
+essa tolerância continua deliberada. Se ele quiser que o produto as empurre ou
+recuse a criação, é regra dele — o que este item consertou foi a área que
+sumia.
 
 ### R-16 · 2026-09-01 · aberto
 **Erik:** "Canvas travado, péssimas animações, interação ruim e confusa, ícones errados"
 **Onde:** /canvas
 **Prova:** sem-prova
 
-### R-17 · 2026-09-01 · aberto
+### R-17 · 2026-09-01 · fechado
 **Erik:** "Navegação enfiada onde não precisa — em alguns lugares é válida, em outros foi forçada sem necessidade e não seguiu o Figma"
 **Onde:** /estudos
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r17`
+
+**Fechado em 06/09.** A trilha de /estudos já tinha sido movida por causa
+desta frase, e o próprio arquivo registra: *"o Erik apontou que ela foi forçada
+onde não cabia, e o desenho confirma: no `895:8849` ela aparece SÓ na fileira de
+baixo, ao lado de 'Você ligou'. Em cima não há o que indexar."*
+
+O que faltava era prova. `r17` mede as três coisas: que a trilha esteja DENTRO
+da fileira de baixo, que comece abaixo do topo da página, e que a coluna dela
+seja de 200. Envenenada — a trilha devolvida para o topo, indexando a página
+inteira —, ela reprova nomeando o nó.
+
+E a navegação existe no desenho: `900:56142` traz a mesma trilha, com "Início",
+"O que ficou" e as perguntas dos estudos.
 
 ### R-18 · 2026-09-01 · aberto
 **Erik:** "Kanban não funciona, interação péssima, parece de enfeite"

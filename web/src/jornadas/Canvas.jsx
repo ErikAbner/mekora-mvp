@@ -965,7 +965,7 @@ const Livro = memo(LivroCrua);
  * área move a NOTA, ou o chão, e nunca o retângulo por baixo. O que pega o
  * retângulo é a barra do título — a mesma regra de uma janela.
  */
-function Secao({ secao, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoEscolher, aoEscolherSozinho, aoInscrever, escolhido, pedindoNome, aoTerminarNome, noChrome = false }) {
+function Secao({ secao, ordem = 0, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoEscolher, aoEscolherSozinho, aoInscrever, escolhido, pedindoNome, aoTerminarNome, noChrome = false }) {
   contarDesenho("secao");
   const arrasto = useRef(null);
   const [desloca, setDesloca] = useState(null);
@@ -1114,12 +1114,29 @@ function Secao({ secao, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoE
     if (moveu.current) { e.preventDefault(); e.stopPropagation(); }
   };
 
+  /* A MENOR FICA POR CIMA — R-15.
+   *
+   * As duas seções nasciam com `z-index: 0`, e aí quem ganha é a ordem do DOM,
+   * que é a ordem de criação. Medido: uma seção INTEIRAMENTE dentro de outra
+   * ficava inalcançável — `elementFromPoint` no topo dela devolvia o que
+   * estava embaixo, e não ela. Uma área que não se pode pegar não existe para
+   * quem usa.
+   *
+   * A regra é de área, e não de idade: quanto menor, mais alto. Uma seção que
+   * cobre outra por inteiro é sempre a maior das duas, então a coberta sobe
+   * sozinha. `ordem` vem do pai, que já tem as seções todas para comparar.
+   *
+   * ISTO NÃO MEXE NA CONTENÇÃO. Quem está dentro de quem continua sendo
+   * vínculo, e não geometria — a versão que perguntava "quem está por cima?"
+   * para decidir pertencimento foi testada e reprovou exatamente com duas
+   * áreas sobrepostas. Aqui só se decide quem PINTA na frente. */
   const estilo = {
     left: medindo?.x ?? secao.x,
     top: medindo?.y ?? secao.y,
     width: medindo?.largura ?? secao.largura,
     height: medindo?.altura ?? secao.altura,
     transform: desloca ? `translate(${desloca.dx}px, ${desloca.dy}px)` : undefined,
+    zIndex: ordem,
   };
 
   return (
@@ -1266,6 +1283,16 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
   const fioVivo = useRef(null);
   /* Qual nota está esperando a segunda ponta, quando a ligação vem do teclado. */
   const [ligandoDaLista, setLigandoDaLista] = useState(null);
+  /* QUEM PINTA NA FRENTE, entre seções — R-15. Da MAIOR para a menor, e o
+     índice vira `z-index`: a menor recebe o maior número. Memoizado porque
+     `secoes` muda a cada arrasto e reordenar a cada quadro não paga. */
+  const ordemDasSecoes = useMemo(() => {
+    const porArea = [...secoes].sort(
+      (a, b) => (b.largura * b.altura) - (a.largura * a.altura),
+    );
+    return new Map(porArea.map((g, i) => [g.id, i + 1]));
+  }, [secoes]);
+
   const [escrevendo, setEscrevendo] = useState(false);
   /* EDITANDO guarda a nota que está sendo mudada, ou nulo. A mesma folha serve
      aos dois casos: escrever é editar uma nota que ainda não existe. */
@@ -3501,6 +3528,11 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
               cima. Vêm antes no DOM, e é isso que os põe atrás. */}
           {secoes.map((g) => (
             <Secao
+              /* A ORDEM DE PINTURA sai da ÁREA: quanto menor, mais alto. Uma
+                 seção dentro de outra é sempre a menor das duas, e sem isto ela
+                 ficava embaixo e inalcançável. O `+1` afasta do zero para a
+                 maior de todas não empatar com o chão. */
+              ordem={ordemDasSecoes.get(g.id) ?? 0}
               aoLevar={levarSecao}
               aoEscolher={escolher}
               aoEscolherSozinho={escolherSozinho}
