@@ -652,7 +652,9 @@
   inline-size: min(384px, 100%);
   z-index: 40;
   display: flex; flex-direction: column; gap: 32px;
-  padding: 24px;
+  /* 32 EM VOLTA — `973:32415` e `973:32420` põem `p-32` no cabeçalho e
+     `px-32 pb-32` no corpo. Tinha 24. */
+  padding: 32px;
   overflow-y: auto;
   background: var(--background-secondary);
   border-inline-start: 1px solid var(--border);
@@ -668,27 +670,40 @@
   border-inline-start: 1px solid var(--border);
 }
 .aparencia header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+/* O título da folha é Body/Large 24/32 peso 500 (`973:32418`), e não um
+   Heading/SM: é o rótulo de um painel, não o título de uma página. */
 .aparencia h2 {
   margin: 0;
-  font-size: 28px; line-height: 36px; font-weight: 540;   /* Heading/SM */
+  font-size: 24px; line-height: 32px; font-weight: 500;   /* Body/Large */
   color: var(--foreground);
 }
+/* 56, do `938:22282` — o botão de fechar das folhas do sistema. */
 .aparencia header button {
-  inline-size: 44px; block-size: 44px;
+  inline-size: 56px; block-size: 56px;
   border: 1px solid var(--border); background: var(--background);
   color: var(--foreground); font-size: 20px; line-height: 30px; cursor: pointer;
 }
-.aparencia section { display: flex; flex-direction: column; gap: 16px; }
+.aparencia section { display: flex; flex-direction: column; gap: 24px; }   /* `973:32430` */
+/* Body/Medium 20/30 — `973:32431`. Estava um degrau abaixo. */
 .aparencia h3 {
   margin: 0;
-  font-size: 16px; line-height: 24px; font-weight: 400;   /* Label/Medium */
+  font-size: 20px; line-height: 30px; font-weight: 400;   /* Body/Medium */
   color: var(--muted-foreground);
 }
-.aparencia-opcoes { display: flex; gap: 12px; }
+/* 24 ENTRE AS AMOSTRAS — `973:32432`. As fileiras do nó têm duas ou três, e
+   elas preenchem a linha; por isso `flex: 1 1 0` e sem quebra.
+   
+   O TEMA É A EXCEÇÃO, e é do produto: o nó desenha dois (claro e escuro) e o
+   Mekora tem quatro (claro, sépia, escuro, sistema). Quatro numa fileira de
+   319 dariam 61px por amostra, 29 depois do recheio — a amostra de cor teria
+   menos que o rótulo dela. Então só essa fileira quebra, em duas de duas. */
+.aparencia-opcoes { display: flex; gap: 24px; }
+.aparencia-opcoes:has(.amostra-tema) { flex-wrap: wrap; }
+.aparencia-opcoes:has(.amostra-tema) button { flex: 1 1 calc(50% - 12px); }
 .aparencia-opcoes button {
   flex: 1 1 0; min-inline-size: 0;
-  display: flex; flex-direction: column; align-items: center; gap: 8px;
-  padding: 16px 8px;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+  padding: 16px;
   border: 1px solid var(--border); background: var(--background);
   cursor: pointer;
   color: var(--muted-foreground);

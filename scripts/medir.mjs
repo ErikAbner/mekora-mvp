@@ -336,9 +336,18 @@ try {
      * notas. Entregava. O instrumento é que não sabia fotografar esta tela. */
     const soAVista = bruto.includes('--vista');
     const alt2 = soAVista ? +alt : await avalia('Math.min(document.documentElement.scrollHeight,12000)');
+    /* O RECORTE É EM COORDENADA DE PÁGINA, e não de janela — mesmo com
+     * `captureBeyondViewport: false`. Com a página rolada, `y: 0` aponta para
+     * o topo do documento, que já não está composto: a foto sai PRETA. Custou
+     * duas capturas em branco (Estudos, e o painel de aparência da Leitura,
+     * que rola sozinha até onde a pessoa parou) antes de eu medir o `scrollY`
+     * em vez de olhar a imagem e supor. */
+    const rolagem = soAVista
+      ? await avalia('({x: Math.round(scrollX), y: Math.round(scrollY)})')
+      : { x: 0, y: 0 };
     const r = await manda('Page.captureScreenshot',
       { format: 'png', captureBeyondViewport: !soAVista,
-        clip: { x: 0, y: 0, width: +larg, height: alt2, scale: 1 } });
+        clip: { x: rolagem.x, y: rolagem.y, width: +larg, height: alt2, scale: 1 } });
     writeFileSync(png, Buffer.from(r.data, 'base64'));
     console.error(`captura: ${png} (${larg}×${alt2})`);
   }
