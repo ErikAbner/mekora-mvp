@@ -101,11 +101,17 @@ export function ContaKindle({ pessoa, aoSair }) {
        dela. Aqui só o painel desta seção e as folhas que ela abre. */
     <>
     <main className="conta-painel">
-          {/* A ILUSTRAÇÃO DESTA TELA — `966:25687`, "secure profile settings",
-              199,185x164 encostada à direita e sobrepondo o card em 26px.
-              Registrei antes que o Kindle não tinha desenho nenhum; tinha, e
-              está no nó do telefone, que eu ainda não havia lido. Como nas
-              outras telas de conta, é ornamento: `aria-hidden`. */}
+          {/* A ILUSTRAÇÃO DESTA TELA — e a escolha dela é minha, com o motivo à
+              vista. O nó do Kindle (`966:25687`) põe aqui "secure profile
+              settings", que é EXATAMENTE o mesmo desenho que o nó da conta
+              (`934:10740`) já põe em /conta: baixei os dois e os traços são o
+              mesmo, só em escalas diferentes. Duas abas vizinhas da mesma área
+              com o mesmo ornamento leem como defeito.
+
+              Então esta usa "magic password" (`966:25339`, 139x164), que é o
+              único desenho da família da conta que nenhuma tela estava usando.
+              É ornamento, `aria-hidden`, e é trocável numa linha se o Erik
+              preferir repetir o do nó. */}
           <img className="conta-desenho" src="/icones/ilustracao-kindle.svg" alt="" aria-hidden="true" />
           <section className="conta-secao">
             <h2>Dispositivos Kindle</h2>
