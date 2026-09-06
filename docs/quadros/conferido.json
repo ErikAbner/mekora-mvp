@@ -243,14 +243,13 @@
     "941:23109": {
       "tela": "Aviso · preferência fora do padrão",
       "rota": "/preparo/:id",
-      "conferido_em": "2026-09-02",
-      "contra": "captura",
+      "conferido_em": "2026-09-06",
+      "contra": "dado-do-no",
       "arquivos": [
-        "web/src/jornadas/preparo.jsx",
-        "web/src/jornadas/preparo.css",
-        "web/src/jornadas/Preparo.jsx"
+        "web/src/componentes/AvisoPreferencias.jsx",
+        "web/src/jornadas/preparo.css"
       ],
-      "nota": "herdado do TELAS-FIGMA.md; refazer contra o dado do no"
+      "nota": "bate: px-40 py-32 com 40 entre o texto e a acao, titulo heading-xs 24/32, o link 'Personalizado' em 16/24 sublinhado. A largura de 875 do no e a do quadro dele; no produto o aviso ocupa a coluna da pagina. Peso do titulo e 540 (o do sistema) e nao os 600 do token. Medido com a preferencia 'modo' em 'personalizado' — com tudo no padrao o aviso nao aparece, que e a regra dele."
     },
     "941:23110": {
       "tela": "Leitura · aparência",
