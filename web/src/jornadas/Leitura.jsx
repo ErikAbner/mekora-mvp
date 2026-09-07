@@ -157,7 +157,7 @@ function Bloco({ tipo = "paragrafo", texto, destaques = [], marcas = [], de = 0,
     if (m.de > i) partes.push(texto.slice(i, m.de));
     partes.push(
       m.classe === "destaque" ? (
-        <mark key={`${m.de}-d`} style={{ background: DESTAQUES[m.cor] }}>{texto.slice(m.de, m.ate)}</mark>
+        <mark key={`${m.de}-d`} data-cor={m.cor}>{texto.slice(m.de, m.ate)}</mark>
       ) : (
         <em key={`${m.de}-${m.classe}`} className={m.classe}>{texto.slice(m.de, m.ate)}</em>
       ),
@@ -185,7 +185,7 @@ function Paragrafo({ texto, destaques = [] }) {
   for (const d of [...destaques].sort((a, b) => a.de - b.de)) {
     if (d.de > i) partes.push(texto.slice(i, d.de));
     partes.push(
-      <mark key={d.de} style={{ background: DESTAQUES[d.cor] }}>
+      <mark key={d.de} data-cor={d.cor}>
         {texto.slice(d.de, d.ate)}
       </mark>,
     );
@@ -523,7 +523,7 @@ function CartaoDeNota({ nota, aoSalvar, aoFechar }) {
 
         {/* O trecho marcado, com o filete na cor da nota. É o que a nota é
             sobre, e sem ele o campo de escrita não tem assunto. */}
-        <blockquote style={{ "--cor-da-nota": DESTAQUES[nota.cor] }}>
+        <blockquote data-cor={nota.cor}>
           {`\u201c${nota.trecho}\u201d`}
         </blockquote>
 
@@ -630,7 +630,7 @@ function Caderno({ livro, notas, capitulo, aoComentar, aoTrocarCor, aoApagar, ao
             <li
               key={n.id}
               className={n.capitulo === capitulo ? "aqui" : ""}
-              style={{ "--cor-da-nota": DESTAQUES[n.cor] }}
+              data-cor={n.cor}
             >
               {n.comentario && <p className="titulo-24 nota-titulo">{n.comentario}</p>}
 

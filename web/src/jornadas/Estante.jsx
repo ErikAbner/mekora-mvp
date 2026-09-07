@@ -21,7 +21,6 @@ import { TrilhaLinhas } from "../componentes/TrilhaLinhas.jsx";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { Folha } from "../componentes/Folha.jsx";
-import { DESTAQUES } from "./Leitura.jsx";
 import "./estante.css";
 import { CapaDeReserva } from "../componentes/CapaDeReserva.jsx";
 
@@ -437,7 +436,7 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher }) {
                     Aqui havia uma frase de enfeite entre aspas, apresentada como
                     citação do livro — em todo livro, a mesma. */}
                 {selecionado.ultima_nota ? (
-                  <blockquote style={{ background: DESTAQUES[selecionado.ultima_nota.cor] }}>
+                  <blockquote className="trecho-citado" data-cor={selecionado.ultima_nota.cor}>
                     {selecionado.ultima_nota.trecho}
                   </blockquote>
                 ) : (

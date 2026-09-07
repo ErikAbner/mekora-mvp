@@ -270,7 +270,9 @@
  * fica ilegivel antes mesmo do contraste. */
 .ficha-notas blockquote {
   margin: 0; padding: 16px;
-  border-inline-start: 1px solid var(--foreground);
+  /* O FILETE VEM DO `.trecho-citado` e leva a cor da nota — ver `base.css`.
+     Aqui ele era neutro e a cor ia no CHÃO do bloco, que é o que o Erik chamou
+     de "pesado, puxa toda a atenção da tela" no R-04. */
   font-size: 20px; line-height: 30px;
   color: var(--foreground);
   text-wrap: pretty;

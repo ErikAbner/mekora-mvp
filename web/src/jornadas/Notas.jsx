@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { TrazerDoKindle } from "../componentes/TrazerDoKindle.jsx";
-import { DESTAQUES } from "./Leitura.jsx";
 import "./notas.css";
 
 /* Todas as notas, num lugar só.
@@ -164,7 +163,7 @@ export function Notas({ notas = [], carregando, aoApagar, aoImportar }) {
                         a tela dela mostra o resto — estudos, ligadas, e de onde
                         veio. */}
                     <Link to={`/nota/${n.id}`} className="nota-link">
-                      <blockquote style={{ background: DESTAQUES[n.cor] }}>{n.trecho}</blockquote>
+                      <blockquote className="trecho-citado" data-cor={n.cor}>{n.trecho}</blockquote>
                     </Link>
                     {n.comentario && <p className="nota-escrita">{n.comentario}</p>}
                     <div className="nota-pe">

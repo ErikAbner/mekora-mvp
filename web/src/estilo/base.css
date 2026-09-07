@@ -346,6 +346,122 @@ button, input, textarea, select { border-radius: 0; font: inherit; color: inheri
   --escolha-veu: color-mix(in oklab, var(--foreground) 8%, transparent);
 }
 
+/* ─── O PESO DO DESTAQUE ──────────────────────────────────────────────────────
+ *
+ * O Erik, 07/09: "manter as quatro cores, mas reduzir fortemente o peso visual.
+ * Não quero grandes blocos de cor competindo com o conteúdo. No claro e sépia,
+ * usar tratamento suave; no escuro, evitar preenchimentos opacos pesados e usar
+ * uma marcação de cor muito mais sutil. Preserve a distinção entre as quatro."
+ *
+ * Duas queixas dele, com um ano de diferença, eram a mesma: "notas e destaques
+ * você coloriu demais" (R-25, na leitura) e "a cor nesses destaques / notas não
+ * funciona — pesado, puxa toda a atenção da tela" (R-04, na ficha da Estante).
+ *
+ * A REGRA JÁ EXISTIA NO PROJETO e não estava sendo aplicada. O CLAUDE.md diz:
+ * *"O chão marca o conteúdo; o filete marca a citação. O inverso fazia a frase
+ * do autor pesar mais que a do leitor, dentro de uma área chamada
+ * Conhecimento."* O caderno da leitura já obedecia — `--cor-da-nota` num
+ * `border-inline-start`. Seis outras telas pintavam a citação inteira com a
+ * cor: Estudos, Estante, Notas, a página da nota, o livro e a busca.
+ *
+ * Então não há tratamento novo a inventar. Há o tratamento da leitura,
+ * estendido às outras seis — `.trecho-citado`, aqui embaixo.
+ *
+ * O QUE SOBRA DE PREENCHIMENTO é o `<mark>` dentro da prosa, e ele não pode
+ * virar filete: a marca acompanha o texto e quebra de linha com ele. Ali o peso
+ * cai por RAREFAÇÃO, e a distinção entre as quatro é salva pelo sublinhado, que
+ * fica na cor cheia. Um véu sozinho aproximaria os quatro pastéis até se
+ * confundirem; um traço fino na cor cheia distingue sem encher.
+ *
+ * DOIS VALORES, e o segundo é o pedido do escuro. No claro e no sépia o pastel
+ * é claro e um véu de 55% ainda lê como marca de caneta. No escuro a cor é
+ * escura e OPACA — é ela que o Erik viu como bloco —, e 30% a deixa como um
+ * sombreamento na cor, que é a "marcação muito mais sutil" que ele pediu.
+ *
+ * O que NÃO rarefaz: pastilha de escolher a cor, marca do cartão do Canvas,
+ * amostra do controle. Ali o objeto É a cor — rarefazer seria apagar o assunto. */
+:root { --veu-da-nota: 55%; }
+@media (prefers-color-scheme: dark) { :root:not([data-tema="claro"]) { --veu-da-nota: 30%; } }
+:root[data-tema="escuro"] { --veu-da-nota: 30%; }
+
+/* O TRAÇO É A COR DO OUTRO TEMA, e isso não é economia — é o que a medida pediu.
+ *
+ * O primeiro filete usava a própria cor da nota, e as duas capturas mostraram o
+ * mesmo defeito espelhado: no claro, `#efffbf` num traço de 2px sobre papel
+ * quase branco é invisível; no escuro, `#61722f` sobre fundo quase preto some
+ * igual. As quatro cores continuavam lá e deixavam de se distinguir — que é
+ * exatamente o que o Erik pediu para NÃO acontecer.
+ *
+ * A razão é que os dois conjuntos foram calculados para serem CHÃO DE TEXTO no
+ * tema deles: cada um tem contraste baixo contra o próprio papel, de propósito,
+ * porque texto vai por cima. Um traço quer o contrário.
+ *
+ * Então cada conjunto vira traço no tema oposto. O pastel claro, que é fundo no
+ * tema claro, é o traço do escuro; o tom fechado, que é fundo no escuro, é o
+ * traço do claro e do sépia. Nenhum valor novo entra no sistema, e os dois
+ * papéis ficam com a cor que serve a cada um. */
+:root {
+  --traco-verde: #61722f;
+  --traco-amarelo: #746c2f;
+  --traco-rosa: #a34344;
+  --traco-azul: #406f9e;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) {
+    --traco-verde: #efffbf;
+    --traco-amarelo: #fff8bf;
+    --traco-rosa: #ffbfc0;
+    --traco-azul: #bfdfff;
+  }
+}
+:root[data-tema="escuro"] {
+  --traco-verde: #efffbf;
+  --traco-amarelo: #fff8bf;
+  --traco-rosa: #ffbfc0;
+  --traco-azul: #bfdfff;
+}
+
+/* A COR CHEGA POR `data-cor`, e não por estilo em linha.
+ *
+ * Antes cada tela mandava `style={{ background: DESTAQUES[n.cor] }}` — quinze
+ * lugares decidindo, cada um por conta, como uma nota colorida se parece. Com o
+ * nome da cor no atributo, quem decide é esta folha: uma mudança de tratamento
+ * é uma linha aqui, e não uma caçada por JSX. */
+[data-cor="verde"]   { --cor-da-nota: var(--nota-verde);   --traco-da-nota: var(--traco-verde); }
+[data-cor="amarelo"] { --cor-da-nota: var(--nota-amarelo); --traco-da-nota: var(--traco-amarelo); }
+[data-cor="rosa"]    { --cor-da-nota: var(--nota-rosa);    --traco-da-nota: var(--traco-rosa); }
+[data-cor="azul"]    { --cor-da-nota: var(--nota-azul);    --traco-da-nota: var(--traco-azul); }
+
+/* A CITAÇÃO LEVA FILETE, em toda tela que mostra o trecho de um livro.
+ *
+ * `--cor-da-nota` chega por estilo em linha, com a cor da nota. Sem ela o filete
+ * cai no `--border` neutro, que é o certo para nota sem cor. */
+/* O SELETOR LEVA O TIPO DE PROPÓSITO. Seis telas já estilizam o próprio
+   `blockquote` por descendência — `.ficha-notas blockquote`, `.estudo-notas
+   blockquote` e as outras —, e uma classe sozinha (0,1,0) perde para elas
+   (0,1,1). Com o tipo junto o peso empata, e a ordem decide: esta regra é lida
+   depois, porque `base.css` entra antes das folhas de jornada.
+
+   O RECHEIO CONTINUA SENDO DE CADA TELA. Ele foi medido contra o nó, tela a
+   tela, e é o respiro entre o filete e o texto. Aqui só muda o que o Erik
+   pediu: o chão sai, o filete entra. */
+blockquote.trecho-citado {
+  background: none;
+  border-inline-start: 2px solid var(--traco-da-nota, var(--border));
+  color: var(--foreground);
+}
+
+/* A MARCA DENTRO DO TEXTO rarefaz, e o sublinhado guarda a cor. */
+.prosa mark,
+.busca-livro-trecho mark {
+  background-color: color-mix(in oklab, var(--cor-da-nota, var(--nota-amarelo)) var(--veu-da-nota), transparent);
+  text-decoration: underline;
+  text-decoration-color: var(--traco-da-nota, var(--traco-amarelo));
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  text-decoration-skip-ink: none;
+}
+
 /* Os valores escuros vivem numa lista só, e os dois seletores a usam: o
  * `@media` para o sistema escuro, o `[data-tema="escuro"]` para a escolha.
  * Duas cópias divergiriam na primeira cor nova. */

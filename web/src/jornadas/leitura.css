@@ -547,7 +547,7 @@
 .caderno li {
   display: flex; flex-direction: column; gap: 16px;
   padding-inline-start: 34px;
-  border-inline-start: 2px solid var(--cor-da-nota, var(--border));
+  border-inline-start: 2px solid var(--traco-da-nota, var(--border));
 }
 
 /* A nota do capítulo aberto é marcada por DEGRAU DE SUPERFÍCIE — a regra que
@@ -767,8 +767,18 @@
 .cromo-aa { font-size: 16px; line-height: 24px; font-weight: 540; }
 
 /* OCULTAR OS DESTAQUES nao apaga a nota: ela continua la, e volta quando a
- * pessoa quiser. Ler sem as proprias marcas e um modo de reler. */
-.prosa mark { background-color: var(--cor-nota, transparent); }
+ * pessoa quiser. Ler sem as proprias marcas e um modo de reler.
+ *
+ * QUEM OCULTA E A OPACIDADE, e sempre foi. Havia aqui um
+ * `background-color: var(--cor-nota, transparent)` que nunca fez nada:
+ * `--cor-nota` nao existe em lugar nenhum do produto — o nome de verdade e
+ * `--cor-da-nota` —, entao a regra resolvia para `transparent` e apagava o
+ * fundo de toda marca da prosa.
+ *
+ * Ela passou despercebida porque o fundo vinha por ESTILO EM LINHA, que vence
+ * folha de estilo. No dia em que o inline saiu, a regra morta apareceu de uma
+ * vez: as quatro cores ficaram com fundo transparente e so o sublinhado. Uma
+ * regra que so e inofensiva enquanto outra coisa a cobre nao e inofensiva. */
 :root { --leitura-destaque: 1; }
 .prosa mark[data-destaque] { opacity: var(--leitura-destaque, 1); }
 
@@ -984,7 +994,7 @@
   /* `895:13121`: filete de 1, 16 à esquerda e 16 em cima e embaixo. Sem o
      respiro vertical o trecho encostava no filete. */
   padding: 16px 0 16px 16px;
-  border-inline-start: 1px solid var(--cor-da-nota, var(--border));
+  border-inline-start: 1px solid var(--traco-da-nota, var(--border));
   color: var(--card-foreground);
   font-size: 24px; line-height: 32px;                     /* Body/Large */
   text-wrap: pretty;

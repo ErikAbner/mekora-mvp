@@ -7,7 +7,6 @@ import { Campo } from "../componentes/Campo.jsx";
 import { Icone } from "../componentes/Icone.jsx";
 import { achatar } from "../../../contrato/texto.js";
 import { estadoDe } from "../../../contrato/estado.js";
-import { DESTAQUES } from "./Leitura.jsx";
 import { analisar, apagarNota, criarNota, editarNota, enviarAoKindle, lerNotas, lerProgresso } from "../../../contrato/api.js";
 import { tamanhoLegivel } from "../../../contrato/tamanho.js";
 import "./livro.css";
@@ -426,7 +425,7 @@ export function Livro() {
                     sobre o livro não aponta para frase nenhuma, e um bloco de cor
                     sem texto dentro é uma citação de nada. */}
                 {n.trecho
-                  ? <blockquote style={{ background: DESTAQUES[n.cor] }}>{n.trecho}</blockquote>
+                  ? <blockquote className="trecho-citado" data-cor={n.cor}>{n.trecho}</blockquote>
                   : null}
                 {n.comentario && <p className="livro-pagina-comentario">{n.comentario}</p>}
                 <p className="livro-pagina-lugar">

@@ -143,7 +143,7 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, 
                 {n.capa && (
                   <img className="estudo-nota-capa" src={n.capa} alt="" aria-hidden="true" loading="lazy" />
                 )}
-                <blockquote style={{ background: DESTAQUES[n.cor] }}>{n.trecho}</blockquote>
+                <blockquote className="trecho-citado" data-cor={n.cor}>{n.trecho}</blockquote>
               </div>
               {n.comentario && <p className="estudo-comentario">{n.comentario}</p>}
               <div className="estudo-nota-acoes">
@@ -823,7 +823,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
             <ul className="estudos-notas-cruas">
               {notas.slice(0, LIMITE_DAS_SOLTAS).map((n) => (
                 <li key={n.id}>
-                  {n.trecho && <blockquote style={{ background: DESTAQUES[n.cor] }}>{n.trecho}</blockquote>}
+                  {n.trecho && <blockquote className="trecho-citado" data-cor={n.cor}>{n.trecho}</blockquote>}
                   {n.comentario && <p className="estudos-solta-comentario">{n.comentario}</p>}
                   <p className="estudos-solta-origem">
                     {n.origem || (n.fonte === "solta" ? "escrita no Canvas" : "de um livro seu")}
@@ -852,7 +852,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                 <ul className="estudos-notas-cruas">
                   {(e.notas ?? []).map((n) => (
                     <li key={n.id}>
-                      {n.trecho && <blockquote style={{ background: DESTAQUES[n.cor] }}>{n.trecho}</blockquote>}
+                      {n.trecho && <blockquote className="trecho-citado" data-cor={n.cor}>{n.trecho}</blockquote>}
                       {n.comentario && <p className="estudos-solta-comentario">{n.comentario}</p>}
                     </li>
                   ))}
@@ -882,7 +882,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
             <ul>
               {soltas.slice(0, LIMITE_DAS_SOLTAS).map((n) => (
                 <li key={n.id}>
-                  <blockquote style={{ background: DESTAQUES[n.cor] }}>{n.trecho}</blockquote>
+                  <blockquote className="trecho-citado" data-cor={n.cor}>{n.trecho}</blockquote>
                   <p className="estudos-solta-origem">
                     {n.origem || (n.fonte === "solta" ? "escrita no Canvas" : "de um livro seu")}
                   </p>
