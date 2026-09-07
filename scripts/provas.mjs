@@ -1760,14 +1760,47 @@ const PROVAS = {
              document.body.appendChild(t);`,
     async correr(veneno) {
       const d = medir('/canvas', `
-        const pinta = (e) => { let n = e; while (n) { const c = getComputedStyle(n);
-          if (c.backgroundColor && c.backgroundColor !== 'rgba(0, 0, 0, 0)') return { cor: c.backgroundColor, img: (c.backgroundImage || 'none').slice(0, 30) }; n = n.parentElement; } return null; };
-        const topo = pinta(document.elementFromPoint(innerWidth / 2, 8));
-        const meio = pinta(document.elementFromPoint(innerWidth / 2, innerHeight / 2));
-        return { topo, meio };`, veneno);
-      if (!d.topo || !d.meio) return 'nao consegui ler quem pinta o canvas';
-      if (d.topo.cor !== d.meio.cor) return `o topo e pintado de ${d.topo.cor} e o meio de ${d.meio.cor}`;
-      if (!d.topo.img.startsWith('radial-gradient')) return `o topo do canvas nao tem os pontos: ${d.topo.img}`;
+        /* A QUEIXA E "UMA FAIXA NO TOPO PINTADA POR OUTRA COISA", e a medida
+           passou a ser essa: para cada ponto da borda de cima do mundo, subir
+           ate quem pinta e perguntar se esse alguem E o mundo, ou vive dentro
+           dele.
+
+           A VERSAO ANTERIOR COMPARAVA A COR DO TOPO COM A DO CENTRO DA TELA, e
+           passava por acidente: enquanto o centro estava vazio, os dois davam o
+           chao. No dia em que um cartao cresceu e cobriu o meio, a prova
+           acusou regressao — e o que ela tinha medido nunca foi a queixa.
+           Cartao no topo nao e o defeito; cartao e conteudo do Canvas. */
+        const mundo = document.querySelector('.canvas-mundo');
+        if (!mundo) return { temMundo: false };
+        const r = mundo.getBoundingClientRect();
+        const quemPinta = (x, y) => {
+          let n = document.elementFromPoint(x, y);
+          while (n) {
+            const c = getComputedStyle(n);
+            if (c.backgroundColor && c.backgroundColor !== 'rgba(0, 0, 0, 0)') return n;
+            if (c.backgroundImage && c.backgroundImage !== 'none') return n;
+            n = n.parentElement;
+          }
+          return null;
+        };
+        const intrusos = [];
+        for (let i = 1; i <= 9; i++) {
+          const x = Math.round(r.x + (r.width * i) / 10);
+          const quem = quemPinta(x, Math.round(r.y + 4));
+          if (!quem) { intrusos.push('nada pinta em x=' + x); continue; }
+          if (quem !== mundo && !mundo.contains(quem)) {
+            const c = getComputedStyle(quem);
+            intrusos.push(quem.tagName.toLowerCase() + '.' + String(quem.className).slice(0, 24) + ' ' + c.backgroundColor);
+          }
+        }
+        const cm = getComputedStyle(mundo);
+        return { temMundo: true, intrusos, chao: cm.backgroundColor,
+                 pontos: (cm.backgroundImage || 'none').slice(0, 30) };
+      `, veneno);
+      if (!d.temMundo) throw new NaoPodeMedir('o Canvas nao montou o mundo');
+      if (d.intrusos.length) return `a faixa de cima do Canvas e pintada por fora dele: ${d.intrusos[0]}`;
+      /* O CHAO PONTILHADO E DO CANVAS, e some junto se alguem trocar o fundo. */
+      if (!d.pontos.startsWith('radial-gradient')) return `o chao do Canvas nao tem os pontos: ${d.pontos}`;
       return null;
     },
   },
