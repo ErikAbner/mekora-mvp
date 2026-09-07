@@ -93,3 +93,4 @@ web/dist/
 
 # gerado por scripts/folha-de-capas.mjs
 web/publico/_folha-capas.html
+web/publico/_folha-icones.html

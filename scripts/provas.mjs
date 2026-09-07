@@ -1229,14 +1229,14 @@ const PROVAS = {
       'icone-estante.svg': 'a08ea4aca7c094bcbc045801cf305f029cc5e27c824708a3757c3f5a3e72465d',
       'icone-estudos.svg': '87386e53ba5b3bd01e70234d676d3c6346c20b8bd70d8cef1f2d4276b6b40f2f',
       'icone-fixar.svg': 'ace45115fbd90cade0c20f15c0b7405f51df9851637c43cf9bb22b059b34b287',
-      'icone-indice.svg': 'ec02f366132ee4b87e9233bbedab7a5b54cf8ba5fd25cd588f0dc3932eab91bc',
+      'icone-indice.svg': '38a8d703fc3e61b02309cbd5b6a6bf48f578cfff4209732a81bc600c84bda376',
       'icone-mais-acoes.svg': '21c9fc9de7603ee9ea14529fdc71f7b363229eeaf1fdb1c0d3fb74b9cd35d94c',
       'icone-marcador.svg': '50d2de341fa5497b507b310c69fecb950a4ec7635b92b00c39d349df117abe71',
       'icone-menu.svg': 'ec02f366132ee4b87e9233bbedab7a5b54cf8ba5fd25cd588f0dc3932eab91bc',
       'icone-mesa.svg': '684a463040482c0fadd620593990802bd272586f972b538c28101001e96375a9',
       'icone-nota-imagem.svg': '44525d79ed918988d634feaf45f8a9cfd559880984a7c5d820d49b39322f4a3b',
       'icone-nota-nova.svg': '86edb3d160197d915d3644f9e82dbb7061bcc28609aee27d064736afb10762f1',
-      'icone-paginas.svg': 'f90e29714752fd20d887ff65fbe5813f6e2eeca7d868387d43adb6e43b4db5c4',
+      'icone-paginas.svg': 'fd09acc61b721066dd733f66f65df0ee6733ae63f29e8fd670f9ed81aa091db6',
       'icone-preferencias.svg': '9df1b852a6fb4f119f00716cc176f6289a96514155e85b20d7bd5b78e8ecca83',
       'icone-privacidade.svg': '22e10767d5de2e6ff9d75537e2dbd39da42283709ee5b70ec1cf6523928e3ce3',
       'icone-refazer.svg': '4bfe930079ef2515f11f5c40cf2bfe8a5bb42008a6a19006228451aba998f157',
@@ -1269,10 +1269,19 @@ const PROVAS = {
          seguinte de nascer em silencio. Tentei alcanca-la em 04/09 copiando o
          icone-fixar sobre o icone-camadas: quem ficou vermelho foi a impressao
          digital, como esta escrito. */
-      const PARES_CONHECIDOS = [
-        ['icone-canvas.svg', 'icone-paginas.svg'],
-        ['icone-indice.svg', 'icone-menu.svg'],
-      ].map((p) => p.join('|'));
+      /* A LISTA ESTA VAZIA DESDE 07/09, e este e o dia que o comentario acima
+         previa. O Erik decidiu: "indice e paginas precisam de desenhos
+         proprios. Nao aceitar icones semanticamente duplicados." Os dois foram
+         redesenhados compondo tracos da propria biblioteca — as barras do menu
+         para a lista, a folha do copiar para a pagina — e a tabela de resumos
+         acima recebeu os dois valores novos.
+
+         Isto NAO e mexer no aparelho para o resumo fechar. O resumo mudou
+         porque o DESENHO mudou, por decisao registrada em
+         docs/DECISOES-2026-09-07.md; a tabela existe para pegar mudanca que
+         ninguem decidiu. Com a lista vazia, qualquer par novo reprova — e a
+         regra deixa de ser inalcancavel. */
+      const PARES_CONHECIDOS = [];
       const porResumo = new Map();
       for (const [nome, resumo] of lidos) {
         if (!porResumo.has(resumo)) porResumo.set(resumo, []);
