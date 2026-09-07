@@ -1,4 +1,12 @@
-"""Onde a pessoa parou. Duas rotas, e uma decisão em cada."""
+"""Onde a pessoa parou, e o que ela declarou sobre o livro.
+
+TRÊS ROTAS, e a terceira existe porque as duas primeiras não davam conta.
+
+Progresso é FATO MEDIDO pelo leitor: capítulo, deslocamento, fração. Estado de
+leitura é DECLARAÇÃO da pessoa: "ainda vou ler", "estou lendo", "terminei". Até
+07/09 só havia o primeiro, e o quadro de Estudos escrevia posição de leitura
+para representar declaração — apagando em silêncio onde ela tinha parado.
+"""
 
 from __future__ import annotations
 
@@ -14,6 +22,11 @@ from app.models.progresso import Progresso
 from app.services import acesso_service
 
 router = APIRouter()
+
+
+# Os três valores do estado, nomeados pelo Erik em 07/09. O conjunto mora aqui e
+# não espalhado em `if`, pela mesma razão que `ESTADOS_DA_NOTA` existe.
+ESTADOS_DE_LEITURA = {"to_read", "reading", "read"}
 
 
 class Marca(BaseModel):
@@ -40,7 +53,8 @@ def ler(
     """
     pessoa = acesso_service.quem_e(db, mekora_sessao)
     if pessoa is None:
-        return {"capitulo": 0, "deslocamento": 0, "capitulos": 0, "fracao": None, "guardado": False}
+        return {"capitulo": 0, "deslocamento": 0, "capitulos": 0, "fracao": None,
+                "estado_leitura": None, "guardado": False}
 
     p = (
         db.query(Progresso)
@@ -48,10 +62,12 @@ def ler(
         .first()
     )
     if p is None:
-        return {"capitulo": 0, "deslocamento": 0, "capitulos": 0, "fracao": None, "guardado": False}
+        return {"capitulo": 0, "deslocamento": 0, "capitulos": 0, "fracao": None,
+                "estado_leitura": None, "guardado": False}
     return {
         "capitulo": p.capitulo, "deslocamento": p.deslocamento,
         "capitulos": p.capitulos, "fracao": p.fracao, "guardado": True,
+        "estado_leitura": p.estado_leitura,
     }
 
 
@@ -93,6 +109,66 @@ def gravar(
     # capitulo. Aqui e guardar e devolver, nao derivar.
     if marca.fracao is not None:
         p.fracao = max(0.0, min(1.0, marca.fracao))
+    p.atualizado_em = agora()
+    db.commit()
+    return None
+
+
+class EstadoDeLeitura(BaseModel):
+    """`None` DEVOLVE A DECLARAÇÃO, e não é o mesmo que "ainda vou ler".
+
+    Sem declaração, o estado volta a ser derivado da fração — que é como ele
+    sempre funcionou e continua funcionando para todo livro que ninguém tocou.
+    Mandar `null` é desfazer o que se declarou, e não declarar "to_read".
+    """
+
+    estado: Optional[str] = None
+
+
+@router.put("/jobs/{job_id}/estado-leitura", status_code=204)
+def declarar_estado(
+    job_id: int,
+    corpo: EstadoDeLeitura,
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> None:
+    """Declara o estado de leitura, SEM TOCAR NO PROGRESSO.
+
+    É a rota do arrasto do quadro de Estudos. Ela escreve uma coluna e nenhuma
+    outra: `capitulo`, `deslocamento`, `capitulos` e `fracao` ficam exatamente
+    como estavam — inclusive quando a linha de progresso é criada agora, para um
+    livro que ninguém abriu. Nesse caso ela nasce com o progresso zerado e
+    `capitulos` em zero, que é o valor que a estante já lê como "ninguém abriu
+    ainda". Declarar não inventa leitura.
+
+    O 400 de valor desconhecido é deliberado: um estado que o produto não
+    conhece, gravado em silêncio, viraria uma quarta coluna no quadro no dia em
+    que alguém lesse a tabela.
+    """
+    from fastapi import HTTPException
+
+    if corpo.estado is not None and corpo.estado not in ESTADOS_DE_LEITURA:
+        raise HTTPException(
+            status_code=400,
+            detail=f"estado de leitura desconhecido: {corpo.estado}. Use um de {', '.join(sorted(ESTADOS_DE_LEITURA))}, ou null para desfazer.",
+        )
+
+    pessoa = acesso_service.quem_e(db, mekora_sessao)
+    if pessoa is None:
+        # O MESMO SILÊNCIO DA GRAVAÇÃO DE PROGRESSO, e pela mesma razão: sem
+        # conta não há onde guardar, e isso é o previsto e não um erro.
+        return None
+
+    p = (
+        db.query(Progresso)
+        .filter(Progresso.pessoa_id == pessoa.id, Progresso.job_id == job_id)
+        .first()
+    )
+    if p is None:
+        p = Progresso(pessoa_id=pessoa.id, job_id=job_id)
+        db.add(p)
+
+    p.estado_leitura = corpo.estado
     p.atualizado_em = agora()
     db.commit()
     return None

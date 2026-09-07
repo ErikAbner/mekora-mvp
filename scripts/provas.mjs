@@ -640,7 +640,7 @@ const PROVAS = {
         const conta = (id) => document.querySelectorAll('.estudos-coluna[data-coluna="' + id + '"] li').length;
         return {
           antes: window.__antesDoArrasto || null,
-          depois: { aler: conta('aler'), lendo: conta('lendo'), lido: conta('lido') },
+          depois: { to_read: conta('to_read'), reading: conta('reading'), read: conta('read') },
           mover: document.querySelectorAll('.estudos-mover-botao').length,
           colunas: document.querySelectorAll('.estudos-coluna[data-coluna]').length,
         };
@@ -653,11 +653,16 @@ const PROVAS = {
       if (!d.antes) return 'o gesto nao chegou a mirar: nenhuma coluna de origem tinha cartao';
       /* O ARRASTO SO PODE SER MEDIDO PELO EFEITO, e o efeito e a DIFERENCA: o
          cartao saiu da coluna de origem e entrou em "Lido". Comparar so o
-         numero final leria "ja estava la" como sucesso. */
+         numero final leria "ja estava la" como sucesso.
+         
+         E O QUE ELE ESCREVE E O ESTADO, nao o progresso — decisao do Erik em
+         07/09. A prova de que o progresso NAO foi tocado mora no backend,
+         em `tests/test_estado_de_leitura.py`, porque e la que da para ler a
+         marca antes e depois sem passar pela tela. */
       const saiu = d.depois[d.antes.origem] === d.antes[d.antes.origem] - 1;
-      const chegou = d.depois.lido === d.antes.lido + 1;
+      const chegou = d.depois.read === d.antes.read + 1;
       if (!saiu || !chegou) {
-        return `o arrasto nao moveu o cartao: ${d.antes.origem} ${d.antes[d.antes.origem]} para ${d.depois[d.antes.origem]}, lido ${d.antes.lido} para ${d.depois.lido}`;
+        return `o arrasto nao moveu o cartao: ${d.antes.origem} ${d.antes[d.antes.origem]} para ${d.depois[d.antes.origem]}, read ${d.antes.read} para ${d.depois.read}`;
       }
       return null;
     },

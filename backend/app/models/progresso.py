@@ -22,7 +22,7 @@ Sem conta não há progresso salvo, e isso é coerente com a DEC-0018: a estante
 conta. Quem lê sem entrar continua lendo; só não encontra a marca depois.
 """
 
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, UniqueConstraint
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, UniqueConstraint
 
 from app.db.database import Base
 from app.models.pessoa import agora
@@ -67,5 +67,20 @@ class Progresso(Base):
     # ficha entao cai no "capitulo N de M" de antes. Nulo NAO e zero: zero
     # afirma que a leitura esta no comeco.
     fracao = Column(Float)
+
+    # O ESTADO DE LEITURA, e ele NÃO É O PROGRESSO.
+    #
+    # "Terminei este livro" é uma declaração da pessoa. "Parei no capítulo 7,
+    # caractere 2.140" é um fato medido pelo leitor. Até 07/09 o produto tinha
+    # só o segundo, e o quadro de Estudos escrevia posição de leitura para
+    # representar declaração — apagando em silêncio onde a pessoa estava.
+    #
+    # NULO É O NORMAL, e quer dizer "ninguém declarou": aí o estado é derivado
+    # da fração, como sempre foi. Preenchido quer dizer que a pessoa disse, e a
+    # declaração vence. Uma fonte com padrão derivado, e a precedência escrita
+    # num lugar só — `estadoDeLeitura`, no contrato.
+    #
+    # Três valores, os que o Erik nomeou: "to_read", "reading", "read".
+    estado_leitura = Column(String(16))
 
     atualizado_em = Column(DateTime, default=agora, onupdate=agora, nullable=False)

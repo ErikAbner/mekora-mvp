@@ -193,6 +193,15 @@ class HistoryEntry(BaseModel):
     # Quanto do livro ja foi lido, de 0 a 1. Calculada no cliente, que e quem
     # conhece a extensao; nula para leitura registrada antes disso.
     fracao: Optional[float] = None
+    # O QUE A PESSOA DECLAROU sobre este livro: "to_read", "reading", "read" —
+    # ou `None` quando ela não declarou nada.
+    #
+    # `None` NÃO É "to_read". É "ninguém disse", e aí o estado sai da fração,
+    # como sempre saiu. A precedência entre os dois mora num lugar só, o
+    # `estadoDeLeitura` do contrato — é ele que a Estante, o quadro de Estudos e
+    # a prova consultam, e é por isso que declaração e progresso convivem sem
+    # virarem duas verdades.
+    estado_leitura: Optional[str] = None
     ultima_nota: Optional[dict] = None
     # Quando a leitura foi mexida pela última vez — o que deixa a Mesa escolher
     # QUAL livro vai no cartão "Continue" do nó 895:9981.

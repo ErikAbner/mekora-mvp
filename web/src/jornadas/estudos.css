@@ -676,3 +676,16 @@
 @media (prefers-reduced-motion: reduce) {
   .estudos-fantasma { transition: none; }
 }
+
+/* O AVISO DE DIVERGÊNCIA entre a declaração e o progresso.
+ *
+ * Ele não é alarme: discordar é legítimo — quem terminou o livro no papel, ou
+ * desistiu e quer tirá-lo da fila sem apagar onde parou. Por isso é texto com
+ * um botão, e não uma tarja. A tinta é a secundária, e o número usa `.dado`,
+ * que é como o produto marca número em toda tela. */
+.estudos-diverge {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px;
+  margin: 8px 0 0;
+  font-size: 14px; line-height: 22px;
+  color: var(--muted-foreground);
+}

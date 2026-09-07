@@ -223,6 +223,10 @@ export function useJornada() {
          * o que aconteceu na primeira medida, com o /history ja devolvendo
          * 0,8963 e a tela mostrando "no ultimo capitulo". */
         fracao: typeof e.fracao === "number" ? e.fracao : null,
+        /* O QUE A PESSOA DECLAROU sobre o livro, ou nulo. Nulo não é "a ler":
+         * é "ninguém disse", e aí o estado sai da fração. Quem decide é o
+         * `estadoDeLeitura` do contrato, e só ele. */
+        estadoLeitura: e.estado_leitura ?? null,
         ultima_nota: e.ultima_nota ?? null,
         /* Quando a leitura foi mexida pela última vez, e quando o arquivo mudou
            de estado pela última vez. A Mesa precisa das duas: uma escolhe o

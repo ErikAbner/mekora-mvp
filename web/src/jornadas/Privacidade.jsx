@@ -54,7 +54,22 @@ const GRUPOS = [
   { titulo: "Seus arquivos", chaves: ["livros", "leituras", "aparelhos", "preferencias"] },
   { titulo: "O que você escreveu", chaves: ["notas", "marcadores", "estudos", "ligacoes"] },
   { titulo: "No Canvas", chaves: ["no_canvas", "grupos_do_canvas", "midias_do_canvas", "livros_do_canvas"] },
-  { titulo: "O que o Mekora aprendeu com você", chaves: ["sugestoes_dispensadas", "grupos_calados", "recados"] },
+  /* O NOME SAI DOS CAMPOS, e não de uma figura de linguagem. Decisão do Erik em
+   * 07/09: numa tela de privacidade, linguagem literal em vez de
+   * antropomorfização — "O que o Mekora aprendeu com você" dizia que o produto
+   * aprende, que é o oposto do que esta tela existe para explicar.
+   *
+   * Ele sugeriu "Preferências e histórico", e o nome NÃO SERVE por um motivo
+   * que está na própria página: `preferencias` já é um item, no grupo "Seus
+   * arquivos" — "as escolhas que você fez em Preferências". Dois "preferências"
+   * na mesma tela, apontando para coisas diferentes, é pior que um nome frouxo.
+   *
+   * "escreveu" também está tomado, pelo grupo das notas. Sobra o que os três
+   * campos são, lidos um a um no `privacidade.py`: dois deles são sugestões que
+   * a pessoa dispensou — pares de notas e grupos calados, guardados para não
+   * sugerir de novo —, e o terceiro é o recado que ela escreveu, com a tela em
+   * que estava. */
+  { titulo: "Sugestões dispensadas e recados", chaves: ["sugestoes_dispensadas", "grupos_calados", "recados"] },
 ];
 
 function agrupar(itens) {

@@ -126,6 +126,11 @@ def _leitura_de(db: Session, job: ProcessingJob) -> dict:
 
     fora = {
         "notas": 0, "capitulo": None, "capitulos": None, "fracao": None,
+        # O QUE A PESSOA DECLAROU sobre este livro — "to_read", "reading",
+        # "read" —, ou nulo quando ela não declarou nada. Nulo NÃO é "to_read":
+        # é "ninguém disse", e aí o estado sai da fração. A precedência mora num
+        # lugar só, o `estadoDeLeitura` do contrato.
+        "estado_leitura": None,
         "ultima_nota": None,
         # QUANDO A LEITURA FOI MEXIDA PELA ÚLTIMA VEZ.
         #
@@ -168,6 +173,7 @@ def _leitura_de(db: Session, job: ProcessingJob) -> dict:
     # amarrá-la à condição do outro esconderia o melhor dado por causa do pior.
     if p is not None:
         fora["fracao"] = p.fracao
+        fora["estado_leitura"] = p.estado_leitura
         fora["lido_em"] = p.atualizado_em
 
     return fora

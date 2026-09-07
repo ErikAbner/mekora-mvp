@@ -328,6 +328,23 @@ export function lerProgresso(jobId) {
   return pede(`/jobs/${jobId}/progresso`);
 }
 
+/** PUT /jobs/{id}/estado-leitura — declara "to_read" | "reading" | "read".
+ *
+ * NAO TOCA NO PROGRESSO. Ela escreve uma coluna e nenhuma outra: capitulo,
+ * deslocamento, capitulos e fracao ficam onde estavam, inclusive quando a linha
+ * nasce agora para um livro que ninguem abriu.
+ *
+ * `null` DESFAZ a declaracao e devolve o estado a derivado da fracao — nao e o
+ * mesmo que declarar "to_read".
+ */
+export function declararEstadoDeLeitura(jobId, estado) {
+  return pede(`/jobs/${jobId}/estado-leitura`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ estado }),
+  });
+}
+
 /** PUT /jobs/{id}/progresso — sem conta, o servidor ignora em silencio. */
 export function gravarProgresso(jobId, { capitulo, deslocamento, capitulos, fracao }) {
   return pede(`/jobs/${jobId}/progresso`, {

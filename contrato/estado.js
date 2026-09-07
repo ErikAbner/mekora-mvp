@@ -229,3 +229,79 @@ export function estadosNaoCobertos() {
   }
   return orfaos;
 }
+
+/* ─── O ESTADO DE LEITURA, e por que ele não é o progresso ───────────────────
+ *
+ * O Erik, 07/09: *"estado de leitura e progresso de leitura são conceitos
+ * diferentes. O drag-and-drop altera o estado. A leitura efetiva altera o
+ * progresso."*
+ *
+ * São mesmo. **Terminei este livro** é uma declaração da pessoa; **parei no
+ * capítulo 7, caractere 2.140** é um fato medido pelo leitor enquanto ela rola.
+ * A primeira versão do arrasto do quadro de Estudos escrevia o segundo para
+ * representar o primeiro — soltar em "Lido" punha a marca no último capítulo —
+ * e apagava, em silêncio, onde a pessoa tinha parado.
+ *
+ * UMA FONTE, COM PADRÃO DERIVADO. Esta função é o único lugar em que a
+ * precedência existe, e ela é curta:
+ *
+ *   declarou   o que ela disse vale, e ponto
+ *   não disse  o estado sai da fração, como sempre saiu
+ *
+ * Isso não é ter duas verdades. Duas verdades seria guardar o estado E
+ * continuar derivando sem dizer qual manda — e é exatamente o que esta função
+ * existe para impedir: a Estante, o quadro, a ficha e a prova leem daqui.
+ */
+export const ESTADOS_DE_LEITURA = ["to_read", "reading", "read"];
+
+/* O CORTE DE "LIDO" É 0,98 E NÃO 1, e o número é antigo: a fração vem da
+ * rolagem do navegador, e a última tela de um EPUB quase nunca fecha em 1,0
+ * exato — sobra o rodapé do arquivo, a margem final, o bloco que não chega ao
+ * fim do visor. Exigir 1 deixaria livro terminado eternamente em "Lendo". */
+export const FRACAO_DE_LIDO = 0.98;
+
+/**
+ * Em que coluna o livro está: `to_read`, `reading` ou `read`.
+ *
+ * @param {{fracao?: number|null, estado_leitura?: string|null, estadoLeitura?: string|null}} livro
+ */
+export function estadoDeLeitura(livro) {
+  if (!livro) return "to_read";
+  /* Os dois nomes porque a mesma pergunta é feita dos dois lados: o servidor
+   * responde `estado_leitura` e o mapeamento da tela guarda `estadoLeitura`.
+   * Aceitar um só faria a função dar a resposta certa numa tela e a errada na
+   * outra, que é o pior defeito possível para um lugar que existe justamente
+   * para ser o único. */
+  const declarado = livro.estado_leitura ?? livro.estadoLeitura ?? null;
+  if (declarado && ESTADOS_DE_LEITURA.includes(declarado)) return declarado;
+
+  const f = livro.fracao;
+  /* NULO NÃO É ZERO. Livro sem fração é livro que ninguém abriu, e é isso que
+   * "a ler" quer dizer — não "está em 0%". */
+  if (typeof f !== "number" || f <= 0) return "to_read";
+  return f < FRACAO_DE_LIDO ? "reading" : "read";
+}
+
+/**
+ * A declaração e o progresso discordam?
+ *
+ * Serve à interface, e não ao modelo: o Erik pediu que marcar "Lido" com
+ * progresso incompleto pudesse *"oferecer uma ação adicional para concluir o
+ * progresso"*, **explicitamente**, em vez de o quadro mexer no histórico por
+ * conta. Esta função diz quando essa ação faz sentido; quem a oferece é a tela.
+ *
+ * Divergir NÃO é erro nem estado inválido: é o caso normal de quem terminou o
+ * livro no papel, ou desistiu e quer tirá-lo da fila sem apagar onde parou.
+ */
+export function leituraDivergeDaDeclaracao(livro) {
+  const declarado = livro?.estado_leitura ?? livro?.estadoLeitura ?? null;
+  if (!declarado) return null;
+  const f = typeof livro?.fracao === "number" ? livro.fracao : null;
+  if (declarado === "read" && (f === null || f < FRACAO_DE_LIDO)) {
+    return { declarado, fracao: f, falta: "concluir" };
+  }
+  if (declarado === "to_read" && f !== null && f > 0) {
+    return { declarado, fracao: f, falta: "zerar" };
+  }
+  return null;
+}

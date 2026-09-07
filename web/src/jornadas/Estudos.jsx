@@ -6,7 +6,8 @@ import { Campo } from "../componentes/Campo.jsx";
 import { achatar, comecosDistintos } from "../../../contrato/texto.js";
 import { Folha } from "../componentes/Folha.jsx";
 import { TrilhaDaPagina } from "../componentes/TrilhaDaPagina.jsx";
-import { criarEstudo, gravarProgresso, ignorarGrupo, lerAgrupadas, ouvirGruposDeNovo, reunirNoEstudo } from "../../../contrato/api.js";
+import { criarEstudo, declararEstadoDeLeitura, gravarProgresso, ignorarGrupo, lerAgrupadas, ouvirGruposDeNovo, reunirNoEstudo } from "../../../contrato/api.js";
+import { ESTADOS_DE_LEITURA, estadoDeLeitura, leituraDivergeDaDeclaracao } from "../../../contrato/estado.js";
 import { DESTAQUES } from "./Leitura.jsx";
 import "./estudos.css";
 
@@ -248,59 +249,33 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, 
  * deixaria livro terminado eternamente em "Lendo", e é o tipo de erro que a
  * pessoa não tem como corrigir.
  */
-/* O QUADRO SE ARRASTA, e o que o arrasto escreve é o PRÓPRIO PROGRESSO.
+/* O QUADRO SE ARRASTA, E O ARRASTO ESCREVE O ESTADO — não o progresso.
  *
- * O Erik: "kanban não funciona, interação péssima, parece de enfeite" (R-18), e
- * em 07/09: "implementar drag-and-drop entre A ler, Lendo e Li, com feedback
- * visual claro durante o arrasto. Não depender exclusivamente de drag:
- * preservar alternativas clicáveis/contextuais".
+ * O Erik, em 07/09, depois de ver a primeira versão:
  *
- * ATÉ AQUI EU TINHA ESCRITO O CONTRÁRIO, com um argumento que parecia bom: a
- * coluna é derivada da fração lida, que é fato medido pelo leitor, e arrastar
- * para "Lido" faria o número mentir. O argumento tinha um furo — a lei do
- * projeto, escrita no CLAUDE.md, diz **"estado derivado, corrigível à mão"**. A
- * frase seguinte proíbe um campo de status PARALELO para alguém manter; ela não
- * proíbe corrigir o derivado. São coisas diferentes, e eu tinha lido as duas
- * como uma só.
+ *   "Não considero correto usar o progresso para representar o estado da
+ *   coluna. Mover para A ler não deve zerar progresso; Lendo não deve fabricar
+ *   capítulo 1/N; Lido não deve silenciosamente alterar a posição real de
+ *   leitura. Estado de leitura e progresso de leitura são conceitos diferentes.
+ *   O drag-and-drop altera o estado. A leitura efetiva altera o progresso."
  *
- * Então o arrasto não cria estado novo: ele ESCREVE O PROGRESSO, que é o mesmo
- * que o leitor escreve rolando e o mesmo que o botão "Reler" já escrevia. Cada
- * coluna corresponde a uma posição real no livro, e nenhuma inventa número:
+ * A versão anterior gravava a marca de leitura para representar a declaração, e
+ * o argumento — "estado derivado, corrigível à mão" — não cobria o dano: quem
+ * arrastasse um livro pela metade para "Lido" perdia onde tinha parado, como
+ * efeito colateral de um gesto que não prometia mexer no histórico.
  *
- *   A ler   capítulo 0, fração 0 — é exatamente o que "Reler" faz hoje
- *   Lendo   capítulo 0, fração de UM capítulo — o livro aberto no começo
- *   Lido    último capítulo, fração 1
+ * Agora há uma coluna `estado_leitura` em `progressos`, anulável, e a rota
+ * `PUT /jobs/{id}/estado-leitura` escreve ela e nada mais.
  *
- * "Lendo" é o único que precisa de conta, e ela sai do livro: `1 / capitulos`
- * é o progresso de quem abriu no primeiro de N capítulos. Sem `capitulos`
- * conhecido sobra o piso da coluna, que é o menor valor que ela reconhece.
+ * E CONTINUA HAVENDO UMA FONTE SÓ. `estadoDeLeitura`, no contrato, é o único
+ * lugar com a precedência: declarou, vale o que ela disse; não declarou, o
+ * estado sai da fração como sempre saiu. Duas verdades seria guardar o estado E
+ * seguir derivando sem dizer qual manda.
  */
-const CORTE_DE_LENDO = 0.02;
-
-const DESTINOS = {
-  aler: () => ({ capitulo: 0, deslocamento: 0, fracao: 0 }),
-  lendo: (l) => ({
-    capitulo: 0,
-    deslocamento: 0,
-    fracao: l.capitulos > 1 ? 1 / l.capitulos : CORTE_DE_LENDO,
-  }),
-  lido: (l) => ({
-    capitulo: Math.max(0, (l.capitulos ?? 1) - 1),
-    deslocamento: 0,
-    fracao: 1,
-  }),
-};
-
-/* Em que coluna o livro está agora — para não escrever o que já está escrito, e
- * para desabilitar a própria coluna no menu. */
-function colunaDe(l) {
-  if (typeof l.fracao !== "number" || l.fracao <= 0) return "aler";
-  return l.fracao < 0.98 ? "lendo" : "lido";
-}
 const COLUNAS = [
-  { id: "aler", rotulo: "A ler", cabe: (l) => typeof l.fracao !== "number" || l.fracao <= 0 },
-  { id: "lendo", rotulo: "Lendo", cabe: (l) => typeof l.fracao === "number" && l.fracao > 0 && l.fracao < 0.98 },
-  { id: "lido", rotulo: "Lido", cabe: (l) => typeof l.fracao === "number" && l.fracao >= 0.98 },
+  { id: "to_read", rotulo: "A ler" },
+  { id: "reading", rotulo: "Lendo" },
+  { id: "read", rotulo: "Lido" },
 ];
 
 /* OS RECORTES DOS ESTUDOS — o nó 966:31095 os tem, e a tela não tinha.
@@ -315,10 +290,7 @@ const LIMITE_DAS_SOLTAS = 20;
 /* OS TRÊS RECORTES DO DESENHO — `895:8911`, `895:8913` e `895:8915`.
  *
  * Eu tinha inventado "Abertos / Respondidos / Tudo", um filtro por ESTADO do
- * estudo. O desenho não filtra estado: ele troca o que a tela MOSTRA. E foi por
- * cima dessa invenção que eu ainda te perguntei qual seria o significado de "Em
- * pesquisa" — uma pergunta construída sobre uma leitura errada de captura
- * pequena demais.
+ * estudo. O desenho não filtra estado: ele troca o que a tela MOSTRA.
  *
  * Os três são vistas do mesmo acervo, e nenhuma precisa de campo novo:
  *
@@ -367,10 +339,32 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
   const [movendo, setMovendo] = useState(null);
 
   const mover = useCallback(async (livro, destino) => {
-    if (!livro || !DESTINOS[destino] || colunaDe(livro) === destino) return;
+    if (!livro || !ESTADOS_DE_LEITURA.includes(destino)) return;
+    if (estadoDeLeitura(livro) === destino) return;
     setMovendo(livro.chave);
     try {
-      await gravarProgresso(livro.chave, DESTINOS[destino](livro));
+      /* UMA COLUNA, E NENHUMA OUTRA. A rota escreve `estado_leitura`; capítulo,
+       * deslocamento e fração ficam onde estavam. Se a pessoa marcar "Lido"
+       * com o livro pela metade, o quadro NÃO conclui a leitura por ela — quem
+       * oferece isso é o aviso de divergência, com um botão e um nome. */
+      await declararEstadoDeLeitura(livro.chave, destino);
+      aoReler?.(livro.chave);
+    } finally {
+      setMovendo(null);
+    }
+  }, [aoReler]);
+
+  /* CONCLUIR A LEITURA é a "ação adicional" que o Erik pediu que existisse
+   * explicitamente: ela mexe no progresso, e por isso tem botão e nome próprios
+   * em vez de acontecer junto com o arrasto. */
+  const concluirLeitura = useCallback(async (livro) => {
+    setMovendo(livro.chave);
+    try {
+      await gravarProgresso(livro.chave, {
+        capitulo: Math.max(0, (livro.capitulos ?? 1) - 1),
+        deslocamento: 0,
+        fracao: 1,
+      });
       aoReler?.(livro.chave);
     } finally {
       setMovendo(null);
@@ -391,7 +385,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
       if (Math.hypot(e.clientX - g.x0, e.clientY - g.y0) < 4) return;
       g.ativo = true;
       try { quadroRef.current?.setPointerCapture(g.id); } catch { /* já foi */ }
-      setArrasto({ chave: g.chave, titulo: g.livro.titulo, x: e.clientX, y: e.clientY, de: colunaDe(g.livro) });
+      setArrasto({ chave: g.chave, titulo: g.livro.titulo, x: e.clientX, y: e.clientY, de: estadoDeLeitura(g.livro) });
     } else {
       setArrasto((a) => (a ? { ...a, x: e.clientX, y: e.clientY } : a));
     }
@@ -625,8 +619,11 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
             onPointerUp={soltaGesto}
             onPointerCancel={soltaGesto}
           >
-            {COLUNAS.map(({ id, rotulo, cabe }) => {
-              const dela = livros.filter(cabe);
+            {COLUNAS.map(({ id, rotulo }) => {
+              /* A COLUNA VEM DO CONTRATO. `estadoDeLeitura` é o único lugar com
+                 a precedência entre o que a pessoa declarou e o que a fração
+                 diz — a Estante, a ficha e a prova leem do mesmo lugar. */
+              const dela = livros.filter((l) => estadoDeLeitura(l) === id);
               return (
                 <section
                   key={id}
@@ -673,7 +670,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                             {/* A porcentagem e a barra só existem em quem está
                                 sendo lido: no "A ler" elas seriam zero em toda
                                 linha, e zero repetido não informa. */}
-                            {id === "lendo" && (
+                            {id === "reading" && (
                               <>
                                 <span className="estudos-livro-onde">
                                   <span className="dado">{Math.round(l.fracao * 100)}%</span> lido
@@ -693,11 +690,51 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                             Não é acessibilidade de enfeite: arrasto não existe
                             para quem usa teclado, para quem usa leitor de tela,
                             e é impreciso em telas pequenas. Os dois caminhos
-                            escrevem a mesma coisa — `DESTINOS`.
+                            escrevem a mesma coisa: a rota do estado.
                             
-                            "Reler" continua, e é o botão do `895:8849`: ele é o
-                            nome que o desenho dá ao movimento de Lido para A
-                            ler, e o desenho o põe só naquela coluna. */}
+                            O "Reler" do `895:8849` deixou de ser um botão à
+                            parte. Ele era o nome que o desenho dava ao
+                            movimento de "Lido" para "A ler" quando esse
+                            movimento ZERAVA o progresso — e ele não zera mais.
+                            Chamar de "Reler" um botão que só troca a
+                            declaração prometeria o que ele não faz. */}
+                        {/* A DECLARAÇÃO E O PROGRESSO PODEM DISCORDAR, e isso
+                            não é erro: é o caso de quem terminou o livro no
+                            papel, ou desistiu e quer tirá-lo da fila sem apagar
+                            onde parou.
+                            
+                            O Erik: "se marcar como Lido enquanto ainda houver
+                            progresso incompleto precisar oferecer uma ação
+                            adicional para concluir o progresso, isso pode ser
+                            tratado explicitamente na interface, mas não quero
+                            mutação silenciosa de histórico como efeito colateral
+                            do Kanban".
+                            
+                            Então o aviso diz o número, e o botão diz o que vai
+                            fazer. Quem não clicar fica com o livro em "Lido" e a
+                            marca onde estava — que é uma combinação legítima. */}
+                        {(() => {
+                          const briga = leituraDivergeDaDeclaracao(l);
+                          if (!briga || briga.falta !== "concluir") return null;
+                          return (
+                            <p className="estudos-diverge">
+                              <span>
+                                Marcado como lido, e a leitura parou em{" "}
+                                <span className="dado">
+                                  {briga.fracao === null ? "nada" : `${Math.round(briga.fracao * 100)}%`}
+                                </span>.
+                              </span>
+                              <button
+                                type="button"
+                                className="estudos-mover-botao"
+                                disabled={movendo === l.chave}
+                                onClick={() => concluirLeitura(l)}
+                              >
+                                Concluir a leitura também
+                              </button>
+                            </p>
+                          );
+                        })()}
                         <span className="estudos-mover">
                           <span className="estudos-mover-rotulo">Mover para</span>
                           {COLUNAS.filter((c) => c.id !== id).map((c) => (
@@ -708,7 +745,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                               disabled={movendo === l.chave}
                               onClick={() => mover(l, c.id)}
                             >
-                              {c.id === "aler" && id === "lido" ? "Reler" : c.rotulo}
+                              {c.rotulo}
                             </button>
                           ))}
                         </span>

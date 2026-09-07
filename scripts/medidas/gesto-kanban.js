@@ -33,13 +33,13 @@
      Cravar "A ler" fazia a prova depender do estado acumulado da bancada: cada
      rodada move um livro para "Lido" e escreve o progresso de verdade, então
      "A ler" esvazia. Uma prova que só funciona na primeira vez não é prova. */
-  const origem = ['aler', 'lendo'].find((id) => conta(id) > 0);
+  const origem = ['to_read', 'reading'].find((id) => conta(id) > 0);
   const de = origem && col(origem).querySelector('li');
-  const para = col('lido');
+  const para = col('read');
   if (!de || !para) return [];
   /* A CONTAGEM DE ANTES fica na página: o `medir()` mede uma vez só, e sem o
      antes a medida não sabe distinguir "chegou agora" de "já estava lá". */
-  window.__antesDoArrasto = { origem, aler: conta('aler'), lendo: conta('lendo'), lido: conta('lido') };
+  window.__antesDoArrasto = { origem, to_read: conta('to_read'), reading: conta('reading'), read: conta('read') };
   const a = de.getBoundingClientRect(), b = para.getBoundingClientRect();
   const x0 = Math.round(a.x + a.width / 2), y0 = Math.round(a.y + 20);
   const x1 = Math.round(b.x + b.width / 2), y1 = Math.round(b.y + 90);
