@@ -179,7 +179,20 @@ export function useJornada() {
   const carregarEstante = useCallback(async () => {
     const h = await historico();
     setLivros(
-      h.map((e) => ({
+      /* A ESTANTE É SÓ O ACERVO PRONTO. Decisão do Erik em 07/09: "Estante
+       * contém apenas livros prontos. Tudo que ainda está em
+       * análise/preparo/conversão pertence à Mesa."
+       *
+       * Ela SUBSTITUI a decisão de 04/09, que dizia o contrário — "a estante
+       * mostra ARQUIVOS, e um arquivo em preparo é um dos arquivos da pessoa" —
+       * e o registro das duas está em `docs/DECISOES-2026-09-07.md`. A regra
+       * nova é a que vale; a antiga fica escrita para não voltar por engano.
+       *
+       * O FILTRO É O MESMO DA MESA, INVERTIDO: lá `estado !== "pronto"`, aqui
+       * `=== "pronto"`. As duas telas passam a ser complementares e nenhum
+       * arquivo cai no vão — inclusive os de erro e os travados esperando
+       * senha, que não são livro e ficam na Mesa. */
+      h.filter((e) => estadoDe(e).estado === "pronto").map((e) => ({
         chave: e.upload_id,
         endereco: e.endereco,
         /* O endereço para ABRIR o livro vem pronto do backend: o arquivo se
@@ -192,17 +205,9 @@ export function useJornada() {
         leituraUrl: e.leitura_url ?? null,
         titulo: e.final_title || e.original_filename,
         autor: e.final_author || "",
-        /* O ESTADO VIAJA COM O CARTÃO, decidido pelo Erik em 04/09.
-         *
-         * A estante mostra ARQUIVOS — "é para organizar arquivos e conseguir ir
-         * até ele de forma mais fácil, apenas isso" —, e um arquivo em preparo é
-         * um dos arquivos da pessoa. Ele fica.
-         *
-         * Só que ele era indistinguível de um livro pronto: mesmo cartão, mesma
-         * capa de reserva, mesmo tamanho. A única diferença era o título vir com
-         * extensão e o autor vir vazio — acidente do dado, não sinal. No dia em
-         * que um arquivo em preparo tiver título nas propriedades, os dois
-         * cartões ficam iguais, e clicar leva a lugares diferentes sem aviso. */
+        /* O ESTADO VIAJA COM O CARTÃO mesmo agora que só entra "pronto": a
+         * ficha o mostra, e um cartão que não sabe o próprio estado precisaria
+         * perguntar de novo. */
         estado: estadoDe(e).estado,
         noKindle: e.kindle_sent,
         /* O que a ficha mostra sobre a LEITURA, tudo vindo do servidor.

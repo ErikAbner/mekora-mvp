@@ -109,8 +109,14 @@
    * O comentário anterior dizia "272px de ornamento antes do conteúdo empurram a
    * primeira informação para fora da primeira tela", e estava certo sobre 272.
    * Só que 272×224 é o `934:10740`, do computador. O nó do telefone,
-   * `966:25339`, põe a MESMA ilustração em 138,22×164 — metade —, encostada à
-   * direita e sobrepondo o card em 26px, exatamente como no desktop.
+   * `966:25339`, põe uma ilustração de 138,22×164 — metade da altura —,
+   * encostada à direita e sobrepondo o card em 26px, exatamente como no desktop.
+   *
+   * E ELA NÃO É A MESMA ARTE. Este comentário afirmou por dois dias que era, sem
+   * que ninguém tivesse aberto as duas capturas: o computador traz "secure
+   * profile settings" e o telefone traz "magic password", um mago com varinha.
+   * A troca de fonte é feita com `<picture>` no `ContaVisao.jsx`; aqui só mora o
+   * tamanho, que vale para as duas.
    *
    * Esconder foi resolver o sintoma de uma medida que não era desta tela. É o
    * item 29 do Erik: "imagens ilustrativas cuidadosamente posicionadas para

@@ -99,7 +99,28 @@ export function ContaVisao({ pessoa, aoSair, aoMudarPerfil }) {
             em cada tela de conta, e ela é ornamento — `aria-hidden`, porque um
             leitor de tela anunciando "imagem" antes do conteúdo da conta só
             atrasa quem veio resolver alguma coisa. */}
-        <img className="conta-desenho" src="/icones/ilustracao-conta.svg" alt="" aria-hidden="true" />
+        {/* ESTA TELA TROCA DE ARTE POR LARGURA, e é a única que troca.
+            No computador o nó `934:10740` traz "secure profile settings" —
+            alguém segurando uma lista com um visto — em 272×224. No telefone o
+            `966:25339` traz OUTRO desenho: um mago com varinha e estrelas,
+            "magic password", em 138,22×164.
+
+            O comentário do `conta.css` afirmava que o telefone punha "a MESMA
+            ilustração em 138,22×164". Estava errado, e ninguém tinha aberto as
+            duas capturas lado a lado. São desenhos diferentes.
+
+            A troca é `<picture>` e não CSS: o navegador escolhe a fonte ANTES de
+            baixar, então a arte que não vale para esta largura nunca desce. Com
+            duas `<img>` e `display: none`, as duas baixam.
+
+            E ISTO NÃO VIRA CONVENÇÃO. Decisão do Erik em 07/09: "não criar uma
+            convenção obrigatória de duas artes para toda tela. Respeitar o Figma
+            caso a caso". As outras três telas de conta têm uma arte só, nas duas
+            larguras, e continuam com uma. */}
+        <picture>
+          <source srcSet="/icones/ilustracao-conta-telefone.svg" media="(max-width: 767px)" />
+          <img className="conta-desenho" src="/icones/ilustracao-conta.svg" alt="" aria-hidden="true" />
+        </picture>
         {erro && <p className="conta-erro" role="alert">{erro}</p>}
 
         <section className="visao-quem">

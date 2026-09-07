@@ -112,7 +112,16 @@ export function ContaKindle({ pessoa, aoSair }) {
               único desenho da família da conta que nenhuma tela estava usando.
               É ornamento, `aria-hidden`, e é trocável numa linha se o Erik
               preferir repetir o do nó. */}
-          <img className="conta-desenho" src="/icones/ilustracao-kindle.svg" alt="" aria-hidden="true" />
+          {/* A ILUSTRAÇÃO É A MESMA DE `/conta`, e isso é decisão do desenho.
+              O nó `966:25687` põe aqui, traço por traço, o "secure profile
+              settings" que a visão geral usa — conferido nas duas capturas.
+
+              Eu havia trocado por outro desenho da biblioteca, achando que duas
+              abas vizinhas com o mesmo ornamento leem como defeito. O Erik
+              fechou em 07/09: "não substituir uma decisão explícita do desenho
+              por outra ilustração apenas para evitar repetição". Se um dia
+              houver uma própria, será alteração deliberada — não conserto meu. */}
+          <img className="conta-desenho" src="/icones/ilustracao-conta.svg" alt="" aria-hidden="true" />
           <section className="conta-secao">
             <h2>Dispositivos Kindle</h2>
             {/* A CONDIÇÃO QUE O PRODUTO NÃO CONTROLA, dita antes de qualquer

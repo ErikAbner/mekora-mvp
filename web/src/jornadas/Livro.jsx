@@ -6,6 +6,7 @@ import { ConfiguracoesArquivo } from "../componentes/ConfiguracoesArquivo.jsx";
 import { Campo } from "../componentes/Campo.jsx";
 import { Icone } from "../componentes/Icone.jsx";
 import { achatar } from "../../../contrato/texto.js";
+import { estadoDe } from "../../../contrato/estado.js";
 import { DESTAQUES } from "./Leitura.jsx";
 import { analisar, apagarNota, criarNota, editarNota, enviarAoKindle, lerNotas, lerProgresso } from "../../../contrato/api.js";
 import { tamanhoLegivel } from "../../../contrato/tamanho.js";
@@ -85,6 +86,23 @@ export function Livro() {
     ])
       .then(([l, n, p]) => {
         if (!vivo) return;
+        /* UM TRABALHO QUE NÃO ESTÁ PRONTO NÃO MORA AQUI, e esta linha é o par
+         * do filtro da Estante.
+         *
+         * Desde 07/09 a grade só lista livro pronto. Sem isto, um endereço
+         * antigo — um favorito, uma aba aberta desde ontem, o botão de voltar —
+         * abriria a ficha de um arquivo ainda em conversão: capa de reserva,
+         * "Ainda em preparo", e nada para ler. O lugar dele é o preparo, e o
+         * `substituir` tira a ficha do histórico para que voltar não caia de
+         * novo na mesma tela.
+         *
+         * O ramo de erro e o de bloqueio vêm juntos de propósito: `estadoDe`
+         * responde "pronto" só quando o trabalho pedido terminou, e as outras
+         * quatro respostas — fila, trabalhando, erro, precisa — são todas Mesa. */
+        if (estadoDe(l).estado !== "pronto") {
+          navegar(`/preparo/${id}`, { replace: true });
+          return;
+        }
         setLivro(l);
         setNotas(n);
         setOnde(p);
@@ -142,10 +160,15 @@ export function Livro() {
             trilha, o topo tem os 1222 inteiros que o desenho pede.
 
             O QUE EU TINHA VISTO NO NÓ era uma coluna de linhas à esquerda do
-            bloco "O que ficou", e li como trilha. Ela continua lá no `895:7631`;
-            o Erik diz que não é navegação. Fica anotado em
-            `docs/TELAS-FIGMA.md` para ele dizer o que aquilo é — a diferença
-            muda o que se constrói ali, e não muda a decisão de tirar esta. */}
+            bloco "O que ficou", e li como trilha. Em 06/09 eu tinha deixado em
+            aberto o que aquela coluna é; em 07/09 o Erik fechou sem precisar
+            responder: "Remover. Meu feedback 'navegação onde não deveria ter, e
+            errada' já respondia essa questão."
+
+            Ou seja: a pergunta era minha, não dele. O feedback original cobria
+            os dois casos, e eu tinha partido a decisão em duas para devolver
+            metade. Isso não se repete — antes de perguntar, ler se a resposta
+            já está no que ele escreveu. */}
         <div className="livro-pagina-corpo">
         <Link to="/estante" className="livro-pagina-volta">← Estante</Link>
 
@@ -295,9 +318,6 @@ export function Livro() {
 
               <Link to={`/preparo/${id}`} className="livro-pagina-preparo">Ver o preparo</Link>
 
-              {!livro.leitura_url && (
-                <p className="livro-pagina-nota">Ainda em preparo. O texto abre quando a conversão terminar.</p>
-              )}
             </div>
           </div>
         </header>

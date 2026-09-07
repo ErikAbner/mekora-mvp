@@ -545,11 +545,15 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher }) {
                   O estado CONTINUA visível na ficha: "No Kindle · Enviado" está
                   nos dados do arquivo, acima. Tirar o botão não é esconder o
                   fato — é tirar o gatilho de onde ele não é o assunto. */}
-              {!selecionado.leituraUrl && (
-                <p className="ficha-aviso">
-                  Ainda em preparo. O texto abre quando a conversão terminar.
-                </p>
-              )}
+              {/* NÃO HÁ AVISO DE PREPARO AQUI. A grade só traz livro pronto
+                  desde 07/09 — o filtro está no `useJornada` —, então um cartão
+                  sem leitura não chega a existir nesta tela.
+
+                  O aviso existia porque a Estante listava tudo, e ele era a
+                  única coisa que separava um livro de um arquivo ainda em
+                  conversão. Com a regra nova ele viraria um ramo que nunca
+                  acende, e ramo que nunca acende é o que fica errado sem
+                  ninguém ver. */}
             </article>
           )}
         </aside>
