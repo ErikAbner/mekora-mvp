@@ -462,6 +462,10 @@ export function Preparo() {
   const [inicio, setInicio] = useState(null);
   const [agora, setAgora] = useState(0);
   const [cancelando, setCancelando] = useState(false);
+  /* A folha de confirmar o cancelamento. Decisão do Erik em 07/09: cancelar
+     pede confirmação — a conversão pode levar minutos, e um clique sem volta
+     numa tela de espera é onde o dedo escorrega. */
+  const [confirmandoParar, setConfirmandoParar] = useState(false);
   /* A TRADUÇÃO — o botão "Traduzir" do nó 895:7856, que ficou de fora antes
      porque a tradução existia no backend e em tela nenhuma.
      
@@ -832,13 +836,46 @@ export function Preparo() {
             {/* CANCELAR É COOPERATIVO, e o botão não pode fingir o contrário: o
                 backend anota o pedido e a etapa o lê entre um passo e outro. Sem
                 `operation_id` não há o que cancelar, e aí o botão não existe —
-                melhor faltar do que responder 409. */}
+                melhor faltar do que responder 409.
+
+                O TOM É O SECUNDÁRIO, e "Continuar navegando" ficou com o
+                primário. É o inverso do que estava aqui, e segue a lei do
+                `Botao.jsx`: quase todo mundo que abre esta tela vai deixar a
+                conversão correr. Dar o tom forte ao gesto raro é sinal
+                invertido — e, pior, põe o destaque em cima do botão que
+                interrompe. */}
             {p?.operacao && (
+              <Botao tom="secundaria" onClick={() => setConfirmandoParar(true)}>
+                {cancelando ? "Cancelando…" : "Cancelar"}
+              </Botao>
+            )}
+            <Botao tom="primaria" onClick={() => navegar("/mesa")}>
+              Continuar navegando
+            </Botao>
+          </div>
+
+          <p className="preparo-andando-nota">
+            {cancelando
+              ? "Pedido de cancelamento anotado. A conversão para em segundos, e o arquivo volta para a Mesa com a análise e as suas escolhas do jeito que estavam."
+              : "Dá para fechar esta aba: a preparação continua no servidor, e o livro aparece na estante quando terminar."}
+          </p>
+
+          {/* O QUE A CONFIRMAÇÃO PRECISA DIZER é o que se perde e o que fica.
+              "Tem certeza?" não ajuda ninguém a decidir: quem está olhando uma
+              barra há três minutos quer saber se vai ter de refazer tudo. Não
+              vai — a análise e as escolhas ficam, e só o trabalho de conversão
+              se perde. */}
+          <Folha
+            aberta={confirmandoParar}
+            titulo="Parar a conversão?"
+            aoFechar={() => setConfirmandoParar(false)}
+            acoes={
               <Botao
                 tom="primaria"
                 porque={cancelando ? "Cancelando…" : null}
                 onClick={async () => {
                   setCancelando(true);
+                  setConfirmandoParar(false);
                   try {
                     await cancelarOperacao(id, p.operacao);
                   } catch (e) {
@@ -846,19 +883,23 @@ export function Preparo() {
                   }
                 }}
               >
-                {cancelando ? "Cancelando…" : "Cancelar"}
+                Parar a conversão
               </Botao>
-            )}
-            <Botao tom="secundaria" onClick={() => navegar("/mesa")}>
-              Continuar navegando
-            </Botao>
-          </div>
-
-          <p className="preparo-andando-nota">
-            {cancelando
-              ? "Pedido de cancelamento anotado. A etapa para no fim do passo em que está — programas de fora, como o conversor, não são interrompidos no meio."
-              : "Dá para fechar esta aba: a preparação continua no servidor, e o livro aparece na estante quando terminar."}
-          </p>
+            }
+          >
+            <p>
+              O tempo já gasto na conversão se perde, e o arquivo pela metade é
+              descartado.
+            </p>
+            <p>
+              O que você decidiu antes fica: o arquivo original, a análise, o
+              título, o autor e as opções que escolheu. O arquivo volta para a
+              Mesa, pronto para preparar de novo quando quiser.
+            </p>
+            <p className="folha-nota">
+              Parar não é erro — nada fica marcado como falha.
+            </p>
+          </Folha>
         </main>
       </div>
     );

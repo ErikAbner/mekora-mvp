@@ -22,7 +22,7 @@ import re
 import signal
 import subprocess
 from pathlib import Path
-from typing import Optional, Sequence
+from typing import Callable, Optional, Sequence
 
 from app.core.limits import limits
 
@@ -34,6 +34,16 @@ OCR_LIMITATION = (
     "são os controles atuais. Refatoração para processo-filho fica registrada "
     "como melhoria futura."
 )
+
+
+class ExternalToolCancelled(Exception):
+    """A pessoa pediu para parar, e o processo externo foi encerrado.
+
+    Ela existe SEPARADA de `ExternalToolError` de propósito: cancelar não é
+    falhar. Tratar as duas juntas faria o job terminar em "error" — e a decisão
+    do Erik em 07/09 diz o contrário, com todas as letras: "não transformar
+    cancelamento voluntário em erro".
+    """
 
 
 class ExternalToolError(Exception):
@@ -135,6 +145,8 @@ def run_external(
     input_path: Optional[Path] = None,
     allowed_roots: Optional[Sequence[Path]] = None,
     output_limit_bytes: Optional[int] = None,
+    deve_parar: Optional[Callable[[], bool]] = None,
+    intervalo_de_checagem: float = 0.5,
 ) -> subprocess.CompletedProcess:
     """
     Executa `cmd` com `shell=False`, timeout, captura limitada e limpeza.
@@ -147,6 +159,9 @@ def run_external(
       já truncados.
     - Retorno != 0 levanta `ExternalToolError` com mensagem pública curta e
       detalhe redigido para log.
+    - Se `deve_parar` for passado, a espera vira um laço de fatias de
+      `intervalo_de_checagem` segundos e a função é consultada entre elas. Um
+      "sim" mata o grupo e levanta `ExternalToolCancelled` — que NÃO é erro.
     """
     if not cmd or not isinstance(cmd, (list, tuple)):
         raise ExternalToolError(
@@ -191,10 +206,9 @@ def run_external(
             redacted_detail=type(exc).__name__,
         )
 
-    try:
-        stdout_b, stderr_b = proc.communicate(timeout=timeout_seconds)
-    except subprocess.TimeoutExpired:
-        # Encerra processo e filhos (grupo no POSIX)
+    def _encerrar_grupo() -> None:
+        """Mata o processo e os filhos dele. No POSIX o grupo inteiro, porque
+        `ebook-convert` dispara workers que sobrevivem ao pai."""
         try:
             if os.name == "posix":
                 try:
@@ -205,6 +219,42 @@ def run_external(
                 proc.kill()
         except Exception:
             pass
+
+    try:
+        if deve_parar is None:
+            stdout_b, stderr_b = proc.communicate(timeout=timeout_seconds)
+        else:
+            # ESPERA EM FATIAS, para poder perguntar "devo parar?".
+            #
+            # `communicate` bloqueia até o fim ou até o timeout, e não há como
+            # interrompê-lo — era por isso que cancelar durante a conversão não
+            # fazia nada: a marca de cancelamento era escrita e ninguém a lia,
+            # porque `ebook-convert` é UMA etapa longa, sem checkpoint por onde
+            # o cancelamento cooperativo pudesse entrar.
+            #
+            # O laço não lê stdout enquanto espera, e isso é seguro aqui: as
+            # ferramentas deste projeto escrevem pouco em stdout/stderr e o
+            # `_clip` já trunca. Se alguma passar a escrever o suficiente para
+            # encher o cano do sistema operacional, ela travaria — e o timeout
+            # total continua sendo o teto.
+            restante = float(timeout_seconds)
+            while True:
+                if deve_parar():
+                    _encerrar_grupo()
+                    try:
+                        proc.communicate(timeout=5)
+                    except Exception:
+                        pass
+                    raise ExternalToolCancelled(tool_label)
+                try:
+                    stdout_b, stderr_b = proc.communicate(timeout=min(intervalo_de_checagem, restante))
+                    break
+                except subprocess.TimeoutExpired:
+                    restante -= intervalo_de_checagem
+                    if restante <= 0:
+                        raise
+    except subprocess.TimeoutExpired:
+        _encerrar_grupo()
         try:
             stdout_b, stderr_b = proc.communicate(timeout=5)
         except Exception:

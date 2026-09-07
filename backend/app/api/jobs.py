@@ -25,7 +25,7 @@ from app.schemas.jobs import (
     UploadResponse,
 )
 from app.services.cleanup_service import apagar_arquivos_do_trabalho
-from app.services.convert_service import ConversionFailedError, convert_to_epub
+from app.services.convert_service import ConversionCancelled, ConversionFailedError, convert_to_epub
 from app.services.epub_web_service import gerar_epub_web
 
 logger = logging.getLogger(__name__)
@@ -417,7 +417,7 @@ def _bg_analyze(job_id: int, operation_id: str | None = None) -> None:
     import time
     from app.db.database import SessionLocal
     from app.services.app_config_service import load_app_config
-    from app.services.progress_service import end_operation, report_progress
+    from app.services.progress_service import cancel_requested, end_operation, report_progress
 
     db = SessionLocal()
     t0 = time.monotonic()
@@ -573,6 +573,18 @@ def _bg_convert(job_id: int, operation_id: str | None = None) -> None:
         if not job:
             return
 
+        # CANCELAR A CONVERSÃO precisa de alguém perguntando, e até 07/09 não
+        # havia ninguém. As outras três operações longas — tradução, tradução de
+        # quadrinho e exportação — chamam `raise_if_cancelled` dentro do laço de
+        # progresso delas. A conversão não tem laço: é uma chamada só ao
+        # Calibre, que pode levar minutos. A marca de cancelamento era escrita
+        # no disco e ninguém a lia.
+        #
+        # Então o gancho desce até o `run_external`, que já sabia matar o grupo
+        # de processos — só não sabia POR QUE fazer isso antes do timeout.
+        def _pediram_parada() -> bool:
+            return bool(operation_id) and cancel_requested(op_dir, operation_id)
+
         # Fallback chain: HTML traduzido → PDF com OCR → arquivo original
         input_pdf = Path(job.translated_artifact_path or job.processed_pdf_path or job.input_path)  # type: ignore[arg-type]
         slug = job.final_filename or Path(job.original_filename).stem
@@ -592,12 +604,45 @@ def _bg_convert(job_id: int, operation_id: str | None = None) -> None:
                 author=job.final_author or job.detected_author or "Desconhecido",
                 language=job.final_language or "por",
                 cover=cover,
+                deve_parar=_pediram_parada,
             )
             job.epub_path = str(output_epub)
             job.epub_bytes = _bytes_de(output_epub)
             job.epub_web_path = _versao_web(output_epub)
             job.status = "converted"
             job.conversion_status = "done"
+
+        except ConversionCancelled:
+            # CANCELAR NÃO É FALHAR — decisão do Erik em 07/09, item por item:
+            #
+            #   artefato parcial      o EPUB truncado já foi apagado pelo
+            #                         `convert_service`, que é quem sabe o nome
+            #                         dele
+            #   arquivo original      não se toca em `input_path`
+            #   análise e escolhas    `final_title`, `final_author`,
+            #                         `processed_pdf_path`, o artefato traduzido
+            #                         e a capa ficam todos onde estavam — o que
+            #                         a pessoa decidiu antes de mandar converter
+            #                         continua decidido
+            #   estado                volta a "analyzed", que é exatamente o
+            #                         ponto em que `POST /convert` aceita de
+            #                         novo. Preparar outra vez não repete a
+            #                         análise
+            #   fica na Mesa          "analyzed" não é "pronto", e a Estante só
+            #                         lista pronto desde 07/09. O arquivo volta
+            #                         a aparecer onde estava
+            #   não vira erro         `error_message` é limpo, e não escrito
+            op_status = "cancelled"
+            job.status = "analyzed"
+            job.conversion_status = "not_started"
+            job.error_message = None
+            job.epub_path = None
+            job.epub_bytes = None
+            job.epub_web_path = None
+            from app.services.metrics_service import record_stage
+            record_stage(job_id, "convert", "cancelled",
+                         duration_ms=(time.monotonic() - t0) * 1000,
+                         processing_mode=job.processing_mode, input_format=job.input_format)
 
         except ConversionFailedError as exc:
             op_status = "failed"

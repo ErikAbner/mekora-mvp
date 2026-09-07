@@ -103,6 +103,17 @@ class NotaEditada(BaseModel):
     # "" APAGA O ESTADO, e `None` não mexe nele. São coisas diferentes: quem
     # muda só a cor manda `estado` ausente; quem tira o rascunho manda vazio.
     estado: Optional[str] = None
+    # O TEXTO DA NOTA ESCRITA NO CANVAS, com a mesma guarda da outra rota.
+    #
+    # ELE FALTAVA AQUI, e a falta era uma regressão de 06/09: o R-43 acrescentou
+    # o tratamento de `trecho` nas DUAS rotas de edição e o campo em UM dos dois
+    # schemas. Toda chamada a esta rota passou a estourar
+    # `AttributeError: 'NotaEditada' object has no attribute 'trecho'`.
+    #
+    # Passou porque naquele dia rodei só os testes de nota. A suíte inteira
+    # pegou na primeira vez que rodou: dois testes de sugestão, vermelhos por um
+    # motivo que não tinha nada a ver com sugestão.
+    trecho: Optional[str] = None
 
     @field_validator("estado")
     @classmethod

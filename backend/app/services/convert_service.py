@@ -17,11 +17,19 @@ from __future__ import annotations
 
 import subprocess  # noqa: F401  # mantido para compatibilidade com testes que fazem monkeypatch
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional
 
 from app.core.config import STORAGE_INPUT, STORAGE_OUTPUT, STORAGE_TEMP
 from app.core.limits import limits
-from app.services.subprocess_runner import ExternalToolError, run_external
+from app.services.subprocess_runner import ExternalToolCancelled, ExternalToolError, run_external
+
+
+class ConversionCancelled(Exception):
+    """A conversão foi interrompida a pedido da pessoa.
+
+    Separada de `ConversionFailedError` porque cancelar não é falhar: o job
+    volta ao estado em que pode ser preparado de novo, sem mensagem de erro.
+    """
 
 
 class ConversionFailedError(Exception):
@@ -35,6 +43,7 @@ def convert_to_epub(
     author: str,
     language: str,
     cover: Optional[Path] = None,
+    deve_parar: Optional[Callable[[], bool]] = None,
 ) -> None:
     """
     Converte *input_path* para EPUB via ebook-convert (Calibre).
@@ -47,9 +56,12 @@ def convert_to_epub(
         author:       Autor a embutir nos metadados do EPUB.
         language:     Código de idioma ISO 639-2 (ex: "por", "eng").
         cover:        Imagem PNG/JPEG opcional para usar como capa.
+        deve_parar:   Consultada durante a espera; um "sim" encerra o Calibre e
+                      levanta `ConversionCancelled`.
 
     Raises:
         ConversionFailedError: Se ebook-convert retornar código ≠ 0.
+        ConversionCancelled:   Se a pessoa pediu para parar.
     """
     output_epub.parent.mkdir(parents=True, exist_ok=True)
 
@@ -71,6 +83,14 @@ def convert_to_epub(
             tool_label="ebook-convert",
             input_path=input_path,
             allowed_roots=(STORAGE_INPUT, STORAGE_OUTPUT, STORAGE_TEMP),
+            deve_parar=deve_parar,
         )
+    except ExternalToolCancelled:
+        # O EPUB parcial não fica para trás: o Calibre escreve o arquivo de
+        # destino enquanto trabalha, e um EPUB truncado no disco é pior que
+        # nenhum — a próxima conversão o sobrescreveria, mas até lá ele existe
+        # com um nome que promete um livro.
+        output_epub.unlink(missing_ok=True)
+        raise ConversionCancelled()
     except ExternalToolError as exc:
         raise ConversionFailedError(exc.public_message)
