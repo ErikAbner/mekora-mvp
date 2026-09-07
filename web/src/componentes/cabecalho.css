@@ -67,6 +67,18 @@
   transition: inline-size 200ms var(--saida);
 }
 
+/* QUEM DISPARA A EXPANSÃO É O FOCO, e não o painel.
+ *
+ * Esta regra existia só com `:has(.busca-painel)`, e o painel só nasce quando o
+ * servidor devolve resultado. Medido: a caixa media 258 antes do foco e 258
+ * depois — a expansão existia e não acontecia na hora em que o Erik a descreve.
+ * Ele diz "se expande quando o usuário TENTA pesquisar"; tentar é clicar no
+ * campo, não é já ter achado.
+ *
+ * As duas condições ficam: `:focus-within` abre, e `:has(.busca-painel)` mantém
+ * aberto enquanto o resultado está na tela — inclusive quando o foco vai para
+ * dentro do painel ou para o campo de outra forma. */
+.cabecalho-acoes:focus-within,
 .cabecalho-acoes:has(.busca-painel) { inline-size: 626px; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -101,7 +113,16 @@
 .lugar:not([aria-current]):hover { background: var(--muted); }
 
 
-.cabecalho-acoes > .busca-caixa { flex: 0 1 auto; }
+/* A BUSCA PREENCHE O QUE SOBRA DA CAIXA, e é assim que ela cresce.
+ *
+ * Estava `flex: 0 1 auto`, que não cresce: a caixa de ações ia de 476 a 626 e a
+ * busca ia de 258 a 277 — dezenove pixels de dezenove que não são o desenho.
+ * O nó `900:52332` diz `flex: 1 0 0`.
+ *
+ * Com ela preenchendo, os dois estados saem da aritmética das duas larguras do
+ * desenho: 476 − 24 de recheio − 56 de vão − 136 dos dois atalhos = 260, e
+ * 626 pela mesma conta = 410. */
+.cabecalho-acoes > .busca-caixa { flex: 1 0 0; min-inline-size: 0; }
 
 .acao {
   display: flex;

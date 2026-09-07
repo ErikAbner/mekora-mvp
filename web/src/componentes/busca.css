@@ -18,6 +18,9 @@
  * um lado e não do outro. */
 .busca {
   display: flex;
+  /* Ela ocupa a caixa inteira: quem decide a largura é a `.cabecalho-acoes`, que
+     tem os dois números do desenho. Sem isto a moldura media o conteúdo. */
+  inline-size: 100%;
   align-items: center;
   gap: 16px;
   padding: 17px 24px;
