@@ -1307,6 +1307,21 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
     setEscrevendo(true);
   }, []);
   const [trazendo, setTrazendo] = useState(false);
+  const [adicionando, setAdicionando] = useState(false);
+  /* O MENU FECHA SOZINHO — com Esc e com um clique em qualquer outro lugar.
+   * Um menu que só fecha pelo próprio botão fica aberto por cima da superfície
+   * inteira enquanto a pessoa tenta trabalhar embaixo dele. */
+  useEffect(() => {
+    if (!adicionando) return undefined;
+    const fora = (e) => { if (!e.target.closest(".canvas-ferramentas")) setAdicionando(false); };
+    const tecla = (e) => { if (e.key === "Escape") setAdicionando(false); };
+    document.addEventListener("pointerdown", fora);
+    document.addEventListener("keydown", tecla);
+    return () => {
+      document.removeEventListener("pointerdown", fora);
+      document.removeEventListener("keydown", tecla);
+    };
+  }, [adicionando]);
 
   const naSuperficie = new Set(nos.map((n) => n.nota_id));
   const deFora = notas.filter((n) => !naSuperficie.has(n.id));
@@ -2377,6 +2392,29 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
       ? secoes.find((g) => g.id === Number([...escolha][0].split(":")[1]))
       : null;
 
+  /* O OBJETO SOZINHO — nota ou livro. Decisão do Erik em 07/09: "quando um
+   * objeto estiver selecionado, suas ações devem ser contextuais, como: Abrir,
+   * Ligar, Editar, Remover".
+   *
+   * As quatro já existiam, e três delas só dentro do menu ⋮ do cartão. Um menu
+   * dentro de um objeto e uma barra fora dele são dois lugares para a mesma
+   * decisão, e quem escolhe um objeto olha para a barra. Elas passam a aparecer
+   * nos dois: no cartão, para quem está com o cursor lá; na barra, para quem
+   * escolheu — inclusive por laço ou por teclado, que não passam pelo cartão. */
+  const escolhidoSozinho = useMemo(() => {
+    if (escolha.size !== 1) return null;
+    const [tipo, id] = [...escolha][0].split(":");
+    if (tipo === "nota") {
+      const n = nos.find((x) => x.id === Number(id));
+      return n ? { tipo, no: n } : null;
+    }
+    if (tipo === "livro") {
+      const l = livros.find((x) => x.id === Number(id));
+      return l ? { tipo, livro: l } : null;
+    }
+    return null;
+  }, [escolha, nos, livros]);
+
   const [renomeando, setRenomeando] = useState(null);
   const secaoSozinhaRef = useRef(null);
   const enquadrarTudoRef = useRef(null);
@@ -3319,41 +3357,63 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
             inteira. "Criar seção" foi para a barra da escolha, onde ela tem
             sujeito. O duplo toque continua, como atalho — e não como a única
             porta. */}
+        {/* A BARRA POR INTENÇÃO — decisão do Erik em 07/09: "a ação principal
+            deve ser Adicionar, contendo Nota, Livro da Estante, Mídia. Busca e
+            controles de zoom/navegação ficam separados."
+
+            Os três eram três botões soltos, lado a lado, sem nada dizendo que
+            fazem a mesma coisa com objetos diferentes. Agora são UMA intenção
+            com três destinos — e a barra passa a ter um item, não três. Busca e
+            zoom já viviam fora dela e continuam.
+
+            NADA NOVO ENTROU: "não adicionar novas features apenas para preencher
+            a barra". São os mesmos três, reagrupados. */}
         <nav className="canvas-ferramentas" aria-label="Ferramentas do Canvas">
           <button
             type="button"
-            title="Nova nota"
-            aria-label="Nova nota"
-            onClick={() => { setTexto(""); setEscrevendo(true); }}
+            className="canvas-adicionar"
+            aria-haspopup="menu"
+            aria-expanded={adicionando}
+            onClick={() => setAdicionando((v) => !v)}
           >
             <Icone src="/icones/icone-nota-nova.svg" />
+            <span>Adicionar</span>
           </button>
-          <button
-            type="button"
-            title="Adicionar mídia"
-            aria-label="Adicionar mídia"
-            onClick={() => { setEndereco(""); setPondoMidia(true); }}
-          >
-            <Icone src="/icones/icone-nota-imagem.svg" />
-          </button>
-          {/* TRAZER O QUE JÁ EXISTE — e era a porta mais escondida do Canvas.
-              Livro e nota antiga só se alcançavam por uma linha de texto dentro
-              da folha de escrever. Um livro é recurso central de um Estudo; ele
-              não pode depender de alguém abrir outra coisa primeiro. */}
-          {/* A DOCA SÃO TRÊS ENTRADAS DE CRIAÇÃO — nota, mídia, livro —, e nada
-              mais. "Organizar" saiu daqui: era a única ação da Doca que não
-              PÕE algo na superfície, era rara, e não tinha símbolo honesto na
-              biblioteca (o de camadas lia como z-order). Virou contextual, na
-              barra da escolha, escopada ao que a pessoa juntou. A Doca não
-              precisa de quatro para ter simetria. */}
-          <button
-            type="button"
-            title="Trazer da estante"
-            aria-label="Trazer da estante"
-            onClick={() => setTrazendo(true)}
-          >
-            <Icone src="/icones/icone-estante.svg" />
-          </button>
+          {adicionando && (
+            <div className="canvas-adicionar-menu" role="menu" aria-label="Adicionar ao Canvas">
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => { setAdicionando(false); setTexto(""); setEscrevendo(true); }}
+              >
+                <Icone src="/icones/icone-nota-nova.svg" />
+                Nota
+              </button>
+              {/* TRAZER O QUE JÁ EXISTE — e era a porta mais escondida do Canvas.
+                  Livro e nota antiga só se alcançavam por uma linha de texto
+                  dentro da folha de escrever. Um livro é recurso central de um
+                  Estudo; ele não pode depender de abrir outra coisa primeiro. */}
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => { setAdicionando(false); setTrazendo(true); }}
+              >
+                <Icone src="/icones/icone-estante.svg" />
+                Livro da Estante
+              </button>
+              {/* O quadro com "+" é ADICIONAR MÍDIA — foto ou endereço de vídeo.
+                  O nome do arquivo já dizia `nota-imagem`, e eu já o usei uma vez
+                  pelo lugar e não pelo que ele desenha. */}
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => { setAdicionando(false); setEndereco(""); setPondoMidia(true); }}
+              >
+                <Icone src="/icones/icone-nota-imagem.svg" />
+                Mídia
+              </button>
+            </div>
+          )}
         </nav>
 
         {/* A BARRA DA ESCOLHA — o único lugar em que as ações sobre VÁRIOS
@@ -3371,6 +3431,37 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
             </span>
             <span className="canvas-escolha-filete" aria-hidden="true" />
             <div className="canvas-escolha-acoes">
+            {/* ABRIR · LIGAR · EDITAR, quando é UM objeto. Ver `escolhidoSozinho`.
+                Remover é o "Tirar" lá embaixo, que já existia e cujo rótulo muda
+                conforme o que está escolhido. */}
+            {escolhidoSozinho?.tipo === "nota" && (
+              <>
+                {escolhidoSozinho.no.job_id && (
+                  <Link className="canvas-escolha-acao" to={`/leitura/${escolhidoSozinho.no.job_id}`}>
+                    Abrir
+                  </Link>
+                )}
+                <button type="button" onClick={() => setLigandoDaLista(`nota:${escolhidoSozinho.no.nota_id}`)}>
+                  Ligar
+                </button>
+                {/* Editar SÓ na nota escrita aqui: numa nota de leitura o texto é
+                    a citação do livro, e o servidor recusa a troca. Oferecer o
+                    botão para depois recusar é pior que não oferecer. */}
+                {!escolhidoSozinho.no.job_id && !escolhidoSozinho.no.midia && (
+                  <button type="button" onClick={() => abrirEdicao(escolhidoSozinho.no)}>Editar</button>
+                )}
+              </>
+            )}
+            {escolhidoSozinho?.tipo === "livro" && (
+              <>
+                <Link className="canvas-escolha-acao" to={`/leitura/${escolhidoSozinho.livro.job_id}`}>
+                  Abrir
+                </Link>
+                <button type="button" onClick={() => setLigandoDaLista(`livro:${escolhidoSozinho.livro.job_id}`)}>
+                  Ligar
+                </button>
+              </>
+            )}
             {/* A PARTIR DE UM. Uma composição começa com um objeto e cresce; exigir
                 dois obrigaria a pessoa a juntar antes de poder organizar. */}
             {temObjetoEscolhido && (

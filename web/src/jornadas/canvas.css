@@ -804,15 +804,17 @@
  *
  * A sombra tem cinco degraus, como as outras do arquivo, e o primeiro com alfa
  * zero: e assim que o Figma escreve o comeco da rampa. */
+/* A BARRA VIROU UM ITEM SÓ — "Adicionar", com três destinos no menu. Ela deixa
+   de ser uma coluna de 86px de ícones e passa a caber no que tem: um botão com
+   rótulo. Ver a nota no `Canvas.jsx`. */
 .canvas-ferramentas {
   position: absolute;
   inset-inline-start: 16px;
   inset-block-start: 50%;
   transform: translateY(-50%);
   z-index: 3;
-  inline-size: 86px;
   display: flex; flex-direction: column; gap: 16px;
-  align-items: center; justify-content: center;
+  align-items: stretch; justify-content: center;
   padding: 16px;
   border: 1px solid var(--border);
   background: var(--piso);
@@ -1594,4 +1596,56 @@
   background: var(--popover, var(--card));
   font-size: 14px; line-height: 22px;
   color: var(--muted-foreground);
+}
+
+/* ─── ADICIONAR, e os três destinos ────────────────────────────────────────
+ *
+ * O botão leva ÍCONE E RÓTULO. Três ícones lado a lado exigiam que a pessoa
+ * soubesse de cor o que cada glifo abre; um item com nome não exige nada. E o
+ * `title` que existia nos três não é alcançável por toque nem por teclado. */
+.canvas-ferramentas .canvas-adicionar {
+  gap: 12px;
+  justify-content: flex-start;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 16px; line-height: 24px;
+  white-space: nowrap;
+}
+
+.canvas-adicionar-menu {
+  position: absolute;
+  inset-inline-start: calc(100% + 8px);
+  inset-block-start: 0;
+  z-index: 4;
+  min-inline-size: 208px;
+  display: flex; flex-direction: column;
+  padding: 8px;
+  border: 1px solid var(--border);
+  background: var(--piso);
+  box-shadow:
+    0 50px 7px rgb(0 0 0 / 0),
+    0 32px 6.5px rgb(0 0 0 / 0.01),
+    0 18px 5.5px rgb(0 0 0 / 0.02),
+    0 8px 4px rgb(0 0 0 / 0.03),
+    0 2px 2px rgb(0 0 0 / 0.04);
+  /* ENTRADA É UMA DAS SEIS QUE PODEM ANIMAR — decisão do Erik em 07/09.
+     `--saida` é a curva do sistema para o que entra e sai. */
+  animation: canvas-menu-entra 140ms var(--saida) backwards;
+}
+@keyframes canvas-menu-entra {
+  from { opacity: 0; transform: translateY(-4px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .canvas-adicionar-menu { animation: none; }
+}
+
+.canvas-ferramentas .canvas-adicionar-menu button {
+  gap: 12px;
+  justify-content: flex-start;
+  padding: 12px;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 16px; line-height: 24px;
+  text-align: start;
+  white-space: nowrap;
 }
