@@ -1,7 +1,32 @@
 /* O que se guarda, item a item. Cada um traz a contagem e o que ela significa —
    um número sozinho não diz o que está sendo guardado. */
+/* OS GRUPOS DA LISTA — a hierarquia que faltava.
+ *
+ * 48 entre um grupo e o seguinte, 16 entre o título do grupo e a lista dele:
+ * a lei do projeto é que respiro conta hierarquia, e com tudo à mesma distância
+ * nada agrupa. Os dezoito itens estavam todos a 16 um do outro.
+ *
+ * O título do grupo é Label/Medium em versalete — ele NOMEIA o grupo e não
+ * compete com o nome de cada item, que é body-medium 20/30. Um h3 do tamanho
+ * dos itens faria dezoito itens virarem vinte e três. */
+.guardado-grupo + .guardado-grupo { margin-block-start: 48px; }
+/* O vão que a `.guardado` carregava como `margin-block-end: 24px` sai daqui: com
+   os grupos, ele passou a cair entre a lista e o título do grupo seguinte, e o
+   que precisa de respiro é a saída da LISTA para o bloco de texto que vem
+   depois. Medido em zero antes desta linha — os dois estavam encostados. */
+.guardado-grupo + .conta-condicao { margin-block-start: 48px; }
+.guardado-grupo-titulo {
+  margin: 0 0 16px;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
 .guardado {
-  margin: 0 0 24px;
+  margin: 0;
   padding: 0;
   list-style: none;
   display: flex;

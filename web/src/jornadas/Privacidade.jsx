@@ -40,6 +40,38 @@ function BotaoDaMedicao() {
   );
 }
 
+/* COMO A LISTA DO "O QUE O MEKORA GUARDA" SE LÊ.
+ *
+ * A ordem dos grupos é a da jornada — a conta, os arquivos, o que a pessoa
+ * escreveu, o Canvas, e o que o Mekora guarda sobre o próprio uso. Dentro de
+ * cada grupo, a ordem é a que o servidor mandou.
+ *
+ * `resto` NÃO é decoração: se o servidor passar a devolver uma chave que este
+ * mapa não conhece, ela aparece em "Outras coisas". Uma tela de privacidade que
+ * esconde um item por falta de mapa é pior que uma tela desorganizada. */
+const GRUPOS = [
+  { titulo: "Sua conta", chaves: ["conta", "sessoes", "links"] },
+  { titulo: "Seus arquivos", chaves: ["livros", "leituras", "aparelhos", "preferencias"] },
+  { titulo: "O que você escreveu", chaves: ["notas", "marcadores", "estudos", "ligacoes"] },
+  { titulo: "No Canvas", chaves: ["no_canvas", "grupos_do_canvas", "midias_do_canvas", "livros_do_canvas"] },
+  { titulo: "O que o Mekora aprendeu com você", chaves: ["sugestoes_dispensadas", "grupos_calados", "recados"] },
+];
+
+function agrupar(itens) {
+  const usadas = new Set();
+  const grupos = GRUPOS.map(({ titulo, chaves }) => {
+    const dentro = chaves
+      .map((c) => itens.find((i) => i.chave === c))
+      .filter(Boolean);
+    dentro.forEach((i) => usadas.add(i.chave));
+    return { titulo, itens: dentro };
+  }).filter((g) => g.itens.length);
+
+  const resto = itens.filter((i) => !usadas.has(i.chave));
+  if (resto.length) grupos.push({ titulo: "Outras coisas", itens: resto });
+  return grupos;
+}
+
 export function Privacidade({ pessoa, aoSair, aoApagarConta }) {
   const [dados, setDados] = useState(null);
   const [erro, setErro] = useState(null);
@@ -109,16 +141,38 @@ export function Privacidade({ pessoa, aoSair, aoApagarConta }) {
 
             {dados && (
               <>
-                <ul className="guardado">
-                  {dados.itens.map((i) => (
-                    <li key={i.nome}>
-                      <p className="guardado-conta">
-                        <span className="dado">{i.quantos}</span> {i.nome}
-                      </p>
-                      <p className="guardado-explicacao">{i.explicacao}</p>
-                    </li>
-                  ))}
-                </ul>
+                {/* DEZOITO LINHAS SEGUIDAS VIRAM UMA PAREDE, e era isso que
+                    esta lista era: dezoito itens de mesmo peso, cada um com
+                    título e explicação, sem nada que os agrupasse. O Erik, no
+                    R-30: "texto quebrado e minúsculo por toda parte"; e em
+                    07/09: "primeiro corrija legibilidade, hierarquia, tamanho e
+                    quantidade de texto".
+
+                    O nó `895:10909` agrupa: ele põe as coisas em seções — "Seus
+                    arquivos", "Dados de uso" —, cada uma com os seus cartões. A
+                    tela tinha uma seção só com tudo dentro.
+
+                    O AGRUPAMENTO É DA TELA, e não do servidor, de propósito: o
+                    servidor responde o que EXISTE, e como se lê é decisão de
+                    quem mostra. E o balde final garante que nada suma — uma
+                    chave nova que o mapa não conheça aparece em "Outras
+                    coisas", em vez de desaparecer da política de privacidade,
+                    que é o pior lugar do produto para um item sumir. */}
+                {agrupar(dados.itens).map((grupo) => (
+                  <div className="guardado-grupo" key={grupo.titulo}>
+                    <h3 className="guardado-grupo-titulo">{grupo.titulo}</h3>
+                    <ul className="guardado">
+                      {grupo.itens.map((i) => (
+                        <li key={i.nome}>
+                          <p className="guardado-conta">
+                            <span className="dado">{i.quantos}</span> {i.nome}
+                          </p>
+                          <p className="guardado-explicacao">{i.explicacao}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
 
                 <div className="conta-condicao">
                   <h3>Para onde as coisas vão</h3>
