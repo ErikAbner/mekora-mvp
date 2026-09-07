@@ -32,7 +32,20 @@ export const CAPAS_PRONTAS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
 
 export function capaDoLivro(chave) {
   if (!chave) return CAPAS_PRONTAS[0];
+  /* `String(chave)` — E ELE NÃO É DEFENSIVO, É O CONSERTO DE UM DEFEITO.
+   *
+   * A Estante passa `chave={chave}`, e a chave dela é o `upload_id`: um NÚMERO.
+   * Num número, `chave.length` é `undefined`, o laço não roda uma vez sequer,
+   * `soma` fica em zero — e a função devolvia `CAPAS_PRONTAS[0]` para todo
+   * livro. Medido em 07/09 com cinco livros sem capa na bancada: cinco capas,
+   * as cinco na variante 1.
+   *
+   * Ninguém tinha visto porque a bancada semeia quase todo livro com capa
+   * própria, e com uma capa de reserva na tela um sorteio que não sorteia é
+   * indistinguível de um que sorteia. É a bancada precisando saber produzir o
+   * caso, de novo — desta vez com quatro `rm -rf` em `storage/covers`. */
+  const s = String(chave);
   let soma = 0;
-  for (let i = 0; i < chave.length; i++) soma = (soma + chave.charCodeAt(i) * (i + 1)) % 100003;
+  for (let i = 0; i < s.length; i++) soma = (soma + s.charCodeAt(i) * (i + 1)) % 100003;
   return CAPAS_PRONTAS[soma % CAPAS_PRONTAS.length];
 }

@@ -953,10 +953,105 @@ const PROVAS = {
       if (capaDoLivro('token-de-prova') !== capaDoLivro('token-de-prova')) {
         return 'a mesma chave devolveu capas diferentes: o acervo se reembaralha';
       }
-      /* E ELA ESPALHA. Um sorteio que sempre cai na mesma nao e sorteio. */
-      const vistas = new Set();
-      for (let i = 0; i < 2000; i++) vistas.add(capaDoLivro(`chave-${i}-${i * 7919}`));
-      if (vistas.size !== 14) return `em 2000 chaves sairam ${vistas.size} variantes de catorze`;
+      /* E ELA ESPALHA. Um sorteio que sempre cai na mesma nao e sorteio.
+         
+         AS DUAS FORMAS DE CHAVE, e a segunda achou um defeito real: a Estante
+         passa o `upload_id`, que e NUMERO. Num numero `chave.length` e
+         undefined, o laco nao rodava e toda capa caia na variante 1 — medido
+         com cinco livros sem capa na bancada. Cobrar so a forma de texto
+         deixaria o defeito passar de novo. */
+      for (const [nome, faz] of [['texto', (i) => `chave-${i}-${i * 7919}`], ['numero', (i) => 1000 + i]]) {
+        const vistas = new Set();
+        for (let i = 0; i < 2000; i++) vistas.add(capaDoLivro(faz(i)));
+        if (vistas.size !== 14) return `em 2000 chaves de ${nome} sairam ${vistas.size} variantes de catorze`;
+      }
+
+      /* ── A ARTE GERADA, e os cinco itens da decisao de 07/09 ───────────────
+         
+         O Erik: "arte gerada deterministicamente por livro, derivada de um
+         token estavel; o mesmo livro deve produzir sempre o mesmo resultado;
+         livros diferentes devem produzir resultados diferentes; nao usar IA,
+         servico externo ou geracao runtime nao deterministica; nao armazenar
+         uma imagem se ela puder ser reconstruida deterministicamente". */
+      const arteFonte = arq('/web/src/componentes/arte-de-capa.js');
+      const tmpArte = join(tmpdir(), `arte-${Date.now()}.mjs`);
+      writeFileSync(tmpArte, arteFonte);
+      const { arteDaCapa, VARIANTES_GERADAS } = await import(`file://${tmpArte}`);
+
+      /* NOVE VARIANTES TEM AREA DE ARTE. As cinco de fora — 1, 5, 12, 13 e 14 —
+         ja eram distintas: as duas primeiras tem arte propria lida do no, as
+         tres ultimas sao massa solida em CSS. */
+      if (VARIANTES_GERADAS.length !== 9) {
+        return `${VARIANTES_GERADAS.length} variantes com arte gerada, e o desenho tem nove com area de arte`;
+      }
+
+      /* MESMO LIVRO, MESMA ARTE — em qualquer aparelho e sem guardar nada. */
+      for (const v of VARIANTES_GERADAS) {
+        if (arteDaCapa(v, 'token-de-prova') !== arteDaCapa(v, 'token-de-prova')) {
+          return `a variante ${v} devolveu artes diferentes para a mesma chave`;
+        }
+      }
+
+      /* LIVROS DIFERENTES, ARTES DIFERENTES. Cem chaves por variante: se o
+         gerador ignorasse a semente, as cem sairiam iguais. */
+      for (const v of VARIANTES_GERADAS) {
+        const distintas = new Set();
+        for (let i = 0; i < 100; i++) distintas.add(arteDaCapa(v, `livro-${i}-${i * 104729}`));
+        if (distintas.size < 95) {
+          return `a variante ${v} deu so ${distintas.size} artes distintas em 100 livros`;
+        }
+      }
+
+      /* E CADA VARIANTE TEM A LINGUAGEM DA SUA. O Erik: "nao quero simplesmente
+         transformar as nove em versoes da grade geometrica da variante 5" e
+         "preservar a linguagem especifica de cada uma das nove variantes".
+         
+         O QUE SE COBRA E A TECNICA, e nao o texto do SVG. A primeira versao
+         comparava as nove artes da mesma chave e exigia que fossem diferentes —
+         e passou com os NOVE GERADORES TROCADOS POR UM SO. Passou porque a
+         semente ja inclui o numero da variante: um gerador unico com nove
+         sementes da nove desenhos diferentes, e nenhum e a linguagem daquela
+         capa. Medir diferenca nao e medir identidade.
+         
+         As tres tecnicas saem do quadro, lidas uma a uma nos nos: */
+      const TECNICA = {
+        2: 'line', 3: 'line', 6: 'line', 7: 'line',   // hachura diagonal
+        4: 'circle',                                   // meio-tom de pontos
+        8: 'massa', 9: 'massa', 10: 'massa', 11: 'massa',
+      };
+      for (const v of VARIANTES_GERADAS) {
+        const svg = arteDaCapa(v, 'token-de-prova');
+        const conta = (tag) => (svg.match(new RegExp('%3C' + tag, 'g')) || []).length;
+        const linhas = conta('line');
+        const circulos = conta('circle');
+        const solidos = conta('rect') + conta('polygon');
+        const esperado = TECNICA[v];
+        if (esperado === 'line' && linhas < 10) return `a variante ${v} devia ser hachura e tem ${linhas} linhas`;
+        if (esperado === 'circle' && circulos < 20) return `a variante ${v} devia ser meio-tom e tem ${circulos} pontos`;
+        if (esperado === 'massa') {
+          if (linhas) return `a variante ${v} devia ser massa e desenha ${linhas} linhas de hachura`;
+          if (!solidos) return `a variante ${v} devia ser massa e nao tem forma solida nenhuma`;
+        }
+      }
+      /* E as tres tecnicas precisam TODAS existir: nove geradores que caissem
+         na mesma tecnica seriam nove versoes de uma capa. */
+      const tecnicas = new Set(VARIANTES_GERADAS.map((v) => TECNICA[v]));
+      if (tecnicas.size !== 3) return `as nove variantes usam ${tecnicas.size} tecnica(s), e o quadro tem tres`;
+
+      /* SEM IA, SEM SERVICO, SEM RUNTIME NAO DETERMINISTICO. Cobrado na fonte,
+         porque e a unica forma de pegar antes de virar dependencia.
+         
+         OS COMENTARIOS SAEM ANTES DA BUSCA. A primeira versao procurava no
+         arquivo inteiro e reprovou o gerador limpo: o cabecalho dele diz, em
+         prosa, "nada aqui chama Math.random". A frase estava certa e a medida
+         leu a frase em vez do codigo. */
+      const soCodigo = arteFonte
+        .replace(/\/\*[\s\S]*?\*\//g, ' ')
+        .replace(/^\s*\/\/.*$/gm, ' ');
+      const proibidos = ['Math.random', 'fetch(', 'XMLHttpRequest', 'new Date', 'Date.now', 'crypto.'];
+      const achados = proibidos.filter((x) => soCodigo.includes(x));
+      if (achados.length) return `o gerador de arte usa ${achados.join(', ')}: deixa de ser deterministico`;
+
       return null;
     },
   },

@@ -143,7 +143,7 @@
 .capa-de-reserva[data-capa="2"] .cr-credito { align-self: flex-end; }
 .capa-de-reserva[data-capa="2"] .cr-arte {
   grid-area: arte;
-  background: var(--capa-trama) url("/capas/trama.png") center / cover no-repeat;
+  background: var(--capa-trama) var(--arte) center / cover no-repeat;
 }
 .capa-de-reserva[data-capa="2"] .cr-rodape {
   grid-area: rodape;
@@ -188,7 +188,7 @@
 .capa-de-reserva[data-capa="4"] .cr-arte {
   grid-area: arte;
   min-inline-size: 0;
-  background: var(--capa-trama) url("/capas/trama.png") center / cover no-repeat;
+  background: var(--capa-trama) var(--arte) center / cover no-repeat;
 }
 .capa-de-reserva[data-capa="3"] .cr-alto,
 .capa-de-reserva[data-capa="4"] .cr-alto {
@@ -340,7 +340,7 @@
   margin: 3.81cqw var(--pad) 11.9cqw;
   padding-block-end: 7.62cqw;
   border-block-end: 1px solid var(--capa-tinta);
-  background: var(--capa-trama) url("/capas/trama.png") center / cover no-repeat content-box;
+  background: var(--capa-trama) var(--arte) center / cover no-repeat content-box;
 }
 
 /* ── 7 · faixa de papel à esquerda, arte de ponta a ponta à direita ──────
@@ -362,7 +362,7 @@
   grid-area: arte;
   min-inline-size: 0;
   margin-block: 5.71cqw;
-  background: var(--capa-trama) url("/capas/trama.png") center / cover no-repeat;
+  background: var(--capa-trama) var(--arte) center / cover no-repeat;
 }
 
 /* ── 8 · título em cima, arte grande, rodapé de papel ────────────────────
@@ -383,7 +383,7 @@
 .capa-de-reserva[data-capa="8"] .cr-arte {
   grid-area: arte;
   margin: 3.81cqw var(--pad) 16.7cqw;
-  background: var(--capa-trama) url("/capas/trama.png") center / cover no-repeat;
+  background: var(--capa-trama) var(--arte) center / cover no-repeat;
 }
 
 /* ── 9 · arte centrada e pequena, muito papel em volta ───────────────────
@@ -403,7 +403,7 @@
   grid-area: arte; align-self: center;
   inline-size: 55.24cqw;
   aspect-ratio: 232 / 258;
-  background: var(--capa-trama) url("/capas/trama.png") center / cover no-repeat;
+  background: var(--capa-trama) var(--arte) center / cover no-repeat;
 }
 
 /* ── 10 · arte sangrada no topo, título deitado no pé ────────────────────
@@ -416,7 +416,7 @@
 }
 .capa-de-reserva[data-capa="10"] .cr-arte {
   grid-area: arte;
-  background: var(--capa-trama) url("/capas/trama.png") center / cover no-repeat;
+  background: var(--capa-trama) var(--arte) center / cover no-repeat;
 }
 .capa-de-reserva[data-capa="10"] .cr-alto {
   grid-area: alto;
@@ -446,7 +446,7 @@
   grid-area: arte;
   margin: 0 var(--pad) 13.5cqw;
   aspect-ratio: 356 / 252;
-  background: var(--capa-trama) url("/capas/trama.png") center / cover no-repeat;
+  background: var(--capa-trama) var(--arte) center / cover no-repeat;
 }
 
 /* ── 13 · quase só papel, com um ponto preto no pé ───────────────────────

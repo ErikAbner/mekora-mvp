@@ -1,4 +1,5 @@
 import { capaDoLivro } from "./capa-substituta.js";
+import { arteDaCapa } from "./arte-de-capa.js";
 import "./capa-de-reserva.css";
 
 /* A capa de quem não tem capa — uma peça, nos três lugares que precisavam dela.
@@ -55,11 +56,27 @@ import "./capa-de-reserva.css";
  * houver uma tela que mostre a capa inteira — uma ficha, uma impressão —, as
  * peças e o CSS dos três continuam escritos e voltam sem serem reinventados. */
 export function CapaDeReserva({ titulo, autor, formato, data, chave, className = "" }) {
+  const variante = capaDoLivro(chave);
+  /* A ARTE É DESENHADA POR LIVRO — ver `arte-de-capa.js`.
+   *
+   * Nove das catorze têm área de arte, e até 07/09 as nove usavam a mesma trama
+   * de meio-tom: na grade da Estante, o que as separava era só onde a mancha
+   * ficava. Agora cada livro tem a sua, derivada do token, e a técnica de cada
+   * variante é a que o quadro mostra — hachura na 2, 3, 6 e 7; pontos na 4;
+   * massa na 8, 9, 10 e 11.
+   *
+   * `null` para as cinco que não têm área gerada: a 1 e a 5 têm arte própria
+   * lida do nó, e a 12, 13 e 14 são massa sólida em CSS.
+   *
+   * A arte NÃO É GUARDADA em lugar nenhum. Ela se reconstrói da chave, e o
+   * `--arte` só existe enquanto o cartão está na tela. */
+  const arte = arteDaCapa(variante, chave);
   return (
     <span
       className={`capa-de-reserva ${className}`.trim()}
-      data-capa={capaDoLivro(chave)}
+      data-capa={variante}
       title={titulo}
+      style={arte ? { "--arte": arte } : undefined}
     >
       <span className="cr-arte" aria-hidden="true" />
       <span className="cr-alto">

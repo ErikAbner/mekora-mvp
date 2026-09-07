@@ -17,6 +17,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { arteDaCapa } from "../web/src/componentes/arte-de-capa.js";
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
 const css = readFileSync(join(RAIZ, "web/src/componentes/capa-de-reserva.css"), "utf8");
@@ -31,11 +32,24 @@ const TITULOS = [
   "Expedição 02", "Registro",
 ];
 
-const cartoes = TITULOS.map((titulo, i) =>
-  `<figure><span class="capa-de-reserva" data-capa="${i + 1}">` +
-  `<span class="cr-arte" aria-hidden="true"></span>` +
-  `<span class="cr-alto"><span class="cr-titulo">${titulo}</span></span>` +
-  `</span><figcaption>${i + 1}</figcaption></figure>`).join("\n");
+/* A ARTE ENTRA AQUI TAMBÉM, e por isso a folha importa o gerador em vez de
+ * desenhar um `span` vazio: as nove variantes com área de arte leem `--arte`, e
+ * sem ele a folha mostraria nove retângulos cinzas. A chave de cada uma é
+ * fixa e escrita — a folha existe para comparar composições, e uma chave que
+ * mudasse a cada geração faria duas execuções darem desenhos diferentes.
+ *
+ * `chaves` variando por índice dá também o outro lado da prova: livros
+ * diferentes, artes diferentes. */
+const cartoes = TITULOS.map((titulo, i) => {
+  const variante = i + 1;
+  const chave = `folha-de-contato-${variante}`;
+  const arte = arteDaCapa(variante, chave);
+  const estilo = arte ? ` style="--arte: ${arte.replace(/"/g, "&quot;")}"` : "";
+  return `<figure><span class="capa-de-reserva" data-capa="${variante}"${estilo}>` +
+    `<span class="cr-arte" aria-hidden="true"></span>` +
+    `<span class="cr-alto"><span class="cr-titulo">${titulo}</span></span>` +
+    `</span><figcaption>${variante}</figcaption></figure>`;
+}).join("\n");
 
 const destino = join(RAIZ, "web/publico/_folha-capas.html");
 writeFileSync(destino, `<!doctype html>
