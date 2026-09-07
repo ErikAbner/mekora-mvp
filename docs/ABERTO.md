@@ -27,10 +27,20 @@ D   backlog técnico             decide-se durante a implementação, por quem i
 | | quantas |
 |---|---:|
 | **A** — antes da arquitetura | 6 |
-| **B** — antes da feature afetada | 22 |
-| **C** — antes do lançamento | 2 |
+| **B** — antes da feature afetada | 20 |
+| **C** — antes do lançamento | 3 |
 | **D** — backlog técnico | 14 |
-| | **44** |
+| | **43** |
+
+*Contagem refeita em 07/09, contra as linhas da própria tabela. Ela dizia 44 —
+A6, B22, C2, D14 — e a diferença não era arredondamento: **`C21` não estava
+sendo contado.** Ele nasceu na auditoria de segurança do mesmo 03/09, depois de
+o parágrafo abaixo ter sido escrito, e o parágrafo continuou dizendo "sobram
+`C2` e `C10`". O item mais urgente da fila — marcado pelo Erik como **primeiro
+da fila de segurança**, valendo mais que os P1 juntos — estava invisível na
+contagem que a página abre.*
+
+*Um cabeçalho que conta errado é pior que nenhum: ele é lido no lugar da tabela.*
 
 *A contagem de C caiu de 12 para 2 em 03/09. `C9` e `C16` fecharam em 02/09; `C1`, `C3`, `C4` e `C8`
 na manhã de 03/09, as quatro por leitura do código e não por decisão; `C6`, `C7`, `C17` e `C18` à
