@@ -153,9 +153,39 @@
     minmax(0, 430px) [larga-fim]
     minmax(var(--borda, 32px), 1fr) [cheia-fim];
   inline-size: 100%;
-  padding: 64px 0 128px;
+  /* A SUPERFÍCIE DE LEITURA NÃO ENCOSTA NA JANELA.
+   *
+   * O Erik, 07/09: "superfície central de leitura; margens/respiro coerentes;
+   * sensação menos edge-to-edge". A queixa tem um caso claro e medido: a
+   * epígrafe usa a coluna `cheia`, que começava em x=0, e num computador de
+   * 1440 o bloco invertido ia de borda a borda da janela. No nó `895:10472` ele
+   * TEM margem — uma margem pequena, mas tem: o bloco preto para antes do papel
+   * acabar, e é isso que faz a página parecer uma página.
+   *
+   * Então `cheia` passa a sangrar até a borda da SUPERFÍCIE, e não da janela.
+   * No telefone a sangria é zero: lá não há papel de sobra, e reservar 64px de
+   * cada lado tiraria um quinto da linha.
+   *
+   * E A SUPERFÍCIE TEM TETO. Sem ele, numa janela de 2560 a epígrafe mediria
+   * 2432 e a coluna de texto continuaria em 680 — o bloco largo ficaria quatro
+   * vezes mais largo que a leitura, que é o contrário de uma superfície central.
+   * 1600 é a área útil de uma página de 1920 com as margens do nó. */
+  max-inline-size: 1600px;
+  margin-inline: auto;
+  padding: 64px var(--sangria, 0px) 128px;
   row-gap: 32px;
 }
+@media (min-width: 1024px) { .prosa { --sangria: 64px; } }
+
+/* A ABERTURA JÁ FECHA COM RESPIRO, e a prosa abria com mais.
+ *
+ * Medido: 248px entre o ornamento da folha de rosto e o primeiro capítulo — 64
+ * do recheio de baixo da abertura, 64 do de cima da prosa, e a margem do
+ * título. Dois recheios somados é o defeito que a Mesa e o Livro já pagaram,
+ * agora entre duas seções irmãs.
+ *
+ * O respiro da virada fica sendo o da abertura, que é quem fecha. */
+.abertura + .prosa { padding-block-start: 0; }
 /* Todo filho mora na coluna de texto, menos quem pede outra. Sem esta linha o
  * grid espalharia cada bloco por uma coluna diferente.
  *
