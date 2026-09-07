@@ -58,6 +58,44 @@ que cada uma fechou, e com que prova.
 | R-49 | índice e páginas ganham desenho próprio | `node scripts/provas.mjs r07` |
 | R-51 | a Estante lista só livro pronto | testes do backend + medida em /estante |
 
+### Os três ajustes, no fim do mesmo dia
+
+O Erik reviu o resultado e mudou três coisas. O texto das três está em
+`docs/DECISOES-2026-09-07.md`; o que elas fizeram a estes itens:
+
+**R-48 · a arte das capas.** Construir as catorze expôs o que quatro não
+mostravam: nove têm área de arte, e as nove usavam a mesma trama. Agora a arte é
+DESENHADA por livro, com a semente saindo do mesmo token que escolhe a variante,
+e cada uma dentro da técnica que o quadro mostra — hachura na 2, 3, 6 e 7;
+meio-tom na 4; massa na 8, 9, 10 e 11.
+
+E um defeito real apareceu: `capaDoLivro` recebia o `upload_id`, que é NÚMERO, e
+num número `chave.length` é `undefined` — o laço não rodava e **toda capa caía
+na variante 1**. Ninguém tinha visto porque a bancada semeia quase tudo com capa
+própria: com uma capa de reserva na tela, um sorteio que não sorteia é
+indistinguível de um que sorteia. Precisou de quatro `rm -rf` em
+`storage/covers` para o caso existir.
+
+**R-18 · o arrasto escreve o ESTADO, e não o progresso.** A primeira versão
+gravava a marca de leitura para representar a declaração da pessoa, com o
+argumento de que "estado derivado, corrigível à mão" é a lei do projeto. O Erik
+recusou, e a razão é uma distinção que o modelo não tinha: *"estado de leitura e
+progresso de leitura são conceitos diferentes"*. Arrastar um livro pela metade
+para "Lido" apagava onde ela tinha parado.
+
+Agora há `estado_leitura` em `progressos`, anulável, e `PUT
+/jobs/{id}/estado-leitura` escreve essa coluna e nenhuma outra. **Continua
+havendo uma fonte só:** `estadoDeLeitura`, no contrato, é o único lugar com a
+precedência — declarou, vale o que ela disse; não declarou, o estado sai da
+fração. Quando os dois discordam, o cartão diz o número e oferece "Concluir a
+leitura também", que é a ação explícita que ele pediu no lugar da mutação
+silenciosa.
+
+**R-30 · o nome do grupo.** "O que o Mekora aprendeu com você" virou "Sugestões
+dispensadas e recados" — numa tela de privacidade, linguagem literal em vez de
+antropomorfização. O nome que ele sugeriu, "Preferências e histórico", não serve
+porque `preferencias` já é um item de outro grupo na mesma página.
+
 **A MUDANÇA DE CRITÉRIO QUE VEIO JUNTO, e que vale para tudo daqui em diante:**
 
 > Nem tudo que você colocou como "depende de mim" realmente depende de decisão
