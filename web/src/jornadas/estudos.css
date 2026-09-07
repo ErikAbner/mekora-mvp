@@ -582,22 +582,10 @@
   color: var(--card-foreground);
 }
 
-/* "RELER" — `895:8849`, e só na coluna do que já foi lido. Ele é o único gesto
- * do quadro, e por isso não se esconde atrás de hover: num toque não há hover, e
- * um botão que só aparece com o mouse não existe no telefone. */
-.estudos-reler {
-  align-self: flex-start;
-  margin-block-start: 12px;
-  padding: 8px 16px;
-  border: 1px solid var(--borda-controle);
-  background: var(--background);
-  color: var(--muted-foreground);
-  font-family: var(--font-sans);
-  font-size: 14px; line-height: 22px;   /* Label/Small */
-  cursor: pointer;
-}
-.estudos-reler:hover:not(:disabled) { background: var(--muted); color: var(--foreground); }
-.estudos-reler:disabled { cursor: progress; }
+/* O "Reler" do `895:8849` virou um dos botões de `.estudos-mover`: ele é o
+ * nome que o desenho dá ao movimento de "Lido" para "A ler", e agora convive
+ * com os outros dois destinos em vez de ser o único. As regras próprias dele
+ * saíram — `scripts/seletores.mjs` recusa regra que não casa em rota nenhuma. */
 .estudos-reler:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
 
 
@@ -615,3 +603,76 @@
 .estudo-pagina .estudo h2 { font-size: 40px; line-height: 48px; letter-spacing: -0.6px; }
 .estudo-pagina .estudo-livros h3,
 .estudo-pagina .estudo-formou h3 { font-size: 32px; line-height: 40px; color: var(--foreground); margin: 0 0 24px; }
+
+/* ─── O ARRASTO DO QUADRO ──────────────────────────────────────────────────
+ *
+ * Decisão do Erik em 07/09: arrastar entre A ler, Lendo e Li, "com feedback
+ * visual claro durante o arrasto", e sem depender só do arrasto.
+ *
+ * O QUE O FEEDBACK PRECISA DIZER são três coisas, e cada uma tem a sua marca:
+ * o que está sendo arrastado (o cartão clareia), onde ele vai cair (a coluna
+ * acende), e que o gesto está em curso (o cursor e o fantasma). A coluna de
+ * origem não acende — soltar de volta não é movimento.
+ */
+.estudos-coluna li { touch-action: pan-y; }
+.estudos-quadro[data-arrastando] { cursor: grabbing; }
+/* Enquanto se arrasta, o texto não se seleciona: um arrasto que pinta metade
+   dos títulos de azul parece defeito, e é o que acontece sem isto. */
+.estudos-quadro[data-arrastando] * { user-select: none; }
+
+.estudos-coluna li[data-arrastado] { opacity: 0.4; }
+.estudos-coluna li[data-movendo] { opacity: 0.6; }
+
+/* A COLUNA ALVO acende por FILETE e fundo rarefeito, e não por cor: a paleta do
+   produto não tem matiz de interface, e a única cor viva são os quatro
+   destaques das notas — que querem dizer outra coisa. */
+.estudos-coluna[data-alvo] {
+  outline: 2px solid var(--foreground);
+  outline-offset: 4px;
+  background: color-mix(in oklab, var(--foreground) 5%, transparent);
+}
+
+.estudos-fantasma {
+  position: fixed;
+  inset-block-start: 0; inset-inline-start: 0;
+  z-index: 60;
+  pointer-events: none;
+  /* O canto do fantasma fica um pouco abaixo e à direita do dedo, para não
+     ficar embaixo dele. */
+  margin: 12px 0 0 12px;
+  max-inline-size: 240px;
+  padding: 8px 12px;
+  border: 1px solid var(--foreground);
+  background: var(--card);
+  color: var(--foreground);
+  font-size: 14px; line-height: 22px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* O CAMINHO CLICÁVEL. Ele não aparece por hover: hover não existe em toque, e
+   um caminho alternativo que só existe com mouse não é alternativa. Fica
+   sempre visível, em corpo pequeno, abaixo do cartão. */
+.estudos-mover {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px;
+  margin-block-start: 8px;
+}
+.estudos-mover-rotulo {
+  font-size: 14px; line-height: 22px;
+  color: var(--muted-foreground);
+}
+.estudos-mover-botao {
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  padding: 2px 8px;
+  font: inherit; font-size: 14px; line-height: 22px;
+  cursor: pointer;
+  border-radius: var(--radius, 0);
+}
+.estudos-mover-botao:hover:not(:disabled) { background: var(--muted); }
+.estudos-mover-botao:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+.estudos-mover-botao:disabled { opacity: 0.5; cursor: default; }
+
+@media (prefers-reduced-motion: reduce) {
+  .estudos-fantasma { transition: none; }
+}

@@ -99,7 +99,8 @@ function medir(rota, corpo, veneno = '', tamanho = {}) {
          `s`, e `/enviar[\s\S]{0,24}kindle/` virou uma classe [sS] que nao casa
          espaco: a prova do R-05 reprovou limpa e envenenada, com a tela certa
          nos dois casos. Escreva `\\s`, ou nao precise dela. */
-  writeFileSync(alvo, `(async () => {\n  const esperar = ms => new Promise(r => setTimeout(r, ms));\n  await esperar(3200);\n  {\n${veneno}\n  }\n  ${corpo}\n})()`);
+  const venenoDaMedida = tamanho.gesto ? '' : veneno;
+  writeFileSync(alvo, `(async () => {\n  const esperar = ms => new Promise(r => setTimeout(r, ms));\n  await esperar(3200);\n  {\n${venenoDaMedida}\n  }\n  ${corpo}\n})()`);
   /* `{CONVERTENDO}` ESCREVE NO BANCO ANTES DE MEDIR, e DESFAZ depois.
      
      É o caso do R-54: chegar no endereço com o servidor já convertendo, sem ter
@@ -114,10 +115,31 @@ function medir(rota, corpo, veneno = '', tamanho = {}) {
     const largura = String(tamanho.largura || 1440);
     const altura = String(tamanho.altura || 1000);
     const extras = tamanho.mouse ? [`--mouse=${tamanho.mouse}`] : [];
+    /* `tamanho.gesto` ARRASTA DE VERDADE, com o mouse do Chrome.
+       
+       E o VENENO vai para dentro do arquivo de gesto, não do de medida: o
+       gesto roda ANTES da medida, e um controle negativo aplicado depois do
+       arrasto não envenena arrasto nenhum. O r18 é a primeira prova em que a
+       ordem importa — o defeito dele acontece durante o gesto, e não depois. */
+    if (tamanho.gesto) {
+      const molde = readFileSync(join(RAIZ, tamanho.gesto), 'utf8');
+      const arqGesto = join(dir, `g-${Date.now()}.js`);
+            /* `replaceAll`, e nao `replace`: o molde cita a propria chave no
+         comentario de cabecalho, e a troca simples pegava a MENCAO em vez do
+         lugar. O gesto rodava com a chave literal no corpo e a pagina
+         respondia "VENENO is not defined". */
+      writeFileSync(arqGesto, molde.replaceAll('{VENENO}', veneno || ''));
+      extras.push(`--gesto=${arqGesto}`);
+    }
     bruto = execFileSync('node', ['scripts/medir.mjs', url, largura, altura, alvo, `--sessao=${token}`, ...extras],
       { cwd: RAIZ, encoding: 'utf8', timeout: 110000, stdio: ['ignore', 'pipe', 'pipe'] });
   } catch (e) {
-    throw new NaoPodeMedir(`nao consegui medir ${url} — o servidor de desenvolvimento esta em pe? (${String(e.message).slice(0, 90)})`);
+    /* A MENSAGEM DO CHROME VEM NO `stderr`, e cortar em 90 caracteres escondia
+       ela inteira: sobrava "Command failed: node scripts/medir.mjs …", que
+       parece servidor fora do ar e quase nunca e. */
+    const detalhe = String(e.stderr || '').trim().split('\n').filter(Boolean).slice(0, 4).join(' | ')
+      || String(e.message).slice(0, 120);
+    throw new NaoPodeMedir(`nao consegui medir ${url} — ${detalhe}`);
   } finally {
     if (emConversao) mudaEstado(analisado, 'parado');
   }
@@ -573,6 +595,51 @@ const PROVAS = {
       if (d.caixaRecheio !== 40) return `o cartao da ficha tem ${d.caixaRecheio} de recheio, e o 917:8399 pede 40`;
       if (d.caixaVao !== 32) return `o cartao da ficha tem ${d.caixaVao} de vao, e o no pede 32`;
       if (d.titulo !== 32) return `o titulo da ficha esta em ${d.titulo}, e o no pede heading-md 32`;
+      return null;
+    },
+  },
+
+  'r18': {
+    erik: 'kanban nao funciona, interacao pessima, parece de enfeite (/estudos)',
+    /* O VENENO DEVOLVE `draggable` AOS LINKS E CAPAS — que e exatamente o
+       defeito que a primeira versao deste arrasto tinha.
+       
+       `<a>` e `<img>` sao arrastaveis por padrao: com o botao apertado sobre
+       eles, o Chrome inicia o SEU drag e engole os eventos de ponteiro. Medido
+       no dia: chegavam pointerdown e DOIS pointermove, e depois nada — nem o
+       pointerup. O cartao nao saia da coluna e nada na tela dizia por que.
+       
+       Envenenar assim prova que a medida ve o defeito REAL, e nao uma versao
+       dele. Um veneno que so desliga pointer-events provaria menos: aquilo
+       quebraria tambem o clique, e o clique e a metade que precisa continuar
+       funcionando. */
+    veneno: `document.querySelectorAll('.estudos-coluna a, .estudos-coluna img')
+               .forEach((e) => { e.draggable = true; });`,
+    async correr(veneno) {
+      const d = medir('/estudos', `
+        await esperar(2200);
+        const conta = (id) => document.querySelectorAll('.estudos-coluna[data-coluna="' + id + '"] li').length;
+        return {
+          antes: window.__antesDoArrasto || null,
+          depois: { aler: conta('aler'), lendo: conta('lendo'), lido: conta('lido') },
+          mover: document.querySelectorAll('.estudos-mover-botao').length,
+          colunas: document.querySelectorAll('.estudos-coluna[data-coluna]').length,
+        };
+      `, veneno, { altura: 1200, gesto: 'scripts/medidas/gesto-kanban.js' });
+
+      if (d.colunas !== 3) return `o quadro de leitura nao montou: ${d.colunas} coluna(s)`;
+      /* O CAMINHO CLICAVEL E METADE DA DECISAO, e por isso e cobrado aqui:
+         "nao depender exclusivamente de drag". Dois destinos por cartao. */
+      if (!d.mover) return 'nenhum botao de mover: o caminho clicavel sumiu';
+      if (!d.antes) return 'o gesto nao chegou a mirar: nenhuma coluna de origem tinha cartao';
+      /* O ARRASTO SO PODE SER MEDIDO PELO EFEITO, e o efeito e a DIFERENCA: o
+         cartao saiu da coluna de origem e entrou em "Lido". Comparar so o
+         numero final leria "ja estava la" como sucesso. */
+      const saiu = d.depois[d.antes.origem] === d.antes[d.antes.origem] - 1;
+      const chegou = d.depois.lido === d.antes.lido + 1;
+      if (!saiu || !chegou) {
+        return `o arrasto nao moveu o cartao: ${d.antes.origem} ${d.antes[d.antes.origem]} para ${d.depois[d.antes.origem]}, lido ${d.antes.lido} para ${d.depois.lido}`;
+      }
       return null;
     },
   },

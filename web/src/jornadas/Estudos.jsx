@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
@@ -248,22 +248,55 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, 
  * deixaria livro terminado eternamente em "Lendo", e é o tipo de erro que a
  * pessoa não tem como corrigir.
  */
-/* O QUADRO NÃO SE ARRASTA, e isso é decisão e não falta.
+/* O QUADRO SE ARRASTA, e o que o arrasto escreve é o PRÓPRIO PROGRESSO.
  *
- * O Erik: "kanban não funciona, interação péssima, parece de enfeite". A parte
- * de enfeite era verdade — não havia gesto nenhum. Mas o gesto que falta não é
- * arrastar.
+ * O Erik: "kanban não funciona, interação péssima, parece de enfeite" (R-18), e
+ * em 07/09: "implementar drag-and-drop entre A ler, Lendo e Li, com feedback
+ * visual claro durante o arrasto. Não depender exclusivamente de drag:
+ * preservar alternativas clicáveis/contextuais".
  *
- * A COLUNA É DERIVADA DA FRAÇÃO LIDA, que é um fato medido pelo leitor, e não um
- * estado que alguém escolhe. Arrastar um livro para "Lido" faria o número
- * mentir — e é o MESMO número que a Estante, a ficha e a barra de progresso
- * mostram. Um quadro que deixa você declarar que leu o que não leu não organiza
- * nada; ele só estraga a medida.
+ * ATÉ AQUI EU TINHA ESCRITO O CONTRÁRIO, com um argumento que parecia bom: a
+ * coluna é derivada da fração lida, que é fato medido pelo leitor, e arrastar
+ * para "Lido" faria o número mentir. O argumento tinha um furo — a lei do
+ * projeto, escrita no CLAUDE.md, diz **"estado derivado, corrigível à mão"**. A
+ * frase seguinte proíbe um campo de status PARALELO para alguém manter; ela não
+ * proíbe corrigir o derivado. São coisas diferentes, e eu tinha lido as duas
+ * como uma só.
  *
- * O desenho não pede arrastar: ele põe um botão "Reler" na coluna do que já foi
- * lido (`895:8849`). Esse é o gesto — ler de novo zera a marca, e o livro volta
- * para "A ler" por si.
+ * Então o arrasto não cria estado novo: ele ESCREVE O PROGRESSO, que é o mesmo
+ * que o leitor escreve rolando e o mesmo que o botão "Reler" já escrevia. Cada
+ * coluna corresponde a uma posição real no livro, e nenhuma inventa número:
+ *
+ *   A ler   capítulo 0, fração 0 — é exatamente o que "Reler" faz hoje
+ *   Lendo   capítulo 0, fração de UM capítulo — o livro aberto no começo
+ *   Lido    último capítulo, fração 1
+ *
+ * "Lendo" é o único que precisa de conta, e ela sai do livro: `1 / capitulos`
+ * é o progresso de quem abriu no primeiro de N capítulos. Sem `capitulos`
+ * conhecido sobra o piso da coluna, que é o menor valor que ela reconhece.
  */
+const CORTE_DE_LENDO = 0.02;
+
+const DESTINOS = {
+  aler: () => ({ capitulo: 0, deslocamento: 0, fracao: 0 }),
+  lendo: (l) => ({
+    capitulo: 0,
+    deslocamento: 0,
+    fracao: l.capitulos > 1 ? 1 / l.capitulos : CORTE_DE_LENDO,
+  }),
+  lido: (l) => ({
+    capitulo: Math.max(0, (l.capitulos ?? 1) - 1),
+    deslocamento: 0,
+    fracao: 1,
+  }),
+};
+
+/* Em que coluna o livro está agora — para não escrever o que já está escrito, e
+ * para desabilitar a própria coluna no menu. */
+function colunaDe(l) {
+  if (typeof l.fracao !== "number" || l.fracao <= 0) return "aler";
+  return l.fracao < 0.98 ? "lendo" : "lido";
+}
 const COLUNAS = [
   { id: "aler", rotulo: "A ler", cabe: (l) => typeof l.fracao !== "number" || l.fracao <= 0 },
   { id: "lendo", rotulo: "Lendo", cabe: (l) => typeof l.fracao === "number" && l.fracao > 0 && l.fracao < 0.98 },
@@ -318,7 +351,65 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
      ninguém organizar nada. É a promessa da Apresentação ganhando tela: "o que
      você marcou em livros diferentes sobre o mesmo assunto se encontra". */
   const [ligou, setLigou] = useState(null);
-  const [relendo, setRelendo] = useState(null);
+
+  /* O ARRASTO DO QUADRO. Ponteiro, e não o drag-and-drop nativo do HTML: o
+   * nativo não existe em toque, e o produto já tem o padrão do Canvas —
+   * limiar de 4px, captura no container, estado escrito só ao soltar.
+   *
+   * O QUE ESTÁ SENDO ARRASTADO NÃO SAI DO LUGAR no DOM. Mover o nó libera a
+   * captura de ponteiro no primeiro pixel e o arrasto morre — é a primeira das
+   * armadilhas já pagas do CLAUDE.md. Quem segue o dedo é um fantasma
+   * `position: fixed`, e o cartão original só clareia. */
+  const quadroRef = useRef(null);
+  const gesto = useRef(null);
+  const [arrasto, setArrasto] = useState(null);   // { chave, titulo, x, y, de }
+  const [colunaSobODedo, setColunaSobODedo] = useState(null);
+  const [movendo, setMovendo] = useState(null);
+
+  const mover = useCallback(async (livro, destino) => {
+    if (!livro || !DESTINOS[destino] || colunaDe(livro) === destino) return;
+    setMovendo(livro.chave);
+    try {
+      await gravarProgresso(livro.chave, DESTINOS[destino](livro));
+      aoReler?.(livro.chave);
+    } finally {
+      setMovendo(null);
+    }
+  }, [aoReler]);
+
+  const comecaGesto = (e, livro) => {
+    /* Só o botão principal, e nunca em cima de um controle: o cartão tem um
+       link e um menu dentro, e capturar o ponteiro deles mataria os dois. */
+    if (e.button !== 0 || e.target.closest("button, [role=menu]")) return;
+    gesto.current = { chave: livro.chave, livro, x0: e.clientX, y0: e.clientY, ativo: false, id: e.pointerId };
+  };
+
+  const andaGesto = (e) => {
+    const g = gesto.current;
+    if (!g) return;
+    if (!g.ativo) {
+      if (Math.hypot(e.clientX - g.x0, e.clientY - g.y0) < 4) return;
+      g.ativo = true;
+      try { quadroRef.current?.setPointerCapture(g.id); } catch { /* já foi */ }
+      setArrasto({ chave: g.chave, titulo: g.livro.titulo, x: e.clientX, y: e.clientY, de: colunaDe(g.livro) });
+    } else {
+      setArrasto((a) => (a ? { ...a, x: e.clientX, y: e.clientY } : a));
+    }
+    /* `elementFromPoint` e não `e.target`: com a captura no quadro, o alvo do
+       evento é sempre o quadro. */
+    const sob = document.elementFromPoint(e.clientX, e.clientY)?.closest(".estudos-coluna");
+    setColunaSobODedo(sob?.dataset.coluna ?? null);
+  };
+
+  const soltaGesto = () => {
+    const g = gesto.current;
+    gesto.current = null;
+    const destino = colunaSobODedo;
+    setArrasto(null);
+    setColunaSobODedo(null);
+    if (!g?.ativo) return;          // foi clique: o link cuida
+    if (destino) mover(g.livro, destino);
+  };
   const [montando, setMontando] = useState(null);
   const [calando, setCalando] = useState(null);
   const navegar = useNavigate();
@@ -526,21 +617,55 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
         )}
 
         {recorte === "estudos" && vista === "leitura" && (
-          <div className="estudos-quadro">
+          <div
+            className="estudos-quadro"
+            ref={quadroRef}
+            data-arrastando={arrasto ? "sim" : undefined}
+            onPointerMove={andaGesto}
+            onPointerUp={soltaGesto}
+            onPointerCancel={soltaGesto}
+          >
             {COLUNAS.map(({ id, rotulo, cabe }) => {
               const dela = livros.filter(cabe);
               return (
-                <section key={id} className="estudos-coluna">
+                <section
+                  key={id}
+                  className="estudos-coluna"
+                  data-coluna={id}
+                  /* A coluna de ORIGEM não acende: soltar onde já se estava não
+                     é um movimento, e acender lá prometeria uma mudança que não
+                     vai acontecer. */
+                  data-alvo={arrasto && colunaSobODedo === id && arrasto.de !== id ? "sim" : undefined}
+                >
                   <h2>
                     {rotulo} <span className="dado">{dela.length}</span>
                   </h2>
                   {!dela.length && <p className="estudos-vazio">Nenhum aqui.</p>}
                   <ul>
                     {dela.map((l) => (
-                      <li key={l.chave}>
-                        <Link to={`/estante/${l.chave}`}>
+                      <li
+                        key={l.chave}
+                        onPointerDown={(e) => comecaGesto(e, l)}
+                        data-arrastado={arrasto?.chave === l.chave ? "sim" : undefined}
+                        data-movendo={movendo === l.chave ? "sim" : undefined}
+                      >
+                        {/* `draggable={false}` NO LINK E NA CAPA, e sem isto o
+                            arrasto morre no segundo pixel.
+                            
+                            `<a>` e `<img>` são arrastáveis por padrão: ao mover
+                            o mouse com o botão apertado sobre eles, o Chrome
+                            inicia o SEU drag — o de trocar um link de aba — e
+                            engole os eventos de ponteiro. Medido: com o gesto
+                            do `medir.mjs`, chegavam `pointerdown` e DOIS
+                            `pointermove`, e depois nada, nem o `pointerup`.
+                            
+                            É irmã da armadilha que o CLAUDE.md já registra
+                            sobre mover o nó no DOM: o arrasto não morre por
+                            causa do código do arrasto, e sim de algo que o
+                            navegador faz por conta. */}
+                        <Link to={`/estante/${l.chave}`} draggable={false}>
                           {l.capa
-                            ? <img src={l.capa} alt="" aria-hidden="true" loading="lazy" />
+                            ? <img src={l.capa} alt="" aria-hidden="true" loading="lazy" draggable={false} />
                             : <span className="estudos-livro-vazio">{l.titulo}</span>}
                           <span className="estudos-livro-texto">
                             <span className="estudos-livro-nome">{l.titulo}</span>
@@ -560,41 +685,51 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                             )}
                           </span>
                         </Link>
-                        {/* "RELER" — o `895:8849` põe este botão, e só na coluna
-                            do que já foi lido. É ele o gesto que move um livro
-                            entre colunas: ler de novo zera a marca, e o livro
-                            volta para "A ler".
+                        {/* O CAMINHO CLICÁVEL, ao lado do arrasto. Decisão do
+                            Erik em 07/09: "não depender exclusivamente de drag:
+                            preservar alternativas clicáveis/contextuais para
+                            mudança de estado".
                             
-                            E É POR ISSO QUE O QUADRO NÃO SE ARRASTA. Ver a nota
-                            em `COLUNAS`: a coluna é DERIVADA da fração lida, que
-                            é um fato medido, e não um estado que alguém escolhe.
-                            Arrastar um livro para "Lido" faria o número mentir —
-                            e é o mesmo número que a Estante e a ficha mostram. */}
-                        {id === "lido" && (
-                          <button
-                            type="button"
-                            className="estudos-reler"
-                            disabled={relendo === l.chave}
-                            title={relendo === l.chave ? "Marcando para reler…" : null}
-                            onClick={async () => {
-                              setRelendo(l.chave);
-                              try {
-                                await gravarProgresso(l.chave, { capitulo: 0, deslocamento: 0, fracao: 0 });
-                                aoReler?.(l.chave);
-                              } finally {
-                                setRelendo(null);
-                              }
-                            }}
-                          >
-                            {relendo === l.chave ? "Zerando…" : "Reler"}
-                          </button>
-                        )}
+                            Não é acessibilidade de enfeite: arrasto não existe
+                            para quem usa teclado, para quem usa leitor de tela,
+                            e é impreciso em telas pequenas. Os dois caminhos
+                            escrevem a mesma coisa — `DESTINOS`.
+                            
+                            "Reler" continua, e é o botão do `895:8849`: ele é o
+                            nome que o desenho dá ao movimento de Lido para A
+                            ler, e o desenho o põe só naquela coluna. */}
+                        <span className="estudos-mover">
+                          <span className="estudos-mover-rotulo">Mover para</span>
+                          {COLUNAS.filter((c) => c.id !== id).map((c) => (
+                            <button
+                              key={c.id}
+                              type="button"
+                              className="estudos-mover-botao"
+                              disabled={movendo === l.chave}
+                              onClick={() => mover(l, c.id)}
+                            >
+                              {c.id === "aler" && id === "lido" ? "Reler" : c.rotulo}
+                            </button>
+                          ))}
+                        </span>
                       </li>
                     ))}
                   </ul>
                 </section>
               );
             })}
+            {/* O FANTASMA. Ele é `position: fixed` e `pointer-events: none`:
+                seguir o dedo com o próprio cartão exigiria tirá-lo da coluna, e
+                mover o nó libera a captura de ponteiro no primeiro pixel. */}
+            {arrasto && (
+              <span
+                className="estudos-fantasma"
+                aria-hidden="true"
+                style={{ transform: `translate3d(${arrasto.x}px, ${arrasto.y}px, 0)` }}
+              >
+                {arrasto.titulo}
+              </span>
+            )}
           </div>
         )}
 
