@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 356 430.2" width="356" height="430.2" fill="none">
+  <rect x="0" y="0" width="83" height="79.64" fill="#111"/>
+  <rect x="91.5" y="0.5" width="82" height="78.64" fill="none" stroke="#111" stroke-width="1"/>
+  <ellipse cx="314.5" cy="39.82" rx="41.5" ry="39.82" fill="#111"/>
+  <rect x="91" y="87.64" width="83" height="79.64" fill="#111"/>
+  <ellipse cx="223.5" cy="127.46" rx="41.5" ry="39.82" fill="none" stroke="#111" stroke-width="1"/>
+  <rect x="0.5" y="175.78" width="82" height="78.64" fill="none" stroke="#111" stroke-width="1"/>
+  <rect x="182" y="175.28" width="83" height="79.64" fill="#111"/>
+  <rect x="273.5" y="175.78" width="82" height="78.64" fill="none" stroke="#111" stroke-width="1"/>
+  <ellipse cx="41.5" cy="302.74" rx="41.5" ry="39.82" fill="#111"/>
+  <rect x="91.5" y="263.42" width="82" height="78.64" fill="none" stroke="#111" stroke-width="1"/>
+  <rect x="273" y="262.92" width="83" height="79.64" fill="#111"/>
+  <rect x="91" y="350.56" width="83" height="79.64" fill="#111"/>
+  <ellipse cx="223.5" cy="390.38" rx="41.5" ry="39.82" fill="none" stroke="#111" stroke-width="1"/>
+  <rect x="273.5" y="351.06" width="82" height="78.64" fill="none" stroke="#111" stroke-width="1"/>
+</svg>

@@ -5,7 +5,17 @@
  * `get_screenshot` de um quadro alto volta reescalado, e um bloco de 100px sai
  * com 30 de altura. Já errei uma vez neste arquivo por ler miniatura.
  *
- * FEITAS: 1, 2, 12.  ESCRITA MAS QUEBRADA: 3.  FALTAM: 4, 5, 6, 7, 8, 9, 10, 11, 13, 14. */
+ * AS CATORZE ESTAO CONSTRUIDAS — decisao do Erik em 07/09: "construir todas as
+ * 14 variantes previstas".
+ *
+ * A FOTOGRAFIA DO DESENHO NAO ENTRA, e a razao vale para as seis capas que a
+ * usam (6, 7, 8, 9, 10, 11). O quadro poe fotos diferentes em cada uma — um
+ * rosto tramado, um cafe, uma cachoeira, um predio. Elas sao CONTEUDO DE
+ * EXEMPLO do designer, e nao gabarito: o Mekora nao tem fotografia nenhuma para
+ * pos ali, e um livro sem capa e justamente aquele de que nao se sabe nada.
+ * Entao as seis recebem a mesma trama de meio-tom que as variantes 2, 3 e 4 ja
+ * usavam, que e a textura da familia. O ARRANJO de cada uma continua sendo o
+ * dela — e o arranjo e o que distingue uma capa da outra na grade. */
 
 .capa-de-reserva {
   display: grid;
@@ -216,11 +226,23 @@
 .capa-de-reserva[data-capa="4"] .cr-alto { justify-content: flex-start; }
 .capa-de-reserva[data-capa="4"] .cr-titulo { font-weight: 800; line-height: 1.1; }
 
-/* ── 12 · centrada, bloco em `mix-blend-saturation`, quatro campos ────────
-   Nó 1016:31006. O bloco é preto com mistura de saturação — sem imagem
-   nenhuma —, proporção 356/403, e o crédito vem em 24px com 2px de vão entre
-   letras. O quarto campo do desenho é uma CATEGORIA ("PESQUISA") que o produto
-   não tem; fica de fora até virar dado, e não texto inventado. */
+/* ── 12 · centrada, bloco preto, quatro campos ───────────────────────────
+   Nó `1016:31006`. Proporção 356/403; o crédito vem em 24px com 2px de vão
+   entre letras. O quarto campo do desenho é uma CATEGORIA ("PESQUISA") que o
+   produto não tem; fica de fora até virar dado, e não texto inventado.
+
+   O BLOCO É PRETO SÓLIDO, e desfazer isto custou duas medidas erradas.
+
+   O nó declara a arte como preto em `mix-blend-mode: saturation`. Em 04/09 eu
+   raciocinei a partir da regra do blend — preto tem saturação zero, logo sobre
+   papel quase neutro ele não pinta nada — e tirei a 12 do sorteio por ser
+   "invisível". O raciocínio sobre CSS estava certo. A conclusão sobre o
+   DESENHO estava errada, e bastava olhar: a captura do próprio Figma mostra um
+   retângulo preto sólido ocupando o miolo da capa. É assim que ela é.
+
+   Vermelho por omissão de novo, e desta vez sem nem abrir a tela: deduzi o que
+   o desenho mostra em vez de fotografá-lo. A captura do nó é a autoridade sobre
+   como a capa se parece; a propriedade de blend é como o arquivo chegou lá. */
 .capa-de-reserva[data-capa="12"] {
   grid-template-rows: auto 1fr auto;
   grid-template-areas: "alto" "arte" "rodape";
@@ -240,13 +262,238 @@
   inline-size: calc(100% - 2 * var(--pad));
   aspect-ratio: 356 / 403;
   background: var(--capa-tinta);
-  mix-blend-mode: saturation;
 }
 .capa-de-reserva[data-capa="12"] .cr-rodape {
   grid-area: rodape; inline-size: 100%;
   padding: 3.81cqw var(--pad);
   font-style: italic;
 }
+
+/* ── TÍTULO DEITADO — variantes 3, 7, 10 e 14 ────────────────────────────
+ * `-webkit-box` com escrita vertical colapsa o corpo: medido na 3, 32px viravam
+ * 2,17. Deitado o corte é por altura da caixa, e não por número de linhas. */
+.capa-de-reserva[data-capa="3"] .cr-titulo,
+.capa-de-reserva[data-capa="7"] .cr-titulo,
+.capa-de-reserva[data-capa="10"] .cr-titulo,
+.capa-de-reserva[data-capa="14"] .cr-titulo {
+  writing-mode: vertical-rl;
+  display: block; -webkit-line-clamp: none;
+  /* O EIXO TROCA COM O `writing-mode`, e a primeira versão errou nisso.
+   *
+   * Em `vertical-rl` o eixo inline é o VERTICAL e o eixo block é o horizontal.
+   * `max-block-size: 100%` limitava a LARGURA — que já estava contida — e
+   * deixava o texto correr pela altura sem teto. Medido na 10: "Notas de
+   * leitura" saía cortado no começo, porque o `nowrap` com reticências corta no
+   * fim da caixa e o `rotate(180deg)` inverte qual ponta é o fim.
+   *
+   * `max-inline-size` é a altura, e sem `nowrap` o nome longo quebra numa
+   * segunda coluna em vez de sumir. Título de capa aqui é NOME DE ARQUIVO: ele
+   * não tem o tamanho que o desenho escolheu. */
+  max-inline-size: 100%;
+  white-space: normal;
+  overflow: hidden;
+}
+/* Nas 3, 7 e 10 o título sobe; na 14 ele desce. É o que os nós mostram. */
+.capa-de-reserva[data-capa="3"] .cr-titulo,
+.capa-de-reserva[data-capa="7"] .cr-titulo,
+.capa-de-reserva[data-capa="10"] .cr-titulo { transform: rotate(180deg); }
+
+/* ── 5 · grade geométrica em cima, título embaixo ────────────────────────
+   Nó `1016:31017`. A arte são catorze formas numa grade de 4×5 com vão 8 —
+   quadrado cheio, quadrado vazado, círculo cheio, círculo vazado, nós
+   `1016:30857` a `1016:30870`. É a única arte da família que não é fotografia
+   nem trama, então ela é DESENHADA: `capa-5.svg` sai dos catorze nós, um a um.
+   Baixar o vetor exportado traria a mesma geometria em bytes maiores. */
+.capa-de-reserva[data-capa="5"] {
+  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-areas: "arte" "alto";
+}
+.capa-de-reserva[data-capa="5"] .cr-arte {
+  grid-area: arte;
+  margin: var(--pad) var(--pad) 0;
+  background-image: url("/capas/capa-5.svg");
+  background-size: contain;
+  background-position: center;
+}
+.capa-de-reserva[data-capa="5"] .cr-alto {
+  grid-area: alto;
+  padding: 4.29cqw var(--pad) var(--pad);   /* pt-18 do nó `1016:30872` */
+}
+
+/* ── 6 · título em cima, trama, filete ───────────────────────────────────
+   Nó `1016:31019`. Cabeçalho de 107px, arte de 348px e um filete 32 abaixo
+   dela — nó `1016:30764`, um vetor de altura zero.
+   O filete vem de `border-block-end` com `background-clip: content-box`: a
+   trama pinta só a caixa de conteúdo, e a borda cai depois do recheio. Sem o
+   recorte, a imagem passaria por baixo do filete. */
+.capa-de-reserva[data-capa="6"] {
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: "alto" "arte";
+}
+.capa-de-reserva[data-capa="6"] .cr-alto {
+  grid-area: alto;
+  padding: var(--pad) var(--pad) 0;
+  min-block-size: 25.48cqw;                 /* h-107 */
+}
+.capa-de-reserva[data-capa="6"] .cr-arte {
+  grid-area: arte;
+  margin: 3.81cqw var(--pad) 11.9cqw;
+  padding-block-end: 7.62cqw;
+  border-block-end: 1px solid var(--capa-tinta);
+  background: var(--capa-trama) url("/capas/trama.png") center / cover no-repeat content-box;
+}
+
+/* ── 7 · faixa de papel à esquerda, arte de ponta a ponta à direita ──────
+   Nó `1016:31022`. Prima da 3 e da 10 — as três põem o título deitado —, e o
+   que a separa é a proporção: aqui a arte toma quase a capa inteira e o papel
+   fica numa tira de 22%. */
+.capa-de-reserva[data-capa="7"] {
+  grid-template-columns: 22% minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: "alto arte";
+}
+.capa-de-reserva[data-capa="7"] .cr-alto {
+  grid-area: alto;
+  min-inline-size: 0; min-block-size: 0;
+  display: flex; align-items: stretch; justify-content: flex-end;
+  padding: var(--pad) 0 var(--pad) var(--pad);
+}
+.capa-de-reserva[data-capa="7"] .cr-arte {
+  grid-area: arte;
+  min-inline-size: 0;
+  margin-block: 5.71cqw;
+  background: var(--capa-trama) url("/capas/trama.png") center / cover no-repeat;
+}
+
+/* ── 8 · título em cima, arte grande, rodapé de papel ────────────────────
+   Nó `1016:31015`. O desenho põe, ao lado do título, um parágrafo em versalete
+   — "RELATÓRIO DE PESQUISA SEM CAPA GERADO AUTOMATICAMENTE PELO SISTEMA
+   MAKORA." Ele NÃO entra: é texto de exemplo sobre um sistema com outro nome, e
+   o produto não tem esse campo. Inventá-lo seria escrever conteúdo no lugar de
+   ler o desenho. O arranjo — título alto, arte alta, rodapé fundo — fica. */
+.capa-de-reserva[data-capa="8"] {
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: "alto" "arte";
+}
+.capa-de-reserva[data-capa="8"] .cr-alto {
+  grid-area: alto;
+  padding: var(--pad) var(--pad) 0;
+  min-block-size: 21.4cqw;
+}
+.capa-de-reserva[data-capa="8"] .cr-arte {
+  grid-area: arte;
+  margin: 3.81cqw var(--pad) 16.7cqw;
+  background: var(--capa-trama) url("/capas/trama.png") center / cover no-repeat;
+}
+
+/* ── 9 · arte centrada e pequena, muito papel em volta ───────────────────
+   Nó `1016:31021`. A mais silenciosa da família: a arte mede 232 de largura numa
+   capa de 420 — 55% — e flutua no meio, com o papel respondendo por tudo. */
+.capa-de-reserva[data-capa="9"] {
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: "alto" "arte";
+  justify-items: center;
+}
+.capa-de-reserva[data-capa="9"] .cr-alto {
+  grid-area: alto; inline-size: 100%;
+  padding: var(--pad) var(--pad) 0;
+  min-block-size: 24.3cqw;
+}
+.capa-de-reserva[data-capa="9"] .cr-arte {
+  grid-area: arte; align-self: center;
+  inline-size: 55.24cqw;
+  aspect-ratio: 232 / 258;
+  background: var(--capa-trama) url("/capas/trama.png") center / cover no-repeat;
+}
+
+/* ── 10 · arte sangrada no topo, título deitado no pé ────────────────────
+   Nó `1016:31024`. A única da família em que a arte SANGRA — sem recheio, de
+   borda a borda — e ocupa 65,7% da altura. O papel de baixo recebe o título
+   deitado, encostado na margem esquerda. */
+.capa-de-reserva[data-capa="10"] {
+  grid-template-rows: 65.66% minmax(0, 1fr);
+  grid-template-areas: "arte" "alto";
+}
+.capa-de-reserva[data-capa="10"] .cr-arte {
+  grid-area: arte;
+  background: var(--capa-trama) url("/capas/trama.png") center / cover no-repeat;
+}
+.capa-de-reserva[data-capa="10"] .cr-alto {
+  grid-area: alto;
+  min-block-size: 0;
+  display: flex; align-items: stretch; justify-content: flex-start;
+  padding: 3.81cqw var(--pad);
+}
+
+/* ── 11 · título rente à direita, logo acima da arte ─────────────────────
+   Nó `1016:31013`. O título desce até 43% da altura e alinha à DIREITA — é a
+   única da família assim. O desenho tem, no alto à esquerda, três linhas de
+   catalogação ("Documentação / Registro de campo / Expedição 02"); pela mesma
+   razão da 8, elas não entram. */
+.capa-de-reserva[data-capa="11"] {
+  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-areas: "alto" "arte";
+}
+.capa-de-reserva[data-capa="11"] .cr-alto {
+  grid-area: alto;
+  min-block-size: 0;
+  display: flex; flex-direction: column;
+  align-items: flex-end; justify-content: flex-end;
+  text-align: end;
+  padding: var(--pad) var(--pad) 3.81cqw;
+}
+.capa-de-reserva[data-capa="11"] .cr-arte {
+  grid-area: arte;
+  margin: 0 var(--pad) 13.5cqw;
+  aspect-ratio: 356 / 252;
+  background: var(--capa-trama) url("/capas/trama.png") center / cover no-repeat;
+}
+
+/* ── 13 · quase só papel, com um ponto preto no pé ───────────────────────
+   Nó `1016:31023`. Não tem arte: tem um DISCO de 62px no canto inferior
+   esquerdo — 14,76% da largura da capa. É a capa mais vazia das catorze, e o
+   vazio é a composição. */
+.capa-de-reserva[data-capa="13"] {
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: "alto" "arte";
+}
+.capa-de-reserva[data-capa="13"] .cr-alto {
+  grid-area: alto;
+  padding: var(--pad) var(--pad) 0;
+}
+.capa-de-reserva[data-capa="13"] .cr-arte {
+  grid-area: arte;
+  justify-self: start; align-self: end;
+  inline-size: 14.76cqw; aspect-ratio: 1;
+  margin: 0 0 8.1cqw var(--pad);
+  border-radius: 50%;
+  background: var(--capa-tinta);
+}
+
+/* ── 14 · capa partida: papel à esquerda, painel preto à direita ─────────
+   Nó `1016:31012`. A única que INVERTE a tinta — o título sai em papel sobre
+   preto. A divisa cai em 38% da largura.
+   `.cr-alto` e `.cr-arte` dividem a MESMA área da grade: o painel é o fundo e o
+   título deita por cima dele. Duas áreas nomeadas dariam uma coluna a mais. */
+.capa-de-reserva[data-capa="14"] {
+  grid-template-columns: 38% minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: "vazio painel";
+}
+.capa-de-reserva[data-capa="14"] .cr-arte {
+  grid-area: painel;
+  background: var(--capa-tinta);
+}
+.capa-de-reserva[data-capa="14"] .cr-alto {
+  grid-area: painel;
+  min-inline-size: 0; min-block-size: 0;
+  display: flex; align-items: stretch; justify-content: center;
+  padding: var(--pad) var(--pad) var(--pad) 5.71cqw;
+  color: var(--capa-papel);
+}
+/* Em escrita vertical, `text-align` age no eixo VERTICAL — é ele que centra o
+   título na altura do painel. */
+.capa-de-reserva[data-capa="14"] .cr-titulo { text-align: center; }
 
 /* ── A CAPA EM MINIATURA NÃO MOSTRA LETRA MIÚDA ──────────────────────────
  *
