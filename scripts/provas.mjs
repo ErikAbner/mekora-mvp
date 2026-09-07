@@ -529,7 +529,8 @@ const PROVAS = {
        32 em volta contra os 40 e 56 que o `895:12217` pede para ela. */
     veneno: `const s = document.createElement('style');
              s.textContent = '.folha.ampla .folha-topo{padding:32px !important}'
-                           + '.folha.ampla .folha-conteudo{gap:48px !important;padding:0 32px 32px !important}';
+                           + '.folha.ampla .folha-conteudo{padding:0 32px 32px !important}'
+                           + '.folha.ampla .folha-conteudo > * + *{margin-block-start:48px !important}';
              document.head.appendChild(s);`,
     async correr(veneno) {
       const d = medir('/estante/{LIVRO}', `
@@ -547,7 +548,25 @@ const PROVAS = {
           temFolha: !!folha,
           larg: folha ? Math.round(folha.getBoundingClientRect().width) : 0,
           topo: px(document.querySelector('.folha.ampla .folha-topo'), 'paddingTop'),
-          corpo: px(document.querySelector('.folha.ampla .folha-conteudo'), 'rowGap'),
+          corpo: (() => {
+            /* O VAO ENTRE BLOCOS SAIU DO gap E FOI PARA A MARGEM, em 07/09.
+               gap separa TODO filho de todo filho, e no no os filhos do corpo
+               sao SECOES — no produto quase toda folha poe dois ou tres
+               paragrafos do mesmo texto, e 56 caia entre duas frases. Bloco
+               leva 56; paragrafo apos paragrafo leva 24.
+               A medida INSERE dois blocos e le a margem do segundo: esta folha
+               tem um filho so, entao a regra nao se manifesta nela sozinha, e
+               ler o filho existente devolvia -1. Medir a norma dentro do
+               contexto real dela e o mais perto que da de medir as duas coisas. */
+            const c = document.querySelector('.folha.ampla .folha-conteudo');
+            if (!c) return -1;
+            const a1 = document.createElement('div');
+            const a2 = document.createElement('div');
+            c.append(a1, a2);
+            const v = px(a2, 'marginBlockStart');
+            a1.remove(); a2.remove();
+            return v;
+          })(),
           linhaRecheio: px(linha, 'paddingTop'),
           linhas: document.querySelectorAll('.arquivo-linha').length,
         };`, veneno);
@@ -640,6 +659,326 @@ const PROVAS = {
       if (!saiu || !chegou) {
         return `o arrasto nao moveu o cartao: ${d.antes.origem} ${d.antes[d.antes.origem]} para ${d.depois[d.antes.origem]}, lido ${d.antes.lido} para ${d.depois.lido}`;
       }
+      return null;
+    },
+  },
+
+  'r04': {
+    erik: '"a cor nesses destaques / notas nao funciona — pesado, puxa toda a atencao da tela" · "notas e destaques voce coloriu demais" (R-25)',
+    /* O VENENO DEVOLVE O CHAO COLORIDO a citacao, que e o defeito exato dos dois
+       itens: a frase do autor pintada inteira, dentro de uma area chamada
+       Conhecimento. */
+    veneno: `const s = document.createElement('style');
+             s.textContent = 'blockquote.trecho-citado{background:var(--cor-da-nota) !important;border-inline-start:0 !important}';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/notas', `
+        const cs = [...document.querySelectorAll('blockquote.trecho-citado')];
+        if (!cs.length) return { citacoes: 0 };
+        const lidos = cs.slice(0, 12).map(e => {
+          const c = getComputedStyle(e);
+          return { chao: c.backgroundColor, filete: c.borderInlineStartColor, larg: Math.round(parseFloat(c.borderInlineStartWidth)) };
+        });
+        const tracos = new Set(lidos.map(l => l.filete));
+        return {
+          citacoes: cs.length,
+          comChao: lidos.filter(l => l.chao !== 'rgba(0, 0, 0, 0)' && l.chao !== 'transparent').length,
+          semFilete: lidos.filter(l => !l.larg).length,
+          tracosDistintos: tracos.size,
+        };
+      `, veneno);
+      if (!d.citacoes) throw new NaoPodeMedir('nenhuma citacao na tela de notas');
+      if (d.comChao) return `${d.comChao} citacoes ainda pintam o chao inteiro com a cor da nota`;
+      if (d.semFilete) return `${d.semFilete} citacoes sem filete: a cor sumiu em vez de virar traco`;
+      /* AS QUATRO PRECISAM CONTINUAR DISTINTAS — foi o pedido explicito. Menos de
+         duas cores distintas numa tela com notas de cores diferentes quer dizer
+         que o traco virou cinza. */
+      if (d.tracosDistintos < 2) return `os filetes tem ${d.tracosDistintos} cor(es): a distincao entre as quatro se perdeu`;
+      return null;
+    },
+  },
+
+  'r09': {
+    erik: '"a pesquisa e MENOR e se expande quando o usuario tenta pesquisar"',
+    /* O VENENO TIRA A REGRA DO FOCO e deixa so a do painel — que e exatamente o
+       estado em que a expansao existia e nao acontecia na hora certa. */
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.cabecalho-acoes:focus-within{inline-size:476px !important}';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/estante', `
+        const caixa = document.querySelector('.cabecalho-acoes');
+        const campo = document.querySelector('.busca-campo');
+        if (!caixa || !campo) return { temBusca: false };
+        const antes = Math.round(caixa.getBoundingClientRect().width);
+        campo.focus();
+        await esperar(400);
+        return { temBusca: true, antes, depois: Math.round(caixa.getBoundingClientRect().width) };
+      `, veneno);
+      if (!d.temBusca) throw new NaoPodeMedir('o cabecalho nao tem busca nesta tela');
+      if (d.antes !== 476) return `a busca parada mede ${d.antes}, e o 900:53900 pede 476`;
+      if (d.depois !== 626) return `com foco a busca mede ${d.depois}, e o 941:23107 pede 626`;
+      return null;
+    },
+  },
+
+  'r13': {
+    erik: '"as funcoes estao erradas, e os itens dentro das funcoes tambem" (/canvas)',
+    veneno: `document.querySelector('.canvas-adicionar').remove();`,
+    async correr(veneno) {
+      const d = medir('/canvas', `
+        const b = document.querySelector('.canvas-adicionar');
+        if (!b) return { temAdicionar: false };
+        b.click();
+        await esperar(300);
+        const itens = [...document.querySelectorAll('.canvas-adicionar-menu [role=menuitem]')]
+          .map(e => e.textContent.trim());
+        return {
+          temAdicionar: true,
+          itens,
+          soltos: document.querySelectorAll('.canvas-ferramentas > button').length,
+        };
+      `, veneno);
+      if (!d.temAdicionar) return 'a barra do Canvas nao tem a acao "Adicionar"';
+      const pedidos = ['Nota', 'Livro da Estante', 'Midia'];
+      const tem = (n) => d.itens.some((i) => i.normalize('NFD').replace(/[̀-ͯ]/g, '') === n);
+      const faltam = pedidos.filter((n) => !tem(n));
+      if (faltam.length) return `o menu Adicionar nao tem: ${faltam.join(', ')} (tem: ${d.itens.join(', ')})`;
+      /* UMA INTENCAO, E NAO TRES BOTOES. Se voltarem os tres soltos, a barra
+         deixa de ser por intencao — que e a decisao inteira. */
+      if (d.soltos !== 1) return `a barra tem ${d.soltos} botoes soltos, e a decisao pede uma acao principal`;
+      return null;
+    },
+  },
+
+  'r16': {
+    erik: '"canvas travado, pessimas animacoes, interacao ruim e confusa, icones errados"',
+    /* O VENENO POE EASING NO QUE SEGUE O DEDO — o defeito que a decisao proibe
+       com todas as letras: "pan e drag devem acompanhar o ponteiro diretamente,
+       sem easing ou animacao intermediaria". */
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.canvas-plano{transition:transform 300ms ease !important}'
+                           + '.nota-canvas.movendo{transition:transform 300ms ease !important}';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/canvas', `
+        const plano = document.querySelector('.canvas-plano');
+        const cartao = document.querySelector('.nota-canvas');
+        if (!plano || !cartao) return { montou: false };
+        const dur = (e) => getComputedStyle(e).transitionDuration;
+        cartao.classList.add('movendo');
+        const movendo = { dur: dur(cartao), anim: getComputedStyle(cartao).animationName };
+        cartao.classList.remove('movendo');
+        return { montou: true, plano: dur(plano), movendo };
+      `, veneno);
+      if (!d.montou) throw new NaoPodeMedir('o Canvas nao montou plano e cartao');
+      const zero = (v) => /^0s(, 0s)*$/.test(v);
+      if (!zero(d.plano)) return `o plano tem transicao de ${d.plano}: o pan nao acompanha o ponteiro`;
+      if (!zero(d.movendo.dur)) return `o cartao em movimento tem transicao de ${d.movendo.dur}`;
+      if (d.movendo.anim !== 'none') return `o cartao em movimento roda a animacao "${d.movendo.anim}"`;
+      return null;
+    },
+  },
+
+  'r21': {
+    erik: '"navegacao onde nao deveria ter, e errada" (ficha do livro)',
+    veneno: `const n = document.createElement('nav');
+             n.className = 'trilha-linhas';
+             n.innerHTML = '<ul><li><button>Ao leitor</button></li></ul>';
+             document.querySelector('.livro-pagina').prepend(n);`,
+    async correr(veneno) {
+      const d = medir('/estante/{LIVRO}', `
+        const pagina = document.querySelector('.livro-pagina');
+        if (!pagina) return { montou: false };
+        return {
+          montou: true,
+          trilhas: pagina.querySelectorAll('.trilha-linhas, .trilha-da-pagina').length,
+          corpo: Math.round((document.querySelector('.livro-pagina-corpo') || pagina).getBoundingClientRect().width),
+        };
+      /* A 1920, E NAO A 1440. O 895:7683 e um quadro de computador, e a 1440 a
+         ficha nao TEM 1222 depois dos recheios: ela mede 1127, e cobrar ali
+         seria reprovar a janela e nao a tela. Medi errado uma vez aqui. */
+      `, veneno, { largura: 1920, altura: 1000 });
+      if (!d.montou) throw new NaoPodeMedir('a ficha do livro nao montou');
+      if (d.trilhas) return `a ficha voltou a ter ${d.trilhas} trilha(s) de navegacao`;
+      /* A LARGURA E A CONSEQUENCIA: a trilha comia 248px — a coluna mais o vao
+         —, e era por causa dela que a capa nao cabia nos 427 do 895:7684. O
+         alvo e o CORPO da pagina, e nao o topo: o topo tem recheio proprio e
+         mede 1127 mesmo com tudo certo. Li o elemento errado uma vez aqui. */
+      if (d.corpo < 1222) return `o corpo da ficha mede ${d.corpo}, e sem trilha ele deve ter os 1222 do 895:7683`;
+      return null;
+    },
+  },
+
+  'r23': {
+    erik: '"seguiu a ideia, mas fugiu muito do grid; as Memorias Postumas podiam ser enquadradas melhor"',
+    /* O VENENO DEVOLVE A SANGRIA ATE A BORDA DA JANELA, que e o edge-to-edge
+       apontado: a epigrafe ia de ponta a ponta num computador de 1440. */
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.prosa{--sangria:0px !important;max-inline-size:none !important}';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/leitura/{LIVRO}', `
+        const prosa = document.querySelector('.prosa');
+        const epi = document.querySelector('.prosa .epigrafe');
+        const par = document.querySelector('.prosa .paragrafo');
+        if (!prosa || !par) return { montou: false };
+        const b = (e) => { const r = e.getBoundingClientRect(); return { x: Math.round(r.x), w: Math.round(r.width) }; };
+        return { montou: true, janela: innerWidth, prosa: b(prosa),
+                 epigrafe: epi ? b(epi) : null, paragrafo: b(par) };
+      `, veneno);
+      if (!d.montou) throw new NaoPodeMedir('a prosa nao montou');
+      if (d.epigrafe) {
+        if (d.epigrafe.x <= 0) return `a epigrafe comeca em ${d.epigrafe.x}: ela encosta na borda da janela`;
+        if (d.epigrafe.x + d.epigrafe.w >= d.janela) return `a epigrafe termina em ${d.epigrafe.x + d.epigrafe.w} de ${d.janela}: encosta do outro lado`;
+      }
+      /* A LINHA CONTINUA NA FAIXA QUE O ERIK APROVOU: nao e para estreitar. */
+      if (d.paragrafo.w < 560 || d.paragrafo.w > 760) return `a coluna de texto mede ${d.paragrafo.w}, e a faixa de 65 a 70 caracteres pede algo entre 560 e 760`;
+      return null;
+    },
+  },
+
+  'r27': {
+    erik: '"voce esqueceu de REMOVER o vertical trim de todos os textos"',
+    /* FECHADO PELO CONTRARIO: em 07/09 o Erik mandou MANTER, porque os vaos das
+       51 telas foram medidos com a caixa aparada. A prova cobra a permanencia —
+       tirar o trim agora e que seria a regressao. */
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.prosa .paragrafo, .abertura h1{text-box-trim:none !important}';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/leitura/{LIVRO}', `
+        const alvos = [document.querySelector('.abertura h1'), document.querySelector('.prosa .paragrafo')].filter(Boolean);
+        if (!alvos.length) return { achou: 0 };
+        return { achou: alvos.length,
+                 sem: alvos.filter(e => {
+                   const v = getComputedStyle(e).textBoxTrim || getComputedStyle(e).getPropertyValue('text-box-trim');
+                   return !v || v === 'none';
+                 }).length };
+      `, veneno);
+      if (!d.achou) throw new NaoPodeMedir('nao achei titulo nem paragrafo na leitura');
+      if (d.sem) return `${d.sem} de ${d.achou} blocos sem text-box-trim, e a decisao de 07/09 e manter`;
+      return null;
+    },
+  },
+
+  'r30': {
+    erik: '"as letras pequenas podiam virar hot spot… em vez de texto quebrado e minusculo por toda parte"',
+    /* O VENENO DESFAZ OS GRUPOS e devolve a parede de dezoito linhas de mesmo
+       peso, que era o defeito. Nada de esconder texto: a decisao e explicita em
+       que o conteudo da Privacidade continua visivel. */
+    veneno: `document.querySelectorAll('.guardado-grupo-titulo').forEach(e => e.remove());`,
+    async correr(veneno) {
+      const d = medir('/conta/privacidade', `
+        const grupos = [...document.querySelectorAll('.guardado-grupo')];
+        const titulos = document.querySelectorAll('.guardado-grupo-titulo').length;
+        const itens = grupos.reduce((s, g) => s + g.querySelectorAll('li').length, 0);
+        return { grupos: grupos.length, titulos, itens,
+                 explicacoes: document.querySelectorAll('.guardado-explicacao').length };
+      `, veneno);
+      if (!d.grupos) throw new NaoPodeMedir('a lista do que o Mekora guarda nao montou');
+      if (d.titulos !== d.grupos) return `${d.grupos} grupos e ${d.titulos} titulos: a lista voltou a ser uma parede`;
+      if (d.grupos < 3) return `a lista tem ${d.grupos} grupo(s): sem agrupamento nao ha hierarquia`;
+      /* NADA FOI ESCONDIDO — a explicacao de cada item continua na tela. */
+      if (d.explicacoes < d.itens) return `${d.itens} itens e so ${d.explicacoes} explicacoes: alguma foi escondida`;
+      return null;
+    },
+  },
+
+  'r36': {
+    erik: '"popups grandes ate demais… coisas que deveriam caber numa tela unica precisam de scroll"',
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.folha{max-block-size:calc(100dvh - 48px) !important}'
+                           + '.folha-conteudo > p + p{margin-block-start:48px !important}';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/sistema', `
+        const f = document.createElement('dialog');
+        f.className = 'folha';
+        f.innerHTML = '<div class="folha-caixa"><div class="folha-conteudo">'
+          + '<p id="pa">um</p><p id="pb">dois</p><div id="pc">bloco</div></div></div>';
+        document.body.appendChild(f);
+        f.showModal();
+        await esperar(120);
+        const px = (id, prop) => Math.round(parseFloat(getComputedStyle(document.getElementById(id))[prop]));
+        const r = { teto: getComputedStyle(f).maxBlockSize,
+                    paragrafo: px('pb', 'marginBlockStart'),
+                    bloco: px('pc', 'marginBlockStart') };
+        f.close(); f.remove();
+        return r;
+      `, veneno);
+      const teto = Math.round(parseFloat(d.teto));
+      if (!Number.isFinite(teto) || teto > 720) return `o teto da folha e ${d.teto}: um painel que cobre a tela nao interrompe, substitui`;
+      if (d.paragrafo !== 24) return `paragrafo apos paragrafo tem ${d.paragrafo} de vao, e o vao de paragrafo e 24`;
+      if (d.bloco !== 48) return `bloco tem ${d.bloco} de vao, e o 895:12452 pede 48`;
+      return null;
+    },
+  },
+
+  'r48': {
+    erik: '"seria interessante se o usuario pudesse trocar as cores, afinal sao placeholders pra eles"',
+    /* A DECISAO DE 07/09 tem duas metades: construir as CATORZE variantes, e
+       deixar a troca manual de capa fora da V1.
+       
+       ESTA PROVA NAO ABRE NAVEGADOR, e a razao e honesta: a estante da bancada
+       tem seis livros e quase todos com capa propria, entao a tela nunca mostra
+       as catorze. Medir na tela responderia "as que couberam", que e verde por
+       omissao. O que se cobra aqui e o MODULO — quantas variantes entram no
+       sorteio, se a escolha e estavel, e se o CSS tem gabarito para cada uma. */
+    veneno: 'CAPAS_PRONTAS = [1, 2, 3, 4]',
+    async correr(veneno) {
+      const modulo = arq('/web/src/componentes/capa-substituta.js');
+      const css = arq('/web/src/componentes/capa-de-reserva.css');
+      const fonte = veneno
+        ? modulo.replace(/export const CAPAS_PRONTAS = \[[^\]]*\];/, `export const ${veneno};`)
+        : modulo;
+      const tmp = join(tmpdir(), `capa-${Date.now()}.mjs`);
+      writeFileSync(tmp, fonte);
+      const { CAPAS_PRONTAS, capaDoLivro } = await import(`file://${tmp}`);
+
+      if (CAPAS_PRONTAS.length !== 14) {
+        return `${CAPAS_PRONTAS.length} variantes no sorteio, e o conjunto 1016:31030 tem catorze`;
+      }
+      /* CADA VARIANTE PRECISA DE GABARITO. Sortear uma que o CSS nao conhece
+         mostra a marcacao crua — pior que repetir uma capa inteira. */
+      const semCss = CAPAS_PRONTAS.filter((n) => !css.includes(`[data-capa="${n}"]`));
+      if (semCss.length) return `as variantes ${semCss.join(', ')} entram no sorteio e nao tem gabarito no CSS`;
+      /* A ESCOLHA E ESTAVEL: mesmo livro, mesma capa. Capa e o que a pessoa usa
+         para achar o livro na grade sem ler o titulo. */
+      if (capaDoLivro('token-de-prova') !== capaDoLivro('token-de-prova')) {
+        return 'a mesma chave devolveu capas diferentes: o acervo se reembaralha';
+      }
+      /* E ELA ESPALHA. Um sorteio que sempre cai na mesma nao e sorteio. */
+      const vistas = new Set();
+      for (let i = 0; i < 2000; i++) vistas.add(capaDoLivro(`chave-${i}-${i * 7919}`));
+      if (vistas.size !== 14) return `em 2000 chaves sairam ${vistas.size} variantes de catorze`;
+      return null;
+    },
+  },
+
+  'r51': {
+    erik: '(nao e dele — apareceu quando a bancada ganhou um trabalho parado em analyzed)',
+    /* A DECISAO DE 07/09: "Estante contem apenas livros prontos. Tudo que ainda
+       esta em analise/preparo/conversao pertence a Mesa."
+       
+       O VENENO POE DE VOLTA UM CARTAO DE TRABALHO EM PREPARO. A bancada tem um
+       job parado em `analyzed` — `estrategia-de-ux-oreilly.pdf` — e ate 07/09
+       ele aparecia na grade, indistinguivel de um livro: mesma capa de reserva,
+       mesmo tamanho, e clicar levava a lugar nenhum. A unica diferenca era o
+       titulo vir com extensao, que e acidente do dado e nao sinal. */
+    veneno: `const h = document.querySelector('.livro-texto h3');
+             if (h) h.textContent = 'estrategia-de-ux-oreilly.pdf';`,
+    async correr(veneno) {
+      const d = medir('/estante', `
+        const cartoes = [...document.querySelectorAll('.livro')];
+        return { livros: cartoes.length,
+                 semLeitura: cartoes.filter(c => !c.querySelector('a[href^="/leitura/"], .livro-alvo')).length,
+                 comExtensao: cartoes.filter(c => /\\.(pdf|epub|docx|cbz|cbr)$/i.test((c.querySelector('.livro-texto h3') || {}).textContent || '')).length };
+      `, veneno);
+      if (!d.livros) throw new NaoPodeMedir('a estante nao tem livro nenhum');
+      /* NOME DE ARQUIVO COM EXTENSAO e o sinal de trabalho nao preparado: o
+         titulo so existe depois da analise. A bancada semeia um em analyzed. */
+      if (d.comExtensao) return `${d.comExtensao} cartao(oes) com nome de arquivo na Estante: trabalho em preparo nao mora aqui`;
       return null;
     },
   },
@@ -1438,7 +1777,17 @@ const PROVAS = {
     async correr(veneno) {
       const d = medir('/canvas', `
         const q = s => [...document.querySelectorAll(s)];
-        q('button').find(b => /nova nota/i.test(b.getAttribute('aria-label') || b.textContent || '')).click();
+        /* O CAMINHO ATE "NOTA" MUDOU EM 07/09: a barra virou uma intencao so,
+           "Adicionar", com tres destinos no menu. Antes havia um botao com
+           aria-label "Nova nota" direto na barra. A prova segue o caminho da
+           pessoa, e o caminho passou a ter dois passos. */
+        const adicionar = document.querySelector('.canvas-adicionar');
+        if (!adicionar) return { sem_adicionar: true };
+        adicionar.click();
+        await esperar(300);
+        const porNota = q('.canvas-adicionar-menu [role=menuitem]').find(b => /^Nota$/i.test(b.textContent.trim()));
+        if (!porNota) return { sem_item_nota: true };
+        porNota.click();
         await esperar(900);
         const folha = q('dialog').find(x => x.open);
         const campo = folha && folha.querySelector('textarea, input[type=text]');

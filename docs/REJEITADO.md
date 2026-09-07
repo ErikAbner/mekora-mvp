@@ -35,6 +35,64 @@ quem lê achou que ela era — e foi assim que o destaque da estante voltou.
 
 ---
 
+## 07/09 — as dezoito decisões, e quinze itens que elas fecham
+
+O Erik respondeu de uma vez o levantamento "O que depende de você". O texto de
+cada decisão está **verbatim** em `docs/DECISOES-2026-09-07.md`; aqui fica só o
+que cada uma fechou, e com que prova.
+
+| item | o que fechou | prova |
+|---|---|---|
+| R-04 · R-25 | o filete marca a citação; a marca do texto rarefaz, e o traço é a cor do outro tema | portão em /notas, /leitura, /estante, /estudos, dois temas |
+| R-09 | a busca expande no foco — 476 → 626, busca 258 → 408 | portão em /estante |
+| R-13 | a barra vira "Adicionar" com Nota, Livro da Estante e Mídia | portão em /canvas, dois temas |
+| R-16 | pan e drag medidos sem easing; ícones auditados por olho, os 27 | medida do computado + folha de contato |
+| R-18 | o quadro se arrasta, e o caminho clicável fica | `node scripts/provas.mjs r18` |
+| R-21 | a trilha saiu em 04/09; a pergunta que sobrava era minha, não dele | — |
+| R-23 | a superfície de leitura deixa de encostar na janela | portão em /leitura + `amassado.mjs` |
+| R-27 | o vertical trim fica: os vãos das 51 telas foram medidos com ele | — |
+| R-30 | os dezoito itens da Privacidade ganham grupos, sem esconder nada | portão nos dois temas + `amassado.mjs` |
+| R-36 | o teto da folha desce de 852 para 720; 48 volta a separar bloco e não parágrafo | medida da regra em /sistema |
+| R-37 | volta a ser QA, e não decisão dele | ver a nota abaixo |
+| R-48 | as catorze capas entram no sorteio | `scripts/folha-de-capas.mjs` |
+| R-49 | índice e páginas ganham desenho próprio | `node scripts/provas.mjs r07` |
+| R-51 | a Estante lista só livro pronto | testes do backend + medida em /estante |
+
+**A MUDANÇA DE CRITÉRIO QUE VEIO JUNTO, e que vale para tudo daqui em diante:**
+
+> Nem tudo que você colocou como "depende de mim" realmente depende de decisão
+> minha. Antes de me devolver qualquer nova pendência, verifique Figma, Design
+> System, componentes existentes, código, estados, screenshots e documentação.
+
+Ela já se provou na mesma rodada. **Quatro dos dezenove itens que eu tinha
+mandado como decisão dele não eram decisão nenhuma:**
+
+- o **botão Cancelar** do Preparo, que eu disse não existir — existia desde
+  antes, e o que faltava era ele funcionar;
+- a **expansão da busca**, que eu disse não acontecer — a regra estava escrita e
+  disparava na hora errada;
+- os **dois estados da busca no Figma**, que eu pedi a ele — estavam nos nós
+  `900:53900` e `941:23107`, e os dois números já estavam escritos num
+  comentário do próprio `cabecalho.css`;
+- a **trilha da ficha**, cuja pergunta ele respondeu sem responder: *"meu
+  feedback já respondia essa questão"*.
+
+É a mesma família do "vermelho por omissão", com uma agravante: aqui eu não só
+concluí ausência de um instrumento cego — eu passei a conclusão adiante como
+pergunta, e perguntar custa o tempo de quem responde.
+
+**R-37 não fecha por prova, e sim por mudança de natureza.** O Erik: *"isto
+deixa de ser uma decisão minha e volta a ser item de QA"*. A comparação visual
+de /estudos e /canvas contra `895:8849` e `895:6938` foi feita nesta rodada e as
+duas telas mudaram por decisão dele — o quadro passou a arrastar, a barra virou
+"Adicionar". **Uma divergência ficou sem medir e não vira pendência dele:** a
+seção "Fora de estudo" aparece no nó com os itens em CAIXA e no produto em linha
+com filete. Não a corrigi porque só a li em captura reescalada, e este arquivo já
+registra o preço de mexer numa medida lida em miniatura. Fica como QA, com o nó
+por ler.
+
+---
+
 ## 01–02/09 — a leva de trinta e oito
 
 Estado de cada um: `docs/RETORNO-2026-09-02.md`.
@@ -80,11 +138,11 @@ elemento sem apertar, e a prova `r01` mede o estado de verdade.
 **Medido em 04/09:** Medido em 04/09: marcador `z-index: 0` contra `z-index: 1` da capa, `elementFromPoint` na sobreposicao devolve a capa, e o marcador nao alcanca a barra de recortes. Sobra 37px acima do topo da capa — o desenho que ele descreveu.
 **Prova:** `node scripts/provas.mjs r03`
 
-### R-04 · 2026-09-01 · aberto
+### R-04 · 2026-09-01 · fechado
 **Erik:** "O item de detalhes do lado direito está gigante, e a cor nesses destaques / notas não funciona — pesado, puxa toda a atenção da tela"
 **Onde:** /estante
 **Medido em 04/09:** Medido a 1440: a ficha ocupa 476px, 33% da janela, com fundos `rgb(28,28,28)`, `rgb(22,22,22)` e `rgb(97,114,47)` dentro.
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r04`
 
 **Medido de novo em 06/09, e a frase se parte em duas.**
 
@@ -132,7 +190,7 @@ e vira filete. Não dá para tirar do Figma, porque o Figma não tem tema escuro
 **Medido em 04/09:** Medido: 56px entre a busca e os atalhos, 16px entre os dois atalhos — os numeros dos nos 900:52331 e 900:52339.
 **Prova:** `node scripts/provas.mjs r08`
 
-### R-09 · 2026-09-01 · aberto
+### R-09 · 2026-09-01 · fechado
 **Erik:** "A pesquisa é MENOR e se expande quando o usuário tenta pesquisar — você não respeitou o componente que já existia e criou outro por cima"
 **Onde:** /estante
 **Medido em 04/09 — duas das três queixas não se reproduzem.** A moldura mede **258×60 em repouso, 258×60 com o foco dentro e 258×60 digitando**: ela não expande. E há **um** campo de busca na página (`input[type=search]`, `.busca-campo`), não dois — não existe componente por cima de componente. O painel abre e acha: digitando "urbana" com teclado de verdade, um item, "Malha Urbana · Ana Duarte · PDF".
@@ -140,7 +198,7 @@ e vira filete. Não dá para tirar do Figma, porque o Figma não tem tema escuro
 **A terceira queixa fica de pé e é do quadro:** "a pesquisa é MENOR" é uma medida contra o desenho, e o `941:23107` está do lado da Fase 4. **Pendência do Erik**, não escolha de quem implementa: se 258 é menor do que o nó pede, o número vem de lá.
 
 **O `inventario.mjs` NÃO é a prova deste item.** Ele relata assinaturas visuais repetidas — hoje seis pares, nenhum deles da busca — e sai com **0** em qualquer caso: relatório, não portão. Item fechado com ele seria fechado com nada.
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r09`
 
 ### R-10 · 2026-09-01 · fechado
 **Erik:** "Conta: clicar navega automaticamente em vez de abrir um dropdown"
@@ -169,10 +227,10 @@ que é o que uma grade responsiva faz.
 **Medido em 04/09:** Medido: em `y=8` e no meio da tela quem pinta e o mesmo `.canvas-mundo`, com o mesmo `radial-gradient`. Nao ha faixa branca no topo. **O resto do item — "as funcoes estao erradas" — e o R-13, e continua aberto.**
 **Prova:** `node scripts/provas.mjs r12`
 
-### R-13 · 2026-09-01 · aberto
+### R-13 · 2026-09-01 · fechado
 **Erik:** "As funções estão erradas, e os itens dentro das funções também"
 **Onde:** /canvas
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r13`
 
 ### R-14 · 2026-09-01 · fechado
 **Erik:** "Eu não consigo mover os post-it"
@@ -216,10 +274,10 @@ essa tolerância continua deliberada. Se ele quiser que o produto as empurre ou
 recuse a criação, é regra dele — o que este item consertou foi a área que
 sumia.
 
-### R-16 · 2026-09-01 · aberto
+### R-16 · 2026-09-01 · fechado
 **Erik:** "Canvas travado, péssimas animações, interação ruim e confusa, ícones errados"
 **Onde:** /canvas
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r16`
 
 ### R-17 · 2026-09-01 · fechado
 **Erik:** "Navegação enfiada onde não precisa — em alguns lugares é válida, em outros foi forçada sem necessidade e não seguiu o Figma"
@@ -239,11 +297,11 @@ inteira —, ela reprova nomeando o nó.
 E a navegação existe no desenho: `900:56142` traz a mesma trilha, com "Início",
 "O que ficou" e as perguntas dos estudos.
 
-### R-18 · 2026-09-01 · aberto
+### R-18 · 2026-09-01 · fechado
 **Erik:** "Kanban não funciona, interação péssima, parece de enfeite"
 **Onde:** /estudos
 **Medido em 04/09:** O gesto pedido nao existe de proposito: o no 895:8849 poe um botao "Reler" na coluna do lido, e ele existe e esta ligado. **Fica aberto porque trocar o gesto pedido por outro e julgamento do Erik, nao meu.**
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r18`
 
 ### R-19 · 2026-09-01 · fechado
 **Erik:** "Figma totalmente ignorado"
@@ -276,11 +334,11 @@ uma terceira — uma faixa de 1100 sem motivo estrutural —, ela reprova nomean
 as três. É esse o defeito que o item descreve: bloco com largura própria sem
 razão. As duas que ficam têm razão, e ela é do desenho.
 
-### R-21 · 2026-09-01 · aberto
+### R-21 · 2026-09-01 · fechado
 **Erik:** "Navegação onde não deveria ter, e errada"
 **Onde:** detalhes do arquivo
 **Medido em 04/09:** A trilha existe e mudou de conteudo: lista as notas da pessoa, citando o no 895:7631. **Fica aberto porque se ela deve existir ali e questao de fidelidade.**
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r21`
 
 ### R-22 · 2026-09-01 · fechado
 **Erik:** "Não seguiu o Figma — inventou coisa que nem devia existir"
@@ -302,10 +360,10 @@ estante —, e a prova conta que sejam cinco.
 
 A frase é sobre a tela inteira, e uma tela inteira não cabe numa prova. O que a prova guarda são as medidas que estavam ERRADAS quando ele escreveu — envenená-la com os números antigos a faz reprovar nomeando qual número e qual nó. Se ele olhar e ainda discordar, o item reabre: é para isso que o livro serve.
 
-### R-23 · 2026-09-01 · aberto
+### R-23 · 2026-09-01 · fechado
 **Erik:** "Seguiu a ideia, mas fugiu muito do grid; as Memórias Póstumas podiam ser enquadradas melhor"
 **Onde:** /leitura/:id
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r23`
 
 ### R-24 · 2026-09-01 · fechado
 **Erik:** "Menu errado: itens abrem do lado contrário ao do ícone; dropdowns e modais abrem errado, com largura errada, ícones apertados"
@@ -333,11 +391,11 @@ A prova `r24` abre os três painéis principais, um por vez, e cobra as duas
 coisas em cada um: que o lado do painel seja o lado do botão, e que a largura
 seja 464.
 
-### R-25 · 2026-09-01 · aberto
+### R-25 · 2026-09-01 · fechado
 **Erik:** "Notas e destaques você coloriu demais"
 **Onde:** /leitura/:id
 **Medido em 04/09:** Medido em /notas: quatro familias de cor fora do neutro, e a azeitona `rgb(116,108,47)` em 111 elementos.
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r04`
 
 **Medido de novo em 06/09 — é o mesmo caso do R-04, pela outra ponta.** A
 azeitona `rgb(116,108,47)` é `--nota-amarelo` no tema escuro. As quatro cores
@@ -353,7 +411,7 @@ escolha de desenho, e o desenho não cobre o tema escuro.
 **Medido em 04/09:** Os quatro rotulos tem uma palavra: Claro, Sepia, Escuro, Sistema (`Leitura.jsx:1335-1347`).
 **Prova:** `node scripts/provas.mjs r26`
 
-### R-27 · 2026-09-01 · aberto
+### R-27 · 2026-09-01 · fechado
 **Erik:** "Você esqueceu de REMOVER o vertical trim de todos os textos — line height normal, nada de vertical trim"
 **Onde:** todas
 **Medido em 04/09:** Medido na Leitura: ha computados com `text-box-trim: trim-both`. Continua aplicado.
@@ -366,7 +424,7 @@ Isso muda a ordem: enquanto o trim estiver lá, todo bloco que ganhar `overflow:
 O escopo é grande, e está escrito no próprio `base.css`: o trim entrou junto com a decisão de tirar os vãos que eram meia-entrelinha sobrando, e removê-lo devolve 654px à Ajuda, 703px às Atualizações e 431px aos Termos — três telas que voltam a ter vão sem decisão. Tirar o trim sem pôr o vão do Figma no lugar troca um defeito por outro.
 **DECIDIDO pelo Erik em 04/09:** o trim FICA por enquanto, e o R-27 vira item da Fase 4. Tirá-lo agora devolve 654px à Ajuda, 703px às Atualizações e 431px aos Termos — três telas que voltam a ter vão sem decisão, e a decisão do vão é justamente o que a leitura do quadro vai dar. Tirar antes trocaria um defeito por três telas redesenhadas às cegas. Sai quando o substituto do vão vier junto, do Figma.
 **Consequência enquanto ficar:** todo bloco de h1..h6/p/li que ganhar `overflow: hidden` precisa de `text-box-edge: cap text` + `padding-block-end: 0.2em`, senão corta descendente. E a varredura de transbordo da Fase 2a usa a MESMA CAIXA contra ela mesma (antes e depois), e não `scrollHeight` contra `clientHeight` — o critério do r46, o único dos três que sobreviveu ao controle negativo.
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r27`
 
 ### R-46 · 2026-09-04 · fechado
 **Erik:** "limitar a quantidade de caracteres do titulo do arquivo aparecendo na estante, se nao, vai ter texto enorme quebrando o layout e fazendo a tela perder o sentido"
@@ -423,11 +481,11 @@ Fica dito o que ainda não é do jeito dele: a largura seguia cravada em 272 par
 todos, e a de Preferências (200,601×224) vinha esticada 1,36×. Agora a altura é
 fixa e a largura segue a proporção de cada desenho.
 
-### R-30 · 2026-09-01 · aberto
+### R-30 · 2026-09-01 · fechado
 **Erik:** "As letras pequenas podiam virar hot spot: bolinha clicável que abre popup informativo, em vez de texto quebrado e minúsculo por toda parte"
 **Onde:** /conta e filhas
 **Medido em 04/09:** Nao ha popover nem hot spot nas telas de conta.
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r30`
 
 ### R-31 · 2026-09-01 · fechado
 **Erik:** "Na tela de dados de uso você modificou tudo — se não havia outra forma, siga o Figma"
@@ -521,11 +579,11 @@ colunas não cabe a 1440.
 
 A frase é sobre a tela inteira, e uma tela inteira não cabe numa prova. O que a prova guarda são as medidas que estavam ERRADAS quando ele escreveu — envenená-la com os números antigos a faz reprovar nomeando qual número e qual nó. Se ele olhar e ainda discordar, o item reabre: é para isso que o livro serve.
 
-### R-36 · 2026-09-01 · aberto
+### R-36 · 2026-09-01 · fechado
 **Erik:** "Popups grandes até demais, fontes enormes. Coisas que deveriam caber numa tela única precisam de scroll. Grandes e legíveis, mas pecam no exagero"
 **Onde:** todas
 **Medido em 04/09:** Medido: /estudos tem 5397px de altura numa janela de 1000.
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r36`
 
 ### R-37 · 2026-09-01 · aberto
 **Erik:** "Estudos e Canvas: péssima organização, criação, uso e animação — não segue em nada o Figma. Eu não o criei por brincadeira"
@@ -651,16 +709,16 @@ O `scripts/semear.py` já sabia disso e contornou: *"TODOS OS LIVROS TÊM CAPA..
 **A prova cobre os dois**, e cada metade foi alcançada sozinha no controle negativo: apontar uma capa para arquivo que não existe dá *"capa emitida sem arquivo, e a moldura sai quebrada"*; reescrever as cinco de `/storage/covers/` para `/storage/temp/` — com arquivo vivo, 0 quebradas — dá *"capa fora de /storage/covers, na pasta que a limpeza por idade apaga"*.
 **Prova:** `node scripts/provas.mjs r45`
 
-### R-48 · 2026-09-04 · aberto
+### R-48 · 2026-09-04 · fechado
 **Erik:** "seria interessante se o usuario pudesse trocar as cores, afinal, sao placeholders pra eles"
 **Onde:** capas de reserva — `componentes/CapaDeReserva.jsx`
 **Contexto:** o conjunto `1016:31030` desenha catorze capas para arquivos sem capa própria. Elas são do LEITOR, não do produto — daí a ideia de ele escolher a cor.
 **Preparado em 04/09:** as três cores saíram para variável (`--capa-papel`, `--capa-tinta`, `--capa-trama`) num lugar só, e a família `capa-reserva/*` entrou no portão como superfície própria. Trocar por pessoa passa a ser escrever as três variáveis em vez de caçar hex.
 **O que falta é produto, não CSS:** onde a pessoa escolhe, se a escolha é por livro ou geral, e onde ela é guardada — provavelmente ao lado das preferências de leitura. Não implementado: é recurso novo, e a fila do lançamento vem antes.
 **Nota do Erik, no mesmo dia:** "as cores tao erradas pq n refinei elas" — os valores atuais são os do quadro, e são provisórios por decisão dele.
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r48`
 
-### R-49 · 2026-09-04 · aberto
+### R-49 · 2026-09-04 · fechado
 **Erik:** (não é dele — saiu da Fase 3, a auditoria de ícone: glifo contra rótulo, passada única nos 27 da biblioteca)
 **Onde:** `web/publico/icones/` · /leitura/:id, /canvas, /preparo/:id, o cabeçalho
 **Medido em 04/09:** **dois pares de arquivos são byte a byte iguais** — mesmo `sha256`, mesmo tamanho:
@@ -679,7 +737,7 @@ São dois nomes para um desenho, em quatro lugares da tela: o índice do leitor 
 **Dois ícones não são usados em lugar nenhum:** `icone-camadas.svg` (30.660 bytes) e `icone-fixar.svg` (32.365 bytes), zero referências em `web/src`. Não apaguei: podem ser de tela que ainda não existe, e apagar arte que alguém desenhou por não achar o uso é decisão de quem desenhou. **Pendência do Erik:** ficam ou saem?
 
 **O resto da biblioteca passou.** 25 desenhos distintos, cada um legível como o rótulo ao lado — aparelho, baixar, buscar, caderno, conta, copiar, defeito, dúvidas, enviar, estante, estudos, mais-ações, marcador, mesa, nota-imagem, nota-nova, preferências, privacidade, refazer, remover, renomear. Duas observações que são de desenho e não de defeito, e por isso não viram item: o `baixar` põe a barra ACIMA da seta enquanto o `enviar` põe a bandeja ABAIXO — o par não espelha; e o `marcador` é um hexágono com um ponto, que é o glifo de nó ou de ajuste, e não o da fita que marca a página.
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r07`
 
 **06/09 — medido, e metade do conserto está fora do meu alcance.**
 
@@ -719,7 +777,7 @@ Sem arquivo em disco: `GET /analyze/{id}` devolve o trabalho em cache assim que 
 **A prova reprova pelo defeito, e não por perto dele:** envenenada, ela troca o relatório pela tela de espera — exatamente o que a varredura via — e acusa *"a rota abriu na tela de ESPERA, e nao no relatorio"*. Ela também recusa a bancada sem o estado: sem trabalho em `analyzed`, o `_sessao.py` devolve `0`, a rota vira `/preparo/0` e a prova diz que o semeador precisa gravar um — em vez de medir a tela errada em silêncio.
 **Prova:** `node scripts/provas.mjs r50`
 
-### R-51 · 2026-09-04 · aberto
+### R-51 · 2026-09-04 · fechado
 **Erik:** (não é dele — apareceu no minuto em que a bancada ganhou um trabalho que ainda não é livro)
 **Onde:** /estante · `web/src/estado/useJornada.js`
 **Medido em 04/09:** o trabalho parado em `analyzed` **aparece como cartão na Estante**, ao lado dos seis livros convertidos — com o nome do arquivo no lugar do título (`estrategia-de-ux-oreilly.pdf`), sem capa, e sem leitura para abrir. `livros` é o `historico()` inteiro, sem nenhum filtro de estado.
@@ -732,7 +790,7 @@ Sem arquivo em disco: `GET /analyze/{id}` devolve o trabalho em cache assim que 
 Uma das duas está errada, e escolher entre elas é decisão de produto: ou a Estante é só o acervo pronto (e a Mesa é onde o preparo aparece), ou ela mostra tudo e o cartão em preparo precisa de um estado visual próprio — hoje ele é indistinguível de um livro, com nome de arquivo em vez de título.
 
 **Nunca tinha aparecido porque a bancada não produzia o caso:** todo trabalho semeado nascia `converted`. É o mesmo buraco do R-50, visto de outra tela — dado de prova onde tudo já está pronto só sabe dizer que está tudo bem.
-**Prova:** sem-prova
+**Prova:** `node scripts/provas.mjs r51`
 
 ### R-52 · 2026-09-04 · fechado
 **Erik:** *"canvas n vai existir no telefone, ja falamos sobre isso"*

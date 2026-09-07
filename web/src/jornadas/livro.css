@@ -7,7 +7,13 @@
    selos quebravam em duas linhas e "Ver o preparo" saía da vista.
    Daí o `calc`, com os dois números à vista em vez de um 1350 que ninguém
    saberia de onde veio. */
-.livro-pagina { max-inline-size: calc(1222px + 2 * 64px); margin: 0 auto; padding: 32px 64px 80px; display: flex; gap: 48px; align-items: flex-start; }
+/* `inline-size: 100%` — E O TETO SO VALE COM ELE.
+ *
+ * A `.mesa` e flex, e filho de flex mede o CONTEUDO e nao o teto: a ficha
+ * parava em 1255 dos 1350 mesmo numa janela de 1920, e o corpo em 1127 dos
+ * 1222. E o mesmo defeito que o `.preparo-pagina` ja pagou, na mesma linha do
+ * CLAUDE.md — e ele so apareceu aqui quando uma prova foi cobrar o numero. */
+.livro-pagina { inline-size: 100%; max-inline-size: calc(1222px + 2 * 64px); margin: 0 auto; padding: 32px 64px 80px; display: flex; gap: 48px; align-items: flex-start; }
 /* 1222, E NÃO 900. O 900 era a medida de leitura de uma coluna que dividia a
    página com a trilha; sem ela o corpo É a página, e o nó `895:7683` mede 1222.
    Medido em 04/09: com 900 a capa de 427 deixava 425 para a identidade, os
