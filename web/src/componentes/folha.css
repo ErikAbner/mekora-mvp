@@ -6,7 +6,19 @@
    * tela e a rolagem movia a FOLHA INTEIRA. O título subia para fora do
    * viewport, sobrava faixa branca no topo, e a pessoa perdia de vista o que
    * estava abrindo. Quem rola é o miolo. */
-  max-block-size: calc(100dvh - 48px);
+  /* UMA FOLHA NÃO É UMA PÁGINA, e 100dvh − 48 fazia dela uma.
+   *
+   * Numa janela de 900 o teto era 852 — 95% da altura. O Erik: "coisas que
+   * deveriam caber numa tela única precisam de scroll... grandes e legíveis,
+   * mas pecam no exagero". Um painel que cobre a tela inteira não deixa ver o
+   * que ele interrompeu, e some a diferença entre abrir uma folha e trocar de
+   * tela.
+   *
+   * 96 de respiro em vez de 48 — o dobro do vão do sistema, para o chão
+   * aparecer em cima e embaixo —, e um teto absoluto de 720: acima disso a
+   * folha vira leitura longa, e leitura longa tem rota própria. Numa janela de
+   * 900 a folha para em 720; numa de 700 ela para em 604, que é o que cabe. */
+  max-block-size: min(calc(100dvh - 96px), 720px);
   overflow: hidden;
 }
 
@@ -64,14 +76,37 @@
  * alcançável numa folha longa sem precisar chegar ao fim dela. */
 .folha-topo, .folha-acoes { flex: 0 0 auto; }
 .folha-conteudo {
-  /* 48 entre os blocos do corpo — `895:12452`. */
-  display: flex; flex-direction: column; gap: 48px;
+  display: flex; flex-direction: column;
   flex: 1 1 auto; min-block-size: 0; overflow-y: auto;
   padding: 0 32px 32px;
   font-size: 20px; line-height: 30px;
   color: var(--muted-foreground);
 }
+
+/* 48 ENTRE OS BLOCOS DO CORPO — `895:12452` —, E O QUE É UM BLOCO IMPORTA.
+ *
+ * O `gap: 48` estava no flex, então ele separava TODO filho de todo filho. No
+ * desenho os filhos do corpo são SEÇÕES; no produto quase toda folha põe dois
+ * ou três `<p>` do mesmo texto, e 48 caía entre duas frases que são o mesmo
+ * parágrafo de raciocínio.
+ *
+ * Medido na folha "Apagar a conta": 680×565 para dois parágrafos curtos, um
+ * rótulo, um campo e dois botões — 62% da altura era conteúdo. É o "exagero"
+ * que o Erik apontou, e o número do desenho estava certo: errado era o que ele
+ * estava separando. A lei do projeto já dizia — *"respiro conta hierarquia; com
+ * tudo à mesma distância, nada agrupa"*.
+ *
+ * Com `margin` em vez de `gap` dá para distinguir os dois casos: bloco novo
+ * recebe 48, parágrafo seguido de parágrafo recebe 16. O 48 do nó continua
+ * valendo onde ele foi desenhado para valer. */
 .folha-conteudo p { margin: 0; text-wrap: pretty; }
+.folha-conteudo > * + * { margin-block-start: 48px; }
+/* 24 é o vão de PARÁGRAFO — dois trechos do mesmo raciocínio. 16 grudou os
+   dois parágrafos da folha "Apagar a conta" num bloco só. */
+.folha-conteudo > p + p { margin-block-start: 24px; }
+/* A NOTA NÃO É CONTINUAÇÃO: ela muda de papel — "se quiser levar suas notas
+   antes…" depois de "isto apaga tudo". Volta ao vão de bloco. */
+.folha-conteudo > * + .folha-nota { margin-block-start: 48px; }
 
 .folha-acoes {
   display: flex; gap: 16px; justify-content: flex-end;
@@ -83,7 +118,10 @@
    cabeçalho, `px-40 pb-56` no corpo e 56 entre os blocos; as folhas estreitas
    (`895:12444`, `973:32415`) põem 32. Painel maior, respiro maior. */
 .folha.ampla .folha-topo { padding: 40px; }
-.folha.ampla .folha-conteudo { gap: 56px; padding: 0 40px 56px; }
+.folha.ampla .folha-conteudo { padding: 0 40px 56px; }
+.folha.ampla .folha-conteudo > * + * { margin-block-start: 56px; }
+.folha.ampla .folha-conteudo > p + p { margin-block-start: 24px; }
+.folha.ampla .folha-conteudo > * + .folha-nota { margin-block-start: 56px; }
 .folha.ampla .folha-acoes { padding: 0 40px 56px; }
 
 /* `flex` só quando aberta: `<dialog>` fechado é `display: none`, e declarar o
