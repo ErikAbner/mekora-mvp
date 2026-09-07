@@ -1,5 +1,10 @@
 # Subir o Mekora
 
+> **Para recuperar a partir de um backup, o documento é outro:**
+> [`RESTAURAR.md`](RESTAURAR.md). Ele cobre listar os snapshots, escolher um,
+> restaurar para uma cópia isolada, validar e promover a produção — e o que
+> fazer quando cada verificação falha.
+
 Este documento é para ser seguido sem lembrar de nada.
 
 O alvo: uma VPS da Hostinger, com Cloudflare na frente. O Mekora sobe em dois

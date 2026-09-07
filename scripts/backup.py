@@ -43,16 +43,49 @@ from datetime import datetime
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parents[1]
-BANCO = RAIZ / "storage" / "kindle_tool.db"
-DESTINO = Path(os.getenv("MEKORA_BACKUP_DIR", RAIZ / "storage" / "backups"))
+
+# A RAIZ DO STORAGE VEM DE `MEKORA_STORAGE`, como no resto do produto.
+#
+# Ela era derivada só da posição deste arquivo, e isso é o defeito que o
+# `config.py` já tinha consertado em 30/08 com a mesma variável: em container o
+# storage é um volume, e um backup que copia `<repo>/storage` num ambiente onde
+# os documentos moram em `/dados` copia uma pasta vazia — e confere, e poda, e
+# diz "feito".
+#
+# Achado em 07/09 ao escrever o `restaurar.py`: apontei o backup para o storage
+# da bancada e ele copiou o de produção sem reclamar.
+STORAGE = Path(os.getenv("MEKORA_STORAGE", RAIZ / "storage"))
+BANCO = STORAGE / "kindle_tool.db"
+DESTINO = Path(os.getenv("MEKORA_BACKUP_DIR", STORAGE / "backups"))
 
 # Quantas cópias do banco ficam. Sete cobre uma semana: tempo de perceber que
 # algo se perdeu antes que a última cópia boa saia da janela.
 QUANTAS_GUARDAR = 7
 
-# O que é espelhado. `temp/` fica de fora de propósito: é descartável por
-# definição, e são 127 MB que se reconstroem sozinhos.
-ESPELHADAS = ["input", "output", "covers"]
+# O QUE É ESPELHADO, e a lista cresceu em 07/09 ao escrever o `restaurar.py`.
+#
+# `retratos/` FALTAVA, e é dado da pessoa: `acesso.py` grava ali o `{id}.png` do
+# retrato da conta e guarda o caminho absoluto em `pessoas.retrato`. Sem ele no
+# backup, restaurar devolve um banco com um retrato que aponta para o nada — e
+# a verificação de "registro tem arquivo" reprova, com razão.
+ESPELHADAS = ["input", "output", "covers", "retratos"]
+
+# CONFIGURAÇÃO PERSISTENTE — dois arquivos soltos na raiz do storage, e nenhum
+# dos dois é reconstruível: `config.json` é o que o `app_config_service` guarda
+# (motor de tradução, endereço de Kindle, limites), e `config_presets.json` são
+# os presets de conversão. Perder os dois não perde livro nenhum, e perde toda
+# a configuração de quem instalou.
+SOLTOS = ["config.json", "config_presets.json"]
+
+# O QUE FICA DE FORA, e por quê — a lista importa tanto quanto a de cima:
+#
+#   temp/      descartável por definição; 127 MB que se reconstroem sozinhos
+#   logs/      histórico operacional, não é dado de ninguém, e só cresce
+#   models/    modelos de tradução baixados: gigabytes, e se rebaixam
+#   ui-audit/  saída de instrumento, regenerável rodando o instrumento
+#   backups/   o próprio backup — copiá-lo dentro de si é recursão
+#   segredos   `.env`, SMTP, chaves. Nunca estiveram aqui, e é política: segredo
+#              em backup é segredo em mais um lugar de onde vazar
 
 
 def registrar(msg):
@@ -113,7 +146,7 @@ def espelhar(destino: Path):
     é um backup que não roda."""
     novos = bytes_copiados = 0
     for pasta in ESPELHADAS:
-        origem = RAIZ / "storage" / pasta
+        origem = STORAGE / pasta
         if not origem.exists():
             continue
         alvo = destino / "espelho" / pasta
@@ -127,6 +160,15 @@ def espelhar(destino: Path):
             shutil.copy2(arq, fim)
             novos += 1
             bytes_copiados += arq.stat().st_size
+    for nome in SOLTOS:
+        origem = STORAGE / nome
+        if not origem.exists():
+            continue
+        alvo = destino / "espelho" / nome
+        alvo.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(origem, alvo)
+        novos += 1
+        bytes_copiados += origem.stat().st_size
     registrar(f"espelho: {novos} arquivos novos ou mudados ({bytes_copiados / 1e6:.1f} MB)")
 
 

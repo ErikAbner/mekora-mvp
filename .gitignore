@@ -48,6 +48,12 @@ storage/models/
 storage/logs/
 storage/covers/
 storage/backups/
+# RETRATOS SÃO DADO PESSOAL, e a pasta não estava aqui: `acesso.py` grava o
+# `{id}.png` de quem põe retrato na conta, e sem esta linha ele entraria no
+# repositório no primeiro `git add` de pasta. Achado em 07/09, ao pôr
+# `retratos/` no backup — as duas coisas certas pelo mesmo motivo: é dado da
+# pessoa, então entra no backup e nunca no versionamento.
+storage/retratos/
 storage/thumbnails/
 storage/ui-audit/
 *.db
