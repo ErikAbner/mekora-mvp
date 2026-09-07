@@ -216,6 +216,31 @@ custa meses. E quem semeia um estado tem de saber DESFAZER: a bancada tem uma
 pessoa por rodada, e deixar o trabalho em conversão faz a prova seguinte medir
 outra tela sem saber por quê — daí o `finally` no `provas.mjs`.
 
+## Declaração e medida são coisas diferentes
+
+Em 07/09 o quadro de Estudos passou a arrastar, e a primeira versão escrevia o
+PROGRESSO para representar o estado da coluna: soltar em "Lido" punha a marca no
+último capítulo, soltar em "A ler" zerava. O argumento parecia bom e citava este
+arquivo — *"estado derivado, corrigível à mão"*.
+
+O Erik recusou: *"estado de leitura e progresso de leitura são conceitos
+diferentes. O drag-and-drop altera o estado. A leitura efetiva altera o
+progresso."*
+
+E ele está certo. **"Terminei este livro" é uma declaração da pessoa; "parei no
+capítulo 7, caractere 2.140" é um fato medido pelo leitor.** Escrever o segundo
+para representar o primeiro apaga onde ela estava — e apaga em silêncio, como
+efeito colateral de um gesto que não prometia mexer no histórico.
+
+A lei de cima continua valendo, e o que ela proíbe é outra coisa: um campo de
+status PARALELO para alguém manter. Um campo anulável cujo nulo significa
+"ninguém declarou" — e aí o estado volta a ser derivado — não é uma segunda
+verdade. É uma fonte com padrão derivado, desde que **a precedência more num
+lugar só**: aqui, o `estadoDeLeitura` do contrato.
+
+O teste da diferença: se o gesto APAGA um fato medido para gravar uma
+declaração, ele está errado, por mais coerente que a coluna fique.
+
 ## Armadilhas de implementação já pagas
 
 - **Arrastar não mexe no DOM.** Mover o nó libera a captura de ponteiro no
