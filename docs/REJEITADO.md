@@ -53,7 +53,7 @@ que cada uma fechou, e com que prova.
 | R-27 | o vertical trim fica: os vãos das 51 telas foram medidos com ele | — |
 | R-30 | os dezoito itens da Privacidade ganham grupos, sem esconder nada | portão nos dois temas + `amassado.mjs` |
 | R-36 | o teto da folha desce de 852 para 720; 48 volta a separar bloco e não parágrafo | medida da regra em /sistema |
-| R-37 | volta a ser QA, e não decisão dele | ver a nota abaixo |
+| R-37 | a seção "Fora de estudo" ganha o chão do nó, e o comentário volta | `node scripts/provas.mjs r37 && node scripts/provas.mjs r37b` |
 | R-48 | as catorze capas entram no sorteio | `scripts/folha-de-capas.mjs` |
 | R-49 | índice e páginas ganham desenho próprio | `node scripts/provas.mjs r07` |
 | R-51 | a Estante lista só livro pronto | testes do backend + medida em /estante |
@@ -119,15 +119,62 @@ mandado como decisão dele não eram decisão nenhuma:**
 concluí ausência de um instrumento cego — eu passei a conclusão adiante como
 pergunta, e perguntar custa o tempo de quem responde.
 
-**R-37 não fecha por prova, e sim por mudança de natureza.** O Erik: *"isto
-deixa de ser uma decisão minha e volta a ser item de QA"*. A comparação visual
-de /estudos e /canvas contra `895:8849` e `895:6938` foi feita nesta rodada e as
-duas telas mudaram por decisão dele — o quadro passou a arrastar, a barra virou
-"Adicionar". **Uma divergência ficou sem medir e não vira pendência dele:** a
-seção "Fora de estudo" aparece no nó com os itens em CAIXA e no produto em linha
-com filete. Não a corrigi porque só a li em captura reescalada, e este arquivo já
-registra o preço de mexer numa medida lida em miniatura. Fica como QA, com o nó
-por ler.
+**R-37 mudou de natureza e depois fechou por prova.** O Erik: *"isto deixa de
+ser uma decisão minha e volta a ser item de QA"*. A comparação visual de /estudos
+e /canvas contra `895:8849` e `895:6938` foi feita nesta rodada e as duas telas
+mudaram por decisão dele — o quadro passou a arrastar, a barra virou "Adicionar".
+
+**A divergência que faltava era a seção "Fora de estudo", e ela fechou em 07/09
+depois de o nó ser lido de verdade.** Eu a tinha registrado como "itens em CAIXA
+no nó, linha com filete no produto", lida em captura reescalada. O nó da seção é
+o `895:9089`, e ele diz mais do que a miniatura mostrava:
+
+| | `895:9059` "Você ligou" | `895:9089` "Fora de estudo" |
+|---|---|---|
+| filete vertical | na LISTA, com recuo de 34 | igual |
+| item | sem chão, sem recheio | **chão, e conteúdo a 32 de cada borda** |
+
+**O produto fazia o inverso dos dois.** `.estudos-fios > li` — a seção do palpite
+— tinha `padding: 32px` e fundo; o item das soltas não tinha nada. A lei do
+`CLAUDE.md` diz qual está certo, e não é gosto: *o chão marca o conteúdo*. O que
+está fora de estudo é material da pessoa; o que está em "Você ligou" é palpite da
+varredura, e dar chão a ele o promove a fato.
+
+Os vãos também saíram do nó, e estavam todos em 8 e 24 — título, apoio e lista à
+mesma distância não formam um cabeçalho, formam três parágrafos:
+
+| vão | nó | estava |
+|---|---|---|
+| título → apoio | 56 (`895:9090` termina em 22, `895:9092` começa em 78) | 8 |
+| apoio → lista | 40 (127 → 167) | 24 |
+| entre itens | 40 (124 → 164) | 24 |
+| texto → texto no item | 24 (`895:9103`: 41 − 17) | 8 |
+| antes da origem | 32 (`895:9095`: 49 − 17) | 8 |
+
+**E uma segunda metade, que é achado meu e não queixa dele:** a seção era a única
+das três a **engolir o comentário da nota**. "Todas as notas" e "Por pergunta" já
+o pintavam, com a mesma classe e o mesmo campo, que a rota `/notas/todas` manda.
+Medido antes de mexer: **8 das 19 soltas da bancada tinham comentário e nenhuma o
+mostrava** — sobrava a citação do autor com a origem embaixo, e o que a pessoa
+escreveu não chegava à tela. Tem veneno próprio (`r37b`), porque verificação sem
+veneno próprio é verde por omissão.
+
+**O `text-box-trim` cobrou de novo, e de um jeito novo.** Tirado o recheio do
+blockquote, o filete da citação passou a medir os 11px da caixa aparada — um
+risco flutuando ao lado da primeira linha, com cara de cursor. O filete acompanha
+a CAIXA, não a linha. 6px de recheio vertical devolvem os 23 que cobrem a linha
+de 24.
+
+**O que S1 e S3 mediram, e que eu quase remedi à mão:** as duas queixas antigas
+deste item já tinham prova — `r17` mede a trilha na fileira de baixo (200 de
+largura, ao lado de "Você ligou", abaixo do topo) e `r20` mede as duas larguras
+que o nó autoriza, 1222 acima da trilha e 974 ao lado dela. Fui medi-las com a
+mão antes de olhar se a bancada já as cobrava. Cobrava.
+
+**Fica registrado, medido e não corrigido:** `.estudos-fios > li` continua com o
+chão que o `895:9059` não tem. Tirá-lo muda a hierarquia da seção inteira e o vão
+entre grupos não é mensurável no nó — só há um grupo desenhado. Corrigir sem
+oráculo para a consequência é o que este arquivo registra como caro.
 
 ---
 
@@ -623,10 +670,15 @@ A frase é sobre a tela inteira, e uma tela inteira não cabe numa prova. O que 
 **Medido em 04/09:** Medido: /estudos tem 5397px de altura numa janela de 1000.
 **Prova:** `node scripts/provas.mjs r36`
 
-### R-37 · 2026-09-01 · aberto
+### R-37 · 2026-09-01 · fechado
 **Erik:** "Estudos e Canvas: péssima organização, criação, uso e animação — não segue em nada o Figma. Eu não o criei por brincadeira"
 **Onde:** /estudos e /canvas
-**Prova:** sem-prova
+**Fechado em 07/09.** As decisões dele fecharam o quadro (arrasta, `r18`), a
+barra do Canvas (`r13`) e os recortes; a trilha e as larguras já tinham `r17` e
+`r20`. A última divergência era a seção "Fora de estudo" contra o `895:9089` — o
+chão que estava na seção errada, os vãos, e o comentário que a seção engolia. Ver
+a nota na abertura deste arquivo.
+**Prova:** `node scripts/provas.mjs r37 && node scripts/provas.mjs r37b`
 
 ### R-38 · 2026-09-01 · fechado
 **Erik:** "As telas com um container atrás, numa cor diferente, sobre canvas pontilhado, são GAVETAS — seções que sobrepõem o conteúdo anterior, seguindo a lógica de navegação dentro do canvas. Usar o vaul desde o início: https://github.com/emilkowalski/vaul.git"

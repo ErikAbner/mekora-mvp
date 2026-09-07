@@ -1054,7 +1054,15 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
             <ul>
               {soltas.slice(0, LIMITE_DAS_SOLTAS).map((n) => (
                 <li key={n.id}>
-                  <blockquote className="trecho-citado" data-cor={n.cor}>{n.trecho}</blockquote>
+                  {n.trecho && (
+                    <blockquote className="trecho-citado" data-cor={n.cor}>{n.trecho}</blockquote>
+                  )}
+                  {/* O COMENTARIO E O QUE A PESSOA ESCREVEU, e esta secao era a
+                      unica das tres que o engolia: "Todas as notas" e "Por
+                      pergunta" ja o mostravam, com a mesma classe. Uma nota que
+                      so tem comentario aparecia aqui como um filete e uma
+                      origem, sem o texto dela. */}
+                  {n.comentario && <p className="estudos-solta-comentario">{n.comentario}</p>}
                   <p className="estudos-solta-origem">
                     {n.origem || (n.fonte === "solta" ? "escrita no Canvas" : "de um livro seu")}
                   </p>

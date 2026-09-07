@@ -1959,6 +1959,72 @@ const PROVAS = {
     },
     veneno: (t) => t.replace('["sistema", "Sistema"]', '["sistema", "Do sistema"]'),
   },
+  /* A DIVERGENCIA QUE FALTAVA MEDIR NO R-37, e que ficou meses lida em
+     miniatura. O `895:9089` ("Fora de estudo") poe cada item num bloco com CHAO
+     e recheio de 32 em volta (o conteudo comeca em x=32 y=32 dentro de 712); o
+     `895:9059` ("Voce ligou") deixa os itens sem fundo e sem recheio.
+
+     O produto fazia o INVERSO — `.estudos-fios > li` com `padding: 32px` e
+     fundo, e o item das soltas com nada. A lei do CLAUDE.md diz qual dos dois
+     esta certo: o chao marca o CONTEUDO, e o que esta fora de estudo e material
+     da pessoa; o que esta em "Voce ligou" e palpite da varredura. */
+  'r37': {
+    erik: '"Estudos e Canvas: pessima organizacao... nao segue em nada o Figma" — a parte da secao "Fora de estudo"',
+    /* O VENENO DEVOLVE O ITEM AO QUE ELE ERA: sem chao e sem recheio. */
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.estudos-soltas li{background:none !important;padding:0 !important}';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/estudos', `
+        const li = document.querySelector('.estudos-soltas li');
+        if (!li) return { temItem: false };
+        const c = getComputedStyle(li);
+        const pagina = getComputedStyle(document.body).backgroundColor;
+        return {
+          temItem: true,
+          fundo: c.backgroundColor,
+          fundoDaPagina: pagina,
+          recheio: [c.paddingTop, c.paddingRight, c.paddingBottom, c.paddingLeft]
+                     .map(v => Math.round(parseFloat(v))),
+        };`, veneno, { alt: 2400 });
+      if (!d.temItem) throw new NaoPodeMedir('a secao "Fora de estudo" nao mostrou item nenhum — semeie notas soltas');
+      /* CHAO E COR PROPRIA, e nao "tem alguma cor": transparente herda o fundo
+         da pagina e mede igualzinho a um bloco pintado de branco. */
+      const semChao = d.fundo === 'rgba(0, 0, 0, 0)' || d.fundo === 'transparent' || d.fundo === d.fundoDaPagina;
+      if (semChao) return `o item de "Fora de estudo" nao tem chao (${d.fundo}), e o 895:9089 poe cada um num bloco pintado`;
+      if (d.recheio.some(v => v !== 32)) return `o item tem recheio ${d.recheio.join('/')}, e o 895:9089 poe o conteudo a 32 de cada borda`;
+      return null;
+    },
+  },
+
+  /* O MESMO ITEM, A OUTRA METADE — e esta e achado meu, nao queixa dele.
+     A secao era a UNICA das tres a nao mostrar o comentario: "Todas as notas" e
+     "Por pergunta" ja o pintavam, com a mesma classe e o mesmo campo, que a
+     rota /notas/todas manda. Medido antes de mexer: 8 das 19 soltas da bancada
+     tinham comentario e nenhuma o mostrava — o texto que a pessoa escreveu
+     sumia, e sobrava a citacao do autor com a origem embaixo.
+
+     VENENO PROPRIO porque verificacao sem veneno proprio e verde por omissao:
+     se ele so tirasse o chao, esta metade passaria mesmo quebrada. */
+  'r37b': {
+    erik: '(QA) o comentario da nota sumia em "Fora de estudo", e aparecia nas outras duas secoes',
+    veneno: `const s = document.createElement('style');
+             s.textContent = '.estudos-soltas .estudos-solta-comentario{display:none !important}';
+             document.head.appendChild(s);`,
+    async correr(veneno) {
+      const d = medir('/estudos', `
+        const itens = [...document.querySelectorAll('.estudos-soltas li')];
+        const visivel = (e) => !!e && e.getBoundingClientRect().height > 0;
+        return {
+          quantos: itens.length,
+          comComentario: itens.filter(li => visivel(li.querySelector('.estudos-solta-comentario'))).length,
+        };`, veneno, { alt: 2400 });
+      if (!d.quantos) throw new NaoPodeMedir('a secao "Fora de estudo" nao mostrou item nenhum — semeie notas soltas');
+      if (!d.comComentario) return `nenhuma das ${d.quantos} notas soltas mostra o comentario, e a rota /notas/todas manda o campo — o texto que a pessoa escreveu nao chega a tela`;
+      return null;
+    },
+  },
+
   'r38': {
     erik: 'as telas sobre o canvas pontilhado sao GAVETAS — usar o vaul',
     /* OS COMENTARIOS SAEM ANTES, e a razao apareceu no controle negativo: o

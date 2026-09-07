@@ -279,20 +279,56 @@
 .estudos-recortes button:focus-visible { outline: 1px solid var(--foreground); outline-offset: -2px; }
 
 .estudos-soltas { margin-block-start: 48px; padding-block-start: 32px; border-block-start: 1px solid var(--border); }
+/* O CABECALHO DA SECAO TAMBEM VEM DO NO. No `895:9089` o titulo termina em 22 e
+ * o texto de apoio comeca em 78 (vao de 56); o apoio termina em 127 e a lista
+ * comeca em 167 (vao de 40). Estava 8 e 24: titulo, apoio e lista a mesma
+ * distancia um do outro nao formam um cabecalho, formam tres paragrafos. */
 .estudos-soltas h2 {
-  margin: 0 0 8px;
+  margin: 0 0 56px;
   font-size: 24px; line-height: 32px; font-weight: 500;   /* Body/Large */
   color: var(--foreground);
 }
 .estudos-soltas h2 .dado { color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
-.estudos-soltas ul { margin: 24px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 24px; }
-.estudos-soltas li { display: flex; flex-direction: column; gap: 8px; }
+/* O CHAO MARCA O CONTEUDO — e aqui ele estava no lugar errado, medido nos dois
+ * lados em 07/09.
+ *
+ * O `895:9089` ("Fora de estudo") poe cada item num bloco com fundo e recheio de
+ * 32 em volta; o `895:9059` ("Voce ligou") deixa os itens sem fundo e sem
+ * recheio, so com o filete da lista. O produto fazia o INVERSO: `.estudos-fios
+ * > li` tinha `padding: 32px; background`, e o item daqui nao tinha nada.
+ *
+ * A lei do CLAUDE.md diz qual dos dois esta certo, e nao e questao de gosto: o
+ * que esta "fora de estudo" e material DA PESSOA — conteudo, e conteudo tem
+ * chao. O que esta em "Voce ligou" e palpite da varredura, que ela pode
+ * discordar; dar chao a ele o promove a fato.
+ *
+ * O vao entre itens tambem vem do no: 164 - 124 = 40. */
+.estudos-soltas ul { margin: 40px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 40px; }
+/* OS VAOS SAO OS DO NO, escritos. No `895:9095` a origem cai 32 abaixo do texto
+ * (y 49 menos altura 17); no `895:9103` a citacao vem 24 abaixo da nota (41-17)
+ * e a origem 40 abaixo dela (110-70). Com 8 para tudo, como estava, nada
+ * agrupava — a lei do respiro. */
+.estudos-soltas li {
+  display: flex; flex-direction: column; gap: 24px;
+  padding: 32px;
+  background: var(--background-secondary);
+}
+/* O RECHEIO LATERAL E DO ITEM, e nao do trecho: com os dois, o filete da citacao
+ * ficava a 16px da borda do chao e o bloco parecia ter duas margens.
+ *
+ * O VERTICAL FICA, e a razao e o `text-box-trim`. Ele fecha a caixa na altura do
+ * glifo: uma citacao de uma linha mede 11px de caixa, e o filete — que acompanha
+ * a caixa, nao a linha — virava um risco de 11px flutuando ao lado do texto,
+ * com cara de cursor. 6px de cada lado devolvem ao filete os 23 que cobrem a
+ * linha de 24. */
 .estudos-soltas blockquote {
-  margin: 0; padding: 16px;
+  margin: 0; padding: 6px 0 6px 16px;
   color: var(--foreground);
   font-size: 16px; line-height: 24px;
   text-wrap: pretty;
 }
+/* A origem e o rodape do item, e nao mais um paragrafo: ela fecha 32 abaixo. */
+.estudos-soltas .estudos-solta-origem { margin-block-start: 8px; }
 .estudos-solta-origem { margin: 0; color: var(--muted-foreground); font-size: 14px; line-height: 22px; }
 .estudos-soltas a { color: inherit; }
 
