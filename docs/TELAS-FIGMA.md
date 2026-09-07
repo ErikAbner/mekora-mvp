@@ -1265,16 +1265,25 @@ em 375. A prosa da nota em Body/Medium 20/30. A seção com borda tracejada de
 estava certa; o que divergia era o interior — um controle apertado onde o
 desenho põe um respirado.
 
-**Aberto, e é decisão do Erik:** o recheio da nota. O nó `895:7033` põe 40; a
-folha põe 24, e a razão está escrita nela:
+**RESOLVIDO EM 07/09, e não por medida nova — por uma regra.** O recheio da nota
+voltou aos **40** do `895:7033`. Estava em 24, com um argumento meu escrito na
+folha:
 
 > *"Antes: 40px de recheio e uma sombra dupla forte que fazia o cartão ler como
 > bloco flutuante, não como artefato de estudo. Agora: recheio na grade (24px, o
 > passo da malha), um filete fino e uma sombra sussurrada."*
 
-Isso não é descuido: é uma decisão tomada com argumento, contra o quadro. Não
-reverti. Ou o quadro se data, ou a folha volta aos 40 — e quem escolhe é quem
-desenhou.
+O argumento continua de pé como argumento, e mesmo assim perde. O Erik deu a
+regra no mesmo dia, a propósito da ilustração do Kindle: *"não substituir uma
+decisão explícita do desenho por outra ilustração apenas para evitar
+repetição. Se posteriormente criarmos uma própria, isso será uma alteração
+deliberada"*. Vale igual para um número: quando o quadro diz 40 e eu acho 24
+melhor, o quadro fica — e a mudança, se vier, é dele.
+
+**O que também veio daquela passada e FICA:** a sombra sussurrada e o filete
+fino, no lugar da sombra dupla forte. Ali não havia número do nó sendo
+contrariado; havia uma sombra minha trocada por outra minha, e a segunda é a da
+identidade.
 
 **QUATRO SELETORES MEUS ERRARAM NESTA TELA**, e a regra do `CLAUDE.md` pegou os
 quatro antes de virarem conserto: o Dock "não existia" (procurei por `dock` e
@@ -1637,10 +1646,14 @@ quando ficou maior que o conteúdo**.
 #### O que ficou
 
 - **O quadrado cinza de 32×32** à esquerda de cada item (`895:7947` e irmãos).
-  Ele é `#d9d9d9`, que é a cor de um retângulo recém-criado no Figma, e a camada
-  não tem nome. **Não implementei:** ou é um lugar reservado para ícone que
-  ficou por preencher, ou é uma caixa de marcar — e a diferença muda o que a
-  tela faz, não só como ela parece. É pergunta para o Erik.
+  **Resolvido em 07/09, lendo o nó em vez de perguntar.** O
+  `get_design_context` dele devolve uma linha: `<div className="bg-[#d9d9d9]
+  relative size-full" />` — sem nome, sem borda, sem filho, sem estado. Uma
+  caixa de marcar teria borda e dois estados, e este arquivo tem componentes de
+  controle de verdade (a Privacidade usa interruptores). É **lugar reservado de
+  imagem**, e `#d9d9d9` é a mesma cor que as capas de reserva usam para "onde a
+  foto entraria". Continua não implementado, e agora por saber o que é: espaço
+  de arte que ninguém desenhou ainda, e não comportamento que falta.
 - **Os botões por item** — "Por quê" no texto em imagem, "Ver" na capa gerada,
   "Traduzir" no idioma. A tela só tem "Alterar" no título e no autor. Cada um
   desses abre algo que precisa existir.

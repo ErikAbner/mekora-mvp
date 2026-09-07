@@ -195,7 +195,7 @@ e vira filete. Não dá para tirar do Figma, porque o Figma não tem tema escuro
 **Onde:** /estante
 **Medido em 04/09 — duas das três queixas não se reproduzem.** A moldura mede **258×60 em repouso, 258×60 com o foco dentro e 258×60 digitando**: ela não expande. E há **um** campo de busca na página (`input[type=search]`, `.busca-campo`), não dois — não existe componente por cima de componente. O painel abre e acha: digitando "urbana" com teclado de verdade, um item, "Malha Urbana · Ana Duarte · PDF".
 
-**A terceira queixa fica de pé e é do quadro:** "a pesquisa é MENOR" é uma medida contra o desenho, e o `941:23107` está do lado da Fase 4. **Pendência do Erik**, não escolha de quem implementa: se 258 é menor do que o nó pede, o número vem de lá.
+**A terceira queixa era do quadro, e o quadro respondeu em 07/09.** "A pesquisa é MENOR e se expande" tem os dois estados nos nós: `900:53900` põe a caixa de ações em **476** e `941:23107` — a busca com o painel aberto — em **626**. Eu tinha registrado isto como pendência do Erik; os dois números já estavam escritos num comentário do próprio `cabecalho.css`, e bastava lê-lo. Ver o fecho do R-09.
 
 **O `inventario.mjs` NÃO é a prova deste item.** Ele relata assinaturas visuais repetidas — hoje seis pares, nenhum deles da busca — e sai com **0** em qualquer caso: relatório, não portão. Item fechado com ele seria fechado com nada.
 **Prova:** `node scripts/provas.mjs r09`
@@ -245,7 +245,7 @@ que é o que uma grade responsiva faz.
 
 Não deu para medir a sobreposição na tela: **o acervo semeado traz uma seção só** ("Design & Tecnologia", 620×420), e sobreposição precisa de duas.
 
-**Pendência do Erik, e é uma regra que falta:** seção pode encostar em seção? Se não pode, o produto deve *impedir* (empurrar como o `organizar` faz com as notas) ou apenas *avisar*? Isso não está no repositório e não se deduz do código — a segunda metade da queixa ("não são como o que eu criei no Figma") é do quadro, na Fase 4.
+**Isto era pendência do Erik, e deixou de ser em 07/09 — a resposta estava na própria nota.** Seção pode encostar em seção: pode, e o produto tolera de propósito. A frase seguinte deste mesmo parágrafo diz que *"a versão que perguntava 'quem está por cima?' foi testada e reprovou justamente com duas áreas sobrepostas"*. Impedir já foi tentado e é pior. Avisar sobre o que é permitido é ruído numa superfície cujo ponto é arranjar as coisas à mão. O que faltava — e entrou no fecho de 06/09 — era só quem PINTA na frente, e isso é por área.
 **Prova:** `node scripts/provas.mjs r15`
 
 **Fechado em 06/09, e a bancada precisou aprender a mostrar o defeito.**
@@ -734,7 +734,7 @@ São dois nomes para um desenho, em quatro lugares da tela: o índice do leitor 
 
 **O que já entrou:** o `r07` deixou de fixar dois ícones e passou a fixar **os 27**, com o `sha256` de cada um como estavam nesta auditoria, mais a recusa de qualquer par novo. Verificado nos dois sentidos: um byte a mais no `icone-fixar.svg` dá *"mudou de desenho desde a auditoria de 04/09"*; copiar um ícone sobre outro dá o mesmo, e o vermelho chega antes da regra de par — está escrito na prova por que ela ainda não é alcançável, e para quando ela serve.
 
-**Dois ícones não são usados em lugar nenhum:** `icone-camadas.svg` (30.660 bytes) e `icone-fixar.svg` (32.365 bytes), zero referências em `web/src`. Não apaguei: podem ser de tela que ainda não existe, e apagar arte que alguém desenhou por não achar o uso é decisão de quem desenhou. **Pendência do Erik:** ficam ou saem?
+**Ícones sem uso:** eram dois — `icone-camadas.svg` e `icone-fixar.svg` —, e hoje é um: o `camadas` passou a ser usado. **Resolvido em 07/09, e não era decisão dele:** o `fixar` fica. Apagar é irreversível, o custo de manter um SVG que ninguém referencia é zero, e a arte é de quem desenhou. O `icones.mjs` continua listando-o como LIVRE, que é o registro honesto: existe, e ninguém usa ainda.
 
 **O resto da biblioteca passou.** 25 desenhos distintos, cada um legível como o rótulo ao lado — aparelho, baixar, buscar, caderno, conta, copiar, defeito, dúvidas, enviar, estante, estudos, mais-ações, marcador, mesa, nota-imagem, nota-nova, preferências, privacidade, refazer, remover, renomear. Duas observações que são de desenho e não de defeito, e por isso não viram item: o `baixar` põe a barra ACIMA da seta enquanto o `enviar` põe a bandeja ABAIXO — o par não espelha; e o `marcador` é um hexágono com um ponto, que é o glifo de nó ou de ajuste, e não o da fita que marca a página.
 **Prova:** `node scripts/provas.mjs r07`

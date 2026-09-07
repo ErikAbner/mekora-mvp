@@ -278,12 +278,21 @@
    * fica guardado. Ver `largura` em canvas_nos. Este `375` e so o fallback de
    * quem chegar sem valor. */
   inline-size: 375px;
-  /* MAIS LEVE, na passada de fecho. Antes: 40px de recheio e uma sombra dupla
-   * forte (0.13 + 0.07) que fazia o cartão ler como bloco flutuante, não como
-   * artefato de estudo. Agora: recheio na grade (24px, o passo da malha), um
-   * filete fino — a "borda fina" da identidade — e uma sombra sussurrada. O
-   * cartão fica preciso em vez de pesado, e continua distinto do chão. */
-  padding: 24px;
+  /* 40, QUE É O QUE O NÓ `895:7033` PÕE — e voltou a ser em 07/09.
+   *
+   * Eu tinha baixado para 24 com um argumento próprio: "recheio na grade, o
+   * passo da malha; o cartão fica preciso em vez de pesado". O argumento
+   * continua de pé como argumento, e mesmo assim ele perde — pela regra que o
+   * Erik deu no mesmo dia, a propósito da ilustração do Kindle: *"não
+   * substituir uma decisão explícita do desenho por outra apenas para evitar"*
+   * o que quem implementa acha melhor. Se um dia for alteração deliberada, será
+   * dele e não minha.
+   *
+   * O que TAMBÉM veio daquela passada e fica: a sombra sussurrada e o filete
+   * fino, no lugar da sombra dupla forte. Ali não havia número no nó sendo
+   * contrariado — havia uma sombra minha, trocada por outra minha, e a segunda
+   * é a da identidade. */
+  padding: 40px;
   border: 1px solid var(--border);
   background: var(--piso);
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);

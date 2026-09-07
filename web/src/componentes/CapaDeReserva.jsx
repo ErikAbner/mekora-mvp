@@ -43,13 +43,17 @@ import "./capa-de-reserva.css";
  * desenho em todos os tamanhos, que é trocar um defeito visível por um
  * silencioso.
  *
- * Então eles saem, e o conflito fica anotado para o Erik: ou os três sobem para
- * a escala — e a proporção do desenho muda —, ou a capa mostra só o título nos
- * tamanhos que o produto usa. O título sobrevive porque tem piso próprio, e
- * porque é o que identifica o livro.
+ * Então eles saem, e em 07/09 isto deixou de ser conflito: o produto NÃO TEM
+ * lugar que mostre uma capa de 420. São 252 na grade a 1440 e 159 nas duas
+ * colunas a 390 — e os dois números vêm do desenho, não de uma escolha minha.
+ * Um texto de 10px numa capa que nunca é desenhada em 420 nunca vai caber na
+ * escala; subir os três para 14 quebraria a proporção em todos os tamanhos que
+ * existem, para consertar um que não existe.
  *
- * As peças e o CSS deles continuam escritos: quando houver um lugar que mostre
- * a capa em 420, eles voltam sem serem reinventados. */
+ * A capa mostra só o título nos tamanhos que o produto usa. Ele sobrevive
+ * porque tem piso próprio e porque é o que identifica o livro. Se um dia
+ * houver uma tela que mostre a capa inteira — uma ficha, uma impressão —, as
+ * peças e o CSS dos três continuam escritos e voltam sem serem reinventados. */
 export function CapaDeReserva({ titulo, autor, formato, data, chave, className = "" }) {
   return (
     <span
