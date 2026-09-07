@@ -322,10 +322,26 @@ try {
   }
 
   if (passaOMouse) {
-    const onde = await avalia(`(() => { const e = document.querySelector(${JSON.stringify(passaOMouse)});
-      if (!e) return null; const r = e.getBoundingClientRect();
-      return { x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2) }; })()`);
-    if (!onde) throw new Error(`--mouse: nao achei "${passaOMouse}" na tela`);
+    /* O ALVO E PROCURADO ATE APARECER, e nao uma vez so.
+     *
+     * A busca acontecia num instante fixo depois do setup, e a tela que ainda
+     * estava montando devolvia null — o erro dizia "nao achei na tela", que le
+     * como seletor errado. Em 07/09 a bancada foi recriada com mais dados e a
+     * Estante passou dos 400ms: a r01 virou "nao consegui medir", e o seletor
+     * achava cinco elementos quando medido a mao.
+     *
+     * E o mesmo controle negativo da busca que o CLAUDE.md exige, aplicado ao
+     * instrumento: antes de dizer que nao ha, tentar de novo. Cinco segundos e
+     * o teto; passou disso, a ausencia e de verdade. */
+    let onde = null;
+    for (let i = 0; i < 25 && !onde; i++) {
+      onde = await avalia(`(() => { const e = document.querySelector(${JSON.stringify(passaOMouse)});
+        if (!e) return null; const r = e.getBoundingClientRect();
+        if (!r.width || !r.height) return null;
+        return { x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2) }; })()`);
+      if (!onde) await espera(200);
+    }
+    if (!onde) throw new Error(`--mouse: nao achei "${passaOMouse}" na tela depois de 5s`);
     await manda('Input.dispatchMouseEvent',
       { type: 'mouseMoved', x: onde.x, y: onde.y, button: 'none', buttons: 0, pointerType: 'mouse' });
     /* Um quadro para a transição começar, e o resto dela para terminar: 160ms
