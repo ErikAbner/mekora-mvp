@@ -26,11 +26,11 @@ D   backlog técnico             decide-se durante a implementação, por quem i
 
 | | quantas |
 |---|---:|
-| **A** — antes da arquitetura | 6 |
+| **A** — antes da arquitetura | 5 |
 | **B** — antes da feature afetada | 20 |
-| **C** — antes do lançamento | 2 |
+| **C** — antes do lançamento | **0** |
 | **D** — backlog técnico | 14 |
-| | **42** |
+| | **39** |
 
 *Contagem refeita em 07/09, contra as linhas da própria tabela — e revista no mesmo dia quando o `C21` fechou. Ela dizia 44 —
 A6, B22, C2, D14 — e a diferença não era arredondamento: **`C21` não estava
@@ -39,6 +39,10 @@ o parágrafo abaixo ter sido escrito, e o parágrafo continuou dizendo "sobram
 `C2` e `C10`". O item mais urgente da fila — marcado pelo Erik como **primeiro
 da fila de segurança**, valendo mais que os P1 juntos — estava invisível na
 contagem que a página abre.*
+
+*Revista de novo no fim de 07/09, quando `A10`, `C2` e `C10` fecharam — as três
+com decisão do Erik, e as três implementadas no mesmo dia. **A coluna `C` foi a
+zero:** não sobra nenhuma pergunta que precise de resposta antes do lançamento.*
 
 *Um cabeçalho que conta errado é pior que nenhum: ele é lido no lugar da tabela.*
 
@@ -169,7 +173,7 @@ Decidem forma de sistema. Errar aqui custa refação, não ajuste.
 | **A5** | **Como relacionar duas importações do mesmo título.** A norma proíbe colisão; não define agrupamento, metadado de edição nem deduplicação | mesma auditoria de A4 | DEC-0021 |
 | **A8** | **O escopo por domínio do `baseline_revisions`.** Todo run carimba todos os repositórios — `bin/project-os.mjs:804`, sem filtro | **nada.** É do Project OS, não do produto: instrumento decide e implementa | DEC-0026 |
 | **A9** | **Como o Kindle por cabo funciona num produto web.** *"Pelo cabo o Mekora leva e traz"* é a afirmação mais frágil da interface | **verificação de bancada**, não decisão. Um Kindle e um Chrome, numa tarde | DEC-0022 |
-| **A10** | **Onde fica a fronteira entre metadado e conteúdo.** Título, autor e formato não são o texto do livro — mas uma lista de títulos é um perfil. A `DEC-0032` protege conteúdo e não trata metadado | decisão | DEC-0032 |
+| **A10** | ✅ **FECHADA em 07/09 — `DEC-0040`.** ~~Onde fica a fronteira entre metadado e conteúdo~~ — três categorias: conteúdo (proteção da `DEC-0032`), metadado sensível de biblioteca (não vai para profiling, publicidade nem analytics sem necessidade explícita; sem log indiscriminado; acesso interno limitado) e metadado operacional. A regra central: metadado não é automaticamente conteúdo, mas metadado capaz de revelar o acervo ou o comportamento de leitura é dado sensível do produto. **E não era pergunta teórica:** o autocapture do `posthog-js` nasce com `maskAllText: false`, o `medir.js` passava `autocapture: true`, e clicar num livro da estante enviava título e autor para fora. Fechado com máscara global no autocapture, contêineres de acervo marcados para a Clarity, e o `medir.teste.mjs` — que tinha passado verde estando cego — reescrito com `--autoteste` de seis venenos | decisão | DEC-0032 |
 
 ### A9 mudou de enunciado, e a versão nova é mais barata
 
@@ -232,14 +236,14 @@ Podem ser decididas durante a construção. Não podem ficar sem resposta na V1.
 | | pergunta | origem |
 |---|---|---|
 | **C1** | ~~Que criptografia é usada, e se o produto tem acesso ao conteúdo em claro durante o processamento~~ — **respondida pelo código em 03/09.** Não há criptografia em repouso: `grep` por `Fernet`/`cryptography` no backend não devolve nada. O servidor lê o arquivo em claro, porque converter é ler — o Calibre e o ocrmypdf recebem o caminho. O que existe é o endereço não adivinhável (`token_publico`) e o dono. Isto é fato, não decisão; a decisão que sobra é se ISSO BASTA | DEC-0022 |
-| **C2** | O que é "processo mínimo necessário", e como o acesso humano interno é auditado e por quem | DEC-0022 |
+| **C2** | ✅ **FECHADA em 07/09 — `DEC-0041`.** ~~O que é "processo mínimo necessário", e como o acesso humano interno é auditado e por quem~~ — definido em quatro eixos (dados, privilégio, duração, número de pessoas), com ordem de investigação em quatro degraus e conteúdo restrito a três casos. **O estado medido antes de decidir:** uma porta de dono em quatro routers, um deles servindo o texto que as pessoas escreveram, e **zero registros de quem a atravessou**. Agora todo acesso privilegiado gera evidência com os sete campos, em JSONL append-only fora do banco, com limpeza por arquivo mensal e nunca por linha. A revisão fica com o operador, e isso vai escrito: não existe auditoria independente no Mekora, e afirmar que existe seria pior que não ter. Procedimento em `ACESSO.md` | DEC-0022 |
 | **C3** | ~~Por quanto tempo o original temporário sobrevive entre a falha e o descarte~~ — **respondida em 03/09.** O mesmo prazo de todos: `retention_days`, hoje 30. `error` está na lista de estados terminais da limpeza desde sempre, e agora `converted` e `analyzed` também — ver o achado abaixo | DEC-0021 · DEC-0022 |
 | **C4** | ~~Prazo exato de retenção de sessões anônimas~~ — **respondida em 03/09.** Trabalho sem dono não é caso à parte: ele cai na mesma limpeza por idade, que olha `updated_at` e não o dono. São os mesmos 30 dias, e a tela de privacidade os diz | DEC-0018 |
 | **C6** | ~~Se há consentimento para a coleta de uso, e como é pedido~~ — **decidido em 03/09: não se pede, e se diz.** A medição não sai do servidor, não toca conteúdo nem nome de arquivo, e a tela de Privacidade a lista item por item. Um banner de consentimento para dado que não vai a lugar nenhum treina a pessoa a clicar em "aceito" sem ler | DEC-0029 |
 | **C7** | ~~Por quanto tempo os eventos coletados são mantidos~~ — **90 dias, decidido em 03/09.** O mesmo número da janela sem conta, para não haver dois prazos a lembrar — e é o que a MEDIDA precisa: a estimativa de "costuma levar" exige cinco execuções da mesma etapa, e trinta dias apagaria a base antes de ela virar número. A limpeza roda no startup, junto da de arquivos | DEC-0029 |
 | **C8** | ~~Qual ferramenta de instrumentação é usada, e se é própria~~ — **respondida pelo código.** É própria: a tabela `stage_metrics`, escrita por `record_stage`. Não há serviço externo, e nada sai da máquina — a tela de privacidade diz isso desde 02/09 | DEC-0029 |
 | **C9** | ~~Quando as telas passam a ser efetivamente verificadas a 390px~~ — **reaberta e fechada de novo em 03/09.** O cabeçalho transbordava **102px em toda rota** (`scrollWidth` 492 numa janela de 390): a consulta de telefone trocava o `flex` de `.cabecalho-acoes` e deixava de pé o `inline-size: 476px` do computador. Junto, os dois atalhos que o `964:24606` substitui pelo hambúrguer continuavam na tela — a regra que os escondia pegava filho, e eles são netos —, e por isso o campo de busca ficava com 70px. Agora: 390 de 390 em treze rotas, campo de 198px. A medida original era boa; ela olhava o `body`, e o cabeçalho é parte `fixed`. — **fechada em 02/09.** As treze cabem, a Leitura inclusive: a auditoria a mede com um livro convertido de verdade, e ela passa com 21 nós | DEC-0023 |
-| **C10** | A migração do acervo e das notas existentes para identidade estável | DEC-0021 |
+| **C10** | ✅ **FECHADA em 07/09.** ~~A migração do acervo e das notas existentes para identidade estável~~ — `pessoas.uuid` (migração `c7d81e3a94b2`) substitui as duas identidades instáveis: o `id` sequencial, que muda em restore e fusão de bases, e o e-mail, que a pessoa troca. E `scripts/migrar-identidade.py` leva o grafo órfão para uma identidade **informada**, com os doze requisitos — backup, ensaio por padrão, inventário, contagens, transação, FKs ligadas, detecção de órfão, validação dentro da transação, idempotência, relatório e rollback impresso na saída. **O princípio é o que ele não faz:** nada de nome, e-mail parecido, título ou timestamp — o único sinal aceito é a chave estrangeira, e quando ela aponta para duas pessoas o script para. Dezesseis testes, a maioria medindo a recusa. Procedimento em `MIGRAR-IDENTIDADE.md` | DEC-0021 |
 | **C11** | ~~Que estado cada uma das 19 DECs anteriores recebe~~ — **fechada em 03/09.** As trinta e nove continuam `accepted`: a própria DEC-0027 §4 diz que emenda parcial NÃO é estado, e nenhuma foi superada ou revogada. O que faltava era mecânico e relacional — onze declaravam com item de lista e passaram à forma em negrito, e três emendadas não tinham apontamento reverso. E o conflito que ela nomeava foi resolvido: **a emendada é a DEC-0017** | DEC-0027 |
 | **C12** | ~~O `role` literal de cada repositório existente~~ — **reconciliado em 03/09.** Os dezoito foram normalizados contra o vocabulário da DEC-0026, e a abertura que ela prevê foi usada duas vezes: `product` (o repositório que é o produto inteiro — Mekora depois da fusão, Panela, Plantas) e `native-client` (Siphon e o widget do Plantas, que não são web-frontend). O texto livre migrou para `role_description` e o `os context` imprime os dois | DEC-0026 |
 | **C13** | ~~Quando a máquina Windows é efetivamente zerada~~ — **aposentada em 03/09.** `status: retired` no `machines.json`, com data, razão e sucessor. A entrada FICA: a DEC-0028 permite zerar e proíbe remover do histórico, e os 100 runs dela continuam apontando para uma máquina que o registro conhece. O `role`, que estava errado desde 06/08, foi corrigido para o que ela de fato foi | DEC-0028 |

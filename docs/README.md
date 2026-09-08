@@ -60,6 +60,7 @@ auditoria vencida, que se lê como estado se ninguém avisar.
 | `SUBIR.md` | Subir, conferir e voltar atrás em produção; `alembic`, backup, rotas |
 | `RESTAURAR.md` | **Recuperar a partir de um backup** — listar, escolher, restaurar, validar e promover. Escrito para quem não conhece o código |
 | `ACESSO.md` | **Acesso a dado de usuário** — a ordem de investigação, quando conteúdo é legítimo, o que fica registrado e como revisar. `DEC-0041` |
+| `MIGRAR-IDENTIDADE.md` | **Migrar o grafo legado para identidade estável** — `pessoas.uuid`, o inventário, o ensaio, e por que o script nunca adivinha proprietário. Item `C10` |
 
 **Histórico** — registro de como se chegou aqui. **Não é estado vigente:**
 

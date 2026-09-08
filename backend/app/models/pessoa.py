@@ -24,6 +24,7 @@ de sessão em texto puro no banco é uma senha em texto puro no banco.
 
 from datetime import datetime, timedelta, timezone
 
+import uuid as _uuid
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
@@ -62,6 +63,26 @@ class Pessoa(Base):
     __tablename__ = "pessoas"
 
     id = Column(Integer, primary_key=True, index=True)
+
+    # A IDENTIDADE ESTÁVEL — `C10`, fechada em 07/09.
+    #
+    # As duas identidades anteriores mudavam. O `id` é sequencial e depende da
+    # ordem de inserção: dois bancos do mesmo produto dão o 7 a pessoas
+    # diferentes, e um restore para banco novo renumera todo mundo. O `email` é
+    # a chave natural, e a pessoa troca de endereço — trocar de endereço não
+    # pode significar virar outra pessoa.
+    #
+    # Opaco de propósito: um identificador que não carrega informação sobre quem
+    # é pode aparecer em log e em auditoria, e o e-mail não pode (`DEC-0040`:
+    # id interno opaco é metadado operacional).
+    uuid = Column(
+        String(36),
+        unique=True,
+        nullable=False,
+        index=True,
+        default=lambda: str(_uuid.uuid4()),
+    )
+
     # Guardado em minúsculas e sem espaço nas pontas. Sem isso, `Erik@x.com` e
     # `erik@x.com` viram duas contas com duas estantes, e a pessoa perde a dela
     # por causa da tecla shift.
