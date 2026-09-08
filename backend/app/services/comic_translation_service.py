@@ -22,6 +22,10 @@ from app.services.archive_safety import (
     safe_extract_7z,
     safe_iter_image_names,
 )
+from app.services.translation_engine import (
+    EngineNotInstalledError,
+    LanguagePairNotAvailableError,
+)
 
 # Importações opcionais — evita falha em CI sem as dependências
 try:
@@ -64,6 +68,54 @@ _IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp"}
 # ---------------------------------------------------------------------------
 # Extração de páginas
 # ---------------------------------------------------------------------------
+
+def contar_paginas(job_path: str, input_format: str) -> int:
+    """Quantas páginas o arquivo tem, SEM ler o conteúdo delas.
+
+    Existe porque a proteção de `limits.max_pages` rodava depois da extração
+    inteira. Medido em 08/09 com um CBZ de 4.000 páginas — acima do limite de
+    3.000 e abaixo do limite de 5.000 entradas do `archive_safety`, que é a
+    faixa onde nenhuma outra proteção alcança: **49 MB já estavam na memória**
+    quando o `PageLimitExceededError` foi levantado. Com páginas de tamanho real
+    em vez das de prova, seriam gigabytes.
+
+    Ler o índice não lê os bytes: `namelist()`, `infolist()` e `page_count`
+    respondem pelo cabeçalho do arquivo.
+    """
+    fmt = (input_format or "").lower().lstrip(".")
+    try:
+        if fmt == "cbz":
+            with zipfile.ZipFile(job_path, "r") as zf:
+                inspect_zip_members(zf)
+                return len(safe_iter_image_names(zf.namelist(), _IMAGE_EXTS))
+        if fmt == "cbr":
+            import rarfile
+
+            with rarfile.RarFile(job_path, "r") as rf:
+                inspect_rar_members(rf)
+                return len(
+                    safe_iter_image_names(
+                        (i.filename for i in rf.infolist()), _IMAGE_EXTS
+                    )
+                )
+        if fmt == "pdf":
+            import fitz
+
+            doc = fitz.open(job_path)
+            try:
+                return doc.page_count
+            finally:
+                doc.close()
+    except ArchiveSafetyError:
+        raise
+    except Exception:  # noqa: BLE001
+        # NÃO SABER NÃO É ZERO. Um formato que este atalho não alcança — cb7 e
+        # cbc precisam extrair para contar — devolve -1, e quem chama entende
+        # que a contagem tem de esperar a extração. Devolver 0 aqui faria a
+        # proteção passar por omissão, que é o defeito clássico da casa.
+        return -1
+    return -1
+
 
 def extract_comic_pages(job_path: str, input_format: str) -> list[bytes]:
     """
@@ -194,6 +246,7 @@ def ocr_page(img_bytes: bytes, lang: str) -> list[str]:
             # Comparação exata antes de decodificar
             w, h = img.size
             if w * h > limits.image_max_pixels:
+                img.close()
                 raise ImageBombError(
                     "Imagem com dimensões acima do limite permitido."
                 )
@@ -206,7 +259,13 @@ def ocr_page(img_bytes: bytes, lang: str) -> list[str]:
         raise ImageBombError(
             "Imagem com dimensões acima do limite permitido."
         )
-    raw: str = _pytesseract.image_to_string(img, lang=tess_lang)
+    # A IMAGEM É FECHADA, e antes ficava aberta uma por página. Num álbum de
+    # 3.000 páginas são 3.000 descritores esperando o coletor de lixo, e o
+    # limite de descritores do sistema chega antes dele.
+    try:
+        raw: str = _pytesseract.image_to_string(img, lang=tess_lang)
+    finally:
+        img.close()
     blocks = [b.strip() for b in raw.split("\n\n") if b.strip()]
     return blocks
 
@@ -236,10 +295,20 @@ def run_comic_translation_pipeline(
 
     Retorna (json_path, html_path).
     """
+    # A PROTEÇÃO VEM ANTES DE LER OS BYTES — ver `contar_paginas`.
+    previstas = contar_paginas(input_path, input_format)
+    if previstas > limits.max_pages:
+        raise PageLimitExceededError(
+            f"O arquivo tem {previstas} páginas; o limite é {limits.max_pages}."
+        )
+
     pages_bytes = extract_comic_pages(input_path, input_format)
     total_pages = len(pages_bytes)
 
-    # P5 — proteção de páginas ANTES de iniciar tradução/render
+    # E DE NOVO DEPOIS, para os formatos que a contagem barata não alcança
+    # (`cb7` e `cbc` precisam extrair para contar, e devolvem -1). Duas
+    # verificações não é redundância: a de cima poupa memória quando dá, e esta
+    # é a que garante o limite sempre.
     if total_pages > limits.max_pages:
         raise PageLimitExceededError(
             f"O arquivo tem {total_pages} páginas; o limite é "
@@ -256,7 +325,14 @@ def run_comic_translation_pipeline(
             )
         try:
             blocks = ocr_page(img_bytes, source_lang)
-            translated_blocks = _translate_blocks(blocks, source_lang, target_lang, engine)
+            translated_blocks = _translate_blocks(
+                blocks, source_lang, target_lang, engine,
+                # O CANCELAMENTO CHEGA DENTRO DA PÁGINA. Ele só era conferido
+                # ENTRE páginas, e uma página de quadrinho tem dezenas de
+                # balões: pedir para cancelar deixava o job rodando até o fim da
+                # página corrente, uma chamada ao modelo por balão.
+                aviso=progress_callback, pagina=page_num, total=total_pages,
+            )
             results.append({"page": page_num, "blocks": translated_blocks})
         except RuntimeError:
             # pytesseract ausente — abortar (erro de configuração)
@@ -264,13 +340,20 @@ def run_comic_translation_pipeline(
         except ImageBombError as exc:
             # Página inválida por tamanho absurdo — registrar mas não abortar
             results.append({"page": page_num, "blocks": [], "error": str(exc)})
+        except (EngineNotInstalledError, LanguagePairNotAvailableError):
+            # ERRO DE MOTOR ABORTA, e agora pela classe e não pelo nome dela.
+            #
+            # A comparação era `type(exc).__name__ in ("EngineNotInstalled...")`,
+            # e o comentário dizia que era "para evitar import circular".
+            # Conferido em 08/09: **não existe import circular** — o
+            # `translation_engine` não importa nada de `app.` (o arquivo não tem
+            # uma linha `from app.`). O custo do disfarce é real: uma subclasse
+            # não casa, e renomear a classe transforma um erro de configuração
+            # que devia abortar num "erro daquela página" — o job termina
+            # "com sucesso", com todas as páginas vazias e um erro repetido
+            # dentro do JSON.
+            raise
         except Exception as exc:  # noqa: BLE001
-            # Erros de engine (EngineNotInstalledError, LanguagePairNotAvailableError)
-            # devem abortar o pipeline — verificar pelo nome da classe para evitar
-            # import circular
-            exc_type = type(exc).__name__
-            if exc_type in ("EngineNotInstalledError", "LanguagePairNotAvailableError"):
-                raise
             # Erros por página: registrar e continuar
             results.append({"page": page_num, "blocks": [], "error": str(exc)})
 
@@ -283,11 +366,35 @@ def run_comic_translation_pipeline(
         "target_language": target_lang,
         "pages": results,
     }
-    json_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    html_path.write_text(
-        _build_html_sidecar(results, title=f"Job {job_id}"),
-        encoding="utf-8",
-    )
+    # OS DOIS ARTEFATOS APARECEM JUNTOS, ou nenhum aparece.
+    #
+    # A escrita era `json_path.write_text(...)` seguida de
+    # `html_path.write_text(...)`, e entre as duas cabe um disco cheio, um
+    # `KeyboardInterrupt` ou uma queda. O que sobrava era um JSON sem o HTML que
+    # ele promete — um par pela metade que a próxima leitura trata como
+    # resultado completo.
+    #
+    # Escreve em temporários no MESMO diretório (rename entre discos não é
+    # atômico) e renomeia por cima. `Path.replace` é atômico no POSIX: ou o
+    # arquivo antigo, ou o novo, nunca meio arquivo.
+    output_dir.mkdir(parents=True, exist_ok=True)
+    tmp_json = json_path.with_suffix(".json.parcial")
+    tmp_html = html_path.with_suffix(".html.parcial")
+    try:
+        tmp_json.write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+        tmp_html.write_text(
+            _build_html_sidecar(results, title=f"Job {job_id}"), encoding="utf-8"
+        )
+        tmp_json.replace(json_path)
+        tmp_html.replace(html_path)
+    finally:
+        # O que sobrar de uma escrita interrompida sai daqui: um `.parcial`
+        # esquecido no diretório de saída seria o lixo que este bloco existe
+        # para não deixar.
+        tmp_json.unlink(missing_ok=True)
+        tmp_html.unlink(missing_ok=True)
 
     return json_path, html_path
 
@@ -297,9 +404,27 @@ def _translate_blocks(
     src: str,
     tgt: str,
     engine: Any,
+    aviso: Any = None,
+    pagina: int = 0,
+    total: int = 0,
 ) -> list[dict[str, str]]:
+    """Traduz os balões de uma página, um a um.
+
+    UM A UM É DIFERENTE DO TEXTO CORRIDO, e a diferença é justificada: no
+    `translation_service` os blocos vão agrupados por `chunk_blocks` com um
+    separador, porque são parágrafos de um mesmo fluxo e o motor lucra com o
+    contexto. Aqui cada bloco é um balão isolado, e juntá-los com um separador
+    faria o modelo tratar falas de personagens diferentes como um texto só — o
+    separador vira parte da frase traduzida, e a divisão de volta erra.
+
+    O custo é uma chamada por balão, e ele é conhecido: é o preço de não
+    misturar falas.
+    """
     result: list[dict[str, str]] = []
     for block in blocks:
+        # A exceção do aviso propaga — é assim que o cancelamento chega.
+        if aviso is not None:
+            aviso("comic_translate", pagina - 1, total, f"Traduzindo página {pagina}")
         translated = engine.translate(block, src, tgt)
         result.append({"text": block, "translated": translated})
     return result

@@ -11,7 +11,7 @@ import dataclasses
 from pathlib import Path
 
 from app.services.document_extractor_service import TextBlock, extract_blocks
-from app.services.translation_engine import TranslatorEngine
+from app.services.translation_engine import TranslatorEngine, teto_de_entrada
 
 _BLOCK_SEP = "\n\n---BLOCK_SEP---\n\n"
 
@@ -52,6 +52,36 @@ def chunk_blocks(blocks: list[TextBlock], max_chars: int = 2000) -> list[list[Te
 # Tradução de blocos
 # ---------------------------------------------------------------------------
 
+def partir_texto(texto: str, teto: int) -> list[str]:
+    """Divide *texto* em pedaços de até *teto* caracteres, sem perder nada.
+
+    Corta na fronteira mais respeitosa que couber: fim de frase, senão espaço,
+    senão no limite bruto — que só acontece com uma "palavra" maior que o teto,
+    e aí não há fronteira nenhuma a respeitar.
+
+    ISTO EXISTE PORQUE O CORTE ACONTECIA DE QUALQUER JEITO, e sem devolver o
+    resto: o motor recebia o bloco inteiro e truncava em silêncio.
+    """
+    if teto <= 0 or len(texto) <= teto:
+        return [texto]
+    partes: list[str] = []
+    resto = texto
+    while len(resto) > teto:
+        janela = resto[:teto]
+        corte = -1
+        for marca in (". ", "! ", "? ", "\n"):
+            corte = max(corte, janela.rfind(marca) + len(marca))
+        if corte <= 0:
+            corte = janela.rfind(" ") + 1
+        if corte <= 0:
+            corte = teto
+        partes.append(resto[:corte])
+        resto = resto[corte:]
+    if resto:
+        partes.append(resto)
+    return partes
+
+
 def translate_blocks(
     blocks: list[TextBlock],
     engine: TranslatorEngine,
@@ -66,11 +96,30 @@ def translate_blocks(
     Retorna novos objetos (blocos originais são imutáveis).
     progress_callback(stage, current, total, message) opcional (P4): chamado
     a cada chunk; exceções do callback propagam (ex.: cancelamento).
+
+    O TETO É DO MOTOR, e não deste arquivo. Antes de 08/09 o agrupamento usava
+    2000 caracteres para qualquer motor, e o NLLB — que roda com
+    `max_length=512, truncation=True` — devolvia o bloco cortado sem dizer.
+    Medido: um parágrafo de 5.840 caracteres voltava com 37% do texto.
+
+    Um bloco maior que o teto é PARTIDO e recomposto, e não entregue inteiro
+    para ser truncado: a saída tem os mesmos blocos da entrada, na mesma ordem,
+    com a mesma estrutura.
     """
     if not blocks:
         return []
 
-    chunks = chunk_blocks(blocks)
+    teto = teto_de_entrada(engine)
+
+    # Parte os blocos grandes, guardando de qual bloco cada pedaço veio.
+    pedacos: list[TextBlock] = []
+    origem: list[int] = []
+    for indice, bloco in enumerate(blocks):
+        for parte in partir_texto(bloco.text, teto):
+            pedacos.append(dataclasses.replace(bloco, text=parte))
+            origem.append(indice)
+
+    chunks = chunk_blocks(pedacos, max_chars=teto)
     translated_blocks: list[TextBlock] = []
 
     for chunk_idx, chunk in enumerate(chunks):
@@ -94,7 +143,14 @@ def translate_blocks(
                 dataclasses.replace(block, text=translated_text.strip())
             )
 
-    return translated_blocks
+    # Recompõe os pedaços de volta nos blocos de origem. Sem isto, um parágrafo
+    # partido chegaria à saída como vários parágrafos — a perda de texto viraria
+    # uma mudança de estrutura, que é outro defeito com a mesma causa.
+    reunidos: list[TextBlock] = []
+    for indice, bloco in enumerate(blocks):
+        partes = [t.text for t, i in zip(translated_blocks, origem) if i == indice]
+        reunidos.append(dataclasses.replace(bloco, text=" ".join(p for p in partes if p)))
+    return reunidos
 
 
 # ---------------------------------------------------------------------------

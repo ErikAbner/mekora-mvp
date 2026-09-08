@@ -369,15 +369,15 @@ def _build_engine(engine_name: str, cfg: dict):
         "argos" ou "nllb"
     cfg : dict
         Configuração da aplicação (load_app_config()).
+
+    A DECISÃO MORA NO SERVIÇO desde 08/09 — `translation_engine.criar_motor`.
+    Esta função fica como o nome que os cinco chamadores daqui já usam, e como o
+    que o `comic_quick.py` importava; o que ela não é mais é o lugar onde a
+    escolha acontece.
     """
-    if engine_name == "nllb":
-        from app.services.nllb_engine import NllbTranslatorEngine
-        return NllbTranslatorEngine(
-            model_name=cfg.get("nllb_model_name", "facebook/nllb-200-distilled-600M"),
-            device=cfg.get("nllb_device_preference") or None,
-        )
-    from app.services.translation_engine import ArgosTranslatorEngine
-    return ArgosTranslatorEngine()
+    from app.services.translation_engine import criar_motor
+
+    return criar_motor(engine_name, cfg)
 
 
 # ---------------------------------------------------------------------------

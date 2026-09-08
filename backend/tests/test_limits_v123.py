@@ -36,6 +36,13 @@ def test_ocr_page_rejects_over_limit_by_dimensions(monkeypatch, tmp_path):
         pytest.skip("pytesseract não instalado")
 
     load_called = {"n": 0}
+    # O DUBLÊ PRECISA TER `close`, porque a imagem de verdade tem.
+    #
+    # Desde 08/09 o `ocr_page` fecha a imagem — num álbum de 3.000 páginas eram
+    # 3.000 descritores esperando o coletor de lixo. O dublê sem `close`
+    # reprovava com `AttributeError`, e a lição é do dublê: um que não implementa
+    # o que substitui reprova código correto e aprova código errado.
+    fechada = {"n": 0}
 
     class _FakeImg:
         # 12000×12000 = 144 MP > default 100 MP
@@ -44,6 +51,9 @@ def test_ocr_page_rejects_over_limit_by_dimensions(monkeypatch, tmp_path):
         def load(self):
             load_called["n"] += 1
 
+        def close(self):
+            fechada["n"] += 1
+
     monkeypatch.setattr(cts._PILImage, "open", lambda *a, **kw: _FakeImg())
 
     with pytest.raises(cts.ImageBombError):
@@ -51,6 +61,9 @@ def test_ocr_page_rejects_over_limit_by_dimensions(monkeypatch, tmp_path):
 
     # A rejeição aconteceu ANTES de load()
     assert load_called["n"] == 0
+    # E a imagem recusada também é fechada: sair pela porta do erro não é
+    # licença para deixar o descritor aberto.
+    assert fechada["n"] == 1
 
 
 def test_ocr_page_accepts_normal_image(monkeypatch):
@@ -62,6 +75,7 @@ def test_ocr_page_accepts_normal_image(monkeypatch):
     class _FakeImg:
         size = (2000, 3000)  # 6 MP — bem abaixo do default
         def load(self): pass
+        def close(self): pass
 
     monkeypatch.setattr(cts._PILImage, "open", lambda *a, **kw: _FakeImg())
     monkeypatch.setattr(

@@ -26,11 +26,11 @@ D   backlog técnico             decide-se durante a implementação, por quem i
 
 | | quantas |
 |---|---:|
-| **A** — antes da arquitetura | 5 |
+| **A** — antes da arquitetura | 2 |
 | **B** — antes da feature afetada | 20 |
 | **C** — antes do lançamento | **0** |
 | **D** — backlog técnico | 14 |
-| | **39** |
+| | **36** |
 
 *Contagem refeita em 07/09, contra as linhas da própria tabela — e revista no mesmo dia quando o `C21` fechou. Ela dizia 44 —
 A6, B22, C2, D14 — e a diferença não era arredondamento: **`C21` não estava
@@ -168,9 +168,9 @@ Decidem forma de sistema. Errar aqui custa refação, não ajuste.
 
 | | pergunta | o que destrava | origem |
 |---|---|---|---|
-| **A2** | **Como a tradução própria é construída.** A regra é o limite; a arquitetura que a cumpre pode ter custo relevante | auditar o pipeline NLLB no Mac — `mac-mini-erik:/Users/sipnm/dev/kindle-local-tool`, revisão `12d7062`. **Precedente não é conformidade** | DEC-0022 |
-| **A4** | **O formato do identificador de conteúdo.** UUID foi exemplo, não especificação | auditar o schema no Mac — Drizzle com `livros`, `notas`, `tags`, `livro_tags`, commit `e0a5204` | DEC-0021 |
-| **A5** | **Como relacionar duas importações do mesmo título.** A norma proíbe colisão; não define agrupamento, metadado de edição nem deduplicação | mesma auditoria de A4 | DEC-0021 |
+| **A2** | ✅ **FECHADA em 08/09 — `docs/TRADUCAO.md`.** ~~Como a tradução própria é construída~~ — deixou de esperar a auditoria de um repositório que **não existe mais nesta máquina** (`/Users/sipnm/Projeto-kindle/` tem um `.DS_Store`) e virou a conclusão de `A4`+`A5` sobre o código que existe. A seam é `TranslatorEngine`, e ela **já era**: dois métodos, sem estado compartilhado, instância entregue pronta aos dois pipelines. Nenhuma camada nova — o que faltava era um lugar só onde a instância é escolhida, e a fábrica morava na camada de API. `MEKORA_MOTOR_DE_TESTE` entra por ali com sucesso, erro, timeout, resposta inválida e cancelamento determinísticos | DEC-0022 |
+| **A4** | ✅ **FECHADA em 08/09.** ~~Auditoria do engine e do model service~~ — cinco defeitos medidos e corrigidos: o cache do modelo sem trava (duas traduções simultâneas carregavam 2,4 GB **duas vezes**), sem teto e com o dispositivo fora da chave (`device="mps"` reusava o pipeline de `cpu`); `is_nllb_model_ready` dizia "pronto" para um diretório com **zero arquivos de peso** — 22 MB onde deveriam estar 2,4 GB; `is_pair_available` respondia coisas diferentes nas duas implementações da mesma interface; e o truncamento silencioso, que fazia um parágrafo de 5.840 caracteres voltar com **37% do texto**. Ver `docs/TRADUCAO.md` | DEC-0021 |
+| **A5** | ✅ **FECHADA em 08/09.** ~~Auditoria do fluxo de quadrinho~~ — cinco defeitos: `limits.max_pages` conferido **depois** da extração inteira (medido: 49 MB na memória antes de o erro sair); erro de motor detectado por **nome de classe em string**, justificado por um import circular que **não existe**; os dois artefatos escritos em sequência, deixando JSON sem HTML numa queda; cancelamento que só chegava **entre** páginas, com dezenas de balões por página; e a imagem do OCR nunca fechada. A diferença entre traduzir texto e traduzir balão foi conferida e é legítima — está escrita. Ver `docs/TRADUCAO.md` | DEC-0021 |
 | **A8** | **O escopo por domínio do `baseline_revisions`.** Todo run carimba todos os repositórios — `bin/project-os.mjs:804`, sem filtro | **nada.** É do Project OS, não do produto: instrumento decide e implementa | DEC-0026 |
 | **A9** | **Como o Kindle por cabo funciona num produto web.** *"Pelo cabo o Mekora leva e traz"* é a afirmação mais frágil da interface | **verificação de bancada**, não decisão. Um Kindle e um Chrome, numa tarde | DEC-0022 |
 | **A10** | ✅ **FECHADA em 07/09 — `DEC-0040`.** ~~Onde fica a fronteira entre metadado e conteúdo~~ — três categorias: conteúdo (proteção da `DEC-0032`), metadado sensível de biblioteca (não vai para profiling, publicidade nem analytics sem necessidade explícita; sem log indiscriminado; acesso interno limitado) e metadado operacional. A regra central: metadado não é automaticamente conteúdo, mas metadado capaz de revelar o acervo ou o comportamento de leitura é dado sensível do produto. **E não era pergunta teórica:** o autocapture do `posthog-js` nasce com `maskAllText: false`, o `medir.js` passava `autocapture: true`, e clicar num livro da estante enviava título e autor para fora. Fechado com máscara global no autocapture, contêineres de acervo marcados para a Clarity, e o `medir.teste.mjs` — que tinha passado verde estando cego — reescrito com `--autoteste` de seis venenos | decisão | DEC-0032 |

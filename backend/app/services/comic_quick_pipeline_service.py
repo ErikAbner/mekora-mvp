@@ -158,15 +158,16 @@ def run_preflight(job: dict, output_dir: Path, cfg: dict) -> dict:
 
 def _check_engine(engine_name: str, src: str, tgt: str, cfg: dict) -> tuple[bool, str]:
     try:
-        if engine_name == "nllb":
-            from app.services.nllb_engine import NllbTranslatorEngine
-            engine: Any = NllbTranslatorEngine(
-                model_name=cfg.get("nllb_model_name", "facebook/nllb-200-distilled-600M"),
-                device=cfg.get("nllb_device_preference") or None,
-            )
-        else:
-            from app.services.translation_engine import ArgosTranslatorEngine
-            engine = ArgosTranslatorEngine()
+        # A MESMA FÁBRICA QUE CONSTRÓI O MOTOR DO JOB.
+        #
+        # Este bloco REESCREVIA a decisão do `_build_engine`, e a divergência
+        # era só questão de tempo: quem acrescentasse um motor teria dois
+        # lugares para lembrar e um para esquecer — e o esquecido é justamente
+        # o que confere se o motor está pronto. A tela diria "pronto" para um
+        # motor que a fábrica nem sabe construir.
+        from app.services.translation_engine import criar_motor
+
+        engine: Any = criar_motor(engine_name, cfg)
         if engine.is_pair_available(src, tgt):
             return True, f"Engine '{engine_name}' pronta para {src}→{tgt}."
         return False, (f"Par de idiomas {src}→{tgt} indisponível na engine "

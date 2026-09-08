@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from app.core.config import PROJECT_ROOT, STORAGE_RAIZ
+from app.core.config import STORAGE_RAIZ
 
 # Diretório padrão onde setup_nllb.py baixa o modelo
 NLLB_DEFAULT_MODEL_DIR: Path = STORAGE_RAIZ / "models" / "nllb"
@@ -39,17 +39,45 @@ def is_nllb_installed() -> bool:
         return False
 
 
-def is_nllb_model_ready(model_name: str, model_dir: Path | None = None) -> bool:
-    """
-    True se o modelo NLLB está disponível localmente.
+# Os nomes que a Hugging Face usa para os PESOS. `config.json` e o tokenizer não
+# bastam: eles somam ~22 MB, e o modelo pesa ~2,4 GB.
+PESOS = ("*.safetensors", "*.bin", "*.msgpack", "*.h5", "*.pt")
 
-    Verifica se model_dir existe e contém ao menos um arquivo 'config.json',
-    que é obrigatório em todos os modelos Hugging Face.
+
+def modelo_utilizavel(model_dir: str | Path | None = None) -> bool:
+    """True quando o diretório tem um modelo que dá para CARREGAR.
+
+    A VERSÃO ANTIGA CONFERIA SÓ O `config.json`, e por isso dizia "pronto" para
+    um download interrompido. Medido em 08/09 no storage deste repositório:
+
+        storage/models/nllb/  →  config.json ✓  tokenizer ✓  pesos: NENHUM
+        is_nllb_model_ready(...)  →  True
+
+    São 22 MB de metadados onde deveriam estar 2,4 GB. Com `transformers`
+    instalado, o produto anunciaria o NLLB disponível, a pessoa o escolheria, e
+    o carregamento estouraria NO MEIO DE UM JOB — e não na tela de configuração,
+    que é onde um "falta baixar o modelo" custa trinta segundos.
     """
-    check_dir = model_dir if model_dir else NLLB_DEFAULT_MODEL_DIR
-    if not check_dir.exists():
+    d = Path(model_dir) if model_dir else NLLB_DEFAULT_MODEL_DIR
+    if not d.is_dir() or not (d / "config.json").exists():
         return False
-    return (check_dir / "config.json").exists()
+    return any(next(d.glob(padrao), None) is not None for padrao in PESOS)
+
+
+def is_nllb_model_ready(model_name: str | None = None, model_dir: Path | None = None) -> bool:
+    """True se o modelo NLLB está disponível localmente, com os pesos.
+
+    `model_name` É ACEITO E NÃO É USADO, e agora isso está dito em vez de
+    escondido: o que existe em disco é UM diretório, e o nome do modelo que a
+    configuração pede não é conferido contra o que foi baixado. Medido:
+    `is_nllb_model_ready('modelo-que-nao-existe-nenhum')` devolvia `True`.
+
+    Conferir de verdade exigiria comparar com o `_name_or_path` do `config.json`
+    — que no download deste repositório vem `None`. Enquanto isso não for
+    resolvido, o parâmetro fica na assinatura pelos chamadores existentes, e o
+    limite fica escrito aqui em vez de parecer uma verificação que não é.
+    """
+    return modelo_utilizavel(model_dir)
 
 
 # ---------------------------------------------------------------------------
