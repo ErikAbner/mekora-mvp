@@ -26,11 +26,11 @@ D   backlog técnico             decide-se durante a implementação, por quem i
 
 | | quantas |
 |---|---:|
-| **A** — antes da arquitetura | 2 |
+| **A** — antes da arquitetura | 1 |
 | **B** — antes da feature afetada | 20 |
 | **C** — antes do lançamento | **0** |
-| **D** — backlog técnico | 14 |
-| | **36** |
+| **D** — backlog técnico | 6 |
+| | **27** |
 
 *Contagem refeita em 07/09, contra as linhas da própria tabela — e revista no mesmo dia quando o `C21` fechou. Ela dizia 44 —
 A6, B22, C2, D14 — e a diferença não era arredondamento: **`C21` não estava
@@ -171,7 +171,7 @@ Decidem forma de sistema. Errar aqui custa refação, não ajuste.
 | **A2** | ✅ **FECHADA em 08/09 — `docs/TRADUCAO.md`.** ~~Como a tradução própria é construída~~ — deixou de esperar a auditoria de um repositório que **não existe mais nesta máquina** (`/Users/sipnm/Projeto-kindle/` tem um `.DS_Store`) e virou a conclusão de `A4`+`A5` sobre o código que existe. A seam é `TranslatorEngine`, e ela **já era**: dois métodos, sem estado compartilhado, instância entregue pronta aos dois pipelines. Nenhuma camada nova — o que faltava era um lugar só onde a instância é escolhida, e a fábrica morava na camada de API. `MEKORA_MOTOR_DE_TESTE` entra por ali com sucesso, erro, timeout, resposta inválida e cancelamento determinísticos | DEC-0022 |
 | **A4** | ✅ **FECHADA em 08/09.** ~~Auditoria do engine e do model service~~ — cinco defeitos medidos e corrigidos: o cache do modelo sem trava (duas traduções simultâneas carregavam 2,4 GB **duas vezes**), sem teto e com o dispositivo fora da chave (`device="mps"` reusava o pipeline de `cpu`); `is_nllb_model_ready` dizia "pronto" para um diretório com **zero arquivos de peso** — 22 MB onde deveriam estar 2,4 GB; `is_pair_available` respondia coisas diferentes nas duas implementações da mesma interface; e o truncamento silencioso, que fazia um parágrafo de 5.840 caracteres voltar com **37% do texto**. Ver `docs/TRADUCAO.md` | DEC-0021 |
 | **A5** | ✅ **FECHADA em 08/09.** ~~Auditoria do fluxo de quadrinho~~ — cinco defeitos: `limits.max_pages` conferido **depois** da extração inteira (medido: 49 MB na memória antes de o erro sair); erro de motor detectado por **nome de classe em string**, justificado por um import circular que **não existe**; os dois artefatos escritos em sequência, deixando JSON sem HTML numa queda; cancelamento que só chegava **entre** páginas, com dezenas de balões por página; e a imagem do OCR nunca fechada. A diferença entre traduzir texto e traduzir balão foi conferida e é legítima — está escrita. Ver `docs/TRADUCAO.md` | DEC-0021 |
-| **A8** | **O escopo por domínio do `baseline_revisions`.** Todo run carimba todos os repositórios — `bin/project-os.mjs:804`, sem filtro | **nada.** É do Project OS, não do produto: instrumento decide e implementa | DEC-0026 |
+| **A8** | ✅ **FECHADO em 08/09.** ~~O escopo por domínio do `baseline_revisions`~~ — a pergunta era se carimbar todos os repositórios era escopo demais, e medindo os 236 runs a resposta foi outra: o campo copiava `repo.revision` do MANIFESTO, escrito à mão. O manifesto dizia `produto: 80c5413`; o repositório estava em `9b4ff7e`, **575 commits depois**, e os 236 runs gravaram a mesma string. A hipótese óbvia caiu junto: os `historical-reference` tiveram TRÊS revisões e o `produto`, UMA — o campo media com que frequência alguém editava o JSON. Agora a revisão vem do git, e o escopo se resolve por presença: carimba-se o que esta máquina alcança | DEC-0026 |
 | **A9** | **Como o Kindle por cabo funciona num produto web.** *"Pelo cabo o Mekora leva e traz"* é a afirmação mais frágil da interface | **verificação de bancada**, não decisão. Um Kindle e um Chrome, numa tarde | DEC-0022 |
 | **A10** | ✅ **FECHADA em 07/09 — `DEC-0040`.** ~~Onde fica a fronteira entre metadado e conteúdo~~ — três categorias: conteúdo (proteção da `DEC-0032`), metadado sensível de biblioteca (não vai para profiling, publicidade nem analytics sem necessidade explícita; sem log indiscriminado; acesso interno limitado) e metadado operacional. A regra central: metadado não é automaticamente conteúdo, mas metadado capaz de revelar o acervo ou o comportamento de leitura é dado sensível do produto. **E não era pergunta teórica:** o autocapture do `posthog-js` nasce com `maskAllText: false`, o `medir.js` passava `autocapture: true`, e clicar num livro da estante enviava título e autor para fora. Fechado com máscara global no autocapture, contêineres de acervo marcados para a Clarity, e o `medir.teste.mjs` — que tinha passado verde estando cego — reescrito com `--autoteste` de seis venenos | decisão | DEC-0032 |
 
@@ -300,14 +300,14 @@ Podem ser decididas durante a implementação, por quem implementa.
 |---|---|---|
 | **D1** | A ordem dos cinco lugares — aberta de propósito, e a V1 observável a responde com dado | DEC-0024 |
 | **D2** | Que tipos de conteúdo têm padrão diferente de paginado | DEC-0023 |
-| **D3** | Quem pode mudar o estado de uma DEC, e se exige run aberto ou revisor independente | DEC-0027 |
-| **D4** | O que acontece com uma DEC que não declara estado — hoje não há nenhuma | DEC-0027 |
-| **D5** | Se `conflicts_with` é declarado à mão ou detectado | DEC-0027 |
-| **D6** | Se `supporting_artifacts` deveria aparecer no briefing | DEC-0026 |
-| **D7** | Quando o campo `canonical` é efetivamente removido dos manifestos | DEC-0026 |
-| **D8** | Que critério classifica cada item na reconciliação | DEC-0028 |
-| **D9** | Se `archive/` tem estrutura interna, e qual | DEC-0028 |
-| **D10** | O destino das ~60 MB de transcrições de sessão | DEC-0028 |
+| **D3** | ✅ **FECHADO em 08/09** — quem muda o estado é quem edita o arquivo, e o git registra. Exigir run aberto seria regra nova que nada no sistema sustenta — o que faltava não era permissão, era **conferência** | DEC-0027 |
+| **D4** | ✅ **FECHADO em 08/09** — a pergunta se dissolve: uma DEC sem estado não pode existir, porque a validação reprova | DEC-0027 |
+| **D5** | ✅ **FECHADO em 08/09** — **à mão.** Detectar conflito entre duas decisões exigiria entender o que cada uma diz; o que se automatiza é a reciprocidade do apontamento | DEC-0027 |
+| **D6** | ✅ **FECHADO em 08/09** — `supporting_artifacts` entra no briefing, em lista própria — a `DEC-0026` já tinha registrado o efeito da ausência: *"o briefing nunca nomeou onde o produto vivia"* | DEC-0026 |
+| **D7** | ✅ **FECHADO em 08/09** — removido dos manifestos. Onde valia `true`, a informação passou para o texto do papel antes da remoção | DEC-0026 |
+| **D8** | ✅ **FECHADO em 08/09** — **se este material sumisse, alguma decisão futura ficaria sem base?** Sim → referência; não, mas prova que algo foi assim → evidência; não e é reproduzível → descarte. A pergunta é sobre o FUTURO, e é isso que a torna decidível | DEC-0028 |
+| **D9** | ✅ **FECHADO em 08/09** — `AAAA-MM-DD-nome/` com `LEIA.md`, a mesma do `resgate/`. A data é a chave e não o assunto | DEC-0028 |
+| **D10** | ✅ **FECHADO em 08/09** — **não entram no registro.** As 60 MB do Windows foram embora com a máquina; as 378 MB desta ficam de fora porque transcrição é log de ferramenta, não registro de projeto | DEC-0028 |
 | **D11** | Que número, em qualquer medida, conta como sucesso — depende de linha de base que ainda não existe | DEC-0029 |
 | **D12** | O que entra no escopo da V1 — matéria da DEC-0018, não da DEC-0029 | DEC-0029 |
 | **D13** | ~~**O Sumário continua sendo folha**, e folha cobre o texto~~ — **falso desde que o índice virou gaveta.** A leitura não tem `<Folha>` nenhuma: o sumário é o painel `.indice`, à esquerda, como a busca no livro e os marcadores. Conferido no código em 03/09 | DEC-0023 |
