@@ -78,13 +78,41 @@ export function medindo() {
  * Então cada elemento desta lista leva o atributo no próprio JSX, e
  * `web/src/medir.teste.mjs` recusa uma classe daqui que não o tenha. As duas
  * formas, uma lista só. */
-export const TAPAR = [
+/* CATEGORIA 1 — CONTEÚDO. A proteção mais restritiva: a `DEC-0032` já proíbe
+ * que isto saia para qualquer processamento de terceiro, e medição é terceiro. */
+export const TAPAR_CONTEUDO = [
   ".prosa",           // o texto do livro, na Leitura
   ".nota-trecho",     // o trecho que a pessoa marcou
   ".estudo-notas",    // as notas reunidas num estudo
   ".recado-corpo",    // o que a pessoa escreveu na caixa de recado
   "[data-pessoal]",   // a saída para o que vier depois
 ];
+
+/* CATEGORIA 2 — METADADO SENSÍVEL DE BIBLIOTECA, e ela não existia aqui.
+ *
+ * Título, autor, capa e nome de arquivo não são o conteúdo da obra, e a
+ * `DEC-0040` recusa classificá-los artificialmente como tal. Mas o CONJUNTO
+ * deles é o acervo da pessoa, e o acervo é um perfil: o que alguém lê diz
+ * religião, saúde, orientação e política sem que ninguém tenha perguntado.
+ *
+ * SÃO CONTÊINERES, e não as trinta classes de título e autor que o `grep`
+ * devolve. Uma lista de classes precisa ser lembrada em cada tela nova; um
+ * contêiner por tela cobre o que estiver dentro dele, inclusive o que ainda não
+ * foi escrito. O limite conhecido está na `DEC-0040`: tela NOVA com contêiner
+ * NOVO não é coberta por omissão, e marcá-la faz parte de escrevê-la. */
+export const TAPAR_ACERVO = [
+  ".grade",             // a estante inteira — título, autor e capa de cada livro
+  ".livro-pagina",      // a ficha de um livro
+  ".preparo-pagina",    // o preparo, onde o nome do arquivo original aparece
+  ".mesa",              // "Ficaram prontos", "Na estante" e "continue lendo"
+  ".estudos-com-trilha",// os nomes de livro que sustentam cada estudo
+  ".notas-grupos",      // a origem de cada nota é o livro de onde ela saiu
+  ".canvas-mundo",      // livros e mídias que a pessoa levou para o Canvas
+];
+
+/* A lista que as duas gravadoras recebem. Uma só, porque para elas a regra é a
+ * mesma — o que muda entre as categorias é a política, escrita na `DEC-0040`. */
+export const TAPAR = [...TAPAR_CONTEUDO, ...TAPAR_ACERVO];
 
 const CHAVE = "mekora-medicao";
 
@@ -135,7 +163,26 @@ function subirPostHog() {
          * do PostHog só vê a primeira tela. */
         capture_pageview: false,
         capture_dead_clicks: true,
-        autocapture: true,
+        /* O AUTOCAPTURE VINHA COM O TEXTO LIGADO, e isso mandava o acervo para
+         * fora sem ninguém ter escrito que mandava.
+         *
+         * Medido no pacote instalado, e não de memória: o construtor do
+         * autocapture do `posthog-js` traz `maskAllText:!1` e
+         * `maskAllElementAttributes:!1`. `autocapture: true` aceita os padrões,
+         * e o padrão é NÃO mascarar — clicar num livro da estante enviava o
+         * texto do elemento, que é o título e o autor.
+         *
+         * O `maskTextSelector` acima não cobre isto: ele é do
+         * `session_recording`, outro sistema, outra configuração.
+         *
+         * A máscara vai GLOBAL, e não por lista, pelo mesmo argumento que a
+         * `DEC-0032` usou para o conteúdo: lista precisa ser lembrada em cada
+         * tela nova, e o ônus certo é o inverso — o padrão é não sair. O que se
+         * perde é só o texto; o evento continua trazendo etiqueta, classe, id e
+         * seletor, que é o que responde "onde clicaram" e "onde travaram".
+         * O projeto não usa `data-attr`, então mascarar atributo não custa nada.
+         */
+        autocapture: { maskAllText: true, maskAllElementAttributes: true },
         session_recording: {
           maskAllInputs: true,
           maskTextSelector: TAPAR.join(", "),

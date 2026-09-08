@@ -347,7 +347,7 @@ export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberA
 
   return (
     <div
-      className={`mesa${sobre ? " recebendo" : ""}`}
+      className={`mesa${sobre ? " recebendo" : ""}`} data-clarity-mask="true"
       onDragOver={(e) => { e.preventDefault(); setSobre(true); }}
       onDragLeave={(e) => {
         /* Só apaga o realce quando o ponteiro sai da MESA, e não de um filho:

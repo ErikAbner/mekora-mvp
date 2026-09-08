@@ -469,7 +469,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
           Os itens são MONTADOS DO QUE EXISTE, e não fixos: uma conta sem fio
           nenhum não deve ter "Parecem do mesmo assunto" na coluna, apontando para uma seção
           que não está lá. */}
-      <div className="estudos-com-trilha">
+      <div className="estudos-com-trilha" data-clarity-mask="true">
       <section className="estudos">
         {/* O TOPO É CENTRADO, e não uma barra com o botão puxado para a
             direita. Nos nós 900:56142 e 895:8849 o título, a frase e a busca são

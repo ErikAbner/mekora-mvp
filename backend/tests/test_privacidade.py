@@ -188,6 +188,14 @@ def test_privacidade_conta_o_ciclo_dos_arquivos_e_o_que_e_medido(client):
     tapado = medido["O que essas gravações NÃO mostram"]["explicacao"]
     for palavra in ("livros", "notas", "recado", "TAPADOS"):
         assert palavra in tapado, f"a tela não diz que {palavra} fica de fora"
+    # AS TRÊS CATEGORIAS DA DEC-0040, e esta linha nomeava só a primeira.
+    #
+    # Enquanto ela dizia "o texto dos seus livros", o autocapture do PostHog
+    # mandava título e autor no clique — o metadado sensível de biblioteca, que
+    # não é conteúdo e também não é dado banal. A tela tem de dizer o acervo com
+    # o nome dele, senão promete a proteção estreita e o produto faz a larga.
+    for palavra in ("acervo", "título", "autor", "capa", "nome de arquivo"):
+        assert palavra in tapado, f"a tela não diz que {palavra} fica de fora"
     assert medido["O que nunca é medido"]["marca"] == "Regra fixa"
 
     # A FRASE QUE JÁ ERROU DUAS VEZES.

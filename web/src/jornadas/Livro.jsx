@@ -114,7 +114,7 @@ export function Livro() {
     return (
       <div className="mesa">
         <Cabecalho lugar="estante" />
-        <main className="livro-pagina"><p className="livro-pagina-erro" role="alert">{erro}</p></main>
+        <main className="livro-pagina" data-clarity-mask="true"><p className="livro-pagina-erro" role="alert">{erro}</p></main>
       </div>
     );
   }
@@ -123,7 +123,7 @@ export function Livro() {
     return (
       <div className="mesa">
         <Cabecalho lugar="estante" />
-        <main className="livro-pagina"><p className="livro-pagina-nota">Buscando…</p></main>
+        <main className="livro-pagina" data-clarity-mask="true"><p className="livro-pagina-nota">Buscando…</p></main>
       </div>
     );
   }
@@ -150,7 +150,7 @@ export function Livro() {
     <div className="mesa">
       <Cabecalho lugar="estante" />
 
-      <main className="livro-pagina">
+      <main className="livro-pagina" data-clarity-mask="true">
         {/* NÃO HÁ TRILHA NESTA FICHA. Decisão do Erik, 04/09: "pode remover essa
             navegação, que nem era pra existir nessa tela".
 

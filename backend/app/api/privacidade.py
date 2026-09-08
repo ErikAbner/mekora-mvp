@@ -238,11 +238,24 @@ def o_que_existe(
             },
             {
                 "titulo": "O que essas gravações NÃO mostram",
+                # A LISTA CRESCEU EM 07/09, e ela estava incompleta de um jeito
+                # que a auditoria da DEC-0040 mediu: até aqui esta frase nomeava
+                # o CONTEÚDO — texto do livro, trecho, estudo, recado — e não o
+                # ACERVO. Enquanto isso, clicar num livro da estante mandava o
+                # título e o autor para o PostHog, porque o autocapture dele
+                # nasce sem máscara de texto e ninguém tinha lido esse padrão.
+                #
+                # Uma tela que promete menos do que o produto faz é melhor que o
+                # contrário, mas as duas estão erradas. O acervo agora é dito com
+                # o nome dele.
                 "explicacao": (
                     "O texto dos seus livros, o trecho das suas notas, o que você "
                     "escreveu num estudo e o que você digitou num recado ficam TAPADOS "
-                    "nas gravações — em preto, sempre, sem opção de ligar. Seu endereço "
-                    "de rede também não é guardado por elas."
+                    "nas gravações — em preto, sempre, sem opção de ligar. E o seu "
+                    "acervo também: título, autor, capa e nome de arquivo não saem "
+                    "nem na gravação nem no clique. O que sai de um clique é onde "
+                    "ele foi na tela, e não o que estava escrito ali. Seu endereço "
+                    "de rede não é guardado por elas."
                 ),
                 "marca": "Regra fixa",
             },

@@ -3525,7 +3525,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
             está dentro sem cada nota precisar saber da câmera. */}
         <div
           ref={mundo}
-          className={`canvas-mundo${espaco ? " de-mao" : ""}`}
+          className={`canvas-mundo${espaco ? " de-mao" : ""}`} data-clarity-mask="true"
           onWheel={rodar}
           /* O chão pontilhado anda com a câmera: as duas variáveis são lidas
              pelo `background-position` e pelo `background-size` em canvas.css. */

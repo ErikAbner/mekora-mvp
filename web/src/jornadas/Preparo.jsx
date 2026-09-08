@@ -609,7 +609,7 @@ export function Preparo() {
     return (
       <div className="mesa">
         <Cabecalho lugar="mesa" />
-        <main className="preparo-pagina"><p className="preparo-pagina-erro" role="alert">{erro}</p></main>
+        <main className="preparo-pagina" data-clarity-mask="true"><p className="preparo-pagina-erro" role="alert">{erro}</p></main>
       </div>
     );
   }
@@ -639,7 +639,7 @@ export function Preparo() {
     return (
       <div className="mesa">
         <Cabecalho lugar="mesa" />
-        <main className="preparo-pagina">
+        <main className="preparo-pagina" data-clarity-mask="true">
           {/* O TOPO CONTINUA AQUI — nó `895:8164`, e o comentário do `Topo` já
               dizia isto: "nos nós 895:8164 (pronto) e 895:8029 (em andamento) o
               topo é o MESMO da tela de análise". Só o "em andamento" tinha
@@ -760,7 +760,7 @@ export function Preparo() {
     return (
       <div className="mesa">
         <Cabecalho lugar="mesa" />
-        <main className="preparo-pagina">
+        <main className="preparo-pagina" data-clarity-mask="true">
           {job && (
             <Topo job={job} titulo={titulo} ajustando={ajustando} aoTrocar={setAjustando} inerte />
           )}
@@ -924,7 +924,7 @@ export function Preparo() {
     return (
       <div className="mesa">
         <Cabecalho lugar="mesa" />
-        <main className="preparo-pagina">
+        <main className="preparo-pagina" data-clarity-mask="true">
           <section className="preparo-andando">
             <div className="preparo-andando-card">
               <h2 role="status">{rotulo ? `Analisando, ${rotulo}` : "Analisando o arquivo…"}</h2>
@@ -968,7 +968,7 @@ export function Preparo() {
     <div className="mesa">
       <Cabecalho lugar="mesa" />
 
-      <main className="preparo-pagina">
+      <main className="preparo-pagina" data-clarity-mask="true">
         <Link to="/mesa" className="preparo-pagina-volta">← Mesa</Link>
 
         <Topo job={job} titulo={titulo} ajustando={ajustando} aoTrocar={setAjustando} />

@@ -304,7 +304,7 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher }) {
               aoEscolher={aoEscolher}
             />
           ) : (
-            <ul className="grade">
+            <ul className="grade" data-clarity-mask="true">
               {mostrados.map((l) => (
                 <Livro
                   key={l.chave}

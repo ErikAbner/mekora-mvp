@@ -145,7 +145,7 @@ export function Notas({ notas = [], carregando, aoApagar, aoImportar }) {
           <p className="notas-vazio">Nenhuma nota neste recorte.</p>
         )}
 
-        <div className="notas-grupos">
+        <div className="notas-grupos" data-clarity-mask="true">
           {grupos.map(([origem, doGrupo]) => (
             <section key={origem || "todas"} className="notas-grupo">
               {origem && (

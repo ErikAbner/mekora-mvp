@@ -324,8 +324,28 @@ escrito.
 para quem, com que finalidade, por quanto tempo o terceiro o retém, e o que acontece se ele for
 descontinuado `DEC-0032 §5`.
 
-> **Metadado não é conteúdo, e a fronteira não foi traçada.** Título, autor e formato não são o texto
-> do livro — mas uma lista de títulos é um perfil. `DEC-0032` protege conteúdo; metadado está aberto.
+### A fronteira do metadado `DEC-0040`
+
+**Metadado não é automaticamente conteúdo, mas metadado capaz de revelar o acervo ou o comportamento
+de leitura é dado sensível do produto e recebe proteção própria.** São três categorias:
+
+| categoria | o que é | tratamento |
+|---|---|---|
+| **1 · Conteúdo** | texto do livro, texto de OCR, páginas derivadas, notas, destaques, anotações | a proteção mais restritiva: `DEC-0032`, não sai |
+| **2 · Metadado sensível de biblioteca** | título, autor, capa, nome do arquivo, ISBN, tags, estado e progresso de leitura, datas e histórico, relações entre livros, estudos e Canvas | não vai para profiling, publicidade nem analytics sem necessidade explícita; não entra em log indiscriminado; acesso interno limitado; minimização e retenção pela finalidade |
+| **3 · Metadado operacional** | formato, tamanho, status, duração, código de erro, ids internos opacos, métricas de operação e segurança | pode ser processado e registrado quando necessário, com minimização e retenção |
+
+A categoria 2 **não é conteúdo e não deve ser classificada artificialmente como tal** — mas o
+conjunto dela é o acervo, e o acervo é um perfil: o que alguém lê diz religião, saúde, orientação e
+política sem que ninguém tenha perguntado.
+
+**A proteção na medição é global, e não uma lista** — mesmo ônus que a `DEC-0032` usa para o
+conteúdo. O autocapture do PostHog recebe `maskAllText` e `maskAllElementAttributes`: uma lista de
+classes precisaria ser lembrada em cada tela nova, e o evento continua trazendo etiqueta, classe, id
+e seletor, que é o que responde "onde clicaram". A gravação da Clarity, que só tapa por atributo,
+recebe os **contêineres** de acervo — um por tela, cobrindo o que está dentro.
+
+Cobrado por `node web/src/medir.teste.mjs`, que se prova com `--autoteste`.
 
 ### A instrumentação não lê o conteúdo `DEC-0020 §1`
 
