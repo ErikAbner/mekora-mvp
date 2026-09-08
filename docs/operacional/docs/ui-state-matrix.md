@@ -1,5 +1,15 @@
 # UI State Matrix
 
+> **HISTÓRICO — não descreve o Mekora de hoje.**
+>
+> Este arquivo veio do `Kindle Local Tool` e foi preservado na fusão dos
+> repositórios. Ele descreve uma árvore (`frontend/`, Vitest, `cd
+> kindle-local-tool`) que **este repositório não tem**, e comandos daqui não
+> funcionam. Serve como origem de uma ideia, nunca como fonte de regra em vigor
+> — a mesma regra do `archive/`.
+>
+> O estado vigente está em [`../README.md`](../README.md).
+
 Todos os estados que superfícies assíncronas precisam representar. Uma tela **completa** trata os estados aplicáveis; quando um estado não faz sentido, marcar N/A com justificativa.
 
 ## Vocabulário de estados

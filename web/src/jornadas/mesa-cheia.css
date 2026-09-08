@@ -227,7 +227,16 @@
   overflow: hidden;
 }
 .continue-capa img { inline-size: 100%; block-size: 100%; object-fit: cover; }
-.continue-capa span { padding: 16px; font-size: 14px; color: var(--muted-foreground); text-align: center; }
+/* A ENTRELINHA VAI JUNTO DO CORPO, sempre.
+ *
+ * Estes dois declaravam `font-size: 14px` e HERDAVAM a entrelinha do pai — 30px
+ * —, formando o par 14/30. A escala do Design System pareia 14 com 22, e o
+ * portão da interface reprovava a Mesa nos dois temas por causa disto: o único
+ * `par_fora_dos_tokens` de doze telas.
+ *
+ * Corpo sem entrelinha não é meia declaração: é uma declaração que depende de
+ * onde o elemento cair. */
+.continue-capa span { padding: 16px; font-size: 14px; line-height: 22px; color: var(--muted-foreground); text-align: center; }
 .continue-texto { display: flex; flex-direction: column; gap: 16px; min-inline-size: 0; }
 .continue-marca { margin: 0; font-size: 20px; line-height: 30px; color: var(--muted-foreground); }
 .continue-texto h2 {
@@ -275,7 +284,7 @@
   border: 1px solid var(--border); background: var(--card);
   padding: 0;
 }
-.faixa-sem-capa { padding: 16px; font-size: 14px; color: var(--muted-foreground); text-align: center; }
+.faixa-sem-capa { padding: 16px; font-size: 14px; line-height: 22px; color: var(--muted-foreground); text-align: center; }
 .faixa-titulo {
   display: block; margin-block-start: 12px;
   font-size: 16px; line-height: 24px; color: var(--muted-foreground);

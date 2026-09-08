@@ -1,5 +1,15 @@
 # Smoke Tests — Kindle Local Tool
 
+> **HISTÓRICO — não descreve o Mekora de hoje.**
+>
+> Este arquivo veio do `Kindle Local Tool` e foi preservado na fusão dos
+> repositórios. Ele descreve uma árvore (`frontend/`, Vitest, `cd
+> kindle-local-tool`) que **este repositório não tem**, e comandos daqui não
+> funcionam. Serve como origem de uma ideia, nunca como fonte de regra em vigor
+> — a mesma regra do `archive/`.
+>
+> O estado vigente está em [`../README.md`](../README.md).
+
 Cenários mínimos de validação manual. Cada smoke test deve ser executável em menos de 5 minutos e confirmar que o fluxo principal funciona sem erros fatais.
 
 **Como usar:** Execute os cenários em ordem. Se um cenário falhar, registre em **Como reportar falha** ao final deste documento.

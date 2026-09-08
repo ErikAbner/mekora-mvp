@@ -1,5 +1,15 @@
 # Capability Matrix
 
+> **HISTÓRICO — não descreve o Mekora de hoje.**
+>
+> Este arquivo veio do `Kindle Local Tool` e foi preservado na fusão dos
+> repositórios. Ele descreve uma árvore (`frontend/`, Vitest, `cd
+> kindle-local-tool`) que **este repositório não tem**, e comandos daqui não
+> funcionam. Serve como origem de uma ideia, nunca como fonte de regra em vigor
+> — a mesma regra do `archive/`.
+>
+> O estado vigente está em [`../README.md`](../README.md).
+
 Classificação de cada capacidade **com base no código presente em v1.2.3**. Nada aqui promete o que ainda não existe.
 
 Estados: **EXISTENTE E FUNCIONAL** · **EXISTENTE, PRECISA DE NOVA UI** · **PARCIAL** · **VISÃO FUTURA** · **FORA DE ESCOPO**

@@ -1,5 +1,15 @@
 # Release Checklist — Kindle Local Tool
 
+> **HISTÓRICO — não descreve o Mekora de hoje.**
+>
+> Este arquivo veio do `Kindle Local Tool` e foi preservado na fusão dos
+> repositórios. Ele descreve uma árvore (`frontend/`, Vitest, `cd
+> kindle-local-tool`) que **este repositório não tem**, e comandos daqui não
+> funcionam. Serve como origem de uma ideia, nunca como fonte de regra em vigor
+> — a mesma regra do `archive/`.
+>
+> O estado vigente está em [`../README.md`](../README.md).
+
 Checklist de validação manual ponta a ponta antes de marcar como Release Candidate.
 
 Marque cada item com `[x]` após validar. Um item `[ ]` indica bloqueador se for crítico, ou apenas nota se for opcional.

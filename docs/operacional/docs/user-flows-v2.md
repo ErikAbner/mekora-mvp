@@ -1,5 +1,15 @@
 # User Flows v2
 
+> **HISTÓRICO — não descreve o Mekora de hoje.**
+>
+> Este arquivo veio do `Kindle Local Tool` e foi preservado na fusão dos
+> repositórios. Ele descreve uma árvore (`frontend/`, Vitest, `cd
+> kindle-local-tool`) que **este repositório não tem**, e comandos daqui não
+> funcionam. Serve como origem de uma ideia, nunca como fonte de regra em vigor
+> — a mesma regra do `archive/`.
+>
+> O estado vigente está em [`../README.md`](../README.md).
+
 Todos os fluxos referem-se ao comportamento **existente** em v1.2.3. Não descrevem intenção; descrevem código.
 
 ## Convenções

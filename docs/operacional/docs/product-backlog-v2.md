@@ -1,5 +1,15 @@
 # Product Backlog v2
 
+> **HISTÓRICO — não descreve o Mekora de hoje.**
+>
+> Este arquivo veio do `Kindle Local Tool` e foi preservado na fusão dos
+> repositórios. Ele descreve uma árvore (`frontend/`, Vitest, `cd
+> kindle-local-tool`) que **este repositório não tem**, e comandos daqui não
+> funcionam. Serve como origem de uma ideia, nunca como fonte de regra em vigor
+> — a mesma regra do `archive/`.
+>
+> O estado vigente está em [`../README.md`](../README.md).
+
 Derivado da `product-vision-v2.md` e da `capability-matrix.md`. Nada aqui está implementado. Este arquivo alimenta o Figma e as próximas rodadas de trabalho.
 
 ## PRÓXIMO APÓS A UI

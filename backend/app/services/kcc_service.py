@@ -32,6 +32,10 @@ class KccConversionFailedError(Exception):
     """kcc-c2e terminou com erro durante a conversão."""
 
 
+# Quanto se espera por um `-h`, que deve responder em milissegundos.
+_ESPERA_DA_CHECAGEM = 10
+
+
 def _find_kcc_executable() -> str:
     """
     Localiza o executável kcc-c2e.
@@ -70,8 +74,18 @@ def get_kcc_status() -> dict:
     """
     exe = _find_kcc_executable()
     try:
-        result = subprocess.run([exe, '-h'], capture_output=True)
+        # TIMEOUT NUMA CHECAGEM DE PRESENÇA, e ele não estava aqui.
+        #
+        # `-h` deve responder em milissegundos, e é exatamente por isso que
+        # esperar por ele para sempre é o pior caso: um binário travado — disco
+        # de rede, dependência quebrada, processo zumbi — pendurava a REQUISIÇÃO
+        # que só queria saber se o KCC existe. Sem limite, sem erro, sem log.
+        result = subprocess.run([exe, '-h'], capture_output=True, timeout=_ESPERA_DA_CHECAGEM)
         available = result.returncode == 0
+    except subprocess.TimeoutExpired:
+        # Um binário que não responde a `-h` não está utilizável, e dizer
+        # "indisponível" é mais verdadeiro que esperar.
+        available = False
     except FileNotFoundError:
         available = False
     return {
@@ -88,7 +102,12 @@ def _check_kcc() -> None:
     """
     exe = _find_kcc_executable()
     try:
-        result = subprocess.run([exe, '-h'], capture_output=True)
+        result = subprocess.run([exe, '-h'], capture_output=True, timeout=_ESPERA_DA_CHECAGEM)
+    except subprocess.TimeoutExpired:
+        raise KccNotInstalledError(
+            f"kcc-c2e não respondeu em {_ESPERA_DA_CHECAGEM}s — o binário existe "
+            "mas não está utilizável."
+        )
     except FileNotFoundError:
         raise KccNotInstalledError(
             "kcc-c2e não encontrado. Instale com: "
