@@ -18,7 +18,7 @@ _local_argos_dir = _project_root / "storage" / "models" / "argos-packages"
 if "ARGOS_PACKAGES_DIR" not in os.environ:
     os.environ["ARGOS_PACKAGES_DIR"] = str(_local_argos_dir)
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -101,6 +101,50 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# A EVIDÊNCIA DE ACESSO PRIVILEGIADO — `DEC-0041`.
+#
+# O `exigir_dono` deixa em `request.state.privilegiado` o que ele sabe: quem,
+# por quê, escopo e ação. Só aqui existe a última peça, o RESULTADO — que é o
+# status da resposta, e a resposta não existe enquanto a dependência corre.
+#
+# Middleware e não decorador de rota: a porta do dono está em quatro routers, e
+# vai estar em mais. Registrar dentro de cada rota seria N lugares para acertar
+# hoje e um para esquecer depois — o mesmo argumento que fez `exigir_dono` ser
+# dependência de router, escrito em `app/api/porta.py`.
+@app.middleware("http")
+async def registrar_acesso_privilegiado(request: Request, call_next):
+    from app import auditoria
+
+    try:
+        resposta = await call_next(request)
+    except Exception:
+        # ERRO TAMBÉM É UM ACESSO, e é o que mais interessa numa revisão: a
+        # requisição chegou, a porta a deixou passar, e algo estourou depois.
+        marca = getattr(request.state, "privilegiado", None)
+        if marca:
+            auditoria.registrar(
+                quem=marca.get("quem"),
+                motivo=marca["motivo"],
+                escopo=marca["escopo"],
+                alvo=marca.get("alvo", "—"),
+                acao=marca["acao"],
+                resultado="erro na aplicação",
+            )
+        raise
+
+    marca = getattr(request.state, "privilegiado", None)
+    if marca:
+        auditoria.registrar(
+            quem=marca.get("quem"),
+            motivo=marca["motivo"],
+            escopo=marca["escopo"],
+            alvo=marca.get("alvo", "—"),
+            acao=marca["acao"],
+            resultado=f"HTTP {resposta.status_code}",
+        )
+    return resposta
+
 
 # v1.2.1 — SEM mount amplo de /storage (expunha banco, config, inputs,
 # backups e manifests internos). Artefatos são servidos por rotas
@@ -227,6 +271,12 @@ def run_startup_cleanup() -> None:
     # escolhe e todo mundo acaba tendo.
     from app.services.cleanup_service import limpar_eventos_antigos
     limpar_eventos_antigos()
+    # A EVIDÊNCIA DE ACESSO SAI PELO MESMO GESTO — `DEC-0041`, 90 dias, o mesmo
+    # prazo dos eventos de uso. Dois prazos para lembrar viram um lembrado e
+    # outro esquecido; e um registro de auditoria sem retenção declarada é uma
+    # coleção que só cresce, que é o oposto de minimização.
+    from app import auditoria
+    auditoria.limpar()
     ensure_system_presets()
 
 

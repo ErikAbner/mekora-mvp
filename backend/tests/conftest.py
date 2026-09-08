@@ -30,6 +30,14 @@ def tmp_storage(tmp_path, monkeypatch):
     import app.core.config as cfg
 
     dirs = {
+        # A RAIZ TAMBÉM, e a falta dela já escreveu no storage de verdade.
+        #
+        # Os testes de `test_auditoria.py` gravaram onze eventos com e-mails
+        # `@exemplo.com` em `storage/auditoria/` do repositório, porque
+        # `app/auditoria.py` deriva a pasta de `STORAGE_RAIZ` e a fixture
+        # redirecionava só as cinco pastas filhas. Qualquer coisa nova que use a
+        # raiz — retratos e mídia do Canvas já usam — cai no mesmo buraco.
+        "STORAGE_RAIZ": tmp_path,
         "STORAGE_INPUT": tmp_path / "input",
         "STORAGE_OUTPUT": tmp_path / "output",
         "STORAGE_TEMP": tmp_path / "temp",

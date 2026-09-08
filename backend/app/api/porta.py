@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import secrets
 from typing import Optional
+from urllib.parse import unquote
 
 from fastapi import Cookie, Depends, Header, HTTPException, Request
 from sqlalchemy.orm import Session
@@ -146,6 +147,7 @@ def donos():
 
 
 def exigir_dono(
+    request: Request,
     db: Session = Depends(get_db),
     mekora_sessao: Optional[str] = Cookie(default=None),
 ):
@@ -173,11 +175,41 @@ def exigir_dono(
 
     Sem `DONO_EMAIL` configurado, ninguém passa. Fecha por falta.
     """
+    # A EVIDÊNCIA COMEÇA AQUI E TERMINA NO MIDDLEWARE — `DEC-0041`.
+    #
+    # Esta dependência sabe QUEM e POR QUÊ; só o middleware sabe o RESULTADO,
+    # porque ele é o status da resposta e a resposta ainda não existe. Então a
+    # dependência deixa o que sabe em `request.state`, e quem fecha o registro é
+    # `app/main.py`.
+    #
+    # O MOTIVO É DECLARADO, e não adivinhado. Quem chama por fora da interface
+    # manda `X-Mekora-Motivo`; quem clica na tela do dono não manda nada, e o
+    # registro diz isso com todas as letras em vez de inventar uma justificativa
+    # plausível. "Não declarado" é uma informação; um motivo fabricado pelo
+    # próprio sistema que se audita não é.
+    # O MOTIVO VEM PERCENT-ENCODED, e não é preciosismo: cabeçalho HTTP é
+    # ISO-8859-1, e um motivo escrito em português quase sempre tem acento. O
+    # próprio `httpx` recusa enviar — "'ascii' codec can't encode character
+    # '\xed'" —, então um motivo com "saída" nem chegaria aqui. `unquote` é
+    # inócuo para texto sem acento, então quem escrever em ASCII não precisa
+    # saber disto.
+    motivo = unquote((request.headers.get("x-mekora-motivo") or "").strip())
+    request.state.privilegiado = {
+        "motivo": motivo or "não declarado — operação pela interface do dono",
+        "escopo": request.url.path,
+        "acao": request.method,
+    }
+
     pessoa = exigir_conta(db=db, mekora_sessao=mekora_sessao)
+    request.state.privilegiado["quem"] = (pessoa.email or "").strip().lower()
     if (pessoa.email or "").strip().lower() not in donos():
         # 403 e não 404: a rota existe e é sabido que existe — o que não é
         # público é quem pode usá-la. Esconder isso não protegeria nada e
         # deixaria quem É dono sem entender por que a tela não abre.
+        #
+        # A TENTATIVA NEGADA TAMBÉM É EVIDÊNCIA, e é a mais interessante das
+        # duas: quem bateu na porta do dono sem ser dono é exatamente o que uma
+        # revisão de acesso procura.
         raise HTTPException(
             status_code=403,
             detail="Esta parte é de quem cuida da instalação.",

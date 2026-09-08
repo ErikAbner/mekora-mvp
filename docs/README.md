@@ -59,6 +59,7 @@ auditoria vencida, que se lê como estado se ninguém avisar.
 | `PLAYBOOK.md` | Como acrescentar uma tela: portão, ícones, tokens, rotas, os dois temas. Escrito a partir das telas que existem |
 | `SUBIR.md` | Subir, conferir e voltar atrás em produção; `alembic`, backup, rotas |
 | `RESTAURAR.md` | **Recuperar a partir de um backup** — listar, escolher, restaurar, validar e promover. Escrito para quem não conhece o código |
+| `ACESSO.md` | **Acesso a dado de usuário** — a ordem de investigação, quando conteúdo é legítimo, o que fica registrado e como revisar. `DEC-0041` |
 
 **Histórico** — registro de como se chegou aqui. **Não é estado vigente:**
 
