@@ -14,13 +14,7 @@
   flex-direction: column;
 }
 
-.canvas-topo {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
-}
+
 
 .canvas h1 {
   margin: 0 0 6px;
@@ -30,27 +24,13 @@
   color: var(--foreground);
 }
 
-.canvas-sobre {
-  margin: 0;
-  max-inline-size: 46ch;
-  font-size: 16px;
-  line-height: 24px;
-  color: var(--muted-foreground);
-  text-wrap: pretty;
-}
 
-.canvas-acoes { display: flex; gap: 10px; flex-wrap: wrap; }
 
-.canvas-erro {
-  margin: 0;
-  padding: 12px 0 12px 20px;
-  border-inline-start: 1px solid var(--foreground);
-  font-size: 16px;
-  line-height: 24px;
-  color: var(--muted-foreground);
-}
 
-.canvas-erro { border-inline-start-color: var(--destructive, var(--foreground)); }
+
+
+
+
 
 /* O AVISO FLUTUA, e nao empurra a superficie.
  *
@@ -535,29 +515,13 @@
 
 /* A lista de ligações, fora da superfície: desfazer um traço clicando nele
    exigiria acertar uma linha de um pixel. */
-.canvas-ligacoes { padding-block-start: 20px; border-block-start: 1px solid var(--border); }
-.canvas-ligacoes h2 { margin: 0 0 12px; font-size: 20px; line-height: 28px; color: var(--foreground); }
-.canvas-ligacoes ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
 
-.canvas-ligacoes li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  font-size: 14px;
-  line-height: 22px;
-  color: var(--muted-foreground);
-}
 
-.canvas-ligacoes button {
-  padding: 4px 10px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--foreground);
-  font-family: inherit;
-  font-size: 14px;
-  cursor: pointer;
-}
+
+
+
+
+
 
 /* A LISTA DE TRAZER — livros e notas, na mesma porta.
  *
@@ -854,14 +818,7 @@
  * dezenove notas atras parecem a mesma coisa. */
 /* 14 aqui tambem, pela mesma razao — eu tinha posto 11. O selo cresce para
  * caber o corpo, e nao o contrario. */
-.canvas-conta {
-  position: absolute;
-  inset-block-start: 2px; inset-inline-end: 2px;
-  min-inline-size: 20px; padding: 0 4px;
-  background: var(--foreground); color: var(--background);
-  font-size: 14px; line-height: 22px; text-align: center;
-  font-variant-numeric: tabular-nums;
-}
+
 
 @media (max-width: 767px) {
   /* No telefone a coluna vira uma barra no rodape: uma coluna de 44px na borda

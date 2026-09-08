@@ -622,7 +622,7 @@
  * nome que o desenho dá ao movimento de "Lido" para "A ler", e agora convive
  * com os outros dois destinos em vez de ser o único. As regras próprias dele
  * saíram — `scripts/seletores.mjs` recusa regra que não casa em rota nenhuma. */
-.estudos-reler:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+
 
 
 /* ── A PÁGINA DE UM ESTUDO — nó `895:8260` ──────────────────────────────────

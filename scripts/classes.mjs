@@ -141,8 +141,9 @@ const CONHECIDAS = new Set([
   'jornadas/ContaVisao.jsx .conta-erro',
   'jornadas/ContaVisao.jsx .conta-painel',
   'jornadas/EstudoPagina.jsx .estudos-erro',
-  'jornadas/Livro.jsx .recortes',
-  'jornadas/MesaCheia.jsx .recortes',
+  /* `.recortes` saiu daqui em 08/09: ele era usado por três telas e morava na
+     folha de UMA. Foi para `estilo/base.css`, que é onde mora o que é de todo
+     mundo — e aí as duas linhas de dívida deixaram de ter razão. */
   'jornadas/Privacidade.jsx .conta-condicao',
   'jornadas/Privacidade.jsx .conta-erro',
   'jornadas/Privacidade.jsx .conta-nota',
@@ -176,8 +177,22 @@ for (const pasta of PASTAS) {
      * importa a folha de outro está declarando a dependência, e declarada ela
      * deixa de ser surpresa. */
     const minhas = new Set([curto]);
-    for (const m of jsx.matchAll(/import\s+["']\.\/([\w.-]+\.css)["']/g)) {
-      minhas.add(`${pasta.split('/').pop()}/${m[1]}`);
+    /* QUALQUER CAMINHO RELATIVO, e não só `./`.
+     *
+     * O padrão exigia `./`, e `SoNoComputador.jsx` importa
+     * `../jornadas/ainda-nao.css` — um import declarado, explícito, na linha 3
+     * do arquivo. O instrumento não o via e acusava TRÊS classes como "estilo
+     * que vem de uma tela que ninguém abriu aqui", indicando como conserto
+     * exatamente o que o arquivo já fazia: "importe a folha e assuma a
+     * dependência".
+     *
+     * Um instrumento que manda fazer o que já foi feito ensina a ignorá-lo. */
+    for (const m of jsx.matchAll(/import\s+["'](?:\.{1,2}\/)+(?:[\w.-]+\/)*([\w.-]+\.css)["']/g)) {
+      const caminho = m[0].match(/["']([^"']+)["']/)[1];
+      const pastaDaFolha = caminho.includes('/')
+        ? caminho.slice(0, caminho.lastIndexOf('/')).split('/').pop()
+        : pasta.split('/').pop();
+      minhas.add(`${pastaDaFolha === '.' || pastaDaFolha === '..' ? pasta.split('/').pop() : pastaDaFolha}/${m[1]}`);
     }
 
     /* Só o `className` literal. Template com `${}` entra pelo pedaço estático,

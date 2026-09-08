@@ -641,3 +641,63 @@ blockquote.trecho-citado {
 /* A mesma peça em tinta secundária: o índice da leitura e a abertura do criar
  * conta. É variação de TINTA, e não outra peça. */
 .titulo-24.discreto { color: var(--muted-foreground); }
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * OS RECORTES — o alternador de vista, e ele é de TRÊS telas.
+ *
+ * Ele morava em `jornadas/estante.css` e era usado por Estante, Estudos e
+ * Livro, sem que nenhuma das duas últimas importasse a folha. O `classes.mjs`
+ * acusava, e com razão: um padrão de interface que mora na folha de UMA tela
+ * muda quando aquela tela mudar, e as outras duas descobrem depois.
+ *
+ * Aqui é o lugar de quem é de todo mundo.
+ * ────────────────────────────────────────────────────────────────────────── */
+/* DOIS COMPONENTES, E NÃO UM — decidido em 05/09, com o Erik passando a decisão.
+ *
+ * O código chamava os dois de `.recortes`, e por isso o desenho parecia divergir
+ * de si mesmo: na Estante os nós pedem uma CAIXA com os botões dentro
+ * (`895:7369` com `p-12`, botões `px-24 py-14`, sem borda por botão); na Mesa e
+ * nos Estudos pedem CHIPS SOLTOS, cada um com a sua borda, separados por 24
+ * (`895:9524`, `895:8910`).
+ *
+ * São papéis diferentes. A caixa é escolha exclusiva entre modos de ver a mesma
+ * coisa — Capas ou 3D, Lista ou Leitura. O chip é recorte de conteúdo: quantos
+ * há em cada estado, e qual deles a pessoa quer ver.
+ *
+ * O RECHEIO DO CHIP É 16/24, e o número saiu de uma conta. Na Mesa o nó escreve
+ * `px-25 py-17` no chip e `px-24 py-16` no total ao lado — 25 = 24+1, 17 = 16+1:
+ * o Figma somou a borda de 1px para as duas caixas terminarem do mesmo tamanho.
+ * O recheio de projeto é 24/16. Nos Estudos o nó pede `px-32 py-16`; 24 aparece
+ * nas outras três instâncias e no alternador, então 24 é o horizontal do
+ * produto e 32 é o caso isolado. Um número só. */
+.recortes {
+  display: flex; align-self: flex-start;
+  padding: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+
+/* O CHIP SOLTO. Sem caixa em volta, cada um com a própria borda, 24 de vão. */
+.recortes.soltos {
+  gap: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.recortes.soltos button {
+  padding: 16px 24px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  white-space: nowrap;
+}
+.recortes button {
+  padding: 14px 24px; border: 0;
+  background: transparent; color: var(--muted-foreground);
+  font-size: 16px; line-height: 24px; cursor: pointer;
+}
+.recortes button[aria-pressed="true"] {
+  background: var(--foreground);
+  color: var(--primary-foreground);
+}
+.recortes button:not([aria-pressed="true"]):hover { background: var(--muted); }
