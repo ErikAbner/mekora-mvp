@@ -523,6 +523,13 @@ def validar(snapshot: Path, de: Path, destino: Path) -> list[tuple[str, bool, st
     # que é onde a truncagem e a corrupção de cópia aparecem.
     espelho = de / "espelho"
     divergentes, comparados = [], 0
+    # QUANTOS ARQUIVOS O SNAPSHOT PROMETE. É a régua que separa "o acervo é
+    # vazio" de "o espelho não existe" — as duas comparam zero, e só uma é ok.
+    with sqlite3.connect(f"file:{d / 'kindle_tool.db'}?mode=ro", uri=True) as _c:
+        prometidos = _c.execute(
+            "SELECT count(*) FROM processing_jobs "
+            "WHERE epub_path IS NOT NULL AND epub_path <> ''"
+        ).fetchone()[0]
     for nome in SOLTOS:
         origem = espelho / nome
         if not origem.exists():
@@ -560,8 +567,19 @@ def validar(snapshot: Path, de: Path, destino: Path) -> list[tuple[str, bool, st
                     b.seek(-(1 << 20), os.SEEK_END)
                     if a.read() != b.read():
                         divergentes.append(f"fim {pasta}/{arq.name}")
-    checa("arquivos idênticos ao espelho", not divergentes,
-          divergentes[0] if divergentes else f"{comparados} arquivo(s) comparado(s)")
+    # COMPARAR ZERO NÃO É "IDÊNTICOS", e em 08/09 esta linha passou verde com
+    # `0 arquivo(s) comparado(s)` — o espelho não existia, e a verificação que
+    # existe para provar que o conteúdo veio inteiro não olhou para nada.
+    #
+    # Se o snapshot promete arquivos, comparar zero é o mesmo verde por omissão
+    # que este repositório chama de pior que vermelho.
+    if not divergentes and comparados == 0 and prometidos:
+        checa("arquivos idênticos ao espelho", False,
+              f"NENHUM arquivo comparado, e o snapshot promete {prometidos}: "
+              "o espelho está vazio ou não existe (rode `backup.py` sem --so-banco)")
+    else:
+        checa("arquivos idênticos ao espelho", not divergentes,
+              divergentes[0] if divergentes else f"{comparados} arquivo(s) comparado(s)")
 
     # ── 6 · permissões utilizáveis ─────────────────────────────────────────
     #

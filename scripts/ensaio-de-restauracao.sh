@@ -77,8 +77,8 @@ echo "  porta:             $PORTA"
 # ── 1 · ter um backup para restaurar ──────────────────────────────────────
 titulo "1 · o backup"
 if MEKORA_STORAGE="$STORAGE" MEKORA_BACKUP_DIR="$BACKUPS" \
-   python3 scripts/backup.py --so-banco > "$ENSAIO/backup.log" 2>&1; then
-  ok "backup do banco feito e conferido"
+   python3 scripts/backup.py > "$ENSAIO/backup.log" 2>&1; then
+  ok "backup COMPLETO feito e conferido — banco e espelho"
 else
   mal "o backup falhou — sem ele não há o que restaurar"
   sed 's/^/      /' "$ENSAIO/backup.log"
@@ -138,10 +138,19 @@ if [ $? -ne 0 ] && grep -q "MAIS DE UMA raiz" "$ENSAIO/restaurar.log"; then
     --snapshot "$(basename "$SNAPSHOT")" --destino "$DESTINO" --juntar-raizes \
     > "$ENSAIO/restaurar.log" 2>&1
 fi
-if [ $? -eq 0 ]; then
+SAIDA_DA_RESTAURACAO=$?
+if [ $SAIDA_DA_RESTAURACAO -eq 0 ]; then
   grep -E '^  (ok|FALHOU) ' "$ENSAIO/restaurar.log" | sed 's/^  /  /'
   [ -n "$JUNTOU" ] && ok "raízes juntadas explicitamente (--juntar-raizes)"
-  ok "restauração completa, todas as verificações passaram"
+  # A FRASE TEM DE SER VERDADE, e em 08/09 ela não era: o log trazia
+  # "FALHOU  registro tem arquivo" e a linha seguinte anunciava "todas as
+  # verificações passaram". Um resumo que contradiz o próprio log é pior que
+  # resumo nenhum — quem lê o fim não volta para conferir o meio.
+  if grep -qE '^  FALHOU ' "$ENSAIO/restaurar.log"; then
+    mal "a restauração reprovou em ao menos uma verificação — ver as linhas acima"
+  else
+    ok "restauração completa, todas as verificações passaram"
+  fi
 else
   mal "a restauração falhou"
   sed 's/^/      /' "$ENSAIO/restaurar.log"

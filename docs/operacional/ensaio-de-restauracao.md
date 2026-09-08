@@ -1,14 +1,14 @@
-# Ensaio de restauração — 07/09/2026 15:49
+# Ensaio de restauração — 08/09/2026 02:51
 
 Gerado por `scripts/ensaio-de-restauracao.sh`. Não editar à mão:
 rode o ensaio de novo e ele reescreve este arquivo.
 
 ```
-snapshot:   kindle_tool_20260907_154906.db
-origem:     /Users/sipnm/dev/mekora/.ver2/backups
-destino:    /var/folders/sx/zgknrg395b34x41xj98ks7gw0000gn/T//mekora-ensaio-JWveQI/restaurado  (temporário, apagado no fim)
+snapshot:   kindle_tool_20260908_025138.db
+origem:     /Users/sipnm/dev/mekora/.ver2/storage/backups
+destino:    /var/folders/sx/zgknrg395b34x41xj98ks7gw0000gn/T//mekora-ensaio-baljd0/restaurado  (temporário, apagado no fim)
 porta:      8399
-duração:    6s
+duração:    5s
 resultado:  PASSOU — caminho inteiro comprovado
 storage:    /Users/sipnm/dev/mekora/.ver2/storage
 ```
@@ -18,11 +18,11 @@ storage:    /Users/sipnm/dev/mekora/.ver2/storage
 ```
   ok                 integridade do banco  ok
   ok                 chaves estrangeiras  nenhuma órfã
-  ok                 contagem por tabela  21 tabelas, 2872 linhas
+  ok                 contagem por tabela  21 tabelas, 17514 linhas
   ok                 caminhos apontam para o destino  nenhum resto da raiz antiga
-  ok                 registro tem arquivo  378 caminho(s) conferido(s)
+  ok                 registro tem arquivo  2316 caminho(s) conferido(s)
   ok                 nenhum arquivo truncado  nenhum de tamanho zero
-  ok                 arquivos idênticos ao espelho  694 arquivo(s) comparado(s)
+  ok                 arquivos idênticos ao espelho  4247 arquivo(s) comparado(s)
   ok                 permissões no destino  banco e pastas legíveis e graváveis
 ```
 
@@ -39,7 +39,7 @@ storage:    /Users/sipnm/dev/mekora/.ver2/storage
 ## O que a restauração fez
 
 ```
-  banco restaurado: kindle_tool.db (1.0 MB)
-  arquivos restaurados: 693 (54.4 MB)
-  caminhos reescritos: 378 valores em 2 grafia(s) de raiz
+  banco restaurado: kindle_tool.db (4.1 MB)
+  arquivos restaurados: 4246 (333.5 MB)
+  caminhos reescritos: 2316 valores em 2 grafia(s) de raiz
 ```

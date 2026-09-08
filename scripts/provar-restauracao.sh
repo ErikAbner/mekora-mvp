@@ -83,6 +83,17 @@ veneno() {
   else
     mal "$nome: reprovou por OUTRO motivo — $(grep -m1 'FALHOU\|reprovou em' "$TRABALHO/$nome.log" | tr -d '\n')"
   fi
+  # A CÓPIA SAI ASSIM QUE O VENENO DELA FOI JULGADO.
+  #
+  # O `trap` do fim limpava tudo de uma vez, e o pico eram SETE cópias
+  # completas vivas ao mesmo tempo — 2,3 GB para um storage de 333 MB. Em
+  # 08/09 o disco desta máquina estava com 2 GB livres e os dois últimos
+  # venenos morreram em "No space left on device": o controle negativo
+  # reprovou por falta de espaço, e um instrumento que falha por recurso
+  # ensina a ignorar a falha dele.
+  #
+  # Uma cópia por vez basta: cada veneno é julgado sozinho.
+  rm -rf "$copia"
 }
 
 # ── 1 · banco corrompido ──────────────────────────────────────────────────
