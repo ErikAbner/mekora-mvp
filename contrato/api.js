@@ -345,6 +345,15 @@ export function declararEstadoDeLeitura(jobId, estado) {
   });
 }
 
+/** PUT /quadro-de-leitura/ordem — organiza os cartões sem mudar estado ou progresso. */
+export function ordenarLeituras(livros) {
+  return pede("/quadro-de-leitura/ordem", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ livros }),
+  });
+}
+
 /** PUT /jobs/{id}/progresso — sem conta, o servidor ignora em silencio. */
 export function gravarProgresso(jobId, { capitulo, deslocamento, capitulos, fracao }) {
   return pede(`/jobs/${jobId}/progresso`, {

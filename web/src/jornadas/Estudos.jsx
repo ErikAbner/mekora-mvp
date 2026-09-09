@@ -3,10 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
-import { achatar, comecosDistintos } from "../../../contrato/texto.js";
+import { achatar } from "../../../contrato/texto.js";
 import { Folha } from "../componentes/Folha.jsx";
 import { TrilhaDaPagina } from "../componentes/TrilhaDaPagina.jsx";
-import { criarEstudo, declararEstadoDeLeitura, gravarProgresso, ignorarGrupo, lerAgrupadas, ouvirGruposDeNovo, reunirNoEstudo } from "../../../contrato/api.js";
+import { criarEstudo, declararEstadoDeLeitura, gravarProgresso, ignorarGrupo, lerAgrupadas, ordenarLeituras, ouvirGruposDeNovo, reunirNoEstudo } from "../../../contrato/api.js";
 import { ESTADOS_DE_LEITURA, estadoDeLeitura, leituraDivergeDaDeclaracao } from "../../../contrato/estado.js";
 import { DESTAQUES } from "./Leitura.jsx";
 import "./estudos.css";
@@ -278,6 +278,16 @@ const COLUNAS = [
   { id: "read", rotulo: "Lido" },
 ];
 
+function ordemDoQuadro(livros) {
+  return [...livros]
+    .sort((a, b) => {
+      const oa = Number.isInteger(a.ordemLeitura) ? a.ordemLeitura : Number.MAX_SAFE_INTEGER;
+      const ob = Number.isInteger(b.ordemLeitura) ? b.ordemLeitura : Number.MAX_SAFE_INTEGER;
+      return oa - ob;
+    })
+    .map((livro) => livro.chave);
+}
+
 /* OS RECORTES DOS ESTUDOS — o nó 966:31095 os tem, e a tela não tinha.
  *
  * "Fechado" não quer dizer apagado: fechar um estudo é dizer que a pergunta foi
@@ -336,23 +346,63 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
   const gesto = useRef(null);
   const [arrasto, setArrasto] = useState(null);   // { chave, titulo, x, y, de }
   const [colunaSobODedo, setColunaSobODedo] = useState(null);
+  const [posicaoSobODedo, setPosicaoSobODedo] = useState(null);
   const [movendo, setMovendo] = useState(null);
+  const [ordemLocal, setOrdemLocal] = useState(() => ordemDoQuadro(livros));
 
-  const mover = useCallback(async (livro, destino) => {
+  useEffect(() => { setOrdemLocal(ordemDoQuadro(livros)); }, [livros]);
+
+  const indiceDaOrdem = new Map(ordemLocal.map((chave, indice) => [String(chave), indice]));
+  const livrosOrdenados = [...livros].sort((a, b) =>
+    (indiceDaOrdem.get(String(a.chave)) ?? Number.MAX_SAFE_INTEGER)
+    - (indiceDaOrdem.get(String(b.chave)) ?? Number.MAX_SAFE_INTEGER));
+
+  const mover = useCallback(async (livro, destino, posicao = null) => {
     if (!livro || !ESTADOS_DE_LEITURA.includes(destino)) return;
-    if (estadoDeLeitura(livro) === destino) return;
+    const origem = estadoDeLeitura(livro);
+    const atuais = [...livros].sort((a, b) => {
+      const ia = ordemLocal.findIndex((chave) => String(chave) === String(a.chave));
+      const ib = ordemLocal.findIndex((chave) => String(chave) === String(b.chave));
+      return (ia < 0 ? Number.MAX_SAFE_INTEGER : ia) - (ib < 0 ? Number.MAX_SAFE_INTEGER : ib);
+    });
+    const porColuna = new Map(COLUNAS.map((c) => [c.id, []]));
+    for (const item of atuais) {
+      if (String(item.chave) === String(livro.chave)) continue;
+      porColuna.get(estadoDeLeitura(item))?.push(item);
+    }
+    const destinoAtual = porColuna.get(destino);
+    let onde = destinoAtual.length;
+    if (posicao?.chave != null) {
+      const alvo = destinoAtual.findIndex((item) => String(item.chave) === String(posicao.chave));
+      if (alvo >= 0) onde = alvo + (posicao.depois ? 1 : 0);
+    }
+    destinoAtual.splice(onde, 0, livro);
+    const novaOrdem = COLUNAS.flatMap((c) => porColuna.get(c.id)).map((item) => item.chave);
+    const naoMudou = novaOrdem.length === ordemLocal.length
+      && novaOrdem.every((chave, indice) => String(chave) === String(ordemLocal[indice]));
+    if (origem === destino && naoMudou) return;
+
+    const ordemAnterior = ordemLocal;
+    setOrdemLocal(novaOrdem);
     setMovendo(livro.chave);
     try {
       /* UMA COLUNA, E NENHUMA OUTRA. A rota escreve `estado_leitura`; capítulo,
        * deslocamento e fração ficam onde estavam. Se a pessoa marcar "Lido"
        * com o livro pela metade, o quadro NÃO conclui a leitura por ela — quem
        * oferece isso é o aviso de divergência, com um botão e um nome. */
-      await declararEstadoDeLeitura(livro.chave, destino);
-      aoReler?.(livro.chave);
+      if (origem !== destino) await declararEstadoDeLeitura(livro.chave, destino);
+      await ordenarLeituras(novaOrdem);
+      await aoReler?.(livro.chave);
+    } catch {
+      /* A ordem otimista não pode mentir depois de uma falha de rede. Volta
+       * imediatamente e pede a fonte novamente; assim o quadro nunca parece
+       * ter guardado uma posição que o servidor recusou. */
+      setOrdemLocal(ordemAnterior);
+      await aoReler?.(livro.chave);
     } finally {
       setMovendo(null);
     }
-  }, [aoReler]);
+  }, [aoReler, livros, ordemLocal]);
 
   /* CONCLUIR A LEITURA é a "ação adicional" que o Erik pediu que existisse
    * explicitamente: ela mexe no progresso, e por isso tem botão e nome próprios
@@ -393,16 +443,26 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
        evento é sempre o quadro. */
     const sob = document.elementFromPoint(e.clientX, e.clientY)?.closest(".estudos-coluna");
     setColunaSobODedo(sob?.dataset.coluna ?? null);
+    const cartao = document.elementFromPoint(e.clientX, e.clientY)?.closest("li[data-livro]");
+    if (cartao && cartao.dataset.livro !== String(g.chave)) {
+      const caixa = cartao.getBoundingClientRect();
+      setPosicaoSobODedo({
+        chave: cartao.dataset.livro,
+        depois: e.clientY > caixa.top + caixa.height / 2,
+      });
+    } else setPosicaoSobODedo(null);
   };
 
   const soltaGesto = () => {
     const g = gesto.current;
     gesto.current = null;
     const destino = colunaSobODedo;
+    const posicao = posicaoSobODedo;
     setArrasto(null);
     setColunaSobODedo(null);
+    setPosicaoSobODedo(null);
     if (!g?.ativo) return;          // foi clique: o link cuida
-    if (destino) mover(g.livro, destino);
+    if (destino) mover(g.livro, destino, posicao);
   };
   const [montando, setMontando] = useState(null);
   const [calando, setCalando] = useState(null);
@@ -623,7 +683,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
               /* A COLUNA VEM DO CONTRATO. `estadoDeLeitura` é o único lugar com
                  a precedência entre o que a pessoa declarou e o que a fração
                  diz — a Estante, a ficha e a prova leem do mesmo lugar. */
-              const dela = livros.filter((l) => estadoDeLeitura(l) === id);
+              const dela = livrosOrdenados.filter((l) => estadoDeLeitura(l) === id);
               return (
                 <section
                   key={id}
@@ -632,19 +692,23 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                   /* A coluna de ORIGEM não acende: soltar onde já se estava não
                      é um movimento, e acender lá prometeria uma mudança que não
                      vai acontecer. */
-                  data-alvo={arrasto && colunaSobODedo === id && arrasto.de !== id ? "sim" : undefined}
+                  data-alvo={arrasto && colunaSobODedo === id ? "sim" : undefined}
                 >
                   <h2>
                     {rotulo} <span className="dado">{dela.length}</span>
                   </h2>
                   {!dela.length && <p className="estudos-vazio">Nenhum aqui.</p>}
                   <ul>
-                    {dela.map((l) => (
+                    {dela.map((l, indice) => (
                       <li
                         key={l.chave}
+                        data-livro={l.chave}
                         onPointerDown={(e) => comecaGesto(e, l)}
                         data-arrastado={arrasto?.chave === l.chave ? "sim" : undefined}
                         data-movendo={movendo === l.chave ? "sim" : undefined}
+                        data-inserir={arrasto && posicaoSobODedo?.chave === String(l.chave)
+                          ? (posicaoSobODedo.depois ? "depois" : "antes")
+                          : undefined}
                       >
                         {/* `draggable={false}` NO LINK E NA CAPA, e sem isto o
                             arrasto morre no segundo pixel.
@@ -724,30 +788,49 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                                   {briga.fracao === null ? "nada" : `${Math.round(briga.fracao * 100)}%`}
                                 </span>.
                               </span>
-                              <button
-                                type="button"
-                                className="estudos-mover-botao"
-                                disabled={movendo === l.chave}
-                                onClick={() => concluirLeitura(l)}
-                              >
-                                Concluir a leitura também
-                              </button>
+                              {movendo === l.chave
+                                ? <span className="estudos-movendo" role="status">Atualizando…</span>
+                                : (
+                                  <button
+                                    type="button"
+                                    className="estudos-mover-botao"
+                                    onClick={() => concluirLeitura(l)}
+                                  >
+                                    Concluir a leitura também
+                                  </button>
+                                )}
                             </p>
                           );
                         })()}
                         <span className="estudos-mover">
-                          <span className="estudos-mover-rotulo">Mover para</span>
-                          {COLUNAS.filter((c) => c.id !== id).map((c) => (
-                            <button
-                              key={c.id}
-                              type="button"
-                              className="estudos-mover-botao"
-                              disabled={movendo === l.chave}
-                              onClick={() => mover(l, c.id)}
-                            >
-                              {c.rotulo}
-                            </button>
-                          ))}
+                          {movendo === l.chave ? (
+                            <span className="estudos-movendo" role="status">Atualizando…</span>
+                          ) : (
+                            <>
+                              <span className="estudos-mover-rotulo">Organizar</span>
+                              {indice > 0 && (
+                                <button type="button" className="estudos-mover-botao" onClick={() => mover(l, id, { chave: dela[indice - 1].chave })}>
+                                  Subir
+                                </button>
+                              )}
+                              {indice < dela.length - 1 && (
+                                <button type="button" className="estudos-mover-botao" onClick={() => mover(l, id, { chave: dela[indice + 1].chave, depois: true })}>
+                                  Descer
+                                </button>
+                              )}
+                              <span className="estudos-mover-rotulo">Mover para</span>
+                              {COLUNAS.filter((c) => c.id !== id).map((c) => (
+                                <button
+                                  key={c.id}
+                                  type="button"
+                                  className="estudos-mover-botao"
+                                  onClick={() => mover(l, c.id)}
+                                >
+                                  {c.rotulo}
+                                </button>
+                              ))}
+                            </>
+                          )}
                         </span>
                       </li>
                     ))}
@@ -808,14 +891,6 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
           itens={[
             ...(ligou?.grupos?.length ? [{ id: "estudos-ligou", rotulo: "Parecem do mesmo assunto" }] : []),
             ...(soltas.length ? [{ id: "estudos-soltas", rotulo: "Fora de estudo" }] : []),
-            /* OS RÓTULOS SE DESEMPATAM SOZINHOS. Medido antes: a trilha saía
-               com "O que separa…" quatro vezes — notas parecidas cortadas no
-               mesmo ponto. Ver `comecosDistintos`. */
-            ...(() => {
-              const oito = soltas.slice(0, 8);
-              const rotulos = comecosDistintos(oito.map((n) => n.trecho || n.comentario));
-              return oito.map((n, k) => ({ id: `solta-${n.id}`, rotulo: rotulos[k] }));
-            })(),
           ]}
         />
 
@@ -858,6 +933,19 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                 /* A chave é o menor id do grupo: ele não muda enquanto o grupo
                    for o mesmo, e o índice mudaria a cada recarga. */
                 const chave = Math.min(...g.notas.map((n) => n.id));
+                /* EXEMPLOS, NÃO ECO. A varredura pode reunir notas diferentes
+                   com o mesmo trecho — importações repetidas, citações iguais
+                   ou testes. Mostrar quatro cópias não aumenta a evidência;
+                   só empurra a decisão para baixo. O grupo inteiro continua na
+                   ação, mas a leitura inicial mostra no máximo dois textos
+                   distintos. */
+                const vistos = new Set();
+                const exemplos = g.notas.filter((n) => {
+                  const texto = achatar(n.trecho || n.comentario || "");
+                  if (!texto || vistos.has(texto)) return false;
+                  vistos.add(texto);
+                  return true;
+                }).slice(0, 2);
                 return (
                   <li key={chave}>
                     <p className="estudos-fio-conta">
@@ -871,7 +959,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                     <p className="estudos-fio-palavras">{g.palavras.join(" · ")}</p>
 
                     <ul className="estudos-fio-notas">
-                      {g.notas.slice(0, 4).map((n) => (
+                      {exemplos.map((n) => (
                         <li key={n.id}>
                           <Link to={`/nota/${n.id}`}>
                             <span className="estudos-fio-trecho">{n.trecho || n.comentario}</span>
@@ -880,10 +968,10 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                         </li>
                       ))}
                     </ul>
-                    {g.notas.length > 4 && (
+                    {g.notas.length > exemplos.length && (
                       <p className="estudos-fio-resto">
-                        e mais {g.notas.length - 4}{" "}
-                        {g.notas.length - 4 === 1 ? "nota" : "notas"}.
+                        Mais {g.notas.length - exemplos.length}{" "}
+                        {g.notas.length - exemplos.length === 1 ? "nota faz" : "notas fazem"} parte deste grupo.
                       </p>
                     )}
 
@@ -909,7 +997,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                           }
                         }}
                       >
-                        {montando === chave ? "Montando…" : `Juntar as ${g.quantas} num estudo`}
+                        {montando === chave ? "Montando…" : `Criar estudo com estas ${g.quantas} notas`}
                       </Botao>
 
                       {/* "IGNORAR" — o botão do desenho, e ele ficou de fora até

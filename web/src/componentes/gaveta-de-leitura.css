@@ -1,0 +1,59 @@
+/* A folha do leitor deixa o chão visível nas quatro bordas. Ela fica no fluxo
+ * para que a rolagem contínua continue pertencendo à janela — condição para o
+ * progresso, a página atual e o carregamento bidirecional permanecerem certos. */
+.leitura-cena {
+  min-block-size: 100dvh;
+  padding: 32px;
+}
+
+.leitura-gaveta {
+  position: relative;
+  inline-size: min(1536px, 100%);
+  min-block-size: calc(100dvh - 64px);
+  margin-inline: auto;
+  padding-block-start: 32px;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  background: var(--folha);
+  box-shadow: 0 8px 24px color-mix(in oklab, var(--foreground) 8%, transparent);
+  outline: none;
+}
+
+.leitura-gaveta-alca {
+  position: absolute;
+  z-index: 4;
+  inset-block-start: 14px;
+  inset-inline: 0;
+  inline-size: 48px;
+  block-size: 4px;
+  margin-inline: auto;
+  border-radius: 0;
+  background: var(--border);
+  cursor: grab;
+}
+
+.leitura-gaveta-alca:active { cursor: grabbing; }
+
+.leitura-gaveta[data-vaul-drawer][data-vaul-drawer-direction="bottom"] {
+  --initial-transform: 24px;
+  animation-duration: 260ms;
+  animation-timing-function: var(--gaveta);
+  transition-duration: 260ms;
+  transition-timing-function: var(--gaveta);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leitura-gaveta[data-vaul-drawer][data-vaul-drawer-direction="bottom"] {
+    animation: none;
+    transition-duration: 1ms;
+  }
+}
+
+@media (max-width: 767px) {
+  .leitura-cena { padding: 12px; }
+  .leitura-gaveta {
+    min-block-size: calc(100dvh - 24px);
+    padding-block-start: 24px;
+  }
+  .leitura-gaveta-alca { inset-block-start: 10px; }
+}

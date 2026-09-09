@@ -34,6 +34,7 @@ export const COM_SUBCAMINHO = [
   "/pending-send",
   "/presets",
   "/privacidade",
+  "/quadro-de-leitura",
   "/sessoes",
   "/storage",
   "/tools",

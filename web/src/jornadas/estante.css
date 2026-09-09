@@ -96,23 +96,15 @@
  * mascara no proprio elemento, o fundo do numero E o balao — na tela e na
  * arvore. */
 .marcador {
-  /* FORA DO FLUXO, e nao no fluxo com recuo negativo.
-   *
-   * Ele estava no fluxo com `margin-block-end: -13px`, e a conta nao fechava: o
-   * recuo tirava 13 dos 50 de altura, entao a caixa da capa ficava 37px mais
-   * alta nos livros COM marcador. Medido: 214 de altura sem marcador, 251 com —
-   * e os titulos da mesma fileira saiam desalinhados em 37px, um erro que so
-   * aparece quando um livro tem nota e o do lado nao.
-   *
-   * Absoluto, ele nao mede nada: a caixa e a capa, e o marcador aparece por
-   * tras dela, saindo por cima. E o que o Erik descreveu — "o item que conta
-   * quantas notas tem na parte de tras com z-index menor, livro na frente". */
+  /* Dentro do canto da capa. A fita negativa vazava alguns pixels para fora do
+   * cartão e, na primeira linha, invadia a zona dos filtros. O número continua
+   * associado à capa sem alterar a altura da grade. */
   position: absolute;
-  inset-block-start: -37px;
-  inset-inline-end: 0;
-  z-index: 0;
-  inline-size: 36px; block-size: 50px;
-  display: flex; justify-content: center; padding-block-start: 12px;
+  inset-block-start: 12px;
+  inset-inline-end: 12px;
+  z-index: 2;
+  inline-size: 34px; block-size: 46px;
+  display: flex; justify-content: center; padding-block-start: 10px;
   background: var(--foreground);
   mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat;
   mask-size: contain; -webkit-mask-size: contain;
@@ -573,6 +565,7 @@
    * ponteiro ao `<li>` do livro SEGUINTE. Numa pilha vista de cima, quem está no
    * topo está na frente. */
   position: relative;
+  z-index: calc(100 - var(--ordem, 0));
   /* O RECUO E A TRANSIÇÃO MORAM JUNTOS, e no mesmo elemento que se move.
    *
    * Eles tinham se separado: as transformações de repouso, de dedo em cima e de
@@ -652,10 +645,11 @@
  * visível como espaço entre livros. */
 .pilha li + li { margin-block-start: -8px; }
 
-/* A FACE DE CIMA É O CORTE DAS PÁGINAS, e não a capa: um livro deitado mostra o
- * papel por cima, e a capa fica embaixo contra a mesa. As listras finas são as
- * folhas — e o único detalhe que essa superfície tem de verdade. */
+/* A FACE DE CIMA IDENTIFICA O LIVRO. O Figma usa um plano cinza como gabarito,
+ * mas no produto a pessoa precisa reconhecer cada volume pela capa e pela cor,
+ * inclusive antes de selecionar a lombada. */
 .deitado-topo {
+  position: relative;
   display: block;
   block-size: 72px;
   /* PLANO SÓLIDO, e não listras de papel. Conferido contra o nó `895:7506` em
@@ -671,6 +665,30 @@
   border: 1px solid var(--border);
   transform-origin: bottom center;
   transform: rotateX(74deg);
+  overflow: hidden;
+}
+
+/* O gabarito do Figma usa cinza para indicar o plano. No produto, esse plano
+ * recebe a imagem do próprio livro: `cover`, porque a perspectiva mostra uma
+ * faixa larga e o papel precisa preencher até as arestas. */
+.deitado-topo > img,
+.deitado-topo > .deitado-capa {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  object-position: center 22%;
+  border: 0;
+  pointer-events: none;
+}
+
+.deitado-topo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgb(255 255 255 / 0.12), rgb(0 0 0 / 0.12));
+  pointer-events: none;
 }
 
 /* A FRENTE DA FATIA. A altura é a espessura do livro, com um piso: abaixo de
@@ -683,6 +701,8 @@
   block-size: clamp(18px, var(--espessura, 18px), 96px);
   padding-inline: 16px;
   background: var(--card);
+  background-size: cover;
+  background-position: center;
   border: 1px solid var(--border);
   border-block-start: 0;
   /* SEM `overflow: hidden` AQUI. O titulo do escolhido e absoluto dentro desta
@@ -775,6 +795,7 @@
 .pilha li:has(.escolhido),
 .pilha:hover li:has(.escolhido) {
   transform: translateZ(40px) translateX(-24px);
+  z-index: 200;
 }
 .livro-deitado.escolhido .deitado-lombada {
   block-size: 96px;

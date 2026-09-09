@@ -49,23 +49,52 @@
 }
 
 
-.lista { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.lista { display: flex; flex-direction: column; gap: 16px; margin: 0; padding: 0; list-style: none; }
 
 /* O chao marca o item; nao ha borda em volta de cada um. As camadas vem do
  * fundo, e um filete por grupo — nao por item. */
 .arquivo {
-  display: flex; flex-direction: column; gap: 12px;
-  padding: 20px 0;
-  border-block-end: 1px solid var(--border);
+  position: relative;
+  display: grid;
+  grid-template-columns: 6px minmax(0, 1fr);
+  min-block-size: 132px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--background);
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.03);
 }
-.arquivo:last-child { border-block-end: 0; }
 
-.arquivo-topo { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.arquivo-sinal { background: var(--border); }
+.arquivo.enviando .arquivo-sinal { background: var(--warning); }
+.arquivo.pronto .arquivo-sinal { background: var(--success); }
+.arquivo.erro .arquivo-sinal { background: var(--destructive); }
+.arquivo.precisa .arquivo-sinal { background: var(--foreground); }
+
+.arquivo-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-inline-size: 0;
+  padding: 24px;
+}
+
+.arquivo-topo { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.arquivo-identidade { display: flex; flex-direction: column; gap: 4px; min-inline-size: 0; }
 .arquivo-nome {
   font-size: 20px; line-height: 30px;    /* Body/Medium */
   color: var(--foreground);
+  font-weight: 500;
+  overflow-wrap: anywhere;
 }
-.arquivo-estado { font-size: 16px; line-height: 24px; }
+.arquivo-proximo { font-size: 14px; line-height: 22px; color: var(--muted-foreground); }
+.arquivo-estado {
+  flex: none;
+  padding: 8px 12px;
+  border: 1px solid currentColor;
+  font-size: 14px;
+  line-height: 22px;
+  white-space: nowrap;
+}
 
 /* Estado tem cor, e e um dos tres enderecos onde ela e permitida. */
 .pronto   .arquivo-estado { color: var(--success); }
@@ -73,7 +102,7 @@
 .enviando .arquivo-estado { color: var(--warning); }
 .fila     .arquivo-estado { color: var(--muted-foreground); }
 
-.barra { block-size: 4px; background: var(--muted); }
+.barra { block-size: 6px; background: var(--muted); }
 .barra-feita { block-size: 100%; background: var(--foreground); }
 .erro .barra-feita { background: var(--destructive); }
 /* VERDE SO NO FIM, como o desenho (895:9736) mostra. A barra que enche em preto
@@ -91,6 +120,8 @@
   color: var(--muted-foreground);
 }
 .arquivo-detalhe .dado { font-size: 14px; line-height: 22px; }  /* Dado/Medida */
+.arquivo-rodape { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; }
+.arquivo-rodape .arquivo-preparo { flex: none; margin: 0; }
 
 .preparo-caixa .botao { align-self: flex-start; }
 
@@ -193,7 +224,7 @@
 
 /* O caminho para o preparo. Ação e não estado, então o alvo tem borda — os
    quatro estados ao lado são texto. */
-.arquivo-preparo { margin: 10px 0 0; }
+.arquivo-preparo { margin: 0; }
 
 .arquivo-preparo a {
   display: inline-block;
@@ -260,8 +291,18 @@
    Com `max-inline-size: 888px` e `padding: 0 64px`, o conteúdo ficava em 760 e
    a faixa desalinhava da seção "Em preparo", que mede 876 sem recheio. Duas
    seções da mesma página com bordas diferentes é o R-20 visto no computador. */
-.faixa { inline-size: 100%; max-inline-size: calc(888px + 2 * 64px); margin: 0 auto; padding: 0 64px 64px; }
-.faixa-topo { display: flex; align-items: baseline; justify-content: space-between; gap: 24px; margin-block-end: 40px; }
+.faixa {
+  inline-size: 100%;
+  max-inline-size: none;
+  margin: 0;
+  padding: 0 0 64px max(64px, calc((100vw - 888px) / 2));
+  overflow: hidden;
+}
+.faixa-topo {
+  inline-size: min(888px, calc(100vw - 128px));
+  display: flex; align-items: baseline; justify-content: space-between; gap: 24px;
+  margin-block-end: 40px;
+}
 .faixa-topo h2 {
   margin: 0;
   font-size: 40px; line-height: 48px; font-weight: 540;   /* Heading/LG */
@@ -271,10 +312,19 @@
 /* A fileira ROLA, e nao encolhe as capas: o desenho mostra seis capas em largura
  * de livro, e cabendo tudo na tela cada uma viraria uma miniatura ilegivel. */
 .faixa-capas {
-  margin: 0; padding: 0 0 8px; list-style: none;
-  display: flex; gap: 40px; overflow-x: auto;
+  margin: 0; padding: 0 64px 16px 0; list-style: none;
+  display: flex; gap: 48px; overflow-x: auto;
+  cursor: grab;
+  touch-action: pan-y;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  overscroll-behavior-inline: contain;
+  user-select: none;
 }
-.faixa-capas li { flex: 0 0 auto; inline-size: 208px; }
+.faixa-capas::-webkit-scrollbar { display: none; }
+.faixa-capas:active { cursor: grabbing; scroll-behavior: auto; }
+.faixa-capas:focus-visible { outline: 1px solid var(--foreground); outline-offset: 8px; }
+.faixa-capas li { flex: 0 0 auto; inline-size: 264px; }
 .faixa-capas a { display: block; color: inherit; text-decoration: none; }
 .faixa-capas img,
 .faixa-sem-capa {
@@ -294,10 +344,19 @@
   .continue { flex-direction: column; align-items: stretch; gap: 32px; padding: 40px 16px; }
   .continue-capa { inline-size: 100%; }
   .continue-texto h2 { font-size: 24px; line-height: 32px; }
-  .faixa { padding: 0 16px 40px; }
+  .faixa { padding: 0 0 40px 16px; }
+  .faixa-topo { inline-size: calc(100vw - 32px); padding-inline-end: 16px; }
   .faixa-topo h2 { font-size: 28px; line-height: 36px; }
   .faixa-capas { gap: 24px; }
   .faixa-capas li { inline-size: 156px; }
+}
+
+@media (max-width: 767px) {
+  .arquivo { grid-template-columns: 4px minmax(0, 1fr); }
+  .arquivo-corpo { padding: 20px 16px; gap: 16px; }
+  .arquivo-topo, .arquivo-rodape { align-items: stretch; flex-direction: column; gap: 12px; }
+  .arquivo-estado { align-self: flex-start; }
+  .arquivo-rodape .arquivo-preparo { align-self: flex-start; }
 }
 
 /* ─── "Precisa de voce" — no 895:9348 ───────────────────────────────────────

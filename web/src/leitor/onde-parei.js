@@ -131,7 +131,7 @@ export function trechoEm(raiz, deslocamento, quanto = 200) {
  * quem parou no meio de um parágrafo tem um deslocamento que não é o início de
  * bloco nenhum, e procurar igualdade exata não acharia nada.
  *
- * `auto` e não `smooth`: rolagem animada ao ABRIR uma página é a tela se mexendo
+ * `instant` e não `smooth`: rolagem animada ao ABRIR uma página é a tela se mexendo
  * sozinha antes de a pessoa ter feito nada, e num leitor isso é desorientador.
  */
 /* Levar a tela até o COMEÇO de um capítulo.
@@ -142,7 +142,7 @@ export function trechoEm(raiz, deslocamento, quanto = 200) {
 export function irParaOComeco(secao) {
   const primeiro = secao?.querySelector("[data-de]");
   if (!primeiro) return false;
-  primeiro.scrollIntoView({ behavior: "auto", block: "start" });
+  primeiro.scrollIntoView({ behavior: "instant", block: "start" });
   return true;
 }
 
@@ -154,6 +154,6 @@ export function irPara(raiz, deslocamento) {
     else break;
   }
   if (!alvo) return false;
-  alvo.scrollIntoView({ behavior: "auto", block: "start" });
+  alvo.scrollIntoView({ behavior: "instant", block: "start" });
   return true;
 }

@@ -1,4 +1,7 @@
 .cabecalho {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 40;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -27,7 +30,16 @@
 .cabecalho-acoes,
 .cabecalho-acoes .acao {
   border: 1px solid var(--border);
-  background: var(--card);
+  background: var(--piso);
+}
+
+/* São cartões persistentes sobre o chão, não pedaços da barra. A sombra fica
+ * abaixo e é curta para separar sem criar uma faixa cinza no topo da página. */
+.cabecalho-lugares,
+.cabecalho-acoes {
+  box-shadow:
+    0 1px 0 rgb(0 0 0 / 0.08),
+    0 8px 18px rgb(0 0 0 / 0.08);
 }
 
 .cabecalho-lugares { display: flex; padding: 12px; }
@@ -78,7 +90,7 @@
  * As duas condições ficam: `:focus-within` abre, e `:has(.busca-painel)` mantém
  * aberto enquanto o resultado está na tela — inclusive quando o foco vai para
  * dentro do painel ou para o campo de outra forma. */
-.cabecalho-acoes:focus-within,
+.cabecalho-acoes:has(.busca-caixa:focus-within),
 .cabecalho-acoes:has(.busca-painel) { inline-size: 626px; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -157,6 +169,33 @@ a.lugar { text-decoration: none; }
    que os botões tinham. */
 a.acao { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 a.acao.active { background: var(--muted); color: var(--foreground); }
+
+/* ENTRE TELEFONE E MESA GRANDE, AS DUAS CAIXAS PRECISAM DIVIDIR A LARGURA.
+ * As medidas fixas do nó de 1440 somavam 1.118px e faziam o cabeçalho passar
+ * 62px da janela em 1024. Mantemos as duas categorias visíveis, mas a navegação
+ * vira uma faixa compacta e a busca deixa de tentar abrir 626px onde esse espaço
+ * não existe. O texto não some: ícone e rótulo ficam empilhados. */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .cabecalho { gap: 16px; padding-inline: 16px; }
+  .cabecalho-lugares { flex: 1 1 auto; min-inline-size: 0; }
+  .lugar {
+    flex: 1 1 0;
+    min-inline-size: 0;
+    width: auto;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 4px;
+    font-size: 14px;
+    line-height: 22px;
+  }
+  .cabecalho-acoes,
+  .cabecalho-acoes:has(.busca-caixa:focus-within),
+  .cabecalho-acoes:has(.busca-painel) {
+    flex: 0 1 420px;
+    inline-size: auto;
+    gap: 16px;
+  }
+}
 
 /* ---- no telefone ---------------------------------------------------------
  *
@@ -237,6 +276,7 @@ a.acao.active { background: var(--muted); color: var(--foreground); }
    * cabecalho e `position: fixed` em parte — e porque o C9 do ABERTO.md deu a
    * conferencia de 390 por fechada. */
   .cabecalho-acoes,
+  .cabecalho-acoes:has(.busca-caixa:focus-within),
   .cabecalho-acoes:has(.busca-painel) { flex: 1 1 auto; gap: 8px; inline-size: auto; }
   /* E O CAMPO VOLTA A CRESCER. No computador ele tem largura propria — sobram
    * 264px dentro da caixa de 476, e por isso `flex: 0 1 auto` la em cima. Sem

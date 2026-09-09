@@ -67,7 +67,9 @@
 @media (max-width: 767px) {
   .atualizacoes { gap: 40px; padding: 40px 16px 80px; }
   .atualizacoes-topo h1 { font-size: 32px; line-height: 40px; }
-  .atualizacoes-lote h2 { line-height: 24px; }
+  /* A data continua no token 20/28 no telefone. O 20/24 comprimido não existe
+     na escala e fazia justamente a faixa que separa os lotes perder ar. */
+  .atualizacoes-lote h2 { line-height: 28px; }
 }
 
 /* A etiqueta do tipo. Vertical no desenho, e ela nao e decoracao: "corrigido"

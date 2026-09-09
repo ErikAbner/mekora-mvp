@@ -136,6 +136,27 @@ export function Nota() {
     .filter((o) => !procura.trim() || o.trecho.toLowerCase().includes(procura.trim().toLowerCase()))
     .slice(0, 8);
 
+  /* UMA IDEIA APARECE UMA VEZ. Notas diferentes podem carregar o mesmo trecho
+     (importação repetida ou citação recorrente), mas repetir o mesmo cartão não
+     produz evidência nova. Mantemos o melhor resultado — a API já devolve por
+     força — e preservamos ids distintos no servidor. */
+  const semEco = (lista = []) => {
+    const vistos = new Set();
+    return lista.filter((item) => {
+      const chave = (item.trecho || "").trim().toLocaleLowerCase("pt-BR").replace(/\s+/g, " ");
+      if (!chave || vistos.has(chave)) return false;
+      vistos.add(chave);
+      return true;
+    });
+  };
+  const proximas = semEco(sugestoes?.proximas);
+  const talvez = semEco(sugestoes?.talvez);
+  const ofereceEstudo = proximas.length >= 3 && !nota.estudos.length;
+  const faixasDeConexao = [
+    ["proximas", "Parecem próximas", sugestoes?.cortes?.proximas, ofereceEstudo ? [] : proximas],
+    ["talvez", "Talvez", sugestoes?.cortes?.talvez, talvez],
+  ].filter(([, , , itens]) => itens.length);
+
   return (
     <div className="mesa">
       <Cabecalho lugar="notas" />
@@ -205,6 +226,7 @@ export function Nota() {
         {copiado && <p className="npag-copiado" role="status">{copiado}</p>}
 
         <div className="npag-acoes">
+          <div className="npag-acoes-principais">
           {nota.livro && (
             <Botao tom="secundaria" onClick={() => navegar(`/leitura/${nota.livro.id}`)}>
               Abrir no livro
@@ -254,6 +276,8 @@ export function Nota() {
           >
             Copiar com origem
           </Botao>
+          </div>
+          <div className="npag-acoes-manutencao">
           {/* REVISAR DEPOIS — `895:8659`, e ele só entrou com o piso que faltava.
               
               Marcar é EXPLÍCITO, porque é intenção, e intenção não se deduz:
@@ -284,6 +308,7 @@ export function Nota() {
           >
             Apagar nota
           </Botao>
+          </div>
         </div>
 
         <section className="nota-secao">
@@ -432,11 +457,11 @@ export function Nota() {
             leva a pessoa até o formulário com as notas já escolhidas. A pergunta
             do centro é o estudo inteiro, e é a única coisa aqui que ninguém pode
             escrever no lugar dela. */}
-        {sugestoes?.proximas?.length >= 3 && !nota.estudos.length && (
+        {ofereceEstudo && (
           <section className="nota-secao nota-talvez-estudo">
             <h2>Talvez um estudo</h2>
             <p className="nota-aviso">
-              Esta nota e mais <span className="dado">{sugestoes.proximas.length}</span>{" "}
+              Esta nota e mais <span className="dado">{proximas.length}</span>{" "}
               dividem assunto, e nenhuma delas está em estudo nenhum. Um estudo é
               uma pergunta no centro e o que você juntou em volta — a pergunta é
               sua, o resto já está aqui.
@@ -452,7 +477,7 @@ export function Nota() {
                      de existir alguma coisa é a pergunta na hora errada. */
                   const semente = (nota.trecho || nota.comentario || "Notas parecidas").slice(0, 60);
                   const novo = await criarEstudo({ nome: semente, sobre: "" });
-                  for (const n of [nota, ...sugestoes.proximas]) {
+                  for (const n of [nota, ...proximas]) {
                     await reunirNoEstudo(novo.id, n.id).catch(() => {});
                   }
                   navegar(`/estudo/${novo.id}`);
@@ -462,7 +487,7 @@ export function Nota() {
                 }
               }}
             >
-              {montando ? "Montando…" : `Juntar as ${sugestoes.proximas.length + 1} num estudo`}
+              {montando ? "Montando…" : `Criar estudo com estas ${proximas.length + 1} notas`}
             </Botao>
           </section>
         )}
@@ -486,15 +511,15 @@ export function Nota() {
           </p>
         )}
 
-        {sugestoes && (sugestoes.proximas?.length || sugestoes.talvez?.length) ? (
-          <>
-            {[
-              ["proximas", "Parecem próximas", sugestoes.cortes?.proximas],
-              ["talvez", "Talvez", sugestoes.cortes?.talvez],
-            ].map(([chave, titulo, corte]) =>
-              sugestoes[chave]?.length ? (
-                <section className="nota-secao nota-sugestoes" key={chave}>
-                  <h2>{titulo}</h2>
+        {faixasDeConexao.length ? (
+          <section className="nota-secao nota-sugestoes">
+            <h2>Conexões sugeridas</h2>
+            <p className="nota-aviso">
+              O Mekora encontrou palavras em comum. Leia a evidência antes de confirmar — a ligação continua sendo sua.
+            </p>
+            {faixasDeConexao.map(([chave, titulo, corte, itens]) => (
+                <div className="nota-sugestao-faixa" key={chave}>
+                  <h3>{titulo}</h3>
                   {/* O CORTE APARECE. Limiar escondido é limiar em que ninguém
                       pode discordar — e este é o do C16, que ficou aberto
                       justamente por não haver como calibrá-lo às cegas. */}
@@ -502,7 +527,7 @@ export function Nota() {
                     A partir de {corte} {corte === 1 ? "palavra" : "palavras"} de assunto em comum.
                   </p>
                   <ul className="nota-candidatas">
-                    {sugestoes[chave].map((sug) => (
+                    {itens.map((sug) => (
                       <li key={sug.id}>
                         {/* DUAS AÇÕES, e não um cartão que liga ao ser tocado.
                           
@@ -576,10 +601,9 @@ export function Nota() {
                       </li>
                     ))}
                   </ul>
-                </section>
-              ) : null,
-            )}
-          </>
+                </div>
+            ))}
+          </section>
         ) : null}
       </main>
     </div>

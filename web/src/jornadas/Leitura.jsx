@@ -727,7 +727,7 @@ function Caderno({ livro, notas, capitulo, aoComentar, aoTrocarCor, aoApagar, ao
 }
 
 
-export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirAntes, temMais = false, temAntes = false, progresso, aoMarcar, notas = [], aoAnotar, aoComentar, aoTrocarCor, aoApagarNota, erroDeNota, aoIrParaCapitulo, marcadores = [], aoDobrar, aoDesdobrar, erroDeMarcador }) {
+export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: janela, aoPedirMais, aoPedirAntes, temMais = false, temAntes = false, progresso, aoMarcar, notas = [], aoAnotar, aoComentar, aoTrocarCor, aoApagarNota, erroDeNota, aoIrParaCapitulo, marcadores = [], aoDobrar, aoDesdobrar, erroDeMarcador }) {
   /* O CROMO PASSA A CONTAR QUEM O USA.
    *
    * O Erik decidiu em 04/09 manter o marcador de páginas e deixar o uso real
@@ -1134,6 +1134,13 @@ export function Leitura({ livro, aviso, capitulos: janela, aoPedirMais, aoPedirA
           disputa atenção com o texto — e aqui o texto é o produto. */}
       <div className={`cromo${cromoVisivel ? "" : " recolhido"}`}>
         <nav className="cromo-caixa" aria-label="Leitura">
+          {/* SAIR DA LEITURA É PARTE DA LEITURA. Usar o histórico do navegador
+              deixava esta tela sem saída quando ela era aberta em nova aba,
+              por favorito ou após um F5. O destino explícito é a ficha deste
+              livro: preserva o contexto e dali a Estante continua a um passo. */}
+          <Link className="cromo-link cromo-voltar" to={voltarPara} aria-label="Voltar ao livro">
+            <span aria-hidden="true">←</span>
+          </Link>
           {/* O BOTÃO "MENU" SAIU EM 04/09, e ele não era menu: era
               `setCromo(v => !v)`, o gatilho que recolhia o próprio cromo. Ficava
               ao lado do Índice com o MESMO glifo — os arquivos

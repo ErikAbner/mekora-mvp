@@ -121,14 +121,28 @@ function Estante3D({ livros, selecionado, aoEscolher }) {
                 }
                 title={mm === null ? "O arquivo não trouxe contagem de páginas" : undefined}
               >
-                {/* A face de cima — o corte das páginas. Um livro deitado
-                    mostra o papel por cima; a capa fica embaixo, contra a mesa.
-                    Eu já tinha posto a capa aqui uma vez, e a imagem espremida
-                    numa faixa girada virava mancha listrada sobre o título do
-                    livro de baixo. */}
-                <span className="deitado-topo" aria-hidden="true" />
+                {/* A face superior usa a capa real. O cinza do Figma é um
+                    gabarito de composição; no produto essa superfície precisa
+                    identificar o livro, inclusive de longe. */}
+                <span className="deitado-topo" aria-hidden="true">
+                  {l.capa ? (
+                    <img src={l.capa} alt="" draggable="false" />
+                  ) : (
+                    <CapaDeReserva
+                      className="deitado-capa"
+                      titulo={l.titulo}
+                      autor={l.autor}
+                      formato={l.formato}
+                      chave={l.chave}
+                    />
+                  )}
+                </span>
                 {/* A frente da fatia. A altura dela é a espessura do livro. */}
-                <span className="deitado-lombada" aria-hidden="true">
+                <span
+                  className="deitado-lombada"
+                  aria-hidden="true"
+                  style={l.capa ? { backgroundImage: `linear-gradient(rgb(255 255 255 / 0.34), rgb(0 0 0 / 0.14)), url(${l.capa})` } : undefined}
+                >
                   {/* O TÍTULO SÓ APARECE NO ESCOLHIDO, e de pé na borda
                       esquerda — é o que o 895:7506 mostra. Antes ele estava
                       dentro de TODAS as fatias, deitado: numa pilha de seis, os
@@ -221,7 +235,7 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher }) {
   const regra = RECORTES.find((r) => r.id === recorte) ?? RECORTES[0];
   const mostrados = livros.filter(regra.cabe);
   return (
-    <div className="mesa">
+    <div className="mesa chao">
       <Cabecalho lugar="estante" />
 
       <Folha
@@ -511,22 +525,20 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher }) {
               })()}
 
               <div className="ficha-acoes">
-                {/* SEM ARQUIVO NÃO HÁ O QUE ABRIR, e o botão diz isso em vez de
-                    ficar clicável e não fazer nada. Um botão que não responde é
-                    lido como produto quebrado; um botão desabilitado com o
-                    motivo ao lado é lido como estado. */}
+                {/* A ficha completa é a central do livro: leitura, Kindle,
+                    notas, escrita sobre o conjunto e arquivo. Por isso ela é o
+                    destino principal da Estante, e não uma seção chamada
+                    genericamente de “Notas”. */}
+                <Link className="botao primaria" to={`/estante/${selecionado.chave}`}>
+                  Abrir livro
+                </Link>
                 <Botao
-                  tom="primaria"
+                  tom="secundaria"
                   onClick={() => aoAbrir?.(selecionado)}
                   porque={!selecionado.leituraUrl ? "Este livro ainda não tem texto para ler aqui" : null}
                 >
-                  Continuar
+                  Continuar lendo
                 </Botao>
-                {/* ELE NÃO FAZIA NADA: `<Botao>` sem `onClick`. As notas do
-                    livro moram na ficha inteira, que é onde cabem todas. */}
-                <Link className="botao secundaria" to={`/estante/${selecionado.chave}#notas`}>
-                  Notas
-                </Link>
               </div>
 
               {/* O ENVIO AO KINDLE NÃO MORA AQUI, e a razão é do Erik: "não

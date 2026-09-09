@@ -88,6 +88,22 @@
    está no `title`. Dois balões no mesmo alvo é um a mais. */
 .cromo-caixa button:disabled::after { content: none; }
 
+/* O BALÃO INVISÍVEL TAMBÉM OCUPA A ÁREA DE ROLAGEM. Centralizar o nome do
+   primeiro e do último comando fazia os pseudo-elementos ultrapassarem a
+   janela em 12px mesmo com `opacity: 0`: nada parecia fora da tela, mas ela
+   aceitava arraste lateral. Nas duas bordas, o balão cresce para dentro. */
+.cromo-caixa:first-child > :first-child::after {
+  inset-inline-start: 0;
+  translate: 0 0;
+  transform-origin: top left;
+}
+.cromo-caixa:last-child > :last-child::after {
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+  translate: 0 0;
+  transform-origin: top right;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cromo-caixa button::after, .cromo-caixa .cromo-link::after { transition: none; transform: none; }
 }
@@ -921,6 +937,11 @@
 }
 .cromo-link:hover { background: var(--muted); }
 .cromo-link:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+.cromo-voltar {
+  font-family: var(--font-sans);
+  font-size: 24px;
+  line-height: 1;
+}
 
 /* Botão do cromo que ainda não tem para onde ir: cinza e sem cursor de clique.
  * Um botão que parece ativo e não responde é lido como produto quebrado; um

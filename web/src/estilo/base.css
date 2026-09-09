@@ -118,7 +118,12 @@
   text-box-edge: cap alphabetic;
 }
 
-html { -webkit-text-size-adjust: 100%; }
+html {
+  -webkit-text-size-adjust: 100%;
+  /* Suaviza saltos escolhidos — links internos, índice e mudanças de seção —
+   * sem substituir a física nativa do mouse e do trackpad. */
+  scroll-behavior: smooth;
+}
 
 /* AS CURVAS, NOMEADAS.
  *
@@ -280,6 +285,7 @@ button, input, textarea, select { border-radius: 0; font: inherit; color: inheri
 
 /* Movimento amacia o que a geometria endureceu — e desliga quando pedido. */
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;

@@ -140,7 +140,7 @@ export function Privacidade({ pessoa, aoSair, aoApagarConta }) {
        não filha dele. Ela precisa abrir por cima de tudo, e dentro do painel
        ficaria presa à rolagem dele. */
     <>
-    <main className="conta-painel">
+    <main className="conta-painel conta-painel-privacidade">
       {/* A ILUSTRAÇÃO DESTA TELA — `1016:30615`, "exploring new horizons", do
           component set que o Erik mandou em 05/09. Ela não saía pelo
           `get_design_context`, que exporta cada vetor separado (77, nesta), e

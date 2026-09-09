@@ -11,10 +11,13 @@
   margin-inline: auto;
 }
 
-/* `gap-128` entre as seções grandes e `pt-128 pb-64`, do `895:8896`. */
+/* RITMO ESTRUTURAL. Com `text-box-trim`, 128px entre todos os blocos virava
+ * silêncio demais entre controles relacionados e ainda deixava os interiores
+ * sem ar. O espaço agora acompanha a relação: entrada maior, seções em 72 e
+ * componentes cuidando do próprio recheio. */
 .estudos {
-  display: flex; flex-direction: column; gap: 128px;
-  padding: 128px 0 64px;
+  display: flex; flex-direction: column; gap: 72px;
+  padding: 96px 0 80px;
 }
 
 /* A FILEIRA DE BAIXO — `895:8945`: a trilha e o conteúdo, com 48 entre eles. */
@@ -24,7 +27,7 @@
 }
 .estudos-de-baixo {
   flex: 1 1 0; min-inline-size: 0;
-  display: flex; flex-direction: column; gap: 128px;
+  display: flex; flex-direction: column; gap: 80px;
 }
 /* A ancora nao pode encostar no topo da janela: sem isto o titulo da secao fica
  * colado na borda e parece cortado. */
@@ -43,7 +46,8 @@
    * abre com ar nos dois, e é assim que ela abre. */
   .estudos-fileira-de-baixo { display: block; }
   .estudos { padding-inline: 16px; }
-  .estudos-de-baixo { gap: 128px; }
+  .estudos { padding-block: 72px 64px; gap: 64px; }
+  .estudos-de-baixo { gap: 64px; }
 }
 
 /* O TOPO E CENTRADO, e nao uma barra com o botao puxado para a direita.
@@ -532,11 +536,11 @@
   color: var(--muted-foreground);
   text-wrap: pretty;
 }
-.estudos-fios { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 24px; }
+.estudos-fios { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0; }
 .estudos-fios > li {
   display: flex; flex-direction: column; gap: 16px; align-items: flex-start;
-  padding: 32px;
-  background: var(--background-secondary);
+  padding: 32px 0;
+  border-block-start: 1px solid var(--border);
 }
 .estudos-fio-conta {
   margin: 0;
@@ -551,7 +555,11 @@
   font-size: 14px; line-height: 22px;
   color: var(--muted-foreground);
 }
-.estudos-fio-notas { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; inline-size: 100%; }
+.estudos-fio-notas {
+  margin: 0; padding: 0; list-style: none;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px; inline-size: 100%;
+}
 .estudos-fio-notas a {
   display: flex; flex-direction: column; gap: 4px;
   padding: 16px 0 16px 24px;
@@ -564,8 +572,9 @@
 .estudos-fio-resto { margin: 0; }
 
 @media (max-width: 767px) {
-  .estudos-fios > li { padding: 24px 16px; }
+  .estudos-fios > li { padding: 24px 0; }
   .estudos-fio-conta { font-size: 18px; line-height: 26px; }
+  .estudos-fio-notas { grid-template-columns: 1fr; }
 }
 
 .estudos-fio-acoes { display: flex; flex-wrap: wrap; gap: 12px; }
@@ -658,6 +667,8 @@
 
 .estudos-coluna li[data-arrastado] { opacity: 0.4; }
 .estudos-coluna li[data-movendo] { opacity: 0.6; }
+.estudos-coluna li[data-inserir="antes"] { box-shadow: inset 0 3px 0 var(--foreground); }
+.estudos-coluna li[data-inserir="depois"] { box-shadow: inset 0 -3px 0 var(--foreground); }
 
 /* A COLUNA ALVO acende por FILETE e fundo rarefeito, e não por cor: a paleta do
    produto não tem matiz de interface, e a única cor viva são os quatro
@@ -708,6 +719,11 @@
 .estudos-mover-botao:hover:not(:disabled) { background: var(--muted); }
 .estudos-mover-botao:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
 .estudos-mover-botao:disabled { opacity: 0.5; cursor: default; }
+.estudos-movendo {
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 22px;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .estudos-fantasma { transition: none; }

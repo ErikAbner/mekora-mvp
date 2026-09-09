@@ -32,7 +32,7 @@ const iconeEnviar = "/icones/icone-enviar.svg";
 /* Os quatro estados vêm do contrato, não daqui. Se esta lista divergir da de
  * `contrato/estado.js`, a tela passa a mostrar rótulo para um estado que não
  * existe — ou a esconder um que existe. */
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ESTADOS as DO_CONTRATO } from "../../../contrato/estado.js";
 
 /* OS RÓTULOS SÃO OS DO DESENHO — nó 895:9736: Enviando, Na fila, Pronto, Com
@@ -94,17 +94,29 @@ function Arquivo({ nome, estado, feito, total, progresso, detalhe, etapa, motivo
    * isto — uma linha que diz "Com erro" e cala o porquê faz o usuário abrir um
    * chamado que ninguém consegue responder. */
   const explicacao = motivo || detalhe;
+  const proximo = {
+    precisa: "Aguardando uma decisão sua",
+    trabalhando: etapa ? `Agora: ${etapa}` : "Preparando para leitura",
+    fila: "Aguardando os arquivos anteriores",
+    pronto: "Disponível na Estante",
+    erro: "Precisa de atenção",
+  }[estado];
   return (
-    <li className={`arquivo ${e.classe}`}>
-      <div className="arquivo-topo">
-        <span className="arquivo-nome">{nome}</span>
+    <li className={`arquivo ${e.classe}`} data-estado={estado}>
+      <div className="arquivo-sinal" aria-hidden="true" />
+      <div className="arquivo-corpo">
+        <div className="arquivo-topo">
+          <div className="arquivo-identidade">
+            <span className="arquivo-nome">{nome}</span>
+            <span className="arquivo-proximo">{proximo}</span>
+          </div>
         {/* O estado é COR e PALAVRA. A cor já estava certa — as três do sistema
             passam AA —, mas quem não vê a cor precisa da palavra, e ela está
             aqui em texto desde sempre. O que faltava era o anúncio quando ela
             MUDA, e isso vive no resumo acima: anunciar cada linha faria um lote
             de dez arquivos falar dez vezes por transição. */}
-        <span className="arquivo-estado">{e.rotulo}</span>
-      </div>
+          <span className="arquivo-estado">{e.rotulo}</span>
+        </div>
 
       {progresso != null && (
         <div
@@ -122,34 +134,37 @@ function Arquivo({ nome, estado, feito, total, progresso, detalhe, etapa, motivo
       {/* O ARQUIVO ANALISADO ESPERA POR UMA DECISÃO, e a tela oferece o lugar
           onde ela é tomada. Sem isto, ele ficaria parado em "na fila" para
           sempre, sem dizer o que falta. */}
-      {preparo && (
-        <p className="arquivo-preparo">
-          <Link to={`/preparo/${preparo}`}>Ver o que encontrei</Link>
-        </p>
-      )}
-
-      <p className="arquivo-detalhe">
-        {feito != null && total != null && (
-          <span className="dado">
-            {feito} MB de {total} MB
-          </span>
-        )}
+        <div className="arquivo-rodape">
+          <p className="arquivo-detalhe">
+            {feito != null && total != null && (
+              <span className="dado">
+                {feito} MB de {total} MB
+              </span>
+            )}
         {/* A etapa diz ONDE parou; o motivo diz o quê. Os dois juntos são o que
             transforma "falhou" em algo que dá para resolver. */}
-        {estado === "erro" && etapa && <span className="detalhe-texto">Parou em: {etapa}.</span>}
-        {explicacao && (
+            {estado === "erro" && etapa && <span className="detalhe-texto">Parou em: {etapa}.</span>}
+            {explicacao && (
           /* `role="alert"` só no ERRO. Ele interrompe o que o leitor de tela
              estiver dizendo, e isso é certo para uma falha e errado para um
              detalhe: usar em tudo faria a tela gritar a cada MB carregado, e
              quem ouve isso desliga o leitor — perdendo também os avisos que
              importam. */
-          <span className="detalhe-texto" role={estado === "erro" ? "alert" : undefined}>
-            {explicacao}
-          </span>
-        )}
-        {digitalizado && <span className="detalhe-texto">Documento digitalizado.</span>}
-        {progresso != null && <span className="dado">{progresso}%</span>}
-      </p>
+              <span className="detalhe-texto" role={estado === "erro" ? "alert" : undefined}>
+                {explicacao}
+              </span>
+            )}
+            {digitalizado && <span className="detalhe-texto">Documento digitalizado.</span>}
+            {progresso != null && <span className="dado">{progresso}%</span>}
+          </p>
+
+          {preparo && (
+            <p className="arquivo-preparo">
+              <Link to={`/preparo/${preparo}`}>Ver o que encontrei</Link>
+            </p>
+          )}
+        </div>
+      </div>
     </li>
   );
 }
@@ -273,17 +288,56 @@ function PrecisaDeVoce({ arquivos, aoDestravar }) {
  * Mesa — "Ficaram prontos" e "Na estante" —, que no desenho são a mesma coisa
  * com listas diferentes. */
 function Faixa({ titulo, quando, livros, verTudo }) {
+  const trilho = useRef(null);
+  const arrasto = useRef({ ativo: false, moveu: false, x: 0, scroll: 0 });
   if (!livros.length) return null;
+
+  const moverComTeclado = (e) => {
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    e.preventDefault();
+    trilho.current?.scrollBy({ left: e.key === "ArrowRight" ? 312 : -312, behavior: "smooth" });
+  };
+
   return (
     <section className="faixa">
       <header className="faixa-topo">
         <h2>{titulo}</h2>
         {quando && <p className="faixa-quando">{quando}</p>}
       </header>
-      <ul className="faixa-capas">
+      <ul
+        className="faixa-capas"
+        ref={trilho}
+        tabIndex={0}
+        aria-label={`${titulo}: arraste ou use as setas para percorrer`}
+        onKeyDown={moverComTeclado}
+        onPointerDown={(e) => {
+          if (e.pointerType === "mouse" && e.button !== 0) return;
+          arrasto.current = { ativo: true, moveu: false, x: e.clientX, scroll: trilho.current.scrollLeft };
+          trilho.current.setPointerCapture(e.pointerId);
+        }}
+        onPointerMove={(e) => {
+          if (!arrasto.current.ativo) return;
+          const delta = e.clientX - arrasto.current.x;
+          if (Math.abs(delta) > 6) arrasto.current.moveu = true;
+          trilho.current.scrollLeft = arrasto.current.scroll - delta;
+        }}
+        onPointerUp={(e) => {
+          arrasto.current.ativo = false;
+          if (trilho.current?.hasPointerCapture?.(e.pointerId)) {
+            trilho.current.releasePointerCapture(e.pointerId);
+          }
+        }}
+        onPointerCancel={() => { arrasto.current.ativo = false; }}
+        onClickCapture={(e) => {
+          if (!arrasto.current.moveu) return;
+          e.preventDefault();
+          e.stopPropagation();
+          arrasto.current.moveu = false;
+        }}
+      >
         {livros.map((l) => (
           <li key={l.chave}>
-            <Link to={verTudo}>
+            <Link to={`${verTudo}/${l.chave}`} draggable="false">
               {l.capa ? (
                 <img src={l.capa} alt="" />
               ) : (
@@ -309,7 +363,11 @@ export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberA
   const primeiraVez = arquivos.length > 0 && !livros.some((l) => l.estado === "pronto");
   const c = contar(arquivos);
   /* A lista filtrada pelo recorte. `tudo` é o padrão, e é o que o desenho marca. */
-  const visiveis = recorte === "tudo" ? arquivos : arquivos.filter((a) => a.estado === recorte);
+  /* "Precisa de você" tem seção e ação próprias mais abaixo. Repeti-lo dentro
+     da fila fazia o mesmo arquivo ocupar dois lugares e transformava um bloqueio
+     em filtro. */
+  const naFila = arquivos.filter((a) => a.estado !== "precisa");
+  const visiveis = recorte === "tudo" ? naFila : naFila.filter((a) => a.estado === recorte);
 
   /* O CARTÃO "CONTINUE" — nó 895:9981, o primeiro bloco depois da área de
      soltar. É UM livro: o que a pessoa estava lendo. A escolha sai de
@@ -442,11 +500,11 @@ export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberA
               </p>
             )}
             <div className="continue-acoes">
-              <Link to={`/leitura/${continuar.chave}`} className="botao primaria">
-                Continuar lendo
+              <Link to={`/estante/${continuar.chave}`} className="botao primaria">
+                Continuar
               </Link>
-              <Link to={`/estante/${continuar.chave}`} className="botao secundaria">
-                Ver as notas
+              <Link to={`/leitura/${continuar.chave}`} className="botao secundaria">
+                Voltar à leitura
               </Link>
             </div>
           </div>
@@ -492,8 +550,8 @@ export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberA
                 sozinho na outra ponta. Aqui ele era o PRIMEIRO da fila, colado
                 nos outros — o que o lê como mais um recorte de estado, e ele
                 não é: os outros dividem a fila, ele mostra a fila inteira. */}
-            {[...Object.entries(c).map(([k, n]) => [k, ESTADOS[k].rotulo, n]),
-              ["tudo", `${arquivos.length} ${arquivos.length === 1 ? "arquivo adicionado" : "arquivos adicionados"}`, arquivos.length],
+            {[...Object.entries(c).filter(([k]) => k !== "precisa").map(([k, n]) => [k, ESTADOS[k].rotulo, n]),
+              ["tudo", `${naFila.length} ${naFila.length === 1 ? "arquivo na fila" : "arquivos na fila"}`, naFila.length],
             ].map(([id, rotulo, quantos]) => (
               <button
                 key={id}
@@ -530,7 +588,12 @@ export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberA
           )}
 
           <div className="preparo-acoes">
-            <Botao tom="primaria" icone={iconeEnviar} onClick={aoVerEstante}>
+            <Botao
+              tom="primaria"
+              icone={iconeEnviar}
+              onClick={aoVerEstante}
+              porque={c.pronto === 0 ? "Nenhum arquivo ficou pronto ainda" : null}
+            >
               Ver na estante
             </Botao>
             {/* "Adicionar mais" saiu: a área de soltar do topo faz a mesma

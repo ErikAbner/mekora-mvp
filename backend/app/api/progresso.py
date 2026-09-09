@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.models.pessoa import agora
+from app.models.processing_job import ProcessingJob
 from app.models.progresso import Progresso
 from app.services import acesso_service
 
@@ -125,6 +126,17 @@ class EstadoDeLeitura(BaseModel):
     estado: Optional[str] = None
 
 
+class OrdemDeLeitura(BaseModel):
+    """A sequência global dos livros no quadro, sem mudar suas colunas.
+
+    Uma única lista basta porque a coluna continua saindo de
+    `estadoDeLeitura`. O servidor só grava a posição relativa; mover de coluna
+    continua sendo uma declaração separada e não toca na leitura real.
+    """
+
+    livros: list[int] = Field(min_length=1, max_length=10000)
+
+
 @router.put("/jobs/{job_id}/estado-leitura", status_code=204)
 def declarar_estado(
     job_id: int,
@@ -170,5 +182,40 @@ def declarar_estado(
 
     p.estado_leitura = corpo.estado
     p.atualizado_em = agora()
+    db.commit()
+    return None
+
+
+@router.put("/quadro-de-leitura/ordem", status_code=204)
+def ordenar_quadro(
+    corpo: OrdemDeLeitura,
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> None:
+    """Persiste a ordem do Kanban sem fabricar leitura ou trocar estado."""
+    from fastapi import HTTPException
+
+    if len(set(corpo.livros)) != len(corpo.livros):
+        raise HTTPException(status_code=400, detail="A ordem repete o mesmo livro.")
+
+    pessoa = acesso_service.quem_e(db, mekora_sessao)
+    if pessoa is None:
+        return None
+
+    encontrados = (
+        db.query(ProcessingJob)
+        .filter(
+            ProcessingJob.dono_id == pessoa.id,
+            ProcessingJob.id.in_(corpo.livros),
+        )
+        .all()
+    )
+    por_id = {livro.id: livro for livro in encontrados}
+    faltam = [livro_id for livro_id in corpo.livros if livro_id not in por_id]
+    if faltam:
+        raise HTTPException(status_code=404, detail="Há livro que não pertence a esta conta.")
+
+    for ordem, livro_id in enumerate(corpo.livros):
+        por_id[livro_id].ordem_leitura = ordem
     db.commit()
     return None

@@ -40,6 +40,7 @@ import { usarEstudos } from "./estado/usarEstudos.js";
 import { Cabecalho } from "./componentes/Cabecalho.jsx";
 import { MenuDaConta } from "./componentes/MenuDaConta.jsx";
 import { GavetaDeSecao } from "./componentes/GavetaDeSecao.jsx";
+import { GavetaDeLeitura } from "./componentes/GavetaDeLeitura.jsx";
 import { Recado } from "./componentes/Recado.jsx";
 import { RECADO_PEDIDO } from "./recado.js";
 import { Consentimento } from "./componentes/Consentimento.jsx";
@@ -387,33 +388,43 @@ function PaginaLeitura() {
   /* Sem o livro, o exemplo — e o produto DIZ que é exemplo, em vez de deixar
    * parecer que aquele é o teu texto. */
   if (erro || !livro) {
-    return <Leitura livro={EXEMPLO_LEITURA} aviso={erro ? `Este é um texto de exemplo. O livro não pôde ser aberto: ${erro}` : null} />;
+    return (
+      <GavetaDeLeitura titulo="Leitura" voltarPara={`/estante/${id}`}>
+        <Leitura
+          livro={EXEMPLO_LEITURA}
+          voltarPara={`/estante/${id}`}
+          aviso={erro ? `Este é um texto de exemplo. O livro não pôde ser aberto: ${erro}` : null}
+        />
+      </GavetaDeLeitura>
+    );
   }
 
   return (
-    <Leitura
-      livro={livro}
-      capitulos={janela}
-      aoPedirMais={pedirMais}
-      aoPedirAntes={pedirAntes}
-      temMais={janela.length > 0 && janela[janela.length - 1].indice < livro.capitulos - 1}
-      temAntes={janela.length > 0 && janela[0].indice > 0}
-      aoIrParaCapitulo={saltarPara}
-      progresso={progresso}
-      notas={notas}
-      erroDeNota={erroDeNota}
-      marcadores={marcadores}
-      erroDeMarcador={erroDeMarcador}
-      aoDobrar={dobrar}
-      aoDesdobrar={desdobrar}
+    <GavetaDeLeitura titulo={`Leitura de ${livro.titulo}`} voltarPara={`/estante/${id}`}>
+      <Leitura
+        livro={livro}
+        voltarPara={`/estante/${id}`}
+        capitulos={janela}
+        aoPedirMais={pedirMais}
+        aoPedirAntes={pedirAntes}
+        temMais={janela.length > 0 && janela[janela.length - 1].indice < livro.capitulos - 1}
+        temAntes={janela.length > 0 && janela[0].indice > 0}
+        aoIrParaCapitulo={saltarPara}
+        progresso={progresso}
+        notas={notas}
+        erroDeNota={erroDeNota}
+        marcadores={marcadores}
+        erroDeMarcador={erroDeMarcador}
+        aoDobrar={dobrar}
+        aoDesdobrar={desdobrar}
       /* O capítulo vem daqui, e não da seleção: quem marca um trecho está no
        * capítulo aberto, e pedir isso à tela seria pedir que ela repita algo que
        * já se sabe — e que pode discordar. */
-      aoAnotar={(t) => marcar({ ...t, capitulo: t.capitulo ?? livro.capitulo ?? 0 })}
-      aoComentar={comentar}
-      aoTrocarCor={trocarCor}
-      aoApagarNota={remover}
-      aoMarcar={({ capitulo, deslocamento }) => {
+        aoAnotar={(t) => marcar({ ...t, capitulo: t.capitulo ?? livro.capitulo ?? 0 })}
+        aoComentar={comentar}
+        aoTrocarCor={trocarCor}
+        aoApagarNota={remover}
+        aoMarcar={({ capitulo, deslocamento }) => {
         /* O CAPÍTULO VEM DA TELA, e não do estado. Com a rolagem contínua há
            vários na página, e `livro.capitulo` é só o que foi aberto primeiro —
            usá-lo faria toda a leitura ser gravada como se fosse no capítulo de
@@ -422,13 +433,14 @@ function PaginaLeitura() {
            Falha em silêncio: isto roda enquanto a pessoa lê, e um erro visível a
            cada rolagem de quem não entrou faria o produto parecer quebrado
            quando o que acontece é o previsto — sem conta não há onde guardar. */
-        gravarProgresso(id, {
-          capitulo,
-          deslocamento,
-          fracao: quanto(capitulo, deslocamento),
-        }).catch(() => {});
-      }}
-    />
+          gravarProgresso(id, {
+            capitulo,
+            deslocamento,
+            fracao: quanto(capitulo, deslocamento),
+          }).catch(() => {});
+        }}
+      />
+    </GavetaDeLeitura>
   );
 }
 

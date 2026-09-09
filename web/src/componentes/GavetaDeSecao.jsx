@@ -46,7 +46,7 @@ import "./gaveta-de-secao.css";
  * `data-aria-hidden`. É por aí que se desfaz, e só o que ele mesmo marcou. O
  * observador existe porque ele reaplica a cada abertura.
  */
-function usarRestoVisivelParaQuemOuve() {
+export function usarRestoVisivelParaQuemOuve() {
   useEffect(() => {
     const limpar = () => {
       for (const el of document.querySelectorAll("[data-aria-hidden]")) {

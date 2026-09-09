@@ -36,6 +36,17 @@ class ProcessingJob(Base):
     # e não quando quer converter um arquivo.
     dono_id = Column(Integer, ForeignKey("pessoas.id", ondelete="SET NULL"), index=True)
 
+    # A ORDEM NO QUADRO DE LEITURA.
+    #
+    # Ela pertence ao livro na biblioteca, não ao progresso: mover um cartão
+    # acima de outro não significa que a pessoa leu nada. Guardá-la em
+    # `progressos` criaria uma marca de leitura só por organizar o Kanban e
+    # faria a Mesa interpretar organização como atividade recente.
+    #
+    # Nulo para os livros anteriores a esta coluna. Nesse caso a interface usa
+    # a ordem estável do acervo até a primeira organização explícita.
+    ordem_leitura = Column(Integer)
+
     # Arquivo original e caminhos gerados
     original_filename = Column(String, nullable=False)
     input_path = Column(String)           # storage/input/

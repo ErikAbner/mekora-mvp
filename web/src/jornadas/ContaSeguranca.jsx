@@ -105,6 +105,18 @@ export function ContaSeguranca({ pessoa, aoSair }) {
     /* `chao` no lugar do fundo liso: a Conta se abre POR CIMA do chão
        pontilhado, e é o que o `895:10599` mostra. */
     <main className="conta-painel">
+        {/* SEGURANÇA TAMBÉM TEM ABERTURA VISUAL. Esta página nasceu depois dos
+            quatro quadros de conta e, por isso, não possui arte própria no seu
+            frame. A escolha vem da biblioteca oficial: `966:25339`, “magic
+            password”, mostra a credencial e o gesto que a cria. Aqui ele fala
+            diretamente da entrada por link sem inventar cadeado ou escudo de
+            outra linguagem. É decorativo, então não entra na leitura sonora. */}
+        <img
+          className="conta-desenho seguranca-desenho"
+          src="/icones/ilustracao-conta-telefone.svg"
+          alt=""
+          aria-hidden="true"
+        />
         {erro && <p className="conta-erro" role="alert">{erro}</p>}
         {aviso && <p className="seguranca-aviso" role="status">{aviso}</p>}
 

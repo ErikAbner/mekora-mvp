@@ -1,4 +1,11 @@
-.nota-pagina { max-inline-size: 760px; margin: 0 auto; padding: 32px 40px 80px; display: flex; flex-direction: column; gap: 20px; }
+.nota-pagina {
+  max-inline-size: 920px;
+  margin: 0 auto;
+  padding: 56px 40px 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
 
 /* A TRILHA É Body/Medium 20/30 no nó (`895:8545`): "Conhecimentos / Método de
    campo / Diário 02 / 14 de agosto" é o caminho da nota, não uma legenda. */
@@ -50,9 +57,21 @@
 .nota-escrever textarea:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
 .nota-escrever-acoes { display: flex; gap: 10px; flex-wrap: wrap; }
 
-.npag-acoes { display: flex; gap: 10px; flex-wrap: wrap; padding-block-end: 8px; }
+.npag-acoes {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  padding-block: 4px 20px;
+}
+.npag-acoes-principais, .npag-acoes-manutencao {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.npag-acoes-manutencao { justify-content: flex-start; }
 
-.nota-secao { padding-block-start: 28px; border-block-start: 1px solid var(--border); }
+.nota-secao { padding-block-start: 40px; border-block-start: 1px solid var(--border); }
 /* Body/Medium 20/30, peso normal — é como o nó escreve "Tag" e "Relacionadas".
    O par 20/28 não existe nos tokens, e o peso 700 vinha do `h2` do navegador. */
 .nota-secao h2 { margin: 0 0 8px; font-size: 20px; line-height: 30px; font-weight: 400; color: var(--foreground); }
@@ -183,11 +202,30 @@
 /* As sugestoes de ligacao. Mesma lista das candidatas — e o mesmo gesto: clicar
  * liga. O que muda e a evidencia embaixo, no lugar da origem. */
 .nota-sugestoes .candidata-origem { color: var(--muted-foreground); }
+.nota-sugestao-faixa { display: flex; flex-direction: column; gap: 16px; margin-block-start: 28px; }
+.nota-sugestao-faixa h3 {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 540;
+  color: var(--foreground);
+}
+.nota-sugestoes .nota-candidatas { gap: 24px; }
+.nota-sugestoes .nota-candidatas > li {
+  padding-block-end: 24px;
+  border-block-end: 1px solid var(--border);
+}
+.nota-sugestoes .nota-candidatas > li:last-child { border-block-end: 0; padding-block-end: 0; }
 
 /* "Talvez um estudo" — a terceira faixa do no 895:8545. Ela nao propoe uma
  * LIGACAO como as outras duas: propoe que um grupo vire uma gaveta, e por isso
  * traz um botao em vez de uma lista clicavel. */
 .nota-talvez-estudo { display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
+
+@media (max-width: 767px) {
+  .nota-pagina { padding: 40px 16px 72px; }
+  .npag-acoes { flex-direction: column; }
+}
 
 /* O recado do "Copiar com origem". Ele diz o que aconteceu — copiou, ou o
  * navegador recusou — e some em dois segundos e meio. Fingir que copiou quando

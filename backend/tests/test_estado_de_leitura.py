@@ -177,3 +177,26 @@ def test_sem_conta_o_silencio_e_o_mesmo(client):
     client.cookies.delete("mekora_sessao")
     r = client.put("/jobs/999999/estado-leitura", json={"estado": "read"})
     assert r.status_code == 204
+
+
+def test_ordem_do_quadro_persiste_sem_criar_progresso(client):
+    """Organizar cartões não pode fingir que algum livro foi aberto."""
+    pid = _quem(client)
+    primeiro = _job(pid, "primeiro.pdf")
+    segundo = _job(pid, "segundo.pdf")
+
+    r = client.put("/quadro-de-leitura/ordem", json={"livros": [segundo, primeiro]})
+    assert r.status_code == 204
+    assert _progresso(pid, primeiro) is None
+    assert _progresso(pid, segundo) is None
+
+    por_id = {linha["upload_id"]: linha for linha in client.get("/history").json()}
+    assert por_id[segundo]["ordem_leitura"] == 0
+    assert por_id[primeiro]["ordem_leitura"] == 1
+
+
+def test_ordem_do_quadro_nao_aceita_livro_repetido(client):
+    pid = _quem(client)
+    livro = _job(pid)
+    r = client.put("/quadro-de-leitura/ordem", json={"livros": [livro, livro]})
+    assert r.status_code == 400

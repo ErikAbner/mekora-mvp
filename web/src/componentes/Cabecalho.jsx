@@ -126,6 +126,10 @@ export function Cabecalho() {
             aria-label="Sua conta"
             aria-haspopup="menu"
             aria-expanded={menuConta}
+            /* O menu fecha no próprio gatilho. Sem impedir que o clique inicial
+               chegue ao ouvinte de “fora”, o pointerdown fechava e o click
+               seguinte abria outra vez no mesmo gesto. */
+            onPointerDown={(e) => e.stopPropagation()}
             onClick={() => setMenuConta((v) => !v)}
           >
             <Icone src={iconeConta} />

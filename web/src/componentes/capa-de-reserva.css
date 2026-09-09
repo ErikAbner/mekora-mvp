@@ -511,7 +511,7 @@
 @container (max-width: 200px) {
   .capa-de-reserva .cr-credito,
   .capa-de-reserva .cr-rodape { display: none; }
-  .capa-de-reserva .cr-titulo { font-size: 14px; }
+  .capa-de-reserva .cr-titulo { font-size: 14px; line-height: 22px; }
 }
 
 /* O MESMO, POR LARGURA DE JANELA — porque a consulta de contêiner não pegou.
@@ -526,5 +526,5 @@
 @media (max-width: 767px) {
   .capa-de-reserva .cr-credito,
   .capa-de-reserva .cr-rodape { display: none; }
-  .capa-de-reserva .cr-titulo { font-size: 14px; }
+  .capa-de-reserva .cr-titulo { font-size: 14px; line-height: 22px; }
 }

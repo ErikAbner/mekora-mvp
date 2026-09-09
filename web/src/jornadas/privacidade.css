@@ -9,7 +9,10 @@
  * O título do grupo é Label/Medium em versalete — ele NOMEIA o grupo e não
  * compete com o nome de cada item, que é body-medium 20/30. Um h3 do tamanho
  * dos itens faria dezoito itens virarem vinte e três. */
-.guardado-grupo + .guardado-grupo { margin-block-start: 48px; }
+.conta-painel-privacidade .conta-secao > .guardado-grupo {
+  margin-inline: 40px;
+}
+.guardado-grupo + .guardado-grupo { margin-block-start: 40px; }
 /* O vão que a `.guardado` carregava como `margin-block-end: 24px` sai daqui: com
    os grupos, ele passou a cair entre a lista e o título do grupo seguinte, e o
    que precisa de respiro é a saída da LISTA para o bloco de texto que vem
@@ -34,8 +37,16 @@
   gap: 16px;
 }
 
+/* As listas diretas de cada cartão precisam de recheio próprio. Antes elas
+ * começavam na borda enquanto o título começava 40px para dentro, quebrando a
+ * coluna de leitura e fazendo o conteúdo parecer miniaturizado. */
+.conta-painel-privacidade .conta-secao > .guardado {
+  padding: 0 40px 40px;
+}
+.conta-painel-privacidade .guardado-grupo > .guardado { padding: 0; }
+
 .guardado li {
-  padding-block-end: 16px;
+  padding-block-end: 24px;
   border-block-end: 1px solid var(--border);
 }
 
@@ -65,6 +76,45 @@
   line-height: 24px;
   color: var(--muted-foreground);
   text-wrap: pretty;
+  max-inline-size: 72ch;
+}
+
+.conta-painel-privacidade .conta-condicao {
+  margin-inline: 40px;
+  margin-block-end: 40px;
+}
+
+.conta-painel-privacidade .conta-secao > .botao {
+  align-self: flex-start;
+  margin: 0 40px 40px;
+}
+
+/* Esta arte é horizontal e perdia presença usando a mesma altura das demais.
+ * O tamanho específico preserva a proporção e ancora sua base ao topo do
+ * painel, sem empurrar o conteúdo. */
+.conta-painel-privacidade .conta-desenho {
+  block-size: 260px;
+  inset-block-start: calc(var(--ate-o-primeiro-item) + 26px - 260px);
+  inset-inline-end: 48px;
+}
+
+@media (max-width: 1023px) {
+  .conta-painel-privacidade .conta-secao > .guardado-grupo { margin-inline: 24px; }
+  .conta-painel-privacidade .conta-secao > .guardado { padding: 0 24px 32px; }
+  .conta-painel-privacidade .guardado-grupo > .guardado { padding: 0; }
+  .conta-painel-privacidade .conta-condicao { margin-inline: 24px; margin-block-end: 32px; }
+  .conta-painel-privacidade .conta-secao > .botao { margin: 0 24px 32px; }
+}
+
+@media (max-width: 767px) {
+  .conta-painel-privacidade .conta-desenho {
+    block-size: 164px;
+    margin-block-end: -26px;
+  }
+  .guardado-conta:has(> .conta-interruptor) {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 /* O PRAZO, e a marca ao lado do titulo — no 895:10909.

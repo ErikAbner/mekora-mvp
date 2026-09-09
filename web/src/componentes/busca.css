@@ -50,6 +50,27 @@
 /* O X nativo do `type=search` no WebKit não segue a tinta do sistema. */
 .busca-campo::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
 
+/* O navegador não decide a tinta da ação de limpar. O controle nativo aparecia
+ * azul em alguns motores, introduzindo uma cor que não existe no Mekora. */
+.busca-limpar {
+  flex: none;
+  inline-size: 32px;
+  block-size: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+  font: inherit;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+}
+.busca-limpar:hover { color: var(--foreground); background: var(--muted); }
+.busca-limpar:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+
 /* O painel: 10px abaixo da barra e 12px de respiro interno, como o desenho. */
 .busca-painel {
   position: absolute;

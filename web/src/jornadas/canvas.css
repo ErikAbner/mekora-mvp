@@ -197,6 +197,7 @@
    isto garante que uma folga mal calculada não corte um traço em silêncio. */
 .canvas-tracos {
   position: absolute;
+  z-index: 100;
   overflow: visible;
   pointer-events: none;
 }
@@ -254,6 +255,9 @@
  * volta de cada nota vira uma grade de retangulos. */
 .nota-canvas {
   position: absolute;
+  /* Faixa explícita de objetos: seções ficam em 10–99, ligações em 100 e
+   * cartões em 200. A ordem do DOM deixa de decidir quem cobre quem. */
+  z-index: 200;
   /* A LARGURA VEM DO DADO, e nao daqui: as laterais do cartao esticam, e o valor
    * fica guardado. Ver `largura` em canvas_nos. Este `375` e so o fallback de
    * quem chegar sem valor. */
@@ -598,7 +602,6 @@
  * cosmética: dentro, o nome disputa espaço com as notas e cobre a de cima. */
 .canvas-secao {
   position: absolute;
-  z-index: 0;
   display: flex; flex-direction: column; gap: 24px;
   /* O MEIO NÃO PEGA O PONTEIRO. Arrastar dentro da área move a nota, ou o chão
      — nunca o retângulo por baixo. O que pega é a linha do nome. */
@@ -1205,6 +1208,51 @@
   display: flex; align-items: center; gap: 2px;
   padding: 6px;
 }
+.canvas-escolha-acoes > button,
+.canvas-escolha-acoes > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.canvas-escolha-acoes .icone { inline-size: 18px; block-size: 18px; }
+.canvas-escolha-acao {
+  padding: 7px 12px;
+  color: var(--foreground);
+  font-size: 14px;
+  line-height: 22px;
+  text-decoration: none;
+}
+.canvas-escolha-acao:hover { background: var(--muted); }
+.canvas-escolha-mais { position: relative; display: flex; }
+.canvas-escolha-menu {
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block-end: calc(100% + 8px);
+  z-index: 10;
+  min-inline-size: 208px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 6px;
+  border: 1px solid var(--border);
+  background: var(--piso);
+  box-shadow: 0 2px 4px rgb(0 0 0 / 0.06), 0 12px 24px rgb(0 0 0 / 0.08);
+}
+.canvas-barra-escolha .canvas-escolha-menu button {
+  inline-size: 100%;
+  justify-content: flex-start;
+  text-align: start;
+}
+.canvas-barra-escolha .canvas-escolha-menu button:disabled {
+  color: var(--muted-foreground);
+  cursor: default;
+}
+.canvas-barra-escolha .canvas-escolha-fechar {
+  min-inline-size: 38px;
+  padding-inline: 10px;
+  font-size: 20px;
+  color: var(--muted-foreground);
+}
 .canvas-barra-escolha button {
   border: 0; border-radius: var(--radius, 0);
   padding: 7px 12px;
@@ -1231,6 +1279,7 @@
  */
 .livro-canvas {
   position: absolute;
+  z-index: 200;
   display: flex; flex-direction: column;
   padding: 12px;
   border: 1px solid var(--border);
@@ -1576,6 +1625,23 @@
   font: inherit;
   font-size: 16px; line-height: 24px;
   white-space: nowrap;
+}
+.canvas-adicionar-grupo {
+  display: flex;
+  align-items: stretch;
+}
+.canvas-ferramentas .canvas-adicionar-principal { flex: 1 1 auto; }
+.canvas-ferramentas .canvas-adicionar-mais {
+  flex: 0 0 40px;
+  inline-size: 40px;
+  padding: 8px;
+  border-inline-start: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-size: 18px;
+}
+.canvas-ferramentas .canvas-adicionar-mais[aria-expanded="true"] {
+  background: var(--muted);
+  color: var(--foreground);
 }
 
 .canvas-adicionar-menu {

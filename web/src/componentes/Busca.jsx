@@ -137,6 +137,22 @@ export function Busca() {
           onFocus={() => setAberta(true)}
           onKeyDown={tecla}
         />
+        {termo && (
+          <button
+            type="button"
+            className="busca-limpar"
+            aria-label="Limpar busca"
+            onClick={() => {
+              setTermo("");
+              setResposta(null);
+              setErro(null);
+              setAberta(false);
+              campo.current?.focus();
+            }}
+          >
+            <span aria-hidden="true">×</span>
+          </button>
+        )}
       </div>
 
       {aberta && termo.trim() && (

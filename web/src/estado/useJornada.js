@@ -227,6 +227,7 @@ export function useJornada() {
          * é "ninguém disse", e aí o estado sai da fração. Quem decide é o
          * `estadoDeLeitura` do contrato, e só ele. */
         estadoLeitura: e.estado_leitura ?? null,
+        ordemLeitura: Number.isInteger(e.ordem_leitura) ? e.ordem_leitura : null,
         ultima_nota: e.ultima_nota ?? null,
         /* Quando a leitura foi mexida pela última vez, e quando o arquivo mudou
            de estado pela última vez. A Mesa precisa das duas: uma escolhe o

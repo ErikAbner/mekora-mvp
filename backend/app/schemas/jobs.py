@@ -202,6 +202,9 @@ class HistoryEntry(BaseModel):
     # a prova consultam, e é por isso que declaração e progresso convivem sem
     # virarem duas verdades.
     estado_leitura: Optional[str] = None
+    # Posição declarada no quadro de leitura. Não é progresso e não altera
+    # capítulo, deslocamento ou fração.
+    ordem_leitura: Optional[int] = None
     ultima_nota: Optional[dict] = None
     # Quando a leitura foi mexida pela última vez — o que deixa a Mesa escolher
     # QUAL livro vai no cartão "Continue" do nó 895:9981.

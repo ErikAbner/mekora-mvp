@@ -35,6 +35,25 @@ export const PAGINAS = [
   { id: "privacidade", rotulo: "Privacidade", rota: "/conta/privacidade", icone: "/icones/icone-privacidade.svg" },
 ];
 
+/* O popup é uma porta para a conta e para o produto. A navegação detalhada
+ * continua na lateral das telas de configuração; repetir as cinco páginas no
+ * cabeçalho transformava o menu numa segunda sidebar. */
+const GRUPOS_SUSPENSOS = [
+  {
+    titulo: "Conta",
+    itens: [
+      { id: "perfil", rotulo: "Perfil e conta", rota: "/conta", icone: "/icones/icone-conta.svg" },
+    ],
+  },
+  {
+    titulo: "Produto",
+    itens: [
+      { id: "atualizacoes", rotulo: "Atualizações", rota: "/atualizacoes", icone: "/icones/icone-caderno.svg" },
+      { id: "ajuda", rotulo: "Ajuda e recursos", rota: "/ajuda", icone: "/icones/icone-duvidas.svg" },
+    ],
+  },
+];
+
 export function iniciais(nome) {
   if (!nome) return "?";
   const partes = nome.trim().split(/\s+/);
@@ -93,25 +112,45 @@ export function MenuDaConta({ pessoa, suspenso = false, aberto = true, aoFechar 
         </div>
       </div>
 
-      <ul className="menu-conta-lista">
-        {PAGINAS.map((p) => (
-          <li key={p.id}>
-            <NavLink
-              to={p.rota}
-              end
-              className="menu-conta-item"
-              role={suspenso ? "menuitem" : undefined}
-              onClick={aoFechar}
-            >
-              <Icone src={p.icone} />
-              <span>{p.rotulo}</span>
-            </NavLink>
-          </li>
-        ))}
-      </ul>
+      {suspenso ? (
+        <div className="menu-conta-grupos">
+          {GRUPOS_SUSPENSOS.map((grupo) => (
+            <section className="menu-conta-grupo" key={grupo.titulo} aria-label={grupo.titulo}>
+              <p className="menu-conta-grupo-titulo">{grupo.titulo}</p>
+              <ul className="menu-conta-lista">
+                {grupo.itens.map((p) => (
+                  <li key={p.id}>
+                    <NavLink
+                      to={p.rota}
+                      end
+                      className="menu-conta-item"
+                      role="menuitem"
+                      onClick={aoFechar}
+                    >
+                      <Icone src={p.icone} />
+                      <span>{p.rotulo}</span>
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+      ) : (
+        <ul className="menu-conta-lista">
+          {PAGINAS.map((p) => (
+            <li key={p.id}>
+              <NavLink to={p.rota} end className="menu-conta-item">
+                <Icone src={p.icone} />
+                <span>{p.rotulo}</span>
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      )}
 
       <button type="button" className="menu-conta-sair" role={suspenso ? "menuitem" : undefined} onClick={sair}>
-        Sair desta conta
+        {suspenso ? "Sair" : "Sair desta conta"}
       </button>
     </div>
   );

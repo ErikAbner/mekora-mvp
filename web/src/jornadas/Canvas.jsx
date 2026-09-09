@@ -561,7 +561,7 @@ function NotaCrua({ no, aoMover, aoTirar, aoEditar, aoLigarDaLista, aoMedir, aoS
         : undefined,
     /* Enquanto arrasta, a nota sobe: passar por baixo de outra faria parecer
        que ela sumiu. */
-    zIndex: posicao ? 10 : undefined,
+    zIndex: posicao ? 300 : undefined,
   };
 
   return (
@@ -574,8 +574,19 @@ function NotaCrua({ no, aoMover, aoTirar, aoEditar, aoLigarDaLista, aoMedir, aoS
       data-no={no.id}
       data-nota={no.nota_id}
       style={estilo}
+      tabIndex={0}
+      aria-label={`${no.texto || "Nota sem texto"}${!no.job_id && !no.midia ? ". Pressione Enter ou dê dois cliques para editar." : ""}`}
       onClickCapture={talvezCancelarClique}
       onPointerDown={comecar}
+      onDoubleClick={(e) => {
+        if (e.target.closest("a, button, .nota-pega") || no.job_id || no.midia) return;
+        aoEditar?.(no);
+      }}
+      onKeyDown={(e) => {
+        if (e.target !== e.currentTarget || e.key !== "Enter" || no.job_id || no.midia) return;
+        e.preventDefault();
+        aoEditar?.(no);
+      }}
       /* O movimento é ouvido na JANELA — ver `comecar`. Aqui fica só o cursor,
          que precisa do ponteiro sobre o cartão para ter o que dizer. */
       /* O CURSOR VIRA CLASSE, e não estilo em linha.
@@ -903,7 +914,7 @@ function LivroCrua({ livro, aoMover, aoTirar, aoLigarDaLista, aoEscolher, aoEsco
           posicao || carregada
             ? `translate(${(posicao?.dx ?? 0) + (carregada?.dx ?? 0)}px, ${(posicao?.dy ?? 0) + (carregada?.dy ?? 0)}px)`
             : undefined,
-        zIndex: posicao ? 10 : undefined,
+        zIndex: posicao ? 300 : undefined,
       }}
       onPointerDown={comecar}
     >
@@ -1136,7 +1147,7 @@ function Secao({ secao, ordem = 0, aoMudar, aoApagar, escala, nasceuAgora = 0, a
     width: medindo?.largura ?? secao.largura,
     height: medindo?.altura ?? secao.altura,
     transform: desloca ? `translate(${desloca.dx}px, ${desloca.dy}px)` : undefined,
-    zIndex: ordem,
+    zIndex: 10 + ordem,
   };
 
   return (
@@ -1308,6 +1319,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
   }, []);
   const [trazendo, setTrazendo] = useState(false);
   const [adicionando, setAdicionando] = useState(false);
+  const [maisAcoesAberto, setMaisAcoesAberto] = useState(false);
   /* O MENU FECHA SOZINHO — com Esc e com um clique em qualquer outro lugar.
    * Um menu que só fecha pelo próprio botão fica aberto por cima da superfície
    * inteira enquanto a pessoa tenta trabalhar embaixo dele. */
@@ -1322,6 +1334,18 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
       document.removeEventListener("keydown", tecla);
     };
   }, [adicionando]);
+
+  useEffect(() => {
+    if (!maisAcoesAberto) return undefined;
+    const fora = (e) => { if (!e.target.closest(".canvas-barra-escolha")) setMaisAcoesAberto(false); };
+    const tecla = (e) => { if (e.key === "Escape") setMaisAcoesAberto(false); };
+    document.addEventListener("pointerdown", fora);
+    document.addEventListener("keydown", tecla);
+    return () => {
+      document.removeEventListener("pointerdown", fora);
+      document.removeEventListener("keydown", tecla);
+    };
+  }, [maisAcoesAberto]);
 
   const naSuperficie = new Set(nos.map((n) => n.nota_id));
   const deFora = notas.filter((n) => !naSuperficie.has(n.id));
@@ -3369,26 +3393,28 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
             NADA NOVO ENTROU: "não adicionar novas features apenas para preencher
             a barra". São os mesmos três, reagrupados. */}
         <nav className="canvas-ferramentas" aria-label="Ferramentas do Canvas">
-          <button
-            type="button"
-            className="canvas-adicionar"
-            aria-haspopup="menu"
-            aria-expanded={adicionando}
-            onClick={() => setAdicionando((v) => !v)}
-          >
-            <Icone src="/icones/icone-nota-nova.svg" />
-            <span>Adicionar</span>
-          </button>
+          <div className="canvas-adicionar-grupo">
+            <button
+              type="button"
+              className="canvas-adicionar canvas-adicionar-principal"
+              onClick={() => { setTexto(""); setEscrevendo(true); }}
+            >
+              <Icone src="/icones/icone-nota-nova.svg" />
+              <span>Nova nota</span>
+            </button>
+            <button
+              type="button"
+              className="canvas-adicionar-mais"
+              aria-label="Adicionar livro ou mídia"
+              aria-haspopup="menu"
+              aria-expanded={adicionando}
+              onClick={() => setAdicionando((v) => !v)}
+            >
+              <span aria-hidden="true">⌄</span>
+            </button>
+          </div>
           {adicionando && (
             <div className="canvas-adicionar-menu" role="menu" aria-label="Adicionar ao Canvas">
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => { setAdicionando(false); setTexto(""); setEscrevendo(true); }}
-              >
-                <Icone src="/icones/icone-nota-nova.svg" />
-                Nota
-              </button>
               {/* TRAZER O QUE JÁ EXISTE — e era a porta mais escondida do Canvas.
                   Livro e nota antiga só se alcançavam por uma linha de texto
                   dentro da folha de escrever. Um livro é recurso central de um
@@ -3431,9 +3457,8 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
             </span>
             <span className="canvas-escolha-filete" aria-hidden="true" />
             <div className="canvas-escolha-acoes">
-            {/* ABRIR · LIGAR · EDITAR, quando é UM objeto. Ver `escolhidoSozinho`.
-                Remover é o "Tirar" lá embaixo, que já existia e cujo rótulo muda
-                conforme o que está escolhido. */}
+            {/* A barra deixa à vista só o que continua a tarefa. Manutenção,
+                descarte e enquadramento ficam em Mais ações. */}
             {escolhidoSozinho?.tipo === "nota" && (
               <>
                 {escolhidoSozinho.no.job_id && (
@@ -3444,11 +3469,11 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
                 <button type="button" onClick={() => setLigandoDaLista(`nota:${escolhidoSozinho.no.nota_id}`)}>
                   Ligar
                 </button>
-                {/* Editar SÓ na nota escrita aqui: numa nota de leitura o texto é
-                    a citação do livro, e o servidor recusa a troca. Oferecer o
-                    botão para depois recusar é pior que não oferecer. */}
                 {!escolhidoSozinho.no.job_id && !escolhidoSozinho.no.midia && (
-                  <button type="button" onClick={() => abrirEdicao(escolhidoSozinho.no)}>Editar</button>
+                  <button type="button" onClick={() => abrirEdicao(escolhidoSozinho.no)}>
+                    <Icone src="/icones/icone-renomear.svg" />
+                    Editar
+                  </button>
                 )}
               </>
             )}
@@ -3462,54 +3487,55 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
                 </button>
               </>
             )}
-            {/* A PARTIR DE UM. Uma composição começa com um objeto e cresce; exigir
-                dois obrigaria a pessoa a juntar antes de poder organizar. */}
             {temObjetoEscolhido && (
-              <button type="button" onClick={criarSecaoDaEscolha}>Criar seção</button>
-            )}
-            {podeDuplicar && (
-              <button type="button" onClick={duplicarComHistoria} title="Livro não duplica — ele é um arquivo só">
-                Duplicar
+              <button type="button" onClick={criarSecaoDaEscolha}>
+                <Icone src="/icones/icone-camadas.svg" />
+                Criar seção
               </button>
             )}
-            {/* ARRUMAR O CLUSTER — a antiga ação da Doca, agora contextual.
-                Só a partir de TRÊS notas escolhidas: é onde desemaranhar tem
-                serventia, e mantém a barra curta no caso comum de um ou dois. */}
-            {notasEscolhidas.length >= 3 && (
-              <button type="button" onClick={() => organizar(notasEscolhidas)} title="Encosta na malha e desfaz sobreposições, empurrando para baixo">
-                Organizar
-              </button>
-            )}
-            {/* AS AÇÕES DA SEÇÃO aparecem quando ela é a única escolhida. Antes
-                elas não existiam em lugar nenhum: renomear era um clique
-                adivinhado no nome, e ajustar não existia. */}
             {secaoSozinha && (
-              <>
-                <button type="button" onClick={() => setRenomeando(secaoSozinha.id)}>
-                  {secaoSozinha.nome ? "Renomear" : "Nomear seção"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => ajustarAoConteudo(secaoSozinha)}
-                  disabled={!membrosDe(secaoSozinha).length}
-                  title={membrosDe(secaoSozinha).length ? "A área encolhe até os membros" : "Esta seção não tem membros"}
-                >
-                  Ajustar ao conteúdo
-                </button>
-                <button type="button" onClick={() => dissolver(secaoSozinha)} title="A área some; o que estava nela fica">
-                  Dissolver
-                </button>
-              </>
-            )}
-            {!secaoSozinha && (
-              <button type="button" onClick={tirarEscolhidos}>
-                {soLigacoes ? (escolha.size > 1 ? "Desfazer ligações" : "Desfazer ligação") : "Tirar"}
+              <button type="button" onClick={() => setRenomeando(secaoSozinha.id)}>
+                <Icone src="/icones/icone-renomear.svg" />
+                {secaoSozinha.nome ? "Renomear" : "Nomear seção"}
               </button>
             )}
-            <button type="button" onClick={enquadrarEscolha} title="Trazer a vista até o que está escolhido">
-              Enquadrar
-            </button>
-            <button type="button" onClick={limparEscolha}>Largar</button>
+            <div className="canvas-escolha-mais">
+              <button
+                type="button"
+                className="canvas-escolha-mais-botao"
+                aria-label="Mais ações"
+                aria-haspopup="menu"
+                aria-expanded={maisAcoesAberto}
+                onClick={() => setMaisAcoesAberto((v) => !v)}
+              >
+                <Icone src="/icones/icone-mais-acoes.svg" />
+              </button>
+              {maisAcoesAberto && (
+                <div className="canvas-escolha-menu" role="menu">
+                  {podeDuplicar && <button type="button" role="menuitem" onClick={() => { setMaisAcoesAberto(false); duplicarComHistoria(); }}>Duplicar</button>}
+                  {notasEscolhidas.length >= 3 && <button type="button" role="menuitem" onClick={() => { setMaisAcoesAberto(false); organizar(notasEscolhidas); }}>Organizar</button>}
+                  {secaoSozinha && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      disabled={!membrosDe(secaoSozinha).length}
+                      title={membrosDe(secaoSozinha).length ? "A área encolhe até os membros" : "Esta seção não tem membros"}
+                      onClick={() => { setMaisAcoesAberto(false); ajustarAoConteudo(secaoSozinha); }}
+                    >
+                      Ajustar ao conteúdo
+                    </button>
+                  )}
+                  {secaoSozinha && <button type="button" role="menuitem" onClick={() => { setMaisAcoesAberto(false); dissolver(secaoSozinha); }}>Dissolver seção</button>}
+                  {!secaoSozinha && (
+                    <button type="button" role="menuitem" onClick={() => { setMaisAcoesAberto(false); tirarEscolhidos(); }}>
+                      {soLigacoes ? (escolha.size > 1 ? "Desfazer ligações" : "Desfazer ligação") : "Tirar do Canvas"}
+                    </button>
+                  )}
+                  <button type="button" role="menuitem" onClick={() => { setMaisAcoesAberto(false); enquadrarEscolha(); }}>Enquadrar na tela</button>
+                </div>
+              )}
+            </div>
+            <button type="button" className="canvas-escolha-fechar" aria-label="Limpar seleção" onClick={limparEscolha}>×</button>
             </div>
           </div>
         )}
@@ -3918,6 +3944,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
         </p>
         <Campo
           rotulo="A nota"
+          tipo="area"
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
           autoFocus
