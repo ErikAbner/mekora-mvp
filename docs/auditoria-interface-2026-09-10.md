@@ -31,4 +31,15 @@ Os 17 pontos relatados foram tratados como uma única revisão de coerência. A 
 
 ## Observação operacional
 
-A tradução depende de um motor e dos pares de idioma instalados no servidor. Quando não houver um par compatível, a interface agora mostra essa limitação no lugar onde a decisão seria tomada, em vez de esconder a função ou oferecer um botão que falharia.
+A tradução local está operacional com o motor Argos e os pares inglês ↔ português e espanhol ↔ português. O par inglês → português foi exercitado no ambiente definitivo, sem chamada a um serviço externo. Quando não houver um par compatível, a interface mostra essa limitação no lugar onde a decisão seria tomada, em vez de esconder a função ou oferecer um botão que falharia.
+
+## Revisão autenticada das telas privadas
+
+As cinco rotas da conta foram abertas com uma sessão real: Conta, Dispositivos Kindle, Segurança, Preferências e Privacidade.
+
+- Tema inicial confirmado como claro (`#f9f9f9`) e opção “Claro” marcada.
+- Nenhuma das cinco telas apresentou rolagem horizontal em 1280 px ou 390 px.
+- As ilustrações são distintas, transparentes, padronizadas e invadem levemente o painel de conteúdo.
+- O detalhe “Antes do primeiro envio” do Kindle abre e revela a orientação completa.
+- Privacidade permanece navegável na gaveta interna apesar do conteúdo longo.
+- No celular, a navegação da conta vem primeiro e o conteúdo segue na mesma gaveta rolável, sem corte lateral.
