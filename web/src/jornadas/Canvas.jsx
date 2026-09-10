@@ -1651,32 +1651,35 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
    *
    * O resultado ESCOLHE e ENQUADRA: achar sem levar até lá seria responder
    * "existe" a quem perguntou "onde". */
-  const [procurando, setProcurando] = useState(false);
-  const [oQueProcuro, setOQueProcuro] = useState("");
-
   const semAcento = (t) =>
     (t ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-  const achados = useMemo(() => {
-    const q = semAcento(oQueProcuro.trim());
-    if (q.length < 2) return [];
-    const cabe = (t) => semAcento(t).includes(q);
-    return [
-      ...nos.filter((n) => cabe(n.texto)).map((n) => ({ chave: `nota:${n.id}`, tipo: "nota", texto: n.texto })),
-      ...livros.filter((l) => cabe(l.titulo) || cabe(l.autor))
-        .map((l) => ({ chave: `livro:${l.id}`, tipo: "livro", texto: l.titulo })),
-      ...secoes.filter((g) => cabe(g.nome))
-        .map((g) => ({ chave: `secao:${g.id}`, tipo: "seção", texto: g.nome })),
-    ].slice(0, 12);
-  }, [oQueProcuro, nos, livros, secoes]);
-
   const irAte = useCallback((chave) => {
     setEscolha(new Set([chave]));
-    setProcurando(false);
-    setOQueProcuro("");
     /* Depois do desenho: o enquadramento lê a cena, e a escolha acabou de mudar. */
     setTimeout(() => enquadrarRef.current(new Set([chave])), 0);
   }, []);
+
+  useEffect(() => {
+    const buscar = (evento) => {
+      const q = semAcento(evento.detail?.termo);
+      if (q.length < 2) return evento.detail?.responder?.([]);
+      const cabe = (t) => semAcento(t).includes(q);
+      const itens = [
+        ...nos.filter((n) => cabe(n.texto)).map((n) => ({ chave: `nota:${n.id}`, canvas: true, titulo: n.texto, abaixo: "Nota neste Canvas" })),
+        ...livros.filter((l) => cabe(l.titulo) || cabe(l.autor)).map((l) => ({ chave: `livro:${l.id}`, canvas: true, titulo: l.titulo, abaixo: [l.autor, "Livro neste Canvas"].filter(Boolean).join(" · ") })),
+        ...secoes.filter((g) => cabe(g.nome)).map((g) => ({ chave: `secao:${g.id}`, canvas: true, titulo: g.nome, abaixo: "Área neste Canvas" })),
+      ].slice(0, 12);
+      evento.detail?.responder?.(itens);
+    };
+    const levar = (evento) => evento.detail?.chave && irAte(evento.detail.chave);
+    window.addEventListener("mekora:canvas-buscar", buscar);
+    window.addEventListener("mekora:canvas-ir-ate", levar);
+    return () => {
+      window.removeEventListener("mekora:canvas-buscar", buscar);
+      window.removeEventListener("mekora:canvas-ir-ate", levar);
+    };
+  }, [nos, livros, secoes, irAte]);
 
   const tirarEscolhidos = useCallback(() => {
     /* O QUE ESTAVA LÁ, guardado antes de sumir: sem a posição e o `nota_id`, não
@@ -2109,7 +2112,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
       fio: fio ? 1 : 0, medidas: Object.keys(medidas).length, escolha: escolha.size,
       vivo: vivo ? 1 : 0, laco: laco ? 1 : 0, camera: `${camera.x}|${camera.y}|${camera.escala}`,
       saltando: saltando ? 1 : 0, espaco: espaco ? 1 : 0, renomeando: renomeando ? 1 : 0,
-      trazendo: trazendo ? 1 : 0, procurando: procurando ? 1 : 0, oQueProcuro,
+      trazendo: trazendo ? 1 : 0,
       escrevendo: escrevendo ? 1 : 0, pondoMidia: pondoMidia ? 1 : 0,
       ligandoDaLista: ligandoDaLista ? 1 : 0, recado: recadoDaHistoria ? 1 : 0,
       desfazerArrumo: desfazerArrumo ? 1 : 0,
@@ -3836,43 +3839,6 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
           {/* PROCURAR. Ele mora junto do zoom porque é da mesma família: as duas
               coisas movem a VISTA, e não o conteúdo. Fechado é um botão; aberto,
               um campo com os achados embaixo. */}
-          <div className={`canvas-procura${procurando ? " aberta" : ""}`}>
-            {procurando ? (
-              <>
-                <input
-                  type="search"
-                  aria-label="Procurar na superfície"
-                  placeholder="Procurar na superfície"
-                  value={oQueProcuro}
-                  autoFocus
-                  onChange={(e) => setOQueProcuro(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Escape") { setProcurando(false); setOQueProcuro(""); }
-                    if (e.key === "Enter" && achados[0]) irAte(achados[0].chave);
-                  }}
-                />
-                {achados.length > 0 && (
-                  <ul className="canvas-achados">
-                    {achados.map((a) => (
-                      <li key={a.chave}>
-                        <button type="button" onClick={() => irAte(a.chave)}>
-                          <span className="canvas-achado-tipo">{a.tipo}</span>
-                          <span className="canvas-achado-texto">{a.texto}</span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                {oQueProcuro.trim().length >= 2 && !achados.length && (
-                  <p className="canvas-achados-vazio">Nada com isso na superfície.</p>
-                )}
-              </>
-            ) : (
-              <button type="button" aria-label="Procurar na superfície" onClick={() => setProcurando(true)}>
-                <Icone src="/icones/icone-buscar.svg" />
-              </button>
-            )}
-          </div>
 
           {/* O CONTROLE DE ZOOM, do canto do desenho. Ele mostra a porcentagem
               porque "menos" e "mais" sem número não deixam voltar ao tamanho

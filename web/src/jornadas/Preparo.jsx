@@ -609,7 +609,18 @@ export function Preparo() {
     return (
       <div className="mesa">
         <Cabecalho lugar="mesa" />
-        <main className="preparo-pagina" data-clarity-mask="true"><p className="preparo-pagina-erro" role="alert">{erro}</p></main>
+        <main className="preparo-pagina preparo-pagina-recuperacao" data-clarity-mask="true">
+          <Link to="/mesa" className="preparo-pagina-volta">← Mesa</Link>
+          <section className="preparo-erro-card">
+            <p className="preparo-fim-marca">Não terminou</p>
+            <h1>Não consegui preparar este arquivo.</h1>
+            <p className="preparo-pagina-erro" role="alert">{erro}</p>
+            <div className="preparo-erro-acoes">
+              <Botao tom="primaria" onClick={() => { setErro(null); buscar(); }}>Tentar de novo</Botao>
+              <Link to="/mesa" className="botao secundaria">Voltar à Mesa</Link>
+            </div>
+          </section>
+        </main>
       </div>
     );
   }
@@ -1008,6 +1019,23 @@ export function Preparo() {
           </span>
         </p>
 
+        {job.detected_language && job.detected_language !== "por" && (
+          <section className="preparo-traducao-destaque">
+            <div>
+              <h2>Ler em português</h2>
+              <p>
+                Este arquivo está em {nomeDoIdioma(job.detected_language)}. O original
+                continua intacto; a tradução gera um segundo texto.
+              </p>
+            </div>
+            {destinos.length > 0 ? (
+              <Botao tom="primaria" onClick={() => setEscolhendoIdioma(true)}>Escolher tradução</Botao>
+            ) : (
+              <span className="preparo-pagina-sem-traducao">{porQueNaoTraduz}</span>
+            )}
+          </section>
+        )}
+
         <section className="preparo-pagina-secao">
           <h2>O que encontrei</h2>
           <ul className="preparo-pagina-lista">
@@ -1039,7 +1067,7 @@ export function Preparo() {
                     numa instalação sem o motor ou sem o par, o botão abriria um
                     caminho que responde 409, e a linha diz o que falta em vez
                     disso — que é a mesma regra do resto desta tela. */}
-                {p.traducao && (
+                {p.traducao && job.detected_language === "por" && (
                   destinos.length > 0 ? (
                     <Botao tom="secundaria" onClick={() => setEscolhendoIdioma(true)}>
                       Traduzir

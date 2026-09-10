@@ -1,18 +1,24 @@
 /* Atualizacoes. Mesma coluna da Ajuda: as duas sao texto corrido.
  */
 .atualizacoes {
-  display: flex; flex-direction: column; gap: 56px;
-  inline-size: 100%; max-inline-size: 680px;
+  display: flex; flex-direction: column; gap: 64px;
+  inline-size: 100%; max-inline-size: 888px;
   margin-inline: auto;
-  padding: 96px 32px 128px;
+}
+.atualizacoes-cena { inline-size: 100%; padding: 32px 32px 0; }
+.atualizacoes-folha {
+  inline-size: 100%; padding: 128px 32px;
+  background: var(--folha);
+  box-shadow: 0 -1px 0 rgb(0 0 0 / 0.08), 0 10px 24px rgb(0 0 0 / 0.06);
 }
 
-.atualizacoes-topo { display: flex; flex-direction: column; gap: 24px; }
+.atualizacoes-topo { display: flex; flex-direction: column; gap: 48px; align-items: center; }
 .atualizacoes-topo h1 {
   margin: 0;
   font-size: 48px; line-height: 56px; font-weight: 540;   /* Heading/XL */
   letter-spacing: -2%;
   color: var(--foreground);
+  text-align: center;
 }
 /* A frase de abertura é body-large 24/32 nos dois nós (`895:11060`, `966:27160`),
    e não body-medium. */
@@ -21,6 +27,8 @@
   font-size: 24px; line-height: 32px;
   color: var(--muted-foreground);
   text-wrap: pretty;
+  inline-size: 100%; padding: 16px 0 16px 32px;
+  border-inline-start: 2px solid var(--foreground);
 }
 
 .atualizacoes-lote { display: flex; flex-direction: column; gap: 24px; }
@@ -58,14 +66,16 @@
 }
 .atualizacoes-lote p {
   margin: 0;
-  font-size: 18px; line-height: 26px;
+  font-size: 20px; line-height: 30px;
   color: var(--muted-foreground);
   text-wrap: pretty;
 }
 .atualizacoes-lote a { color: var(--foreground); font-size: 18px; line-height: 26px; }
 
 @media (max-width: 767px) {
-  .atualizacoes { gap: 40px; padding: 40px 16px 80px; }
+  .atualizacoes-cena { padding: 16px 16px 0; }
+  .atualizacoes-folha { padding: 64px 16px 80px; }
+  .atualizacoes { gap: 40px; }
   .atualizacoes-topo h1 { font-size: 32px; line-height: 40px; }
   /* A data continua no token 20/28 no telefone. O 20/24 comprimido não existe
      na escala e fazia justamente a faixa que separa os lotes perder ar. */
@@ -108,8 +118,10 @@
  * precisar de cor de aviso. */
 .atualizacoes-pendente {
   display: flex; flex-direction: column; gap: 24px;
-  padding: 32px 40px;
-  background: var(--card);
+  padding: 40px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  box-shadow: 0 8px 18px rgb(0 0 0 / 0.06);
 }
 .atualizacoes-pendente h2 {
   margin: 0;
@@ -127,13 +139,13 @@
 .atualizacoes-pendente li:last-child { border-bottom: 0; padding-block-end: 0; }
 .atualizacoes-pendente h3 {
   margin: 0;
-  font-size: 20px; line-height: 30px; font-weight: 540;
+  font-size: 24px; line-height: 32px; font-weight: 540;
   color: var(--foreground);
   text-wrap: pretty;
 }
 .atualizacoes-pendente p {
   margin: 0;
-  font-size: 18px; line-height: 26px;
+  font-size: 20px; line-height: 30px;
   color: var(--muted-foreground);
   text-wrap: pretty;
 }
@@ -152,5 +164,5 @@
 .atualizacoes-desenho {
   display: block;
   inline-size: 264px; block-size: 264px;
-  margin: 24px auto 0;
+  margin: 16px auto 0;
 }

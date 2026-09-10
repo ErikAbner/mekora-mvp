@@ -3,7 +3,7 @@
 /* “Magic password” (`966:25339`) tem proporção mais estreita que as demais
  * artes. A altura compartilhada mantém a base na mesma régua; o recuo maior à
  * direita impede que uma figura estreita pareça solta no centro do painel. */
-.seguranca-desenho { inset-inline-end: 72px; }
+.seguranca-desenho { inset-inline-end: 40px; }
 
 .seguranca-como,
 .seguranca-navegadores {
@@ -38,14 +38,14 @@
 .seguranca-lista { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
 .seguranca-lista li {
   display: flex; align-items: center; justify-content: space-between; gap: 24px;
-  padding: 20px 0;
+  padding: 24px 0;
   border-bottom: 1px solid var(--separator);
 }
 .seguranca-lista li:first-child { padding-top: 0; }
 /* Este navegador em degrau de superficie, nunca matiz — a mesma regra do lugar
  * ativo no cabecalho e da selecao em toda parte. */
-.seguranca-lista li.este { padding: 20px; background: var(--card); }
-.seguranca-texto { display: flex; flex-direction: column; gap: 4px; min-inline-size: 0; }
+.seguranca-lista li.este { padding: 24px; background: var(--card); }
+.seguranca-texto { display: flex; flex-direction: column; gap: 10px; min-inline-size: 0; }
 .seguranca-titulo { margin: 0; font-size: 20px; line-height: 30px; color: var(--foreground); }
 .seguranca-detalhe { margin: 0; font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
 

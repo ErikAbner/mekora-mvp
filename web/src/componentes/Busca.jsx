@@ -15,7 +15,7 @@
  * com as setas. `Esc` fecha, ↑↓ andam, `Enter` vai.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Icone } from "./Icone.jsx";
 import { buscarNoMekora } from "../../../contrato/api.js";
 import "./busca.css";
@@ -59,6 +59,8 @@ function achatar(r) {
 
 export function Busca() {
   const navegar = useNavigate();
+  const { pathname } = useLocation();
+  const noCanvas = pathname === "/canvas";
   const caixa = useRef(null);
   const campo = useRef(null);
   const [termo, setTermo] = useState("");
@@ -67,12 +69,24 @@ export function Busca() {
   const [erro, setErro] = useState(null);
   const [buscando, setBuscando] = useState(false);
   const [marcado, setMarcado] = useState(0);
+  const [itensCanvas, setItensCanvas] = useState([]);
 
-  const itens = useMemo(() => achatar(resposta), [resposta]);
+  const itens = useMemo(() => noCanvas ? itensCanvas : achatar(resposta), [noCanvas, itensCanvas, resposta]);
 
   useEffect(() => {
     const limpo = termo.trim();
-    if (!limpo) { setResposta(null); setErro(null); return; }
+    if (!limpo) { setResposta(null); setItensCanvas([]); setErro(null); setBuscando(false); return; }
+
+    if (noCanvas) {
+      const t = setTimeout(() => {
+        window.dispatchEvent(new CustomEvent("mekora:canvas-buscar", {
+          detail: { termo: limpo, responder: (itens) => setItensCanvas(itens) },
+        }));
+        setBuscando(false);
+        setMarcado(0);
+      }, ESPERA_MS);
+      return () => clearTimeout(t);
+    }
 
     let vivo = true;
     setBuscando(true);
@@ -90,7 +104,7 @@ export function Busca() {
     }, ESPERA_MS);
 
     return () => { vivo = false; clearTimeout(t); };
-  }, [termo]);
+  }, [termo, noCanvas]);
 
   /* Clique fora fecha. Sem isto o painel fica aberto por cima da tela e a
    * pessoa precisa achar o campo de novo só para sumir com ele. */
@@ -104,7 +118,9 @@ export function Busca() {
   const ir = useCallback((item) => {
     setAberta(false);
     setTermo("");
-    navegar(item.rota);
+    if (item.canvas) {
+      window.dispatchEvent(new CustomEvent("mekora:canvas-ir-ate", { detail: { chave: item.chave } }));
+    } else navegar(item.rota);
   }, [navegar]);
 
   const tecla = (e) => {
@@ -115,8 +131,8 @@ export function Busca() {
     if (e.key === "Enter") { e.preventDefault(); ir(itens[marcado]); }
   };
 
-  const curto = resposta?.curto;
-  const vazio = resposta && !curto && !itens.length;
+  const curto = noCanvas ? termo.trim().length < 2 : resposta?.curto;
+  const vazio = noCanvas ? termo.trim().length >= 2 && !buscando && !itens.length : resposta && !curto && !itens.length;
 
   return (
     <div className="busca-caixa" ref={caixa}>
@@ -126,8 +142,8 @@ export function Busca() {
           ref={campo}
           type="search"
           className="busca-campo"
-          placeholder="Buscar em Mekora"
-          aria-label="Buscar em Mekora"
+          placeholder={noCanvas ? "Buscar neste Canvas" : "Buscar em Mekora"}
+          aria-label={noCanvas ? "Buscar neste Canvas" : "Buscar em Mekora"}
           role="combobox"
           aria-expanded={aberta && !!termo.trim()}
           aria-controls="busca-resultados"
@@ -164,8 +180,9 @@ export function Busca() {
           {!erro && !curto && buscando && !itens.length && <p className="busca-recado">Procurando…</p>}
           {!erro && vazio && (
             <p className="busca-recado">
-              Nada com esse texto. A busca olha título, autor, nome do arquivo, o
-              texto das notas e o assunto dos estudos — não o interior dos livros.
+              {noCanvas
+                ? "Nada com esse texto neste Canvas."
+                : "Nada com esse texto. A busca olha título, autor, nome do arquivo, o texto das notas e o assunto dos estudos — não o interior dos livros."}
             </p>
           )}
 

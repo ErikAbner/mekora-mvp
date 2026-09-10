@@ -24,16 +24,18 @@
    * moram no `menu-da-conta.css`: retrato de 80 (`900:53046`) e `gap: 24`
    * (`900:53555`). Escrita aqui como soma para quem mexer num deles ver o que
    * mais depende. */
-  --ate-o-primeiro-item: calc(80px + 24px);
+  /* retrato + vão + rótulo do grupo (22px de linha + 6px abaixo): o painel
+   * começa exatamente junto do primeiro botão, não junto do texto “Conta”. */
+  --ate-o-primeiro-item: calc(80px + 24px + 28px);
 
   display: grid;
-  grid-template-columns: 300px minmax(0, 1040px);
-  gap: 64px;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 56px;
   align-items: flex-start;
   justify-content: center;
-  padding: 112px 48px 96px;
+  padding: 112px 32px 96px;
   inline-size: 100%;
-  max-inline-size: 1536px;
+  max-inline-size: none;
   margin-inline: auto;
   background: var(--folha);
   box-shadow:
@@ -49,7 +51,7 @@
   --vao: 40px;
   position: relative;
   display: flex; flex-direction: column; gap: var(--vao);
-  inline-size: 100%; max-inline-size: 1040px;
+  inline-size: 100%; max-inline-size: none;
   /* O card desce até a linha do primeiro item do menu. Ver `--ate-o-primeiro-item`. */
   padding-block-start: var(--ate-o-primeiro-item);
 }
@@ -115,6 +117,9 @@
      saía espremida. `auto` deixa cada SVG usar a proporção que ele tem. */
   inline-size: auto;
   block-size: 224px;
+  max-inline-size: 272px;
+  object-fit: contain;
+  object-position: center bottom;
 }
 /* No escuro ele clareia junto com as outras ilustracoes — a regra do base.css e
  * por classe, e esta entra nela. */

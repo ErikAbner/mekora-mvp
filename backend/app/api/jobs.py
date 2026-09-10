@@ -567,7 +567,7 @@ def _bg_convert(job_id: int, operation_id: str | None = None) -> None:
     """Executa conversão para EPUB em segundo plano."""
     import time
     from app.db.database import SessionLocal
-    from app.services.progress_service import end_operation, report_progress
+    from app.services.progress_service import cancel_requested, end_operation, report_progress
 
     db = SessionLocal()
     t0 = time.monotonic()

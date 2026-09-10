@@ -22,6 +22,7 @@ import { Campo } from "../componentes/Campo.jsx";
 import { achatar } from "../../../contrato/texto.js";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Rodape } from "../componentes/Rodape.jsx";
+import { GavetaDeSecao } from "../componentes/GavetaDeSecao.jsx";
 import "./ajuda.css";
 
 /* As quatro tarefas do desenho. Cada uma leva ao lugar onde ela se faz — o
@@ -121,9 +122,10 @@ export function Ajuda() {
   const quantas = categorias.reduce((n, c) => n + c.itens.length, 0);
 
   return (
-    <div className="mesa">
+    <div className="mesa chao">
       <Cabecalho />
-
+      <GavetaDeSecao titulo="Ajuda e recursos">
+      <div className="ajuda-folha">
       <main className="ajuda">
         <header className="ajuda-topo">
           <h1>Por onde você quer começar</h1>
@@ -215,8 +217,9 @@ export function Ajuda() {
           </p>
         </section>
       </main>
-
       <Rodape />
+      </div>
+      </GavetaDeSecao>
     </div>
   );
 }

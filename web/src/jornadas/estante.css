@@ -651,39 +651,46 @@
 .deitado-topo {
   position: relative;
   display: block;
-  block-size: 72px;
-  /* PLANO SÓLIDO, e não listras de papel. Conferido contra o nó `895:7506` em
-   * 04/09: lá a face de cima é um cinza cheio, com a aresta da frente mais
-   * escura. As listras foram interpretação — a ideia de "corte das páginas" é
-   * boa, não está no desenho, e desenho é autoridade.
-   *
-   * Na tela elas custaram caro: seis livros de listras finas leem-se como
-   * folhas soltas empilhadas, e não como livros. `--muted` é `surface/deep`, o
-   * degrau de cinza do sistema mais perto do que o quadro usa. */
-  background: var(--muted);
-  box-shadow: inset 0 -2px 0 color-mix(in oklab, var(--border) 60%, transparent);
-  border: 1px solid var(--border);
-  transform-origin: bottom center;
-  transform: rotateX(74deg);
-  overflow: hidden;
-}
-
-/* O gabarito do Figma usa cinza para indicar o plano. No produto, esse plano
- * recebe a imagem do próprio livro: `cover`, porque a perspectiva mostra uma
- * faixa larga e o papel precisa preencher até as arestas. */
-.deitado-topo > img,
-.deitado-topo > .deitado-capa {
-  position: absolute;
-  inset: 0;
-  inline-size: 100%;
-  block-size: 100%;
-  object-fit: cover;
-  object-position: center 22%;
-  border: 0;
+  block-size: clamp(92px, 9vw, 124px);
   pointer-events: none;
 }
 
-.deitado-topo::after {
+/* A capa é um PLANO DE LIVRO, não uma faixa de 680×72 com `object-fit: cover`.
+ * A regra antiga cortava quase toda a imagem e mostrava um pedaço aleatório —
+ * por isso a capa parecia ser outra. O plano agora tem a proporção física do
+ * livro (594×420 quando ele está deitado), e só depois recebe a perspectiva. */
+.deitado-plano {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  inline-size: 100%;
+  aspect-ratio: 594 / 420;
+  background: var(--muted);
+  border: 1px solid var(--border);
+  box-shadow: inset 0 -2px 0 color-mix(in oklab, var(--border) 60%, transparent);
+  transform-origin: bottom center;
+  transform: rotateX(76deg);
+  overflow: hidden;
+}
+
+/* O arquivo da capa é vertical. Como o livro está deitado, ele gira 90 graus
+ * dentro do plano antes da inclinação em profundidade. Assim a imagem inteira
+ * ocupa a face em vez de virar uma faixa ampliada do meio. */
+.deitado-plano > img,
+.deitado-plano > .deitado-capa {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  inline-size: 70.707%;
+  block-size: 141.429%;
+  object-fit: cover;
+  object-position: center;
+  border: 0;
+  transform: translate(-50%, -50%) rotate(90deg);
+  pointer-events: none;
+}
+
+.deitado-plano::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -691,92 +698,124 @@
   pointer-events: none;
 }
 
-/* A FRENTE DA FATIA. A altura é a espessura do livro, com um piso: abaixo de
- * 18px a fatia some entre as vizinhas, e um livro fino continua sendo um livro.
- * O teto existe pelo motivo oposto — 1020 páginas dariam uma fatia mais alta
- * que a tela. */
+/* A FRENTE DA FATIA recompõe os 14 gabaritos de lombada. Os PNGs do conjunto
+ * trazem títulos de exemplo gravados na imagem; usá-los diretamente repetiria
+ * "MALHA URBANA" em outro livro. Por isso a composição — círculo, losango,
+ * meio-tom, divisão de campo — vive em CSS, e título/autor vêm do acervo. */
 .deitado-lombada {
   position: relative;
-  display: flex; align-items: center;
-  block-size: clamp(18px, var(--espessura, 18px), 96px);
-  padding-inline: 16px;
-  background: var(--card);
-  background-size: cover;
-  background-position: center;
+  isolation: isolate;
+  display: flex; align-items: center; gap: 14px;
+  block-size: clamp(26px, var(--espessura, 26px), 72px);
+  padding-inline: 16px 12px;
+  color: var(--lombada-tinta, #101010);
+  background:
+    linear-gradient(to bottom, rgb(255 255 255 / 0.12), rgb(0 0 0 / 0.16)),
+    var(--lombada-cor, #d9d9d9);
   border: 1px solid var(--border);
   border-block-start: 0;
-  /* SEM `overflow: hidden` AQUI. O titulo do escolhido e absoluto dentro desta
-   * caixa e mede 96px de altura para o nome caber de pe — com o corte, ele saia
-   * fatiado pela propria fatia. Na captura do Erik o que se lia era "DE CAMPO",
-   * com "CADERNOS" cortado fora. */
+  overflow: hidden;
 }
 
-/* O TÍTULO DO ESCOLHIDO, DE PÉ NA BORDA ESQUERDA — como no 895:7506. Ele fica
- * fora da fatia, à esquerda dela, e por isso não depende da altura dela: uma
- * fatia de 18px não caberia uma linha de texto deitada, e era exatamente esse o
- * defeito da versão anterior. */
-/* O TITULO DE PE, NA BORDA DE INICIO DA FATIA ESCOLHIDA.
- *
- * A versao anterior tinha `inset-block: 0` E `block-size: 96px` ao mesmo tempo,
- * numa caixa absoluta: a altura ganha, o `inset` nao segura, e a etiqueta descia
- * por cima de DOIS livros de baixo. E `align-self` num absoluto nao faz nada.
- *
- * Agora ela e ancorada pelo meio da fatia e cortada no proprio tamanho: um
- * titulo longo ganha reticencias em vez de invadir a pilha. O nome inteiro esta
- * na trilha ao lado e no painel a direita — aqui ele e etiqueta, nao leitura. */
-.deitado-titulo {
-  /* PROPRIEDADE FISICA AQUI, e nao logica — e a unica regra do projeto que faz
-   * isso de proposito.
-   *
-   * `writing-mode: vertical-rl` troca os eixos LOGICOS do proprio elemento, e as
-   * insets de uma caixa absoluta resolvem no writing-mode DELA: medido,
-   * `inset-inline-start: 0` computou como topo e a etiqueta foi parar no meio da
-   * fatia, a 231px da borda. `max-block-size: 96px` tambem nao cortava nada,
-   * porque ali "block" e a horizontal — a etiqueta media 202px de altura numa
-   * fatia de 99.
-   *
-   * `left` e `top` querem dizer esquerda e topo em qualquer writing-mode. */
-  /* ELA CRESCE PARA CIMA, ancorada no pe da fatia.
-   *
-   * Centrada e cortada em 96px, "CADERNOS DE CAMPO" virava "CADER…" — o nome
-   * cortado nao serve de nada. Para baixo ela invadiria os livros seguintes, que
-   * foi o defeito anterior; para cima ha o proprio corte de paginas do livro
-   * escolhido, que e espaco dele. 168px e a fatia mais a face de cima. */
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  display: block;
-  padding: 8px;
-  background: var(--foreground);
-  color: var(--primary-foreground);
-  font-size: 14px; line-height: 22px;   /* Label/Small */
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  writing-mode: vertical-rl;
-  rotate: 180deg;
-  /* ELA NÃO PASSA DA FATIA. Eram 168 — a fatia mais a face de cima —, com o
-     argumento de que o espaço acima é do próprio livro. Na tela não é: a face
-     está girada 74°, então a etiqueta subia sobre um plano quase invisível e
-     virava um retângulo preto flutuando ACIMA do livro, encostado em nada. Foi
-     o que mais gritou "bugada" na captura do Erik.
-     O nó `895:7506` põe a lombada DENTRO da altura do livro, e 96px é a altura
-     da fatia escolhida. Nome longo ganha reticências — e o nome inteiro está na
-     trilha ao lado e no painel à direita, como este arquivo já dizia. */
-  max-height: 96px;
+.lombada-motivo {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  inline-size: 18px;
+  block-size: 18px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.lombada-identidade {
+  position: relative;
+  z-index: 1;
+  min-inline-size: 0;
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 24px;
+}
+
+.lombada-titulo,
+.lombada-autor {
+  min-inline-size: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.deitado-titulo { z-index: 2; }
+.lombada-titulo {
+  font: 700 clamp(11px, calc(var(--espessura, 26px) * 0.42), 18px) / 1 var(--font-sans);
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
 
-/* O bloco escuro na ponta direita — o marcador do desenho. */
-.deitado-marca {
+.lombada-autor {
+  font: 400 11px / 1 var(--font-sans);
+  letter-spacing: 0.08em;
+  opacity: 0.82;
+  text-transform: uppercase;
+}
+
+.lombada-codigo {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  font-size: 9px;
+  color: inherit;
+  opacity: 0.72;
+}
+
+/* Os gestos gráficos vêm das lombadas 01–14, rotacionados para o livro deitado.
+ * A cor, porém, é sempre do livro real: variantes escuras aprofundam a cor da
+ * capa em vez de voltarem ao preto genérico. */
+.deitado-lombada:is([data-lombada="5"], [data-lombada="8"], [data-lombada="10"], [data-lombada="11"], [data-lombada="13"], [data-lombada="14"]) {
+  color: #f4f2ec;
+  background:
+    linear-gradient(to bottom, rgb(255 255 255 / 0.05), rgb(0 0 0 / 0.18)),
+    color-mix(in oklab, var(--lombada-cor, #d9d9d9) 42%, #101010);
+}
+
+.deitado-lombada[data-lombada="2"] .lombada-motivo {
+  background: conic-gradient(currentColor 25%, transparent 0 50%, currentColor 0 75%, transparent 0) 0 0 / 6px 6px;
+  border: 1px solid currentColor;
+}
+.deitado-lombada:is([data-lombada="3"], [data-lombada="4"], [data-lombada="5"], [data-lombada="8"], [data-lombada="10"], [data-lombada="11"]) .lombada-motivo { display: none; }
+.deitado-lombada[data-lombada="6"] .lombada-motivo { border-radius: 0; }
+.deitado-lombada[data-lombada="7"] .lombada-motivo { border-radius: 0; rotate: 45deg; scale: 0.78; }
+.deitado-lombada[data-lombada="9"] .lombada-motivo {
+  display: grid;
+  place-items: center;
+  inline-size: 24px;
+  background: none;
+  border-radius: 0;
+  font: 800 15px / 1 var(--font-sans);
+}
+.deitado-lombada[data-lombada="9"] .lombada-motivo::before { content: "M"; }
+.deitado-lombada:is([data-lombada="13"], [data-lombada="14"]) .lombada-motivo {
+  border-radius: 18px 18px 0 0;
+  block-size: 9px;
+  background: #f4f2ec;
+}
+.deitado-lombada:is([data-lombada="3"], [data-lombada="5"])::after {
+  content: "";
   position: absolute;
-  inset-block: 4px;
-  inset-inline-end: 12px;
-  inline-size: 18px;
-  background: var(--muted-foreground);
+  inset-block: 0;
+  inset-inline-end: 0;
+  inline-size: 30%;
+  background: radial-gradient(circle, currentColor 0 2px, transparent 2.5px) 0 0 / 12px 12px;
+  opacity: 0.48;
+  mask-image: linear-gradient(to right, transparent, #000);
+}
+.deitado-lombada[data-lombada="4"] { box-shadow: inset 0 -4px 0 var(--lombada-tinta, #101010); }
+.deitado-lombada[data-lombada="8"] {
+  background: linear-gradient(to right, color-mix(in oklab, var(--lombada-cor) 42%, #101010) 0 24%, var(--lombada-cor) 24%);
+  color: var(--lombada-tinta, #101010);
+}
+.deitado-lombada[data-lombada="11"] {
+  background: linear-gradient(to right, color-mix(in oklab, var(--lombada-cor) 42%, #101010) 0 78%, var(--lombada-cor) 78%);
 }
 
 /* AO PASSAR E AO ESCOLHER: o livro cresce e vem para a frente, e os outros
@@ -801,6 +840,12 @@
   block-size: 96px;
   border-color: var(--foreground);
 }
+.livro-deitado.escolhido .lombada-identidade {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+.livro-deitado.escolhido .lombada-titulo { font-size: 20px; }
+.livro-deitado.escolhido .lombada-autor { font-size: 12px; }
 .livro-deitado:focus-visible { outline: 1px solid var(--foreground); outline-offset: 4px; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -816,7 +861,9 @@
 
 @media (max-width: 767px) {
   .pilha-caixa { padding: 24px 0 40px; }
-  .deitado-topo { block-size: 56px; }
+  .deitado-topo { block-size: 88px; }
+  .lombada-identidade { gap: 12px; }
+  .livro-deitado.escolhido .lombada-titulo { font-size: 17px; }
   .pilha li + li { margin-block-start: -8px; }
   .pilha { perspective: 1100px; }
 }

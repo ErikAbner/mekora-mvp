@@ -14,7 +14,7 @@
  * interruptor. Pílula e círculo são os 5% que quebram a retidão, e funcionam por
  * serem raros.
  */
-import { useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { espessuraMm, espessuraPx } from "../../../contrato/lombada.js";
 import { TrilhaLinhas } from "../componentes/TrilhaLinhas.jsx";
@@ -23,8 +23,87 @@ import { Botao } from "../componentes/Botao.jsx";
 import { Folha } from "../componentes/Folha.jsx";
 import "./estante.css";
 import { CapaDeReserva } from "../componentes/CapaDeReserva.jsx";
+import {
+  autorNaLombada,
+  corPrincipalDosPixels,
+  paletaDaLombada,
+  tituloNaLombada,
+  varianteDaLombada,
+} from "../componentes/lombada-do-livro.js";
 
 const marcador = "/icones/marcador-notas.svg";
+const PALETA_NEUTRA = paletaDaLombada(null);
+const paletasDeCapa = new Map();
+
+function usePaletaDaCapa(capa) {
+  const [paleta, setPaleta] = useState(() => paletasDeCapa.get(capa) ?? PALETA_NEUTRA);
+
+  useEffect(() => {
+    let descartada = false;
+    if (!capa) {
+      setPaleta(PALETA_NEUTRA);
+      return () => { descartada = true; };
+    }
+    if (paletasDeCapa.has(capa)) {
+      setPaleta(paletasDeCapa.get(capa));
+      return () => { descartada = true; };
+    }
+
+    const imagem = new Image();
+    imagem.crossOrigin = "anonymous";
+    imagem.decoding = "async";
+    imagem.onload = () => {
+      if (descartada) return;
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = 24;
+        canvas.height = 24;
+        const contexto = canvas.getContext("2d", { willReadFrequently: true });
+        contexto.drawImage(imagem, 0, 0, canvas.width, canvas.height);
+        const rgb = corPrincipalDosPixels(
+          contexto.getImageData(0, 0, canvas.width, canvas.height).data,
+        );
+        const encontrada = paletaDaLombada(rgb);
+        paletasDeCapa.set(capa, encontrada);
+        setPaleta(encontrada);
+      } catch {
+        /* Uma capa de origem externa pode negar a leitura dos pixels. Ela ainda
+         * aparece no plano superior; a lombada fica no papel neutro em vez de
+         * inventar uma cor a partir do endereço do arquivo. */
+        setPaleta(PALETA_NEUTRA);
+      }
+    };
+    imagem.onerror = () => { if (!descartada) setPaleta(PALETA_NEUTRA); };
+    imagem.src = capa;
+    return () => { descartada = true; };
+  }, [capa]);
+
+  return paleta;
+}
+
+function LombadaDoLivro({ livro }) {
+  const variante = varianteDaLombada(livro.chave);
+  const paleta = usePaletaDaCapa(livro.capa);
+  const titulo = tituloNaLombada(livro.titulo);
+  const autor = autorNaLombada(livro.autor);
+
+  return (
+    <span
+      className="deitado-lombada"
+      data-lombada={variante}
+      aria-hidden="true"
+      style={{ "--lombada-cor": paleta.fundo, "--lombada-tinta": paleta.tinta }}
+    >
+      <span className="lombada-motivo" />
+      <span className="lombada-identidade">
+        <span className="lombada-titulo" title={livro.titulo}>{titulo}</span>
+        {autor && <span className="lombada-autor" title={livro.autor}>{autor}</span>}
+      </span>
+      <span className="lombada-codigo dado">{String(variante).padStart(2, "0")}</span>
+    </span>
+  );
+}
+
 const RECORTES = [
   { id: "tudo", rotulo: "Tudo", cabe: () => true },
   { id: "nota", rotulo: "Com nota", cabe: (l) => (l.notas ?? 0) > 0 },
@@ -95,7 +174,7 @@ function Estante3D({ livros, selecionado, aoEscolher }) {
         className="pilha-indice"
       />
 
-      <ul className="pilha">
+      <ul className="pilha" data-clarity-mask="true">
         {livros.map((l, ordem) => {
           const px = espessuraPx(l.paginas, ALTURA_LOMBADA);
           const mm = espessuraMm(l.paginas);
@@ -125,35 +204,23 @@ function Estante3D({ livros, selecionado, aoEscolher }) {
                     gabarito de composição; no produto essa superfície precisa
                     identificar o livro, inclusive de longe. */}
                 <span className="deitado-topo" aria-hidden="true">
-                  {l.capa ? (
-                    <img src={l.capa} alt="" draggable="false" />
-                  ) : (
-                    <CapaDeReserva
-                      className="deitado-capa"
-                      titulo={l.titulo}
-                      autor={l.autor}
-                      formato={l.formato}
-                      chave={l.chave}
-                    />
-                  )}
+                  <span className="deitado-plano">
+                    {l.capa ? (
+                      <img src={l.capa} alt="" draggable="false" />
+                    ) : (
+                      <CapaDeReserva
+                        className="deitado-capa"
+                        titulo={l.titulo}
+                        autor={l.autor}
+                        formato={l.formato}
+                        chave={l.chave}
+                      />
+                    )}
+                  </span>
                 </span>
-                {/* A frente da fatia. A altura dela é a espessura do livro. */}
-                <span
-                  className="deitado-lombada"
-                  aria-hidden="true"
-                  style={l.capa ? { backgroundImage: `linear-gradient(rgb(255 255 255 / 0.34), rgb(0 0 0 / 0.14)), url(${l.capa})` } : undefined}
-                >
-                  {/* O TÍTULO SÓ APARECE NO ESCOLHIDO, e de pé na borda
-                      esquerda — é o que o 895:7506 mostra. Antes ele estava
-                      dentro de TODAS as fatias, deitado: numa pilha de seis, os
-                      títulos se cruzavam porque a altura de cada fatia é a
-                      espessura do livro, e um livro de 88 páginas não tem altura
-                      para uma linha de texto. Os nomes moram na trilha ao lado.
-
-                      O bloco escuro na ponta direita é o marcador do desenho. */}
-                  {escolhido && <span className="deitado-titulo">{l.titulo}</span>}
-                  {escolhido && <span className="deitado-marca" />}
-                </span>
+                {/* A lombada não é uma faixa recortada da capa. Ela recompõe
+                    os catorze gabaritos do acervo com os dados deste livro. */}
+                <LombadaDoLivro livro={l} />
               </button>
             </li>
           );

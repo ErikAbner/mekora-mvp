@@ -196,27 +196,25 @@ export function ContaKindle({ pessoa, aoSair }) {
               </Botao>
             </div>
 
-            <div className="conta-condicao">
-              <h3>Antes do primeiro envio</h3>
-              <p>
-                A Amazon só entrega documentos enviados de um endereço que você
-                autorizou. Entre em <strong>amazon.com.br › Conteúdo e dispositivos ›
-                Preferências › Configurações de documentos</strong> e adicione o
-                endereço de quem envia à lista de e-mails aprovados.
-              </p>
-              <p className="conta-nota">
-                Sem isso o Mekora envia, a Amazon recusa em silêncio, e o arquivo
-                não aparece no aparelho.
-              </p>
-            </div>
-
-
-            {/* O produto diz o que o "principal" decide, em vez de deixar o
-                rótulo sozinho. */}
-            <p className="conta-nota">
-              O aparelho principal é o que define o tamanho das páginas quando o arquivo é um
-              quadrinho, e é para ele que o botão de enviar aponta sem perguntar.
-            </p>
+            <details className="conta-condicao">
+              <summary>Antes do primeiro envio <span>Ver detalhes</span></summary>
+              <div className="conta-condicao-corpo">
+                <p>
+                  A Amazon só entrega documentos enviados de um endereço que você
+                  autorizou. Entre em <strong>amazon.com.br › Conteúdo e dispositivos ›
+                  Preferências › Configurações de documentos</strong> e adicione o
+                  endereço de quem envia à lista de e-mails aprovados.
+                </p>
+                <p>
+                  Sem isso o Mekora envia, a Amazon recusa em silêncio, e o arquivo
+                  não aparece no aparelho.
+                </p>
+                <p>
+                  O aparelho principal define o tamanho das páginas de quadrinhos e
+                  recebe o envio quando você não escolhe outro destino.
+                </p>
+              </div>
+            </details>
           </section>
         </main>
 

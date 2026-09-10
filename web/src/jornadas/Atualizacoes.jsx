@@ -196,7 +196,9 @@ export function Atualizacoes() {
     <div className="mesa">
       <Cabecalho />
 
-      <main className="atualizacoes">
+      <main className="atualizacoes-cena">
+      <div className="atualizacoes-folha">
+      <div className="atualizacoes">
         <header className="atualizacoes-topo">
           <h1>Atualizações</h1>
           {/* O "principalmente" é do desenho, e ele é a tese da página: a
@@ -246,6 +248,8 @@ export function Atualizacoes() {
             ))}
           </ul>
         </section>
+      </div>
+      </div>
       </main>
 
       <Rodape />

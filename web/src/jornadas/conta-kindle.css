@@ -54,6 +54,14 @@
   padding: 16px 0 16px 24px;
   border-inline-start: 1px solid var(--foreground);
 }
+.conta-condicao summary {
+  display: flex; justify-content: space-between; gap: 24px; align-items: center;
+  padding: 24px 40px; cursor: pointer; color: var(--foreground);
+  font-size: 20px; line-height: 30px; font-weight: 540;
+}
+.conta-condicao summary::marker { display: none; }
+.conta-condicao summary span { font-size: 16px; line-height: 24px; font-weight: 400; text-decoration: underline; }
+.conta-condicao-corpo { padding: 0 40px 32px; border-inline-start: 1px solid var(--foreground); margin: 0 40px 32px; }
 
 .conta-condicao h3 {
   margin: 0 0 8px;

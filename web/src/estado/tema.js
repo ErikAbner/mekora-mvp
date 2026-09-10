@@ -46,5 +46,5 @@ export function temaEspelhado() {
  * do primeiro desenho, que é exatamente o que se quer evitar. */
 export function aplicarEspelhoAgora() {
   const t = temaEspelhado();
-  if (t) aplicarTema(t);
+  aplicarTema(t || "claro");
 }

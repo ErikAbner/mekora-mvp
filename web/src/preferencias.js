@@ -74,13 +74,12 @@ export const GRUPOS = [
       {
         id: "tema",
         titulo: "Tema",
-        /* `sistema` é o padrão, e é a opção que faltava.
+        /* `sistema` continua disponível, mas o padrão do produto é claro.
          *
          * Sem ela, escolher uma vez era permanente: não havia como voltar a
-         * seguir o computador. E seguir o computador é o comportamento certo
-         * para a maioria — quem alterna claro de dia e escuro de noite no
-         * sistema espera que o Mekora acompanhe. */
-        padrao: "sistema",
+         * seguir o computador. Quem quiser que o Mekora acompanhe a troca do
+         * sistema continua podendo escolher isso explicitamente. */
+        padrao: "claro",
         opcoes: [
           { id: "sistema", rotulo: "Como o sistema", detalhe: "Acompanha a preferência do seu computador, inclusive quando ela muda sozinha." },
           { id: "claro", rotulo: "Claro" },

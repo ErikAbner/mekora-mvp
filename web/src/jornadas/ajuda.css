@@ -10,6 +10,12 @@
   padding: 96px 32px 128px;
 }
 
+.ajuda-folha {
+  inline-size: 100%; min-block-size: 100%;
+  background: var(--folha);
+  box-shadow: 0 -1px 0 rgb(0 0 0 / 0.08), 0 10px 24px rgb(0 0 0 / 0.06);
+}
+
 /* O TÍTULO E A BUSCA, com o vão do desenho.
  *
  * `895:11245` é uma coluna de 755px com `gap: 48px`. Aqui não havia gap nenhum:

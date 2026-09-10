@@ -155,6 +155,37 @@ def test_bg_convert_cancelado_devolve_o_job_a_analyzed(client, tmp_storage, monk
     assert Path(j.input_path).read_bytes() == b"%PDF-1.4 original"
 
 
+def test_bg_convert_com_operacao_consegue_consultar_cancelamento(client, tmp_storage, monkeypatch):
+    """O callback entregue ao Calibre não pode falhar só por existir um id."""
+    from app.api import jobs as jobs_mod
+    from app.db.database import SessionLocal
+    from app.models.processing_job import ProcessingJob
+    from app.services.convert_service import ConversionCancelled
+
+    db = SessionLocal()
+    job = ProcessingJob(
+        original_filename="ingles.epub",
+        input_path=str(tmp_storage / "input" / "ingles.epub"),
+        input_format="epub", status="converting", conversion_status="in_progress",
+    )
+    db.add(job); db.commit(); db.refresh(job)
+    jid = job.id
+    Path(job.input_path).parent.mkdir(parents=True, exist_ok=True)
+    Path(job.input_path).write_bytes(b"PK\x03\x04")
+
+    def converter(**kw):
+        assert kw["deve_parar"]() is False
+        raise ConversionCancelled()
+
+    monkeypatch.setattr(jobs_mod, "convert_to_epub", converter)
+    jobs_mod._bg_convert(jid, operation_id="conversao-regressao")
+
+    db2 = SessionLocal()
+    pronto = db2.query(ProcessingJob).filter(ProcessingJob.id == jid).first()
+    assert pronto.status == "analyzed"
+    assert pronto.error_message is None
+
+
 def test_job_cancelado_fica_na_mesa_e_nao_na_estante(client, tmp_storage, monkeypatch):
     """`analyzed` não é "pronto" — e a Estante só lista pronto desde 07/09.
 

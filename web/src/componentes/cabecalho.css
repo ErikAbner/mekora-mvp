@@ -18,6 +18,14 @@
    * Nas telas sem chão isto não muda nada — o que aparece atrás é a mesma cor
    * que a barra pintava. */
   background: transparent;
+  transition: transform 220ms var(--saida), opacity 160ms var(--saida);
+  will-change: transform;
+}
+
+.cabecalho.recolhido {
+  transform: translateY(calc(-100% - 20px));
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* Duas caixas, não uma. Navegação e ferramenta são categorias diferentes, e
@@ -94,7 +102,7 @@
 .cabecalho-acoes:has(.busca-painel) { inline-size: 626px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .cabecalho-acoes { transition: none; }
+  .cabecalho, .cabecalho-acoes { transition: none; }
 }
 
 .cabecalho-atalhos { display: flex; align-items: center; gap: 16px; }
@@ -169,6 +177,7 @@ a.lugar { text-decoration: none; }
    que os botões tinham. */
 a.acao { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 a.acao.active { background: var(--muted); color: var(--foreground); }
+.acao.ativo { background: var(--foreground); color: var(--primary-foreground); }
 
 /* ENTRE TELEFONE E MESA GRANDE, AS DUAS CAIXAS PRECISAM DIVIDIR A LARGURA.
  * As medidas fixas do nó de 1440 somavam 1.118px e faziam o cabeçalho passar

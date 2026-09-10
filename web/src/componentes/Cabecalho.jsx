@@ -79,8 +79,30 @@ export function Cabecalho() {
   const estreito = useEstreito();
   const lugares = LUGARES.filter((l) => !(estreito && l.soNoComputador));
   const [menuConta, setMenuConta] = useState(false);
+  const [recolhido, setRecolhido] = useState(false);
+
+  useEffect(() => {
+    let anterior = window.scrollY;
+    let quadro = 0;
+    const rolar = () => {
+      if (quadro) return;
+      quadro = requestAnimationFrame(() => {
+        const agora = window.scrollY;
+        if (agora < 48 || menuConta || menuAberto) setRecolhido(false);
+        else if (agora > anterior + 5) setRecolhido(true);
+        else if (agora < anterior - 5) setRecolhido(false);
+        anterior = agora;
+        quadro = 0;
+      });
+    };
+    window.addEventListener("scroll", rolar, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", rolar);
+      if (quadro) cancelAnimationFrame(quadro);
+    };
+  }, [menuConta, menuAberto]);
   return (
-    <header className="cabecalho">
+    <header className={`cabecalho${recolhido ? " recolhido" : ""}`}>
       <nav className="cabecalho-lugares" aria-label="Lugares do Mekora">
         {lugares.map((l) => (
           /* `Link`, E NÃO `NavLink`. O `NavLink` marca sozinho conforme a rota
@@ -122,7 +144,7 @@ export function Cabecalho() {
               aparelhos. O botão agora oferece as telas. */}
           <button
             type="button"
-            className="acao"
+            className={`acao${menuConta ? " ativo" : ""}`}
             aria-label="Sua conta"
             aria-haspopup="menu"
             aria-expanded={menuConta}
