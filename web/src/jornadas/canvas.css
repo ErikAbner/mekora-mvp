@@ -160,7 +160,7 @@
  *
  * Medido em 04/09 contra o quadro, a 1920. */
 .canvas-zoom {
-  position: absolute; inset-block-end: 16px; inset-inline-end: 16px;
+  position: absolute; inset-block-end: 16px; inset-inline-end: 32px;
   z-index: 3;
   display: flex; align-items: center; gap: 24px;
   padding: 16px;
@@ -785,7 +785,7 @@
    rótulo. Ver a nota no `Canvas.jsx`. */
 .canvas-ferramentas {
   position: absolute;
-  inset-inline-start: 16px;
+  inset-inline-start: 32px;
   inset-block-start: 50%;
   transform: translateY(-50%);
   z-index: 3;
@@ -835,7 +835,7 @@
   /* E O ZOOM SOBE, senao os dois ocupam o mesmo canto. Medido a 390: a barra
    * comeca em y=754 e o zoom estava em y=770, um por cima do outro — dois
    * controles flutuantes disputando o mesmo lugar, e o de baixo inalcancavel. */
-  .canvas-zoom { inset-block-end: 90px; }
+  .canvas-zoom { inset-block-end: 90px; inset-inline-end: 16px; }
 }
 
 /* O CABEÇALHO FLUTUA NO CANVAS, e só aqui.
@@ -855,7 +855,7 @@
   inset-block-start: 0;
   inset-inline: 0;
   z-index: 4;
-  padding: 16px;
+  padding: 16px 32px;
   pointer-events: none;
 }
 /* A barra não recebe o ponteiro — ela é uma faixa transparente sobre o plano, e

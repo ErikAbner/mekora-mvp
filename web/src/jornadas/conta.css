@@ -29,12 +29,15 @@
   --ate-o-primeiro-item: calc(80px + 24px + 28px);
 
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
+  grid-template-columns: 320px minmax(0, 1fr);
   gap: 56px;
   align-items: flex-start;
   justify-content: center;
-  padding: 112px 32px 96px;
+  padding: 112px max(32px, calc((100% - 1218px) / 2)) 96px;
   inline-size: 100%;
+  /* No Figma, menu + vão + painel formam um miolo de 1218px. A folha continua
+   * ocupando a gaveta inteira; quem cresce em monitores largos é o respiro dos
+   * lados, não o painel de conteúdo. */
   max-inline-size: none;
   margin-inline: auto;
   background: var(--folha);
@@ -51,7 +54,7 @@
   --vao: 40px;
   position: relative;
   display: flex; flex-direction: column; gap: var(--vao);
-  inline-size: 100%; max-inline-size: none;
+  inline-size: 100%; max-inline-size: 842px;
   /* O card desce até a linha do primeiro item do menu. Ver `--ate-o-primeiro-item`. */
   padding-block-start: var(--ate-o-primeiro-item);
 }

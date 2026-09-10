@@ -113,7 +113,7 @@ export function ContaSeguranca({ pessoa, aoSair }) {
             outra linguagem. É decorativo, então não entra na leitura sonora. */}
         <img
           className="conta-desenho seguranca-desenho"
-          src="/icones/ilustracao-mesa-limpa.svg"
+          src="/icones/ilustracao-conta-telefone.svg"
           alt=""
           aria-hidden="true"
         />

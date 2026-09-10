@@ -436,7 +436,7 @@ export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberA
 
           O estado é derivado, e não guardado: há arquivo em preparo e nenhum
           livro pronto. A tela já recebe as duas listas. */}
-      <section className="promessa">
+      <section className={`promessa${primeiraVez ? " primeira-vez" : ""}`}>
         {primeiraVez ? (
           <>
             <h1>Comece soltando um arquivo</h1>

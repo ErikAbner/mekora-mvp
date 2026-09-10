@@ -415,10 +415,34 @@
    num corpo abaixo dele. Ele só existe nesse estado: quem já tem estante lê a
    promessa, e promessa não precisa de explicação. */
 .promessa-diz {
-  margin: 24px 0 0;
+  margin: 0;
   max-inline-size: 46ch;
-  margin-inline-start: auto;
   font-size: 20px; line-height: 30px;   /* Body/Medium */
   color: var(--muted-foreground);
   text-wrap: pretty;
+}
+
+/* A primeira visita é uma única composição de duas colunas. Antes, o `auto`
+ * do parágrafo o empurrava para a borda direita da janela, separando a frase
+ * do título em monitores largos. */
+.promessa.primeira-vez {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 470px);
+  gap: 96px;
+  align-items: center;
+  inline-size: 100%;
+  max-inline-size: calc(1222px + 128px);
+  min-block-size: 440px;
+  margin-inline: auto;
+}
+.promessa.primeira-vez h1 { max-inline-size: 650px; }
+
+@media (max-width: 1023px) {
+  .promessa.primeira-vez {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+    min-block-size: 0;
+  }
 }

@@ -186,6 +186,46 @@ def test_bg_convert_com_operacao_consegue_consultar_cancelamento(client, tmp_sto
     assert pronto.error_message is None
 
 
+def test_bg_convert_bem_sucedido_limpa_erro_da_tentativa_anterior(client, tmp_storage, monkeypatch):
+    """Recuperar uma conversão não pode deixar o erro velho na tela."""
+    from app.api import jobs as jobs_mod
+    from app.db.database import SessionLocal
+    from app.models.processing_job import ProcessingJob
+
+    db = SessionLocal()
+    job = ProcessingJob(
+        original_filename="livro.pdf",
+        input_path=str(tmp_storage / "input" / "livro.pdf"),
+        input_format="pdf",
+        status="error",
+        conversion_status="failed",
+        error_message="erro da tentativa anterior",
+        final_title="Livro",
+        final_author="Autora",
+        final_language="por",
+    )
+    db.add(job); db.commit(); db.refresh(job)
+    jid = job.id
+    Path(job.input_path).parent.mkdir(parents=True, exist_ok=True)
+    Path(job.input_path).write_bytes(b"%PDF-1.4")
+
+    def converter(**kw):
+        destino = Path(kw["output_epub"])
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_bytes(b"PK\x03\x04epub")
+
+    monkeypatch.setattr(jobs_mod, "convert_to_epub", converter)
+    monkeypatch.setattr(jobs_mod, "_versao_web", lambda p: str(Path(p).with_suffix(".web.epub")))
+
+    jobs_mod._bg_convert(jid, operation_id=None)
+
+    db2 = SessionLocal()
+    pronto = db2.query(ProcessingJob).filter(ProcessingJob.id == jid).first()
+    assert pronto.status == "converted"
+    assert pronto.conversion_status == "done"
+    assert pronto.error_message is None
+
+
 def test_job_cancelado_fica_na_mesa_e_nao_na_estante(client, tmp_storage, monkeypatch):
     """`analyzed` não é "pronto" — e a Estante só lista pronto desde 07/09.
 

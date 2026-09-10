@@ -8,7 +8,10 @@
  * As medidas abaixo são todas do nó. Nenhuma foi escolhida aqui. */
 
 .menu-conta {
-  inline-size: 300px;
+  /* O e-mail real é maior que o exemplo curto do Figma. Vinte pixels a mais
+   * preservam a composição e evitam transformar o endereço em duas linhas. */
+  inline-size: 320px;
+  max-inline-size: 100%;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -74,7 +77,9 @@
   margin: 0;
   color: var(--muted-foreground);
   font-size: 18px; line-height: 26px;   /* Label/Large */
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .menu-conta.suspenso .menu-conta-quem { gap: 2px; }
 .menu-conta.suspenso .menu-conta-nome { font-size: 18px; line-height: 26px; font-weight: 540; }

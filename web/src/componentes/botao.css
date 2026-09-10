@@ -10,6 +10,11 @@
   transition: background var(--d1, 160ms) cubic-bezier(.16, 1, .3, 1);
 }
 
+/* Rótulo de ação é uma unidade. Os botões do Figma têm largura pelo conteúdo;
+ * quebrar “Sair de todos” ou “Tentar de novo” cria dois alvos visualmente
+ * diferentes para a mesma ação. */
+.botao > span:not(.botao-icone) { white-space: nowrap; }
+
 .botao-icone {
   inline-size: 24px; block-size: 24px; flex: none;
   background: currentColor;

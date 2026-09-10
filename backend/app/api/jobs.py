@@ -617,6 +617,10 @@ def _bg_convert(job_id: int, operation_id: str | None = None) -> None:
             job.epub_web_path = _versao_web(output_epub)
             job.status = "converted"
             job.conversion_status = "done"
+            # Uma tentativa bem-sucedida substitui o erro anterior por completo.
+            # O endpoint já limpa antes de enfileirar, mas a rotina também pode
+            # ser retomada na recuperação de uma operação interrompida.
+            job.error_message = None
 
         except ConversionCancelled:
             # CANCELAR NÃO É FALHAR — decisão do Erik em 07/09, item por item:
