@@ -89,7 +89,7 @@ export function useJornada() {
     setArquivos((atual) => atual.map((a) => (a.id === id ? { ...a, ...campos } : a)));
   }, []);
 
-  const receber = useCallback(async (lista) => {
+  const receber = useCallback(async (lista, { aoCriar } = {}) => {
     for (const f of Array.from(lista)) {
       // Entra na tela ANTES de subir. Arquivo grande demora, e uma lista que só
       // aparece depois do upload faz o usuário achar que o clique não pegou.
@@ -122,6 +122,12 @@ export function useJornada() {
         grava(atual, { id: up.upload_id, estado: "trabalhando", etapa: "analisando" });
         atual = up.upload_id;
 
+        /* UM ARQUIVO ABRE O PREPARO IMEDIATAMENTE. A própria tela acompanha a
+         * análise, então não há motivo para esconder a configuração atrás da
+         * Mesa e de um segundo clique. Em lote a Mesa continua sendo o lugar
+         * certo, porque ela mostra o andamento de todos. */
+        if (aoCriar?.(atual, modo) === true) continue;
+
         etapa = "análise";
         const analise = await analisar(atual);
         grava(atual, {
@@ -136,37 +142,15 @@ export function useJornada() {
         const pronta = await esperarAnalise(atual);
         if (pronta.estado === "erro") { grava(atual, pronta); continue; }
 
-        /* GUIADO PARA AQUI, e é o que a preferência sempre prometeu.
-         *
-         * O fluxo convertia direto depois da análise, e a tela de Preparo — que
-         * mostra o que foi encontrado e o que vai ser feito — nunca era vista.
-         * O produto decidia sozinho e contava depois, que é exatamente o que o
-         * `CLAUDE.md` chama de "IA mágica".
-         *
-         * `personalizado` converte direto: quem escolheu não quer ser
-         * perguntado. A preferência estava guardada e sem efeito desde que
-         * existe; este é o efeito. */
-        if (modo !== "personalizado") {
-          grava(atual, {
-            estado: "fila",
-            etapa: "esperando você",
-            preparo: atual,
-            detalhe: "Analisado. Veja o que encontrei antes de preparar.",
-          });
-          continue;
-        }
-
-        etapa = "conversão";
-        await converter(atual);
-        if (vivos.current.has(atual)) continue;
-        const id = atual;
-        vivos.current.add(id);
-        /* O contrato devolve `progresso` como objeto {feito,total,porcento}; a
-         * tela desenha uma barra com um número. Achatar aqui, e não lá, mantém o
-         * contrato descrevendo o backend em vez de descrever esta tela. */
-        acompanhar(id, (s) =>
-          grava(id, { ...s, progresso: s.progresso?.porcento ?? null }),
-        ).finally(() => vivos.current.delete(id));
+        /* TODO ARQUIVO ANALISADO PARA AQUI. "Personalizado" não pode significar
+         * converter sem mostrar título, autor e tradução: isso tornava o modo
+         * mais configurável justamente o que menos deixava configurar. */
+        grava(atual, {
+          estado: "fila",
+          etapa: "esperando você",
+          preparo: atual,
+          detalhe: "Analisado. Confira as opções antes de preparar.",
+        });
       } catch (e) {
         // O erro do backend é preservado, e escrito no id VIGENTE. Trocar a
         // mensagem por "falhou" esconderia a única informação que resolve o
@@ -175,6 +159,22 @@ export function useJornada() {
       }
     }
   }, [grava, modo]);
+
+  const refazerErros = useCallback(async (ids) => {
+    await Promise.all(Array.from(new Set(ids)).map(async (id) => {
+      grava(id, { estado: "trabalhando", etapa: "convertendo", motivo: null, detalhe: null, progresso: null });
+      try {
+        await converter(id);
+        if (vivos.current.has(id)) return;
+        vivos.current.add(id);
+        acompanhar(id, (s) =>
+          grava(id, { ...s, progresso: s.progresso?.porcento ?? null }),
+        ).finally(() => vivos.current.delete(id));
+      } catch (e) {
+        grava(id, { estado: "erro", etapa: "a conversão", motivo: e.message });
+      }
+    }));
+  }, [grava]);
 
   const carregarEstante = useCallback(async () => {
     const h = await historico();
@@ -306,5 +306,5 @@ export function useJornada() {
     grava(id, { ...pronto, progresso: pronto.progresso?.porcento ?? null, preparo: id });
   }, [grava]);
 
-  return { arquivos, livros, backend, receber, carregarEstante, enviar, destravar };
+  return { arquivos, livros, backend, receber, refazerErros, carregarEstante, enviar, destravar };
 }

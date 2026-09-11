@@ -10,6 +10,19 @@
    mentir quando ficou maior que o texto. */
 .preparo-pagina { inline-size: 100%; max-inline-size: calc(1222px + 2 * 64px); margin: 0 auto; padding: 32px 64px 128px; display: flex; flex-direction: column; gap: 48px; }
 
+/* O preparo é uma passagem curta, não um novo lugar do produto. A gaveta deixa
+ * a Mesa visível nas laterais, mantém a navegação ativa e ainda comporta o
+ * relatório longo dentro da própria rolagem. */
+.gaveta-secao.preparo-gaveta {
+  inset-inline: max(32px, calc((100% - 1350px) / 2));
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-block-end: 0;
+}
+
+.preparo-gaveta .gaveta-secao-conteudo { background: var(--background); }
+.preparo-gaveta .preparo-pagina { padding-block-start: 56px; }
+
 .preparo-pagina-volta { align-self: flex-start; font-size: 16px; line-height: 24px; color: var(--muted-foreground); text-decoration: none; }
 .preparo-pagina-volta:hover { color: var(--foreground); }
 .preparo-pagina-volta:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
@@ -174,6 +187,7 @@
 .preparo-traducao-destaque h2 { margin: 0; font-size: 28px; line-height: 36px; }
 .preparo-traducao-destaque p { margin: 0; font-size: 18px; line-height: 26px; color: var(--muted-foreground); }
 @media (max-width: 767px) {
+  .gaveta-secao.preparo-gaveta { inset-inline: 16px; }
   .preparo-erro-card { padding: 24px 20px; }
   .preparo-traducao-destaque { flex-direction: column; align-items: stretch; padding: 24px 20px; }
 }
@@ -368,41 +382,6 @@
   .preparo-pagina-capa { inline-size: 100%; aspect-ratio: 270 / 407; }
   .preparo-pagina-pagina-acoes { flex-direction: column; align-items: stretch; }
   .preparo-pagina-pagina-acoes .botao { inline-size: 100%; justify-content: center; }
-}
-
-/* O alternador Guiado / Personalizado — nós 966:31504, 895:7856 e 895:8029.
-   Mesma forma dos recortes da estante: uma caixa, dois botões, o ativo em tinta
-   cheia.
-
-   ELE MORA NA COLUNA DO TÍTULO, logo abaixo dos selos, e não solto sob o
-   cabeçalho inteiro. Nos três nós ele começa onde o título começa — ao lado da
-   capa, não debaixo dela. Solto, ele parecia governar a página; ali, governa o
-   arquivo que está nomeado acima dele. */
-.preparo-pagina-modo {
-  display: flex; align-self: flex-start; inline-size: fit-content;
-  margin-block-start: 20px;
-  padding: 12px;
-  border: 1px solid var(--border);
-  background: var(--card);
-}
-.preparo-pagina-modo button {
-  padding: 14px 24px; border: 0;
-  background: transparent; color: var(--muted-foreground);
-  font: inherit; font-size: 16px; line-height: 24px; cursor: pointer;
-}
-.preparo-pagina-modo button[aria-pressed="true"] {
-  background: var(--foreground);
-  color: var(--primary-foreground);
-}
-.preparo-pagina-modo button:not([aria-pressed="true"]):hover { background: var(--muted); }
-.preparo-pagina-modo button:focus-visible { outline: 1px solid var(--foreground); outline-offset: -2px; }
-
-@media (max-width: 619px) {
-  /* `align-self: stretch` sozinho não estica nada aqui: a regra de cima crava
-     `inline-size: fit-content`, e largura vence alinhamento. Media a 390 com o
-     alternador ainda em 263 numa coluna de 358. `966:31529` é `w-full`. */
-  .preparo-pagina-modo { align-self: stretch; inline-size: auto; }
-  .preparo-pagina-modo button { flex: 1 1 0; padding: 12px 16px; }
 }
 
 /* A TRADUCAO — no 895:7856. O botao so existe quando ha para onde traduzir; sem

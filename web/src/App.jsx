@@ -87,22 +87,32 @@ function usaExemplo() {
 }
 
 function Mesa() {
-  const { arquivos, livros, backend, receber, carregarEstante, destravar } = useJornada();
+  const { arquivos, livros, backend, receber, refazerErros, carregarEstante, destravar } = useJornada();
   const navegar = useNavigate();
   const lista = arquivos.length ? arquivos : usaExemplo() ? EXEMPLO_FILA : [];
+  const receberNaMesa = useCallback((arquivos) => {
+    const itens = Array.from(arquivos);
+    return receber(itens, itens.length === 1 ? {
+      aoCriar: (id, modo) => {
+        navegar(`/preparo/${id}?modo=${modo}`);
+        return true;
+      },
+    } : {});
+  }, [navegar, receber]);
 
   /* A MESA TAMBÉM PRECISA DA ESTANTE. O nó 895:9981 termina em três blocos
      feitos de livros — "Continue", "Ficaram prontos" e "Na estante" —, e nenhum
      deles sai da fila: a fila é o que ainda não virou livro. */
   useEffect(() => { carregarEstante().catch(() => {}); }, [carregarEstante]);
 
-  if (!lista.length) return <MesaVazia aoReceberArquivos={receber} backend={backend} />;
+  if (!lista.length) return <MesaVazia aoReceberArquivos={receberNaMesa} backend={backend} />;
   return (
     <MesaCheia
       arquivos={lista}
       livros={livros}
       aoVerEstante={() => navegar("/estante")}
-      aoReceberArquivos={receber}
+      aoReceberArquivos={receberNaMesa}
+      aoRefazerErros={refazerErros}
       aoDestravar={destravar}
       backend={backend}
     />
@@ -118,7 +128,16 @@ function PaginaApresentacao() {
   return (
     <Apresentacao
       backend={backend}
-      aoReceberArquivos={(arquivos) => { receber(arquivos); navegar("/mesa"); }}
+      aoReceberArquivos={(arquivos) => {
+        const itens = Array.from(arquivos);
+        receber(itens, itens.length === 1 ? {
+          aoCriar: (id, modo) => {
+            navegar(`/preparo/${id}?modo=${modo}`);
+            return true;
+          },
+        } : {});
+        if (itens.length > 1) navegar("/mesa");
+      }}
     />
   );
 }

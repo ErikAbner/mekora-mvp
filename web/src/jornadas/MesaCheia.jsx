@@ -27,7 +27,8 @@ import "./mesa-cheia.css";
  * recusa uma classe definida em dois arquivos, e com razão. */
 import "./mesa-vazia.css";
 
-const iconeEnviar = "/icones/icone-enviar.svg";
+const iconeEstante = "/icones/icone-estante.svg";
+const iconeRefazer = "/icones/icone-refazer.svg";
 
 /* Os quatro estados vêm do contrato, não daqui. Se esta lista divergir da de
  * `contrato/estado.js`, a tela passa a mostrar rótulo para um estado que não
@@ -352,8 +353,9 @@ function Faixa({ titulo, quando, livros, verTudo }) {
   );
 }
 
-export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberArquivos, aoDestravar, backend }) {
+export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberArquivos, aoRefazerErros, aoDestravar, backend }) {
   const [recorte, setRecorte] = useState("tudo");
+  const [refazendo, setRefazendo] = useState(false);
   /* PRIMEIRA VEZ É TER ARQUIVO E NENHUM LIVRO PRONTO — ver a nota na seção
      `promessa`.
      O `livros` NÃO serve como está: ele é o histórico inteiro e inclui o que
@@ -577,7 +579,7 @@ export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberA
 
           <ul className="lista">
             {visiveis.map((a) => (
-              <Arquivo key={a.nome} {...a} />
+              <Arquivo key={a.id ?? a.nome} {...a} />
             ))}
           </ul>
 
@@ -588,9 +590,26 @@ export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberA
           )}
 
           <div className="preparo-acoes">
+            {c.erro > 0 && aoRefazerErros && (
+              <Botao
+                tom="secundaria"
+                icone={iconeRefazer}
+                porque={refazendo ? "Iniciando novas tentativas…" : null}
+                onClick={async () => {
+                  setRefazendo(true);
+                  try {
+                    await aoRefazerErros(arquivos.filter((a) => a.estado === "erro").map((a) => a.id));
+                  } finally {
+                    setRefazendo(false);
+                  }
+                }}
+              >
+                {refazendo ? "Tentando novamente…" : c.erro === 1 ? "Tentar arquivo novamente" : `Tentar ${c.erro} arquivos novamente`}
+              </Botao>
+            )}
             <Botao
               tom="primaria"
-              icone={iconeEnviar}
+              icone={iconeEstante}
               onClick={aoVerEstante}
               porque={c.pronto === 0 ? "Nenhum arquivo ficou pronto ainda" : null}
             >

@@ -60,12 +60,12 @@ export function usarRestoVisivelParaQuemOuve() {
   }, []);
 }
 
-export function GavetaDeSecao({ titulo, children }) {
+export function GavetaDeSecao({ titulo, children, voltarPara = null, classe = "" }) {
   const navegar = useNavigate();
   usarRestoVisivelParaQuemOuve();
 
   function fechar() {
-    navegar(lugarDoRastro()?.rota ?? "/estante");
+    navegar(voltarPara ?? lugarDoRastro()?.rota ?? "/estante");
   }
 
   return (
@@ -93,7 +93,7 @@ export function GavetaDeSecao({ titulo, children }) {
         * Quem denunciou foi o portão, e não pela regra dele: ele pula subárvore
         * `aria-hidden`, e a contagem de nós medidos caiu de 49 para 14 na mesma
         * tela. A tela continuava passando — medindo um terço dela. */}
-      <Drawer.Content className="gaveta-secao" aria-label={titulo}>
+      <Drawer.Content className={`gaveta-secao${classe ? ` ${classe}` : ""}`} aria-label={titulo}>
         <Drawer.Title className="visualmente-oculto">{titulo}</Drawer.Title>
         {/* A ALÇA: esta gaveta se arrasta, e o gesto precisa de onde pegar. Sem
             ela, arrastar é um segredo. */}
