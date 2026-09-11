@@ -42,7 +42,7 @@ Outras capturas de navegação estão em [`docs/imagens`](docs/imagens).
 Requisitos: Python 3.11, Node.js 20 ou superior e npm.
 
 ```bash
-git clone --branch entrega-professor https://github.com/ErikAbner/mekora.git
+git clone https://github.com/ErikAbner/mekora-mvp.git
 cd mekora
 
 python3.11 -m venv .venv
