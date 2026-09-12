@@ -22,6 +22,10 @@ export function GavetaDeLeitura({ titulo, voltarPara, children }) {
         direction="bottom"
         modal={false}
         shouldScaleBackground={false}
+        /* Na leitura, arrastar o corpo precisa continuar sendo seleção de
+         * texto. Só a alça visível fecha a gaveta; sem isto a Vaul captura o
+         * pointerdown da prosa antes que o navegador forme o destaque. */
+        handleOnly
         scrollLockTimeout={500}
       >
         <Drawer.Content className="leitura-gaveta" aria-label={titulo}>

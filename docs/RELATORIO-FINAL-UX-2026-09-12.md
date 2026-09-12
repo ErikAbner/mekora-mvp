@@ -9,7 +9,7 @@
 
 O Mekora está coerente e apresentável para revisão acadêmica nas rotas e larguras auditadas. Não restou falha conhecida de navegação, layout, copy crítica, download ou conversão. A rodada corrigiu também dois defeitos funcionais que o acabamento visual não revelava: EPUBs reais com pontuação no nome eram recusados pelo servidor, e a gaveta de leitura podia tomar o gesto usado para selecionar texto.
 
-O veredito não transforma ausência de prova em aprovação. Três ensaios manuais curtos continuam recomendados antes da apresentação: envio simultâneo de dois arquivos pelo seletor nativo, ciclo visual completo de selecionar/destacar/comentar/recolorir/apagar e percurso integral por Tab. O código e as regressões dessas áreas foram revisados; o navegador automatizado disponível não reproduziu de modo confiável os três gestos nativos.
+O veredito não transforma ausência de prova em aprovação. O envio simultâneo de dois arquivos foi finalmente comprovado pelo seletor nativo e permaneceu na Mesa com os dois estados individuais. Restam dois ensaios físicos curtos antes da apresentação: o ciclo visual completo de selecionar/destacar/comentar/recolorir/apagar e o percurso integral por Tab. O navegador automatizado disponível não forma seleção nem desloca foco por Tab sequer fora das gavetas; por isso esses dois gestos não foram declarados aprovados por aproximação.
 
 ## O que foi corrigido nesta reconciliação
 
@@ -43,6 +43,10 @@ O veredito não transforma ausência de prova em aprovação. Três ensaios manu
 - Canvas: zoom 100%→110%, pan para `(-60,-120)`, arrasto de nota e grupo com persistência após recarga;
 - grupo e nota sintéticos usados no ensaio foram removidos ao terminar;
 - painéis de leitura abertos no lado correspondente a seus controles, sem sobreposição ou overflow.
+- lote real de dois TXT escolhido de uma vez, mantido em `/mesa` com os dois nomes e contador correto; registros e arquivos sintéticos removidos após a prova;
+- ciclo persistente da nota coberto por regressão: criar, comentar, recolorir, recarregar e apagar;
+- componente específico da Leitura protegido com `handleOnly`; a implementação instalada da Vaul deixa os eventos de arrasto no corpo intactos e conserva o gesto na alça;
+- menu da conta focado, aberto com estado expandido e fechado por Escape no navegador real.
 
 ## Auditoria de conteúdo
 
@@ -69,8 +73,9 @@ Os estados vazios observados indicam o próximo passo:
 
 ## Verificações automatizadas
 
-- backend: **933 aprovados, 1 ignorado, 0 falhas**;
-- interface/contrato: **10 suítes aprovadas, 0 falhas**;
+- backend: **934 aprovados, 1 ignorado, 0 falhas**;
+- interface/contrato: **3 testes Node aprovados**, incluindo a nova trava que impede remover `handleOnly` da leitura sem alarme;
+- portões estruturais: links, botões, classes e ícones aprovados;
 - build de produção: concluído;
 - links: 28 rotas declaradas, nenhum link morto;
 - botões: nenhum sem gesto e nenhum desabilitado sem motivo;
@@ -82,8 +87,7 @@ O build ainda informa que o pacote principal supera 500 kB. É uma oportunidade 
 
 ## Checklist manual de dois minutos antes da apresentação
 
-1. Na Mesa, escolher dois arquivos sintéticos ao mesmo tempo e confirmar que ambos aparecem na fila sem abrir uma gaveta individual.
-2. Na leitura, selecionar uma frase com o mouse, destacar, escrever comentário, trocar a cor, recarregar e apagar.
-3. A partir do topo da Mesa, percorrer a interface com Tab/Shift+Tab, abrir um menu com Enter e fechá-lo com Escape.
+1. Na leitura, selecionar uma frase com o mouse, destacar, escrever comentário, trocar a cor, recarregar e apagar.
+2. A partir do topo da Mesa, percorrer a interface com Tab/Shift+Tab, abrir um menu com Enter e fechá-lo com Escape.
 
-Se qualquer um desses três ensaios divergir, o item correspondente deve voltar imediatamente para **Falhou** no checklist mestre; não deve ser explicado como “limitação do protótipo”.
+Se qualquer um desses dois ensaios divergir, o item correspondente deve voltar imediatamente para **Falhou** no checklist mestre; não deve ser explicado como “limitação do protótipo”.

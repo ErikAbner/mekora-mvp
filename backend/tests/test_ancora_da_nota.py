@@ -71,6 +71,32 @@ def test_o_contexto_tem_teto(client, livro):
     assert len(feita["depois"]) == CONTEXTO
 
 
+def test_ciclo_completo_da_nota_de_leitura_persiste(client, livro):
+    """Criar, comentar, recolorir, recarregar e apagar é um único contrato.
+
+    A interface oferece essas ações em sequência na paleta e no cartão. Testar
+    apenas a criação deixaria passar justamente a regressão que faria uma nota
+    parecer editada até a próxima recarga.
+    """
+    feita = _nota(client, livro, antes="um ", depois=" persistente")
+
+    alterada = client.patch(
+        f"/jobs/{livro}/notas/{feita['id']}",
+        json={"comentario": "ideia para retomar", "cor": "azul"},
+    )
+    assert alterada.status_code == 200, alterada.text
+    assert alterada.json()["comentario"] == "ideia para retomar"
+    assert alterada.json()["cor"] == "azul"
+
+    recarregada = client.get(f"/jobs/{livro}/notas").json()
+    assert [(n["id"], n["comentario"], n["cor"]) for n in recarregada] == [
+        (feita["id"], "ideia para retomar", "azul")
+    ]
+
+    assert client.delete(f"/jobs/{livro}/notas/{feita['id']}").status_code == 204
+    assert client.get(f"/jobs/{livro}/notas").json() == []
+
+
 def test_a_nota_de_outra_pessoa_nao_entrega_o_contexto(client, livro, test_engine):
     """O contexto é um pedaço do livro de alguém, e sai pela mesma porta do
     resto da nota. Se a porta se afrouxar, este teste fica vermelho junto."""
