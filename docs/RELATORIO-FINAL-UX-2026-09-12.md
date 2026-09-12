@@ -9,7 +9,7 @@
 
 O Mekora está coerente e apresentável para revisão acadêmica nas rotas e larguras auditadas. Não restou falha conhecida de navegação, layout, copy crítica, download ou conversão. A rodada corrigiu também dois defeitos funcionais que o acabamento visual não revelava: EPUBs reais com pontuação no nome eram recusados pelo servidor, e a gaveta de leitura podia tomar o gesto usado para selecionar texto.
 
-O veredito não transforma ausência de prova em aprovação. O envio simultâneo de dois arquivos foi finalmente comprovado pelo seletor nativo e permaneceu na Mesa com os dois estados individuais. Restam dois ensaios físicos curtos antes da apresentação: o ciclo visual completo de selecionar/destacar/comentar/recolorir/apagar e o percurso integral por Tab. O navegador automatizado disponível não forma seleção nem desloca foco por Tab sequer fora das gavetas; por isso esses dois gestos não foram declarados aprovados por aproximação.
+O veredito não transforma ausência de prova em aprovação. O envio simultâneo de dois arquivos foi finalmente comprovado pelo seletor nativo e permaneceu na Mesa com os dois estados individuais. O ciclo visual da nota também foi comprovado da abertura do caderno à exclusão, incluindo duas recargas; resta apenas formar a seleção inicial com um mouse físico e ver a paleta aparecer. O segundo ensaio restante é o percurso integral por Tab. O navegador automatizado disponível não forma seleção nem desloca foco por Tab sequer fora das gavetas; por isso esses dois gestos não foram declarados aprovados por aproximação.
 
 ## O que foi corrigido nesta reconciliação
 
@@ -49,6 +49,7 @@ O veredito não transforma ausência de prova em aprovação. O envio simultâne
 - menu da conta focado, aberto com estado expandido e fechado por Escape no navegador real.
 - ordem da Mesa medida no runtime: 25 alvos focáveis, todos no fluxo natural e com a sequência DOM acompanhando a sequência visual;
 - menu da conta completado para teclado: foco entra no primeiro item, setas/Home/End percorrem a lista e Escape fecha devolvendo foco ao gatilho.
+- nota temporária operada na interface real do trabalho 44: abriu no caderno, mudou para azul, persistiu após recarga, recebeu novo comentário e cor verde, persistiu novamente e foi apagada; `Notas (0)` e o banco confirmaram a limpeza.
 
 ## Auditoria de conteúdo
 
@@ -89,7 +90,7 @@ O build ainda informa que o pacote principal supera 500 kB. É uma oportunidade 
 
 ## Checklist manual de dois minutos antes da apresentação
 
-1. Na leitura, selecionar uma frase com o mouse, destacar, escrever comentário, trocar a cor, recarregar e apagar.
+1. Na leitura, selecionar uma frase com o mouse e confirmar que a paleta de cores e “Adicionar nota” aparece junto do trecho.
 2. A partir do topo da Mesa, percorrer a interface com Tab/Shift+Tab, abrir um menu com Enter e fechá-lo com Escape.
 
 Se qualquer um desses dois ensaios divergir, o item correspondente deve voltar imediatamente para **Falhou** no checklist mestre; não deve ser explicado como “limitação do protótipo”.
