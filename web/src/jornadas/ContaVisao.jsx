@@ -117,7 +117,7 @@ export function ContaVisao({ pessoa, aoSair, aoMudarPerfil }) {
             convenção obrigatória de duas artes para toda tela. Respeitar o Figma
             caso a caso". As outras três telas de conta têm uma arte só, nas duas
             larguras, e continuam com uma. */}
-        <picture>
+        <picture className="conta-desenho-picture">
           <source srcSet="/icones/ilustracao-conta-telefone.svg" media="(max-width: 767px)" />
           <img className="conta-desenho" src="/icones/ilustracao-conta.svg" alt="" aria-hidden="true" />
         </picture>

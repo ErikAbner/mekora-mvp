@@ -41,7 +41,11 @@ _ROOT_FILE_PATTERNS = [
     re.compile(r"^finished_pages\.(zip|cbz|pdf)$"),
     re.compile(r"^rendered_pages\.(zip|cbz)$"),
     re.compile(r"^inpaint_pages\.zip$"),
-    re.compile(r"^[\w\-. ]+\.epub$"),  # EPUBs gerados (KCC/Calibre)
+    # O nome do EPUB vem do titulo/autor e pode legitimamente conter parenteses,
+    # virgulas e outros sinais. A seguranca nao depende de reduzir o alfabeto do
+    # nome: `_validate_segments` barra separadores, ocultos e traversal, e
+    # `_serve_validated` confirma que o caminho resolvido continua dentro do job.
+    re.compile(r"^.+\.epub$"),  # EPUBs gerados (KCC/Calibre)
 ]
 
 # Subdiretórios permitidos (1 nível) → extensões permitidas neles
@@ -55,7 +59,10 @@ _SUBDIR_EXTS: dict[str, set[str]] = {
     "comic_export": {".epub", ".cbz"},
 }
 
-_SAFE_SEGMENT = re.compile(r"^[\w\-. ]+$")
+# Um segmento pode conservar a pontuacao real do titulo do livro. NUL e os dois
+# separadores de caminho continuam proibidos; pontos isolados e arquivos ocultos
+# sao recusados separadamente em `_validate_segments`.
+_SAFE_SEGMENT = re.compile(r"^[^/\\\x00]+$")
 _THUMBNAIL_NAME = re.compile(r"^page_[0-4]\.png$")
 
 _MEDIA_TYPES = {

@@ -60,12 +60,12 @@ export function usarRestoVisivelParaQuemOuve() {
   }, []);
 }
 
-export function GavetaDeSecao({ titulo, children }) {
+export function GavetaDeSecao({ titulo, children, voltarPara = null, classe = "" }) {
   const navegar = useNavigate();
   usarRestoVisivelParaQuemOuve();
 
   function fechar() {
-    navegar(lugarDoRastro()?.rota ?? "/estante");
+    navegar(voltarPara ?? lugarDoRastro()?.rota ?? "/estante");
   }
 
   return (
@@ -74,6 +74,12 @@ export function GavetaDeSecao({ titulo, children }) {
       onOpenChange={(v) => { if (!v) fechar(); }}
       direction="bottom"
       modal={false}
+      /* A folha fecha pela ALCA, que ja deixa o gesto visivel. Se o corpo
+       * inteiro tambem iniciar o arrasto, a Vaul chama preventDefault no
+       * pointerdown e impede selecionar texto na leitura — justamente o gesto
+       * que cria destaques e notas. Campos, links e selecao ficam livres; a
+       * folha continua arrastavel pela alca. */
+      handleOnly
       /* O fundo NÃO encolhe: embaixo há um chão pontilhado, e encolher tudo
        * faria os pontos pularem de escala a cada abertura. */
       shouldScaleBackground={false}
@@ -93,7 +99,7 @@ export function GavetaDeSecao({ titulo, children }) {
         * Quem denunciou foi o portão, e não pela regra dele: ele pula subárvore
         * `aria-hidden`, e a contagem de nós medidos caiu de 49 para 14 na mesma
         * tela. A tela continuava passando — medindo um terço dela. */}
-      <Drawer.Content className="gaveta-secao" aria-label={titulo}>
+      <Drawer.Content className={`gaveta-secao${classe ? ` ${classe}` : ""}`} aria-label={titulo}>
         <Drawer.Title className="visualmente-oculto">{titulo}</Drawer.Title>
         {/* A ALÇA: esta gaveta se arrasta, e o gesto precisa de onde pegar. Sem
             ela, arrastar é um segredo. */}

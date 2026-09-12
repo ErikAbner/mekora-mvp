@@ -840,9 +840,10 @@
 
 /* O CABEÇALHO FLUTUA NO CANVAS, e só aqui.
  *
- * O `895:6938` põe as duas caixas dele como `absolute` a 16px dos cantos, e não
- * como a barra de 32px das outras telas. A razão é o que a tela é: aqui a página
- * INTEIRA é o plano, e o cabeçalho é uma coisa que paira sobre ele. Em fluxo,
+ * Ele continua absoluto porque a página INTEIRA é o plano. O respiro, porém,
+ * segue a régua atual do produto: 32px no computador, igual às outras seções.
+ * A diferença antiga de 16px quase não ganhava área útil e fazia o Canvas
+ * parecer pertencer a outro sistema. Em fluxo,
  * ele empurrava o plano para baixo — o dock ficava 59px fora do centro da
  * janela, e o alto do plano ficava branco.
  *
@@ -855,13 +856,17 @@
   inset-block-start: 0;
   inset-inline: 0;
   z-index: 4;
-  padding: 16px 32px;
+  padding: 32px;
   pointer-events: none;
 }
 /* A barra não recebe o ponteiro — ela é uma faixa transparente sobre o plano, e
  * um clique nela seria um clique que não arrasta o canvas. As duas caixas
  * recebem. */
 .canvas-com-cabecalho-solto > .cabecalho > * { pointer-events: auto; }
+
+@media (max-width: 767px) {
+  .canvas-com-cabecalho-solto > .cabecalho { padding: 16px; }
+}
 
 /* Sem o cabeçalho no fluxo, o plano ocupa a janela inteira. */
 .canvas-com-cabecalho-solto > .canvas { block-size: 100dvh; }
@@ -1565,9 +1570,10 @@
 }
 .canvas-ferramentas .canvas-adicionar-principal { flex: 1 1 auto; }
 .canvas-ferramentas .canvas-adicionar-mais {
-  flex: 0 0 40px;
-  inline-size: 40px;
-  padding: 8px;
+  flex: 0 0 56px;
+  inline-size: 56px;
+  block-size: 56px;
+  padding: 16px;
   border-inline-start: 1px solid var(--border);
   color: var(--muted-foreground);
   font-size: 18px;

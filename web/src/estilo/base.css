@@ -113,7 +113,7 @@
  * centralizado verticalmente dentro do controle, e a sobra é o que faz o centro
  * cair no lugar. Navegador sem suporte ignora as duas linhas e fica folgado,
  * que é o comportamento de antes. */
-:where(h1, h2, h3, h4, h5, h6, p, li, dt, dd, figcaption, legend, blockquote) {
+:where(h1, h2, h3, h4, h5, h6, p, dt, dd, figcaption, legend, blockquote) {
   text-box-trim: trim-both;
   text-box-edge: cap alphabetic;
 }

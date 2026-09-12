@@ -901,12 +901,41 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
    * a tela brigando com quem lê. */
   useEffect(() => {
     const chave = `${livro?.capitulo ?? 0}`;
-    if (restaurado.current === chave || !blocos.length) return;
-    restaurado.current = chave;
-    if (progresso?.capitulo === livro?.capitulo && progresso?.deslocamento) {
-      irPara(prosa.current, progresso.deslocamento);
+    /* Durante a abertura, o App mostra o texto de exemplo enquanto o EPUB é
+     * carregado. Ele ocupa o mesmo componente, mas não traz `progresso`. Marcar
+     * o capítulo como restaurado nessa passagem fazia o livro real herdar a
+     * trava e ignorar a posição salva. */
+    if (!progresso || restaurado.current === chave || !blocos.length) return;
+    if (Number(progresso?.capitulo) === Number(livro?.capitulo ?? 0) && progresso?.deslocamento) {
+      /* A leitura abre dentro de uma gaveta Vaul. Durante a animação de entrada,
+       * a biblioteca termina de posicionar e focar a folha; uma rolagem feita
+       * no primeiro efeito era aceita pelo navegador e logo devolvida ao topo.
+       * Fazemos a restauração já no primeiro quadro útil e a confirmamos quando
+       * a entrada termina. A segunda chamada é idempotente e acontece só ao
+       * abrir o capítulo, portanto não disputa a rolagem normal da leitura. */
+      const restaurar = () => {
+        const secao = prosa.current?.querySelector(
+          `[data-capitulo="${Number(progresso.capitulo) || 0}"]`,
+        );
+        return irPara(secao ?? prosa.current, progresso.deslocamento);
+      };
+      let quadro2 = null;
+      const quadro1 = requestAnimationFrame(() => {
+        quadro2 = requestAnimationFrame(restaurar);
+      });
+      const confirmar = window.setTimeout(() => {
+        restaurar();
+        restaurado.current = chave;
+      }, 420);
+      return () => {
+        cancelAnimationFrame(quadro1);
+        if (quadro2 !== null) cancelAnimationFrame(quadro2);
+        clearTimeout(confirmar);
+      };
     }
-  }, [blocos, livro?.capitulo, progresso]);
+    restaurado.current = chave;
+    return undefined;
+  }, [blocos.length, livro?.capitulo, progresso?.capitulo, progresso?.deslocamento]);
 
   /* A SENTINELA PEDE O PRÓXIMO CAPÍTULO quando entra em cena.
    *
@@ -1272,6 +1301,9 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
         data-carregados={capitulos.length}
         data-tem-mais={temMais ? "sim" : "nao"}
         data-ultimo={capitulos[capitulos.length - 1]?.indice ?? -1}
+        data-progresso-capitulo={progresso?.capitulo ?? ""}
+        data-progresso-deslocamento={progresso?.deslocamento ?? ""}
+        data-livro-capitulo={livro?.capitulo ?? ""}
       >
         {/* A SENTINELA DE CIMA. Quem abre no capítulo 8 precisa poder subir, e
             sem ela os sete anteriores ficariam inalcançáveis — a rolagem

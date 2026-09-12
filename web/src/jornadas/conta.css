@@ -24,9 +24,10 @@
    * moram no `menu-da-conta.css`: retrato de 80 (`900:53046`) e `gap: 24`
    * (`900:53555`). Escrita aqui como soma para quem mexer num deles ver o que
    * mais depende. */
-  /* retrato + vão + rótulo do grupo (22px de linha + 6px abaixo): o painel
-   * começa exatamente junto do primeiro botão, não junto do texto “Conta”. */
-  --ate-o-primeiro-item: calc(80px + 24px + 28px);
+  /* A régua inclui o retrato, o vão e os 16 px que a trilha ganha no início da
+   * coluna quando fica sticky. Medido na tela autenticada: com 132 px o painel
+   * começava 12 px abaixo do primeiro item; 120 px fecha os dois topos. */
+  --ate-o-primeiro-item: 120px;
 
   display: grid;
   grid-template-columns: 320px minmax(0, 1fr);
@@ -127,6 +128,11 @@
 /* No escuro ele clareia junto com as outras ilustracoes — a regra do base.css e
  * por classe, e esta entra nela. */
 @media (max-width: 767px) {
+  /* A gaveta já deixa 16 px de margem. Repetir mais 16 aqui reduzia a trilha a
+   * 296 px e truncava até `eriks0403@gmail.com`; o miolo volta a ocupar a
+   * largura útil da folha, sem eliminar o respiro externo. */
+  .conta { padding-inline: 0; }
+
   /* NO TELEFONE ELA FICA — e o motivo de ter saído era uma medida do OUTRO nó.
    *
    * O comentário anterior dizia "272px de ornamento antes do conteúdo empurram a
@@ -152,7 +158,9 @@
     position: static;
     display: block;
     margin-inline-start: auto;
-    margin-block-end: -26px;
+    /* O painel tem `gap: 40px`: -26 sozinho ainda deixava 14 px de vazio.
+       Compensar o vão e mais 26 px faz a base realmente invadir o card. */
+    margin-block-end: -66px;
     inline-size: auto;
     block-size: 164px;
   }

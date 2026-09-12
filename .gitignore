@@ -56,6 +56,9 @@ storage/backups/
 storage/retratos/
 storage/thumbnails/
 storage/ui-audit/
+# Histórico de acesso e mídia solta do Canvas também são dados da pessoa.
+storage/auditoria/
+storage/midia/
 *.db
 *.sqlite
 *.sqlite3

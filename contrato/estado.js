@@ -95,13 +95,16 @@ export function estadoDe(j) {
    * "Parou em: status" não fala com ninguém; "Parou em: a análise do arquivo"
    * fala. O nome do campo continua disponível em `bruto`, para quem depura. */
   const erro = [
-    ["a análise do arquivo", j.status],
     ["a conversão", j.conversion_status],
     ["o envio ao Kindle", j.send_status],
     ["a leitura do texto na imagem", j.ocr_status],
     ["a tradução", j.translation_status],
     ["a tradução do quadrinho", j.comic_translation_status],
     ["a exportação", j.comic_export_status],
+    /* `status: error` é o resumo do trabalho inteiro. Ele vem por último para
+     * não esconder a subetapa que realmente falhou — foi assim que um NameError
+     * da conversão apareceu na Mesa como "análise do arquivo". */
+    ["a análise do arquivo", j.status],
   ].find(([, v]) => FALHOU.has(v));
 
   if (erro) {

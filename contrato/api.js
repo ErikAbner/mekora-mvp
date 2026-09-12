@@ -873,6 +873,15 @@ export function escolherIdiomas(jobId, { source_language, target_language }) {
   });
 }
 
+/** POST /jobs/{id}/metadata — o título e o autor confirmados no preparo. */
+export function atualizarMetadados(jobId, { final_title, final_author }) {
+  return pede(`/jobs/${jobId}/metadata`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ final_title, final_author }),
+  });
+}
+
 /** POST /jobs/{id}/translate — dispara a traducao. Gera um SEGUNDO arquivo; o
  *  original fica intacto, e e dele que a conversao parte se ninguem pedir. */
 export function traduzir(jobId) {

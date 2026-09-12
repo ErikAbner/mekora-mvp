@@ -41,12 +41,14 @@
    o mesmo elemento, que é a entreletra que dá o ar de versalete sem quebrar.
    Estava 14/22 reto, do tamanho de uma legenda. */
 .atualizacoes-lote h2 {
+  inline-size: 100%;
   margin: 0;
   font-size: 20px; line-height: 28px;   /* Label/Small-caps */
   font-weight: 400;
   font-style: italic;
   letter-spacing: 4px;
   color: var(--muted-foreground);
+  text-align: center;
   text-transform: uppercase;
 }
 .atualizacoes-lote ul { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
@@ -76,10 +78,16 @@
   .atualizacoes-cena { padding: 16px 16px 0; }
   .atualizacoes-folha { padding: 64px 16px 80px; }
   .atualizacoes { gap: 40px; }
-  .atualizacoes-topo h1 { font-size: 32px; line-height: 40px; }
-  /* A data continua no token 20/28 no telefone. O 20/24 comprimido não existe
-     na escala e fazia justamente a faixa que separa os lotes perder ar. */
-  .atualizacoes-lote h2 { line-height: 28px; }
+  .atualizacoes-topo h1 {
+    inline-size: 100%;
+    font-size: 32px; line-height: 40px;
+    text-align: start;
+  }
+  .atualizacoes-lote h2 {
+    font-size: 18px; line-height: 24px;
+    letter-spacing: 3px;
+    white-space: nowrap;
+  }
 }
 
 /* A etiqueta do tipo. Vertical no desenho, e ela nao e decoracao: "corrigido"
@@ -163,6 +171,10 @@
    primeira data. Ela é ornamento: centrada, sem ocupar coluna de texto. */
 .atualizacoes-desenho {
   display: block;
-  inline-size: 264px; block-size: 264px;
+  inline-size: min(312px, 100%); block-size: auto;
   margin: 16px auto 0;
+}
+
+@media (max-width: 767px) {
+  .atualizacoes-desenho { inline-size: 100%; }
 }
