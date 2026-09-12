@@ -47,6 +47,8 @@ O veredito não transforma ausência de prova em aprovação. O envio simultâne
 - ciclo persistente da nota coberto por regressão: criar, comentar, recolorir, recarregar e apagar;
 - componente específico da Leitura protegido com `handleOnly`; a implementação instalada da Vaul deixa os eventos de arrasto no corpo intactos e conserva o gesto na alça;
 - menu da conta focado, aberto com estado expandido e fechado por Escape no navegador real.
+- ordem da Mesa medida no runtime: 25 alvos focáveis, todos no fluxo natural e com a sequência DOM acompanhando a sequência visual;
+- menu da conta completado para teclado: foco entra no primeiro item, setas/Home/End percorrem a lista e Escape fecha devolvendo foco ao gatilho.
 
 ## Auditoria de conteúdo
 
@@ -74,7 +76,7 @@ Os estados vazios observados indicam o próximo passo:
 ## Verificações automatizadas
 
 - backend: **934 aprovados, 1 ignorado, 0 falhas**;
-- interface/contrato: **3 testes Node aprovados**, incluindo a nova trava que impede remover `handleOnly` da leitura sem alarme;
+- interface/contrato: **5 testes Node aprovados**, incluindo a trava de `handleOnly`, a transformação da seleção em âncora e a navegação circular do menu por teclado;
 - portões estruturais: links, botões, classes e ícones aprovados;
 - build de produção: concluído;
 - links: 28 rotas declaradas, nenhum link morto;

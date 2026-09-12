@@ -25,7 +25,7 @@ const iconeDuvidas = "/icones/icone-duvidas.svg";
 const iconeConta = "/icones/icone-conta.svg";
 const iconeMenu = "/icones/icone-menu.svg";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { Icone } from "./Icone.jsx";
 import { Busca } from "./Busca.jsx";
@@ -79,6 +79,7 @@ export function Cabecalho() {
   const estreito = useEstreito();
   const lugares = LUGARES.filter((l) => !(estreito && l.soNoComputador));
   const [menuConta, setMenuConta] = useState(false);
+  const botaoConta = useRef(null);
   const [recolhido, setRecolhido] = useState(false);
 
   useEffect(() => {
@@ -143,6 +144,7 @@ export function Cabecalho() {
               tinha de achar a trilha lateral para chegar em Privacidade ou nos
               aparelhos. O botão agora oferece as telas. */}
           <button
+            ref={botaoConta}
             type="button"
             className={`acao${menuConta ? " ativo" : ""}`}
             aria-label="Sua conta"
@@ -158,7 +160,13 @@ export function Cabecalho() {
           </button>
         </div>
 
-        <MenuDaConta suspenso aberto={menuConta} pessoa={pessoa} aoFechar={() => setMenuConta(false)} />
+        <MenuDaConta
+          suspenso
+          aberto={menuConta}
+          pessoa={pessoa}
+          aoFechar={() => setMenuConta(false)}
+          aoDevolverFoco={() => botaoConta.current?.focus()}
+        />
 
         {/* O HAMBÚRGUER DO TELEFONE — nó 964:24606, ao lado da busca.
          *
