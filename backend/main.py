@@ -285,19 +285,21 @@ def run_startup_cleanup() -> None:
 # Registrado por último para que as rotas de API tenham prioridade.
 # ---------------------------------------------------------------------------
 
-# `frontend/` virou `legado/` quando os repositorios viraram um so (DEC-0038).
-# O nome mudou porque o papel mudou: este e o frontend LEGADO, e ele sai quando a
-# interface nova cobrir importar com validacao, acompanhar a conversao ate o fim,
-# e enviar ao Kindle — a condicao que a DEC-0011 §6 escreveu e que so agora tem
-# como ser conferida, com os dois lado a lado.
-_FRONTEND_DIST = PROJECT_ROOT / "legado" / "dist"
+# A porta 8000 e os links de entrada nunca podem devolver o produto legado.
+# Em desenvolvimento a interface roda em :5180; este build e a salvaguarda para
+# quem abrir a API diretamente e para o modo local de um processo so.
+_FRONTEND_DIST = PROJECT_ROOT / "web" / "dist"
 
 if _FRONTEND_DIST.exists():
-    app.mount(
-        "/assets",
-        StaticFiles(directory=str(_FRONTEND_DIST / "assets")),
-        name="frontend-assets",
-    )
+    # O Vite copia `publico/` para a raiz do build. Montar apenas `/assets`
+    # entregava React e CSS, mas deixava ícones, capas e fontes virarem o próprio
+    # index.html pelo fallback abaixo: a tela certa abria com desenhos quebrados.
+    for _pasta_publica in ("assets", "fontes", "capas", "icones"):
+        app.mount(
+            f"/{_pasta_publica}",
+            StaticFiles(directory=str(_FRONTEND_DIST / _pasta_publica)),
+            name=f"frontend-{_pasta_publica}",
+        )
 
     @app.get("/{full_path:path}", include_in_schema=False)
     async def serve_spa(full_path: str) -> FileResponse:
