@@ -218,6 +218,13 @@
 .preparo-traducao-destaque > div { display: flex; flex-direction: column; gap: 12px; }
 .preparo-traducao-destaque h2 { margin: 0; font-size: 28px; line-height: 36px; }
 .preparo-traducao-destaque p { margin: 0; font-size: 18px; line-height: 26px; color: var(--muted-foreground); }
+.preparo-traducao-erro {
+  margin: 0;
+  flex-basis: 100%;
+  padding-inline-start: 16px;
+  border-inline-start: 1px solid var(--destructive);
+  color: var(--foreground);
+}
 @media (max-width: 767px) {
   .gaveta-secao.preparo-gaveta { inset-inline: 16px; }
   .preparo-erro-card { padding: 24px 20px; }

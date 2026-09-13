@@ -14,6 +14,7 @@
  * endereços onde a cor é permitida.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { Icone } from "../componentes/Icone.jsx";
 import { Botao } from "../componentes/Botao.jsx";
@@ -37,6 +38,10 @@ const iconeCopiar = "/icones/icone-copiar.svg";
 const iconeMarcador = "/icones/icone-marcador.svg";
 const iconeBuscar = "/icones/icone-buscar.svg";
 const ornamentoAbertura = "/icones/ornamento-abertura.svg";
+
+function Flutuante({ children }) {
+  return createPortal(children, document.body);
+}
 
 /* As quatro cores de destaque. O nome diz o papel, e o valor é o conjunto claro
  * — o único em que a prosa continua legível por cima. */
@@ -877,24 +882,28 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
   /* A PALETA APARECE AO SOLTAR O DEDO, e não a cada movimento da seleção.
    * Durante o arrasto a seleção muda continuamente, e uma paleta que segue o
    * cursor atrapalha justamente o gesto de escolher o trecho. */
+  const capturarSelecao = useCallback(() => {
+    if (!aoAnotar) return;
+    requestAnimationFrame(() => {
+      const sel = lerSelecao(prosa.current);
+      if (sel) setPaleta(sel);
+    });
+  }, [aoAnotar]);
+
   useEffect(() => {
     if (!aoAnotar) return;
-    const aoSoltar = () => {
-      const sel = lerSelecao(prosa.current);
-      setPaleta(sel);
-    };
-    document.addEventListener("mouseup", aoSoltar);
-    document.addEventListener("touchend", aoSoltar);
+    document.addEventListener("pointerup", capturarSelecao);
+    document.addEventListener("keyup", capturarSelecao);
     /* Rolar fecha a paleta: ela é posicionada em coordenadas de tela, e sem
      * isto ficaria pairando longe do texto que marcou. */
     const fechar = () => setPaleta(null);
     window.addEventListener("scroll", fechar, { passive: true });
     return () => {
-      document.removeEventListener("mouseup", aoSoltar);
-      document.removeEventListener("touchend", aoSoltar);
+      document.removeEventListener("pointerup", capturarSelecao);
+      document.removeEventListener("keyup", capturarSelecao);
       window.removeEventListener("scroll", fechar);
     };
-  }, [aoAnotar]);
+  }, [aoAnotar, capturarSelecao]);
 
   /* RESTAURAR uma vez por capítulo, e não a cada render. Sem a trava, qualquer
    * re-render depois de a pessoa ter rolado a puxaria de volta para a marca —
@@ -1161,7 +1170,7 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
     <div className="leitura">
       {/* O cromo recolhe. Numa tela de leitura, a interface que fica é a que
           disputa atenção com o texto — e aqui o texto é o produto. */}
-      <div className={`cromo${cromoVisivel ? "" : " recolhido"}`}>
+      <Flutuante><div className={`cromo${cromoVisivel ? "" : " recolhido"}`}>
         <nav className="cromo-caixa" aria-label="Leitura">
           {/* SAIR DA LEITURA É PARTE DA LEITURA. Usar o histórico do navegador
               deixava esta tela sem saída quando ela era aberta em nova aba,
@@ -1266,12 +1275,14 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
               conta no meio da leitura só serve para tirar a pessoa do livro, e
               ela existe no cabeçalho de todas as outras telas. */}
         </nav>
-      </div>
+      </div></Flutuante>
 
       <header className="abertura">
         <h1>{livro.titulo}</h1>
         <p className="autoria">Escrito por {livro.autor}</p>
-        <img src={ornamentoAbertura} alt="" className="ornamento" aria-hidden="true" />
+        {/enviesados/i.test(livro.titulo ?? "") && (
+          <img src={ornamentoAbertura} alt="" className="ornamento" aria-hidden="true" />
+        )}
       </header>
 
       {/* A medida vem do sistema: 680px é a coluna do desenho, e a 20px dá
@@ -1297,6 +1308,8 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
         className="prosa"
         data-clarity-mask="true"
         ref={prosa}
+        data-vaul-no-drag
+        onPointerUp={capturarSelecao}
         data-capitulos={livro.capitulos ?? 1}
         data-carregados={capitulos.length}
         data-tem-mais={temMais ? "sim" : "nao"}
@@ -1347,7 +1360,7 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
           única coisa que importa ali. */}
       {/* A PALETA, junto do que foi marcado. Em canto fixo obrigaria a olhar
           para longe do texto e voltar — e num leitor o olho está no texto. */}
-      {paleta && (
+      {paleta && <Flutuante>{(
         /* PARA BAIXO QUANDO NÃO CABE PARA CIMA. O painel tem duas fileiras e
            fica em torno de 236px de altura; abaixo de 280 do topo da janela ele
            sairia pela borda. Aí ele abre sob o trecho, ancorado no fim da
@@ -1419,9 +1432,9 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
 
           {copiado && <p className="paleta-recado" role="status">{copiado}</p>}
         </div>
-      )}
+      )}</Flutuante>}
 
-      {cartao && (
+      {cartao && <Flutuante>{(
         <CartaoDeNota
           nota={cartao}
           aoFechar={() => setCartao(null)}
@@ -1430,17 +1443,17 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
             setCartao(null);
           }}
         />
-      )}
+      )}</Flutuante>}
 
-      {procurando && (
+      {procurando && <Flutuante>{(
         <BuscaNoLivro
           livro={livro}
           aoIr={aoIrParaCapitulo}
           aoFechar={() => setProcurando(false)}
         />
-      )}
+      )}</Flutuante>}
 
-      {dobras && (
+      {dobras && <Flutuante>{(
         <Marcadores
           livro={livro}
           marcadores={marcadores}
@@ -1451,18 +1464,18 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
           aoIr={irAoMarcador}
           aoFechar={() => setDobras(false)}
         />
-      )}
+      )}</Flutuante>}
 
-      {indice && (
+      {indice && <Flutuante>{(
         <Indice
           livro={livro}
           aqui={capitulos[0]?.indice ?? livro.capitulo ?? 0}
           aoIr={aoIrParaCapitulo}
           aoFechar={() => setIndice(false)}
         />
-      )}
+      )}</Flutuante>}
 
-      {painel && (
+      {painel && <Flutuante>{(
         <aside className="aparencia" aria-label="Aparência da leitura">
           <header>
             <h2>Aparência</h2>
@@ -1530,7 +1543,7 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
             medida cheia no monitor.
           </p>
         </aside>
-      )}
+      )}</Flutuante>}
 
       {erroDeNota && <p className="nota-erro" role="alert">{erroDeNota}</p>}
 

@@ -54,7 +54,7 @@
 .atualizacoes-lote ul { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
 .atualizacoes-lote li {
   display: flex; flex-direction: column; gap: 12px; align-items: flex-start;
-  padding: 28px 0;
+  padding: 40px 0 40px 32px;
   border-bottom: 1px solid var(--separator);
 }
 .atualizacoes-lote li:first-child { padding-block-start: 0; }
@@ -163,7 +163,7 @@
 .atualizacoes-pendente a { color: var(--foreground); font-size: 18px; line-height: 26px; }
 
 @media (max-width: 767px) {
-  .atualizacoes-lote li { gap: 16px; }
+  .atualizacoes-lote li { gap: 16px; padding-inline-start: 0; }
   .atualizacoes-pendente { padding: 24px 20px; }
 }
 
@@ -171,8 +171,8 @@
    primeira data. Ela é ornamento: centrada, sem ocupar coluna de texto. */
 .atualizacoes-desenho {
   display: block;
-  inline-size: min(312px, 100%); block-size: auto;
-  margin: 16px auto 0;
+  inline-size: min(352px, 100%); block-size: auto;
+  margin: 0 auto;
 }
 
 @media (max-width: 767px) {

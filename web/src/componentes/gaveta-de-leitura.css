@@ -8,7 +8,7 @@
 
 .leitura-gaveta {
   position: relative;
-  inline-size: min(1536px, 100%);
+  inline-size: 100%;
   min-block-size: calc(100dvh - 64px);
   margin-inline: auto;
   padding-block-start: 32px;
@@ -34,6 +34,16 @@
 
 .leitura-gaveta-alca:active { cursor: grabbing; }
 
+.leitura-estado {
+  max-inline-size: 760px;
+  margin: 144px auto;
+  padding: 40px;
+  border: 1px solid var(--border);
+}
+
+.leitura-estado h1 { margin-block: 12px 20px; }
+.leitura-estado .botao { margin-block-start: 24px; }
+
 .leitura-gaveta[data-vaul-drawer][data-vaul-drawer-direction="bottom"] {
   --initial-transform: 24px;
   animation-duration: 260ms;
@@ -50,10 +60,11 @@
 }
 
 @media (max-width: 767px) {
-  .leitura-cena { padding: 12px; }
+  .leitura-cena { padding: 16px; }
   .leitura-gaveta {
-    min-block-size: calc(100dvh - 24px);
+    min-block-size: calc(100dvh - 32px);
     padding-block-start: 24px;
   }
   .leitura-gaveta-alca { inset-block-start: 10px; }
+  .leitura-estado { margin: 96px 16px; padding: 24px; }
 }

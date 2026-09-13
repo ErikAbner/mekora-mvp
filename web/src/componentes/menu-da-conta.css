@@ -132,7 +132,7 @@
 .menu-conta-sair {
   display: block;
   inline-size: 100%;
-  padding: 16px 32px;
+  padding: 16px 32px 16px 80px;
   border: 0;
   border-block-start: 1px solid var(--border);
   background: transparent;

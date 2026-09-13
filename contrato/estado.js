@@ -113,7 +113,7 @@ export function estadoDe(j) {
       etapa: erro[0],
       // A mensagem vem do backend. Inventar texto de erro aqui esconderia o que
       // realmente aconteceu atrás de uma frase genérica.
-      motivo: j.error_message || j.send_error || j.comic_export_error || null,
+      motivo: j.translation_error || j.comic_translation_error || j.error_message || j.send_error || j.comic_export_error || null,
     };
   }
 

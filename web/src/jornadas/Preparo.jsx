@@ -499,6 +499,7 @@ export function Preparo() {
   const [motores, setMotores] = useState(null);
   const [consultouTraducao, setConsultouTraducao] = useState(false);
   const [traduzindo, setTraduzindo] = useState(false);
+  const [erroTraducao, setErroTraducao] = useState(null);
   const [escolhendoIdioma, setEscolhendoIdioma] = useState(false);
   const [vendoCapa, setVendoCapa] = useState(false);
   const [explicandoImagem, setExplicandoImagem] = useState(false);
@@ -518,12 +519,13 @@ export function Preparo() {
        * perguntava DEPOIS de disparar. `GET /jobs/{id}/status` só lê, e é o
        * mesmo que o `acompanhar` já usa.
        *
-       * Quem fechou a aba durante a conversão e voltou a este endereço via a
-       * PROPOSTA, com "Preparar com recomendações" clicável, enquanto o
-       * servidor já convertia aquele arquivo — e podia mandar converter de
-       * novo o que já estava sendo convertido. Agora volta para a espera. */
+       * Quem fechou a aba durante a conversão OU A TRADUÇÃO e voltou a este
+       * endereço precisa reencontrar a operação em curso. Reconhecer apenas
+       * "convertendo" fazia a volta durante a tradução disparar uma análise
+       * concorrente e perder o feedback da operação original. */
       const situ = await situacao(id);
-      if (situ.estado === "trabalhando" && situ.etapa === "convertendo") {
+      if (situ.estado === "trabalhando" && ["convertendo", "traduzindo"].includes(situ.etapa)) {
+        const retomandoTraducao = situ.etapa === "traduzindo";
         /* `trabalho(id)` e não `analisar(id)`: os dados do arquivo sem
            re-executar nada em cima de uma conversão em curso. */
         const jAndando = await trabalho(id);
@@ -538,12 +540,19 @@ export function Preparo() {
         setAndamento(null);
         setPreparando(false);
         if (fim.estado === "erro") {
-          setErro(fim.motivo || "A conversão não terminou.");
+          if (retomandoTraducao) setErroTraducao(fim.motivo || "A tradução não terminou.");
+          else setErro(fim.motivo || "A conversão não terminou.");
           return;
         }
         const pronto = await trabalho(id);
-        setConvertido(pronto);
-        setFeito(true);
+        if (retomandoTraducao) {
+          setJob(pronto);
+          setTitulo(pronto.final_title || pronto.detected_title || pronto.original_filename || "");
+          setAutor(pronto.final_author || pronto.detected_author || "");
+        } else {
+          setConvertido(pronto);
+          setFeito(true);
+        }
         return;
       }
 
@@ -601,7 +610,7 @@ export function Preparo() {
         return;
       }
     } catch (e) {
-      setErro(e.message);
+      setErro(e);
     }
   }, [id]);
 
@@ -787,6 +796,7 @@ export function Preparo() {
   if (preparando) {
     const p = andamento?.progresso;
     const pct = p?.porcento;
+    const traducaoEmCurso = andamento?.etapa === "traduzindo";
     const rotulo = andamento?.etapa ? EM_CURSO[andamento.etapa] || andamento.etapa : null;
     /* A lista é a MESMA de "O que vou fazer" da análise — não uma segunda lista
        de passos escrita à parte, que discordaria da primeira no dia em que uma
@@ -807,7 +817,9 @@ export function Preparo() {
                   tempo, e barra nenhuma. */}
               <p>
                 {typeof pct === "number"
-                  ? "Esta etapa eu sei contar, porque é página a página. As seguintes não avançam de forma linear — nelas mostro a etapa e o tempo, não uma barra."
+                  ? (traducaoEmCurso
+                    ? "Esta etapa eu sei contar, porque avança bloco a bloco. Mostro o que já foi traduzido e o tempo decorrido."
+                    : "Esta etapa eu sei contar, porque é página a página. As seguintes não avançam de forma linear — nelas mostro a etapa e o tempo, não uma barra.")
                   : "Esta etapa não avança de forma linear, então mostro a etapa e o tempo, e não uma barra. Uma barra aqui andaria sozinha, sem nada por baixo."}
               </p>
               {p?.recado && <p className="preparo-andando-recado">{p.recado}</p>}
@@ -829,7 +841,9 @@ export function Preparo() {
             <p className="preparo-andando-medida">
               <span>
                 {p?.total
-                  ? `${p.feito} de ${p.total} páginas reconhecidas`
+                  ? (traducaoEmCurso
+                    ? `${p.feito} de ${p.total} blocos traduzidos`
+                    : `${p.feito} de ${p.total} páginas reconhecidas`)
                   : "Sem contagem nesta etapa"}
               </span>
               <span>{relogio(agora)}</span>
@@ -890,8 +904,10 @@ export function Preparo() {
 
           <p className="preparo-andando-nota">
             {cancelando
-              ? "Pedido de cancelamento anotado. A conversão para em segundos, e o arquivo volta para a Mesa com a análise e as suas escolhas do jeito que estavam."
-              : "Dá para fechar esta aba: a preparação continua no servidor, e o livro aparece na estante quando terminar."}
+              ? `Pedido de cancelamento anotado. A ${traducaoEmCurso ? "tradução" : "conversão"} para em segundos, e a análise e as suas escolhas permanecem.`
+              : (traducaoEmCurso
+                ? "Dá para continuar navegando: a tradução segue no servidor. Volte a este preparo para revisar o resultado e converter o livro."
+                : "Dá para fechar esta aba: a preparação continua no servidor, e o livro aparece na estante quando terminar.")}
           </p>
 
           {/* O QUE A CONFIRMAÇÃO PRECISA DIZER é o que se perde e o que fica.
@@ -901,7 +917,7 @@ export function Preparo() {
               se perde. */}
           <Folha
             aberta={confirmandoParar}
-            titulo="Parar a conversão?"
+            titulo={`Parar a ${traducaoEmCurso ? "tradução" : "conversão"}?`}
             aoFechar={() => setConfirmandoParar(false)}
             acoes={
               <Botao
@@ -984,6 +1000,7 @@ export function Preparo() {
   /* PARA ONDE DÁ PARA TRADUZIR — só com os pares que o motor tem instalados.
      `null` enquanto a pergunta não voltou, e aí a linha não promete nada. */
   const destinos = opcoesDeTraducao(pares?.argos, job.detected_language);
+  const traducaoPronta = job.translation_status === "done";
   const motorDisponivel = motores?.engines?.some((e) => e.available);
   const porQueNaoTraduz = !consultouTraducao
     ? "Perguntando ao servidor se dá para traduzir…"
@@ -1036,13 +1053,20 @@ export function Preparo() {
               {job.detected_language
                 ? `Idioma identificado: ${nomeDoIdioma(job.detected_language)}. `
                 : "Você pode escolher o idioma original. "}
-              O original continua intacto; a tradução gera um segundo texto.
+              {traducaoPronta
+                ? `Tradução para ${nomeDoIdioma(job.target_language) || job.target_language} concluída. O original continua intacto; a preparação usará o segundo texto.`
+                : "O original continua intacto; a tradução gera um segundo texto."}
             </p>
           </div>
           {destinos.length > 0 ? (
-            <Botao tom="primaria" onClick={() => setEscolhendoIdioma(true)}>Traduzir este arquivo</Botao>
+            <Botao tom={traducaoPronta ? "secundaria" : "primaria"} onClick={() => { setErroTraducao(null); setEscolhendoIdioma(true); }}>
+              {traducaoPronta ? "Trocar tradução" : "Traduzir este arquivo"}
+            </Botao>
           ) : (
             <span className="preparo-pagina-sem-traducao">{porQueNaoTraduz}</span>
+          )}
+          {erroTraducao && (
+            <p className="preparo-traducao-erro" role="alert">{erroParaPessoa(erroTraducao)}</p>
           )}
         </section>
 
@@ -1255,6 +1279,9 @@ export function Preparo() {
             O arquivo original fica intacto. O que sai é um segundo texto, e é
             dele que o EPUB é montado.
           </p>
+          {erroTraducao && (
+            <p className="preparo-traducao-erro" role="alert">{erroParaPessoa(erroTraducao)}</p>
+          )}
           <ul className="preparo-pagina-idiomas">
             {destinos.map((d) => (
               <li key={`${d.origem}:${d.codigo}`}>
@@ -1263,7 +1290,7 @@ export function Preparo() {
                   porque={traduzindo ? "Traduzindo…" : null}
                   onClick={async () => {
                     setTraduzindo(true);
-                    setErro(null);
+                    setErroTraducao(null);
                     try {
                       /* OS IDIOMAS SÃO GRAVADOS ANTES. O `/translate` não os
                          recebe no corpo: ele os LÊ do trabalho, e chamar sem
@@ -1279,7 +1306,10 @@ export function Preparo() {
                       setAgora(0);
                       const fim = await acompanhar(id, setAndamento);
                       if (fim.estado === "erro") {
-                        setErro(fim.motivo || "A tradução não terminou.");
+                        setErroTraducao(fim.motivo || "A tradução não terminou.");
+                        setPreparando(false);
+                        setAndamento(null);
+                        return;
                       }
                       setPreparando(false);
                       setAndamento(null);
@@ -1287,8 +1317,7 @@ export function Preparo() {
                          tela precisa mostrar o que mudou. */
                       try { setJob(await analisar(id)); } catch { /* a tela funciona sem */ }
                     } catch (e) {
-                      setErro(e.message);
-                      setEscolhendoIdioma(false);
+                      setErroTraducao(e);
                     } finally {
                       setTraduzindo(false);
                     }

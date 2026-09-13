@@ -28,11 +28,8 @@
 .estante-grade { display: flex; flex-direction: column; gap: 40px; min-inline-size: 0; }
 
 /* Recorte nomeado. Zero raio: e acao e estrutura, nao dado. */
-/* No computador a caixa da vista nao existe como caixa: ela dissolve e o
- * alternador continua sendo filho direto da ficha, como sempre foi. */
+/* No computador a caixa auxiliar do filtro móvel se dissolve. */
 .estante-vista { display: contents; }
-.recortes.vista { align-self: stretch; }
-.recortes.vista button { flex: 1 0 0; }
 
 .grade {
   display: grid;
@@ -277,33 +274,15 @@
    * O vão também: `966:25142` pede 16, e aqui estava 8. */
   .livro-texto { gap: 16px; }
   .ficha-caixa h2 { font-size: 24px; line-height: 32px; }
-  /* O ALTERNADOR SOBE, e a ficha do livro escolhido DESCE.
-   *
-   * O alternador troca o que a GRADE mostra, e empilhado depois dela ficava
-   * abaixo de todos os livros — um controle que só se encontra depois de passar
-   * por tudo o que ele controla. A ficha, ao contrário, fala de um livro que a
-   * pessoa escolheu na grade: ela vem depois da escolha.
-   *
-   * `display: contents` porque os dois são irmãos DENTRO da `.ficha`, e a grade
-   * é irmã DELA: sem dissolver a caixa do meio, `order` só consegue mover as
-   * duas juntas. A `.ficha` perde a caixa e os filhos viram itens da grade da
-   * `.estante` — que é onde a ordem é decidida. */
+  /* No telefone, o filtro vem antes da grade e a ficha do livro vem depois da
+   * escolha. `display: contents` faz esses filhos participarem da mesma ordem. */
   .ficha { display: contents; }
   .ficha > .estante-vista { order: 1; }
   .estante-grade { order: 2; }
   .ficha > .ficha-caixa { order: 3; }
 
-  /* O FUNIL DIVIDE A FILEIRA COM O ALTERNADOR — no 964:24606, onde ele esta a
-   * direita de "Capas | Estante em 3D". Sozinho numa linha ele gastava 76px de
-   * altura para um botao, numa tela onde a primeira capa ja comeca longe.
-   *
-   * Quem resolve isso e a ESTRUTURA, e nao posicao absoluta com deslocamento
-   * medido: os dois sao irmaos dentro de `.estante-vista`, e no telefone essa
-   * caixa vira uma fileira. Deslocamento medido a mao erra na primeira largura
-   * em que ninguem mediu — foi o defeito do `calc(100vh - 88px)` do Canvas, hoje
-   * de manha. */
+  /* O funil ocupa uma fileira curta antes da grade. */
   .estante-vista { display: flex; align-items: stretch; gap: 12px; order: 1; }
-  .estante-vista > .recortes.vista { flex: 1 1 auto; }
   .estante-funil { display: flex; flex: 0 0 auto; }
 }
 

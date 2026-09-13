@@ -7,7 +7,7 @@
 
 ## Veredito
 
-O Mekora está coerente e apresentável para revisão acadêmica nas rotas e larguras auditadas. Não restou falha conhecida de navegação, layout, copy crítica, download ou conversão. A rodada corrigiu também dois defeitos funcionais que o acabamento visual não revelava: EPUBs reais com pontuação no nome eram recusados pelo servidor, e a gaveta de leitura podia tomar o gesto usado para selecionar texto.
+O Mekora está coerente e apresentável para revisão acadêmica nas rotas e larguras auditadas. A navegação, o layout, a seleção no leitor, o download, a conversão sem tradução e uma tradução real passaram nos ensaios realizados. O trabalho 47 traduziu 176/176 blocos de Inglês para Português; ao sair e voltar, a tela retomou a operação em curso e, ao final, exibiu o idioma concluído. Uma falha futura permanece no contexto da tradução e não desmonta a tela inteira de preparo.
 
 O veredito não transforma ausência de prova em aprovação. O envio simultâneo de dois arquivos foi comprovado pelo seletor nativo e permaneceu na Mesa com os dois estados individuais. O ciclo visual da nota foi comprovado da seleção inicial com arrasto real até a abertura da paleta e, depois, da criação à exclusão, incluindo duas recargas. O percurso integral por Tab também foi executado, inclusive Shift+Tab, Enter, setas, Home, End e Escape no menu da conta. As duas ressalvas manuais da versão anterior deste relatório estão, portanto, encerradas por comportamento observado.
 
@@ -27,8 +27,9 @@ O veredito não transforma ausência de prova em aprovação. O envio simultâne
 - progresso de leitura restaurado no ponto persistido;
 - corpo da gaveta liberado para seleção de texto, mantendo o arrasto somente na alça;
 - EPUB real com vírgulas, parênteses, apóstrofo e `&` servido sem 404, ainda protegido contra traversal;
-- Estante 3D usando título, autor, lombadas e cor dominante do próprio livro;
-- face superior, lombada e texto do livro como uma única área interativa;
+- vista 3D retirada porque a representação disponível não atingia a qualidade prometida; a grade de capas permanece como única vista da Estante;
+- leitor ampliado para a janela com 32 px laterais, barra e painéis flutuantes, índice mais compacto e seleção contextual restaurada;
+- ornamento de óculos restrito ao livro correspondente e conteúdo de demonstração removido do carregamento de livros reais;
 - Canvas com uma busca contextual, padding comum às demais seções, pan, zoom, notas e grupos persistentes;
 - Atualizações recomposta segundo o frame canônico indicado;
 - estados vazios e mensagens de erro separados: vazio orienta o próximo passo, falha oferece recuperação.
@@ -37,10 +38,11 @@ O veredito não transforma ausência de prova em aprovação. O envio simultâne
 ## Evidências funcionais
 
 - fluxo real de TXT: upload → Preparo → conversão → EPUB concluído;
+- tradução real do trabalho 47: Inglês → Português, 176/176 blocos, com saída e retorno durante a operação e confirmação final na própria tela;
 - EPUB real do trabalho 44 aberto em `/leitura/44`, com conteúdo carregado e sem livro de reserva;
 - progresso conhecido reaberto no bloco correspondente e confirmado persistido;
 - arrasto real da alça fechando Preparo, Leitura e Ajuda e retornando ao contexto correto;
-- clique real na face superior e na lombada selecionando livros diferentes na Estante 3D;
+- Estante carregada diretamente na grade de capas, sem o alternador 3D removido;
 - Canvas: zoom 100%→110%, pan para `(-60,-120)`, arrasto de nota e grupo com persistência após recarga;
 - grupo e nota sintéticos usados no ensaio foram removidos ao terminar;
 - painéis de leitura abertos no lado correspondente a seus controles, sem sobreposição ou overflow.
@@ -57,7 +59,7 @@ O veredito não transforma ausência de prova em aprovação. O envio simultâne
 
 ## Auditoria de conteúdo
 
-As 18 rotas principais foram lidas e varridas em desktop e 390 px. Não apareceu Lorem ipsum, placeholder editorial, `NoneType`, `cancel_requested`, `[object Object]` ou mensagem de exceção sem tratamento. Ações críticas dizem o efeito ou o destino: “Continuar”, “Voltar à leitura”, “Ver o preparo”, “Tentar de novo”, “Enviar ao Kindle” e “Ver detalhes do arquivo”.
+As 18 rotas principais foram lidas e varridas em desktop e 390 px. Não apareceu Lorem ipsum, placeholder editorial, `NoneType`, `cancel_requested` ou `[object Object]` na interface revisada. Ações críticas dizem o efeito ou o destino: “Continuar”, “Voltar à leitura”, “Ver o preparo”, “Tentar de novo”, “Enviar ao Kindle” e “Ver detalhes do arquivo”.
 
 Os estados vazios observados indicam o próximo passo:
 

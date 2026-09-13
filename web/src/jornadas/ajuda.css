@@ -5,7 +5,7 @@
  */
 .ajuda {
   display: flex; flex-direction: column; gap: 64px;
-  inline-size: 100%; max-inline-size: 1096px;
+  inline-size: 100%; max-inline-size: 1280px;
   margin-inline: auto;
   padding: 96px 32px 128px;
 }
@@ -41,7 +41,7 @@
 
 /* As quatro tarefas, duas por linha como no desenho. */
 .ajuda-tarefas {
-  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px;
   margin: 0; padding: 0; list-style: none;
 }
 /* O CARTÃO DE TAREFA, com os números dos dois nós (`895:11193` e `966:27747`):
@@ -87,19 +87,19 @@
 .ajuda-tarefas .botao { margin-block-start: 8px; text-decoration: none; }
 
 /* A trilha e a lista, lado a lado. */
-.ajuda-corpo { display: flex; gap: 56px; align-items: flex-start; }
+.ajuda-corpo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px; align-items: flex-start; }
 
-.ajuda-trilha { position: sticky; top: 32px; flex: none; inline-size: 200px; }
+.ajuda-trilha { position: sticky; top: 32px; inline-size: 100%; padding: 16px 0 16px 32px; border-inline-start: 2px solid var(--foreground); }
 .ajuda-trilha ul { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
 .ajuda-trilha a {
-  display: block; padding: 12px 0;
+  display: block; padding: 8px 0;
   color: var(--muted-foreground);
-  font-size: 16px; line-height: 24px;   /* Label/Medium */
+  font-size: 24px; line-height: 32px;
   text-decoration: none;
 }
 .ajuda-trilha a:hover { color: var(--foreground); text-decoration: underline; }
 
-.ajuda-listas { display: flex; flex-direction: column; gap: 64px; flex: 1 1 0; min-inline-size: 0; }
+.ajuda-listas { display: flex; flex-direction: column; gap: 64px; min-inline-size: 0; }
 
 /* A ESCALA DESTA TELA ESTAVA UM DEGRAU ABAIXO — nós `895:11296` a `895:11302`,
    conferidos em 05/09. É o mesmo padrão que o Preparo tinha: cada peça um
@@ -160,7 +160,7 @@
 @media (max-width: 1023px) {
   /* A trilha vira uma fila rolavel acima das listas: coluna fixa de 200px numa
      tela estreita rouba metade do texto. */
-  .ajuda-corpo { flex-direction: column; gap: 32px; }
+  .ajuda-corpo { grid-template-columns: minmax(0, 1fr); gap: 32px; }
   .ajuda-trilha { position: static; inline-size: 100%; }
   .ajuda-trilha ul { flex-direction: row; flex-wrap: wrap; gap: 8px 20px; }
   .ajuda-trilha a { padding: 8px 0; }

@@ -55,7 +55,7 @@ import { fracaoLida } from "../../contrato/progresso.js";
 import { usarNotas } from "./leitor/usarNotas.js";
 import { usarMarcadores } from "./leitor/usarMarcadores.js";
 import { analisar, apagarNota, chaveDe, importarClippings, lerTodasAsNotas } from "../../contrato/api.js";
-import { EXEMPLO_FILA, EXEMPLO_ESTANTE, EXEMPLO_LEITURA } from "./exemplos.js";
+import { EXEMPLO_FILA, EXEMPLO_ESTANTE } from "./exemplos.js";
 
 /* O exemplo entra SÓ quando a URL pede — `?exemplo`. Nunca no caminho normal,
  * porque tela que inventa dado esconde backend fora do ar. */
@@ -404,16 +404,18 @@ function PaginaLeitura() {
     }
   }, [livro, id, semear]);
 
-  /* Sem o livro, o exemplo — e o produto DIZ que é exemplo, em vez de deixar
-   * parecer que aquele é o teu texto. */
-  if (erro || !livro) {
+  /* Uma rota de livro real nunca exibe conteúdo de demonstração enquanto a
+   * abertura está em curso. Além de parecer o livro errado, isso fazia o
+   * ornamento específico de Enviesados piscar em qualquer EPUB. */
+  if (!livro) {
     return (
       <GavetaDeLeitura titulo="Leitura" voltarPara={`/estante/${id}`}>
-        <Leitura
-          livro={EXEMPLO_LEITURA}
-          voltarPara={`/estante/${id}`}
-          aviso={erro ? `Este é um texto de exemplo. O livro não pôde ser aberto: ${erro}` : null}
-        />
+        <section className="leitura-estado" aria-live="polite" aria-busy={!erro}>
+          <p className="rotulo">{erro ? "NÃO ABRIU" : "ABRINDO O LIVRO"}</p>
+          <h1>{erro ? "Não consegui abrir este livro." : "Preparando sua leitura…"}</h1>
+          {erro && <p>{erro}</p>}
+          {erro && <Link className="botao secundario" to={`/estante/${id}`}>Voltar ao livro</Link>}
+        </section>
       </GavetaDeLeitura>
     );
   }

@@ -14,95 +14,15 @@
  * interruptor. Pílula e círculo são os 5% que quebram a retidão, e funcionam por
  * serem raros.
  */
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { espessuraMm, espessuraPx } from "../../../contrato/lombada.js";
-import { TrilhaLinhas } from "../componentes/TrilhaLinhas.jsx";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { Folha } from "../componentes/Folha.jsx";
 import "./estante.css";
 import { CapaDeReserva } from "../componentes/CapaDeReserva.jsx";
-import {
-  autorNaLombada,
-  corPrincipalDosPixels,
-  paletaDaLombada,
-  tituloNaLombada,
-  varianteDaLombada,
-} from "../componentes/lombada-do-livro.js";
 
 const marcador = "/icones/marcador-notas.svg";
-const PALETA_NEUTRA = paletaDaLombada(null);
-const paletasDeCapa = new Map();
-
-function usePaletaDaCapa(capa) {
-  const [paleta, setPaleta] = useState(() => paletasDeCapa.get(capa) ?? PALETA_NEUTRA);
-
-  useEffect(() => {
-    let descartada = false;
-    if (!capa) {
-      setPaleta(PALETA_NEUTRA);
-      return () => { descartada = true; };
-    }
-    if (paletasDeCapa.has(capa)) {
-      setPaleta(paletasDeCapa.get(capa));
-      return () => { descartada = true; };
-    }
-
-    const imagem = new Image();
-    imagem.crossOrigin = "anonymous";
-    imagem.decoding = "async";
-    imagem.onload = () => {
-      if (descartada) return;
-      try {
-        const canvas = document.createElement("canvas");
-        canvas.width = 24;
-        canvas.height = 24;
-        const contexto = canvas.getContext("2d", { willReadFrequently: true });
-        contexto.drawImage(imagem, 0, 0, canvas.width, canvas.height);
-        const rgb = corPrincipalDosPixels(
-          contexto.getImageData(0, 0, canvas.width, canvas.height).data,
-        );
-        const encontrada = paletaDaLombada(rgb);
-        paletasDeCapa.set(capa, encontrada);
-        setPaleta(encontrada);
-      } catch {
-        /* Uma capa de origem externa pode negar a leitura dos pixels. Ela ainda
-         * aparece no plano superior; a lombada fica no papel neutro em vez de
-         * inventar uma cor a partir do endereço do arquivo. */
-        setPaleta(PALETA_NEUTRA);
-      }
-    };
-    imagem.onerror = () => { if (!descartada) setPaleta(PALETA_NEUTRA); };
-    imagem.src = capa;
-    return () => { descartada = true; };
-  }, [capa]);
-
-  return paleta;
-}
-
-function LombadaDoLivro({ livro }) {
-  const variante = varianteDaLombada(livro.chave);
-  const paleta = usePaletaDaCapa(livro.capa);
-  const titulo = tituloNaLombada(livro.titulo);
-  const autor = autorNaLombada(livro.autor);
-
-  return (
-    <span
-      className="deitado-lombada"
-      data-lombada={variante}
-      aria-hidden="true"
-      style={{ "--lombada-cor": paleta.fundo, "--lombada-tinta": paleta.tinta }}
-    >
-      <span className="lombada-motivo" />
-      <span className="lombada-identidade">
-        <span className="lombada-titulo" title={livro.titulo}>{titulo}</span>
-        {autor && <span className="lombada-autor" title={livro.autor}>{autor}</span>}
-      </span>
-      <span className="lombada-codigo dado">{String(variante).padStart(2, "0")}</span>
-    </span>
-  );
-}
 
 const RECORTES = [
   { id: "tudo", rotulo: "Tudo", cabe: () => true },
@@ -137,97 +57,6 @@ function onde(l) {
   if (!l.capitulos) return null;
   if (l.capitulo + 1 >= l.capitulos) return "no último capítulo";
   return `capítulo ${l.capitulo + 1} de ${l.capitulos}`;
-}
-
-/* A ESTANTE EM 3D — livros DEITADOS, empilhados na vertical.
- *
- * A primeira versão os pôs EM PÉ, lado a lado, como numa prateleira de livraria.
- * O nó `895:7506` mostra o contrário: uma pilha, vista de lado e de cima, com o
- * livro escolhido maior e à frente e os outros recuando atrás dele.
- *
- * A diferença não é de gosto. Em pé, a espessura vira largura e uma estante de
- * cinquenta livros não cabe na tela; deitados, a espessura vira ALTURA da fatia
- * e a pilha cresce para baixo — que é a direção em que a página já rola.
- *
- * A colheita no GitHub de 31/08 continua valendo aqui: a espessura sai de
- * `contrato/lombada.js`, em milímetros de papel, e o título é legível na
- * superfície rotacionada. O que mudou foi a orientação, não a conta.
- *
- * SEM Three.js: são retângulos com `rotateX`, e um canvas traria uma árvore que
- * leitor de tela não percorre.
- */
-const ALTURA_LOMBADA = 297;   // a "capa" de referência, para a escala da espessura
-
-function Estante3D({ livros, selecionado, aoEscolher }) {
-  return (
-    <div className="pilha-caixa">
-      {/* O ÍNDICE À ESQUERDA É O `LineSidebar`, e não uma lista à mão.
-          O Erik trouxe o componente e disse onde ele vive: é a navegação da
-          estante em 3D e da maior parte das navegações do projeto. O que eu
-          tinha escrito aqui era uma aproximação dele — traços de comprimento
-          fixo e nenhuma resposta ao cursor. */}
-      <TrilhaLinhas
-        rotulo="Os livros da pilha"
-        itens={livros.map((l) => l.titulo)}
-        ativo={livros.findIndex((l) => l.chave === selecionado?.chave)}
-        aoEscolher={(i) => aoEscolher?.(livros[i])}
-        className="pilha-indice"
-      />
-
-      <ul className="pilha" data-clarity-mask="true">
-        {livros.map((l, ordem) => {
-          const px = espessuraPx(l.paginas, ALTURA_LOMBADA);
-          const mm = espessuraMm(l.paginas);
-          const escolhido = l.chave === selecionado?.chave;
-          return (
-            /* AS DUAS VARIÁVEIS FICAM NO `<li>`, e não no botão.
-               `--espessura` desce por herança e serve igual lá dentro. `--ordem`
-               PRECISA estar aqui: quem empilha é o `<li>` — ele tem a margem
-               negativa e é irmão dos outros —, e propriedade custom só herda
-               para baixo. Com ela no botão, todo `<li>` lia o valor padrão zero,
-               os seis ficavam com o mesmo `z-index` e a ordem do DOM decidia:
-               o livro de baixo cobria a lombada do de cima, que é o defeito que
-               o Erik descreveu em 04/09. */
-            <li key={l.chave} style={{ "--espessura": `${px ?? 2}px`, "--ordem": ordem }}>
-              <button
-                type="button"
-                className={`livro-deitado${escolhido ? " escolhido" : ""}`}
-                onClick={() => aoEscolher?.(l)}
-                aria-label={
-                  mm === null
-                    ? `${l.titulo}, de ${l.autor || "autor desconhecido"} — espessura desconhecida`
-                    : `${l.titulo}, de ${l.autor || "autor desconhecido"} — ${Math.round(mm)} milímetros`
-                }
-                title={mm === null ? "O arquivo não trouxe contagem de páginas" : undefined}
-              >
-                {/* A face superior usa a capa real. O cinza do Figma é um
-                    gabarito de composição; no produto essa superfície precisa
-                    identificar o livro, inclusive de longe. */}
-                <span className="deitado-topo" aria-hidden="true">
-                  <span className="deitado-plano">
-                    {l.capa ? (
-                      <img src={l.capa} alt="" draggable="false" />
-                    ) : (
-                      <CapaDeReserva
-                        className="deitado-capa"
-                        titulo={l.titulo}
-                        autor={l.autor}
-                        formato={l.formato}
-                        chave={l.chave}
-                      />
-                    )}
-                  </span>
-                </span>
-                {/* A lombada não é uma faixa recortada da capa. Ela recompõe
-                    os catorze gabaritos do acervo com os dados deste livro. */}
-                <LombadaDoLivro livro={l} />
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
 }
 
 function Livro({ chave, titulo, autor, formato, estado, notas, capa, aoEscolher, escolhido }) {
@@ -295,10 +124,6 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher }) {
   /* O funil do telefone (nó 964:24606): abre os mesmos recortes que o computador
      mostra em linha. */
   const [filtrando, setFiltrando] = useState(false);
-  /* A vista começa em "capas", e não em 3D: quem abre a estante quer achar o
-   * livro, e a capa de frente é o que se reconhece de longe. A estante de pé é
-   * para olhar o acervo, que é outra coisa e vem por escolha. */
-  const [vista, setVista] = useState("capas");
   const regra = RECORTES.find((r) => r.id === recorte) ?? RECORTES[0];
   const mostrados = livros.filter(regra.cabe);
   return (
@@ -378,12 +203,6 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher }) {
               </p>
               <Link to="/mesa" className="estante-comecar">Preparar um documento</Link>
             </div>
-          ) : vista === "3d" ? (
-            <Estante3D
-              livros={mostrados}
-              selecionado={selecionado}
-              aoEscolher={aoEscolher}
-            />
           ) : (
             <ul className="grade" data-clarity-mask="true">
               {mostrados.map((l) => (
@@ -399,28 +218,10 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher }) {
         </div>
 
         <aside className="ficha" aria-label="Livro selecionado">
-          {/* O ALTERNADOR EXISTIA E NÃO FAZIA NADA: dois botões com
-              `aria-pressed` cravado e sem `onClick`. A vista 3D era o desenho
-              prometendo o que o produto não tinha. */}
-          {/* O ALTERNADOR E O FUNIL SÃO IRMÃOS, e no telefone a caixa deles vira
-              uma fileira — que é onde o nó 964:24606 os põe. No computador ela
-              dissolve (`display: contents`) e o alternador continua sendo filho
-              direto da ficha, como sempre foi. */}
+          {/* A caixa só organiza o filtro móvel. No desktop ela se dissolve e
+              deixa a ficha seguir a grade principal. */}
           <div className="estante-vista">
-            <nav className="recortes vista" aria-label="Modo de vista">
-              {["capas", "3d"].map((v) => (
-                <button
-                  key={v}
-                  type="button"
-                  aria-pressed={vista === v ? "true" : "false"}
-                  onClick={() => setVista(v)}
-                >
-                  {v === "capas" ? "Capas" : "Estante em 3D"}
-                </button>
-              ))}
-            </nav>
-
-          {/* O FUNIL DO TELEFONE — nó 964:24606, ao lado do alternador de vista.
+          {/* O FUNIL DO TELEFONE — nó 964:24606.
            *
            * Ele existia no desenho e não tinha painel desenhado em lugar nenhum
            * do arquivo. A decisão foi tomada em 02/09, e ela não inventa nada: o
