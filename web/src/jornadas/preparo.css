@@ -14,7 +14,9 @@
  * a Mesa visível nas laterais, mantém a navegação ativa e ainda comporta o
  * relatório longo dentro da própria rolagem. */
 .gaveta-secao.preparo-gaveta {
-  inset-inline: max(32px, calc((100% - 1350px) / 2));
+  /* A folha ocupa a mesma largura externa do leitor. O limite de 1222px
+     continua em `.preparo-pagina`: ampliar a moldura não estica o conteúdo. */
+  inset-inline: 32px;
   background: var(--background);
   border: 1px solid var(--border);
   border-block-end: 0;

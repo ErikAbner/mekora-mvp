@@ -222,6 +222,18 @@
 /* "Escrever sobre o livro" — nó 895:7839. Uma superfície recuada e sem borda,
    como o desenho: o campo é o convite, e a moldura o transformaria em
    formulário. */
+.livro-pagina-escrever-secao {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px;
+  gap: 48px;
+  align-items: start;
+}
+.livro-pagina-escrever-conteudo { min-inline-size: 0; }
+.livro-pagina-escrever-ilustracao {
+  inline-size: 120px;
+  block-size: auto;
+  margin-block-start: -8px;
+}
 .livro-pagina-escrever {
   inline-size: 100%;
   min-block-size: 108px;
@@ -285,6 +297,10 @@
 }
 
 @media (max-width: 767px) {
+  /* No telefone a ilustração decorativa não compra o direito de estreitar o
+     campo de escrita. A tarefa continua com a largura inteira. */
+  .livro-pagina-escrever-secao { grid-template-columns: minmax(0, 1fr); }
+  .livro-pagina-escrever-ilustracao { display: none; }
   .livro-pagina-acoes-nota .botao { flex: 1 1 auto; justify-content: center; }
 }
 

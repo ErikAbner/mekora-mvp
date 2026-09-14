@@ -1925,6 +1925,23 @@ o marcador de "você está aqui" no índice, como o `941:23112` pede.
 - **A página do estudo** não tem **"Notas semelhantes"**, **"Podem
   complementar"**, a **busca dentro do estudo** nem **"Ver rede neural"**.
 
+#### Triagem de produto posterior — 14/09
+
+Esta lista é um inventário do que aparecia nos quadros, não autorização para
+reintroduzir decisões antigas. A conferência posterior estabeleceu que o
+estado atual do produto prevalece quando o fluxo mudou desde a captura.
+
+- **Não entram por comparação visual:** reconstruir Conexões segundo a captura
+  antiga; criar "Notas semelhantes", "Podem complementar" ou "Ver rede
+  neural" só para preencher a página do estudo; e simular tempos ou etapas no
+  Preparo. Todos alterariam comportamento, vocabulário ou promessa do produto.
+- **Entram porque completam a forma vigente sem mudar o fluxo:** a ilustração
+  já desenhada de "Escrever sobre o livro" e a moldura externa do Preparo com
+  a mesma largura da Leitura.
+- **Regra de largura:** a moldura pode crescer até os 32px de respiro da cena;
+  a coluna interna continua limitada. Largura de tela não é licença para
+  esticar texto, capa, formulário ou linha de leitura.
+
 ### As ilustrações, resolvidas — component set `1016:30664`
 
 O Erik mandou o component set com as **56 ilustrações nomeadas**, e ele resolve a
