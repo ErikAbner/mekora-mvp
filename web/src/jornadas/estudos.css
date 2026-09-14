@@ -617,6 +617,10 @@
   color: var(--foreground);
   font-size: 16px; line-height: 24px;
 }
+.estudos-notas-cruas .estudo-nota-acoes,
+.estudos-soltas .estudo-nota-acoes {
+  margin-block-start: 12px;
+}
 
 /* A pergunta é o título do grupo, e não o nome do estudo: é ela que a pessoa
  * escreveu para se lembrar do que estava atrás. */
@@ -626,13 +630,6 @@
   font-size: 24px; line-height: 36px; font-weight: 540;   /* Heading/SM */
   color: var(--card-foreground);
 }
-
-/* O "Reler" do `895:8849` virou um dos botões de `.estudos-mover`: ele é o
- * nome que o desenho dá ao movimento de "Lido" para "A ler", e agora convive
- * com os outros dois destinos em vez de ser o único. As regras próprias dele
- * saíram — `scripts/seletores.mjs` recusa regra que não casa em rota nenhuma. */
-
-
 
 /* ── A PÁGINA DE UM ESTUDO — nó `895:8260` ──────────────────────────────────
  *
@@ -652,7 +649,8 @@
 /* ─── O ARRASTO DO QUADRO ──────────────────────────────────────────────────
  *
  * Decisão do Erik em 07/09: arrastar entre A ler, Lendo e Li, "com feedback
- * visual claro durante o arrasto", e sem depender só do arrasto.
+ * visual claro durante o arrasto". As ações redundantes deixaram de ocupar o
+ * cartão; a alternativa acessível agora são as setas quando o cartão tem foco.
  *
  * O QUE O FEEDBACK PRECISA DIZER são três coisas, e cada uma tem a sua marca:
  * o que está sendo arrastado (o cartão clareia), onde ele vai cair (a coluna
@@ -660,6 +658,10 @@
  * origem não acende — soltar de volta não é movimento.
  */
 .estudos-coluna li { touch-action: pan-y; }
+.estudos-coluna li:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 4px;
+}
 .estudos-quadro[data-arrastando] { cursor: grabbing; }
 /* Enquanto se arrasta, o texto não se seleciona: um arrasto que pinta metade
    dos títulos de azul parece defeito, e é o que acontece sem isto. */
@@ -696,17 +698,6 @@
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-/* O CAMINHO CLICÁVEL. Ele não aparece por hover: hover não existe em toque, e
-   um caminho alternativo que só existe com mouse não é alternativa. Fica
-   sempre visível, em corpo pequeno, abaixo do cartão. */
-.estudos-mover {
-  display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px;
-  margin-block-start: 8px;
-}
-.estudos-mover-rotulo {
-  font-size: 14px; line-height: 22px;
-  color: var(--muted-foreground);
-}
 .estudos-mover-botao {
   border: 1px solid var(--border);
   background: var(--card);

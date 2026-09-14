@@ -1,5 +1,12 @@
 # Para o Project OS — pendente de filtro
 
+> **Nova consolidação de qualidade — 14/09/2026:** a retrospectiva detalhada das
+> rodadas de implementação, incluindo padrões do produto, causas dos erros,
+> correções, evidências e protocolo de prevenção, está em
+> [`docs/RETROSPECTIVA-DE-IMPLEMENTACAO-E-QUALIDADE-2026-09-14.md`](docs/RETROSPECTIVA-DE-IMPLEMENTACAO-E-QUALIDADE-2026-09-14.md).
+> Ela foi adicionada ao projeto como material de entrada para o Project OS sem
+> apagar as pendências históricas registradas abaixo.
+
 > **Resolvido em 2026-08-12.** O Erik julgou os itens no chat e eles foram aplicados:
 >
 > - **item 1** — o repositório entrou em `projects/mekora.json` como `supporting_artifact`

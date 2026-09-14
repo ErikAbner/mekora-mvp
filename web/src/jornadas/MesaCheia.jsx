@@ -34,8 +34,24 @@ const iconeRefazer = "/icones/icone-refazer.svg";
 /* Os quatro estados vêm do contrato, não daqui. Se esta lista divergir da de
  * `contrato/estado.js`, a tela passa a mostrar rótulo para um estado que não
  * existe — ou a esconder um que existe. */
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ESTADOS as DO_CONTRATO } from "../../../contrato/estado.js";
+
+/* Movimento continuo da faixa:
+ *
+ *   dedo acompanha -> solta com embalo -> desacelera ate repousar
+ *
+ * Os valores ficam nomeados para a sensacao poder ser afinada sem esconder a
+ * coreografia em numeros espalhados. Nao ha snap: parar entre capas e valido. */
+const MOVIMENTO_DA_FAIXA = {
+  filtroDaVelocidade: 0.24,
+  projecaoMs: 190,
+  rigidez: 170,
+  amortecimento: 26,
+  distanciaDeParada: 0.35,
+  velocidadeDeParada: 4,
+  passoDoTeclado: 312,
+};
 
 /* OS RÓTULOS SÃO OS DO DESENHO — nó 895:9736: Enviando, Na fila, Pronto, Com
  * erro. O de `trabalhando` dizia "Em preparo", que é também o nome da SEÇÃO, e
@@ -291,13 +307,63 @@ function PrecisaDeVoce({ arquivos, aoDestravar }) {
  * com listas diferentes. */
 function Faixa({ titulo, quando, livros, verTudo }) {
   const trilho = useRef(null);
-  const arrasto = useRef({ ativo: false, moveu: false, x: 0, scroll: 0 });
+  const arrasto = useRef({ ativo: false, moveu: false, x: 0, scroll: 0, ultimoX: 0, ultimoTempo: 0, velocidade: 0 });
+  const animacao = useRef({ quadro: 0, alvo: 0, velocidade: 0, ultimoTempo: 0 });
+
+  const pararAnimacao = useCallback(() => {
+    if (animacao.current.quadro) cancelAnimationFrame(animacao.current.quadro);
+    animacao.current.quadro = 0;
+  }, []);
+
+  const moverAte = useCallback((alvo, velocidadeInicial = 0) => {
+    const no = trilho.current;
+    if (!no) return;
+    pararAnimacao();
+    const limite = Math.max(0, no.scrollWidth - no.clientWidth);
+    const destino = Math.max(0, Math.min(limite, alvo));
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      no.scrollLeft = destino;
+      return;
+    }
+
+    animacao.current = {
+      quadro: 0,
+      alvo: destino,
+      velocidade: velocidadeInicial * 1000,
+      ultimoTempo: performance.now(),
+    };
+
+    const quadro = (agora) => {
+      const estado = animacao.current;
+      const delta = Math.min(0.032, (agora - estado.ultimoTempo) / 1000);
+      estado.ultimoTempo = agora;
+      const distancia = estado.alvo - no.scrollLeft;
+      const aceleracao = distancia * MOVIMENTO_DA_FAIXA.rigidez
+        - estado.velocidade * MOVIMENTO_DA_FAIXA.amortecimento;
+      estado.velocidade += aceleracao * delta;
+      no.scrollLeft += estado.velocidade * delta;
+
+      if (
+        Math.abs(distancia) <= MOVIMENTO_DA_FAIXA.distanciaDeParada
+        && Math.abs(estado.velocidade) <= MOVIMENTO_DA_FAIXA.velocidadeDeParada
+      ) {
+        no.scrollLeft = estado.alvo;
+        estado.quadro = 0;
+        return;
+      }
+      estado.quadro = requestAnimationFrame(quadro);
+    };
+    animacao.current.quadro = requestAnimationFrame(quadro);
+  }, [pararAnimacao]);
+
+  useEffect(() => pararAnimacao, [pararAnimacao]);
   if (!livros.length) return null;
 
   const moverComTeclado = (e) => {
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
     e.preventDefault();
-    trilho.current?.scrollBy({ left: e.key === "ArrowRight" ? 312 : -312, behavior: "smooth" });
+    const passo = e.key === "ArrowRight" ? MOVIMENTO_DA_FAIXA.passoDoTeclado : -MOVIMENTO_DA_FAIXA.passoDoTeclado;
+    moverAte((trilho.current?.scrollLeft ?? 0) + passo);
   };
 
   return (
@@ -314,22 +380,50 @@ function Faixa({ titulo, quando, livros, verTudo }) {
         onKeyDown={moverComTeclado}
         onPointerDown={(e) => {
           if (e.pointerType === "mouse" && e.button !== 0) return;
-          arrasto.current = { ativo: true, moveu: false, x: e.clientX, scroll: trilho.current.scrollLeft };
+          pararAnimacao();
+          arrasto.current = {
+            ativo: true,
+            moveu: false,
+            x: e.clientX,
+            scroll: trilho.current.scrollLeft,
+            ultimoX: e.clientX,
+            ultimoTempo: performance.now(),
+            velocidade: 0,
+          };
           trilho.current.setPointerCapture(e.pointerId);
+          trilho.current.dataset.arrastando = "true";
         }}
         onPointerMove={(e) => {
           if (!arrasto.current.ativo) return;
           const delta = e.clientX - arrasto.current.x;
           if (Math.abs(delta) > 6) arrasto.current.moveu = true;
           trilho.current.scrollLeft = arrasto.current.scroll - delta;
+          const agora = performance.now();
+          const tempo = Math.max(1, agora - arrasto.current.ultimoTempo);
+          const velocidadeInstantanea = (arrasto.current.ultimoX - e.clientX) / tempo;
+          arrasto.current.velocidade += (velocidadeInstantanea - arrasto.current.velocidade)
+            * MOVIMENTO_DA_FAIXA.filtroDaVelocidade;
+          arrasto.current.ultimoX = e.clientX;
+          arrasto.current.ultimoTempo = agora;
         }}
         onPointerUp={(e) => {
           arrasto.current.ativo = false;
+          delete trilho.current.dataset.arrastando;
           if (trilho.current?.hasPointerCapture?.(e.pointerId)) {
             trilho.current.releasePointerCapture(e.pointerId);
           }
+          const velocidade = performance.now() - arrasto.current.ultimoTempo > 80
+            ? 0
+            : arrasto.current.velocidade;
+          moverAte(
+            trilho.current.scrollLeft + velocidade * MOVIMENTO_DA_FAIXA.projecaoMs,
+            velocidade,
+          );
         }}
-        onPointerCancel={() => { arrasto.current.ativo = false; }}
+        onPointerCancel={() => {
+          arrasto.current.ativo = false;
+          if (trilho.current) delete trilho.current.dataset.arrastando;
+        }}
         onClickCapture={(e) => {
           if (!arrasto.current.moveu) return;
           e.preventDefault();

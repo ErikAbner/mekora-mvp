@@ -780,18 +780,18 @@
  *
  * A sombra tem cinco degraus, como as outras do arquivo, e o primeiro com alfa
  * zero: e assim que o Figma escreve o comeco da rampa. */
-/* A BARRA VIROU UM ITEM SÓ — "Adicionar", com três destinos no menu. Ela deixa
-   de ser uma coluna de 86px de ícones e passa a caber no que tem: um botão com
-   rótulo. Ver a nota no `Canvas.jsx`. */
+/* A DOCA mostra os tres destinos sem menu intermediario. A largura acomoda os
+   nomes; os alvos e os icones seguem uma unica regua. */
 .canvas-ferramentas {
   position: absolute;
   inset-inline-start: 32px;
   inset-block-start: 50%;
   transform: translateY(-50%);
   z-index: 3;
-  display: flex; flex-direction: column; gap: 16px;
+  inline-size: 176px;
+  display: flex; flex-direction: column; gap: 4px;
   align-items: stretch; justify-content: center;
-  padding: 16px;
+  padding: 8px;
   border: 1px solid var(--border);
   background: var(--piso);
   box-shadow:
@@ -803,13 +803,17 @@
 }
 .canvas-ferramentas button {
   position: relative;
-  display: flex; align-items: center; justify-content: center;
+  display: flex; align-items: center; justify-content: flex-start; gap: 12px;
   inline-size: 100%;
-  padding: 16px;
+  min-block-size: 48px;
+  padding: 12px 14px;
   border: 0; background: transparent;
   color: var(--muted-foreground);
+  font: inherit; font-size: 15px; line-height: 22px;
+  white-space: nowrap;
   cursor: pointer;
 }
+.canvas-ferramentas .icone { inline-size: 24px; block-size: 24px; flex: 0 0 24px; }
 .canvas-ferramentas button:hover:not(:disabled) { background: var(--background-secondary); color: var(--foreground); }
 .canvas-ferramentas button[aria-pressed="true"] { background: var(--foreground); color: var(--background); }
 /* Desabilitado nao vira invisivel: ele conta que a ferramenta existe e que
@@ -830,8 +834,10 @@
     inset-block-start: auto; inset-block-end: 16px;
     inset-inline: 16px;
     transform: none;
-    flex-direction: row; justify-content: center;
+    inline-size: auto;
+    flex-direction: row; justify-content: stretch;
   }
+  .canvas-ferramentas button { inline-size: auto; flex: 1 1 0; justify-content: center; min-inline-size: 0; }
   /* E O ZOOM SOBE, senao os dois ocupam o mesmo canto. Medido a 390: a barra
    * comeca em y=754 e o zoom estava em y=770, um por cima do outro — dois
    * controles flutuantes disputando o mesmo lugar, e o de baixo inalcancavel. */
@@ -1194,17 +1200,20 @@
   font-size: 14px; line-height: 22px;
   color: var(--foreground);
   white-space: nowrap;
+  max-inline-size: calc(100vw - 64px);
   animation: canvas-recado-entra 160ms var(--saida);
 }
 /* A CONTAGEM é rótulo, não botão: mais apagada, à esquerda, com um filete a
  * separando das ações. */
 .canvas-escolha-conta {
   display: flex; align-items: center;
+  flex: 0 0 auto;
   padding: 0 14px;
   color: var(--muted-foreground);
   font-variant-numeric: tabular-nums;
 }
 .canvas-escolha-filete {
+  flex: 0 0 1px;
   inline-size: 1px; align-self: stretch;
   margin-block: 6px;
   background: var(--border);
@@ -1212,6 +1221,9 @@
 .canvas-escolha-acoes {
   display: flex; align-items: center; gap: 2px;
   padding: 6px;
+  min-inline-size: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
 .canvas-escolha-acoes > button,
 .canvas-escolha-acoes > a {
@@ -1219,7 +1231,6 @@
   align-items: center;
   gap: 8px;
 }
-.canvas-escolha-acoes .icone { inline-size: 18px; block-size: 18px; }
 .canvas-escolha-acao {
   padding: 7px 12px;
   color: var(--foreground);
@@ -1228,30 +1239,6 @@
   text-decoration: none;
 }
 .canvas-escolha-acao:hover { background: var(--muted); }
-.canvas-escolha-mais { position: relative; display: flex; }
-.canvas-escolha-menu {
-  position: absolute;
-  inset-inline-end: 0;
-  inset-block-end: calc(100% + 8px);
-  z-index: 10;
-  min-inline-size: 208px;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  padding: 6px;
-  border: 1px solid var(--border);
-  background: var(--piso);
-  box-shadow: 0 2px 4px rgb(0 0 0 / 0.06), 0 12px 24px rgb(0 0 0 / 0.08);
-}
-.canvas-barra-escolha .canvas-escolha-menu button {
-  inline-size: 100%;
-  justify-content: flex-start;
-  text-align: start;
-}
-.canvas-barra-escolha .canvas-escolha-menu button:disabled {
-  color: var(--muted-foreground);
-  cursor: default;
-}
 .canvas-barra-escolha .canvas-escolha-fechar {
   min-inline-size: 38px;
   padding-inline: 10px;
@@ -1266,6 +1253,10 @@
   color: var(--foreground);
   cursor: pointer;
   transition: background-color 120ms var(--saida);
+}
+.canvas-barra-escolha button:disabled {
+  color: var(--muted-foreground);
+  cursor: default;
 }
 .canvas-barra-escolha button:hover { background: var(--muted); }
 .canvas-barra-escolha button:active { background: var(--secondary, var(--muted)); }
@@ -1549,74 +1540,4 @@
   stroke-width: 1;
   stroke-dasharray: 3 3;
   opacity: 0.7;
-}
-
-/* ─── ADICIONAR, e os três destinos ────────────────────────────────────────
- *
- * O botão leva ÍCONE E RÓTULO. Três ícones lado a lado exigiam que a pessoa
- * soubesse de cor o que cada glifo abre; um item com nome não exige nada. E o
- * `title` que existia nos três não é alcançável por toque nem por teclado. */
-.canvas-ferramentas .canvas-adicionar {
-  gap: 12px;
-  justify-content: flex-start;
-  color: var(--foreground);
-  font: inherit;
-  font-size: 16px; line-height: 24px;
-  white-space: nowrap;
-}
-.canvas-adicionar-grupo {
-  display: flex;
-  align-items: stretch;
-}
-.canvas-ferramentas .canvas-adicionar-principal { flex: 1 1 auto; }
-.canvas-ferramentas .canvas-adicionar-mais {
-  flex: 0 0 56px;
-  inline-size: 56px;
-  block-size: 56px;
-  padding: 16px;
-  border-inline-start: 1px solid var(--border);
-  color: var(--muted-foreground);
-  font-size: 18px;
-}
-.canvas-ferramentas .canvas-adicionar-mais[aria-expanded="true"] {
-  background: var(--muted);
-  color: var(--foreground);
-}
-
-.canvas-adicionar-menu {
-  position: absolute;
-  inset-inline-start: calc(100% + 8px);
-  inset-block-start: 0;
-  z-index: 4;
-  min-inline-size: 208px;
-  display: flex; flex-direction: column;
-  padding: 8px;
-  border: 1px solid var(--border);
-  background: var(--piso);
-  box-shadow:
-    0 50px 7px rgb(0 0 0 / 0),
-    0 32px 6.5px rgb(0 0 0 / 0.01),
-    0 18px 5.5px rgb(0 0 0 / 0.02),
-    0 8px 4px rgb(0 0 0 / 0.03),
-    0 2px 2px rgb(0 0 0 / 0.04);
-  /* ENTRADA É UMA DAS SEIS QUE PODEM ANIMAR — decisão do Erik em 07/09.
-     `--saida` é a curva do sistema para o que entra e sai. */
-  animation: canvas-menu-entra 140ms var(--saida) backwards;
-}
-@keyframes canvas-menu-entra {
-  from { opacity: 0; transform: translateY(-4px); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .canvas-adicionar-menu { animation: none; }
-}
-
-.canvas-ferramentas .canvas-adicionar-menu button {
-  gap: 12px;
-  justify-content: flex-start;
-  padding: 12px;
-  color: var(--foreground);
-  font: inherit;
-  font-size: 16px; line-height: 24px;
-  text-align: start;
-  white-space: nowrap;
 }

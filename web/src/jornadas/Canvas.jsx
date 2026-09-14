@@ -1318,34 +1318,6 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
     setEscrevendo(true);
   }, []);
   const [trazendo, setTrazendo] = useState(false);
-  const [adicionando, setAdicionando] = useState(false);
-  const [maisAcoesAberto, setMaisAcoesAberto] = useState(false);
-  /* O MENU FECHA SOZINHO — com Esc e com um clique em qualquer outro lugar.
-   * Um menu que só fecha pelo próprio botão fica aberto por cima da superfície
-   * inteira enquanto a pessoa tenta trabalhar embaixo dele. */
-  useEffect(() => {
-    if (!adicionando) return undefined;
-    const fora = (e) => { if (!e.target.closest(".canvas-ferramentas")) setAdicionando(false); };
-    const tecla = (e) => { if (e.key === "Escape") setAdicionando(false); };
-    document.addEventListener("pointerdown", fora);
-    document.addEventListener("keydown", tecla);
-    return () => {
-      document.removeEventListener("pointerdown", fora);
-      document.removeEventListener("keydown", tecla);
-    };
-  }, [adicionando]);
-
-  useEffect(() => {
-    if (!maisAcoesAberto) return undefined;
-    const fora = (e) => { if (!e.target.closest(".canvas-barra-escolha")) setMaisAcoesAberto(false); };
-    const tecla = (e) => { if (e.key === "Escape") setMaisAcoesAberto(false); };
-    document.addEventListener("pointerdown", fora);
-    document.addEventListener("keydown", tecla);
-    return () => {
-      document.removeEventListener("pointerdown", fora);
-      document.removeEventListener("keydown", tecla);
-    };
-  }, [maisAcoesAberto]);
 
   const naSuperficie = new Set(nos.map((n) => n.nota_id));
   const deFora = notas.filter((n) => !naSuperficie.has(n.id));
@@ -3384,65 +3356,23 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
             inteira. "Criar seção" foi para a barra da escolha, onde ela tem
             sujeito. O duplo toque continua, como atalho — e não como a única
             porta. */}
-        {/* A BARRA POR INTENÇÃO — decisão do Erik em 07/09: "a ação principal
-            deve ser Adicionar, contendo Nota, Livro da Estante, Mídia. Busca e
-            controles de zoom/navegação ficam separados."
-
-            Os três eram três botões soltos, lado a lado, sem nada dizendo que
-            fazem a mesma coisa com objetos diferentes. Agora são UMA intenção
-            com três destinos — e a barra passa a ter um item, não três. Busca e
-            zoom já viviam fora dela e continuam.
-
-            NADA NOVO ENTROU: "não adicionar novas features apenas para preencher
-            a barra". São os mesmos três, reagrupados. */}
+        {/* A DOCA EXPOE AS TRES ACOES. Um menu economizava poucos pixels e
+            cobrava descoberta, mira na seta e um clique extra toda vez. Aqui o
+            espaco e flutuante e permanente: rotulo + icone consistente tornam
+            Nota, Livro e Midia reconheciveis sem memorizar glifos. */}
         <nav className="canvas-ferramentas" aria-label="Ferramentas do Canvas">
-          <div className="canvas-adicionar-grupo">
-            <button
-              type="button"
-              className="canvas-adicionar canvas-adicionar-principal"
-              onClick={() => { setTexto(""); setEscrevendo(true); }}
-            >
-              <Icone src="/icones/icone-nota-nova.svg" />
-              <span>Nova nota</span>
-            </button>
-            <button
-              type="button"
-              className="canvas-adicionar-mais"
-              aria-label="Adicionar livro ou mídia"
-              aria-haspopup="menu"
-              aria-expanded={adicionando}
-              onClick={() => setAdicionando((v) => !v)}
-            >
-              <span aria-hidden="true">⌄</span>
-            </button>
-          </div>
-          {adicionando && (
-            <div className="canvas-adicionar-menu" role="menu" aria-label="Adicionar ao Canvas">
-              {/* TRAZER O QUE JÁ EXISTE — e era a porta mais escondida do Canvas.
-                  Livro e nota antiga só se alcançavam por uma linha de texto
-                  dentro da folha de escrever. Um livro é recurso central de um
-                  Estudo; ele não pode depender de abrir outra coisa primeiro. */}
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => { setAdicionando(false); setTrazendo(true); }}
-              >
-                <Icone src="/icones/icone-estante.svg" />
-                Livro da Estante
-              </button>
-              {/* O quadro com "+" é ADICIONAR MÍDIA — foto ou endereço de vídeo.
-                  O nome do arquivo já dizia `nota-imagem`, e eu já o usei uma vez
-                  pelo lugar e não pelo que ele desenha. */}
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => { setAdicionando(false); setEndereco(""); setPondoMidia(true); }}
-              >
-                <Icone src="/icones/icone-nota-imagem.svg" />
-                Mídia
-              </button>
-            </div>
-          )}
+          <button type="button" aria-label="Nova nota" onClick={() => { setTexto(""); setEscrevendo(true); }}>
+            <Icone src="/icones/icone-nota-nova.svg" />
+            <span>Nova nota</span>
+          </button>
+          <button type="button" aria-label="Adicionar livro" onClick={() => setTrazendo(true)}>
+            <Icone src="/icones/icone-estante.svg" />
+            <span>Livro</span>
+          </button>
+          <button type="button" aria-label="Adicionar mídia" onClick={() => { setEndereco(""); setPondoMidia(true); }}>
+            <Icone src="/icones/icone-nota-imagem.svg" />
+            <span>Mídia</span>
+          </button>
         </nav>
 
         {/* A BARRA DA ESCOLHA — o único lugar em que as ações sobre VÁRIOS
@@ -3460,8 +3390,8 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
             </span>
             <span className="canvas-escolha-filete" aria-hidden="true" />
             <div className="canvas-escolha-acoes">
-            {/* A barra deixa à vista só o que continua a tarefa. Manutenção,
-                descarte e enquadramento ficam em Mais ações. */}
+            {/* Todas as acoes ficam visiveis: selecao e um estado temporario e
+                nao deve esconder operacoes frequentes atras de outra camada. */}
             {escolhidoSozinho?.tipo === "nota" && (
               <>
                 {escolhidoSozinho.no.job_id && (
@@ -3474,7 +3404,6 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
                 </button>
                 {!escolhidoSozinho.no.job_id && !escolhidoSozinho.no.midia && (
                   <button type="button" onClick={() => abrirEdicao(escolhidoSozinho.no)}>
-                    <Icone src="/icones/icone-renomear.svg" />
                     Editar
                   </button>
                 )}
@@ -3492,54 +3421,35 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
             )}
             {temObjetoEscolhido && (
               <button type="button" onClick={criarSecaoDaEscolha}>
-                <Icone src="/icones/icone-camadas.svg" />
                 Criar seção
               </button>
             )}
             {secaoSozinha && (
               <button type="button" onClick={() => setRenomeando(secaoSozinha.id)}>
-                <Icone src="/icones/icone-renomear.svg" />
                 {secaoSozinha.nome ? "Renomear" : "Nomear seção"}
               </button>
             )}
-            <div className="canvas-escolha-mais">
+            {podeDuplicar && <button type="button" onClick={duplicarComHistoria}>Duplicar</button>}
+            {notasEscolhidas.length >= 3 && <button type="button" onClick={() => organizar(notasEscolhidas)}>Organizar</button>}
+            {secaoSozinha && (
               <button
                 type="button"
-                className="canvas-escolha-mais-botao"
-                aria-label="Mais ações"
-                aria-haspopup="menu"
-                aria-expanded={maisAcoesAberto}
-                onClick={() => setMaisAcoesAberto((v) => !v)}
+                disabled={!membrosDe(secaoSozinha).length}
+                title={membrosDe(secaoSozinha).length ? "A área encolhe até os membros" : "Esta seção não tem membros"}
+                onClick={() => ajustarAoConteudo(secaoSozinha)}
               >
-                <Icone src="/icones/icone-mais-acoes.svg" />
+                Ajustar ao conteúdo
               </button>
-              {maisAcoesAberto && (
-                <div className="canvas-escolha-menu" role="menu">
-                  {podeDuplicar && <button type="button" role="menuitem" onClick={() => { setMaisAcoesAberto(false); duplicarComHistoria(); }}>Duplicar</button>}
-                  {notasEscolhidas.length >= 3 && <button type="button" role="menuitem" onClick={() => { setMaisAcoesAberto(false); organizar(notasEscolhidas); }}>Organizar</button>}
-                  {secaoSozinha && (
-                    <button
-                      type="button"
-                      role="menuitem"
-                      disabled={!membrosDe(secaoSozinha).length}
-                      title={membrosDe(secaoSozinha).length ? "A área encolhe até os membros" : "Esta seção não tem membros"}
-                      onClick={() => { setMaisAcoesAberto(false); ajustarAoConteudo(secaoSozinha); }}
-                    >
-                      Ajustar ao conteúdo
-                    </button>
-                  )}
-                  {secaoSozinha && <button type="button" role="menuitem" onClick={() => { setMaisAcoesAberto(false); dissolver(secaoSozinha); }}>Dissolver seção</button>}
-                  {!secaoSozinha && (
-                    <button type="button" role="menuitem" onClick={() => { setMaisAcoesAberto(false); tirarEscolhidos(); }}>
-                      {soLigacoes ? (escolha.size > 1 ? "Desfazer ligações" : "Desfazer ligação") : "Tirar do Canvas"}
-                    </button>
-                  )}
-                  <button type="button" role="menuitem" onClick={() => { setMaisAcoesAberto(false); enquadrarEscolha(); }}>Enquadrar na tela</button>
-                </div>
-              )}
+            )}
+            {secaoSozinha && <button type="button" onClick={() => dissolver(secaoSozinha)}>Dissolver seção</button>}
+            {!secaoSozinha && (
+              <button type="button" onClick={tirarEscolhidos}>
+                {soLigacoes ? (escolha.size > 1 ? "Desfazer ligações" : "Desfazer ligação") : "Tirar do Canvas"}
+              </button>
+            )}
+            <button type="button" onClick={enquadrarEscolha}>Enquadrar na tela</button>
             </div>
             <button type="button" className="canvas-escolha-fechar" aria-label="Limpar seleção" onClick={limparEscolha}>×</button>
-            </div>
           </div>
         )}
 

@@ -30,7 +30,7 @@ import "./estudos.css";
  * A tela mostrava tudo, e três estudos de vinte notas viravam uma rolagem onde
  * nenhum deles se lia. O changelog já dizia que isso tinha sido resolvido pelo
  * título virar link, e não tinha: o link foi acrescentado e as notas ficaram. */
-export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, aoTirar, semLink = false, resumido = false }) {
+export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoApagarNota, aoReunir, aoTirar, semLink = false, resumido = false }) {
   const [reunindo, setReunindo] = useState(false);
   /* A busca DENTRO do estudo — nó 895:8260, logo abaixo da faixa de livros. Um
      estudo que cumpriu seu papel tem trinta notas de cinco livros, e é aí que
@@ -151,6 +151,7 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, 
                 <span className="estudo-origem">
                   {n.fonte === "kindle" ? `Kindle · ${n.origem}` : n.origem || "do seu livro"}
                 </span>
+                <Link to={`/nota/${n.id}`}>Abrir nota</Link>
                 {n.job_id && <Link to={`/leitura/${n.job_id}`}>Abrir no livro</Link>}
                 {/* COPIAR COM ORIGEM — o desenho o põe em toda nota, aqui e na
                     ficha do livro. É o que separa uma nota de um recorte solto:
@@ -173,6 +174,7 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoReunir, 
                   {copiada === n.id ? "Copiado" : "Copiar com origem"}
                 </button>
                 <button type="button" onClick={() => aoTirar(estudo.id, n.id)}>Tirar daqui</button>
+                {aoApagarNota && <button type="button" onClick={() => aoApagarNota(n.id)}>Apagar nota</button>}
               </div>
             </li>
           ))}
@@ -314,7 +316,7 @@ const RECORTES = [
   { id: "pergunta", rotulo: "Por pergunta" },
 ];
 
-export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, aoMudar, aoApagar, aoReunir, aoTirar, aoReler }) {
+export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, aoMudar, aoApagar, aoApagarNota, aoReunir, aoTirar, aoReler }) {
   const [criando, setCriando] = useState(false);
   const [nome, setNome] = useState("");
   const [sobre, setSobre] = useState("");
@@ -493,6 +495,19 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
      escrever alguma coisa e mesmo assim não as levou para lugar nenhum. Marcar
      um trecho é barato; escrever sobre ele não é. */
   const escritasESoltas = soltas.filter((n) => n.comentario);
+
+  const acoesDaNota = (n, mostrarOrigem = false) => (
+    <div className="estudo-nota-acoes">
+      {mostrarOrigem && (
+        <span className="estudo-origem">
+          {n.origem || (n.fonte === "solta" ? "escrita no Canvas" : "de um livro seu")}
+        </span>
+      )}
+      <Link to={`/nota/${n.id}`}>Abrir nota</Link>
+      {n.job_id && <Link to={`/leitura/${n.job_id}`}>Abrir no livro</Link>}
+      {aoApagarNota && <button type="button" onClick={() => aoApagarNota(n.id)}>Apagar nota</button>}
+    </div>
+  );
 
   const alvo = achatar(procura.trim());
 
@@ -703,7 +718,26 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                       <li
                         key={l.chave}
                         data-livro={l.chave}
+                        tabIndex={0}
+                        role="group"
+                        aria-label={`${l.titulo}. Em ${rotulo}. Arraste para organizar; com o teclado, use as setas.`}
                         onPointerDown={(e) => comecaGesto(e, l)}
+                        onKeyDown={async (e) => {
+                          const coluna = COLUNAS.findIndex((c) => c.id === id);
+                          let acao = null;
+                          if (e.key === "ArrowUp" && indice > 0) acao = () => mover(l, id, { chave: dela[indice - 1].chave });
+                          if (e.key === "ArrowDown" && indice < dela.length - 1) acao = () => mover(l, id, { chave: dela[indice + 1].chave, depois: true });
+                          if (e.key === "ArrowLeft" && coluna > 0) acao = () => mover(l, COLUNAS[coluna - 1].id);
+                          if (e.key === "ArrowRight" && coluna < COLUNAS.length - 1) acao = () => mover(l, COLUNAS[coluna + 1].id);
+                          if (!acao) return;
+                          e.preventDefault();
+                          await acao();
+                          requestAnimationFrame(() => {
+                            const item = [...(quadroRef.current?.querySelectorAll("[data-livro]") ?? [])]
+                              .find((el) => String(el.dataset.livro) === String(l.chave));
+                            item?.focus();
+                          });
+                        }}
                         data-arrastado={arrasto?.chave === l.chave ? "sim" : undefined}
                         data-movendo={movendo === l.chave ? "sim" : undefined}
                         data-inserir={arrasto && posicaoSobODedo?.chave === String(l.chave)
@@ -746,22 +780,13 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                             )}
                           </span>
                         </Link>
-                        {/* O CAMINHO CLICÁVEL, ao lado do arrasto. Decisão do
-                            Erik em 07/09: "não depender exclusivamente de drag:
-                            preservar alternativas clicáveis/contextuais para
-                            mudança de estado".
-                            
-                            Não é acessibilidade de enfeite: arrasto não existe
-                            para quem usa teclado, para quem usa leitor de tela,
-                            e é impreciso em telas pequenas. Os dois caminhos
-                            escrevem a mesma coisa: a rota do estado.
-                            
-                            O "Reler" do `895:8849` deixou de ser um botão à
-                            parte. Ele era o nome que o desenho dava ao
-                            movimento de "Lido" para "A ler" quando esse
-                            movimento ZERAVA o progresso — e ele não zera mais.
-                            Chamar de "Reler" um botão que só troca a
-                            declaração prometeria o que ele não faz. */}
+                        {/* A organização é o gesto do quadro, e não uma segunda
+                            interface escrita abaixo de cada cartão. “Subir”,
+                            “Descer”, “Mover para”, “Lendo” e “Lido” repetiam em
+                            texto o que as colunas e o arrasto já dizem, criando
+                            até seis alvos pequenos por livro. O teclado não foi
+                            sacrificado: quando o cartão recebe foco, as setas
+                            verticais reordenam e as horizontais trocam a coluna. */}
                         {/* A DECLARAÇÃO E O PROGRESSO PODEM DISCORDAR, e isso
                             não é erro: é o caso de quem terminou o livro no
                             papel, ou desistiu e quer tirá-lo da fila sem apagar
@@ -802,36 +827,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                             </p>
                           );
                         })()}
-                        <span className="estudos-mover">
-                          {movendo === l.chave ? (
-                            <span className="estudos-movendo" role="status">Atualizando…</span>
-                          ) : (
-                            <>
-                              <span className="estudos-mover-rotulo">Organizar</span>
-                              {indice > 0 && (
-                                <button type="button" className="estudos-mover-botao" onClick={() => mover(l, id, { chave: dela[indice - 1].chave })}>
-                                  Subir
-                                </button>
-                              )}
-                              {indice < dela.length - 1 && (
-                                <button type="button" className="estudos-mover-botao" onClick={() => mover(l, id, { chave: dela[indice + 1].chave, depois: true })}>
-                                  Descer
-                                </button>
-                              )}
-                              <span className="estudos-mover-rotulo">Mover para</span>
-                              {COLUNAS.filter((c) => c.id !== id).map((c) => (
-                                <button
-                                  key={c.id}
-                                  type="button"
-                                  className="estudos-mover-botao"
-                                  onClick={() => mover(l, c.id)}
-                                >
-                                  {c.rotulo}
-                                </button>
-                              ))}
-                            </>
-                          )}
-                        </span>
+                        {movendo === l.chave && <span className="estudos-movendo" role="status">Atualizando…</span>}
                       </li>
                     ))}
                   </ul>
@@ -865,6 +861,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
               notasDisponiveis={notas}
               aoMudar={aoMudar}
               aoApagar={aoApagar}
+              aoApagarNota={aoApagarNota}
               aoReunir={aoReunir}
               aoTirar={aoTirar}
               resumido
@@ -1088,6 +1085,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                   <p className="estudos-solta-origem">
                     {n.origem || (n.fonte === "solta" ? "escrita no Canvas" : "de um livro seu")}
                   </p>
+                  {acoesDaNota(n)}
                 </li>
               ))}
             </ul>
@@ -1114,6 +1112,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                     <li key={n.id}>
                       {n.trecho && <blockquote className="trecho-citado" data-cor={n.cor}>{n.trecho}</blockquote>}
                       {n.comentario && <p className="estudos-solta-comentario">{n.comentario}</p>}
+                      {acoesDaNota(n, true)}
                     </li>
                   ))}
                 </ul>
@@ -1154,6 +1153,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                   <p className="estudos-solta-origem">
                     {n.origem || (n.fonte === "solta" ? "escrita no Canvas" : "de um livro seu")}
                   </p>
+                  {acoesDaNota(n)}
                 </li>
               ))}
             </ul>

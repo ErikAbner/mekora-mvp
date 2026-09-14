@@ -23,7 +23,7 @@ import { Estudo } from "./Estudos.jsx";
 import { TrilhaDaPagina } from "../componentes/TrilhaDaPagina.jsx";
 import "./estudo-pagina.css";
 
-export function EstudoPagina({ estudo, notas = [], erro, aoMudar, aoApagar, aoReunir, aoTirar, carregando }) {
+export function EstudoPagina({ estudo, notas = [], erro, aoMudar, aoApagar, aoApagarNota, aoReunir, aoTirar, carregando }) {
   return (
     <div className="mesa">
       <Cabecalho lugar="estudos" />
@@ -74,6 +74,7 @@ export function EstudoPagina({ estudo, notas = [], erro, aoMudar, aoApagar, aoRe
             notasDisponiveis={notas}
             aoMudar={aoMudar}
             aoApagar={aoApagar}
+            aoApagarNota={aoApagarNota}
             aoReunir={aoReunir}
             aoTirar={aoTirar}
             semLink

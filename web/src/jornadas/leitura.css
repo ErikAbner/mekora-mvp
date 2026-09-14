@@ -390,6 +390,11 @@
   background: var(--branco, #ffffff);
 }
 
+/* Resíduo de remontagem de PDF. O `hidden` vem da dimensão natural, não do
+ * nome do arquivo: tiras como 17×2174px são fatias posicionadas pelo CSS do
+ * conversor e, isoladas, não constituem uma ilustração. */
+.prosa .ilustracao[hidden] { display: none; }
+
 /* A imagem larga: 1540 do desenho, e ela ENCOLHE em tela menor em vez de
  * empurrar a pagina. `object-fit: cover` com a altura do desenho so vale quando
  * ha largura para isso; abaixo disso a proporcao natural manda, porque cortar
@@ -479,23 +484,30 @@
    quatro amostras em quatro botões grandes. */
 .paleta-cores { display: flex; gap: 24px; inline-size: min(372px, 100%); }
 
-.paleta-acoes { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.paleta-acoes-fazer { display: flex; gap: 24px; }
+.paleta-acoes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
 
 .paleta-botao {
-  display: inline-flex; align-items: center; gap: 16px;
-  padding: 17px 24px;   /* `895:12846` */
+  display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+  min-inline-size: 0; min-block-size: 60px;
+  padding: 17px 16px;
   border: 1px solid var(--border);
   background: transparent;
   color: var(--muted-foreground);
   font: inherit; font-size: 16px; line-height: 24px;
   cursor: pointer;
 }
+.paleta-botao svg, .paleta-botao img { flex: none; }
+.paleta-remover { color: var(--destructive); }
+.paleta-remover:hover { border-color: var(--destructive); }
 .paleta-botao:hover { background: var(--muted); }
 .paleta-botao:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
 /* Cancelar é a única com superfície e recheio próprios — `895:12850` põe `p-24`
    e a borda em `border/subtle`. */
-.paleta-cancelar { padding: 24px; background: var(--background-secondary, var(--muted)); }
+.paleta-cancelar { background: var(--background-secondary, var(--muted)); }
 
 .paleta-recado {
   margin: 0;
@@ -839,7 +851,41 @@
  * vez: as quatro cores ficaram com fundo transparente e so o sublinhado. Uma
  * regra que so e inofensiva enquanto outra coisa a cobre nao e inofensiva. */
 :root { --leitura-destaque: 1; }
-.prosa mark[data-destaque] { opacity: var(--leitura-destaque, 1); }
+.prosa mark[data-destaque] {
+  /* Ocultar tira a MARCA, não o texto. `opacity: 0` apagava também as palavras
+     e transformava reler sem destaques em reler com buracos. */
+  opacity: 1;
+  cursor: pointer;
+}
+:root[data-leitura-destaques="ocultar"] .prosa mark[data-destaque] {
+  background-color: transparent;
+  text-decoration-color: transparent;
+}
+.prosa mark[data-destaque]:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
+
+/* Feedback no próprio lugar marcado. O losango fica na margem da coluna para
+ * não inserir caracteres no livro nem mudar a quebra das linhas. */
+.prosa .bloco.com-marcador { position: relative; }
+.prosa .bloco.com-marcador::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -28px;
+  inset-block-start: 0.25em;
+  inline-size: 12px;
+  block-size: 18px;
+  background: var(--foreground);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 72%, 0 100%);
+}
+
+@media (max-width: 767px) {
+  .paleta { padding: 20px; gap: 20px; }
+  .paleta-cores { gap: 12px; }
+  .paleta-acoes { grid-template-columns: 1fr; }
+  .prosa .bloco.com-marcador::before { inset-inline-start: -20px; inline-size: 9px; block-size: 14px; }
+}
 
 /* A amostra do tema e um retangulo da cor do fundo daquele tema — e o que o
  * desenho mostra, e e a unica amostra que nao precisa de letra: o que muda no
@@ -1013,10 +1059,14 @@
  */
 .cartao-nota-fundo {
   position: fixed; inset: 0; z-index: 60;
+  inline-size: 100%; block-size: 100%; max-inline-size: none; max-block-size: none;
+  margin: 0; border: 0;
   display: flex; align-items: center; justify-content: center;
   padding: 24px;
-  background: color-mix(in srgb, var(--foreground) 55%, transparent);
+  background: transparent;
+  color: var(--foreground);
 }
+.cartao-nota-fundo::backdrop { background: color-mix(in srgb, var(--foreground) 55%, transparent); }
 
 /* 40 entre as três partes do cartão — `941:23113`. */
 .cartao-nota {
@@ -1066,20 +1116,32 @@
 
 .cartao-nota textarea {
   inline-size: 100%;
-  min-block-size: 132px;
-  padding: 32px;   /* `895:13123` */
-  border: 0;
-  background: var(--muted, color-mix(in srgb, var(--foreground) 5%, transparent));
+  min-block-size: 168px;
+  padding: 20px;
+  border: 1px solid var(--borda-controle, var(--foreground));
+  background: var(--background);
   color: var(--foreground);
   font: inherit;
   font-size: 20px; line-height: 30px;                     /* Body/Medium */
   resize: vertical;
+  caret-color: var(--foreground);
 }
 .cartao-nota textarea::placeholder { color: var(--muted-foreground); opacity: 1; }
-.cartao-nota textarea:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+.cartao-nota textarea:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+
+.cartao-nota-campo { display: flex; flex-direction: column; gap: 8px; }
+.cartao-nota-campo label {
+  color: var(--foreground);
+  font-size: 16px; line-height: 24px; font-weight: 540;
+}
+.cartao-nota-campo p {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 14px; line-height: 22px;
+}
 
 .cartao-nota footer { display: flex; justify-content: flex-end; }
-.cartao-nota footer .botao { min-inline-size: 132px; justify-content: center; }
+.cartao-nota footer .botao { min-inline-size: 156px; justify-content: center; }
 
 @media (max-width: 767px) {
   .cartao-nota { gap: 32px; padding: 24px; }
