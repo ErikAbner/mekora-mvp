@@ -23,6 +23,7 @@
  */
 import { Link } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
+import { GavetaDeSecao } from "../componentes/GavetaDeSecao.jsx";
 import { Rodape } from "../componentes/Rodape.jsx";
 import "./atualizacoes.css";
 
@@ -193,17 +194,18 @@ const data = (iso) => {
 
 export function Atualizacoes() {
   return (
-    <div className="mesa">
+    <div className="mesa chao">
       <Cabecalho />
-
-      <main className="atualizacoes-cena">
+      <GavetaDeSecao titulo="Atualizações" voltarPara="/estante" classe="atualizacoes-gaveta">
       <div className="atualizacoes-folha">
-      <div className="atualizacoes">
+      <main className="atualizacoes">
         <header className="atualizacoes-topo">
-          <h1>Atualizações</h1>
-          {/* O "principalmente" é do desenho, e ele é a tese da página: a
-              segunda metade vale mais que a primeira. */}
-          <p>O que mudou e, principalmente, o que ainda não é confiável.</p>
+          <div className="atualizacoes-introducao">
+            <h1>Atualizações</h1>
+            {/* O "principalmente" é do desenho, e ele é a tese da página: a
+                segunda metade vale mais que a primeira. */}
+            <p>O que mudou e, principalmente, o que ainda não é confiável.</p>
+          </div>
           {/* A ILUSTRAÇÃO — `1016:30623`, "business balance". O nó `895:11060` a põe
               abaixo do subtítulo, antes da primeira data. */}
           <img className="atualizacoes-desenho" src="/icones/ilustracao-atualizacoes.svg" alt="" aria-hidden="true" />
@@ -248,11 +250,10 @@ export function Atualizacoes() {
             ))}
           </ul>
         </section>
-      </div>
-      </div>
       </main>
-
       <Rodape />
+      </div>
+      </GavetaDeSecao>
     </div>
   );
 }

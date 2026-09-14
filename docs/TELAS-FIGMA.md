@@ -1837,8 +1837,8 @@ desenho porque vem do servidor, que é a fonte certa.
 Atualizações traz título, subtítulo, as datas, os itens com o selo vertical
 (Novo / Melhorado / Corrigido) e o bloco "O que ainda não está de pé".
 
-**Falta a ilustração das Atualizações** (`937:20482`, "business balance"), abaixo
-do subtítulo — e ela cai no mesmo caso das duas telas de conta.
+**A ilustração das Atualizações está aplicada** (`937:20482`, “business balance”),
+abaixo do subtítulo, com o quadro de `472 × 467px` do nó desktop.
 
 ### As ilustrações que não saem do Figma como arquivo
 
@@ -1847,7 +1847,7 @@ Três das cinco ilustrações do produto **não podem ser exportadas por aqui**:
 | tela | nó | por quê |
 |---|---|---|
 | Conta — privacidade | `937:20283` "exploring new horizons" | 77 vetores posicionados |
-| Atualizações | `937:20482` "business balance" | dezenas de vetores |
+| Atualizações | `937:20482` "business balance" | exportada e aplicada como SVG |
 | Conta — Kindle | (não conferido) | — |
 
 O `get_design_context` exporta **cada vetor separado**, com a posição em

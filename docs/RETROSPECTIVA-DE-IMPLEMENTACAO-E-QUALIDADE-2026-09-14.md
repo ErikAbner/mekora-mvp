@@ -453,3 +453,76 @@ O padrão correto é continuar uma camada abaixo:
 - o que acontece depois de rolar, sair, voltar ou usar o teclado?
 
 Essa camada adicional é o que transforma uma interface parecida com o Figma em um produto coerente, defensável e apresentável.
+
+---
+
+## 13. Reabertura da auditoria após comparação visual direta
+
+A conferência posterior com o produto aberto revelou quatro falsos positivos da
+rodada anterior. Eles importam porque mostram como uma implementação pode estar
+funcional, testada e ainda assim estruturalmente errada.
+
+### 13.1 Atualizações: uma adaptação inventada substituiu uma medida deliberada
+
+O código reduzia o tracking desktop da data de `23,8px` para `4px`. O comentário
+afirmava que o valor do Figma era um alongamento acidental e que quebraria a
+linha. Essa conclusão não havia sido provada na coluna correta. Ao medir o nó e
+o produto com a mesma largura, ficou claro que:
+
+- o conteúdo interno mede exatamente `888px`;
+- a data usa `20/28`, itálico, caixa alta e tracking de `23,8px` para ocupar a
+  régua horizontal inteira;
+- a ilustração mede `472 × 467px`;
+- a etiqueta vertical mede `67px` de largura física;
+- a página pertence a uma gaveta Vaul sobre o canvas pontilhado, e não a uma
+  folha comum empilhada no fluxo.
+
+O erro foi evitado desta vez medindo o retângulo renderizado depois da mudança,
+não apenas lendo as propriedades. A prova retornou `887,997px` para a coluna,
+`471,989 × 466,989px` para a ilustração e `66,989px` para a etiqueta.
+
+### 13.2 Livro: largura de página não é largura de leitura
+
+O topo da ficha precisa dos `1222px` para acomodar capa, identidade e ações. Isso
+não autoriza texto, destaques e metadados a usar a mesma medida. As seções
+textuais passaram a uma coluna central de `888px`. Com isso:
+
+- os trechos deixam de formar linhas excessivamente longas;
+- filtros e busca pertencem ao mesmo grupo visual;
+- cada nota recebe separação inferior e padding lateral consistente;
+- ações secundárias deixam de competir com o conteúdo;
+- “Escrever sobre o livro” mantém título e ilustração no cabeçalho, enquanto o
+  campo ocupa a largura completa abaixo;
+- “Este arquivo” usa a mesma largura de leitura, sem esticar seus pares de dado.
+
+### 13.3 Leitura: `position: fixed` não bastava porque um painel não usava o portal
+
+A barra principal já era renderizada no `body` e permanecia em `top: 32px` após
+rolar. O caderno de notas, porém, era a exceção: apesar de ter
+`position: fixed`, continuava filho da longa `.leitura-gaveta`. Depois de rolar
+`5998px`, seu retângulo aparecia entre `-5965px` e `-3649px` — tecnicamente
+existente, visualmente fora da janela.
+
+O caderno passou pelo mesmo portal dos demais painéis. A nova prova, feita sem
+voltar ao topo, registrou o painel em `top: 0`, `bottom: 981,8px`, filho direto
+de `BODY`, enquanto a barra continuou em `top: 32px`. A regra para futuras
+mudanças é simples: todo elemento cuja coordenada é relativa à viewport deve
+ser testado depois de uma rolagem longa, com o ancestral real inspecionado.
+
+### 13.4 Estudos: o mesmo componente não deve conservar o mesmo recipiente
+
+O componente de estudo é reutilizado na lista e na página própria. O conteúdo é
+o mesmo, mas o recipiente não: na lista, borda e fundo separam cartões vizinhos;
+na página, essa mesma moldura agrupava título, livros e notas como se fossem um
+único bloco. A página agora usa a largura estrutural de `1222px`, dividida em
+trilha de `200px`, vão de `48px` e conteúdo de `974px`, e remove a moldura do
+cartão no contexto de página. Separadores e vãos passam a indicar as seções
+reais.
+
+### 13.5 Regra de prevenção adicionada
+
+Sempre que uma decisão divergir do Figma, o registro precisa conter três
+evidências: a medida original, a medida renderizada e o caso real que exige a
+divergência. Uma justificativa plausível sem essas três provas não substitui o
+desenho. E sempre que um elemento se declarar flutuante, a prova deve acontecer
+com a página rolada — testá-lo apenas em `scrollY = 0` não testa flutuação.

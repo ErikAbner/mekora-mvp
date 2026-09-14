@@ -455,6 +455,9 @@ blockquote.trecho-citado {
   background: none;
   border-inline-start: 2px solid var(--traco-da-nota, var(--border));
   color: var(--foreground);
+  /* Uma nota pode ser uma URL longa. Sem quebra de emergência, um único
+     endereço alargava toda a página de Estudos no telefone. */
+  overflow-wrap: anywhere;
 }
 
 /* A MARCA DENTRO DO TEXTO rarefaz, e o sublinhado guarda a cor. */

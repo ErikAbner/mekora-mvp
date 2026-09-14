@@ -11,13 +11,11 @@
   margin-inline: auto;
 }
 
-/* RITMO ESTRUTURAL. Com `text-box-trim`, 128px entre todos os blocos virava
- * silêncio demais entre controles relacionados e ainda deixava os interiores
- * sem ar. O espaço agora acompanha a relação: entrada maior, seções em 72 e
- * componentes cuidando do próprio recheio. */
+/* RITMO ESTRUTURAL do nó 895:8849. Os 128px separam regiões independentes da
+ * página; os agrupamentos internos continuam usando seus vãos menores. */
 .estudos {
-  display: flex; flex-direction: column; gap: 72px;
-  padding: 96px 0 80px;
+  display: flex; flex-direction: column; gap: 128px;
+  padding: 128px 0;
 }
 
 /* A FILEIRA DE BAIXO — `895:8945`: a trilha e o conteúdo, com 48 entre eles. */
@@ -27,7 +25,7 @@
 }
 .estudos-de-baixo {
   flex: 1 1 0; min-inline-size: 0;
-  display: flex; flex-direction: column; gap: 80px;
+  display: flex; flex-direction: column; gap: 128px;
 }
 /* A ancora nao pode encostar no topo da janela: sem isto o titulo da secao fica
  * colado na borda e parece cortado. */
@@ -645,6 +643,31 @@
 .estudo-pagina .estudo h2 { font-size: 40px; line-height: 48px; letter-spacing: -0.6px; }
 .estudo-pagina .estudo-livros h3,
 .estudo-pagina .estudo-formou h3 { font-size: 32px; line-height: 40px; color: var(--foreground); margin: 0 0 24px; }
+
+/* Na página, o estudo deixa de ser cartão. A moldura pertence à lista, onde
+ * separa um estudo do vizinho; aplicada ao estudo inteiro ela achatava título,
+ * livros e notas num único grupo cinza. */
+.estudo-pagina .estudo {
+  display: flex; flex-direction: column; gap: 48px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.estudo-pagina .estudo-sobre {
+  max-inline-size: none;
+  margin-block-start: 32px;
+  padding: 24px;
+  background: var(--background-secondary);
+}
+.estudo-pagina .estudo-resumo { margin: 0; }
+.estudo-pagina .estudo-livros,
+.estudo-pagina .estudo-formou {
+  margin-block-start: 0;
+  padding-block-start: 48px;
+  border-block-start: 1px solid var(--separator);
+}
+.estudo-pagina .estudo-notas { margin-block-start: 0; gap: 40px; }
+.estudo-pagina .estudo-notas li { padding-block-end: 40px; }
 
 /* ─── O ARRASTO DO QUADRO ──────────────────────────────────────────────────
  *

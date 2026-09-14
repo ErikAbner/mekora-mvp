@@ -1693,7 +1693,7 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
 
       {erroDeNota && <p className="nota-erro" role="alert">{erroDeNota}</p>}
 
-      {caderno && (
+      {caderno && <Flutuante>{(
         <Caderno
           livro={livro}
           notas={notasComDegrau}
@@ -1715,7 +1715,7 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
           semParadeiro={semParadeiro}
           aoFechar={() => setCaderno(false)}
         />
-      )}
+      )}</Flutuante>}
 
       {/* OS BOTÕES DE VIRAR CAPÍTULO SAÍRAM. O desenho (895:10472) não os tem:
           a leitura é uma rolagem só, do título ao fim. Eles existiam porque o

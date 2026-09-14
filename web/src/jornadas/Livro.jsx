@@ -524,12 +524,21 @@ export function Livro() {
          * gesto CRIA — e criar sem clique nenhum faria uma nota nascer de um
          * clique fora do campo. */}
         <section className="livro-pagina-secao livro-pagina-escrever-secao" id="livro-escrever">
-          <div className="livro-pagina-escrever-conteudo">
-            <h2>Escrever sobre o livro</h2>
-            <p className="livro-pagina-nota">
-              O que ficou do conjunto, e não de uma frase. Fica com o livro, junto
-              das outras notas.
-            </p>
+          <header className="livro-pagina-escrever-cabecalho">
+            <div className="livro-pagina-escrever-conteudo">
+              <h2>Escrever sobre o livro</h2>
+              <p className="livro-pagina-nota">
+                O que ficou do conjunto, e não de uma frase. Fica com o livro, junto
+                das outras notas.
+              </p>
+            </div>
+            <img
+              className="livro-pagina-escrever-ilustracao"
+              src="/icones/ilustracao-escrever-livro.svg"
+              alt=""
+              aria-hidden="true"
+            />
+          </header>
             <textarea
               className="livro-pagina-escrever"
               placeholder="Escreva aqui..."
@@ -565,13 +574,6 @@ export function Livro() {
               </Botao>
               {recado && <p className="livro-pagina-nota" role="status">{recado}</p>}
             </div>
-          </div>
-          <img
-            className="livro-pagina-escrever-ilustracao"
-            src="/icones/ilustracao-escrever-livro.svg"
-            alt=""
-            aria-hidden="true"
-          />
         </section>
 
         <section className="livro-pagina-secao" id="livro-arquivo">
