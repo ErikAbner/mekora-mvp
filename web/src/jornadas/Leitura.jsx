@@ -14,6 +14,7 @@
  * endereços onde a cor é permitida.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { Icone } from "../componentes/Icone.jsx";
 import { Botao } from "../componentes/Botao.jsx";
@@ -24,6 +25,7 @@ import { lerSelecao, notasDoBloco } from "../leitor/selecao.js";
 import { EXPLICACAO, procurarNoLivro, reancorar } from "../leitor/ancora.js";
 import { ondeComeca, tituloDoCapitulo, usarSumario } from "../leitor/sumario.js";
 import { blocosDoCapitulo } from "../leitor/abrir.js";
+import { imagemEFragmento, larguraDaImagem } from "../leitor/imagem.js";
 import "./leitura.css";
 import { medir } from "../medir.js";
 
@@ -37,6 +39,22 @@ const iconeCopiar = "/icones/icone-copiar.svg";
 const iconeMarcador = "/icones/icone-marcador.svg";
 const iconeBuscar = "/icones/icone-buscar.svg";
 const ornamentoAbertura = "/icones/ornamento-abertura.svg";
+
+function Flutuante({ children }) {
+  /* As ferramentas usam coordenadas da viewport. Mantê-las em `body` evita
+   * que a rolagem da longa folha do livro seja descontada dessas coordenadas. */
+  return createPortal(children, document.body);
+}
+
+function alvoDaAncora(secao, ancora) {
+  if (!secao || !ancora) return null;
+  const blocos = [...secao.querySelectorAll("[data-de]")];
+  const inicio = blocos.findIndex((el) => el.dataset.ancora === ancora);
+  if (inicio < 0) return null;
+  /* A âncora pode cair numa tira de imagem descartada. O lugar continua sendo
+   * válido; quem recebe a rolagem é o primeiro bloco visível a partir dali. */
+  return blocos.slice(inicio).find((el) => !el.hidden && el.getClientRects().length) ?? null;
+}
 
 /* As quatro cores de destaque. O nome diz o papel, e o valor é o conjunto claro
  * — o único em que a prosa continua legível por cima. */
@@ -86,30 +104,20 @@ const TAG = { titulo: "h2", subtitulo: "h3", citacao: "blockquote", epigrafe: "b
  * `max-inline-size`, e aí "larga" quer dizer "pode passar da coluna, até onde
  * seus pixels alcançarem".
  */
-const LARGA_MINIMA = 900;
-const LARGA_PROPORCAO = 1.4;
-const CHEIA_MINIMA = 1600;
-const CHEIA_PROPORCAO = 2.2;
-
-export function larguraDaImagem(w, h) {
-  if (!w || !h) return "";
-  const proporcao = w / h;
-  if (w >= CHEIA_MINIMA && proporcao >= CHEIA_PROPORCAO) return "cheia";
-  if (w >= LARGA_MINIMA && proporcao >= LARGA_PROPORCAO) return "larga";
-  return "";
-}
-
-function Ilustracao({ src, alt, de }) {
+function Ilustracao({ src, alt, de, ancora, marcador = false }) {
   /* A classe só entra DEPOIS de a imagem carregar, porque antes disso não há
    * dimensão nenhuma para medir. Começar na coluna e alargar depois é a ordem
    * certa: o contrário faria toda imagem piscar larga antes de encolher. */
   const [largura, setLargura] = useState("");
   const [natural, setNatural] = useState(null);
+  const [fragmento, setFragmento] = useState(false);
 
   return (
     <figure
-      className={`bloco ilustracao${largura ? ` ${largura}` : ""}`}
+      className={`bloco ilustracao${largura ? ` ${largura}` : ""}${marcador ? " com-marcador" : ""}`}
       data-de={de}
+      data-ancora={ancora || undefined}
+      hidden={fragmento}
       /* O teto em pixels da própria imagem. Sem ele, `inline-size: 100%` na
          coluna larga amplia o que não tem pixel para isso. */
       style={natural ? { "--natural": `${natural}px` } : undefined}
@@ -125,6 +133,7 @@ function Ilustracao({ src, alt, de }) {
         alt={alt}
         onLoad={(e) => {
           const { naturalWidth: w, naturalHeight: h } = e.target;
+          setFragmento(imagemEFragmento(w, h));
           setNatural(w || null);
           setLargura(larguraDaImagem(w, h));
         }}
@@ -133,13 +142,13 @@ function Ilustracao({ src, alt, de }) {
   );
 }
 
-function Bloco({ tipo = "paragrafo", texto, destaques = [], marcas = [], de = 0, src, alt = "" }) {
+function Bloco({ tipo = "paragrafo", texto, destaques = [], marcas = [], de = 0, src, alt = "", ancora, marcador = false, aoAbrirDestaque }) {
   /* A imagem é um bloco próprio, com legenda vazia se o EPUB não deu nenhuma.
    * O `alt` vem do arquivo COMO ESTÁ, incluindo vazio: `alt=""` num EPUB quer
    * dizer "decorativa, não anuncie", e inventar uma descrição faria o leitor de
    * tela narrar enfeite. */
   if (tipo === "imagem") {
-    return <Ilustracao src={src} alt={alt} de={de} />;
+    return <Ilustracao src={src} alt={alt} de={de} ancora={ancora} marcador={marcador} />;
   }
 
   const Como = TAG[tipo] ?? "p";
@@ -148,7 +157,7 @@ function Bloco({ tipo = "paragrafo", texto, destaques = [], marcas = [], de = 0,
     ...destaques.map((d) => ({ ...d, classe: "destaque", cor: d.cor })),
   ].sort((a, b) => a.de - b.de);
 
-  if (!todas.length) return <Como className={`bloco ${tipo}`} data-de={de}>{texto}</Como>;
+  if (!todas.length) return <Como className={`bloco ${tipo}${marcador ? " com-marcador" : ""}`} data-de={de} data-ancora={ancora || undefined}>{texto}</Como>;
 
   const partes = [];
   let i = 0;
@@ -157,7 +166,22 @@ function Bloco({ tipo = "paragrafo", texto, destaques = [], marcas = [], de = 0,
     if (m.de > i) partes.push(texto.slice(i, m.de));
     partes.push(
       m.classe === "destaque" ? (
-        <mark key={`${m.de}-d`} data-cor={m.cor}>{texto.slice(m.de, m.ate)}</mark>
+        <mark
+          key={`${m.de}-d`}
+          data-cor={m.cor}
+          data-destaque=""
+          data-nota-id={m.id}
+          role="button"
+          tabIndex={0}
+          aria-label="Destaque: editar ou remover"
+          onClick={(e) => { e.stopPropagation(); aoAbrirDestaque?.(m, e.currentTarget); }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              aoAbrirDestaque?.(m, e.currentTarget);
+            }
+          }}
+        >{texto.slice(m.de, m.ate)}</mark>
       ) : (
         <em key={`${m.de}-${m.classe}`} className={m.classe}>{texto.slice(m.de, m.ate)}</em>
       ),
@@ -165,7 +189,7 @@ function Bloco({ tipo = "paragrafo", texto, destaques = [], marcas = [], de = 0,
     i = m.ate;
   }
   if (i < texto.length) partes.push(texto.slice(i));
-  return <Como className={`bloco ${tipo}`} data-de={de}>{partes}</Como>;
+  return <Como className={`bloco ${tipo}${marcador ? " com-marcador" : ""}`} data-de={de} data-ancora={ancora || undefined}>{partes}</Como>;
 }
 
 function Paragrafo({ texto, destaques = [] }) {
@@ -185,7 +209,7 @@ function Paragrafo({ texto, destaques = [] }) {
   for (const d of [...destaques].sort((a, b) => a.de - b.de)) {
     if (d.de > i) partes.push(texto.slice(i, d.de));
     partes.push(
-      <mark key={d.de} data-cor={d.cor}>
+      <mark key={d.de} data-cor={d.cor} data-destaque="">
         {texto.slice(d.de, d.ate)}
       </mark>,
     );
@@ -215,8 +239,18 @@ function Paragrafo({ texto, destaques = [] }) {
  * não ter índice, e inventar um seria a tela afirmando uma estrutura que
  * ninguém escreveu.
  */
-function Indice({ livro, aqui, aoIr, aoFechar }) {
+function Indice({ livro, aqui, raiz, aoIr, aoFechar }) {
   const { itens, erro } = usarSumario(livro);
+  let ativo = -1;
+  if (itens?.length && aqui) {
+    const secao = raiz?.current?.querySelector(`[data-capitulo="${aqui.capitulo}"]`);
+    itens.forEach((item, n) => {
+      if (item.capitulo !== aqui.capitulo) return;
+      const alvo = alvoDaAncora(secao, item.ancora);
+      const de = alvo ? Number(alvo.dataset.de) || 0 : (item.ancora ? Infinity : 0);
+      if (de <= aqui.deslocamento) ativo = n;
+    });
+  }
 
   return (
     <aside className="indice" aria-label="Índice do livro">
@@ -237,14 +271,14 @@ function Indice({ livro, aqui, aoIr, aoFechar }) {
       {!!itens?.length && (
         <ol className="indice-lista">
           {itens.map((i, n) => {
-            const nele = i.capitulo === aqui;
+            const nele = n === ativo;
             const onde = ondeComeca(livro?.extensao, i.capitulo);
             return (
               <li key={`${i.capitulo}-${n}`} className={nele ? "aqui" : undefined} style={{ "--nivel": i.nivel }}>
                 <button
                   type="button"
                   aria-current={nele ? "true" : undefined}
-                  onClick={() => { aoIr?.(i.capitulo); aoFechar?.(); }}
+                  onClick={() => { aoIr?.(i); aoFechar?.(); }}
                 >
                   <span className="titulo-24 discreto indice-titulo">{i.titulo}</span>
                   {nele ? (
@@ -498,11 +532,17 @@ function Marcadores({ livro, marcadores, aqui, erro, aoDobrar, aoDesdobrar, aoIr
 function CartaoDeNota({ nota, aoSalvar, aoFechar }) {
   const [texto, setTexto] = useState(nota?.comentario ?? "");
   const campo = useRef(null);
+  const dialogo = useRef(null);
 
   /* O foco vai para o campo ao abrir. Quem clicou em "Adicionar nota" quer
    * escrever — pedir um segundo clique para começar é o produto cobrando um
    * gesto que ele já sabe qual é. */
-  useEffect(() => { campo.current?.focus(); }, []);
+  useEffect(() => {
+    if (!nota) return undefined;
+    if (!dialogo.current?.open) dialogo.current?.showModal();
+    const quadro = requestAnimationFrame(() => campo.current?.focus());
+    return () => cancelAnimationFrame(quadro);
+  }, [nota?.id]);
 
   if (!nota) return null;
 
@@ -511,10 +551,19 @@ function CartaoDeNota({ nota, aoSalvar, aoFechar }) {
     : "";
 
   return (
-    <div className="cartao-nota-fundo" onPointerDown={(e) => { if (e.target === e.currentTarget) aoFechar?.(); }}>
-      <section className="cartao-nota" role="dialog" aria-label="Nota">
+    <dialog
+      ref={dialogo}
+      className="cartao-nota-fundo"
+      aria-labelledby="cartao-nota-titulo"
+      onCancel={(e) => { e.preventDefault(); aoFechar?.(); }}
+      onPointerDown={(e) => { if (e.target === e.currentTarget) aoFechar?.(); }}
+    >
+      <form
+        className="cartao-nota"
+        onSubmit={(e) => { e.preventDefault(); aoSalvar?.(texto); }}
+      >
         <header>
-          <h2>Nota</h2>
+          <h2 id="cartao-nota-titulo">Nota</h2>
           {hora && <span className="cartao-nota-hora">{hora}</span>}
           <button type="button" className="cartao-nota-x" aria-label="Fechar" onClick={aoFechar}>
             <span aria-hidden="true">×</span>
@@ -527,25 +576,31 @@ function CartaoDeNota({ nota, aoSalvar, aoFechar }) {
           {`\u201c${nota.trecho}\u201d`}
         </blockquote>
 
-        <textarea
-          ref={campo}
-          value={texto}
-          placeholder="Escreva aqui..."
-          aria-label="O que você quer dizer sobre este trecho"
-          onChange={(e) => setTexto(e.target.value)}
-          /* `Esc` fecha sem salvar, e `Ctrl/Cmd+Enter` salva. São os dois atalhos
-             que um campo de texto dentro de um diálogo deve ter. */
-          onKeyDown={(e) => {
-            if (e.key === "Escape") aoFechar?.();
-            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) aoSalvar?.(texto);
-          }}
-        />
+        <div className="cartao-nota-campo">
+          <label htmlFor="comentario-da-nota">Sua nota</label>
+          <textarea
+            id="comentario-da-nota"
+            ref={campo}
+            autoFocus
+            value={texto}
+            placeholder="Escreva o que você quer lembrar…"
+            aria-describedby="atalho-da-nota"
+            onChange={(e) => setTexto(e.target.value)}
+            /* `Esc` fecha sem salvar, e `Ctrl/Cmd+Enter` salva. São os dois atalhos
+               que um campo de texto dentro de um diálogo deve ter. */
+            onKeyDown={(e) => {
+              if (e.key === "Escape") aoFechar?.();
+              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) aoSalvar?.(texto);
+            }}
+          />
+          <p id="atalho-da-nota">Ctrl/⌘ + Enter para salvar</p>
+        </div>
 
         <footer>
-          <Botao tom="primaria" onClick={() => aoSalvar?.(texto)}>Salvar</Botao>
+          <Botao tom="primaria" tipo="submit">Salvar nota</Botao>
         </footer>
-      </section>
-    </div>
+      </form>
+    </dialog>
   );
 }
 
@@ -800,6 +855,15 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
    * pessoa poder escrever ao lado do que acabou de marcar. */
   const marcar = async (cor, { escrever = false } = {}) => {
     if (!paleta) return;
+    if (paleta.existenteId) {
+      if (cor && cor !== paleta.cor) await aoTrocarCor?.(paleta.existenteId, cor);
+      if (escrever) {
+        const existente = notas.find((n) => n.id === paleta.existenteId);
+        if (existente) setCartao(existente);
+      }
+      setPaleta(null);
+      return;
+    }
     const nova = await aoAnotar?.({
       de: paleta.de, ate: paleta.ate, cor, trecho: paleta.trecho,
       antes: paleta.antes, depois: paleta.depois,
@@ -818,6 +882,18 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
   const [caderno, setCaderno] = useState(false);
   const prosa = useRef(null);
   const restaurado = useRef(null);
+
+  const abrirDestaque = useCallback((recorte, elemento) => {
+    const nota = notas.find((n) => n.id === recorte.id);
+    if (!nota || !elemento) return;
+    const caixa = elemento.getBoundingClientRect();
+    setPaleta({
+      ...nota,
+      existenteId: nota.id,
+      onde: { x: caixa.left + caixa.width / 2, y: caixa.top, yBaixo: caixa.bottom },
+    });
+    window.getSelection?.()?.removeAllRanges();
+  }, [notas]);
 
   /* A JANELA, ou o livro sozinho. O texto de exemplo e a prova não passam
    * janela nenhuma, e continuar funcionando com um capítulo só é o que mantém
@@ -877,36 +953,81 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
   /* A PALETA APARECE AO SOLTAR O DEDO, e não a cada movimento da seleção.
    * Durante o arrasto a seleção muda continuamente, e uma paleta que segue o
    * cursor atrapalha justamente o gesto de escolher o trecho. */
+  const capturarSelecao = useCallback(() => {
+    if (!aoAnotar) return;
+    requestAnimationFrame(() => {
+      const sel = lerSelecao(prosa.current);
+      if (sel) setPaleta(sel);
+    });
+  }, [aoAnotar]);
+
   useEffect(() => {
     if (!aoAnotar) return;
-    const aoSoltar = () => {
-      const sel = lerSelecao(prosa.current);
-      setPaleta(sel);
-    };
-    document.addEventListener("mouseup", aoSoltar);
-    document.addEventListener("touchend", aoSoltar);
+    document.addEventListener("pointerup", capturarSelecao);
+    document.addEventListener("keyup", capturarSelecao);
     /* Rolar fecha a paleta: ela é posicionada em coordenadas de tela, e sem
      * isto ficaria pairando longe do texto que marcou. */
     const fechar = () => setPaleta(null);
     window.addEventListener("scroll", fechar, { passive: true });
     return () => {
-      document.removeEventListener("mouseup", aoSoltar);
-      document.removeEventListener("touchend", aoSoltar);
+      document.removeEventListener("pointerup", capturarSelecao);
+      document.removeEventListener("keyup", capturarSelecao);
       window.removeEventListener("scroll", fechar);
     };
-  }, [aoAnotar]);
+  }, [aoAnotar, capturarSelecao]);
+
+  useEffect(() => {
+    if (!paleta) return undefined;
+    const fecharComTeclado = (e) => {
+      if (e.key === "Escape") {
+        setPaleta(null);
+        window.getSelection?.()?.removeAllRanges();
+      }
+    };
+    document.addEventListener("keydown", fecharComTeclado);
+    return () => document.removeEventListener("keydown", fecharComTeclado);
+  }, [paleta]);
 
   /* RESTAURAR uma vez por capítulo, e não a cada render. Sem a trava, qualquer
    * re-render depois de a pessoa ter rolado a puxaria de volta para a marca —
    * a tela brigando com quem lê. */
   useEffect(() => {
     const chave = `${livro?.capitulo ?? 0}`;
-    if (restaurado.current === chave || !blocos.length) return;
-    restaurado.current = chave;
-    if (progresso?.capitulo === livro?.capitulo && progresso?.deslocamento) {
-      irPara(prosa.current, progresso.deslocamento);
+    /* Durante a abertura, o App mostra o texto de exemplo enquanto o EPUB é
+     * carregado. Ele ocupa o mesmo componente, mas não traz `progresso`. Marcar
+     * o capítulo como restaurado nessa passagem fazia o livro real herdar a
+     * trava e ignorar a posição salva. */
+    if (!progresso || restaurado.current === chave || !blocos.length) return;
+    if (Number(progresso?.capitulo) === Number(livro?.capitulo ?? 0) && progresso?.deslocamento) {
+      /* A leitura abre dentro de uma gaveta Vaul. Durante a animação de entrada,
+       * a biblioteca termina de posicionar e focar a folha; uma rolagem feita
+       * no primeiro efeito era aceita pelo navegador e logo devolvida ao topo.
+       * Fazemos a restauração já no primeiro quadro útil e a confirmamos quando
+       * a entrada termina. A segunda chamada é idempotente e acontece só ao
+       * abrir o capítulo, portanto não disputa a rolagem normal da leitura. */
+      const restaurar = () => {
+        const secao = prosa.current?.querySelector(
+          `[data-capitulo="${Number(progresso.capitulo) || 0}"]`,
+        );
+        return irPara(secao ?? prosa.current, progresso.deslocamento);
+      };
+      let quadro2 = null;
+      const quadro1 = requestAnimationFrame(() => {
+        quadro2 = requestAnimationFrame(restaurar);
+      });
+      const confirmar = window.setTimeout(() => {
+        restaurar();
+        restaurado.current = chave;
+      }, 420);
+      return () => {
+        cancelAnimationFrame(quadro1);
+        if (quadro2 !== null) cancelAnimationFrame(quadro2);
+        clearTimeout(confirmar);
+      };
     }
-  }, [blocos, livro?.capitulo, progresso]);
+    restaurado.current = chave;
+    return undefined;
+  }, [blocos.length, livro?.capitulo, progresso?.capitulo, progresso?.deslocamento]);
 
   /* A SENTINELA PEDE O PRÓXIMO CAPÍTULO quando entra em cena.
    *
@@ -985,6 +1106,7 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
        onde os cinco passam. Contar em cinco lugares é como o quinto fica de
        fora sem ninguém notar. */
     contarCromo(qual);
+    if (qual === "indice") setAqui(indice ? null : ondeEstouNoLivro(prosa.current));
     setIndice(qual === "indice" ? (v) => !v : false);
     setCaderno(qual === "caderno" ? (v) => !v : false);
     setPainel(qual === "painel" ? (v) => !v : false);
@@ -997,6 +1119,32 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
    * vezes por segundo re-renderizaria a leitura inteira para responder uma
    * pergunta que só interessa com a gaveta aberta. */
   const [aqui, setAqui] = useState(null);
+
+  /* Enquanto uma gaveta que depende da posição está aberta, acompanha a
+   * leitura. Fora dela, não há motivo para re-renderizar o livro durante cada
+   * rolagem. */
+  useEffect(() => {
+    if (!indice && !dobras) return undefined;
+    let quadro = null;
+    const atualizar = () => {
+      if (quadro !== null) return;
+      quadro = requestAnimationFrame(() => {
+        quadro = null;
+        const proxima = ondeEstouNoLivro(prosa.current);
+        setAqui((anterior) =>
+          anterior?.capitulo === proxima.capitulo &&
+          anterior?.deslocamento === proxima.deslocamento &&
+          anterior?.ancora === proxima.ancora ? anterior : proxima,
+        );
+      });
+    };
+    atualizar();
+    window.addEventListener("scroll", atualizar, { passive: true });
+    return () => {
+      if (quadro !== null) cancelAnimationFrame(quadro);
+      window.removeEventListener("scroll", atualizar);
+    };
+  }, [indice, dobras]);
 
   const abrirDobras = () => {
     /* Sem `contarCromo` aqui: o `abrirSo("dobras")` abaixo já conta, e contar
@@ -1038,6 +1186,20 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
     setDobras(false);
   };
 
+  const irAoItemDoIndice = (item) => {
+    const secao = prosa.current?.querySelector(`[data-capitulo="${item.capitulo}"]`);
+    if (secao) {
+      const alvo = alvoDaAncora(secao, item.ancora);
+      if (alvo) alvo.scrollIntoView({ behavior: "instant", block: "start" });
+      else irParaOComeco(secao);
+      setIndice(false);
+      return;
+    }
+    setDestino({ capitulo: item.capitulo, deslocamento: 0, ancora: item.ancora ?? null });
+    aoIrParaCapitulo?.(item.capitulo);
+    setIndice(false);
+  };
+
   /* A VIAGEM PENDENTE, quando os blocos chegam.
    *
    * A condição olha `capitulos[0].indice`, e não `livro.capitulo`: quem replanta
@@ -1052,7 +1214,9 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
     if (!destino || !blocos.length) return;
     if (capitulos[0]?.indice !== destino.capitulo) return;
     const secao = prosa.current?.querySelector(`[data-capitulo="${destino.capitulo}"]`) ?? prosa.current;
-    irPara(secao, destino.deslocamento);
+    const alvo = alvoDaAncora(secao, destino.ancora);
+    if (alvo) alvo.scrollIntoView({ behavior: "instant", block: "start" });
+    else irPara(secao, destino.deslocamento) || irParaOComeco(secao);
     setDestino(null);
   }, [destino, blocos, capitulos]);
   useEffect(() => { aplicarAparencia(aparencia); gravarAparencia(aparencia); }, [aparencia]);
@@ -1132,7 +1296,7 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
     <div className="leitura">
       {/* O cromo recolhe. Numa tela de leitura, a interface que fica é a que
           disputa atenção com o texto — e aqui o texto é o produto. */}
-      <div className={`cromo${cromoVisivel ? "" : " recolhido"}`}>
+      <Flutuante><div className={`cromo${cromoVisivel ? "" : " recolhido"}`}>
         <nav className="cromo-caixa" aria-label="Leitura">
           {/* SAIR DA LEITURA É PARTE DA LEITURA. Usar o histórico do navegador
               deixava esta tela sem saída quando ela era aberta em nova aba,
@@ -1237,12 +1401,14 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
               conta no meio da leitura só serve para tirar a pessoa do livro, e
               ela existe no cabeçalho de todas as outras telas. */}
         </nav>
-      </div>
+      </div></Flutuante>
 
       <header className="abertura">
         <h1>{livro.titulo}</h1>
         <p className="autoria">Escrito por {livro.autor}</p>
-        <img src={ornamentoAbertura} alt="" className="ornamento" aria-hidden="true" />
+        {/enviesados/i.test(livro.titulo ?? "") && (
+          <img src={ornamentoAbertura} alt="" className="ornamento" aria-hidden="true" />
+        )}
       </header>
 
       {/* A medida vem do sistema: 680px é a coluna do desenho, e a 20px dá
@@ -1268,10 +1434,15 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
         className="prosa"
         data-clarity-mask="true"
         ref={prosa}
+        data-vaul-no-drag
+        onPointerUp={capturarSelecao}
         data-capitulos={livro.capitulos ?? 1}
         data-carregados={capitulos.length}
         data-tem-mais={temMais ? "sim" : "nao"}
         data-ultimo={capitulos[capitulos.length - 1]?.indice ?? -1}
+        data-progresso-capitulo={progresso?.capitulo ?? ""}
+        data-progresso-deslocamento={progresso?.deslocamento ?? ""}
+        data-livro-capitulo={livro?.capitulo ?? ""}
       >
         {/* A SENTINELA DE CIMA. Quem abre no capítulo 8 precisa poder subir, e
             sem ela os sete anteriores ficariam inalcançáveis — a rolagem
@@ -1280,10 +1451,16 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
         {temAntes && <div ref={sentinelaAcima} className="sentinela" aria-hidden="true" />}
         {janelaResolvida.map(({ indice, blocos: b, notas: daqui_ }) => (
           <section key={indice} className="capitulo" data-capitulo={indice}>
-            {b.map((bloco, i) => (
-              <Bloco
+            {b.map((bloco, i) => {
+              const proximo = b[i + 1]?.de ?? Infinity;
+              const temMarcador = marcadores.some(
+                (m) => m.capitulo === indice && m.deslocamento >= bloco.de && m.deslocamento < proximo,
+              );
+              return <Bloco
                 key={i}
                 {...bloco}
+                marcador={temMarcador}
+                aoAbrirDestaque={abrirDestaque}
                 /* A NOTA PERDIDA NÃO PINTA NADA. Ela não tem onde: o trecho não
                    existe mais neste texto, e pintar no deslocamento guardado é
                    exatamente o defeito que a escada existe para acabar —
@@ -1294,8 +1471,8 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
                   bloco.de,
                   (bloco.texto ?? "").length,
                 )}
-              />
-            ))}
+              />;
+            })}
           </section>
         ))}
         {/* A SENTINELA. Quando ela entra em cena, o capítulo seguinte é pedido —
@@ -1315,7 +1492,7 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
           única coisa que importa ali. */}
       {/* A PALETA, junto do que foi marcado. Em canto fixo obrigaria a olhar
           para longe do texto e voltar — e num leitor o olho está no texto. */}
-      {paleta && (
+      {paleta && <Flutuante>{(
         /* PARA BAIXO QUANDO NÃO CABE PARA CIMA. O painel tem duas fileiras e
            fica em torno de 236px de altura; abaixo de 280 do topo da janela ele
            sairia pela borda. Aí ele abre sob o trecho, ancorado no fim da
@@ -1334,9 +1511,10 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
               <button
                 key={cor}
                 type="button"
-                className="paleta-cor"
+                className={`paleta-cor${paleta.existenteId && paleta.cor === cor ? " escolhida" : ""}`}
                 style={{ background: DESTAQUES[cor] }}
-                aria-label={`Marcar de ${cor}`}
+                aria-label={`${paleta.existenteId ? "Trocar destaque para" : "Marcar de"} ${cor}`}
+                aria-pressed={paleta.existenteId ? paleta.cor === cor : undefined}
                 onClick={() => marcar(cor)}
               />
             ))}
@@ -1345,16 +1523,15 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
           {/* AS TRÊS AÇÕES do nó 941:23120. Marcar de uma cor é só metade do
               que se faz com um trecho selecionado — o desenho tem também
               "Adicionar nota", "Copiar" e "Cancelar", e nenhuma existia. */}
-          <div className="paleta-acoes">
-            <div className="paleta-acoes-fazer">
+          <div className={`paleta-acoes${paleta.existenteId ? " existente" : ""}`}>
               {/* "Adicionar nota" MARCA E ABRE O CADERNO no mesmo gesto: nota é
                   destaque com comentário, e sem o caderno aberto não há onde
                   escrever o comentário. A cor é a primeira da paleta — a pessoa
                   troca depois, e obrigá-la a escolher a cor antes de escrever
                   poria uma decisão de forma na frente de uma de conteúdo. */}
-              <button type="button" className="paleta-botao" onClick={() => marcar("amarelo", { escrever: true })}>
+              <button type="button" className="paleta-botao" onClick={() => marcar(paleta.cor ?? "amarelo", { escrever: true })}>
                 <Icone src={iconeNotaNova} />
-                Adicionar nota
+                {paleta.existenteId ? "Editar nota" : "Adicionar nota"}
               </button>
               <button
                 type="button"
@@ -1375,7 +1552,19 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
                 <Icone src={iconeCopiar} />
                 Copiar
               </button>
-            </div>
+            {paleta.existenteId && (
+              <button
+                type="button"
+                className="paleta-botao paleta-remover"
+                onClick={async () => {
+                  await aoApagarNota?.(paleta.existenteId);
+                  setPaleta(null);
+                }}
+              >
+                Remover destaque
+              </button>
+            )}
+            {!paleta.existenteId && (
             <button
               type="button"
               className="paleta-botao paleta-cancelar"
@@ -1383,11 +1572,12 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
             >
               Cancelar
             </button>
+            )}
           </div>
 
           {copiado && <p className="paleta-recado" role="status">{copiado}</p>}
         </div>
-      )}
+      )}</Flutuante>}
 
       {cartao && (
         <CartaoDeNota
@@ -1400,15 +1590,15 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
         />
       )}
 
-      {procurando && (
+      {procurando && <Flutuante>{(
         <BuscaNoLivro
           livro={livro}
           aoIr={aoIrParaCapitulo}
           aoFechar={() => setProcurando(false)}
         />
-      )}
+      )}</Flutuante>}
 
-      {dobras && (
+      {dobras && <Flutuante>{(
         <Marcadores
           livro={livro}
           marcadores={marcadores}
@@ -1419,18 +1609,19 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
           aoIr={irAoMarcador}
           aoFechar={() => setDobras(false)}
         />
-      )}
+      )}</Flutuante>}
 
-      {indice && (
+      {indice && <Flutuante>{(
         <Indice
           livro={livro}
-          aqui={capitulos[0]?.indice ?? livro.capitulo ?? 0}
-          aoIr={aoIrParaCapitulo}
+          aqui={aqui}
+          raiz={prosa}
+          aoIr={irAoItemDoIndice}
           aoFechar={() => setIndice(false)}
         />
-      )}
+      )}</Flutuante>}
 
-      {painel && (
+      {painel && <Flutuante>{(
         <aside className="aparencia" aria-label="Aparência da leitura">
           <header>
             <h2>Aparência</h2>
@@ -1498,11 +1689,11 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
             medida cheia no monitor.
           </p>
         </aside>
-      )}
+      )}</Flutuante>}
 
       {erroDeNota && <p className="nota-erro" role="alert">{erroDeNota}</p>}
 
-      {caderno && (
+      {caderno && <Flutuante>{(
         <Caderno
           livro={livro}
           notas={notasComDegrau}
@@ -1524,7 +1715,7 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
           semParadeiro={semParadeiro}
           aoFechar={() => setCaderno(false)}
         />
-      )}
+      )}</Flutuante>}
 
       {/* OS BOTÕES DE VIRAR CAPÍTULO SAÍRAM. O desenho (895:10472) não os tem:
           a leitura é uma rolagem só, do título ao fim. Eles existiam porque o

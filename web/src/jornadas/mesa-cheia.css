@@ -143,7 +143,6 @@
    é (0,2,1) e a classe sozinha seria (0,2,0) — a genérica ganharia e a borda
    voltaria a ser neutra. Mesmo defeito de especificidade que o
    `.estudos-metade-marca` tinha. */
-.preparo .recortes button.recorte-precisa { border-color: var(--foreground); }
 .preparo .recortes button.recorte-fila    { border-color: var(--warning); }
 .preparo .recortes button.recorte-pronto  { border-color: var(--success); }
 .preparo .recortes button.recorte-erro    { border-color: var(--destructive); }
@@ -292,16 +291,29 @@
    a faixa desalinhava da seção "Em preparo", que mede 876 sem recheio. Duas
    seções da mesma página com bordas diferentes é o R-20 visto no computador. */
 .faixa {
+  position: relative;
   inline-size: 100%;
   max-inline-size: none;
   margin: 0;
-  padding: 0 0 64px max(64px, calc((100vw - 888px) / 2));
+  padding: 64px 0;
   overflow: hidden;
+}
+/* Cada faixa começa depois de um filete de 876px, exatamente como os heroes
+   `895:9688` e `895:9708`. O filete não atravessa a janela: ele pertence à
+   coluna de conteúdo, e os 64px dos dois lados fazem a troca de assunto ser
+   percebida sem virar um vazio sem forma. */
+.faixa::before {
+  content: "";
+  display: block;
+  inline-size: min(876px, calc(100vw - 128px));
+  block-size: 1px;
+  margin: 0 0 64px max(64px, calc((100vw - 876px) / 2));
+  background: var(--separator);
 }
 .faixa-topo {
   inline-size: min(888px, calc(100vw - 128px));
   display: flex; align-items: baseline; justify-content: space-between; gap: 24px;
-  margin-block-end: 40px;
+  margin: 0 0 40px max(64px, calc((100vw - 888px) / 2));
 }
 .faixa-topo h2 {
   margin: 0;
@@ -312,20 +324,22 @@
 /* A fileira ROLA, e nao encolhe as capas: o desenho mostra seis capas em largura
  * de livro, e cabendo tudo na tela cada uma viraria uma miniatura ilegivel. */
 .faixa-capas {
-  margin: 0; padding: 0 64px 16px 0; list-style: none;
+  margin: 0;
+  padding: 0 64px 16px max(64px, calc((100vw - 888px) / 2));
+  list-style: none;
   display: flex; gap: 48px; overflow-x: auto;
   cursor: grab;
   touch-action: pan-y;
-  scroll-behavior: smooth;
   scrollbar-width: none;
   overscroll-behavior-inline: contain;
   user-select: none;
 }
 .faixa-capas::-webkit-scrollbar { display: none; }
-.faixa-capas:active { cursor: grabbing; scroll-behavior: auto; }
+.faixa-capas[data-arrastando="true"] { cursor: grabbing; }
 .faixa-capas:focus-visible { outline: 1px solid var(--foreground); outline-offset: 8px; }
 .faixa-capas li { flex: 0 0 auto; inline-size: 264px; }
 .faixa-capas a { display: block; color: inherit; text-decoration: none; }
+.faixa-capas :where(a, img) { -webkit-user-drag: none; }
 .faixa-capas img,
 .faixa-sem-capa {
   display: flex; align-items: center; justify-content: center;
@@ -344,10 +358,14 @@
   .continue { flex-direction: column; align-items: stretch; gap: 32px; padding: 40px 16px; }
   .continue-capa { inline-size: 100%; }
   .continue-texto h2 { font-size: 24px; line-height: 32px; }
-  .faixa { padding: 0 0 40px 16px; }
-  .faixa-topo { inline-size: calc(100vw - 32px); padding-inline-end: 16px; }
+  .faixa { padding: 40px 0; }
+  .faixa::before {
+    inline-size: calc(100vw - 32px);
+    margin: 0 0 40px 16px;
+  }
+  .faixa-topo { inline-size: calc(100vw - 32px); margin-inline-start: 16px; padding-inline-end: 16px; }
   .faixa-topo h2 { font-size: 28px; line-height: 36px; }
-  .faixa-capas { gap: 24px; }
+  .faixa-capas { gap: 24px; padding-inline-start: 16px; }
   .faixa-capas li { inline-size: 156px; }
 }
 
@@ -357,6 +375,11 @@
   .arquivo-topo, .arquivo-rodape { align-items: stretch; flex-direction: column; gap: 12px; }
   .arquivo-estado { align-self: flex-start; }
   .arquivo-rodape .arquivo-preparo { align-self: flex-start; }
+  .arquivo-preparo a {
+    min-block-size: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
 }
 
 /* ─── "Precisa de voce" — no 895:9348 ───────────────────────────────────────
@@ -375,38 +398,54 @@
 .precisa-de-voce { display: flex; justify-content: center; padding: 0 64px 64px; }
 .precisa-de-voce-caixa {
   inline-size: 100%; max-inline-size: 888px;
+  padding: 0;
+}
+.precisa-de-voce-cabecalho {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 64px;
+  margin-block-end: 64px;
   padding: 40px;
   background: var(--background-secondary);
 }
-.precisa-de-voce-caixa h2 {
-  margin: 0 0 8px;
+.precisa-de-voce-cabecalho h2 {
+  margin: 0;
   font-size: 40px; line-height: 48px; font-weight: 540;   /* Heading/LG */
   letter-spacing: -0.015em;
   color: var(--foreground);
-  text-wrap: pretty;
+  text-align: center; text-wrap: pretty;
 }
-.precisa-de-voce-diz { margin: 0 0 32px; font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
-.precisa-de-voce-lista { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 24px; }
+.precisa-de-voce-ilustracao {
+  display: block; inline-size: 272px; block-size: 224px;
+  margin: 0; object-fit: contain;
+}
+.precisa-de-voce-lista { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 40px; }
 .precisa-de-voce-lista > li {
-  padding: 24px;
-  background: var(--background);
-  border: 1px solid var(--border);
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px;
+  align-items: center; padding: 0;
 }
+.precisa-de-voce-texto { display: flex; flex-direction: column; align-items: stretch; gap: 24px; }
 .precisa-de-voce-lista h3 {
-  margin: 0 0 8px;
-  font-size: 20px; line-height: 30px; font-weight: 540;
+  margin: 0;
+  font-size: 28px; line-height: 36px; font-weight: 540;
   color: var(--foreground);
   overflow-wrap: anywhere;
 }
-.precisa-de-voce-motivo { margin: 0 0 16px; font-size: 16px; line-height: 24px; color: var(--muted-foreground); text-wrap: pretty; }
+.precisa-de-voce-motivo { margin: 0; font-size: 20px; line-height: 30px; color: var(--muted-foreground); text-wrap: pretty; }
 .precisa-de-voce-motivo strong { color: var(--foreground); font-weight: 540; }
 .precisa-de-voce-forma { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
 .precisa-de-voce-forma .campo { flex: 1 1 260px; }
+.precisa-de-voce-capa { inline-size: 100%; aspect-ratio: 420 / 594; }
 
 @media (max-width: 1023px) {
   .precisa-de-voce { padding: 0 24px 40px; }
-  .precisa-de-voce-caixa { padding: 24px 16px; }
-  .precisa-de-voce-caixa h2 { font-size: 28px; line-height: 36px; }
+  .precisa-de-voce-caixa { padding: 0; }
+  .precisa-de-voce-cabecalho { gap: 40px; margin-block-end: 40px; padding: 32px 24px; }
+  .precisa-de-voce-cabecalho h2 { font-size: 28px; line-height: 36px; }
+  .precisa-de-voce-ilustracao { inline-size: 220px; }
+  .precisa-de-voce-lista > li { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .precisa-de-voce-capa { max-inline-size: 320px; }
   .precisa-de-voce-forma { align-items: stretch; }
   .precisa-de-voce-forma .botao { inline-size: 100%; justify-content: center; }
 }

@@ -11,13 +11,11 @@
   margin-inline: auto;
 }
 
-/* RITMO ESTRUTURAL. Com `text-box-trim`, 128px entre todos os blocos virava
- * silêncio demais entre controles relacionados e ainda deixava os interiores
- * sem ar. O espaço agora acompanha a relação: entrada maior, seções em 72 e
- * componentes cuidando do próprio recheio. */
+/* RITMO ESTRUTURAL do nó 895:8849. Os 128px separam regiões independentes da
+ * página; os agrupamentos internos continuam usando seus vãos menores. */
 .estudos {
-  display: flex; flex-direction: column; gap: 72px;
-  padding: 96px 0 80px;
+  display: flex; flex-direction: column; gap: 128px;
+  padding: 128px 0;
 }
 
 /* A FILEIRA DE BAIXO — `895:8945`: a trilha e o conteúdo, com 48 entre eles. */
@@ -27,7 +25,7 @@
 }
 .estudos-de-baixo {
   flex: 1 1 0; min-inline-size: 0;
-  display: flex; flex-direction: column; gap: 80px;
+  display: flex; flex-direction: column; gap: 128px;
 }
 /* A ancora nao pode encostar no topo da janela: sem isto o titulo da secao fica
  * colado na borda e parece cortado. */
@@ -339,6 +337,12 @@
 @media (max-width: 767px) {
   .estudos-recortes { align-self: stretch; }
   .estudos-recortes button { flex: 1 1 auto; padding: 12px 16px; }
+  .estudo-nota-acoes a,
+  .estudo-nota-acoes button {
+    min-block-size: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
 
   /* `966:30771` baixa o título para heading-md e tira a entreletra. O respiro
      vertical, esse não muda — ver a regra de 1023. */
@@ -575,6 +579,10 @@
   .estudos-fios > li { padding: 24px 0; }
   .estudos-fio-conta { font-size: 18px; line-height: 26px; }
   .estudos-fio-notas { grid-template-columns: 1fr; }
+  /* Em 320px, “Criar estudo com estas notas” ultrapassava a coluna por 5px.
+     O rótulo continua em uma linha; só o recheio lateral cai de 32 para 20,
+     ainda acima do espaçamento interno mínimo do sistema. */
+  .estudos-fio-acoes .botao { padding-inline: 20px; }
 }
 
 .estudos-fio-acoes { display: flex; flex-wrap: wrap; gap: 12px; }
@@ -605,8 +613,10 @@
 
 .estudos-notas-cruas {
   margin: 0; padding: 0; list-style: none;
-  display: flex; flex-direction: column; gap: 24px;
+  display: flex; flex-direction: column; gap: 40px;
 }
+.estudos-todas > .estudos-sobre:last-child,
+.estudos-soltas > .estudos-sobre:last-child { margin-block-start: 16px; }
 .estudos-notas-cruas blockquote {
   margin: 0; padding: 24px;
   color: var(--card-foreground);
@@ -617,6 +627,10 @@
   color: var(--foreground);
   font-size: 16px; line-height: 24px;
 }
+.estudos-notas-cruas .estudo-nota-acoes,
+.estudos-soltas .estudo-nota-acoes {
+  margin-block-start: 12px;
+}
 
 /* A pergunta é o título do grupo, e não o nome do estudo: é ela que a pessoa
  * escreveu para se lembrar do que estava atrás. */
@@ -626,13 +640,6 @@
   font-size: 24px; line-height: 36px; font-weight: 540;   /* Heading/SM */
   color: var(--card-foreground);
 }
-
-/* O "Reler" do `895:8849` virou um dos botões de `.estudos-mover`: ele é o
- * nome que o desenho dá ao movimento de "Lido" para "A ler", e agora convive
- * com os outros dois destinos em vez de ser o único. As regras próprias dele
- * saíram — `scripts/seletores.mjs` recusa regra que não casa em rota nenhuma. */
-
-
 
 /* ── A PÁGINA DE UM ESTUDO — nó `895:8260` ──────────────────────────────────
  *
@@ -649,10 +656,36 @@
 .estudo-pagina .estudo-livros h3,
 .estudo-pagina .estudo-formou h3 { font-size: 32px; line-height: 40px; color: var(--foreground); margin: 0 0 24px; }
 
+/* Na página, o estudo deixa de ser cartão. A moldura pertence à lista, onde
+ * separa um estudo do vizinho; aplicada ao estudo inteiro ela achatava título,
+ * livros e notas num único grupo cinza. */
+.estudo-pagina .estudo {
+  display: flex; flex-direction: column; gap: 48px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.estudo-pagina .estudo-sobre {
+  max-inline-size: none;
+  margin-block-start: 32px;
+  padding: 24px;
+  background: var(--background-secondary);
+}
+.estudo-pagina .estudo-resumo { margin: 0; }
+.estudo-pagina .estudo-livros,
+.estudo-pagina .estudo-formou {
+  margin-block-start: 0;
+  padding-block-start: 48px;
+  border-block-start: 1px solid var(--separator);
+}
+.estudo-pagina .estudo-notas { margin-block-start: 0; gap: 40px; }
+.estudo-pagina .estudo-notas li { padding-block-end: 40px; }
+
 /* ─── O ARRASTO DO QUADRO ──────────────────────────────────────────────────
  *
  * Decisão do Erik em 07/09: arrastar entre A ler, Lendo e Li, "com feedback
- * visual claro durante o arrasto", e sem depender só do arrasto.
+ * visual claro durante o arrasto". As ações redundantes deixaram de ocupar o
+ * cartão; a alternativa acessível agora são as setas quando o cartão tem foco.
  *
  * O QUE O FEEDBACK PRECISA DIZER são três coisas, e cada uma tem a sua marca:
  * o que está sendo arrastado (o cartão clareia), onde ele vai cair (a coluna
@@ -660,6 +693,10 @@
  * origem não acende — soltar de volta não é movimento.
  */
 .estudos-coluna li { touch-action: pan-y; }
+.estudos-coluna li:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 4px;
+}
 .estudos-quadro[data-arrastando] { cursor: grabbing; }
 /* Enquanto se arrasta, o texto não se seleciona: um arrasto que pinta metade
    dos títulos de azul parece defeito, e é o que acontece sem isto. */
@@ -696,17 +733,6 @@
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-/* O CAMINHO CLICÁVEL. Ele não aparece por hover: hover não existe em toque, e
-   um caminho alternativo que só existe com mouse não é alternativa. Fica
-   sempre visível, em corpo pequeno, abaixo do cartão. */
-.estudos-mover {
-  display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px;
-  margin-block-start: 8px;
-}
-.estudos-mover-rotulo {
-  font-size: 14px; line-height: 22px;
-  color: var(--muted-foreground);
-}
 .estudos-mover-botao {
   border: 1px solid var(--border);
   background: var(--card);

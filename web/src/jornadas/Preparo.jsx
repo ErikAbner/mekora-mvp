@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { AvisoPreferencias } from "../componentes/AvisoPreferencias.jsx";
@@ -13,6 +13,7 @@ import { nomeDoIdioma } from "../../../contrato/idiomas.js";
 import { comoSeDiz } from "../../../contrato/duracao.js";
 import { Folha } from "../componentes/Folha.jsx";
 import { tamanhoLegivel } from "../../../contrato/tamanho.js";
+import { erroParaPessoa } from "../mensagem-de-erro.js";
 import "./preparo.css";
 import { Icone } from "../componentes/Icone.jsx";
 import { CapaDeReserva } from "../componentes/CapaDeReserva.jsx";
@@ -346,7 +347,7 @@ function planos(job) {
  * Aqui isso só era verdade na análise: o "em andamento" trocava a página
  * inteira por uma linha de texto, e a pessoa perdia de vista o que preparava.
  */
-function Topo({ job, titulo }) {
+function Topo({ job, titulo, modo, aoMudarModo }) {
   const capa = (job.thumbnails ?? [])[0];
   const [capaFalhou, setCapaFalhou] = useState(false);
   const marcas = [
@@ -399,6 +400,23 @@ function Topo({ job, titulo }) {
             {marcas.map((m) => <span key={m} className="marca-arquivo">{m}</span>)}
           </p>
 
+          <div className="preparo-modo" role="group" aria-label="Modo de preparo">
+            {[
+              ["personalizado", "Personalizado"],
+              ["guiado", "Guiado"],
+            ].map(([valor, rotulo]) => (
+              <button
+                key={valor}
+                type="button"
+                className={modo === valor ? "ativo" : ""}
+                aria-pressed={modo === valor}
+                onClick={() => aoMudarModo(valor)}
+              >
+                {rotulo}
+              </button>
+            ))}
+          </div>
+
         </div>
       </header>
     </>
@@ -433,6 +451,8 @@ function relogio(ms) {
 export function Preparo() {
   const { id } = useParams();
   const navegar = useNavigate();
+  const [parametros, setParametros] = useSearchParams();
+  const modo = parametros.get("modo") === "personalizado" ? "personalizado" : "guiado";
   const [job, setJob] = useState(null);
   const [erro, setErro] = useState(null);
   const [preparando, setPreparando] = useState(false);
@@ -450,6 +470,7 @@ export function Preparo() {
   const [enviado, setEnviado] = useState(false);
   const [titulo, setTitulo] = useState("");
   const [autor, setAutor] = useState("");
+  const [editandoMetadados, setEditandoMetadados] = useState(false);
   /* O RELÓGIO DA ESPERA — o "Min 11,30" do canto direito do nó 895:8029.
    *
    * No desenho o número está ao lado de "42 de 96 páginas reconhecidas", e é a
@@ -478,6 +499,7 @@ export function Preparo() {
   const [motores, setMotores] = useState(null);
   const [consultouTraducao, setConsultouTraducao] = useState(false);
   const [traduzindo, setTraduzindo] = useState(false);
+  const [erroTraducao, setErroTraducao] = useState(null);
   const [escolhendoIdioma, setEscolhendoIdioma] = useState(false);
   const [vendoCapa, setVendoCapa] = useState(false);
   const [explicandoImagem, setExplicandoImagem] = useState(false);
@@ -497,12 +519,13 @@ export function Preparo() {
        * perguntava DEPOIS de disparar. `GET /jobs/{id}/status` só lê, e é o
        * mesmo que o `acompanhar` já usa.
        *
-       * Quem fechou a aba durante a conversão e voltou a este endereço via a
-       * PROPOSTA, com "Preparar com recomendações" clicável, enquanto o
-       * servidor já convertia aquele arquivo — e podia mandar converter de
-       * novo o que já estava sendo convertido. Agora volta para a espera. */
+       * Quem fechou a aba durante a conversão OU A TRADUÇÃO e voltou a este
+       * endereço precisa reencontrar a operação em curso. Reconhecer apenas
+       * "convertendo" fazia a volta durante a tradução disparar uma análise
+       * concorrente e perder o feedback da operação original. */
       const situ = await situacao(id);
-      if (situ.estado === "trabalhando" && situ.etapa === "convertendo") {
+      if (situ.estado === "trabalhando" && ["convertendo", "traduzindo"].includes(situ.etapa)) {
+        const retomandoTraducao = situ.etapa === "traduzindo";
         /* `trabalho(id)` e não `analisar(id)`: os dados do arquivo sem
            re-executar nada em cima de uma conversão em curso. */
         const jAndando = await trabalho(id);
@@ -517,12 +540,19 @@ export function Preparo() {
         setAndamento(null);
         setPreparando(false);
         if (fim.estado === "erro") {
-          setErro(fim.motivo || "A conversão não terminou.");
+          if (retomandoTraducao) setErroTraducao(fim.motivo || "A tradução não terminou.");
+          else setErro(fim.motivo || "A conversão não terminou.");
           return;
         }
         const pronto = await trabalho(id);
-        setConvertido(pronto);
-        setFeito(true);
+        if (retomandoTraducao) {
+          setJob(pronto);
+          setTitulo(pronto.final_title || pronto.detected_title || pronto.original_filename || "");
+          setAutor(pronto.final_author || pronto.detected_author || "");
+        } else {
+          setConvertido(pronto);
+          setFeito(true);
+        }
         return;
       }
 
@@ -580,7 +610,7 @@ export function Preparo() {
         return;
       }
     } catch (e) {
-      setErro(e.message);
+      setErro(e);
     }
   }, [id]);
 
@@ -609,6 +639,13 @@ export function Preparo() {
     return () => clearInterval(t);
   }, [preparando, inicio]);
 
+  const mudarModo = (novoModo) => {
+    const proximos = new URLSearchParams(parametros);
+    proximos.set("modo", novoModo);
+    setParametros(proximos, { replace: true });
+    if (novoModo === "personalizado") setEditandoMetadados(true);
+  };
+
   if (erro) {
     return (
       <MolduraPreparo recuperacao>
@@ -616,7 +653,7 @@ export function Preparo() {
           <section className="preparo-erro-card">
             <p className="preparo-fim-marca">Não terminou</p>
             <h1>Não consegui preparar este arquivo.</h1>
-            <p className="preparo-pagina-erro" role="alert">{erro}</p>
+            <p className="preparo-pagina-erro" role="alert">{erroParaPessoa(erro)}</p>
             <div className="preparo-erro-acoes">
               <Botao tom="primaria" onClick={() => { setErro(null); buscar(); }}>Tentar de novo</Botao>
               <Link to="/mesa" className="botao secundaria">Voltar à Mesa</Link>
@@ -659,7 +696,7 @@ export function Preparo() {
 
               O mesmo topo permanece para não trocar a identidade do arquivo no
               instante em que ele fica pronto. */}
-          <Topo job={j} titulo={titulo} />
+          <Topo job={j} titulo={titulo} modo={modo} aoMudarModo={mudarModo} />
 
           <section className="preparo-fim">
             <p className="preparo-fim-marca">Pronto</p>
@@ -692,6 +729,7 @@ export function Preparo() {
               </p>
             )}
 
+            <div className="preparo-fim-rodape">
             <div className="preparo-fim-acoes">
               {/* AS DUAS AÇÕES QUE FALTAVAM. A tela terminava em "Ler agora" e
                   "Ver na estante", e o produto promete na Apresentação "receba o
@@ -723,9 +761,10 @@ export function Preparo() {
               <Botao tom="secundaria" onClick={() => navegar("/estante")}>
                 Abrir na estante
               </Botao>
-              <Botao tom="secundaria" onClick={() => navegar("/mesa")}>
-                Preparar outro
-              </Botao>
+            </div>
+            <Link className="preparo-fim-relatorio" to={`/estante/${id}#livro-arquivo`}>
+              O que foi feito neste arquivo
+            </Link>
             </div>
           </section>
       </MolduraPreparo>
@@ -759,6 +798,7 @@ export function Preparo() {
   if (preparando) {
     const p = andamento?.progresso;
     const pct = p?.porcento;
+    const traducaoEmCurso = andamento?.etapa === "traduzindo";
     const rotulo = andamento?.etapa ? EM_CURSO[andamento.etapa] || andamento.etapa : null;
     /* A lista é a MESMA de "O que vou fazer" da análise — não uma segunda lista
        de passos escrita à parte, que discordaria da primeira no dia em que uma
@@ -768,7 +808,7 @@ export function Preparo() {
     return (
       <MolduraPreparo>
           {job && (
-            <Topo job={job} titulo={titulo} />
+            <Topo job={job} titulo={titulo} modo={modo} aoMudarModo={mudarModo} />
           )}
 
           <section className="preparo-andando">
@@ -779,7 +819,9 @@ export function Preparo() {
                   tempo, e barra nenhuma. */}
               <p>
                 {typeof pct === "number"
-                  ? "Esta etapa eu sei contar, porque é página a página. As seguintes não avançam de forma linear — nelas mostro a etapa e o tempo, não uma barra."
+                  ? (traducaoEmCurso
+                    ? "Esta etapa eu sei contar, porque avança bloco a bloco. Mostro o que já foi traduzido e o tempo decorrido."
+                    : "Esta etapa eu sei contar, porque é página a página. As seguintes não avançam de forma linear — nelas mostro a etapa e o tempo, não uma barra.")
                   : "Esta etapa não avança de forma linear, então mostro a etapa e o tempo, e não uma barra. Uma barra aqui andaria sozinha, sem nada por baixo."}
               </p>
               {p?.recado && <p className="preparo-andando-recado">{p.recado}</p>}
@@ -801,7 +843,9 @@ export function Preparo() {
             <p className="preparo-andando-medida">
               <span>
                 {p?.total
-                  ? `${p.feito} de ${p.total} páginas reconhecidas`
+                  ? (traducaoEmCurso
+                    ? `${p.feito} de ${p.total} blocos traduzidos`
+                    : `${p.feito} de ${p.total} páginas reconhecidas`)
                   : "Sem contagem nesta etapa"}
               </span>
               <span>{relogio(agora)}</span>
@@ -862,8 +906,10 @@ export function Preparo() {
 
           <p className="preparo-andando-nota">
             {cancelando
-              ? "Pedido de cancelamento anotado. A conversão para em segundos, e o arquivo volta para a Mesa com a análise e as suas escolhas do jeito que estavam."
-              : "Dá para fechar esta aba: a preparação continua no servidor, e o livro aparece na estante quando terminar."}
+              ? `Pedido de cancelamento anotado. A ${traducaoEmCurso ? "tradução" : "conversão"} para em segundos, e a análise e as suas escolhas permanecem.`
+              : (traducaoEmCurso
+                ? "Dá para continuar navegando: a tradução segue no servidor. Volte a este preparo para revisar o resultado e converter o livro."
+                : "Dá para fechar esta aba: a preparação continua no servidor, e o livro aparece na estante quando terminar.")}
           </p>
 
           {/* O QUE A CONFIRMAÇÃO PRECISA DIZER é o que se perde e o que fica.
@@ -873,7 +919,7 @@ export function Preparo() {
               se perde. */}
           <Folha
             aberta={confirmandoParar}
-            titulo="Parar a conversão?"
+            titulo={`Parar a ${traducaoEmCurso ? "tradução" : "conversão"}?`}
             aoFechar={() => setConfirmandoParar(false)}
             acoes={
               <Botao
@@ -956,6 +1002,7 @@ export function Preparo() {
   /* PARA ONDE DÁ PARA TRADUZIR — só com os pares que o motor tem instalados.
      `null` enquanto a pergunta não voltou, e aí a linha não promete nada. */
   const destinos = opcoesDeTraducao(pares?.argos, job.detected_language);
+  const traducaoPronta = job.translation_status === "done";
   const motorDisponivel = motores?.engines?.some((e) => e.available);
   const porQueNaoTraduz = !consultouTraducao
     ? "Perguntando ao servidor se dá para traduzir…"
@@ -972,7 +1019,7 @@ export function Preparo() {
     <MolduraPreparo>
         <Link to="/mesa" className="preparo-pagina-volta">← Mesa</Link>
 
-        <Topo job={job} titulo={titulo} />
+        <Topo job={job} titulo={titulo} modo={modo} aoMudarModo={mudarModo} />
 
         {/* O VEREDITO PRIMEIRO. Quem abre esta tela quer saber uma coisa: dá
             para seguir? O detalhe vem depois, para quem quiser.
@@ -1008,15 +1055,35 @@ export function Preparo() {
               {job.detected_language
                 ? `Idioma identificado: ${nomeDoIdioma(job.detected_language)}. `
                 : "Você pode escolher o idioma original. "}
-              O original continua intacto; a tradução gera um segundo texto.
+              {traducaoPronta
+                ? `Tradução para ${nomeDoIdioma(job.target_language) || job.target_language} concluída. O original continua intacto; a preparação usará o segundo texto.`
+                : "O original continua intacto; a tradução gera um segundo texto."}
             </p>
           </div>
           {destinos.length > 0 ? (
-            <Botao tom="primaria" onClick={() => setEscolhendoIdioma(true)}>Traduzir este arquivo</Botao>
+            <Botao tom={traducaoPronta ? "secundaria" : "primaria"} onClick={() => { setErroTraducao(null); setEscolhendoIdioma(true); }}>
+              {traducaoPronta ? "Trocar tradução" : "Traduzir este arquivo"}
+            </Botao>
           ) : (
             <span className="preparo-pagina-sem-traducao">{porQueNaoTraduz}</span>
           )}
+          {erroTraducao && (
+            <p className="preparo-traducao-erro" role="alert">{erroParaPessoa(erroTraducao)}</p>
+          )}
         </section>
+
+        {modo === "personalizado" && (
+          <section className="preparo-pagina-secao preparo-ajustes-primeiro">
+            <h2>Ajustes do arquivo</h2>
+            <div className="preparo-pagina-ajuste">
+              <Campo rotulo="Título" value={titulo} onChange={(e) => setTitulo(e.target.value)} />
+              <Campo rotulo="Autor" value={autor} onChange={(e) => setAutor(e.target.value)} />
+              <p className="preparo-pagina-nota">
+                Estes valores já vieram preenchidos com o que o Mekora encontrou. Você só muda o que precisar.
+              </p>
+            </div>
+          </section>
+        )}
 
         <section className="preparo-pagina-secao">
           <h2>O que encontrei</h2>
@@ -1057,16 +1124,36 @@ export function Preparo() {
           </ul>
         </section>
 
-        <section className="preparo-pagina-secao">
+        {modo === "guiado" && <section className="preparo-pagina-secao">
           <h2>Como vai aparecer na estante</h2>
-          <div className="preparo-pagina-ajuste">
-            <Campo rotulo="Título" value={titulo} onChange={(e) => setTitulo(e.target.value)} />
-            <Campo rotulo="Autor" value={autor} onChange={(e) => setAutor(e.target.value)} />
-            <p className="preparo-pagina-nota">
-              Você pode corrigir estes dados em qualquer preparo. O que escrever aqui vale mais que o que veio no arquivo.
-            </p>
-          </div>
-        </section>
+          {editandoMetadados ? (
+            <div className="preparo-pagina-ajuste">
+              <Campo rotulo="Título" value={titulo} onChange={(e) => setTitulo(e.target.value)} />
+              <Campo rotulo="Autor" value={autor} onChange={(e) => setAutor(e.target.value)} />
+              <p className="preparo-pagina-nota">
+                Você pode corrigir estes dados em qualquer preparo. O que escrever aqui vale mais que o que veio no arquivo.
+              </p>
+              <Botao tom="secundaria" onClick={() => setEditandoMetadados(false)}>
+                Concluir ajustes
+              </Botao>
+            </div>
+          ) : (
+            <ul className="preparo-pagina-lista preparo-metadados-guiados">
+              <li>
+                <Icone src={ICONE.titulo} tamanho={32} />
+                <h3>Título: {titulo || "Sem título"}</h3>
+                <p>Lido das propriedades do arquivo. Você pode corrigir antes de preparar.</p>
+                <Botao tom="secundaria" onClick={() => setEditandoMetadados(true)}>Alterar</Botao>
+              </li>
+              <li>
+                <Icone src={ICONE.autor} tamanho={32} />
+                <h3>Autor: {autor || "Não informado"}</h3>
+                <p>{autor ? "Lido das propriedades do arquivo." : "O arquivo não informa um autor; você pode acrescentar agora."}</p>
+                <Botao tom="secundaria" onClick={() => setEditandoMetadados(true)}>Alterar</Botao>
+              </li>
+            </ul>
+          )}
+        </section>}
 
         {/* O aviso do 941:23109 envolve a ação quando há preferência fora do
             padrão, e some quando não há. Preparar é o momento em que a escolha
@@ -1107,8 +1194,17 @@ export function Preparo() {
               }
             }}
           >
-            {preparando ? "Preparando…" : "Preparar com recomendações"}
+            {preparando
+              ? "Preparando…"
+              : modo === "personalizado"
+                ? "Preparar com minhas escolhas"
+                : "Preparar com recomendações"}
           </Botao>
+          {modo === "guiado" && (
+            <Botao tom="secundaria" onClick={() => mudarModo("personalizado")}>
+              Ajustar manualmente
+            </Botao>
+          )}
         </div>
         </AvisoPreferencias>
 
@@ -1185,6 +1281,9 @@ export function Preparo() {
             O arquivo original fica intacto. O que sai é um segundo texto, e é
             dele que o EPUB é montado.
           </p>
+          {erroTraducao && (
+            <p className="preparo-traducao-erro" role="alert">{erroParaPessoa(erroTraducao)}</p>
+          )}
           <ul className="preparo-pagina-idiomas">
             {destinos.map((d) => (
               <li key={`${d.origem}:${d.codigo}`}>
@@ -1193,7 +1292,7 @@ export function Preparo() {
                   porque={traduzindo ? "Traduzindo…" : null}
                   onClick={async () => {
                     setTraduzindo(true);
-                    setErro(null);
+                    setErroTraducao(null);
                     try {
                       /* OS IDIOMAS SÃO GRAVADOS ANTES. O `/translate` não os
                          recebe no corpo: ele os LÊ do trabalho, e chamar sem
@@ -1209,7 +1308,10 @@ export function Preparo() {
                       setAgora(0);
                       const fim = await acompanhar(id, setAndamento);
                       if (fim.estado === "erro") {
-                        setErro(fim.motivo || "A tradução não terminou.");
+                        setErroTraducao(fim.motivo || "A tradução não terminou.");
+                        setPreparando(false);
+                        setAndamento(null);
+                        return;
                       }
                       setPreparando(false);
                       setAndamento(null);
@@ -1217,8 +1319,7 @@ export function Preparo() {
                          tela precisa mostrar o que mudou. */
                       try { setJob(await analisar(id)); } catch { /* a tela funciona sem */ }
                     } catch (e) {
-                      setErro(e.message);
-                      setEscolhendoIdioma(false);
+                      setErroTraducao(e);
                     } finally {
                       setTraduzindo(false);
                     }

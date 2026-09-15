@@ -729,29 +729,21 @@ const PROVAS = {
 
   'r13': {
     erik: '"as funcoes estao erradas, e os itens dentro das funcoes tambem" (/canvas)',
-    veneno: `document.querySelector('.canvas-adicionar').remove();`,
+    veneno: `document.querySelector('.canvas-ferramentas button').remove();`,
     async correr(veneno) {
       const d = medir('/canvas', `
-        const b = document.querySelector('.canvas-adicionar');
-        if (!b) return { temAdicionar: false };
-        b.click();
-        await esperar(300);
-        const itens = [...document.querySelectorAll('.canvas-adicionar-menu [role=menuitem]')]
+        const itens = [...document.querySelectorAll('.canvas-ferramentas > button')]
           .map(e => e.textContent.trim());
         return {
-          temAdicionar: true,
           itens,
           soltos: document.querySelectorAll('.canvas-ferramentas > button').length,
         };
       `, veneno);
-      if (!d.temAdicionar) return 'a barra do Canvas nao tem a acao "Adicionar"';
-      const pedidos = ['Nota', 'Livro da Estante', 'Midia'];
+      const pedidos = ['Nova nota', 'Livro', 'Midia'];
       const tem = (n) => d.itens.some((i) => i.normalize('NFD').replace(/[̀-ͯ]/g, '') === n);
       const faltam = pedidos.filter((n) => !tem(n));
-      if (faltam.length) return `o menu Adicionar nao tem: ${faltam.join(', ')} (tem: ${d.itens.join(', ')})`;
-      /* UMA INTENCAO, E NAO TRES BOTOES. Se voltarem os tres soltos, a barra
-         deixa de ser por intencao — que e a decisao inteira. */
-      if (d.soltos !== 1) return `a barra tem ${d.soltos} botoes soltos, e a decisao pede uma acao principal`;
+      if (faltam.length) return `a barra do Canvas nao expoe: ${faltam.join(', ')} (tem: ${d.itens.join(', ')})`;
+      if (d.soltos !== 3) return `a barra tem ${d.soltos} acoes visiveis; Nota, Livro e Midia precisam estar expostas`;
       return null;
     },
   },
@@ -1910,16 +1902,8 @@ const PROVAS = {
     async correr(veneno) {
       const d = medir('/canvas', `
         const q = s => [...document.querySelectorAll(s)];
-        /* O CAMINHO ATE "NOTA" MUDOU EM 07/09: a barra virou uma intencao so,
-           "Adicionar", com tres destinos no menu. Antes havia um botao com
-           aria-label "Nova nota" direto na barra. A prova segue o caminho da
-           pessoa, e o caminho passou a ter dois passos. */
-        const adicionar = document.querySelector('.canvas-adicionar');
-        if (!adicionar) return { sem_adicionar: true };
-        adicionar.click();
-        await esperar(300);
-        const porNota = q('.canvas-adicionar-menu [role=menuitem]').find(b => /^Nota$/i.test(b.textContent.trim()));
-        if (!porNota) return { sem_item_nota: true };
+        const porNota = q('.canvas-ferramentas > button').find(b => /nova nota/i.test(b.textContent.trim()));
+        if (!porNota) return { sem_adicionar: true };
         porNota.click();
         await esperar(900);
         const folha = q('dialog').find(x => x.open);

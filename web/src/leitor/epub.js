@@ -128,7 +128,17 @@ export async function abrirEpub(dados) {
     /* Item que não aponta para nenhum arquivo da espinha fica de fora: ele
      * apareceria na lista e não levaria a lugar nenhum. */
     if (capitulo === undefined || !titulo) return null;
-    return { titulo, capitulo, nivel };
+    /* O fragmento faz parte do destino. Vários livros põem dezenas de itens do
+     * sumário no mesmo XHTML e distinguem cada seção apenas por `#id`. Jogá-lo
+     * fora fazia todos esses itens levarem ao começo do mesmo capítulo e fazia
+     * a indicação "Você está aqui" marcar uma fileira inteira. */
+    let ancora = null;
+    const cerquilha = href?.indexOf("#") ?? -1;
+    if (cerquilha >= 0 && href.slice(cerquilha + 1)) {
+      try { ancora = decodeURIComponent(href.slice(cerquilha + 1)); }
+      catch { ancora = href.slice(cerquilha + 1); }
+    }
+    return { titulo, capitulo, nivel, ancora };
   }
 
   function deNav(html, caminho) {

@@ -63,6 +63,8 @@ const e = estadoDe({ send_status: "failed", send_error: "SMTP recusou o anexo" }
 const temMotivo = e.motivo === "SMTP recusou o anexo" && e.etapa === "o envio ao Kindle";
 if (!temMotivo) falhas++;
 console.log(`  ${temMotivo ? "ok  " : "FALHA"} etapa e motivo preservados  ->  ${e.etapa} / ${e.motivo}`);
+const et = estadoDe({ translation_status: "failed", translation_error: "O par inglês → português falhou" });
+iguais(et.motivo, "O par inglês → português falhou", "motivo específico da tradução preservado");
 
 console.log("\nUma resposta REAL do backend, capturada em 30/08. O ocrmypdf nao");
 console.log("estava instalado, e a falha de verdade virou o melhor caso de teste.");

@@ -1,117 +1,149 @@
 # Mekora
 
-O **Mekora** é uma aplicação web para transformar documentos em uma experiência de leitura organizada. O sistema recebe arquivos, converte o conteúdo para formatos adequados, organiza uma biblioteca pessoal e conecta leitura, notas, estudos e relações visuais em um Canvas.
+> Leitura, biblioteca e conhecimento em um único produto.
 
-Este repositório registra o estado funcional do projeto em **10 de setembro de 2026** e foi preparado como entrega acadêmica executável.
+O **Mekora** transforma documentos em uma experiência de leitura contínua. A pessoa envia um arquivo, acompanha sua preparação, lê o resultado, registra destaques e notas e organiza o conhecimento em estudos e no Canvas.
 
-## Principais recursos
+Esta é a candidata pública do **MVP 1.0**, consolidada em 15 de setembro de 2026.
 
-- envio e preparação de documentos;
-- conversão para EPUB e processamento local com OCR;
-- biblioteca pessoal em grade ou estante 3D;
-- leitor responsivo com progresso, destaques e notas;
-- Mesa para acompanhar arquivos em processamento;
-- organização de notas e estudos;
-- Canvas visual com notas, livros, seções e conexões;
-- integração com dispositivos Kindle;
-- autenticação por link enviado por e-mail;
-- temas claro e escuro e interface adaptada para celular;
-- armazenamento local e API protegida por sessão.
+## O produto
+
+- recebe PDF, EPUB, DOCX, RTF e arquivos de quadrinhos;
+- analisa, converte e valida o material antes de adicioná-lo à biblioteca;
+- aplica OCR e tradução local, sem enviar o conteúdo para serviços externos;
+- oferece leitor responsivo com índice, progresso, marcadores, destaques e notas;
+- organiza o trabalho em Mesa, Estante, Notas, Estudos e Canvas;
+- permite retomar a leitura e a preparação entre sessões;
+- envia livros para dispositivos Kindle e importa `My Clippings.txt`;
+- funciona em desktop e celular, com temas claro e escuro;
+- protege documentos por sessão e endereços públicos não sequenciais.
 
 ## Interface
+
+### Mesa no celular
+
+<img src="docs/auditoria-mobile/depois/mesa.png" alt="Mesa do Mekora em celular" width="390">
+
+### Estante no celular
+
+<img src="docs/auditoria-mobile/depois/estante.png" alt="Estante do Mekora em celular" width="390">
 
 ### Leitor em desktop
 
 ![Leitor do Mekora em desktop](docs/imagens/leitor-desktop.png)
 
-### Leitor em celular
+Mais evidências visuais estão em [`docs/auditoria-mobile`](docs/auditoria-mobile) e [`docs/imagens`](docs/imagens).
 
-<img src="docs/imagens/leitor-mobile.png" alt="Leitor do Mekora em celular" width="390">
+## Arquitetura
 
-Outras capturas de navegação estão em [`docs/imagens`](docs/imagens).
-
-## Tecnologias
+```text
+Navegador
+   │
+   ▼
+Caddy ── interface React/Vite
+   │
+   └──── API FastAPI ── SQLAlchemy/SQLite
+              │
+              └── Calibre, Tesseract, Ghostscript, KCC e Argos Translate
+```
 
 - **Frontend:** React 19, Vite e React Router;
-- **Backend:** Python 3.11, FastAPI, SQLAlchemy e SQLite;
-- **Processamento:** Calibre, Tesseract OCR, Ghostscript e ferramentas de imagem;
-- **Infraestrutura:** Docker Compose e Caddy.
+- **Backend:** Python 3.11, FastAPI, SQLAlchemy e Alembic;
+- **Dados:** SQLite e diretório persistente de arquivos;
+- **Processamento:** Calibre, OCRmyPDF/Tesseract, Ghostscript, KCC e Argos Translate;
+- **Produção:** Docker Compose e Caddy com TLS automático.
 
-## Executar a demonstração local
+## Executar localmente
 
 Requisitos: Python 3.11, Node.js 20 ou superior e npm.
 
 ```bash
 git clone https://github.com/ErikAbner/mekora-mvp.git
-cd mekora
+cd mekora-mvp
 
 python3.11 -m venv .venv
 source .venv/bin/activate
 pip install -r backend/requirements.txt
 
 cd web
-npm install
+npm ci
 cd ..
 
 bash scripts/ver.sh
 ```
 
-O último comando inicia o backend e o frontend, cria uma conta local, adiciona um acervo demonstrativo e imprime no terminal um link de acesso. Abra esse link no navegador.
+O último comando inicia a aplicação, cria uma conta local, semeia dados demonstrativos e imprime um link de entrada. Para encerrar: `bash scripts/prova.sh parar`.
 
-Para gerar outro link de entrada: `bash scripts/ver.sh --link`.
+## Subir em produção
 
-Para encerrar: `bash scripts/prova.sh parar`.
-
-## Executar com Docker
-
-Para executar a pilha completa com as ferramentas externas de conversão:
+Requisitos: servidor Linux com Docker, domínio apontado para o servidor e uma conta SMTP.
 
 ```bash
+git clone https://github.com/ErikAbner/mekora-mvp.git
+cd mekora-mvp
 cp .env.example .env
-docker compose up -d --build
 ```
 
-Antes de publicar, configure no `.env` pelo menos `MEKORA_DOMINIO` e `DONO_EMAIL`. SMTP e Kindle são necessários apenas para autenticação por e-mail real e envio a um dispositivo. Veja [docs/SUBIR.md](docs/SUBIR.md) para a configuração completa.
+Preencha no `.env`:
 
-## Testes e build
+- `MEKORA_DOMINIO`;
+- `DONO_EMAIL`;
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER` e `SMTP_PASS`;
+- `KINDLE_EMAIL`, quando houver envio para um dispositivo padrão.
+
+Depois:
 
 ```bash
-source .venv/bin/activate
-pytest -q
-
-cd web
-npm run build
+docker compose up -d --build
+docker compose ps
+curl -fsS https://SEU-DOMINIO/health
 ```
 
-Estado desta entrega:
+O backend não expõe uma porta pública; Caddy serve a interface, encaminha somente as rotas da API e administra o TLS. O banco e os documentos ficam fora das imagens Docker, no diretório persistente `storage/`.
 
-- **932 testes aprovados** e 1 ignorado;
-- build de produção aprovado com 229 módulos transformados;
-- nenhuma credencial, banco, upload ou dado pessoal incluído.
+Antes de uma publicação real, siga integralmente o [checklist de go-live](docs/GO-LIVE.md) e o [guia de implantação](docs/SUBIR.md).
 
-## Estrutura
+O portão completo da release pode ser repetido com:
+
+```bash
+bash scripts/verificar-release.sh
+```
+
+## Qualidade desta release
+
+- **936 testes de backend aprovados**, 1 ignorado e nenhuma falha;
+- **14 testes de interface e contratos aprovados**;
+- build de produção aprovado com 228 módulos transformados;
+- 18 rotas principais auditadas em desktop e 390 px;
+- nenhum overflow horizontal nas rotas auditadas;
+- nenhum segredo, banco, upload, log ou dado pessoal versionado.
+
+O build ainda alerta que o pacote principal supera 500 kB. Isso é uma melhoria de desempenho planejada, não um bloqueio funcional do MVP.
+
+## Estrutura do repositório
 
 ```text
-backend/    API, regras de negócio, banco, migrações e testes
-web/        interface React e design system aplicado
-contrato/   contratos compartilhados de rotas e estados
-scripts/    execução local, dados de demonstração e verificações
-docs/       produto, arquitetura, segurança e operação
+backend/    API, regras de negócio, migrações e testes
+web/        interface React e tokens do design system
+contrato/   estados e contratos compartilhados
+scripts/    execução, verificação, backup e restauração
+docs/       produto, arquitetura, UX, segurança e operação
 ```
 
-## Documentação
+## Documentação essencial
 
 - [Visão do produto](docs/PRODUTO.md)
 - [Arquitetura e modelo do sistema](docs/SISTEMA.md)
-- [Como publicar](docs/SUBIR.md)
+- [Checklist de go-live](docs/GO-LIVE.md)
+- [Implantação](docs/SUBIR.md)
+- [Backup e restauração](docs/RESTAURAR.md)
 - [Segurança e acesso](docs/ACESSO.md)
-- [Design system](docs/DESIGN-SYSTEM.md)
-- [Canvas](docs/CANVAS.md)
-- [Decisões e pontos em aberto](docs/ABERTO.md)
+- [Relatório final de UX](docs/RELATORIO-FINAL-UX-2026-09-12.md)
+- [Auditoria mobile](docs/AUDITORIA-MOBILE-FIGMA-2026-09-15.md)
 
-## Observação acadêmica
+## Privacidade
 
-Os dados criados por `scripts/ver.sh` são apenas demonstrativos e não representam livros reais. Uploads, bancos, capas geradas, logs e credenciais ficam fora do Git por meio do `.gitignore`.
+O conteúdo dos documentos é processado localmente pela instalação. Credenciais ficam somente no `.env`; bancos, arquivos enviados, resultados, retratos, modelos, logs e backups são ignorados pelo Git.
 
 ## Autor
 

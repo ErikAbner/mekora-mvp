@@ -30,7 +30,6 @@ export function gruposDeLugares(estreito = false) {
            para quem chegar por link guardado; ver `SoNoComputador.jsx`. */
         ...LUGARES.filter((l) => l.pronto && !(estreito && l.soNoComputador))
           .map((l) => ({ rota: l.rota, rotulo: l.rotulo })),
-        { rota: "/notas", rotulo: "Notas" },
       ],
     },
     {

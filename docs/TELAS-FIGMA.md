@@ -1837,8 +1837,8 @@ desenho porque vem do servidor, que é a fonte certa.
 Atualizações traz título, subtítulo, as datas, os itens com o selo vertical
 (Novo / Melhorado / Corrigido) e o bloco "O que ainda não está de pé".
 
-**Falta a ilustração das Atualizações** (`937:20482`, "business balance"), abaixo
-do subtítulo — e ela cai no mesmo caso das duas telas de conta.
+**A ilustração das Atualizações está aplicada** (`937:20482`, “business balance”),
+abaixo do subtítulo, com o quadro de `472 × 467px` do nó desktop.
 
 ### As ilustrações que não saem do Figma como arquivo
 
@@ -1847,7 +1847,7 @@ Três das cinco ilustrações do produto **não podem ser exportadas por aqui**:
 | tela | nó | por quê |
 |---|---|---|
 | Conta — privacidade | `937:20283` "exploring new horizons" | 77 vetores posicionados |
-| Atualizações | `937:20482` "business balance" | dezenas de vetores |
+| Atualizações | `937:20482` "business balance" | exportada e aplicada como SVG |
 | Conta — Kindle | (não conferido) | — |
 
 O `get_design_context` exporta **cada vetor separado**, com a posição em
@@ -1924,6 +1924,23 @@ o marcador de "você está aqui" no índice, como o `941:23112` pede.
   Duas das três faixas já existiam; a de estudo nunca existiu.
 - **A página do estudo** não tem **"Notas semelhantes"**, **"Podem
   complementar"**, a **busca dentro do estudo** nem **"Ver rede neural"**.
+
+#### Triagem de produto posterior — 14/09
+
+Esta lista é um inventário do que aparecia nos quadros, não autorização para
+reintroduzir decisões antigas. A conferência posterior estabeleceu que o
+estado atual do produto prevalece quando o fluxo mudou desde a captura.
+
+- **Não entram por comparação visual:** reconstruir Conexões segundo a captura
+  antiga; criar "Notas semelhantes", "Podem complementar" ou "Ver rede
+  neural" só para preencher a página do estudo; e simular tempos ou etapas no
+  Preparo. Todos alterariam comportamento, vocabulário ou promessa do produto.
+- **Entram porque completam a forma vigente sem mudar o fluxo:** a ilustração
+  já desenhada de "Escrever sobre o livro" e a moldura externa do Preparo com
+  a mesma largura da Leitura.
+- **Regra de largura:** a moldura pode crescer até os 32px de respiro da cena;
+  a coluna interna continua limitada. Largura de tela não é licença para
+  esticar texto, capa, formulário ou linha de leitura.
 
 ### As ilustrações, resolvidas — component set `1016:30664`
 

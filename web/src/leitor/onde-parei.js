@@ -78,7 +78,7 @@ function topoDe(secao) {
  * juntos daqui em vez de serem calculados em lugares diferentes.
  */
 export function ondeEstouNoLivro(raiz) {
-  if (!raiz) return { capitulo: 0, deslocamento: 0 };
+  if (!raiz) return { capitulo: 0, deslocamento: 0, ancora: null };
   const linha = window.innerHeight * 0.2;
 
   let secao = null;
@@ -89,13 +89,21 @@ export function ondeEstouNoLivro(raiz) {
   /* Nenhuma seção começou acima da linha: a pessoa está no topo do primeiro
    * capítulo, antes de ele cruzar a linha. O primeiro é a resposta. */
   if (!secao) secao = raiz.querySelector("[data-capitulo]");
-  if (!secao) return { capitulo: 0, deslocamento: ondeEstou(raiz) };
+  if (!secao) return { capitulo: 0, deslocamento: ondeEstou(raiz), ancora: null };
+
+  const deslocamento = ondeEstou(secao);
+  let ancora = null;
+  for (const el of secao.querySelectorAll("[data-de]")) {
+    if ((Number(el.dataset.de) || 0) > deslocamento) break;
+    if (el.dataset.ancora) ancora = el.dataset.ancora;
+  }
 
   return {
     capitulo: Number(secao.dataset.capitulo) || 0,
     /* O deslocamento é lido DENTRO da seção, e não na raiz: as contagens são por
      * capítulo, e medir na raiz devolveria a do último capítulo carregado. */
-    deslocamento: ondeEstou(secao),
+    deslocamento,
+    ancora,
   };
 }
 

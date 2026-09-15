@@ -16,7 +16,7 @@ export ARGOS_PACKAGES_DIR="$ROOT_DIR/storage/models/argos-packages"
 if [ "$1" = "--prod" ]; then
   echo ""
   echo "[frontend] Gerando build de produção..."
-  cd "$ROOT_DIR/frontend"
+  cd "$ROOT_DIR/web"
   if [ ! -d "node_modules" ]; then
     npm install -q
   fi
@@ -40,7 +40,7 @@ if [ "$1" = "--prod" ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Modo desenvolvimento: backend (8000) + frontend dev server (5173)
+# Modo desenvolvimento: backend (8000) + interface do Mekora (5180)
 # ---------------------------------------------------------------------------
 
 # ---- Backend ---------------------------------------------------------------
@@ -63,7 +63,7 @@ echo "[backend] Rodando em http://localhost:8000 (PID $BACKEND_PID)"
 # ---- Frontend --------------------------------------------------------------
 echo ""
 echo "[frontend] Iniciando..."
-cd "$ROOT_DIR/frontend"
+cd "$ROOT_DIR/web"
 
 if [ ! -d "node_modules" ]; then
   echo "[frontend] Instalando dependências npm..."
@@ -72,11 +72,11 @@ fi
 
 npm run dev &
 FRONTEND_PID=$!
-echo "[frontend] Rodando em http://localhost:5173 (PID $FRONTEND_PID)"
+echo "[frontend] Rodando em http://localhost:5180 (PID $FRONTEND_PID)"
 
 echo ""
 echo "Backend:  http://localhost:8000/docs"
-echo "Frontend: http://localhost:5173"
+echo "Frontend: http://localhost:5180"
 echo ""
 echo "Pressione Ctrl+C para encerrar."
 

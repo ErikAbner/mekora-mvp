@@ -172,6 +172,19 @@ def test_allowed_translation_sidecar_and_archives_served(client, tmp_storage, en
     assert client.get(f"/storage/output/{endereco}/documento.epub").status_code == 200
 
 
+def test_epub_com_pontuacao_do_titulo_e_servido(client, tmp_storage, endereco):
+    """O nome real de um livro não pode transformar uma conversão válida em 404."""
+    out = tmp_storage / "output" / "1"
+    out.mkdir(parents=True, exist_ok=True)
+    nome = "Entrevistas, produto & pessoas (Ana D'Ávila).web.epub"
+    (out / nome).write_bytes(b"PK epub fake")
+
+    r = client.get(f"/storage/output/{endereco}/{nome}")
+
+    assert r.status_code == 200
+    assert r.headers["content-type"] == "application/epub+zip"
+
+
 def test_allowed_thumbnail_served(client, tmp_storage, endereco):
     _make_png(tmp_storage / "temp" / "1" / "page_0.png")
     r = client.get(f"/storage/temp/{endereco}/page_0.png")

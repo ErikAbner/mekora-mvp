@@ -13,7 +13,7 @@ from app.models.nota import CORES, Nota
 from app.models.processing_job import ProcessingJob
 from app.services import clippings_service
 from app.models.pessoa import Pessoa, agora
-from app.services import acesso_service
+from app.services import acesso_service, capa_service
 
 router = APIRouter()
 
@@ -207,7 +207,29 @@ def todas(
         quantas[a] = quantas.get(a, 0) + 1
         quantas[b] = quantas.get(b, 0) + 1
 
-    return [{**_fora(n), "ligadas": quantas.get(n.id, 0)} for n in notas]
+    jobs = {
+        j.id: j
+        for j in db.query(ProcessingJob).filter(
+            ProcessingJob.id.in_({n.job_id for n in notas if n.job_id}),
+            ProcessingJob.dono_id == pessoa.id,
+        ).all()
+    }
+    return [
+        {
+            **_fora(n),
+            "ligadas": quantas.get(n.id, 0),
+            "cover_url": capa_service.url(jobs[n.job_id]) if n.job_id in jobs else None,
+            "livro_titulo": (
+                jobs[n.job_id].final_title
+                or jobs[n.job_id].detected_title
+                or jobs[n.job_id].original_filename
+            ) if n.job_id in jobs else None,
+            "livro_autor": (
+                jobs[n.job_id].final_author or jobs[n.job_id].detected_author
+            ) if n.job_id in jobs else None,
+        }
+        for n in notas
+    ]
 
 
 @router.get("/notas/agrupadas")

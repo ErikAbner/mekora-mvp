@@ -4,16 +4,7 @@
  * aparece com aquela imagem, e um livro tem centenas. Aqui as dimensoes sao o
  * dado, e o teste diz o que cada uma vira.
  */
-const LARGA_MINIMA = 900, LARGA_PROPORCAO = 1.4;
-const CHEIA_MINIMA = 1600, CHEIA_PROPORCAO = 2.2;
-
-function larguraDaImagem(w, h) {
-  if (!w || !h) return "";
-  const proporcao = w / h;
-  if (w >= CHEIA_MINIMA && proporcao >= CHEIA_PROPORCAO) return "cheia";
-  if (w >= LARGA_MINIMA && proporcao >= LARGA_PROPORCAO) return "larga";
-  return "";
-}
+import { imagemEFragmento, larguraDaImagem } from "../web/src/leitor/imagem.js";
 
 const CASOS = [
   // [largura, altura, esperado, por que]
@@ -67,6 +58,26 @@ for (let w = 100; w <= 3000; w += 37) {
       console.log(`  FALHA ${w}x${Math.round(h)} foi promovida a ${classe} e pintaria ${pintada}px, que nao passa da coluna`);
       falhas++;
     }
+  }
+}
+
+const FRAGMENTOS = [
+  [17, 2174, true, "tira vertical real encontrada no EPUB"],
+  [145, 2560, true, "fatia de página que dependia do CSS editorial"],
+  [200, 1600, true, "limiar inclusivo da proporção 8:1"],
+  [201, 1800, false, "acima do limite de largura não é descartada por forma"],
+  [200, 1599, false, "um fio abaixo da proporção não é descartado"],
+  [1875, 1046, false, "imagem completa que acompanhava uma tira"],
+  [2162, 2560, false, "página completa em retrato"],
+  [0, 0, false, "dimensão ausente não é adivinhada"],
+];
+for (const [w, h, esperado, porque] of FRAGMENTOS) {
+  const teve = imagemEFragmento(w, h);
+  if (teve !== esperado) {
+    console.log(`  FALHA fragmento ${w}x${h}: esperava ${esperado}, veio ${teve} · ${porque}`);
+    falhas++;
+  } else {
+    console.log(`  ok   fragmento ${w}x${h} -> ${teve ? "descarta" : "preserva"} · ${porque}`);
   }
 }
 console.log(falhas ? `\n${falhas} falha(s)` : "\ntudo passou: nenhuma imagem e ampliada alem do proprio tamanho.");

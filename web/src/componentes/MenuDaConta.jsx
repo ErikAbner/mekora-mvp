@@ -17,6 +17,7 @@
 import { useEffect, useRef } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Icone } from "./Icone.jsx";
+import { destinoDoMenu } from "./menu-teclado.js";
 import { sair as sairNoServidor } from "../../../contrato/api.js";
 import "./menu-da-conta.css";
 
@@ -60,7 +61,7 @@ export function iniciais(nome) {
   return (partes[0][0] + (partes.length > 1 ? partes[partes.length - 1][0] : "")).toUpperCase();
 }
 
-export function MenuDaConta({ pessoa, suspenso = false, aberto = true, aoFechar }) {
+export function MenuDaConta({ pessoa, suspenso = false, aberto = true, aoFechar, aoDevolverFoco }) {
   const caixa = useRef(null);
   const navegar = useNavigate();
 
@@ -68,17 +69,33 @@ export function MenuDaConta({ pessoa, suspenso = false, aberto = true, aoFechar 
    * não fecha. */
   useEffect(() => {
     if (!suspenso || !aberto) return undefined;
-    const tecla = (e) => { if (e.key === "Escape") aoFechar?.(); };
+    const itens = () => [...(caixa.current?.querySelectorAll('[role="menuitem"]') ?? [])]
+      .filter((item) => !item.disabled && item.tabIndex >= 0);
+    const quadro = requestAnimationFrame(() => itens()[0]?.focus());
+    const tecla = (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        aoFechar?.();
+        requestAnimationFrame(() => aoDevolverFoco?.());
+        return;
+      }
+      const todos = itens();
+      const destino = destinoDoMenu(e.key, todos.indexOf(document.activeElement), todos.length);
+      if (destino === null) return;
+      e.preventDefault();
+      todos[destino]?.focus();
+    };
     /* `pointerdown` e não `click`: o clique do botão que abre chegaria aqui
      * ainda na mesma volta e fecharia o menu no instante em que ele abre. */
     const fora = (e) => { if (!caixa.current?.contains(e.target)) aoFechar?.(); };
     document.addEventListener("keydown", tecla);
     document.addEventListener("pointerdown", fora);
     return () => {
+      cancelAnimationFrame(quadro);
       document.removeEventListener("keydown", tecla);
       document.removeEventListener("pointerdown", fora);
     };
-  }, [suspenso, aberto, aoFechar]);
+  }, [suspenso, aberto, aoFechar, aoDevolverFoco]);
 
   if (suspenso && !aberto) return null;
 

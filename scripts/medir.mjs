@@ -141,7 +141,23 @@ if (!url || !arqMedida) {
 }
 
 const porta = 9333 + Math.floor(process.pid % 500);
-const chrome = spawn(process.env.CHROME || achaChrome(), [
+let chrome;
+const encerrarChromeDeProva = () => {
+  if (chrome && chrome.exitCode === null && !chrome.killed) chrome.kill("SIGTERM");
+};
+const interromper = (codigo) => {
+  encerrarChromeDeProva();
+  process.exit(codigo);
+};
+/* `finally` nao roda quando o medidor recebe SIGTERM (por exemplo, o timeout
+ * da bancada). Sem estes tratadores, o Chrome temporario podia sobreviver ao
+ * teste e aparecer para a pessoa depois. O perfil `medir-*` continua isolado;
+ * o Chrome normal nunca e alvo desta limpeza. */
+process.once("exit", encerrarChromeDeProva);
+process.once("SIGINT", () => interromper(130));
+process.once("SIGTERM", () => interromper(143));
+
+chrome = spawn(process.env.CHROME || achaChrome(), [
   '--headless=new', `--remote-debugging-port=${porta}`,
   '--no-first-run', '--no-default-browser-check', '--hide-scrollbars',
   `--window-size=${larg},${alt}`, `--user-data-dir=/tmp/medir-${porta}-${Date.now()}`,
@@ -407,5 +423,5 @@ try {
   }
 } finally {
   try { ws?.close(); } catch { /* já fechado */ }
-  chrome.kill();
+  encerrarChromeDeProva();
 }

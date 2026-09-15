@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { ConfiguracoesArquivo } from "../componentes/ConfiguracoesArquivo.jsx";
@@ -52,6 +52,9 @@ function Linha({ rotulo, children }) {
 export function Livro() {
   const { id } = useParams();
   const navegar = useNavigate();
+  const local = useLocation();
+  const voltarPara = local.state?.voltarPara || "/estante";
+  const voltarRotulo = local.state?.voltarRotulo || "Estante";
   const [livro, setLivro] = useState(null);
   const [notas, setNotas] = useState([]);
   const [onde, setOnde] = useState(null);
@@ -169,7 +172,7 @@ export function Livro() {
             metade. Isso não se repete — antes de perguntar, ler se a resposta
             já está no que ele escreveu. */}
         <div className="livro-pagina-corpo">
-        <Link to="/estante" className="livro-pagina-volta">← Estante</Link>
+        <Link to={voltarPara} className="livro-pagina-volta">← {voltarRotulo}</Link>
 
         <header className="livro-pagina-topo" id="livro-inicio">
           <div className="livro-pagina-capa">
@@ -354,6 +357,7 @@ export function Livro() {
         )}
 
         <section className="livro-pagina-secao" id="livro-o-que-ficou">
+          <div className="livro-pagina-o-que-ficou-conteudo">
           <h2>
             O que ficou <span className="dado">{notas.length}</span>
           </h2>
@@ -420,7 +424,7 @@ export function Livro() {
 
           <ul className="livro-pagina-notas">
             {visiveis.map((n) => (
-              <li key={n.id} id={`nota-${n.id}`}>
+              <li key={n.id} id={`nota-${n.id}`} data-cor={n.cor}>
                 {/* NOTA SEM TRECHO NÃO VIRA CAIXA VAZIA COLORIDA. A nota escrita
                     sobre o livro não aponta para frase nenhuma, e um bloco de cor
                     sem texto dentro é uma citação de nada. */}
@@ -510,6 +514,7 @@ export function Livro() {
               </li>
             ))}
           </ul>
+          </div>
         </section>
 
         {/* ESCREVER SOBRE O LIVRO — nó 895:7839.
@@ -523,47 +528,57 @@ export function Livro() {
          * porque a nota já existe e o que muda é o comentário dela; aqui o
          * gesto CRIA — e criar sem clique nenhum faria uma nota nascer de um
          * clique fora do campo. */}
-        <section className="livro-pagina-secao" id="livro-escrever">
-          <h2>Escrever sobre o livro</h2>
-          <p className="livro-pagina-nota">
-            O que ficou do conjunto, e não de uma frase. Fica com o livro, junto
-            das outras notas.
-          </p>
-          <textarea
-            className="livro-pagina-escrever"
-            placeholder="Escreva aqui..."
-            aria-label="O que você quer dizer sobre este livro"
-            value={sobreOLivro}
-            onChange={(e) => { setSobreOLivro(e.target.value); setRecado(null); }}
-          />
-          <div className="livro-pagina-acoes">
-            <Botao
-              tom="primaria"
-              porque={!sobreOLivro.trim() ? "Escreva alguma coisa antes de guardar" : guardando ? "Guardando…" : null}
-              onClick={async () => {
-                setGuardando(true);
-                setRecado(null);
-                try {
-                  /* Sem trecho, e sem âncora: `de` e `ate` em zero dizem que ela
-                     não aponta para lugar nenhum do texto. */
-                  await criarNota(id, {
-                    capitulo: 0, de: 0, ate: 0, cor: "amarelo",
-                    trecho: "", comentario: sobreOLivro.trim(), fonte: "livro",
-                  });
-                  setSobreOLivro("");
-                  setRodada((n) => n + 1);
-                  setRecado("Guardado com o livro.");
-                } catch (e) {
-                  setRecado(e.status === 401 ? "Entre para guardar notas." : e.message);
-                } finally {
-                  setGuardando(false);
-                }
-              }}
-            >
-              {guardando ? "Guardando…" : "Guardar"}
-            </Botao>
-            {recado && <p className="livro-pagina-nota" role="status">{recado}</p>}
-          </div>
+        <section className="livro-pagina-secao livro-pagina-escrever-secao" id="livro-escrever">
+          <header className="livro-pagina-escrever-cabecalho">
+            <div className="livro-pagina-escrever-conteudo">
+              <h2>Escrever sobre o livro</h2>
+              <p className="livro-pagina-nota">
+                O que ficou do conjunto, e não de uma frase. Fica com o livro, junto
+                das outras notas.
+              </p>
+            </div>
+            <img
+              className="livro-pagina-escrever-ilustracao"
+              src="/icones/ilustracao-escrever-livro.svg"
+              alt=""
+              aria-hidden="true"
+            />
+          </header>
+            <textarea
+              className="livro-pagina-escrever"
+              placeholder="Escreva aqui..."
+              aria-label="O que você quer dizer sobre este livro"
+              value={sobreOLivro}
+              onChange={(e) => { setSobreOLivro(e.target.value); setRecado(null); }}
+            />
+            <div className="livro-pagina-acoes">
+              <Botao
+                tom="primaria"
+                porque={!sobreOLivro.trim() ? "Escreva alguma coisa antes de guardar" : guardando ? "Guardando…" : null}
+                onClick={async () => {
+                  setGuardando(true);
+                  setRecado(null);
+                  try {
+                    /* Sem trecho, e sem âncora: `de` e `ate` em zero dizem que ela
+                       não aponta para lugar nenhum do texto. */
+                    await criarNota(id, {
+                      capitulo: 0, de: 0, ate: 0, cor: "amarelo",
+                      trecho: "", comentario: sobreOLivro.trim(), fonte: "livro",
+                    });
+                    setSobreOLivro("");
+                    setRodada((n) => n + 1);
+                    setRecado("Guardado com o livro.");
+                  } catch (e) {
+                    setRecado(e.status === 401 ? "Entre para guardar notas." : e.message);
+                  } finally {
+                    setGuardando(false);
+                  }
+                }}
+              >
+                {guardando ? "Guardando…" : "Guardar"}
+              </Botao>
+              {recado && <p className="livro-pagina-nota" role="status">{recado}</p>}
+            </div>
         </section>
 
         <section className="livro-pagina-secao" id="livro-arquivo">

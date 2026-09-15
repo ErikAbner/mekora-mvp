@@ -54,8 +54,8 @@ import { gravarProgresso, lerProgresso } from "../../contrato/api.js";
 import { fracaoLida } from "../../contrato/progresso.js";
 import { usarNotas } from "./leitor/usarNotas.js";
 import { usarMarcadores } from "./leitor/usarMarcadores.js";
-import { analisar, apagarNota, chaveDe, importarClippings, lerTodasAsNotas } from "../../contrato/api.js";
-import { EXEMPLO_FILA, EXEMPLO_ESTANTE, EXEMPLO_LEITURA } from "./exemplos.js";
+import { analisar, apagarNota, apagarNotaPorId, chaveDe, importarClippings, lerTodasAsNotas } from "../../contrato/api.js";
+import { EXEMPLO_FILA, EXEMPLO_ESTANTE } from "./exemplos.js";
 
 /* O exemplo entra SÓ quando a URL pede — `?exemplo`. Nunca no caminho normal,
  * porque tela que inventa dado esconde backend fora do ar. */
@@ -404,16 +404,18 @@ function PaginaLeitura() {
     }
   }, [livro, id, semear]);
 
-  /* Sem o livro, o exemplo — e o produto DIZ que é exemplo, em vez de deixar
-   * parecer que aquele é o teu texto. */
-  if (erro || !livro) {
+  /* Uma rota de livro real nunca exibe conteúdo de demonstração enquanto a
+   * abertura está em curso. Além de parecer o livro errado, isso fazia o
+   * ornamento específico de Enviesados piscar em qualquer EPUB. */
+  if (!livro) {
     return (
       <GavetaDeLeitura titulo="Leitura" voltarPara={`/estante/${id}`}>
-        <Leitura
-          livro={EXEMPLO_LEITURA}
-          voltarPara={`/estante/${id}`}
-          aviso={erro ? `Este é um texto de exemplo. O livro não pôde ser aberto: ${erro}` : null}
-        />
+        <section className="leitura-estado" aria-live="polite" aria-busy={!erro}>
+          <p className="rotulo">{erro ? "NÃO ABRIU" : "ABRINDO O LIVRO"}</p>
+          <h1>{erro ? "Não consegui abrir este livro." : "Preparando sua leitura…"}</h1>
+          {erro && <p>{erro}</p>}
+          {erro && <Link className="botao secundario" to={`/estante/${id}`}>Voltar ao livro</Link>}
+        </section>
       </GavetaDeLeitura>
     );
   }
@@ -539,7 +541,7 @@ function PaginaCanvas() {
 }
 
 function PaginaEstudos() {
-  const { estudos, erro, criar, mudar, apagar, reunir, tirar } = usarEstudos();
+  const { estudos, erro, criar, mudar, apagar, reunir, tirar, recarregar } = usarEstudos();
   const [notas, setNotas] = useState([]);
   /* A VISTA "LEITURA" DOS ESTUDOS precisa dos livros: ela é um quadro dos
      livros por estado de leitura, e nada disso sai dos estudos. */
@@ -553,6 +555,12 @@ function PaginaEstudos() {
 
   useEffect(() => { carregarEstante().catch(() => {}); }, [carregarEstante]);
 
+  const apagarNotaNosEstudos = async (notaId) => {
+    await apagarNotaPorId(notaId);
+    setNotas((atuais) => atuais.filter((n) => n.id !== notaId));
+    await recarregar();
+  };
+
   return (
     <Estudos
       estudos={estudos}
@@ -562,6 +570,7 @@ function PaginaEstudos() {
       aoCriar={criar}
       aoMudar={mudar}
       aoApagar={apagar}
+      aoApagarNota={apagarNotaNosEstudos}
       aoReunir={reunir}
       aoTirar={tirar}
       /* Depois de zerar a marca de um livro, a estante precisa ser relida: a
@@ -574,7 +583,7 @@ function PaginaEstudos() {
 
 function PaginaEstudo() {
   const { id } = useParams();
-  const { estudos, erro, carregando, mudar, apagar, reunir, tirar } = usarEstudos();
+  const { estudos, erro, carregando, mudar, apagar, reunir, tirar, recarregar } = usarEstudos();
   const [notas, setNotas] = useState([]);
 
   useEffect(() => {
@@ -591,6 +600,12 @@ function PaginaEstudo() {
    * "respondeu vazio", e era so perguntar a ele. */
   const estudo = estudos.find((e) => String(e.id) === String(id)) ?? null;
 
+  const apagarNotaDoEstudo = async (notaId) => {
+    await apagarNotaPorId(notaId);
+    setNotas((atuais) => atuais.filter((n) => n.id !== notaId));
+    await recarregar();
+  };
+
   return (
     <EstudoPagina
       estudo={estudo}
@@ -599,6 +614,7 @@ function PaginaEstudo() {
       carregando={carregando}
       aoMudar={mudar}
       aoApagar={apagar}
+      aoApagarNota={apagarNotaDoEstudo}
       aoReunir={reunir}
       aoTirar={tirar}
     />
@@ -827,7 +843,15 @@ export function App() {
           <Route index element={<ContaVisao pessoa={comoChamar(acesso.pessoa)} aoMudarPerfil={acesso.conferir} />} />
           <Route path="preferencias" element={<Conta pessoa={comoChamar(acesso.pessoa)} />} />
           <Route path="seguranca" element={<ContaSeguranca pessoa={comoChamar(acesso.pessoa)} />} />
-          <Route path="kindle" element={<ContaKindle pessoa={comoChamar(acesso.pessoa)} />} />
+          <Route
+            path="kindle"
+            element={
+              <ContaKindle
+                pessoa={comoChamar(acesso.pessoa)}
+                aoImportar={async (arquivo) => importarClippings(arquivo)}
+              />
+            }
+          />
           <Route
             path="privacidade"
             element={

@@ -74,6 +74,12 @@ export function GavetaDeSecao({ titulo, children, voltarPara = null, classe = ""
       onOpenChange={(v) => { if (!v) fechar(); }}
       direction="bottom"
       modal={false}
+      /* A folha fecha pela ALCA, que ja deixa o gesto visivel. Se o corpo
+       * inteiro tambem iniciar o arrasto, a Vaul chama preventDefault no
+       * pointerdown e impede selecionar texto na leitura — justamente o gesto
+       * que cria destaques e notas. Campos, links e selecao ficam livres; a
+       * folha continua arrastavel pela alca. */
+      handleOnly
       /* O fundo NÃO encolhe: embaixo há um chão pontilhado, e encolher tudo
        * faria os pontos pularem de escala a cada abertura. */
       shouldScaleBackground={false}

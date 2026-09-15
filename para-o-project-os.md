@@ -1,5 +1,20 @@
 # Para o Project OS — pendente de filtro
 
+> **Auditoria mobile × Figma — 15/09/2026:** a comparação completa das rotas
+> mobile, incluindo os quinze nós canônicos, as decisões posteriores que
+> prevalecem sobre frames históricos, as correções de navegação, densidade,
+> alvos de toque e os ensaios em 320/390/430 px, está em
+> [`docs/AUDITORIA-MOBILE-FIGMA-2026-09-15.md`](docs/AUDITORIA-MOBILE-FIGMA-2026-09-15.md).
+> Ela deve ser lida junto da retrospectiva abaixo: a auditoria registra o estado
+> atual; a retrospectiva explica como o produto chegou até ele.
+
+> **Nova consolidação de qualidade — 14/09/2026:** a retrospectiva detalhada das
+> rodadas de implementação, incluindo padrões do produto, causas dos erros,
+> correções, evidências e protocolo de prevenção, está em
+> [`docs/RETROSPECTIVA-DE-IMPLEMENTACAO-E-QUALIDADE-2026-09-14.md`](docs/RETROSPECTIVA-DE-IMPLEMENTACAO-E-QUALIDADE-2026-09-14.md).
+> Ela foi adicionada ao projeto como material de entrada para o Project OS sem
+> apagar as pendências históricas registradas abaixo.
+
 > **Resolvido em 2026-08-12.** O Erik julgou os itens no chat e eles foram aplicados:
 >
 > - **item 1** — o repositório entrou em `projects/mekora.json` como `supporting_artifact`

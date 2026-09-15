@@ -130,11 +130,24 @@ def _base_publica(request: Request) -> str:
     dominio = os.getenv("MEKORA_DOMINIO", "").strip()
     if dominio and dominio != "localhost":
         return f"https://{dominio}"
+
+    interface = os.getenv("MEKORA_FRONTEND_URL", "").strip().rstrip("/")
+    if interface:
+        return interface
+
+    # Em desenvolvimento a API vive em :8000 e a interface atual em :5180.
+    # Usar `request.base_url` aqui fazia o e-mail abrir diretamente o servidor
+    # da API — que ainda tinha uma cópia do painel legado — e a pessoa parecia
+    # ter entrado em outro produto. Cookie não é separado por porta, portanto o
+    # link pode passar pelo proxy do Vite e a sessão continua chegando à API.
+    host = request.url.hostname
+    if host in {"127.0.0.1", "localhost"}:
+        return f"{request.url.scheme}://{host}:5180"
     return str(request.base_url).rstrip("/")
 
 
 @router.get("/entrar/{token}")
-def usar_link(token: str, db: Session = Depends(get_db)) -> RedirectResponse:
+def usar_link(token: str, request: Request, db: Session = Depends(get_db)) -> RedirectResponse:
     """Abre o link do e-mail e devolve a pessoa ao produto.
 
     Redireciona em vez de responder JSON porque quem chega aqui é uma PESSOA
@@ -143,9 +156,9 @@ def usar_link(token: str, db: Session = Depends(get_db)) -> RedirectResponse:
     """
     sessao = acesso_service.usar_link(db, token)
     if sessao is None:
-        return RedirectResponse("/entrar?erro=link", status_code=303)
+        return RedirectResponse(f"{_base_publica(request)}/entrar?erro=link", status_code=303)
 
-    resposta = RedirectResponse("/estante", status_code=303)
+    resposta = RedirectResponse(f"{_base_publica(request)}/estante", status_code=303)
     _gravar_cookie(resposta, sessao)
     return resposta
 

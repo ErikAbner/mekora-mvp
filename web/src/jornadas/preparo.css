@@ -14,7 +14,9 @@
  * a Mesa visível nas laterais, mantém a navegação ativa e ainda comporta o
  * relatório longo dentro da própria rolagem. */
 .gaveta-secao.preparo-gaveta {
-  inset-inline: max(32px, calc((100% - 1350px) / 2));
+  /* A folha ocupa a mesma largura externa do leitor. O limite de 1222px
+     continua em `.preparo-pagina`: ampliar a moldura não estica o conteúdo. */
+  inset-inline: 32px;
   background: var(--background);
   border: 1px solid var(--border);
   border-block-end: 0;
@@ -71,6 +73,32 @@
 .preparo-pagina h1 { margin: 0 0 32px; font-size: 40px; line-height: 48px; letter-spacing: -0.6px; color: var(--foreground); text-wrap: balance; }
 
 .preparo-pagina-marcas { margin: 0; display: flex; gap: 16px; flex-wrap: wrap; }
+
+/* Alternador do topo — 587 px no frame desktop e largura inteira no telefone.
+ * O estado pertence à URL: recarregar a folha não troca silenciosamente o modo
+ * escolhido. */
+.preparo-modo {
+  inline-size: min(587px, 100%);
+  margin-block-start: 32px;
+  padding: 9px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--border);
+  background: var(--background);
+  box-shadow: inset 0 2px 3px rgb(0 0 0 / 0.12);
+}
+.preparo-modo button {
+  min-block-size: 52px;
+  padding: 14px 24px;
+  border: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+  font: inherit;
+  line-height: 24px;
+  cursor: pointer;
+}
+.preparo-modo button.ativo { background: var(--foreground); color: var(--background); }
+.preparo-modo button:focus-visible { outline: 2px solid var(--foreground); outline-offset: -4px; }
 
 /* As marcas do arquivo são PÍLULA: `tag, chip, trilho e interruptor são
    pílula`, e a regra de raio zero governa ação e estrutura. */
@@ -160,6 +188,12 @@
 
 .preparo-pagina-ajuste { display: flex; flex-direction: column; gap: 16px; }
 .preparo-pagina-ajuste .campo { inline-size: 100%; }
+.preparo-ajustes-primeiro {
+  padding: 40px;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+.preparo-ajustes-primeiro h2 { margin-block-end: 32px; }
 
 .preparo-pagina-nota { margin: 0; max-inline-size: 60ch; font-size: 14px; line-height: 22px; color: var(--muted-foreground); text-wrap: pretty; }
 
@@ -186,10 +220,20 @@
 .preparo-traducao-destaque > div { display: flex; flex-direction: column; gap: 12px; }
 .preparo-traducao-destaque h2 { margin: 0; font-size: 28px; line-height: 36px; }
 .preparo-traducao-destaque p { margin: 0; font-size: 18px; line-height: 26px; color: var(--muted-foreground); }
+.preparo-traducao-erro {
+  margin: 0;
+  flex-basis: 100%;
+  padding-inline-start: 16px;
+  border-inline-start: 1px solid var(--destructive);
+  color: var(--foreground);
+}
 @media (max-width: 767px) {
   .gaveta-secao.preparo-gaveta { inset-inline: 16px; }
   .preparo-erro-card { padding: 24px 20px; }
   .preparo-traducao-destaque { flex-direction: column; align-items: stretch; padding: 24px 20px; }
+  .preparo-modo { margin-block-start: 24px; }
+  .preparo-modo button { min-block-size: 48px; padding-inline: 12px; }
+  .preparo-ajustes-primeiro { padding: 32px 24px; }
 }
 
 .preparo-pagina-pagina-acoes { display: flex; gap: 12px; flex-wrap: wrap; padding-block-start: 12px; border-block-start: 1px solid var(--border); }
@@ -202,7 +246,7 @@
  */
 .preparo-fim {
   display: flex; flex-direction: column; gap: 24px;
-  inline-size: 100%; max-inline-size: 680px;
+  inline-size: 100%; max-inline-size: 1222px;
   margin-block: 64px;
 }
 /* A SECAO EM ANDAMENTO NAO E MAIS A PAGINA INTEIRA.
@@ -303,7 +347,9 @@
   color: var(--muted-foreground);
   text-transform: uppercase;
 }
-.preparo-fim-acoes { display: flex; flex-wrap: wrap; gap: 16px; }
+.preparo-fim-rodape { display: flex; justify-content: space-between; align-items: center; gap: 32px; }
+.preparo-fim-acoes { display: flex; flex-wrap: nowrap; gap: 16px; }
+.preparo-fim-relatorio { color: var(--foreground); font-size: 16px; line-height: 24px; white-space: nowrap; }
 
 @media (max-width: 767px) {
   /* 16 DE BORDA NO TELEFONE. Os 64 do computador comiam 128 dos 390 e deixavam
@@ -336,7 +382,9 @@
   .preparo-pagina-capa { inline-size: 100%; }
   .preparo-fim { margin-block: 40px; }
   .preparo-fim h1 { font-size: 32px; line-height: 40px; }
+  .preparo-fim-rodape { flex-direction: column; align-items: stretch; }
   .preparo-fim-acoes { flex-direction: column; align-items: stretch; }
+  .preparo-fim-relatorio { white-space: normal; }
 }
 
 /* O arquivo gerado, pelo nome. O desenho traz tambem o tamanho — "8,4 MB" — e o

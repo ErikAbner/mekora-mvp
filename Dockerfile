@@ -1,6 +1,6 @@
-# ⚠ ESTE ARQUIVO NÃO É O DO PRODUTO. Ele constrói o frontend LEGADO (`legado/`),
-# e o `docker compose` não o usa: quem sobe é `backend/Dockerfile` e
-# `web/Dockerfile`. Está aqui porque o legado ainda existe, e some junto com ele.
+# ⚠ O `docker compose` continua sendo o caminho de produção: ele separa o
+# backend e a borda web. Este Dockerfile mantém o modo de um único container
+# funcional sem ressuscitar a interface legada.
 #
 # Se você chegou pensando em `docker build .` para subir o Mekora, o comando é
 # outro, e está em `docs/SUBIR.md`:
@@ -12,10 +12,11 @@
 # --------------------------------------------------------------------------- #
 FROM node:20-slim AS frontend-build
 
-WORKDIR /app/legado
-COPY legado/package*.json ./
+WORKDIR /app/web
+COPY web/package*.json ./
 RUN npm ci --quiet
-COPY legado/ .
+COPY web/ .
+COPY contrato/ /app/contrato/
 RUN npm run build
 
 # --------------------------------------------------------------------------- #
@@ -48,7 +49,7 @@ COPY backend/ backend/
 COPY pyproject.toml .
 
 # Frontend já compilado
-COPY --from=frontend-build /app/legado/dist legado/dist
+COPY --from=frontend-build /app/web/dist web/dist
 
 # Dependências Python
 RUN pip install --no-cache-dir \

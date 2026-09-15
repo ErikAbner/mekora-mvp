@@ -1,4 +1,9 @@
-.notas-lugar { padding: 32px 40px 64px; display: flex; flex-direction: column; gap: 24px; }
+.notas-lugar {
+  inline-size: min(1222px, calc(100% - 64px));
+  margin-inline: auto;
+  padding: 64px 0 128px;
+  display: flex; flex-direction: column; gap: 40px;
+}
 
 .notas-topo { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
 .notas-lugar h1 { margin: 0 0 6px; font-size: 32px; line-height: 40px; letter-spacing: -0.01em; color: var(--foreground); }
@@ -44,21 +49,35 @@
   text-wrap: pretty;
 }
 
-.notas-grupos { display: flex; flex-direction: column; gap: 40px; }
+.notas-grupos { display: flex; flex-direction: column; gap: 72px; }
 
+.notas-grupo { display: grid; grid-template-columns: 168px minmax(0, 1fr); gap: 40px; padding-block-start: 40px; border-block-start: 1px solid var(--border); }
+/* Na vista corrida não existe cabeçalho de origem. Manter a primeira coluna da
+   grade fazia o UL ocupar os 168px reservados para a capa, comprimindo todas
+   as notas numa fita à esquerda. */
+.notas-grupo-lista { grid-template-columns: minmax(0, 1fr); }
+.notas-grupo-topo { display: flex; flex-direction: column; gap: 16px; min-inline-size: 0; }
+.notas-grupo-topo > div:last-child { display: flex; flex-direction: column; gap: 6px; }
+.notas-grupo-topo p { margin: 0; font-size: 14px; line-height: 22px; color: var(--muted-foreground); }
 .notas-grupo h2 {
-  margin: 0 0 16px;
-  padding-block-end: 12px;
-  border-block-end: 1px solid var(--border);
+  margin: 0;
   font-size: 20px;
   line-height: 28px;
   color: var(--foreground);
+  overflow-wrap: anywhere;
 }
 
-.notas-grupo h2 .dado { color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+.notas-grupo-conta { color: var(--muted-foreground); font-size: 14px; line-height: 22px; }
+.notas-grupo-capa {
+  inline-size: 112px; aspect-ratio: 420 / 594;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); background: var(--card); overflow: hidden;
+}
+.notas-grupo-capa > :where(img, .capa-de-reserva) { inline-size: 100%; block-size: 100%; object-fit: cover; }
+.notas-grupo-capa > .icone { inline-size: 32px; block-size: 32px; }
 
-.notas-grupo ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 24px; }
-.notas-grupo li { max-inline-size: 76ch; }
+.notas-grupo ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 16px; min-inline-size: 0; }
+.notas-grupo li { padding: 24px; background: var(--background-secondary); min-inline-size: 0; }
 
 .notas-grupo blockquote {
   margin: 0;
@@ -81,6 +100,7 @@
   color: var(--muted-foreground);
   text-wrap: pretty;
 }
+.nota-sem-trecho { margin: 0; color: var(--muted-foreground); font-size: 14px; line-height: 22px; }
 
 .nota-pe { margin-block-start: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .nota-origem { flex: 1 0 auto; font-size: 14px; line-height: 22px; color: var(--muted-foreground); }
@@ -122,6 +142,11 @@
  * finge que acabou.
  */
 @media (max-width: 767px) {
+  .notas-lugar { inline-size: calc(100% - 32px); padding-block: 40px 80px; }
+  .notas-grupo { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .notas-grupo-topo { flex-direction: row; align-items: flex-end; }
+  .notas-grupo-capa { inline-size: 80px; flex: 0 0 80px; }
+  .notas-grupo li { padding: 20px 16px; }
   .notas-recortes {
     align-self: stretch;
     flex-wrap: nowrap;
@@ -130,4 +155,13 @@
     -webkit-overflow-scrolling: touch;
   }
   .notas-recortes button { flex: none; scroll-snap-align: start; }
+  /* Ações compactas ainda precisam ser alvos de toque, não texto cercado por
+     uma borda. O conteúdo continua visualmente leve; a área clicável passa a
+     cumprir 44px sem criar uma segunda hierarquia de botão. */
+  .nota-pe a,
+  .nota-pe button {
+    min-block-size: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
 }

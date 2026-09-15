@@ -6,6 +6,12 @@
  * distancia. Dois menus para os mesmos quatro lugares e onde a pessoa comeca a
  * duvidar de qual esta certo.
  */
+.conta-desenho-picture {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
 .visao-quem,
 .visao-resumo {
   display: flex; flex-direction: column; gap: 24px;
@@ -62,6 +68,7 @@
 .visao-resumo a:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
 
 @media (max-width: 767px) {
+  .conta-desenho-picture { position: static; display: block; }
   .visao-quem, .visao-resumo { padding: 24px 20px; }
   .visao-dados { gap: 24px; }
   .visao-resumo a { min-inline-size: 0; flex: 1 1 40%; padding: 16px 20px; }

@@ -220,6 +220,15 @@ a.acao.active { background: var(--muted); color: var(--foreground); }
  */
 @media (max-width: 767px) {
   .cabecalho {
+    /* O dock é `position: fixed`, mas `will-change: transform` no ancestral
+       cria um bloco de contenção para filhos fixos. Na prática ele prendia a
+       barra inferior dentro dos 110px do cabeçalho e a desenhava no TOPO.
+
+       No telefone o cabeçalho não precisa da coreografia de recolher: a busca
+       participa do fluxo e sai da tela com a rolagem; só os lugares persistem
+       no rodapé. Tirar o contexto transformado devolve o `fixed` à janela. */
+    position: relative;
+    will-change: auto;
     flex-direction: column; align-items: stretch; gap: 12px;
     /* DEZESSEIS EM VOLTA, e não 12/16. O nó `966:31048` — e os de Estante,
        Preparo e Conta, que são o mesmo cabeçalho — põem `p-[16px]` fechado. Os
@@ -227,6 +236,12 @@ a.acao.active { background: var(--muted); color: var(--foreground); }
        expõe em 51 lugares: a tela é menor, logo encolhe. Aqui o desenho não
        encolhe. */
     padding: 16px;
+  }
+
+  .cabecalho.recolhido {
+    transform: none;
+    opacity: 1;
+    pointer-events: auto;
   }
 
   /* NO TELEFONE OS LUGARES VIRAM DOCK, colado no rodape da tela.

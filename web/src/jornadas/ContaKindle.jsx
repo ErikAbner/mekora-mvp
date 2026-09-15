@@ -15,9 +15,10 @@ import { AssistenteKindle } from "./AssistenteKindle.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
 import { Folha } from "../componentes/Folha.jsx";
+import { TrazerDoKindle } from "../componentes/TrazerDoKindle.jsx";
 import "./conta-kindle.css";
 
-export function ContaKindle({ pessoa, aoSair }) {
+export function ContaKindle({ pessoa, aoSair, aoImportar }) {
   /* OS APARELHOS VÊM DO SERVIDOR agora.
    *
    * Eles viviam em `useState`, semeados por uma lista escrita à mão em
@@ -195,6 +196,22 @@ export function ContaKindle({ pessoa, aoSair }) {
                 Conectar meu Kindle
               </Botao>
             </div>
+
+            {/* ENVIAR E TRAZER SÃO AS DUAS DIREÇÕES DO MESMO APARELHO. A
+                importação existia apenas em Notas, um lugar coerente depois
+                que se conhece a função, mas difícil de descobrir antes. O
+                segundo ponto de entrada mora aqui; ambos abrem o mesmo fluxo
+                e usam o mesmo contrato, portanto não criam duas importações. */}
+            <section className="conta-importar">
+              <div>
+                <h3>Trazer notas e destaques</h3>
+                <p>
+                  Importe o arquivo <strong>My Clippings.txt</strong> do Kindle.
+                  O Mekora reconhece o que já foi trazido e não duplica notas.
+                </p>
+              </div>
+              <TrazerDoKindle aoTrazer={aoImportar} />
+            </section>
 
             <details className="conta-condicao">
               <summary>Antes do primeiro envio <span>Ver detalhes</span></summary>

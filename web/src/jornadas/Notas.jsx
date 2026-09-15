@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { TrazerDoKindle } from "../componentes/TrazerDoKindle.jsx";
+import { CapaDeReserva } from "../componentes/CapaDeReserva.jsx";
+import { Icone } from "../componentes/Icone.jsx";
 import "./notas.css";
 
 /* Todas as notas, num lugar só.
@@ -62,7 +64,7 @@ function ondeVeio(n) {
   if (n.origem_removida_em) return `${n.origem || "um livro"} · removido da estante`;
   if (n.fonte === "solta") return "escrita no Canvas";
   if (n.fonte === "kindle") return n.origem ? `Kindle · ${n.origem}` : "do Kindle";
-  return n.origem || "de um livro seu";
+  return n.origem || n.livro_titulo || "de um livro seu";
 }
 
 export function Notas({ notas = [], carregando, aoApagar, aoImportar }) {
@@ -147,11 +149,24 @@ export function Notas({ notas = [], carregando, aoApagar, aoImportar }) {
 
         <div className="notas-grupos" data-clarity-mask="true">
           {grupos.map(([origem, doGrupo]) => (
-            <section key={origem || "todas"} className="notas-grupo">
+            <section key={origem || "todas"} className={`notas-grupo${origem ? "" : " notas-grupo-lista"}`}>
               {origem && (
-                <h2>
-                  {origem} <span className="dado">{doGrupo.length}</span>
-                </h2>
+                <header className="notas-grupo-topo">
+                  <div className="notas-grupo-capa">
+                    {doGrupo[0]?.job_id ? (
+                      doGrupo[0]?.cover_url
+                        ? <img src={doGrupo[0].cover_url} alt="" aria-hidden="true" />
+                        : <CapaDeReserva titulo={doGrupo[0]?.livro_titulo || doGrupo[0]?.origem || origem} autor={doGrupo[0]?.livro_autor} chave={doGrupo[0]?.job_id} />
+                    ) : (
+                      <Icone src="/icones/icone-caderno.svg" />
+                    )}
+                  </div>
+                  <div>
+                    <p>{doGrupo[0]?.fonte === "kindle" ? "Importadas do Kindle" : doGrupo[0]?.job_id ? "De um livro" : "Escritas no Mekora"}</p>
+                    <h2>{origem}</h2>
+                    <span className="notas-grupo-conta"><span className="dado">{doGrupo.length}</span> {doGrupo.length === 1 ? "nota" : "notas"}</span>
+                  </div>
+                </header>
               )}
               <ul>
                 {doGrupo.map((n) => (
@@ -163,7 +178,9 @@ export function Notas({ notas = [], carregando, aoApagar, aoImportar }) {
                         a tela dela mostra o resto — estudos, ligadas, e de onde
                         veio. */}
                     <Link to={`/nota/${n.id}`} className="nota-link">
-                      <blockquote className="trecho-citado" data-cor={n.cor}>{n.trecho}</blockquote>
+                      {n.trecho
+                        ? <blockquote className="trecho-citado" data-cor={n.cor}>{n.trecho}</blockquote>
+                        : <p className="nota-sem-trecho">Nota escrita no Mekora</p>}
                     </Link>
                     {n.comentario && <p className="nota-escrita">{n.comentario}</p>}
                     <div className="nota-pe">

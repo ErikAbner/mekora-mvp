@@ -256,8 +256,9 @@ consegue defender depois.
 **O `Label/Small/Caps` tem um nome que mente três vezes.** Os 2 nós são *"14 de agosto de
 2026"* e *"12 de agosto de 2026"*: não é caps, é minúscula; não é small, 20px é o corpo; e o
 peso é Italic. É um **rótulo de data**. O tracking de `23.8px` — **119% do corpo**, mais que
-um caractere inteiro entre letras — não foi tocado: a hipótese é que seja 10× o pretendido,
-já que `2.38px` daria 11,9%, tracking de rótulo largo normal. Um zero a mais num campo.
+um caractere inteiro entre letras — é deliberado no desktop: foi calculado para distribuir
+“2 DE SETEMBRO DE 2026” pela coluna de conteúdo de 888px. Não deve ser “normalizado” para
+um valor tipográfico comum; no telefone a variante usa `4px` para não quebrar a linha.
 
 ### Dado · REGRA
 

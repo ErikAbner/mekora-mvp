@@ -8,10 +8,21 @@
  * são categorias diferentes de interação, e juntá-las faria o olho ler uma lista
  * só. */
 .cromo {
-  position: sticky; inset-block-start: 8px; z-index: 2;
+  position: fixed; inset-block-start: 32px; inset-inline: 32px; z-index: 8;
   display: flex; justify-content: space-between; gap: 16px;
-  inline-size: 100%; max-inline-size: 1856px; padding: 8px;
+  inline-size: auto; padding: 8px 16px;
+  pointer-events: none;
   transition: opacity var(--d2, 260ms) cubic-bezier(.16, 1, .3, 1);
+}
+
+/* Vaul impede seleção de texto no desktop para reservar o gesto de arrastar a
+ * gaveta. Na leitura, porém, selecionar é a porta de entrada para destacar e
+ * anotar. A alça continua responsável por fechar a folha; a prosa devolve ao
+ * navegador o gesto normal de seleção. */
+.leitura-gaveta .prosa,
+.leitura-gaveta .prosa * {
+  -webkit-user-select: text;
+  user-select: text;
 }
 .cromo.recolhido { opacity: 0.15; }
 .cromo.recolhido:hover, .cromo.recolhido:focus-within { opacity: 1; }
@@ -20,9 +31,11 @@
   display: flex; gap: 8px; padding: 12px;
   border: 1px solid var(--border);
   background: var(--background);
+  pointer-events: auto;
 }
 .cromo-caixa button {
   display: flex; align-items: center; justify-content: center;
+  inline-size: 56px; block-size: 56px;
   padding: 16px; border: 0; background: transparent;
   color: var(--muted-foreground); cursor: pointer;
 }
@@ -377,6 +390,11 @@
   background: var(--branco, #ffffff);
 }
 
+/* Resíduo de remontagem de PDF. O `hidden` vem da dimensão natural, não do
+ * nome do arquivo: tiras como 17×2174px são fatias posicionadas pelo CSS do
+ * conversor e, isoladas, não constituem uma ilustração. */
+.prosa .ilustracao[hidden] { display: none; }
+
 /* A imagem larga: 1540 do desenho, e ela ENCOLHE em tela menor em vez de
  * empurrar a pagina. `object-fit: cover` com a altura do desenho so vale quando
  * ha largura para isso; abaixo disso a proporcao natural manda, porque cortar
@@ -466,23 +484,30 @@
    quatro amostras em quatro botões grandes. */
 .paleta-cores { display: flex; gap: 24px; inline-size: min(372px, 100%); }
 
-.paleta-acoes { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.paleta-acoes-fazer { display: flex; gap: 24px; }
+.paleta-acoes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
 
 .paleta-botao {
-  display: inline-flex; align-items: center; gap: 16px;
-  padding: 17px 24px;   /* `895:12846` */
+  display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+  min-inline-size: 0; min-block-size: 60px;
+  padding: 17px 16px;
   border: 1px solid var(--border);
   background: transparent;
   color: var(--muted-foreground);
   font: inherit; font-size: 16px; line-height: 24px;
   cursor: pointer;
 }
+.paleta-botao svg, .paleta-botao img { flex: none; }
+.paleta-remover { color: var(--destructive); }
+.paleta-remover:hover { border-color: var(--destructive); }
 .paleta-botao:hover { background: var(--muted); }
 .paleta-botao:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
 /* Cancelar é a única com superfície e recheio próprios — `895:12850` põe `p-24`
    e a borda em `border/subtle`. */
-.paleta-cancelar { padding: 24px; background: var(--background-secondary, var(--muted)); }
+.paleta-cancelar { background: var(--background-secondary, var(--muted)); }
 
 .paleta-recado {
   margin: 0;
@@ -710,7 +735,7 @@
   /* 464, como os outros painéis do leitor — `941:23110`. Ele estava em 384 e
      o índice em 464: dois painéis irmãos, abertos pelo mesmo tipo de botão da
      mesma barra, com larguras diferentes. É a "largura errada" do R-24. */
-  inline-size: min(464px, 100%);
+  inline-size: min(420px, 100%);
   z-index: 40;
   display: flex; flex-direction: column; gap: 32px;
   /* 32 EM VOLTA — `973:32415` e `973:32420` põem `p-32` no cabeçalho e
@@ -826,7 +851,41 @@
  * vez: as quatro cores ficaram com fundo transparente e so o sublinhado. Uma
  * regra que so e inofensiva enquanto outra coisa a cobre nao e inofensiva. */
 :root { --leitura-destaque: 1; }
-.prosa mark[data-destaque] { opacity: var(--leitura-destaque, 1); }
+.prosa mark[data-destaque] {
+  /* Ocultar tira a MARCA, não o texto. `opacity: 0` apagava também as palavras
+     e transformava reler sem destaques em reler com buracos. */
+  opacity: 1;
+  cursor: pointer;
+}
+:root[data-leitura-destaques="ocultar"] .prosa mark[data-destaque] {
+  background-color: transparent;
+  text-decoration-color: transparent;
+}
+.prosa mark[data-destaque]:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
+
+/* Feedback no próprio lugar marcado. O losango fica na margem da coluna para
+ * não inserir caracteres no livro nem mudar a quebra das linhas. */
+.prosa .bloco.com-marcador { position: relative; }
+.prosa .bloco.com-marcador::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -28px;
+  inset-block-start: 0.25em;
+  inline-size: 12px;
+  block-size: 18px;
+  background: var(--foreground);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 72%, 0 100%);
+}
+
+@media (max-width: 767px) {
+  .paleta { padding: 20px; gap: 20px; }
+  .paleta-cores { gap: 12px; }
+  .paleta-acoes { grid-template-columns: 1fr; }
+  .prosa .bloco.com-marcador::before { inset-inline-start: -20px; inline-size: 9px; block-size: 14px; }
+}
 
 /* A amostra do tema e um retangulo da cor do fundo daquele tema — e o que o
  * desenho mostra, e e a unica amostra que nao precisa de letra: o que muda no
@@ -847,15 +906,15 @@
   position: fixed; inset-block: 0; inset-inline-start: 0;
   inline-size: min(464px, 100%);
   z-index: 40;
-  display: flex; flex-direction: column; gap: 32px;
-  padding: 32px;
+  display: flex; flex-direction: column; gap: 20px;
+  padding: 24px;
   overflow-y: auto;
   background: var(--background-secondary);
   border-inline-end: 1px solid var(--border);
 }
 .indice header {
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  padding-block-end: 32px;
+  padding-block-end: 20px;
   border-block-end: 1px solid var(--border);
 }
 .indice h2 {
@@ -890,7 +949,7 @@
   inline-size: 100%;
   /* O recuo diz a HIERARQUIA do sumário — uma seção dentro de um capítulo. Vem
      do próprio livro, e não de uma numeração inventada por nós. */
-  padding: 32px 32px 32px calc(32px + var(--nivel, 0) * 20px);
+  padding: 20px 16px 20px calc(16px + var(--nivel, 0) * 16px);
   border: 0; background: transparent;
   text-align: start; cursor: pointer;
 }
@@ -898,18 +957,18 @@
 .indice-lista button:focus-visible { outline: 1px solid var(--foreground); outline-offset: -1px; }
 
 .indice-titulo {
-  /* aparência: `.titulo-24`, em `estilo/base.css` */
+  font-size: 18px; line-height: 26px; font-weight: 500;
 }
 .indice-onde {
   flex: 0 0 auto;
   color: var(--muted-foreground);
-  font-size: 20px; line-height: 30px;                     /* Body/Medium */
+  font-size: 16px; line-height: 24px;
   font-variant-numeric: tabular-nums;
 }
 .indice-aqui {
   flex: 0 0 auto;
   color: var(--muted-foreground);
-  font-size: 20px; line-height: 28px;
+  font-size: 16px; line-height: 24px;
   text-decoration: underline;
 }
 /* Onde a pessoa está: o filete à esquerda do desenho. */
@@ -931,7 +990,7 @@
  * conviviam no cromo. Link precisa dos mesmos limites que o botão tinha. */
 .cromo-link {
   display: inline-flex; align-items: center; justify-content: center;
-  inline-size: 44px; block-size: 44px;
+  inline-size: 56px; block-size: 56px;
   color: var(--muted-foreground);
   text-decoration: none;
 }
@@ -972,7 +1031,7 @@
  * caixas some.
  */
 @media (max-width: 767px) {
-  .cromo { gap: 8px; padding: 8px 12px; }
+  .cromo { inset-block-start: 16px; inset-inline: 16px; gap: 8px; padding: 8px 0; }
   .cromo-caixa { flex: 1 1 auto; justify-content: space-around; gap: 0; padding: 6px; }
   .cromo-caixa button, .cromo-link { padding: 10px; inline-size: 44px; block-size: 44px; }
   /* O NÓ DE TELEFONE PEDE `py-64 px-16` E VÃO 64 — os mesmos 64 do computador.
@@ -1000,10 +1059,14 @@
  */
 .cartao-nota-fundo {
   position: fixed; inset: 0; z-index: 60;
+  inline-size: 100%; block-size: 100%; max-inline-size: none; max-block-size: none;
+  margin: 0; border: 0;
   display: flex; align-items: center; justify-content: center;
   padding: 24px;
-  background: color-mix(in srgb, var(--foreground) 55%, transparent);
+  background: transparent;
+  color: var(--foreground);
 }
+.cartao-nota-fundo::backdrop { background: color-mix(in srgb, var(--foreground) 55%, transparent); }
 
 /* 40 entre as três partes do cartão — `941:23113`. */
 .cartao-nota {
@@ -1053,20 +1116,32 @@
 
 .cartao-nota textarea {
   inline-size: 100%;
-  min-block-size: 132px;
-  padding: 32px;   /* `895:13123` */
-  border: 0;
-  background: var(--muted, color-mix(in srgb, var(--foreground) 5%, transparent));
+  min-block-size: 168px;
+  padding: 20px;
+  border: 1px solid var(--borda-controle, var(--foreground));
+  background: var(--background);
   color: var(--foreground);
   font: inherit;
   font-size: 20px; line-height: 30px;                     /* Body/Medium */
   resize: vertical;
+  caret-color: var(--foreground);
 }
 .cartao-nota textarea::placeholder { color: var(--muted-foreground); opacity: 1; }
-.cartao-nota textarea:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
+.cartao-nota textarea:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+
+.cartao-nota-campo { display: flex; flex-direction: column; gap: 8px; }
+.cartao-nota-campo label {
+  color: var(--foreground);
+  font-size: 16px; line-height: 24px; font-weight: 540;
+}
+.cartao-nota-campo p {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 14px; line-height: 22px;
+}
 
 .cartao-nota footer { display: flex; justify-content: flex-end; }
-.cartao-nota footer .botao { min-inline-size: 132px; justify-content: center; }
+.cartao-nota footer .botao { min-inline-size: 156px; justify-content: center; }
 
 @media (max-width: 767px) {
   .cartao-nota { gap: 32px; padding: 24px; }

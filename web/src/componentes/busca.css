@@ -143,6 +143,16 @@
 
 @media (max-width: 767px) {
   .busca { padding: 13px 16px; }
+  /* O campo visual mede 52px, mas o <input> media só a linha de texto (24px).
+     Em toque, acertar o respiro da própria caixa não focava a busca. Margens
+     negativas conservam a geometria do Figma e ampliam o alvo real do input
+     até a altura inteira do controle. */
+  .busca-campo { padding-block: 13px; margin-block: -13px; }
+  .busca-limpar {
+    inline-size: 44px;
+    block-size: 44px;
+    margin: -6px;
+  }
   .busca-item { padding: 16px; gap: 16px; }
   .busca-painel { max-block-size: 60vh; }
 }

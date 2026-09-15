@@ -81,6 +81,7 @@ export function lerCapitulo(html, { caminho = "" } = {}) {
 function percorrer(no, saida) {
   for (const filho of no.children ?? []) {
     const marca = filho.tagName?.toUpperCase();
+    const ancora = filho.getAttribute?.("id") || null;
 
     /* A IMAGEM É UM BLOCO, e não um detalhe dentro do parágrafo. Num EPUB ela
      * costuma vir sozinha entre dois textos — mapa, gravura, quadro —, e tratá-la
@@ -93,7 +94,7 @@ function percorrer(no, saida) {
     if (marca === "IMG" || marca === "IMAGE") {
       const src = filho.getAttribute("src") || filho.getAttribute("xlink:href") || filho.getAttribute("href");
       const dentro = resolverCaminho(src, caminhoDoCapitulo);
-      if (dentro) saida.push({ tipo: "imagem", dentro, alt: filho.getAttribute("alt") ?? "" });
+      if (dentro) saida.push({ tipo: "imagem", dentro, alt: filho.getAttribute("alt") ?? "", ...(ancora ? { ancora } : {}) });
       continue;
     }
 
@@ -119,11 +120,11 @@ function percorrer(no, saida) {
             img.getAttribute("xlink:href") ||
             img.getAttribute("href");
           const dentro = resolverCaminho(src, caminhoDoCapitulo);
-          if (dentro) saida.push({ tipo: "imagem", dentro, alt: img.getAttribute("alt") ?? "" });
+          if (dentro) saida.push({ tipo: "imagem", dentro, alt: img.getAttribute("alt") ?? "", ...(ancora ? { ancora } : {}) });
         }
         /* O texto só entra se existir. Um `<p>` que carrega apenas a figura não
          * é um parágrafo vazio: é a figura. */
-        if ((conteudo.texto ?? "").trim()) saida.push({ tipo, ...conteudo });
+        if ((conteudo.texto ?? "").trim()) saida.push({ tipo, ...conteudo, ...(ancora ? { ancora } : {}) });
         continue;
       }
 
@@ -139,12 +140,19 @@ function percorrer(no, saida) {
        * filete, que é o que ele pediu. */
       const papel = filho.getAttribute?.("data-epub-type") || "";
       const qual = tipo === "citacao" && /\bepigraph\b/.test(papel) ? "epigrafe" : tipo;
-      saida.push({ tipo: qual, ...lerBloco(filho) });
+      saida.push({ tipo: qual, ...lerBloco(filho), ...(ancora ? { ancora } : {}) });
       // Não desce: um <p> dentro de <blockquote> já foi lido, e descer
       // duplicaria o parágrafo.
       continue;
     }
+    /* Um destino do sumário costuma estar num invólucro (`section`/`div`) e
+     * não no parágrafo. Nesse caso ele pertence ao primeiro bloco produzido
+     * pelo invólucro: é ali que a navegação deve pousar. */
+    const inicio = saida.length;
     percorrer(filho, saida);
+    if (ancora && saida.length > inicio && !saida[inicio].ancora) {
+      saida[inicio] = { ...saida[inicio], ancora };
+    }
   }
 }
 

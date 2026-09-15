@@ -72,6 +72,30 @@ const GRUPOS = [
   { titulo: "Sugestões dispensadas e recados", chaves: ["sugestoes_dispensadas", "grupos_calados", "recados"] },
 ];
 
+const NOME_NO_SINGULAR = {
+  livros: "livro",
+  notas: "nota",
+  leituras: "leitura",
+  marcadores: "marcador",
+  aparelhos: "aparelho",
+  preferencias: "preferência",
+  estudos: "estudo",
+  no_canvas: "nota no Canvas",
+  grupos_do_canvas: "grupo no Canvas",
+  ligacoes: "ligação",
+  midias_do_canvas: "imagem no Canvas",
+  livros_do_canvas: "livro no Canvas",
+  sugestoes_dispensadas: "sugestão que você recusou",
+  grupos_calados: "grupo que você mandou parar",
+  sessoes: "sessão",
+  links: "link de entrada",
+  recados: "recado",
+};
+
+function nomeContado(item) {
+  return item.quantos === 1 ? (NOME_NO_SINGULAR[item.chave] ?? item.nome) : item.nome;
+}
+
 function agrupar(itens) {
   const usadas = new Set();
   const grupos = GRUPOS.map(({ titulo, chaves }) => {
@@ -180,7 +204,7 @@ export function Privacidade({ pessoa, aoSair, aoApagarConta }) {
                       {grupo.itens.map((i) => (
                         <li key={i.nome}>
                           <p className="guardado-conta">
-                            <span className="dado">{i.quantos}</span> {i.nome}
+                            <span className="dado">{i.quantos}</span> {nomeContado(i)}
                           </p>
                           <p className="guardado-explicacao">{i.explicacao}</p>
                         </li>

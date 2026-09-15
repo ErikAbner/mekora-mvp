@@ -22,7 +22,7 @@ def correio(monkeypatch):
     caixa = []
 
     def guardar(email, token, base_url):
-        caixa.append({"email": email, "token": token})
+        caixa.append({"email": email, "token": token, "base_url": base_url})
 
     monkeypatch.setattr(acesso_service, "enviar_link", guardar)
     return caixa
@@ -131,13 +131,42 @@ def test_o_link_serve_uma_vez_so(client, correio):
 
     primeira = client.get(f"/entrar/{token}", follow_redirects=False)
     assert primeira.status_code == 303
-    assert "/estante" in primeira.headers["location"]
+    assert primeira.headers["location"] == "http://testserver/estante"
 
     client.cookies.clear()
     segunda = client.get(f"/entrar/{token}", follow_redirects=False)
     assert segunda.status_code == 303
     assert "erro=link" in segunda.headers["location"]
     assert "set-cookie" not in {k.lower() for k in segunda.headers}
+
+
+def test_em_desenvolvimento_o_email_e_os_redirecionamentos_voltam_a_interface_atual(
+    client, correio, monkeypatch
+):
+    """A porta 8000 é a API; a pessoa deve terminar no Mekora da porta 5180."""
+    monkeypatch.setenv("MEKORA_FRONTEND_URL", "http://127.0.0.1:5180/")
+
+    client.post("/entrar/pedir", json={"email": "erik@exemplo.com"})
+    assert correio[-1]["base_url"] == "http://127.0.0.1:5180"
+
+    token = correio[-1]["token"]
+    entrada = client.get(f"/entrar/{token}", follow_redirects=False)
+    assert entrada.headers["location"] == "http://127.0.0.1:5180/estante"
+
+    repetido = client.get(f"/entrar/{token}", follow_redirects=False)
+    assert repetido.headers["location"] == "http://127.0.0.1:5180/entrar?erro=link"
+
+
+def test_a_porta_da_api_nunca_serve_o_painel_legado(client):
+    resposta = client.get("/")
+    assert resposta.status_code == 200
+    assert "<title>Mekora</title>" in resposta.text
+    assert "<title>Kindle Local Tool</title>" not in resposta.text
+
+    desenho = client.get("/icones/ilustracao-soltar-arquivo.svg")
+    assert desenho.status_code == 200
+    assert desenho.headers["content-type"].startswith("image/svg+xml")
+    assert desenho.text.lstrip().startswith("<svg")
 
 
 def test_o_link_vence(client, correio, test_engine):

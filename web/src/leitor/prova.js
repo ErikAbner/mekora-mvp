@@ -253,9 +253,9 @@
   }));
 
   caso("sumario: nav de EPUB 3", await comNav.sumario(), [
-    { titulo: "A partida", capitulo: 0, nivel: 0 },
-    { titulo: "O porto", capitulo: 0, nivel: 1 },
-    { titulo: "O regresso", capitulo: 1, nivel: 0 },
+    { titulo: "A partida", capitulo: 0, nivel: 0, ancora: null },
+    { titulo: "O porto", capitulo: 0, nivel: 1, ancora: "meio" },
+    { titulo: "O regresso", capitulo: 1, nivel: 0, ancora: null },
   ]);
 
   // EPUB 2: o `toc.ncx`, com href RELATIVO ao arquivo que o escreveu — que é
@@ -272,8 +272,8 @@
   }));
 
   caso("sumario: toc.ncx de EPUB 2", await comNcx.sumario(), [
-    { titulo: "A partida", capitulo: 0, nivel: 0 },
-    { titulo: "O regresso", capitulo: 1, nivel: 0 },
+    { titulo: "A partida", capitulo: 0, nivel: 0, ancora: null },
+    { titulo: "O regresso", capitulo: 1, nivel: 0, ancora: null },
   ]);
 
   // Sem sumário nenhum: lista vazia, e NÃO um erro. Um EPUB pode legitimamente

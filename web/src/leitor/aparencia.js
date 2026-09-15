@@ -111,6 +111,7 @@ export function gravarAparencia(escolhas) {
 /** Aplica as escolhas como variáveis de CSS na raiz. */
 export function aplicarAparencia(escolhas) {
   const raiz = document.documentElement;
+  raiz.dataset.leituraDestaques = escolhas.destaques ?? PADROES.destaques;
   for (const g of GRUPOS) {
     const o = g.opcoes.find((x) => x.id === escolhas[g.id]) ?? g.opcoes.find((x) => x.id === g.padrao);
     for (const [prop, valor] of Object.entries(o.css)) raiz.style.setProperty(prop, valor);
