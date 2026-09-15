@@ -603,8 +603,10 @@
 
 .estudos-notas-cruas {
   margin: 0; padding: 0; list-style: none;
-  display: flex; flex-direction: column; gap: 24px;
+  display: flex; flex-direction: column; gap: 40px;
 }
+.estudos-todas > .estudos-sobre:last-child,
+.estudos-soltas > .estudos-sobre:last-child { margin-block-start: 16px; }
 .estudos-notas-cruas blockquote {
   margin: 0; padding: 24px;
   color: var(--card-foreground);

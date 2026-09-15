@@ -3396,15 +3396,15 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
               <>
                 {escolhidoSozinho.no.job_id && (
                   <Link className="canvas-escolha-acao" to={`/leitura/${escolhidoSozinho.no.job_id}`}>
-                    Abrir
+                    <Icone src="/icones/icone-caderno.svg" /><span>Abrir</span>
                   </Link>
                 )}
                 <button type="button" onClick={() => setLigandoDaLista(`nota:${escolhidoSozinho.no.nota_id}`)}>
-                  Ligar
+                  <Icone src="/icones/icone-fixar.svg" /><span>Ligar</span>
                 </button>
                 {!escolhidoSozinho.no.job_id && !escolhidoSozinho.no.midia && (
                   <button type="button" onClick={() => abrirEdicao(escolhidoSozinho.no)}>
-                    Editar
+                    <Icone src="/icones/icone-nota-nova.svg" /><span>Editar</span>
                   </button>
                 )}
               </>
@@ -3412,25 +3412,25 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
             {escolhidoSozinho?.tipo === "livro" && (
               <>
                 <Link className="canvas-escolha-acao" to={`/leitura/${escolhidoSozinho.livro.job_id}`}>
-                  Abrir
+                  <Icone src="/icones/icone-estante.svg" /><span>Abrir</span>
                 </Link>
                 <button type="button" onClick={() => setLigandoDaLista(`livro:${escolhidoSozinho.livro.job_id}`)}>
-                  Ligar
+                  <Icone src="/icones/icone-fixar.svg" /><span>Ligar</span>
                 </button>
               </>
             )}
             {temObjetoEscolhido && (
               <button type="button" onClick={criarSecaoDaEscolha}>
-                Criar seção
+                <Icone src="/icones/icone-camadas.svg" /><span>Criar seção</span>
               </button>
             )}
             {secaoSozinha && (
               <button type="button" onClick={() => setRenomeando(secaoSozinha.id)}>
-                {secaoSozinha.nome ? "Renomear" : "Nomear seção"}
+                <Icone src="/icones/icone-renomear.svg" /><span>{secaoSozinha.nome ? "Renomear" : "Nomear seção"}</span>
               </button>
             )}
-            {podeDuplicar && <button type="button" onClick={duplicarComHistoria}>Duplicar</button>}
-            {notasEscolhidas.length >= 3 && <button type="button" onClick={() => organizar(notasEscolhidas)}>Organizar</button>}
+            {podeDuplicar && <button type="button" onClick={duplicarComHistoria}><Icone src="/icones/icone-copiar.svg" /><span>Duplicar</span></button>}
+            {notasEscolhidas.length >= 3 && <button type="button" onClick={() => organizar(notasEscolhidas)}><Icone src="/icones/icone-paginas.svg" /><span>Organizar</span></button>}
             {secaoSozinha && (
               <button
                 type="button"
@@ -3438,16 +3438,16 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
                 title={membrosDe(secaoSozinha).length ? "A área encolhe até os membros" : "Esta seção não tem membros"}
                 onClick={() => ajustarAoConteudo(secaoSozinha)}
               >
-                Ajustar ao conteúdo
+                <Icone src="/icones/icone-refazer.svg" /><span>Ajustar ao conteúdo</span>
               </button>
             )}
-            {secaoSozinha && <button type="button" onClick={() => dissolver(secaoSozinha)}>Dissolver seção</button>}
+            {secaoSozinha && <button type="button" onClick={() => dissolver(secaoSozinha)}><Icone src="/icones/icone-remover.svg" /><span>Dissolver seção</span></button>}
             {!secaoSozinha && (
               <button type="button" onClick={tirarEscolhidos}>
-                {soLigacoes ? (escolha.size > 1 ? "Desfazer ligações" : "Desfazer ligação") : "Tirar do Canvas"}
+                <Icone src="/icones/icone-remover.svg" /><span>{soLigacoes ? (escolha.size > 1 ? "Desfazer ligações" : "Desfazer ligação") : "Tirar do Canvas"}</span>
               </button>
             )}
-            <button type="button" onClick={enquadrarEscolha}>Enquadrar na tela</button>
+            <button type="button" onClick={enquadrarEscolha}><Icone src="/icones/icone-buscar.svg" /><span>Enquadrar na tela</span></button>
             </div>
             <button type="button" className="canvas-escolha-fechar" aria-label="Limpar seleção" onClick={limparEscolha}>×</button>
           </div>

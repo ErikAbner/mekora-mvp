@@ -65,34 +65,34 @@ const CATEGORIAS = [
   {
     titulo: "Formatos",
     itens: [
-      { p: "Por que alguns PDFs precisam de OCR", r: "Porque neles não existe texto; existe foto de texto." },
-      { p: "PDF, EPUB e a diferença que importa", r: "O EPUB se ajusta à tela. O PDF tem tamanho fixo." },
-      { p: "CBZ, CBR e pastas de imagens", r: "São quadrinhos: um monte de imagem em ordem." },
+      { p: "Por que alguns PDFs precisam de OCR", r: "Porque neles não existe texto; existe foto de texto.", detalhes: ["O OCR reconhece as letras dessas imagens para permitir busca, seleção e leitura adaptável.", "Nomes próprios, tabelas e páginas tortas merecem uma conferência no preparo: são os pontos em que o reconhecimento costuma ter mais dúvida."] },
+      { p: "PDF, EPUB e a diferença que importa", r: "O EPUB se ajusta à tela. O PDF tem tamanho fixo.", detalhes: ["No PDF, posição, coluna e tamanho pertencem à página. No EPUB, o texto se reorganiza conforme a tela, a fonte e a entrelinha escolhidas.", "O Mekora preserva o original e cria um arquivo de leitura separado; converter não substitui nem altera o PDF enviado."] },
+      { p: "CBZ, CBR e pastas de imagens", r: "São quadrinhos: um monte de imagem em ordem.", detalhes: ["A ordem vem dos nomes dos arquivos. Se ela aparecer como 1, 10, 2, use números com zeros — 001, 002, 010 — ou ajuste as páginas no modo Personalizado.", "Imagens muito estreitas, duplas ou com margens incomuns devem ser revistas antes da conversão."] },
     ],
   },
   {
     titulo: "Entenda o processo",
     itens: [
-      { p: "O que acontece com os arquivos durante o processamento", r: "O original fica guardado, e o conteúdo não é lido por ninguém.", onde: { rota: "/conta/privacidade", diz: "Ver o que está guardado" } },
-      { p: "Por que não mostramos porcentagem", r: "Porque na maior parte das etapas ela seria inventada." },
-      { p: "Posso fechar a aba no meio?", r: "Pode. O preparo não é feito no seu computador." },
+      { p: "O que acontece com os arquivos durante o processamento", r: "O original fica guardado, e o conteúdo não é lido por ninguém.", detalhes: ["O servidor extrai estrutura, imagens e texto para montar a versão de leitura. Processamento automático não significa revisão humana do conteúdo.", "A tela de privacidade mostra quais cópias existem e como removê-las junto com o livro."], onde: { rota: "/conta/privacidade", diz: "Ver o que está guardado" } },
+      { p: "Por que não mostramos porcentagem", r: "Porque na maior parte das etapas ela seria inventada.", detalhes: ["Quando há páginas contáveis, a barra usa páginas concluídas. Em tarefas sem unidade confiável, o Mekora mostra a etapa atual em vez de fingir uma precisão.", "Se o nome da etapa continuar igual por muito tempo, volte à Mesa: ali aparecem bloqueios, erros e a ação para tentar de novo."] },
+      { p: "Posso fechar a aba no meio?", r: "Pode. O preparo não é feito no seu computador.", detalhes: ["O trabalho continua no servidor. Ao voltar, procure o mesmo arquivo na Mesa; não é necessário enviar outra cópia.", "Se ele precisar de senha ou de uma decisão sua, aparecerá em “Precisa de você”."] },
     ],
   },
   {
     titulo: "Resolver problemas",
     itens: [
-      { p: "Mandei para o Kindle e não chegou", r: "Quase sempre é o remetente não autorizado.", onde: { rota: "/conta/kindle", diz: "Ver meus aparelhos" } },
-      { p: "O arquivo não abre", r: "Costuma ser senha ou download interrompido." },
-      { p: "A capa não apareceu", r: "Se o arquivo não tinha capa, o Mekora monta uma." },
-      { p: "As páginas estão fora de ordem", r: "Acontece em quadrinho quando os nomes não têm número." },
+      { p: "Mandei para o Kindle e não chegou", r: "Quase sempre é o remetente não autorizado.", detalhes: ["Confirme se o endereço remetente do Mekora está na lista aprovada da Amazon e se o e-mail do aparelho foi copiado sem espaços.", "Depois de corrigir, envie novamente. A Amazon pode levar alguns minutos; uma recusa registrada aparece na Mesa."], onde: { rota: "/conta/kindle", diz: "Conferir Kindle e remetente" } },
+      { p: "O arquivo não abre", r: "Costuma ser senha ou download interrompido.", detalhes: ["PDF protegido aparece em “Precisa de você” para receber a senha uma única vez. O Mekora não guarda essa senha.", "Se não houver pedido de senha, baixe novamente o arquivo de origem e compare o tamanho antes de reenviar; uma cópia truncada não pode ser reconstruída."] },
+      { p: "A capa não apareceu", r: "Se o arquivo não tinha capa, o Mekora monta uma.", detalhes: ["A capa de reserva usa título, autor e formato para o livro não virar um buraco na estante.", "Antes de enviar ao Kindle, abra “Ver capa proposta” na Mesa e confira se título e autoria identificam o arquivo corretamente."] },
+      { p: "As páginas estão fora de ordem", r: "Acontece em quadrinho quando os nomes não têm número.", detalhes: ["Arquivos 1, 2 e 10 podem ser ordenados de maneira diferente conforme a origem. Nomes 001, 002 e 010 eliminam a ambiguidade.", "No modo Personalizado, revise a sequência antes de converter; o original permanece intacto."] },
     ],
   },
   {
     titulo: "Avançado",
     itens: [
-      { p: "Quando usar o Guiado e quando usar o Personalizado", r: "No Guiado você confirma. No Personalizado você ajusta.", onde: { rota: "/conta/preferencias", diz: "Escolher o modo" } },
-      { p: "Organizar as páginas na mão", r: "Não é etapa obrigatória, e nunca vai ser." },
-      { p: "Tradução", r: "Gera um segundo arquivo. O original fica intacto." },
+      { p: "Quando usar o Guiado e quando usar o Personalizado", r: "No Guiado você confirma. No Personalizado você ajusta.", detalhes: ["Use Guiado quando título, autoria, capa e ordem estiverem corretos. Ele reduz decisões repetidas.", "Use Personalizado quando o arquivo vier de scanner, tiver páginas fora de ordem, metadados ruins ou quando você quiser rever cada escolha."], onde: { rota: "/conta/preferencias", diz: "Escolher o modo padrão" } },
+      { p: "Organizar as páginas na mão", r: "Não é etapa obrigatória, e nunca vai ser.", detalhes: ["Faça isso apenas quando a prévia mostrar uma sequência errada, páginas duplicadas ou material que não deveria entrar no livro.", "A alteração vale para a cópia convertida; o arquivo original não é reescrito."] },
+      { p: "Tradução", r: "Gera um segundo arquivo. O original fica intacto.", detalhes: ["Escolha origem e destino no preparo. A versão traduzida fica separada para você poder comparar e voltar ao texto original.", "Tradução automática pode errar termos técnicos, nomes e trechos ambíguos; revise essas partes antes de usar a versão como referência."] },
     ],
   },
 ];
@@ -115,7 +115,7 @@ export function Ajuda() {
   const categorias = alvo
     ? CATEGORIAS.map((c) => ({
         ...c,
-        itens: c.itens.filter((i) => achatar(`${i.p} ${i.r}`).includes(alvo)),
+        itens: c.itens.filter((i) => achatar(`${i.p} ${i.r} ${(i.detalhes ?? []).join(" ")}`).includes(alvo)),
       })).filter((c) => c.itens.length)
     : CATEGORIAS;
 
@@ -197,9 +197,16 @@ export function Ajuda() {
                 <ul>
                   {c.itens.map((i) => (
                     <li key={i.p}>
-                      <h3>{i.p}</h3>
-                      <p>{i.r}</p>
-                      {i.onde && <Link to={i.onde.rota}>{i.onde.diz}</Link>}
+                      <details>
+                        <summary>
+                          <span className="ajuda-pergunta">{i.p}</span>
+                          <span className="ajuda-resposta-curta">{i.r}</span>
+                        </summary>
+                        <div className="ajuda-resposta-completa">
+                          {(i.detalhes ?? []).map((paragrafo) => <p key={paragrafo}>{paragrafo}</p>)}
+                          {i.onde && <Link to={i.onde.rota}>{i.onde.diz}</Link>}
+                        </div>
+                      </details>
                     </li>
                   ))}
                 </ul>

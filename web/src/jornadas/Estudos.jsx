@@ -88,7 +88,14 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoApagarNo
             {estudo.livros.map((l) => (
               <li key={l.id ?? l.titulo}>
                 {l.id ? (
-                  <Link to={`/estante/${l.id}`} title={`Ver ${l.titulo} na estante`}>
+                  <Link
+                    to={`/estante/${l.id}`}
+                    state={{
+                      voltarPara: semLink ? `/estudo/${estudo.id}` : "/estudos",
+                      voltarRotulo: "Estudos",
+                    }}
+                    title={`Ver ${l.titulo} na estante`}
+                  >
                     {l.capa
                       ? <img src={l.capa} alt="" aria-hidden="true" loading="lazy" />
                       : <span className="estudo-livro-vazio">{l.titulo}</span>}

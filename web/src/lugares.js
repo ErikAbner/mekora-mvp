@@ -17,6 +17,16 @@ export const LUGARES = [
     oQueE: "Onde o arquivo chega e é preparado." },
   { id: "estante", rotulo: "Estante", rota: "/estante", icone: "/icones/icone-estante.svg", pronto: true,
     oQueE: "Os livros prontos, com notas e leitura." },
+  /* NOTAS E UM LUGAR, NAO UMA CONFIGURACAO.
+   *
+   * A rota existia e funcionava, mas no computador só aparecia escondida no
+   * menu da conta e, nos Estudos, depois de uma página inteira de conteúdo.
+   * Isso contradizia o próprio modelo do produto: notas são uma entidade
+   * global e precisam ser encontráveis antes de a pessoa lembrar em qual livro
+   * escreveu. No telefone o Canvas já sai da barra, então Notas ocupa o quarto
+   * lugar sem aumentar a navegação inferior. */
+  { id: "notas", rotulo: "Notas", rota: "/notas", icone: "/icones/icone-caderno.svg", pronto: true,
+    oQueE: "Tudo que você marcou lendo, trouxe do Kindle ou escreveu aqui." },
   /* O CANVAS É DE COMPUTADOR, decidido pelo Erik e reafirmado em 04/09: "canvas
      n vai existir no telefone, ja falamos sobre isso".
      A decisão vivia só na conversa, e o produto não a conhecia: medido a 390, o

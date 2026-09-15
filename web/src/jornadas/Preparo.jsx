@@ -729,6 +729,7 @@ export function Preparo() {
               </p>
             )}
 
+            <div className="preparo-fim-rodape">
             <div className="preparo-fim-acoes">
               {/* AS DUAS AÇÕES QUE FALTAVAM. A tela terminava em "Ler agora" e
                   "Ver na estante", e o produto promete na Apresentação "receba o
@@ -760,9 +761,10 @@ export function Preparo() {
               <Botao tom="secundaria" onClick={() => navegar("/estante")}>
                 Abrir na estante
               </Botao>
-              <Botao tom="secundaria" onClick={() => navegar("/mesa")}>
-                Preparar outro
-              </Botao>
+            </div>
+            <Link className="preparo-fim-relatorio" to={`/estante/${id}#livro-arquivo`}>
+              O que foi feito neste arquivo
+            </Link>
             </div>
           </section>
       </MolduraPreparo>

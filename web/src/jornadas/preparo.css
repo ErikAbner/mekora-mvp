@@ -246,7 +246,7 @@
  */
 .preparo-fim {
   display: flex; flex-direction: column; gap: 24px;
-  inline-size: 100%; max-inline-size: 680px;
+  inline-size: 100%; max-inline-size: 1222px;
   margin-block: 64px;
 }
 /* A SECAO EM ANDAMENTO NAO E MAIS A PAGINA INTEIRA.
@@ -347,7 +347,9 @@
   color: var(--muted-foreground);
   text-transform: uppercase;
 }
-.preparo-fim-acoes { display: flex; flex-wrap: wrap; gap: 16px; }
+.preparo-fim-rodape { display: flex; justify-content: space-between; align-items: center; gap: 32px; }
+.preparo-fim-acoes { display: flex; flex-wrap: nowrap; gap: 16px; }
+.preparo-fim-relatorio { color: var(--foreground); font-size: 16px; line-height: 24px; white-space: nowrap; }
 
 @media (max-width: 767px) {
   /* 16 DE BORDA NO TELEFONE. Os 64 do computador comiam 128 dos 390 e deixavam
@@ -380,7 +382,9 @@
   .preparo-pagina-capa { inline-size: 100%; }
   .preparo-fim { margin-block: 40px; }
   .preparo-fim h1 { font-size: 32px; line-height: 40px; }
+  .preparo-fim-rodape { flex-direction: column; align-items: stretch; }
   .preparo-fim-acoes { flex-direction: column; align-items: stretch; }
+  .preparo-fim-relatorio { white-space: normal; }
 }
 
 /* O arquivo gerado, pelo nome. O desenho traz tambem o tamanho — "8,4 MB" — e o

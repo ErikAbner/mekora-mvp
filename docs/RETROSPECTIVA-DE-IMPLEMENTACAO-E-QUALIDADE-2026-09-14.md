@@ -526,3 +526,154 @@ evidências: a medida original, a medida renderizada e o caso real que exige a
 divergência. Uma justificativa plausível sem essas três provas não substitui o
 desenho. E sempre que um elemento se declarar flutuante, a prova deve acontecer
 com a página rolada — testá-lo apenas em `scrollY = 0` não testa flutuação.
+
+---
+
+## 14. Fechamento de 15/09: descoberta, origem e gestos
+
+Esta rodada corrigiu um conjunto de problemas que pareciam visuais, mas tinham
+uma raiz comum: a interface não deixava claro **onde uma coisa vive, de onde a
+pessoa veio e qual gesto cada superfície aceita**.
+
+### 14.1 Notas viraram lugar primário
+
+Deixar a entrada de Notas no fim de Estudos ou dentro das configurações fazia a
+pessoa conhecer a existência do acervo inteiro antes de conseguir chegar nele.
+Notas agora é um lugar primário do cabeçalho, entre Estante e Canvas, seguindo o
+próprio arranjo já desenhado para a página de estudo.
+
+A página também deixou de ser uma sucessão de linhas quase idênticas:
+
+- o conteúdo é contido em `1222px`, em vez de se diluir na largura da janela;
+- cada origem forma um grupo com capa real ou capa de reserva;
+- notas do Canvas recebem ícone próprio e não fingem pertencer a um livro;
+- o cabeçalho de cada grupo diz origem, título e quantidade;
+- os itens usam superfície, espaçamento e rodapé de ações consistentes;
+- notas sem trecho continuam identificáveis, em vez de produzirem um bloco vazio;
+- a API passa a devolver a capa junto da nota, numa consulta de trabalhos única,
+  sem criar uma chamada por livro.
+
+O padrão reconhecido foi o da **identidade antes do conteúdo**. Quando há dezenas
+de itens, começar pelo texto integral obriga a pessoa a reinterpretar cada nota.
+Começar por capa, título e origem permite escolher o grupo antes de ler.
+
+### 14.2 Voltar passou a respeitar a origem real
+
+Um livro aberto dentro de um estudo carregava um link fixo para Estante. A rota
+estava tecnicamente correta — o livro também existe na Estante —, mas quebrava o
+fluxo que a pessoa estava realizando. O link de entrada agora transporta a rota
+e o rótulo de retorno. A ficha usa esse contexto quando existe e conserva
+`Estante` como fallback para entrada direta, favorito ou página recarregada.
+
+Isso evita duas soluções erradas:
+
+1. depender exclusivamente do histórico do navegador, que pode começar no
+   próprio livro;
+2. trocar o retorno fixo para Estudos, quebrando quem veio da Estante.
+
+### 14.3 Canvas: ferramenta reconhecível, ação reconhecível
+
+A barra de seleção deixou de ser uma frase longa de verbos com pesos visuais
+iguais. Cada ação recebeu um ícone já existente no vocabulário do produto:
+ligação, escrita, seção, duplicação, remoção e enquadramento. Todos os ícones usam
+a mesma caixa de `20px`; o texto permanece visível para não transformar a barra
+em um teste de memória.
+
+O topo do Canvas também passou de `32px` para `16px` de padding vertical, a mesma
+medida do cabeçalho das outras telas. A correção importante aqui não foi
+“compactar”: foi retirar uma exceção sem função.
+
+A inspeção em desktop confirmou que as seis ações de uma nota cabem numa única
+barra, com contagem e fechamento separados, sem dropdown e sem seta ambígua.
+
+### 14.4 Carrossel: gesto de percurso, não drag-and-drop
+
+O carrossel já tinha captura de ponteiro, inércia e desaceleração contínua, mas a
+imagem dentro do link continuava arrastável pelo navegador. O Chrome iniciava o
+drag nativo da capa antes que o componente pudesse concluir o gesto; por isso
+aparecia o fantasma da imagem e a interface parecia tentar mover o livro.
+
+A prevenção foi aplicada em três camadas:
+
+- `draggable={false}` no link;
+- `draggable={false}` na imagem;
+- cancelamento explícito de `dragstart`, com `-webkit-user-drag: none` como
+  reforço visual do comportamento.
+
+Assim o mesmo gesto passa integralmente para a faixa: o conteúdo acompanha o
+ponteiro, recebe embalo ao soltar e pode parar entre capas. Não há reordenação na
+Mesa, porque a Mesa não oferece esse modelo mental.
+
+### 14.5 “Precisa de você” voltou a ser conteúdo, não estado escondido
+
+O nó `895:9348` foi relido diretamente. Ele define uma abertura com título e
+ilustração de `272 × 224px`, seguida de decisões em duas colunas: explicação e
+ação de um lado, representação do arquivo do outro.
+
+A seção agora reúne dois casos reais:
+
+- arquivo protegido, com campo de senha e envio efêmero;
+- livro sem capa, com capa proposta e acesso direto à conferência.
+
+A ilustração foi baixada do ativo do próprio Figma, em vez de ser redesenhada ou
+substituída por uma imagem parecida. Capas ausentes usam o mesmo componente de
+reserva já utilizado pela Estante, o que elimina uma quarta interpretação do
+mesmo estado.
+
+### 14.6 Ajuda: resposta curta para reconhecer, resposta completa para resolver
+
+As frases originais funcionavam como resumo, mas não como ajuda. Cada pergunta
+agora usa divulgação progressiva:
+
+- pergunta e resposta curta permanecem visíveis;
+- abrir revela diagnóstico, consequência e ação recomendada;
+- quando há um lugar do produto capaz de resolver, a resposta termina nele;
+- a busca também indexa o conteúdo expandido, não apenas o resumo.
+
+Foram aprofundados OCR, diferenças de formato, ordem de quadrinhos, tratamento
+dos arquivos, progresso honesto, retomada do processamento, Kindle, senha,
+capas, modos, organização manual e tradução. A prevenção para textos de ajuda é
+testar a pergunta “depois de ler isto, a pessoa sabe qual ação executar?”. Se a
+resposta for não, há descrição, mas não há suporte.
+
+### 14.7 Preparo pronto: três decisões e uma explicação
+
+A quarta ação, “Preparar outro”, quebrava a linha e repetia a entrada principal
+da Mesa. A tela final passou a ter as três saídas referentes ao arquivo — enviar,
+baixar e abrir — e um link separado para “O que foi feito neste arquivo”. Esse
+link leva à seção de diagnóstico da ficha, em vez de abrir um painel vazio.
+
+A largura externa passou a acompanhar os `1222px` da tela de preparo, mas o
+texto não foi esticado artificialmente: largura de recipiente continua diferente
+de largura de leitura.
+
+### 14.8 Estudos e destaques: separação por agrupamento real
+
+As notas cruas em Estudos passaram de `24px` para `40px` entre itens, e o aviso
+de truncamento recebeu espaço próprio. Na ficha do livro, “O que ficou” ocupa a
+coluna direita de aproximadamente `747px` dentro da estrutura de `1222px`; isso
+preserva a relação do Figma sem reintroduzir a trilha que foi removida por
+decisão de produto.
+
+Os destaques abandonaram fundos e separadores inferiores redundantes. O filete
+colorido identifica o tipo de marca, o conteúdo forma um grupo, e as ações ficam
+depois da origem. A prova visual foi feita na ficha real com sete notas, não num
+estado vazio.
+
+### 14.9 Provas executadas nesta rodada
+
+- build de produção do frontend: concluído;
+- suíte do backend: `936` testes passaram e `1` foi ignorado;
+- `git diff --check`: sem erro de whitespace;
+- teste navegável Estudos → livro: retorno exibido como `← Estudos` e apontando
+  para o estudo de origem;
+- inspeção desktop da barra do Canvas: ícones uniformes e ações em uma linha;
+- inspeção da Ajuda com resposta expandida;
+- inspeção da Mesa com “Precisa de você” e capa proposta;
+- inspeção da ficha real no trecho “O que ficou”.
+
+Um comando de auditoria visual (`scripts/portao.js`) não deve ser chamado
+diretamente pelo Node: ele depende de `document` e foi escrito para execução no
+navegador. O erro dessa tentativa não indica defeito do produto; a prevenção é
+executá-lo pelo invólucro de medição/browser apropriado e nunca registrar sua
+execução crua como teste de frontend.

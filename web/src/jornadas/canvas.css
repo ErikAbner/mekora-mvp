@@ -862,7 +862,10 @@
   inset-block-start: 0;
   inset-inline: 0;
   z-index: 4;
-  padding: 32px;
+  /* A mesma borda vertical das outras telas. O Canvas tinha 32px também em
+     cima, enquanto o cabeçalho compartilhado usa 16px: o plano começava com um
+     degrau vazio que só existia aqui. A lateral continua em 32px no desktop. */
+  padding: 16px 32px;
   pointer-events: none;
 }
 /* A barra não recebe o ponteiro — ela é uma faixa transparente sobre o plano, e
@@ -1230,6 +1233,10 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+.canvas-escolha-acoes .icone {
+  inline-size: 20px; block-size: 20px;
+  flex: 0 0 20px;
 }
 .canvas-escolha-acao {
   padding: 7px 12px;

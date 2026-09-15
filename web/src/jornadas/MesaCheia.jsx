@@ -18,6 +18,7 @@ import { Icone } from "../componentes/Icone.jsx";
 import { Link } from "react-router-dom";
 import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
+import { CapaDeReserva } from "../componentes/CapaDeReserva.jsx";
 import { erroParaPessoa } from "../mensagem-de-erro.js";
 import "./mesa-cheia.css";
 /* A PROMESSA E A ÁREA DE SOLTAR SÃO AS MESMAS DAS DUAS TELAS, e o CSS delas mora
@@ -216,24 +217,38 @@ function quandoFoi(iso) {
  * servidor, que abre o arquivo, regrava sem proteção e esquece — e aqui o
  * estado do campo morre com o componente.
  */
-function PrecisaDeVoce({ arquivos, aoDestravar }) {
+function PrecisaDeVoce({ arquivos, livrosSemCapa, aoDestravar }) {
   const [senhas, setSenhas] = useState({});
   const [tentando, setTentando] = useState(null);
   const [erros, setErros] = useState({});
 
-  if (!arquivos.length) return null;
+  if (!arquivos.length && !livrosSemCapa.length) return null;
 
   return (
     <section className="precisa-de-voce">
       <div className="precisa-de-voce-caixa">
         <h2>Precisa de você</h2>
-        <p className="precisa-de-voce-diz">
-          {arquivos.length === 1
-            ? "Um arquivo parou e não volta a andar sozinho."
-            : `${arquivos.length} arquivos pararam e não voltam a andar sozinhos.`}
-        </p>
+        <img className="precisa-de-voce-ilustracao" src="/icones/ilustracao-precisa-de-voce.svg" alt="" aria-hidden="true" />
 
         <ul className="precisa-de-voce-lista">
+          {livrosSemCapa.map((l) => (
+            <li key={`capa-${l.chave ?? l.id}`} className="precisa-de-voce-item">
+              <div className="precisa-de-voce-texto">
+                <h3>{l.titulo}</h3>
+                <p className="precisa-de-voce-motivo">
+                  <strong>O arquivo não tem capa.</strong> Montei uma com o título e o autor; vale conferir antes de mandar para o aparelho.
+                </p>
+                <Link className="botao secundaria" to={`/preparo/${l.chave ?? l.id}`}>Ver capa proposta</Link>
+              </div>
+              <CapaDeReserva
+                className="precisa-de-voce-capa"
+                titulo={l.titulo}
+                autor={l.autor}
+                formato={(l.formato || "epub").toUpperCase()}
+                chave={l.chave ?? l.id}
+              />
+            </li>
+          ))}
           {arquivos.map((a) => {
             const qual = BLOQUEIOS[a.bloqueio] ?? {
               titulo: "Este arquivo parou",
@@ -241,11 +256,12 @@ function PrecisaDeVoce({ arquivos, aoDestravar }) {
               acao: null,
             };
             return (
-              <li key={a.id}>
-                <h3>{a.nome}</h3>
-                <p className="precisa-de-voce-motivo">
-                  <strong>{qual.titulo}</strong> {qual.diz}
-                </p>
+              <li key={a.id} className="precisa-de-voce-item">
+                <div className="precisa-de-voce-texto">
+                  <h3>{a.nome}</h3>
+                  <p className="precisa-de-voce-motivo">
+                    <strong>{qual.titulo}</strong> {qual.diz}
+                  </p>
 
                 {a.bloqueio === "senha" && (
                   <form
@@ -292,7 +308,9 @@ function PrecisaDeVoce({ arquivos, aoDestravar }) {
                       {tentando === a.id ? "Abrindo…" : qual.acao}
                     </Botao>
                   </form>
-                )}
+                  )}
+                </div>
+                <CapaDeReserva className="precisa-de-voce-capa" titulo={a.nome} formato="PDF" chave={a.id} />
               </li>
             );
           })}
@@ -433,9 +451,9 @@ function Faixa({ titulo, quando, livros, verTudo }) {
       >
         {livros.map((l) => (
           <li key={l.chave}>
-            <Link to={`${verTudo}/${l.chave}`} draggable="false">
+            <Link to={`${verTudo}/${l.chave}`} draggable={false} onDragStart={(e) => e.preventDefault()}>
               {l.capa ? (
-                <img src={l.capa} alt="" />
+                <img src={l.capa} alt="" draggable={false} />
               ) : (
                 <span className="faixa-sem-capa">{l.titulo}</span>
               )}
@@ -724,6 +742,7 @@ export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberA
       {aoDestravar && (
         <PrecisaDeVoce
           arquivos={arquivos.filter((a) => a.estado === "precisa")}
+          livrosSemCapa={livros.filter((l) => l.leituraUrl && !l.capa).slice(0, 3)}
           aoDestravar={aoDestravar}
         />
       )}
