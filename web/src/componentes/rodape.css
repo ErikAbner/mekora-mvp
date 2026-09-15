@@ -78,3 +78,15 @@
 }
 
 :root[data-tema="escuro"] .rodape-marca { filter: none; }
+
+@media (max-width: 767px) {
+  /* O rodapé é o fallback de navegação para páginas longas. Texto de 24px de
+     altura não pode virar um alvo de 24px: mantém-se a aparência tipográfica e
+     amplia-se apenas a área de toque. */
+  .rodape a,
+  .rodape-acao {
+    min-block-size: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}

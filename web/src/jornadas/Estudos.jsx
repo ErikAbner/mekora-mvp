@@ -6,6 +6,7 @@ import { Campo } from "../componentes/Campo.jsx";
 import { achatar } from "../../../contrato/texto.js";
 import { Folha } from "../componentes/Folha.jsx";
 import { TrilhaDaPagina } from "../componentes/TrilhaDaPagina.jsx";
+import { useEstreito } from "../estreito.js";
 import { criarEstudo, declararEstadoDeLeitura, gravarProgresso, ignorarGrupo, lerAgrupadas, ordenarLeituras, ouvirGruposDeNovo, reunirNoEstudo } from "../../../contrato/api.js";
 import { ESTADOS_DE_LEITURA, estadoDeLeitura, leituraDivergeDaDeclaracao } from "../../../contrato/estado.js";
 import { DESTAQUES } from "./Leitura.jsx";
@@ -305,6 +306,7 @@ function ordemDoQuadro(livros) {
 /* Quantas notas soltas a tela mostra antes de mandar para as Notas. Vinte é o
  * que cabe numa rolagem sem virar uma segunda tela de Notas dentro dos Estudos. */
 const LIMITE_DAS_SOLTAS = 20;
+const LIMITE_DAS_SOLTAS_NO_TELEFONE = 6;
 
 /* OS TRÊS RECORTES DO DESENHO — `895:8911`, `895:8913` e `895:8915`.
  *
@@ -324,6 +326,8 @@ const RECORTES = [
 ];
 
 export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, aoMudar, aoApagar, aoApagarNota, aoReunir, aoTirar, aoReler }) {
+  const estreito = useEstreito();
+  const limiteDasSoltas = estreito ? LIMITE_DAS_SOLTAS_NO_TELEFONE : LIMITE_DAS_SOLTAS;
   const [criando, setCriando] = useState(false);
   const [nome, setNome] = useState("");
   const [sobre, setSobre] = useState("");
@@ -1085,7 +1089,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
           <section className="estudos-todas" id="estudos-todas">
             <h2>Todas as notas <span className="dado">{notas.length}</span></h2>
             <ul className="estudos-notas-cruas">
-              {notas.slice(0, LIMITE_DAS_SOLTAS).map((n) => (
+              {notas.slice(0, limiteDasSoltas).map((n) => (
                 <li key={n.id}>
                   {n.trecho && <blockquote className="trecho-citado" data-cor={n.cor}>{n.trecho}</blockquote>}
                   {n.comentario && <p className="estudos-solta-comentario">{n.comentario}</p>}
@@ -1096,9 +1100,9 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                 </li>
               ))}
             </ul>
-            {notas.length > LIMITE_DAS_SOLTAS && (
+            {notas.length > limiteDasSoltas && (
               <p className="estudos-sobre">
-                Mostrando {LIMITE_DAS_SOLTAS} de <span className="dado">{notas.length}</span>.
+                Mostrando {limiteDasSoltas} de <span className="dado">{notas.length}</span>.
                 As outras estão em <Link to="/notas">Notas</Link>.
               </p>
             )}
@@ -1146,7 +1150,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
               estudo começa aqui.
             </p>
             <ul>
-              {soltas.slice(0, LIMITE_DAS_SOLTAS).map((n) => (
+              {soltas.slice(0, limiteDasSoltas).map((n) => (
                 <li key={n.id}>
                   {n.trecho && (
                     <blockquote className="trecho-citado" data-cor={n.cor}>{n.trecho}</blockquote>
@@ -1164,11 +1168,11 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                 </li>
               ))}
             </ul>
-            {soltas.length > LIMITE_DAS_SOLTAS && (
+            {soltas.length > limiteDasSoltas && (
               /* O TETO É DITO, e não escondido. Uma lista cortada em silêncio
                  faz a pessoa achar que só há vinte notas soltas. */
               <p className="estudos-sobre">
-                Mostrando {LIMITE_DAS_SOLTAS} de <span className="dado">{soltas.length}</span>.
+                Mostrando {limiteDasSoltas} de <span className="dado">{soltas.length}</span>.
                 As outras estão em <Link to="/notas">Notas</Link>.
               </p>
             )}

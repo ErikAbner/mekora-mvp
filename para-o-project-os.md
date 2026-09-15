@@ -1,5 +1,13 @@
 # Para o Project OS — pendente de filtro
 
+> **Auditoria mobile × Figma — 15/09/2026:** a comparação completa das rotas
+> mobile, incluindo os quinze nós canônicos, as decisões posteriores que
+> prevalecem sobre frames históricos, as correções de navegação, densidade,
+> alvos de toque e os ensaios em 320/390/430 px, está em
+> [`docs/AUDITORIA-MOBILE-FIGMA-2026-09-15.md`](docs/AUDITORIA-MOBILE-FIGMA-2026-09-15.md).
+> Ela deve ser lida junto da retrospectiva abaixo: a auditoria registra o estado
+> atual; a retrospectiva explica como o produto chegou até ele.
+
 > **Nova consolidação de qualidade — 14/09/2026:** a retrospectiva detalhada das
 > rodadas de implementação, incluindo padrões do produto, causas dos erros,
 > correções, evidências e protocolo de prevenção, está em

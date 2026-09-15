@@ -143,7 +143,6 @@
    é (0,2,1) e a classe sozinha seria (0,2,0) — a genérica ganharia e a borda
    voltaria a ser neutra. Mesmo defeito de especificidade que o
    `.estudos-metade-marca` tinha. */
-.preparo .recortes button.recorte-precisa { border-color: var(--foreground); }
 .preparo .recortes button.recorte-fila    { border-color: var(--warning); }
 .preparo .recortes button.recorte-pronto  { border-color: var(--success); }
 .preparo .recortes button.recorte-erro    { border-color: var(--destructive); }
@@ -359,6 +358,11 @@
   .arquivo-topo, .arquivo-rodape { align-items: stretch; flex-direction: column; gap: 12px; }
   .arquivo-estado { align-self: flex-start; }
   .arquivo-rodape .arquivo-preparo { align-self: flex-start; }
+  .arquivo-preparo a {
+    min-block-size: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
 }
 
 /* ─── "Precisa de voce" — no 895:9348 ───────────────────────────────────────

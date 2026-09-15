@@ -151,4 +151,13 @@
     -webkit-overflow-scrolling: touch;
   }
   .notas-recortes button { flex: none; scroll-snap-align: start; }
+  /* Ações compactas ainda precisam ser alvos de toque, não texto cercado por
+     uma borda. O conteúdo continua visualmente leve; a área clicável passa a
+     cumprir 44px sem criar uma segunda hierarquia de botão. */
+  .nota-pe a,
+  .nota-pe button {
+    min-block-size: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
 }

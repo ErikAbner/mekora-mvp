@@ -225,6 +225,16 @@
 @media (max-width: 767px) {
   .nota-pagina { padding: 40px 16px 72px; }
   .npag-acoes { flex-direction: column; }
+  /* Chips e ações textuais continuam leves, mas deixam de exigir precisão de
+     mouse num contexto de polegar. A marca visual não cresce; cresce o alvo. */
+  .chip,
+  .candidata-ir,
+  .candidata-dispensar,
+  .nota-ligadas li > button {
+    min-block-size: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
 }
 
 /* O recado do "Copiar com origem". Ele diz o que aconteceu — copiou, ou o
