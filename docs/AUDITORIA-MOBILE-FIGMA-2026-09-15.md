@@ -400,3 +400,21 @@ A rodada termina quando:
 Durante esse portão também foram removidas 28 regras órfãs da antiga Estante
 3D e uma regra órfã da Mesa. A limpeza não ressuscita recursos abandonados; ela
 faz o CSS voltar a descrever apenas o produto existente.
+
+## Complemento desktop — 15 de setembro de 2026
+
+Uma segunda inspeção, motivada por capturas em desktop, encontrou cinco desvios
+que não apareciam na auditoria de 320–430 px:
+
+1. o cabeçalho “Precisa de você” recuperou o painel `surface/sunken`, com 40 px
+   de recheio e 64 px entre título e ilustração, conforme `895:9608`;
+2. as duas faixas finais da Mesa recuperaram o divisor central de 876 px e os
+   intervalos de 64 px antes e depois dele, conforme `895:9688` e `895:9708`;
+3. a vista corrida de Notas deixou de herdar a coluna de 168 px reservada à capa
+   dos grupos e passou a ocupar os 1.201 px disponíveis em uma janela de 1.280;
+4. as perguntas da Ajuda ganharam uma seta de expansão dentro da própria linha,
+   alinhada à direita, que gira quando a resposta abre;
+5. Atualizações manteve a coluna canônica de 888 px e a etiqueta de 67 px com
+   corpo 24/32, mas passou de caixa-alta para caixa de título. A mudança reduz a
+   altura medida de “novo” de 139 px para aproximadamente 130 px, o tamanho do
+   componente no Figma.

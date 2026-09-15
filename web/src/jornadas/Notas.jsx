@@ -149,7 +149,7 @@ export function Notas({ notas = [], carregando, aoApagar, aoImportar }) {
 
         <div className="notas-grupos" data-clarity-mask="true">
           {grupos.map(([origem, doGrupo]) => (
-            <section key={origem || "todas"} className="notas-grupo">
+            <section key={origem || "todas"} className={`notas-grupo${origem ? "" : " notas-grupo-lista"}`}>
               {origem && (
                 <header className="notas-grupo-topo">
                   <div className="notas-grupo-capa">

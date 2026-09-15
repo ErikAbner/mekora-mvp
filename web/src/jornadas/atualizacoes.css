@@ -107,7 +107,10 @@
      de um subtítulo porque ela diz que tipo de mudança foi. */
   font-size: 24px; line-height: 32px;
   font-style: italic;
-  text-transform: uppercase;
+  /* O frame escreve “Novo”, “Melhorado” e “Corrigido” em caixa normal. Em
+     vertical, uppercase não era só tom: alargava a palavra rotacionada e fazia
+     a etiqueta inteira ultrapassar a altura calculada do componente. */
+  text-transform: capitalize;
 }
 /* NO TELEFONE ELA NÃO GIRA. `966:27160` põe a mesma caixa deitada, com
    `px-32 py-16`, acima do texto — girar num vão de 358 gasta a altura toda. */

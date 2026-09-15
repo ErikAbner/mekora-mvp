@@ -227,8 +227,10 @@ function PrecisaDeVoce({ arquivos, livrosSemCapa, aoDestravar }) {
   return (
     <section className="precisa-de-voce">
       <div className="precisa-de-voce-caixa">
-        <h2>Precisa de você</h2>
-        <img className="precisa-de-voce-ilustracao" src="/icones/ilustracao-precisa-de-voce.svg" alt="" aria-hidden="true" />
+        <header className="precisa-de-voce-cabecalho">
+          <h2>Precisa de você</h2>
+          <img className="precisa-de-voce-ilustracao" src="/icones/ilustracao-precisa-de-voce.svg" alt="" aria-hidden="true" />
+        </header>
 
         <ul className="precisa-de-voce-lista">
           {livrosSemCapa.map((l) => (

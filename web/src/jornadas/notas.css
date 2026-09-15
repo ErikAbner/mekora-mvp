@@ -52,6 +52,10 @@
 .notas-grupos { display: flex; flex-direction: column; gap: 72px; }
 
 .notas-grupo { display: grid; grid-template-columns: 168px minmax(0, 1fr); gap: 40px; padding-block-start: 40px; border-block-start: 1px solid var(--border); }
+/* Na vista corrida não existe cabeçalho de origem. Manter a primeira coluna da
+   grade fazia o UL ocupar os 168px reservados para a capa, comprimindo todas
+   as notas numa fita à esquerda. */
+.notas-grupo-lista { grid-template-columns: minmax(0, 1fr); }
 .notas-grupo-topo { display: flex; flex-direction: column; gap: 16px; min-inline-size: 0; }
 .notas-grupo-topo > div:last-child { display: flex; flex-direction: column; gap: 6px; }
 .notas-grupo-topo p { margin: 0; font-size: 14px; line-height: 22px; color: var(--muted-foreground); }
