@@ -55,6 +55,24 @@ Caddy ── interface React/Vite
 
 ## Executar localmente
 
+### Windows 10/11
+
+Instale o [Docker Desktop](https://www.docker.com/products/docker-desktop/) com
+WSL 2 e dê dois cliques em **`Iniciar Mekora.cmd`** depois de clonar o projeto:
+
+```powershell
+git clone https://github.com/ErikAbner/mekora-mvp.git
+cd mekora-mvp
+& '.\Iniciar Mekora.cmd'
+```
+
+O iniciador verifica o computador, prepara Python, Node, Calibre, OCR e tradução
+dentro do Docker, espera o servidor responder e abre um link local já
+autenticado. Use **`Parar Mekora.cmd`** para encerrar sem apagar livros, notas ou
+progresso. Instruções completas estão em [`docs/USO-LOCAL.md`](docs/USO-LOCAL.md).
+
+### macOS e Linux
+
 Requisitos: Python 3.11, Node.js 20 ou superior e npm.
 
 ```bash

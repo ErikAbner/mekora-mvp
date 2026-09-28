@@ -1,0 +1,11 @@
+# Ajustes locais usados por "Iniciar Mekora.cmd".
+# O backend continua recebendo MEKORA_DOMINIO=localhost, portanto a instalacao
+# nao assume por engano as regras de producao. So a borda usa um endereco HTTP
+# explicito, sem certificado local e sem ocupar as portas 80/443 do Windows.
+services:
+  web:
+    environment:
+      MEKORA_DOMINIO: http://localhost:${MEKORA_PORTA_LOCAL:-8080}
+    ports: !override
+      - 127.0.0.1:${MEKORA_PORTA_LOCAL:-8080}:${MEKORA_PORTA_LOCAL:-8080}
+

@@ -1,0 +1,10 @@
+* text=auto
+
+# Scripts Unix precisam continuar com LF mesmo quando o clone foi feito no Windows.
+*.sh text eol=lf
+*.py text eol=lf
+
+# Os dois iniciadores abaixo sao abertos diretamente pelo Windows.
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+

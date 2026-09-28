@@ -25,9 +25,16 @@ import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
-RAIZ = Path(os.environ.get("MEKORA_PROVA", ".ver"))
 EMAIL = os.environ.get("MEKORA_EMAIL", "erik@mekora.local")
-BANCO = RAIZ / "storage" / "kindle_tool.db"
+if os.environ.get("MEKORA_STORAGE"):
+    # Dentro do Docker o banco fica no volume persistente, sem a camada `.ver`
+    # usada pela bancada de demonstracao. Ler a mesma variavel do backend evita
+    # dois caminhos para a mesma informacao e permite o iniciador do Windows
+    # criar um link local sem depender de SMTP.
+    BANCO = Path(os.environ["MEKORA_STORAGE"]) / "kindle_tool.db"
+else:
+    RAIZ = Path(os.environ.get("MEKORA_PROVA", ".ver"))
+    BANCO = RAIZ / "storage" / "kindle_tool.db"
 
 # Um dia, e não os quinze minutos da rota. O link de produção é curto porque
 # viaja por e-mail e pode ser lido por quem não devia; este fica na máquina de

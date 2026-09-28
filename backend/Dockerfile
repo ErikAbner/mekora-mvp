@@ -42,7 +42,7 @@ RUN pip install --no-cache-dir -r /app/backend/requirements.txt
 
 COPY backend/ /app/backend/
 COPY contrato/ /app/contrato/
-COPY scripts/conferir-ferramentas.py /app/scripts/
+COPY scripts/conferir-ferramentas.py scripts/chave-local.py /app/scripts/
 
 # A imagem NÃO constrói se faltar ferramenta. Uma falta descoberta aqui custa um
 # build; descoberta em produção, custa o primeiro documento de alguém.
