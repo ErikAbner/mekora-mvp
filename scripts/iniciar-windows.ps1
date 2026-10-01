@@ -7,6 +7,7 @@ param(
     [string]$Email = 'usuario@mekora.local',
 
     [switch]$NaoAbrir,
+    [switch]$Tablet,
     [switch]$Parar
 )
 
@@ -17,6 +18,18 @@ $ComposeBase = Join-Path $Raiz 'docker-compose.yml'
 $ComposeWindows = Join-Path $Raiz 'docker-compose.windows.yml'
 $Relatorio = Join-Path $Raiz 'storage\logs\iniciar-windows.log'
 $Url = "http://localhost:$Porta"
+$IpRede = $null
+if ($Tablet) {
+    $IpRede = Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
+        Where-Object { $_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '169.254.*' } |
+        Select-Object -First 1 -ExpandProperty IPAddress
+    if ([string]::IsNullOrWhiteSpace($IpRede)) {
+        throw 'Nao consegui descobrir o endereco desta maquina na rede. Conecte o computador ao Wi-Fi ou execute sem -Tablet.'
+    }
+}
+$EnderecoTablet = if ($Tablet) { "http://$IpRede`:$Porta" } else { $Url }
+$BindAddress = if ($Tablet) { '0.0.0.0' } else { '127.0.0.1' }
+$CaddySite = if ($Tablet) { ":$Porta" } else { "http://localhost:$Porta" }
 $Compose = @(
     'compose',
     '--env-file', $EnvWindows,
@@ -64,6 +77,8 @@ KINDLE_EMAIL=
         MEKORA_DOMINIO = 'localhost'
         MEKORA_FRONTEND_URL = $Url
         MEKORA_PORTA_LOCAL = "$Porta"
+        MEKORA_BIND_ADDRESS = $BindAddress
+        MEKORA_CADDY_SITE = $CaddySite
         DONO_EMAIL = $Email
         CONVIDADOS = $Email
         ALLOWED_ORIGINS = ''
@@ -119,7 +134,9 @@ Docker Desktop nao foi encontrado.
     if (-not $PrecisaGravar) {
         $Configuracao = Get-Content $EnvWindows -Raw
         $PrecisaGravar = ($Configuracao -notmatch "(?m)^MEKORA_PORTA_LOCAL=$Porta$") -or
-            ($Configuracao -notmatch "(?m)^DONO_EMAIL=$([regex]::Escape($Email))$")
+            ($Configuracao -notmatch "(?m)^DONO_EMAIL=$([regex]::Escape($Email))$") -or
+            ($Configuracao -notmatch "(?m)^MEKORA_BIND_ADDRESS=$([regex]::Escape($BindAddress))$") -or
+            ($Configuracao -notmatch "(?m)^MEKORA_CADDY_SITE=$([regex]::Escape($CaddySite))$")
     }
     if ($PrecisaGravar) {
         Gravar-ConfiguracaoLocal
@@ -172,8 +189,13 @@ Docker Desktop nao foi encontrado.
     }
 
     $Entrada = "$Url/entrar/$Token"
+    if ($Tablet) { $Entrada = "$EnderecoTablet/entrar/$Token" }
     Escrever-Titulo 'Pronto'
     Write-Host "  $Entrada" -ForegroundColor Cyan
+    if ($Tablet) {
+        Write-Host '  Abra este endereco no tablet conectado a mesma rede Wi-Fi.' -ForegroundColor Yellow
+        Write-Host '  Redes de convidados podem impedir que os aparelhos se encontrem.' -ForegroundColor DarkGray
+    }
     Write-Host '  Os dados ficam na pasta storage e sobrevivem a atualizacoes e reinicios.' -ForegroundColor DarkGray
     Write-Host '  Para encerrar, use "Parar Mekora.cmd".' -ForegroundColor DarkGray
 

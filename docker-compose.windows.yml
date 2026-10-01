@@ -5,7 +5,6 @@
 services:
   web:
     environment:
-      MEKORA_DOMINIO: http://localhost:${MEKORA_PORTA_LOCAL:-8080}
+      MEKORA_DOMINIO: ${MEKORA_CADDY_SITE:-http://localhost:${MEKORA_PORTA_LOCAL:-8080}}
     ports: !override
-      - 127.0.0.1:${MEKORA_PORTA_LOCAL:-8080}:${MEKORA_PORTA_LOCAL:-8080}
-
+      - ${MEKORA_BIND_ADDRESS:-127.0.0.1}:${MEKORA_PORTA_LOCAL:-8080}:${MEKORA_PORTA_LOCAL:-8080}

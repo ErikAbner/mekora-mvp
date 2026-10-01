@@ -20,6 +20,18 @@ PowerShell na pasta e execute, por exemplo:
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\iniciar-windows.ps1 -Porta 8180 -Email professor@faculdade.edu.br
 ```
 
+Para usar o mesmo acervo em um tablet conectado ao mesmo Wi‑Fi, execute o
+mesmo iniciador com `-Tablet`:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\iniciar-windows.ps1 -Tablet
+```
+
+O terminal mostrará um link `http://192.168.../entrar/...` para abrir no
+tablet. O serviço continua local e não é publicado na internet; redes de
+convidados podem impedir a comunicação entre os aparelhos. Use
+**`Parar Mekora.cmd`** para encerrar.
+
 Se o Docker informar que o WSL 2 ou a virtualização estão indisponíveis, eles
 precisam ser habilitados no Windows antes de repetir o iniciador.
 
