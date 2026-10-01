@@ -3,7 +3,13 @@ from zipfile import ZipFile
 
 import fitz
 
-from app.services.pdf_reflow_epub_service import _paragraphs, convert_pdf_to_reflow_epub
+from app.services.pdf_reflow_epub_service import (
+    _join_wrapped_hyphens,
+    _paragraphs,
+    _prefer_fallback_word,
+    _conservative_spelling,
+    convert_pdf_to_reflow_epub,
+)
 
 
 def test_pdf_textual_becomes_adjustable_text_and_keeps_visual_page(tmp_path: Path) -> None:
@@ -28,8 +34,8 @@ def test_pdf_textual_becomes_adjustable_text_and_keeps_visual_page(tmp_path: Pat
     )
 
     with ZipFile(output) as archive:
-        first = archive.read("EPUB/page-0001.xhtml").decode("utf-8")
-        second = archive.read("EPUB/page-0002.xhtml").decode("utf-8")
+        first = archive.read("EPUB/section-0001.xhtml").decode("utf-8")
+        second = archive.read("EPUB/section-0002.xhtml").decode("utf-8")
         assert "Selectable and adjustable text" in first
         assert "<img" not in first
         assert "<img" in second
@@ -52,3 +58,23 @@ def test_landscape_book_spread_reads_left_page_before_right_page(tmp_path: Path)
     document.close()
 
     assert text.index("ESQUERDA linha 11") < text.index("DIREITA linha 0")
+
+
+def test_text_fusion_uses_only_a_clearly_better_portuguese_word() -> None:
+    assert _prefer_fallback_word("cufona", "euforia", "por") == "euforia"
+    assert _prefer_fallback_word("intcgraf", "integrar", "por") == "integrar"
+    # Nome próprio raro não pode ser trocado só porque a outra camada também
+    # contém um token raro diferente.
+    assert _prefer_fallback_word("Gonçalves", "GQll", "por") == "Gonçalves"
+
+
+def test_wrapped_hyphen_is_removed_only_for_a_known_joined_word() -> None:
+    assert _join_wrapped_hyphens("apre-\nsentam", "por") == "apresentam"
+    assert _join_wrapped_hyphens("estado-\nnovista", "por") == "estado-novista"
+
+
+def test_spelling_correction_is_conservative_around_names_and_short_words() -> None:
+    assert _conservative_spelling("desenvolvimernito", "por") == "desenvolvimento"
+    assert _conservative_spelling("congrçsso", "por") == "congresso"
+    assert _conservative_spelling("paertês", "por") == "paertês"
+    assert _conservative_spelling("Gatete", "por") == "Gatete"

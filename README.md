@@ -8,7 +8,7 @@ Esta é a distribuição compartilhável do Mekora, sincronizada com o produto e
 **1º de outubro de 2026**. Ela contém o mesmo código operacional da versão
 principal, mas nunca inclui o acervo, banco, credenciais, modelos baixados,
 arquivos convertidos, logs ou demais dados da instalação de desenvolvimento.
-Nesta revisão, a origem funcional corresponde ao commit `62cd0e6` do Mekora
+Nesta revisão, a origem funcional corresponde ao commit `0606890` do Mekora
 principal; os iniciadores próprios da distribuição para Windows são mantidos.
 
 ## O produto

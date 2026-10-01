@@ -32,6 +32,8 @@ py7zr==1.1.3
 # conferida fica para depois, sem pressa.
 pytesseract==0.3.13
 Pillow==12.3.0
+wordfreq==3.1.1
+pyspellchecker==0.8.3
 argostranslate==1.11.0
 beautifulsoup4==4.15.0
 odfpy==1.4.1

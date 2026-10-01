@@ -21,6 +21,7 @@ const BLOCOS = {
   P: "paragrafo",
   H1: "titulo", H2: "titulo", H3: "subtitulo", H4: "subtitulo", H5: "subtitulo", H6: "subtitulo",
   BLOCKQUOTE: "citacao",
+  ASIDE: "nota-fonte",
   LI: "item",
   FIGCAPTION: "legenda",
 };
@@ -161,7 +162,11 @@ function percorrer(no, saida) {
        * Livro que não declara não ganha o bloco escuro, e ganha a citação com
        * filete, que é o que ele pediu. */
       const papel = filho.getAttribute?.("data-epub-type") || "";
-      const qual = tipo === "citacao" && /\bepigraph\b/.test(papel) ? "epigrafe" : tipo;
+      const qual = tipo === "citacao" && /\bepigraph\b/.test(papel)
+        ? "epigrafe"
+        : tipo === "paragrafo" && /\bcontributors?\b/.test(papel)
+          ? "autoria"
+          : tipo;
       saida.push({ tipo: qual, ...lerBloco(filho), ...(ancora ? { ancora } : {}) });
       // Não desce: um <p> dentro de <blockquote> já foi lido, e descer
       // duplicaria o parágrafo.

@@ -367,6 +367,20 @@
 }
 .prosa .item { text-indent: 0; }
 .prosa .legenda { text-indent: 0; font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
+.prosa .autoria { margin: 8px 0 32px; color: var(--muted-foreground); font-style: italic; text-indent: 0; }
+
+/* Nota editorial do próprio livro. Ela não é uma nota criada pela pessoa e
+ * por isso não usa o caderno nem as cores de destaque. A borda superior
+ * conserva a separação que edições impressas costumam fazer com um filete. */
+.prosa .nota-fonte {
+  margin: 32px 0 0;
+  padding: 16px 0 0;
+  border-block-start: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-size: max(0.82em, 16px);
+  line-height: 1.5;
+  text-indent: 0;
+}
 
 /* Enfase do AUTOR, distinta do destaque do LEITOR: uma e do texto, a outra e
  * marca sobre o texto. */

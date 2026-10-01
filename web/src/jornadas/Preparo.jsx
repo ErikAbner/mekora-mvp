@@ -225,7 +225,7 @@ function planos(job) {
       passo: "ocr",
       icone: ICONE.reconhecer,
       titulo: `Reconhecer o texto${job.detected_language ? ` em ${nomeDoIdioma(job.detected_language)}` : ""}`,
-      diz: "Depois disso o Kindle acha palavras e você pode mudar o corpo da letra.",
+      diz: "O idioma detectado orienta o reconhecimento. Depois disso o Kindle acha palavras e você pode mudar o corpo da letra; em digitalizações antigas, vale comparar trechos difíceis com a página original.",
     });
   }
 

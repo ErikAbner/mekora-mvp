@@ -516,7 +516,7 @@ def _bg_analyze(job_id: int, operation_id: str | None = None) -> None:
             job.cover_path = str(promovida)
 
         if result["is_scanned"]:
-            from app.services.ocr_service import OCRFailedError, apply_ocr
+            from app.services.ocr_service import OCRFailedError, apply_ocr, choose_ocr_languages
 
             # A ETAPA MAIS LONGA DO PRODUTO, e a que passava calada. O
             # reconhecimento é uma chamada externa só, sem retorno por página —
@@ -526,7 +526,11 @@ def _bg_analyze(job_id: int, operation_id: str | None = None) -> None:
             cfg = load_app_config()
             ocr_out = STORAGE_TEMP / str(job_id) / f"{Path(job.input_path).stem}_ocr.pdf"
             try:
-                apply_ocr(Path(job.input_path), ocr_out, languages=cfg["ocr_languages"])
+                idiomas_ocr = choose_ocr_languages(
+                    job.final_language or job.detected_language,
+                    cfg["ocr_languages"],
+                )
+                apply_ocr(Path(job.input_path), ocr_out, languages=idiomas_ocr)
                 job.processed_pdf_path = str(ocr_out)
                 job.ocr_used = True
                 job.ocr_status = "done"
@@ -683,7 +687,12 @@ def _bg_convert(job_id: int, operation_id: str | None = None) -> None:
                         report_progress(op_dir, operation_id, "convert", atual, total,
                                         f"Organizando texto da página {atual} de {total}")
 
-                convert_pdf_to_reflow_epub(**argumentos, progresso=_progresso_refluxo)
+                convert_pdf_to_reflow_epub(
+                    **argumentos,
+                    fallback_text_path=(Path(job.input_path) if job.ocr_used else None),
+                    visual_ocr=bool(job.ocr_used),
+                    progresso=_progresso_refluxo,
+                )
             elif usar_layout_fixo:
                 from app.services.pdf_fixed_epub_service import convert_pdf_to_fixed_epub
 

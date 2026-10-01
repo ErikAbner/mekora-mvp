@@ -48,6 +48,7 @@ IMPORTA_COMO = {
     "pydantic-settings": "pydantic_settings",
     "odfpy": "odf",
     "python-docx": "docx",
+    "pyspellchecker": "spellchecker",
 }
 
 # O QUE NÃO DÁ PARA EXIGIR AQUI, e por quê. Cada linha precisa de uma razão:

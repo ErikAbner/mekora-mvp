@@ -15,9 +15,38 @@ import shutil
 from pathlib import Path
 from typing import Optional
 
+from app.services.language_detection_service import normalize_language_code
+
 
 class OCRFailedError(Exception):
     """Lançada quando o ocrmypdf não consegue processar o arquivo."""
+
+
+def choose_ocr_languages(
+    document_language: str | None,
+    configured_languages: Optional[list[str]] = None,
+) -> list[str]:
+    """Escolhe o vocabulário do OCR sem misturar idiomas desnecessariamente.
+
+    O Tesseract não trata ``por+eng+spa`` como uma rede de segurança neutra:
+    todos os vocabulários competem pela mesma palavra. Em uma digitalização em
+    português isso fazia ``são`` virar ``sáo``, ``mudança`` virar ``mudanga`` e
+    ``questões`` virar ``questóes``. Quando a análise já identificou o idioma e
+    ele está entre os instalados, usar somente esse modelo é mais fiel.
+
+    A lista completa continua sendo o plano B para documento sem idioma
+    confiável ou para uma instalação que não tenha o modelo detectado.
+    """
+    configured = [
+        normalize_language_code(code)
+        for code in (configured_languages or ["por", "eng", "spa"])
+        if normalize_language_code(code)
+    ]
+    configured = list(dict.fromkeys(configured))
+    detected = normalize_language_code(document_language)
+    if detected and detected in configured:
+        return [detected]
+    return configured or ["por"]
 
 
 def apply_ocr(
@@ -60,6 +89,11 @@ def apply_ocr(
             output_pdf,
             language="+".join(languages),
             deskew=True,
+            rotate_pages=True,
+            # Muitos acervos antigos guardam uma fotografia de 150 dpi. O
+            # aumento não inventa detalhe, mas dá ao segmentador uma grade
+            # estável e melhora letras pequenas e acentos antes do Tesseract.
+            oversample=300,
             force_ocr=True,
             progress_bar=False,
         )
