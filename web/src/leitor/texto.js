@@ -214,6 +214,9 @@ function lerBloco(bloco) {
         anda(filho);
         if (tag === "EM" || tag === "I") marcas.push({ de, ate: texto.length, tipo: "enfase" });
         if (tag === "STRONG" || tag === "B") marcas.push({ de, ate: texto.length, tipo: "forte" });
+        if (tag === "A" && /\bnoteref\b/.test(filho.getAttribute("data-epub-type") || "")) {
+          marcas.push({ de, ate: texto.length, tipo: "referencia-nota", alvo: filho.getAttribute("href") || "" });
+        }
       }
     }
   };

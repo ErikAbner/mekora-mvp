@@ -186,7 +186,7 @@ function Bloco({ tipo = "paragrafo", texto, destaques = [], marcas = [], de = 0,
     ...destaques.map((d) => ({ ...d, classe: "destaque", cor: d.cor })),
   ].sort((a, b) => a.de - b.de);
 
-  if (!todas.length) return <Como className={`bloco ${tipo}${marcador ? " com-marcador" : ""}`} data-de={de} data-ancora={ancora || undefined}>{texto}</Como>;
+  if (!todas.length) return <Como id={ancora || undefined} className={`bloco ${tipo}${marcador ? " com-marcador" : ""}`} data-de={de} data-ancora={ancora || undefined}>{texto}</Como>;
 
   const partes = [];
   let i = 0;
@@ -211,6 +211,8 @@ function Bloco({ tipo = "paragrafo", texto, destaques = [], marcas = [], de = 0,
             }
           }}
         >{texto.slice(m.de, m.ate)}</mark>
+      ) : m.classe === "referencia-nota" ? (
+        <a key={`${m.de}-nota`} className="nota-fonte-ref" href={m.alvo}>{texto.slice(m.de, m.ate)}</a>
       ) : (
         <em key={`${m.de}-${m.classe}`} className={m.classe}>{texto.slice(m.de, m.ate)}</em>
       ),
@@ -218,7 +220,7 @@ function Bloco({ tipo = "paragrafo", texto, destaques = [], marcas = [], de = 0,
     i = m.ate;
   }
   if (i < texto.length) partes.push(texto.slice(i));
-  return <Como className={`bloco ${tipo}${marcador ? " com-marcador" : ""}`} data-de={de} data-ancora={ancora || undefined}>{partes}</Como>;
+  return <Como id={ancora || undefined} className={`bloco ${tipo}${marcador ? " com-marcador" : ""}`} data-de={de} data-ancora={ancora || undefined}>{partes}</Como>;
 }
 
 function Paragrafo({ texto, destaques = [] }) {

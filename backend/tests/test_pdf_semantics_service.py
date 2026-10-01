@@ -2,6 +2,7 @@ from app.services.pdf_semantics_service import (
     InlineMark,
     SemanticBlock,
     classify_blocks,
+    link_explicit_notes,
     merge_continuations,
     render_blocks,
 )
@@ -87,3 +88,13 @@ def test_inline_italic_bold_and_auxiliary_content_survive_xhtml() -> None:
     assert 'epub:type="footnote"' in rendered
     assert "<ul><li>item da lista</li></ul>" in rendered
     assert "<h2>Nova seção</h2>" in rendered
+
+
+def test_explicit_footnote_marker_keeps_the_relation_without_guessing() -> None:
+    body = block("A afirmação vem da fonte.¹")
+    note = block("¹ Nosso século, 1945-1960.", kind="note", y0=500, y1=520, size=7)
+    linked = link_explicit_notes([body, note])
+    rendered = render_blocks(linked)
+    assert 'epub:type="noteref"' in rendered
+    assert 'href="#nota-fonte-' in rendered
+    assert 'epub:type="footnote"' in rendered

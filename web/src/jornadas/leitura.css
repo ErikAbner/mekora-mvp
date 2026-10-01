@@ -381,6 +381,13 @@
   line-height: 1.5;
   text-indent: 0;
 }
+.prosa .nota-fonte-ref {
+  color: inherit;
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: .18em;
+}
+.prosa .nota-fonte-ref:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
 
 /* Enfase do AUTOR, distinta do destaque do LEITOR: uma e do texto, a outra e
  * marca sobre o texto. */

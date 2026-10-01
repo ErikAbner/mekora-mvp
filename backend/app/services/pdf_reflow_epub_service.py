@@ -24,6 +24,7 @@ from app.services.pdf_semantics_service import (
     InlineMark,
     SemanticBlock,
     classify_blocks,
+    link_explicit_notes,
     merge_continuations,
     render_blocks,
 )
@@ -446,7 +447,7 @@ def convert_pdf_to_reflow_epub(
             if progresso:
                 progresso(index + 1, total)
 
-        semantic = merge_continuations(classify_blocks(raw_blocks))
+        semantic = link_explicit_notes(merge_continuations(classify_blocks(raw_blocks)))
         sections: list[tuple[str, object]] = []
         current: list[SemanticBlock] = []
         pending_visual = iter(sorted(visual_pages))

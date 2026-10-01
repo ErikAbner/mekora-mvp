@@ -17,6 +17,7 @@ class InlineMark:
     start: int
     end: int
     kind: str  # emphasis | strong
+    target: str | None = None
 
 
 @dataclass(frozen=True)
@@ -222,6 +223,41 @@ def merge_continuations(blocks: list[SemanticBlock]) -> list[SemanticBlock]:
     return headings
 
 
+_NOTE_MARKER = re.compile(r"^\s*([*†‡]|\d{1,2}|[¹²³⁴⁵⁶⁷⁸⁹]+)(?=\s|[A-ZÀ-Ý])")
+
+
+def link_explicit_notes(blocks: list[SemanticBlock]) -> list[SemanticBlock]:
+    """Liga nota e chamada somente quando o mesmo marcador existe nos dois lados."""
+    result = list(blocks)
+    for note_index, note in enumerate(result):
+        if note.kind != "note":
+            continue
+        marker_match = _NOTE_MARKER.match(note.text)
+        if not marker_match:
+            continue
+        marker = marker_match.group(1)
+        anchor = note.anchor or f"nota-fonte-{note.page}-{note.region}-{note_index}"
+        for source_index in range(note_index - 1, -1, -1):
+            source = result[source_index]
+            if source.kind not in {"paragraph", "byline", "caption"}:
+                continue
+            position = source.text.rfind(marker)
+            if position < 0:
+                continue
+            # Um número comum no meio da frase não é chamada de nota. Símbolos
+            # e sobrescritos são inequívocos; algarismos precisam estar junto à
+            # pontuação ou ao fim do bloco.
+            if marker.isdigit() and position + len(marker) < len(source.text):
+                following = source.text[position + len(marker)]
+                if following.isalnum():
+                    continue
+            reference = InlineMark(position, position + len(marker), "noteref", anchor)
+            result[source_index] = replace(source, marks=source.marks + (reference,))
+            result[note_index] = replace(note, anchor=anchor)
+            break
+    return result
+
+
 def render_inline(block: SemanticBlock) -> str:
     if not block.marks:
         return html.escape(block.text)
@@ -237,6 +273,12 @@ def render_inline(block: SemanticBlock) -> str:
             value = f"<em>{value}</em>"
         if "strong" in active:
             value = f"<strong>{value}</strong>"
+        reference = next(
+            (m for m in block.marks if m.kind == "noteref" and m.start <= start and m.end >= end),
+            None,
+        )
+        if reference and reference.target:
+            value = f'<a epub:type="noteref" href="#{html.escape(reference.target)}">{value}</a>'
         pieces.append(value)
     return "".join(pieces)
 
