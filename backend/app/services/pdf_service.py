@@ -1,4 +1,6 @@
 from pathlib import Path
+import math
+import re
 
 import fitz  # PyMuPDF
 
@@ -12,6 +14,17 @@ SCANNED_THRESHOLD = 50
 # está tudo bem num livro que veio quase todo vazio. Vinte é o tamanho de uma
 # linha curta — abaixo disso não há frase.
 LETRAS_PARA_TER_TEXTO = 20
+
+_MARCADORES_TEXTO_CORROMPIDO = re.compile(r"[~^¬¦�]")
+
+
+def texto_parece_corrompido(texto: str) -> bool:
+    """Detecta uma camada OCR extensa, mas imprópria para virar EPUB."""
+    if not texto:
+        return False
+    marcadores = len(_MARCADORES_TEXTO_CORROMPIDO.findall(texto))
+    letras = sum(1 for caractere in texto if caractere.isalpha())
+    return marcadores >= 10 and marcadores / max(1, letras) >= 0.0035
 
 
 def analyze_pdf(pdf_path: str, thumbnails_dir: Path) -> dict:
@@ -65,6 +78,7 @@ def analyze_pdf(pdf_path: str, thumbnails_dir: Path) -> dict:
     total_chars = 0
     ilegiveis = 0
     sem_texto = 0
+    texto_suspeito = 0
     for pagina in doc:
         try:
             texto = pagina.get_text().strip()
@@ -78,9 +92,12 @@ def analyze_pdf(pdf_path: str, thumbnails_dir: Path) -> dict:
         total_chars += len(texto)
         if len(texto) < LETRAS_PARA_TER_TEXTO:
             sem_texto += 1
+        if texto_parece_corrompido(texto):
+            texto_suspeito += 1
 
     avg_chars = total_chars / page_count if page_count > 0 else 0.0
-    is_scanned = avg_chars < SCANNED_THRESHOLD
+    qualidade_suspeita = texto_suspeito >= max(1, math.ceil(page_count * 0.2))
+    is_scanned = avg_chars < SCANNED_THRESHOLD or qualidade_suspeita
 
     # Miniaturas das primeiras 5 páginas a 50% do tamanho original
     thumbnails_dir.mkdir(parents=True, exist_ok=True)
@@ -102,6 +119,7 @@ def analyze_pdf(pdf_path: str, thumbnails_dir: Path) -> dict:
         "needs_password": False,
         "paginas_ilegiveis": ilegiveis,
         "paginas_sem_texto": sem_texto,
+        "paginas_texto_suspeito": texto_suspeito,
         # OS CAPÍTULOS QUE O ARQUIVO DECLARA, e não os que alguém adivinhou.
         #
         # "A partir dos 14 títulos de capítulo que encontrei" (nó 895:7856)

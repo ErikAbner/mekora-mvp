@@ -596,14 +596,21 @@ def _bg_convert(job_id: int, operation_id: str | None = None) -> None:
         slug = job.final_filename or Path(job.original_filename).stem
         output_epub = STORAGE_OUTPUT / str(job_id) / f"{slug}.epub"
         cover = Path(job.cover_path) if job.cover_path else None
+        pdf_original = input_pdf.suffix.lower() == ".pdf" and not job.translated_artifact_path
+        usar_refluxo_pdf = pdf_original and bool(
+            job.ocr_used or ((job.avg_chars_per_page or 0) >= 120 and not job.is_scanned)
+        )
 
         if operation_id:
-            # ebook-convert é processo externo: indeterminado honesto
-            report_progress(op_dir, operation_id, "convert", 0, None,
-                            "Convertendo via Calibre (sem estimativa)")
+            report_progress(
+                op_dir, operation_id, "convert", 0, None,
+                "Criando leitura adaptável do PDF"
+                if usar_refluxo_pdf
+                else "Convertendo via Calibre (sem estimativa)",
+            )
 
         try:
-            convert_to_epub(
+            argumentos = dict(
                 input_path=input_pdf,
                 output_epub=output_epub,
                 title=job.final_title or job.detected_title or "Sem título",
@@ -612,6 +619,19 @@ def _bg_convert(job_id: int, operation_id: str | None = None) -> None:
                 cover=cover,
                 deve_parar=_pediram_parada,
             )
+            if usar_refluxo_pdf:
+                from app.services.pdf_reflow_epub_service import convert_pdf_to_reflow_epub
+
+                def _progresso_refluxo(atual: int, total: int) -> None:
+                    if operation_id:
+                        report_progress(
+                            op_dir, operation_id, "convert", atual, total,
+                            f"Organizando texto da página {atual} de {total}",
+                        )
+
+                convert_pdf_to_reflow_epub(**argumentos, progresso=_progresso_refluxo)
+            else:
+                convert_to_epub(**argumentos)
             job.epub_path = str(output_epub)
             job.epub_bytes = _bytes_de(output_epub)
             job.epub_web_path = _versao_web(output_epub)

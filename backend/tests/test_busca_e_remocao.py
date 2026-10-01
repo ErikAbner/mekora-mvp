@@ -484,6 +484,16 @@ def test_analise_conta_paginas_sem_texto_e_capitulos(tmp_path):
     assert r["capitulos_declarados"] == 3
 
 
+def test_camadas_de_texto_corrompidas_exigem_ocr():
+    from app.services.pdf_service import texto_parece_corrompido
+
+    normal = "Um texto normal em português, com pontuação e acentuação corretas. " * 20
+    corrompido = "nossasvedetes~ texto quebrado ¬ com palavras~unidas e sinais ^ estranhos " * 18
+
+    assert texto_parece_corrompido(normal) is False
+    assert texto_parece_corrompido(corrompido) is True
+
+
 def test_arquivo_sem_sumario_devolve_zero_e_nao_nulo(tmp_path):
     """Zero e nulo dizem coisas diferentes: zero é "o arquivo não traz sumário",
     nulo é "ninguém contou". A tela precisa separar os dois."""
