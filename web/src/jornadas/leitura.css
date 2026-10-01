@@ -40,6 +40,10 @@
   color: var(--muted-foreground); cursor: pointer;
 }
 .cromo-caixa button:hover { background: var(--muted); }
+.cromo-caixa button[aria-pressed="true"] {
+  background: var(--foreground);
+  color: var(--background);
+}
 .cromo-caixa button:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
 
 /* O BALÃO COM O NOME DO BOTÃO.
@@ -138,10 +142,13 @@
 }
 .abertura h1 {
   margin: 0;
+  max-inline-size: 1120px;
   font-size: 64px; line-height: 72px;   /* Display/Large */
   font-weight: 700;                     /* Extrabold da Zodiak esta em 700 */
   letter-spacing: -2.5%;                /* tracking relativo, nunca absoluto */
   color: var(--foreground);
+  overflow-wrap: anywhere;
+  text-wrap: wrap;
 }
 .autoria {
   margin: 0;
@@ -236,14 +243,20 @@
    * como padrao. A entrelinha e RAZAO e nao numero: mudar o corpo sem mudar a
    * entrelinha aperta o texto justamente quando alguem pediu para ele respirar. */
   font-family: var(--leitura-fonte, var(--font-sans));
-  font-size: var(--leitura-corpo, 20px);
-  line-height: calc(var(--leitura-corpo, 20px) * var(--leitura-razao, 1.5));
+  font-size: calc(var(--leitura-corpo, 20px) + var(--leitura-ajuste, 0px));
+  line-height: calc((var(--leitura-corpo, 20px) + var(--leitura-ajuste, 0px)) * var(--leitura-razao, 1.5));
+  font-weight: var(--leitura-peso, 400);
   /* TINTA CHEIA, e nao a secundaria do desenho. O texto do livro e o conteudo
    * pelo qual o produto existe; poe-lo na tinta mais fraca do sistema e inverter
    * a hierarquia. E com destaque atras, a secundaria REPROVA no rosa (3,47) e no
    * azul (3,92) — com a cheia, os oito pares passam. */
   color: var(--foreground);
-  text-wrap: pretty;
+  /* A leitura é a exceção deliberada ao `text-wrap: pretty` global. Em prosa
+   * longa, o navegador repaginar linhas anteriores ao encontrar uma órfã e a
+   * posição visual pode mudar durante o carregamento contínuo. Aqui a quebra
+   * precisa ser estável para progresso, seleção e notas continuarem no mesmo
+   * lugar. */
+  text-wrap: wrap;
 }
 
 /* O destaque acompanha o texto porque E o texto. O desenho usava retangulos
@@ -288,16 +301,18 @@
   .prosa { padding: 40px 0 80px; row-gap: 24px; --respiro: 32px; --borda: 16px; }
   .prosa .ilustracao.larga { margin: 32px 0; }
   .prosa .ilustracao.cheia { margin: 40px 0; padding: 0 16px; }
-  /* O CORPO DA LEITURA NAO CAI NO TELEFONE. O `base.css` desce de 20 para 18 no
-   * produto inteiro, e a razao escrita la e sobre a ENTRELINHA acompanhar em
-   * razao — nao sobre o corpo. O no M-Leitura mantem `body-medium-prosa`, que e
-   * 20/30, e ele esta certo: numa tela de leitura o texto e o produto, e apertar
-   * o unico conteudo da tela para caber mais dele e o troco errado.
-   *
-   * Fica registrado o custo: a 20px numa coluna de 358, a Zodiak da cerca de 34
-   * caracteres por linha — abaixo da faixa confortavel de 45 a 75. E a medida de
-   * livro de bolso, e o pente fino decide se vale. */
-  .prosa p { font-size: 20px; line-height: 30px; }
+  /* O PADRÃO DA LEITURA NÃO CAI NO TELEFONE. O `base.css` desce de 20 para 18
+   * no produto inteiro, mas o nó M-Leitura mantém `body-medium-prosa`, 20/30.
+   * A escolha explícita da pessoa pode ir de 18 a 28; só o encolhimento
+   * automático é evitado. A largura continua limitada pela tela e pelo cálculo
+   * do painel de Aparência. */
+  .prosa p {
+    /* A preferência vale também no telefone. A regra anterior fixava 20px e
+       fazia o controle de tamanho responder visualmente no painel sem alterar
+       o livro — exatamente o tipo de clique que parece ignorado. */
+    font-size: calc(var(--leitura-corpo, 20px) + var(--leitura-ajuste, 0px));
+    line-height: calc((var(--leitura-corpo, 20px) + var(--leitura-ajuste, 0px)) * var(--leitura-razao, 1.5));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -348,7 +363,7 @@
   font-size: 24px; line-height: 32px; font-weight: 540;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  text-wrap: pretty;
+  text-wrap: wrap;
 }
 .prosa .item { text-indent: 0; }
 .prosa .legenda { text-indent: 0; font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
@@ -735,7 +750,7 @@
   /* 464, como os outros painéis do leitor — `941:23110`. Ele estava em 384 e
      o índice em 464: dois painéis irmãos, abertos pelo mesmo tipo de botão da
      mesma barra, com larguras diferentes. É a "largura errada" do R-24. */
-  inline-size: min(420px, 100%);
+  inline-size: min(464px, 100%);
   z-index: 40;
   display: flex; flex-direction: column; gap: 32px;
   /* 32 EM VOLTA — `973:32415` e `973:32420` põem `p-32` no cabeçalho e
@@ -801,6 +816,52 @@
 .aparencia-opcoes button:focus-visible { outline: 1px solid var(--foreground); outline-offset: 2px; }
 .amostra-rotulo { font-size: 14px; line-height: 22px; text-align: center; }
 
+/* Os três ajustes que admitem gradação usam o controle nativo de faixa. Além
+ * de oferecer mais escolhas, ele responde a teclado, toque e tecnologias
+ * assistivas sem recriar arrasto em JavaScript — justamente a interação que
+ * estava intermitente nos cartões de opção. */
+.aparencia section.aparencia-faixa { gap: 12px; }
+.aparencia-faixa label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--muted-foreground);
+  font-size: 20px;
+  line-height: 30px;
+}
+.aparencia-faixa output {
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+  font-size: 16px;
+  line-height: 24px;
+}
+.aparencia-faixa input[type="range"] {
+  inline-size: 100%;
+  block-size: 44px;
+  margin: 0;
+  accent-color: var(--foreground);
+  cursor: pointer;
+}
+.aparencia-faixa input[type="range"]:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
+.aparencia-faixa-limites {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 22px;
+}
+.aparencia-coluna-ajuda {
+  margin: -16px 0 0;
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 22px;
+  text-wrap: pretty;
+}
+
 /* A AMOSTRA MOSTRA O QUE A ESCOLHA FAZ. "Solta" nao diz nada ate se ver a
  * entrelinha solta — o rotulo sozinho pede que a pessoa imagine o resultado. */
 .amostra { color: var(--foreground); font-weight: 540; }
@@ -808,6 +869,7 @@
 .amostra-corpo.amostra-medio { font-size: 24px; }
 .amostra-corpo.amostra-maior { font-size: 32px; }   /* o mesmo do h1 da prosa */
 .amostra-fonte { font-size: 24px; }
+.amostra-fonte.amostra-serifada { font-family: var(--font-sans); font-weight: 450; }
 .amostra-fonte.amostra-sem-serifa { font-family: system-ui, -apple-system, sans-serif; }
 .amostra-destaques { font-size: 24px; padding: 0 4px; }
 .amostra-destaques.amostra-mostrar { background: var(--nota-amarelo); color: #151515; }
@@ -1048,7 +1110,7 @@
      "o corpo caiu, logo a entrelinha cai" é o encolhimento automático que já
      tinha errado na Estante, onde a folha reduziu o que o desenho mantinha.
      Conferido por dado de nó em 04/09. */
-  .abertura h1 { font-size: 56px; line-height: 64px; }
+  .abertura h1 { font-size: 56px; line-height: 72px; }
 }
 
 /* ---- Nota · cartão — nó 941:23113 -----------------------------------------

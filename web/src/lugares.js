@@ -1,4 +1,5 @@
-/* Os cinco lugares do Mekora, num arquivo só.
+/* Os cinco destinos globais do Mekora, reconciliados em 15/09/2026.
+ * Conexões continua sendo uma capacidade contextual de Notas e Estudos.
  *
  * A `DEC-0024` fixa quais são, e o cabeçalho, o roteador e a página de "ainda
  * não existe" leem daqui. Ter a lista em três lugares é como o menu passa a

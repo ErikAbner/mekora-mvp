@@ -149,7 +149,8 @@
 
 .estudo header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 /* 24/32: ver a nota do `.livro-pagina-secao h2` — o 22 não é degrau do Figma. */
-.estudo h2 { margin: 0; font-size: 24px; line-height: 32px; color: var(--foreground); }
+.estudo :where(h1, h2) { margin: 0; color: var(--foreground); }
+.estudo h2 { font-size: 24px; line-height: 32px; }
 /* O TÍTULO É UM LINK, e link sem tinta declarada sai no `#0000ee` do
  * navegador. O defeito estava aqui desde que o título virou link, e nenhuma
  * medição o via: a auditoria media a tela numa conta sem estudo nenhum, então
@@ -165,6 +166,34 @@
   line-height: 26px;
   color: var(--foreground);
   text-wrap: pretty;
+}
+
+/* O índice apresenta a pergunta; a página do estudo guarda a íntegra. Uma
+ * pergunta de duas mil letras não pode transformar um cartão em uma página. */
+.estudo--resumido .estudo-sobre {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
+}
+.estudo-sobre--recolhido {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 8;
+  overflow: hidden;
+}
+.estudo-sobre-alternar {
+  margin-block-start: 12px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 14px;
+  line-height: 22px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
 }
 
 .estudo-selo {
@@ -190,6 +219,10 @@
   font-size: 16px;
   line-height: 24px;
   text-wrap: pretty;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 8;
+  overflow: hidden;
 }
 
 .estudo-comentario {
@@ -198,6 +231,10 @@
   line-height: 22px;
   font-style: italic;
   color: var(--muted-foreground);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
+  overflow: hidden;
 }
 
 .estudo-nota-acoes {
@@ -250,6 +287,18 @@
 .reunir-marca { grid-row: span 2; inline-size: 14px; block-size: 14px; margin-block-start: 3px; }
 .reunir-texto { font-size: 14px; line-height: 22px; }
 .reunir-origem { font-size: 14px; line-height: 22px; color: var(--muted-foreground); }
+.reunir-contagem { margin: 12px 0 0; color: var(--muted-foreground); font-size: 14px; line-height: 22px; }
+
+.estudos-carregar-mais {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-block-start: 24px;
+  border-block-start: 1px solid var(--border);
+}
+.estudos-carregar-mais p { margin: 0; color: var(--muted-foreground); font-size: 14px; line-height: 22px; }
 
 /* ---- Os recortes e o que ficou fora — nó 966:31095 -------------------------
  *
@@ -347,6 +396,8 @@
   /* `966:30771` baixa o título para heading-md e tira a entreletra. O respiro
      vertical, esse não muda — ver a regra de 1023. */
   .estudos h1 { font-size: 32px; line-height: 40px; letter-spacing: normal; }
+  .estudos-carregar-mais { align-items: stretch; flex-direction: column; }
+  .estudos-carregar-mais .botao { inline-size: 100%; }
 }
 
 /* A capa ao lado do trecho — nó 966:31095. */
@@ -367,7 +418,7 @@
  * a capa diz de relance, e leva de volta ao livro.
  */
 .estudo-livros { margin-block-start: 24px; }
-.estudo-livros h3 {
+.estudo-livros :where(h2, h3) {
   margin: 0 0 12px;
   font-size: 16px; line-height: 24px;   /* Label/Medium */
   color: var(--muted-foreground);
@@ -407,6 +458,17 @@
 }
 /* A caixa vazia já mostra o nome; repeti-lo embaixo diria duas vezes. */
 .estudo-livro-vazio + .estudo-livro-nome { display: none; }
+.estudo-livros-restantes {
+  inline-size: 88px;
+  block-size: 124px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  background: var(--background-secondary);
+  color: var(--muted-foreground);
+  font-size: 16px;
+  line-height: 24px;
+}
 
 /* ─── O que os nos 900:56142 e 895:8849 trazem e a tela nao tinha ───────────*/
 
@@ -519,7 +581,7 @@
 /* "Como isso se formou" — o titulo que o no 895:8260 poe sobre as notas. A lista
  * aparecia sem nome nenhum, e um estudo e a pergunta MAIS o que foi juntado. */
 .estudo-formou { display: flex; flex-direction: column; gap: 16px; margin-block-start: 32px; }
-.estudo-formou h3 {
+.estudo-formou :where(h2, h3) {
   margin: 0;
   font-size: 20px; line-height: 30px; font-weight: 540;
   color: var(--foreground);
@@ -528,10 +590,18 @@
 
 /* "Voce ligou" — no 895:8849. Os assuntos que apareceram no acervo sem ninguem
  * organizar nada. */
-.estudos-ligou { display: flex; flex-direction: column; gap: 24px; }
+.estudos-ligou { display: flex; flex-direction: column; }
+.estudos-ligou-cabecalho {
+  display: flex; flex-direction: column; gap: 24px;
+  padding-block-end: 24px;
+  border-block-end: 1px solid var(--border);
+}
 .estudos-ligou h2 {
   margin: 0;
-  font-size: 28px; line-height: 36px; font-weight: 540;   /* Heading/SM */
+  /* O frame 895:8492 usa o mesmo degrau de seção de "Livros" na página de
+     um estudo. Com 28/36 este título parecia subordinado ao primeiro grupo,
+     quando ele nomeia toda a região. */
+  font-size: 32px; line-height: 40px; font-weight: 540;   /* Heading/MD */
   color: var(--foreground);
 }
 .estudos-ligou-criterio {
@@ -543,9 +613,10 @@
 .estudos-fios { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0; }
 .estudos-fios > li {
   display: flex; flex-direction: column; gap: 16px; align-items: flex-start;
-  padding: 32px 0;
-  border-block-start: 1px solid var(--border);
+  padding: 40px 0;
+  border-block-end: 1px solid var(--border);
 }
+.estudos-fios > li:last-child { border-block-end: 0; padding-block-end: 0; }
 .estudos-fio-conta {
   margin: 0;
   font-size: 20px; line-height: 30px;   /* Body/Medium */
@@ -561,7 +632,10 @@
 }
 .estudos-fio-notas {
   margin: 0; padding: 0; list-style: none;
-  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* O frame 895:8492 lê as evidências de cima para baixo. Duas colunas
+     aproximavam trechos sem relação e faziam a origem de uma nota competir
+     com o começo da outra. */
+  display: flex; flex-direction: column;
   gap: 16px; inline-size: 100%;
 }
 .estudos-fio-notas a {
@@ -577,8 +651,8 @@
 
 @media (max-width: 767px) {
   .estudos-fios > li { padding: 24px 0; }
+  .estudos-ligou h2 { font-size: 28px; line-height: 36px; }
   .estudos-fio-conta { font-size: 18px; line-height: 26px; }
-  .estudos-fio-notas { grid-template-columns: 1fr; }
   /* Em 320px, “Criar estudo com estas notas” ultrapassava a coluna por 5px.
      O rótulo continua em uma linha; só o recheio lateral cai de 32 para 20,
      ainda acima do espaçamento interno mínimo do sistema. */
@@ -652,34 +726,80 @@
  * isso se formou" 20/30 onde ele pede 32/40 nos dois. Três degraus de
  * diferença, e o efeito é a página do estudo parecer um cartão grande em vez de
  * uma página. */
-.estudo-pagina .estudo h2 { font-size: 40px; line-height: 48px; letter-spacing: -0.6px; }
-.estudo-pagina .estudo-livros h3,
-.estudo-pagina .estudo-formou h3 { font-size: 32px; line-height: 40px; color: var(--foreground); margin: 0 0 24px; }
+.estudo--pagina h1 { font-size: 40px; line-height: 48px; letter-spacing: -0.6px; }
+.estudo--pagina .estudo-livros h2,
+.estudo--pagina .estudo-formou h2 { font-size: 32px; line-height: 40px; color: var(--foreground); margin: 0 0 24px; }
 
 /* Na página, o estudo deixa de ser cartão. A moldura pertence à lista, onde
  * separa um estudo do vizinho; aplicada ao estudo inteiro ela achatava título,
  * livros e notas num único grupo cinza. */
-.estudo-pagina .estudo {
-  display: flex; flex-direction: column; gap: 48px;
+.estudo--pagina {
+  display: flex; flex-direction: column; gap: 0;
   padding: 0;
   border: 0;
   background: transparent;
 }
-.estudo-pagina .estudo-sobre {
+.estudo--pagina > header {
+  padding-block-start: 0;
+}
+.estudo--pagina > header > div { inline-size: 100%; }
+.estudo--pagina .estudo-sobre {
   max-inline-size: none;
   margin-block-start: 32px;
   padding: 24px;
   background: var(--background-secondary);
 }
-.estudo-pagina .estudo-resumo { margin: 0; }
-.estudo-pagina .estudo-livros,
-.estudo-pagina .estudo-formou {
-  margin-block-start: 0;
-  padding-block-start: 48px;
+.estudo--pagina .estudo-resumo { margin: 32px 0 0; }
+.estudo-detalhe-corpo {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 974px);
+  gap: 48px;
+  margin-block-start: 64px;
+  padding-block-start: 64px;
   border-block-start: 1px solid var(--separator);
 }
-.estudo-pagina .estudo-notas { margin-block-start: 0; gap: 40px; }
-.estudo-pagina .estudo-notas li { padding-block-end: 40px; }
+.estudo-detalhe-conteudo { min-inline-size: 0; }
+.estudo-detalhe-corpo--lista,
+.estudo-detalhe-conteudo--lista { display: contents; }
+.estudo--pagina .estudo-livros { margin-block-start: 0; }
+.estudo--pagina .estudo-formou {
+  margin-block-start: 64px;
+  padding-block-start: 64px;
+  border-block-start: 1px solid var(--separator);
+}
+.estudo--pagina .estudo-notas {
+  inline-size: min(747px, 100%);
+  margin: 40px 0 0;
+  gap: 40px;
+}
+.estudo--pagina .estudo-notas li {
+  padding: 0 0 40px;
+  border-block-end: 0;
+}
+/* No frame, alguns registros ganham chão recuado e outros ficam diretamente
+   na página. É uma alternância de leitura, não uma coleção de cartões iguais. */
+.estudo--pagina .estudo-notas li:nth-child(even) {
+  padding: 32px;
+  background: var(--background-secondary);
+}
+.estudo--pagina .estudo-notas li:last-child { padding-block-end: 0; }
+.estudo--pagina .estudo-notas li:nth-child(even):last-child { padding-block-end: 32px; }
+.estudo--pagina .estudo-formou .campo { max-inline-size: 747px; }
+
+@media (max-width: 1023px) {
+  /* A trilha some neste ponto; a coluna reservada para ela precisa sumir junto.
+     Manter a grade de duas colunas deixava 248px vazios no tablet. */
+  .estudo-detalhe-corpo { display: block; }
+}
+
+@media (max-width: 767px) {
+  .estudo--pagina h1 { font-size: 32px; line-height: 40px; letter-spacing: normal; }
+  .estudo--pagina .estudo-livros h2,
+  .estudo--pagina .estudo-formou h2 { font-size: 28px; line-height: 36px; }
+  .estudo--pagina .estudo-livros { margin-block-start: 0; padding-block-start: 0; }
+  .estudo--pagina .estudo-formou { margin-block-start: 64px; padding-block-start: 64px; }
+  .estudo--pagina .estudo-notas li:nth-child(even) { padding: 24px; }
+}
 
 /* ─── O ARRASTO DO QUADRO ──────────────────────────────────────────────────
  *

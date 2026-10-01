@@ -29,8 +29,10 @@ Depois:
 node scripts/medir.mjs <url> [largura] [altura] [setup.js] <medida.js>
 ```
 
-Sem dependência: Node 18+ já tem `fetch` e `WebSocket` globais, e o Chrome é
-procurado no cache do puppeteer e nos caminhos usuais. `CHROME=` força outro.
+Sem dependência: Node 18+ já tem `fetch` e `WebSocket` globais. O instrumento
+prefere o `chrome-headless-shell` do cache do Puppeteer, que não se registra
+como aplicativo nem abre janela; depois procura um navegador instalado e só
+usa o Chrome for Testing completo como último recurso. `CHROME=` força outro.
 
 O `setup.js` põe o protótipo no estado que interessa; o `medida.js` é avaliado
 na página e o valor volta como JSON.

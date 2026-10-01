@@ -113,18 +113,40 @@ function percorrer(no, saida) {
        * o parágrafo que já foi lido, que é o que o comentário antigo evitava. */
       const dentroDele = filho.querySelectorAll?.("img, image") ?? [];
       if (dentroDele.length) {
-        const conteudo = lerBloco(filho);
+        /* Preserva a ordem real do XHTML. Antes todas as imagens eram emitidas
+         * primeiro e o texto inteiro depois, mesmo em `texto, imagem, texto`.
+         * Isso invertia justamente os exemplos que o parágrafo explicava. */
+        let ancoraUsada = false;
+        let inicioNo = filho;
+        let inicioOffset = 0;
+        const emitirTexto = (fragmento) => {
+          const conteudo = lerBloco(fragmento);
+          if ((conteudo.texto ?? "").trim()) {
+            saida.push({ tipo, ...conteudo, ...(!ancoraUsada && ancora ? { ancora } : {}) });
+            ancoraUsada = true;
+          }
+        };
         for (const img of dentroDele) {
+          const trecho = filho.ownerDocument.createRange();
+          trecho.setStart(inicioNo, inicioOffset);
+          trecho.setEndBefore(img);
+          emitirTexto(trecho.cloneContents());
           const src =
             img.getAttribute("src") ||
             img.getAttribute("xlink:href") ||
             img.getAttribute("href");
           const dentro = resolverCaminho(src, caminhoDoCapitulo);
-          if (dentro) saida.push({ tipo: "imagem", dentro, alt: img.getAttribute("alt") ?? "", ...(ancora ? { ancora } : {}) });
+          if (dentro) {
+            saida.push({ tipo: "imagem", dentro, alt: img.getAttribute("alt") ?? "", ...(!ancoraUsada && ancora ? { ancora } : {}) });
+            ancoraUsada = true;
+          }
+          inicioNo = img.parentNode;
+          inicioOffset = Array.from(inicioNo.childNodes).indexOf(img) + 1;
         }
-        /* O texto só entra se existir. Um `<p>` que carrega apenas a figura não
-         * é um parágrafo vazio: é a figura. */
-        if ((conteudo.texto ?? "").trim()) saida.push({ tipo, ...conteudo, ...(ancora ? { ancora } : {}) });
+        const restante = filho.ownerDocument.createRange();
+        restante.setStart(inicioNo, inicioOffset);
+        restante.setEnd(filho, filho.childNodes.length);
+        emitirTexto(restante.cloneContents());
         continue;
       }
 

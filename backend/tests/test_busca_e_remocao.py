@@ -451,6 +451,25 @@ def test_senha_em_arquivo_que_nao_espera_senha_da_409(client, sample_pdf):
     assert r.status_code == 409
 
 
+def test_cinco_senhas_erradas_fecham_a_porta_temporariamente(client, tmp_path):
+    caminho = _pdf_com_senha(tmp_path / "tentativas.pdf")
+    with open(caminho, "rb") as f:
+        envio = client.post("/upload", files={"file": ("tentativas.pdf", f.read(), "application/pdf")})
+    job_id = envio.json()["upload_id"]
+    client.get(f"/analyze/{job_id}")
+
+    for _ in range(4):
+        assert client.post(f"/jobs/{job_id}/senha", json={"senha": "errada"}).status_code == 403
+    quinta = client.post(f"/jobs/{job_id}/senha", json={"senha": "errada"})
+    assert quinta.status_code == 429
+    assert quinta.headers["retry-after"] == "900"
+
+    # Nem a senha certa atravessa o teto: sem isto, o limite seria só uma
+    # mensagem diferente na quinta tentativa, e não uma porta fechada.
+    bloqueada = client.post(f"/jobs/{job_id}/senha", json={"senha": "abre-te"})
+    assert bloqueada.status_code == 429
+
+
 # ---------------------------------------------------------------------------
 # O que a análise conta página por página (nós 895:7856 e 895:7631)
 # ---------------------------------------------------------------------------
@@ -488,7 +507,7 @@ def test_camadas_de_texto_corrompidas_exigem_ocr():
     from app.services.pdf_service import texto_parece_corrompido
 
     normal = "Um texto normal em português, com pontuação e acentuação corretas. " * 20
-    corrompido = "nossasvedetes~ texto quebrado ¬ com palavras~unidas e sinais ^ estranhos " * 18
+    corrompido = ("nossasvedetes~ texto quebrado ¬ com palavras~unidas e sinais ^ estranhos " * 18)
 
     assert texto_parece_corrompido(normal) is False
     assert texto_parece_corrompido(corrompido) is True

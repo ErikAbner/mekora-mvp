@@ -30,8 +30,30 @@ function PROXY() {
   );
 }
 
+/* A janela instalada pode permanecer aberta enquanto um build novo substitui
+ * os arquivos no disco. O identificador entra tanto no JavaScript quanto em um
+ * arquivo mínimo consultado pelo app; assim ele compara a versão que EXECUTA
+ * com a versão que o servidor já tem, sem depender do cache do navegador. */
+function versaoDoAppInstalado() {
+  const assinatura = String(Date.now());
+  return {
+    name: "mekora-versao-app-instalado",
+    apply: "build",
+    config() {
+      return { define: { __MEKORA_BUILD_ID__: JSON.stringify(assinatura) } };
+    },
+    generateBundle() {
+      this.emitFile({
+        type: "asset",
+        fileName: "assets/mekora-version.json",
+        source: JSON.stringify({ versao: assinatura }),
+      });
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), versaoDoAppInstalado()],
   // A pasta publica se chama publico, como o resto do repositorio.
   publicDir: "publico",
   resolve: {

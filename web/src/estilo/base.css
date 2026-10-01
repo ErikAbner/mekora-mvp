@@ -125,6 +125,17 @@ html {
   scroll-behavior: smooth;
 }
 
+/* QUEBRAS DE LINHA COMO PADRAO DE INTERFACE.
+ *
+ * `pretty` evita a palavra solta na ultima linha sem mudar a medida da caixa.
+ * Ele vale para a interface inteira porque títulos, explicações, cartões e
+ * mensagens são lidos como unidades curtas. O leitor é a exceção deliberada:
+ * ali a paginação, as âncoras e a posição de leitura dependem do fluxo mais
+ * previsível possível, e o texto pertence ao livro — não à interface. */
+body { text-wrap: pretty; }
+.leitura,
+.leitura :where(p, li, blockquote, h1, h2, h3, h4, h5, h6) { text-wrap: wrap; }
+
 /* AS CURVAS, NOMEADAS.
  *
  * O Erik disse "péssimas animações ao longo do site", e parte disso é não haver
@@ -271,6 +282,13 @@ body {
   line-height: 30px; /* a excecao escrita: leitura em razao 1,5 */
   font-weight: var(--font-weight-body);
   -webkit-font-smoothing: antialiased;
+}
+
+.rota-carregando {
+  min-block-size: 50vh;
+  display: grid;
+  place-items: center;
+  color: var(--muted-foreground);
 }
 
 /* Mobile: o corpo cai para 18 e a entrelinha o acompanha em RAZAO, nao em
@@ -709,4 +727,5 @@ blockquote.trecho-citado {
   background: var(--foreground);
   color: var(--primary-foreground);
 }
+.recortes button .dado { color: currentColor; }
 .recortes button:not([aria-pressed="true"]):hover { background: var(--muted); }

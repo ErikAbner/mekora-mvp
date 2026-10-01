@@ -450,16 +450,32 @@ const PROVAS = {
         }
         if (!par) return { achouPar: false, quantas: secs.length };
         const b = par.dentro;
-        const alvo2 = document.elementFromPoint(Math.round(b.x + b.w / 2), Math.round(b.y + 6));
+        const faixa = b.el.querySelector('.canvas-secao-faixa');
+        const area = b.el.querySelector('.canvas-secao-area');
+        const rf = faixa?.getBoundingClientRect();
+        const ra = area?.getBoundingClientRect();
+        /* Se a faixa estiver sob o cabeçalho fixo ela some de propósito. Nesse
+           estado, prova-se a própria área, que continua sendo a segunda pega
+           legítima da seção. */
+        const usarFaixa = faixa && getComputedStyle(faixa).pointerEvents !== 'none' && rf.height > 0;
+        const pontos = usarFaixa
+          ? [[rf.left + 8, rf.top + rf.height / 2], [rf.left + rf.width / 2, rf.top + rf.height / 2]]
+          : [[ra.left + 1, ra.top + ra.height / 2], [ra.right - 1, ra.top + ra.height / 2],
+             [ra.left + 8, ra.bottom - 8], [ra.right - 8, ra.bottom - 8], [ra.right - 8, ra.top + 8]];
+        const alvos = pontos.map(([x, y]) => document.elementFromPoint(Math.round(x), Math.round(y)));
+        const alvo2 = alvos.find(e => e && (e === b.el || b.el.contains(e))) || alvos[0];
         return {
           achouPar: true,
           zDentro: parseInt(getComputedStyle(b.el).zIndex) || 0,
           zFora: parseInt(getComputedStyle(par.fora.el).zIndex) || 0,
-          pega: !!alvo2 && (alvo2 === b.el || b.el.contains(alvo2)),
+          /* Nota é um alvo legítimo e deliberadamente vence a moldura. O
+             defeito é a seção externa interceptar a interna inteira. */
+          pega: !!alvo2 && (alvo2 === b.el || b.el.contains(alvo2) || !!alvo2.closest?.('.nota-canvas')),
+          alvo: alvo2 ? alvo2.tagName + '.' + (alvo2.className || '') : 'nenhum',
         };`, veneno);
       if (!d.achouPar) throw new NaoPodeMedir(`o Canvas mostrou ${d.quantas} secao(oes) e nenhuma dentro de outra`);
       if (!(d.zDentro > d.zFora)) return `a secao de dentro pinta em ${d.zDentro} e a de fora em ${d.zFora}: a menor tem de ficar por cima`;
-      if (!d.pega) return 'a secao coberta nao pega o ponteiro: uma area que nao se pode pegar nao existe para quem usa';
+      if (!d.pega) return `a secao coberta nao pega o ponteiro (${d.alvo}): uma area que nao se pode pegar nao existe para quem usa`;
       return null;
     },
   },
@@ -583,37 +599,13 @@ const PROVAS = {
 
   'r35': {
     erik: '"Continua completamente bugada" (estante 3D)',
-    /* A VISTA 3D MORA EM `/estante`, e nao em `/estante/:id` — aquela e a
-       ficha do livro. Apontei para a errada na primeira escrita e a prova
-       respondeu "a vista 3D nao montou a pilha", que era verdade sobre a
-       outra tela. */
-    veneno: `const s = document.createElement('style');
-             s.textContent = '.ficha-caixa{padding:24px !important;gap:16px !important}';
-             document.head.appendChild(s);`,
-    async correr(veneno) {
-      const d = medir('/estante', `
-        const px = (e, p) => e ? Math.round(parseFloat(getComputedStyle(e)[p])) : -1;
-        const esperar2 = ms => new Promise(r3 => setTimeout(r3, ms));
-        const b = [...document.querySelectorAll('.recortes.vista button')]
-          .find(e => /3D/.test(e.textContent || ''));
-        if (b) { b.click(); await esperar2(700); }
-        const pilha = document.querySelector('.pilha');
-        const ficha = document.querySelector('.ficha');
-        const caixa = document.querySelector('.ficha-caixa');
-        return {
-          temPilha: !!pilha,
-          deitados: document.querySelectorAll('.livro-deitado').length,
-          fichaLarg: ficha ? Math.round(ficha.getBoundingClientRect().width) : 0,
-          caixaRecheio: px(caixa, 'paddingTop'),
-          caixaVao: px(caixa, 'rowGap'),
-          titulo: px(caixa ? caixa.querySelector('h2') : null, 'fontSize'),
-        };`, veneno);
-      if (!d.temPilha) throw new NaoPodeMedir('a vista 3D nao montou a pilha');
-      if (d.deitados < 2) return `a pilha tem ${d.deitados} livro(s) deitado(s)`;
-      if (d.fichaLarg !== 476) return `a ficha mede ${d.fichaLarg}, e o 895:7506 pede 476`;
-      if (d.caixaRecheio !== 40) return `o cartao da ficha tem ${d.caixaRecheio} de recheio, e o 917:8399 pede 40`;
-      if (d.caixaVao !== 32) return `o cartao da ficha tem ${d.caixaVao} de vao, e o no pede 32`;
-      if (d.titulo !== 32) return `o titulo da ficha esta em ${d.titulo}, e o no pede heading-md 32`;
+    /* A vista 3D foi aposentada. A prova vigente impede que o controle e a
+       pilha histórica voltem por acidente. */
+    texto: () => arq('web/src/jornadas/Estante.jsx'),
+    correr(t) {
+      if (/Estante em 3D|className=["']pilha|livro-deitado/.test(t)) {
+        return 'a vista 3D aposentada voltou para a Estante';
+      }
       return null;
     },
   },
@@ -837,24 +829,23 @@ const PROVAS = {
 
   'r27': {
     erik: '"voce esqueceu de REMOVER o vertical trim de todos os textos"',
-    /* FECHADO PELO CONTRARIO: em 07/09 o Erik mandou MANTER, porque os vaos das
-       51 telas foram medidos com a caixa aparada. A prova cobra a permanencia —
-       tirar o trim agora e que seria a regressao. */
+    /* A decisão vigente removeu o recurso experimental: ritmo depende apenas
+       de line-height, gap e padding, de forma igual entre navegadores. */
     veneno: `const s = document.createElement('style');
-             s.textContent = '.prosa .paragrafo, .abertura h1{text-box-trim:none !important}';
+             s.textContent = '.prosa .paragrafo, .abertura h1{text-box-trim:trim-both !important}';
              document.head.appendChild(s);`,
     async correr(veneno) {
       const d = medir('/leitura/{LIVRO}', `
         const alvos = [document.querySelector('.abertura h1'), document.querySelector('.prosa .paragrafo')].filter(Boolean);
         if (!alvos.length) return { achou: 0 };
         return { achou: alvos.length,
-                 sem: alvos.filter(e => {
+                 com: alvos.filter(e => {
                    const v = getComputedStyle(e).textBoxTrim || getComputedStyle(e).getPropertyValue('text-box-trim');
-                   return !v || v === 'none';
+                   return v && v !== 'none';
                  }).length };
       `, veneno);
       if (!d.achou) throw new NaoPodeMedir('nao achei titulo nem paragrafo na leitura');
-      if (d.sem) return `${d.sem} de ${d.achou} blocos sem text-box-trim, e a decisao de 07/09 e manter`;
+      if (d.com) return `${d.com} de ${d.achou} blocos ainda dependem de text-box-trim`;
       return null;
     },
   },
@@ -1571,7 +1562,7 @@ const PROVAS = {
         faixa.setStart(no, 5); faixa.setEnd(no, 45);
         const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(faixa);
         const trecho = sel.toString();
-        document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+        document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
         await esperar(700);
         const paleta = document.querySelector('.paleta');
         const cores = paleta ? [...paleta.querySelectorAll('.paleta-cor')] : [];
@@ -1672,7 +1663,7 @@ const PROVAS = {
                  invade_filtros: filtros ? rm.top < filtros.getBoundingClientRect().bottom : false };`, veneno);
       if (d.semMarcador) return 'nenhum livro da estante tem marcador de notas — sem ele nao ha a sobreposicao que este item mede';
       if (d.invade_filtros) return `o marcador alcanca a barra de recortes`;
-      if (!String(d.na_frente || '').includes('capa')) return `na sobreposicao quem esta na frente e "${d.na_frente}", e nao a capa (z marca ${d.z_marca}, z capa ${d.z_capa})`;
+      if (!String(d.na_frente || '').includes('marcador')) return `o marcador ficou escondido pela capa (z marca ${d.z_marca}, z capa ${d.z_capa})`;
       return null;
     },
   },
@@ -2005,6 +1996,27 @@ const PROVAS = {
         };`, veneno, { alt: 2400 });
       if (!d.quantos) throw new NaoPodeMedir('a secao "Fora de estudo" nao mostrou item nenhum — semeie notas soltas');
       if (!d.comComentario) return `nenhuma das ${d.quantos} notas soltas mostra o comentario, e a rota /notas/todas manda o campo — o texto que a pessoa escreveu nao chega a tela`;
+      return null;
+    },
+  },
+
+  'r55': {
+    erik: 'o dock mobile precisa terminar no fim da janela, e nao no fim de um ancestral',
+    /* `transform` cria bloco de contenção para descendente fixed. É o defeito
+       que a leitura de `inset-block-end: 0` não encontra: a regra continua
+       escrita e a barra aparece no lugar errado. */
+    veneno: `document.querySelector('.cabecalho').style.transform = 'translateZ(0)';`,
+    async correr(veneno) {
+      const d = medir('/mesa', `
+        const dock = document.querySelector('.cabecalho-lugares');
+        if (!dock) return { semDock: true };
+        const r = dock.getBoundingClientRect();
+        return { fim: Math.round(r.bottom), janela: window.innerHeight,
+                 posicao: getComputedStyle(dock).position };`, veneno,
+        { largura: 390, altura: 844 });
+      if (d.semDock) return 'a navegacao mobile nao montou';
+      if (d.posicao !== 'fixed') return `o dock usa ${d.posicao}, e precisa acompanhar a janela`;
+      if (Math.abs(d.fim - d.janela) > 1) return `o dock termina em ${d.fim}px e a janela em ${d.janela}px`;
       return null;
     },
   },

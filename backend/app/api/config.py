@@ -40,13 +40,25 @@ async def formatos() -> dict:
 
     A lista sai de `input_router_service`, que é quem decide de verdade para
     onde cada arquivo vai.
-    """
-    from app.services.input_router_service import COMIC_EXTENSIONS, DOCUMENT_EXTENSIONS
 
+    A LISTA É A DO MOMENTO, e não a do que o produto sabe fazer. Com a
+    conversão de quadrinhos desligada (`core/quadrinhos.py`), `quadrinhos` volta
+    vazia e a tela para de oferecer o que o `/upload` vai recusar — que é o
+    mesmo defeito de antes, na direção contrária.
+    """
+    from app.core import quadrinhos as bandeira
+    from app.services.input_router_service import (
+        COMIC_EXTENSIONS,
+        DOCUMENT_EXTENSIONS,
+        get_accepted_extensions,
+    )
+
+    comics = sorted(COMIC_EXTENSIONS) if bandeira.ligados() else []
     return {
         "documentos": sorted(DOCUMENT_EXTENSIONS),
-        "quadrinhos": sorted(COMIC_EXTENSIONS),
-        "todos": sorted(DOCUMENT_EXTENSIONS | COMIC_EXTENSIONS),
+        "quadrinhos": comics,
+        "todos": sorted(get_accepted_extensions()),
+        "quadrinhos_desligados": not bandeira.ligados(),
     }
 
 

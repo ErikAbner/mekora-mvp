@@ -53,11 +53,23 @@ IMPORTA_COMO = {
 # O QUE NÃO DÁ PARA EXIGIR AQUI, e por quê. Cada linha precisa de uma razão:
 # uma lista de exceções sem motivo vira o lugar onde se esconde o que incomoda.
 FORA = {
-    # O KCC 9 pede Python 3.10 ou mais novo. Este `.venv` é 3.9 e a imagem de
-    # produção é 3.11, onde ele instala. O código que o usa importa dentro da
-    # função (`comic_export_service`), então a ausência aqui não quebra import
-    # nenhum — e os testes de quadrinho não o executam.
-    "kindlecomicconverter": "exige Python 3.10+; a imagem de produção é 3.11",
+    # VAZIO, e a linha que saiu daqui merece ficar registrada.
+    #
+    # Havia uma exceção para o `kindlecomicconverter`, com esta razão escrita:
+    # "exige Python 3.10+; a imagem de produção é 3.11, ONDE ELE INSTALA".
+    #
+    # A segunda metade era falsa. O pacote não instala em lugar nenhum: ele saiu
+    # do PyPI, e `pip install -r requirements.txt` falhava — a imagem de
+    # produção não reconstruía. Este arquivo era o único lugar da suíte que
+    # olhava para o pacote, e ele PULAVA o caso afirmando o contrário.
+    #
+    # É o formato mais caro de exceção: a que carrega uma razão plausível e não
+    # conferida. Ela sobreviveu porque o `.venv` era 3.9, e a explicação "no 3.9
+    # não instala, na produção sim" fechava sozinha.
+    #
+    # A lição fica na regra que já estava escrita aqui em cima — "cada linha
+    # precisa de uma razão" — com um pedaço a mais: **a razão precisa ser
+    # verificável, e verificada na hora em que se escreve.**
 }
 
 

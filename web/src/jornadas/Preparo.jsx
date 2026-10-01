@@ -7,7 +7,7 @@ import { Campo } from "../componentes/Campo.jsx";
 import {
   acompanhar, analisar, atualizarMetadados, cancelarOperacao, converter, enviarAoKindle, escolherIdiomas,
   esperarAnalise, motoresDeTraducao, paresDeTraducao, quantoCostumaLevar, situacao,
-  trabalho, traduzir,
+  trabalho, traduzir, escolherCapa,
 } from "../../../contrato/api.js";
 import { nomeDoIdioma } from "../../../contrato/idiomas.js";
 import { comoSeDiz } from "../../../contrato/duracao.js";
@@ -292,7 +292,13 @@ function planos(job) {
    * capa; se nao escolheu, o Mekora monta uma. */
   const escolhida = job.selected_cover_page;
   fora.push(
-    typeof escolhida === "number"
+    job.cover_source === "embedded"
+      ? {
+          icone: ICONE.capa,
+          titulo: "Usar a capa do arquivo",
+          diz: "A capa foi encontrada dentro do livro e será preservada.",
+        }
+      : job.cover_source === "page" && typeof escolhida === "number"
       ? {
           icone: ICONE.capa,
           titulo: `Usar a página ${escolhida + 1} como capa`,
@@ -305,7 +311,7 @@ function planos(job) {
              a pessoa faça. */
           icone: ICONE.capa,
           verCapa: true,
-          sozinho: "o arquivo não tem capa",
+          sozinho: job.embedded_cover_url ? null : "o arquivo não tem capa embutida",
           titulo: "Capa gerada",
           diz: "Montar uma com o título, o autor e o formato, na linguagem da estante.",
         },
@@ -348,7 +354,7 @@ function planos(job) {
  * inteira por uma linha de texto, e a pessoa perdia de vista o que preparava.
  */
 function Topo({ job, titulo, modo, aoMudarModo }) {
-  const capa = (job.thumbnails ?? [])[0];
+  const capa = job.cover_url || (job.thumbnails ?? [])[0];
   const [capaFalhou, setCapaFalhou] = useState(false);
   const marcas = [
     job.input_format && job.input_format.toUpperCase(),
@@ -508,6 +514,7 @@ export function Preparo() {
      terminaram nesta máquina. Vazio enquanto não houver histórico bastante, e aí
      a tela cala, como sempre calou. */
   const [tempos, setTempos] = useState(null);
+  const [salvandoCapa, setSalvandoCapa] = useState(false);
 
   const buscar = useCallback(async () => {
     try {
@@ -1047,6 +1054,34 @@ export function Preparo() {
                 : `${sozinhas.length} coisas eu resolvi sozinho e vale você conferir: ${sozinhas.join(", ")}.`}
           </span>
         </p>
+
+        <section className="preparo-pagina-secao preparo-capas" aria-labelledby="capas-titulo">
+          <div className="preparo-capas-cabecalho">
+            <div>
+              <h2 id="capas-titulo">Capa do livro</h2>
+              <p>A escolha vale na Mesa, Estante, busca, Estudos e Canvas. Você pode trocá-la depois.</p>
+            </div>
+            {salvandoCapa && <span role="status">Guardando…</span>}
+          </div>
+          <div className="preparo-capas-opcoes" role="radiogroup" aria-label="Escolher capa">
+            {job.embedded_cover_url && (
+              <button type="button" role="radio" aria-checked={job.cover_source === "embedded"} onClick={async () => { setSalvandoCapa(true); try { setJob(await escolherCapa(id, { mode: "embedded" })); } finally { setSalvandoCapa(false); } }}>
+                <img src={job.embedded_cover_url} alt="Capa encontrada dentro do arquivo" />
+                <span>Capa do arquivo</span>
+              </button>
+            )}
+            {(job.thumbnails ?? []).map((miniatura, indice) => (
+              <button key={miniatura} type="button" role="radio" aria-checked={job.cover_source === "page" && job.selected_cover_page === indice} onClick={async () => { setSalvandoCapa(true); try { setJob(await escolherCapa(id, { mode: "page", selected_cover_page: indice })); } finally { setSalvandoCapa(false); } }}>
+                <img src={miniatura} alt={`Página ${indice + 1} como capa`} />
+                <span>Página {indice + 1}</span>
+              </button>
+            ))}
+            <button type="button" role="radio" aria-checked={job.cover_source === "generated"} onClick={async () => { setSalvandoCapa(true); try { setJob(await escolherCapa(id, { mode: "generated" })); } finally { setSalvandoCapa(false); } }}>
+              <CapaDeReserva titulo={titulo} autor={autor || null} formato={(job.input_format || "").toUpperCase() || null} chave={id} />
+              <span>Capa do Mekora</span>
+            </button>
+          </div>
+        </section>
 
         <section className="preparo-traducao-destaque">
           <div>

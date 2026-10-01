@@ -13,19 +13,20 @@
  * parava em 1255 dos 1350 mesmo numa janela de 1920, e o corpo em 1127 dos
  * 1222. E o mesmo defeito que o `.preparo-pagina` ja pagou, na mesma linha do
  * CLAUDE.md — e ele so apareceu aqui quando uma prova foi cobrar o numero. */
-.livro-pagina { inline-size: 100%; max-inline-size: calc(1222px + 2 * 64px); margin: 0 auto; padding: 32px 64px 80px; display: flex; gap: 48px; align-items: flex-start; }
+.livro-pagina { inline-size: 100%; max-inline-size: calc(1222px + 2 * 64px); margin: 0 auto; padding: 64px 64px 0; display: flex; gap: 48px; align-items: flex-start; }
 /* 1222, E NÃO 900. O 900 era a medida de leitura de uma coluna que dividia a
    página com a trilha; sem ela o corpo É a página, e o nó `895:7683` mede 1222.
    Medido em 04/09: com 900 a capa de 427 deixava 425 para a identidade, os
    selos quebravam em duas linhas e "Ver o preparo" caía para baixo dos outros
    dois botões. */
-.livro-pagina-corpo { flex: 1 1 0; min-inline-size: 0; max-inline-size: 1222px; display: flex; flex-direction: column; gap: 48px; }
+.livro-pagina-corpo { flex: 1 1 0; min-inline-size: 0; max-inline-size: 1222px; display: flex; flex-direction: column; gap: 0; }
 /* A ancora nao pode encostar no topo da janela: sem isto o titulo da secao fica
  * colado na borda e parece cortado. */
 .livro-pagina-secao, .livro-pagina-topo { scroll-margin-top: 32px; }
 
 .livro-pagina-volta {
   align-self: flex-start;
+  margin-block-end: 32px;
   font-size: 16px;
   line-height: 24px;
   color: var(--muted-foreground);
@@ -36,7 +37,13 @@
 .livro-pagina-volta:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
 
 /* 48 entre a capa e a identidade — nó 895:7683. */
-.livro-pagina-topo { display: flex; gap: 48px; align-items: flex-start; flex-wrap: wrap; }
+.livro-pagina-topo {
+  display: grid;
+  grid-template-columns: 427px minmax(0, 747px);
+  gap: 48px;
+  align-items: start;
+  padding-block-end: 64px;
+}
 
 /* 427 DE LARGURA E A RAZÃO DA CAPA — nó `895:7684`.
  *
@@ -90,7 +97,7 @@
  * (`895:7688`), 24 entre os selos e a origem (`895:7693`), 16 entre os selos
  * (`895:7694`), 16 entre autor, "lido" e a barra (`895:7700`). */
 .livro-pagina-identidade {
-  flex: 1 1 320px;
+  min-inline-size: 0;
   display: flex; flex-direction: column; gap: 32px;
 }
 .livro-pagina h1 { margin: 0; font-size: 40px; line-height: 48px; letter-spacing: -0.01em; color: var(--foreground); text-wrap: balance; }
@@ -106,21 +113,53 @@
 
 .livro-pagina-secao {
   inline-size: 100%; max-inline-size: 1222px;
-  padding-block-start: 32px;
+  padding-block: 64px;
   border-block-start: 1px solid var(--border);
 }
-/* O BLOCO DE DESTAQUES NAO E UMA FAIXA ESTICADA.
- *
- * O frame 895:7631 usa os 1222px para compor a página, mas o conteúdo de
- * “O que ficou” ocupa a coluna de 747px à direita. A trilha antiga da esquerda
- * foi removida por decisão de produto; o espaço que ela organizava continua
- * sendo respiro, não largura extra entregue ao texto. A tentativa anterior de
- * centralizar tudo em 888px apagou essa hierarquia e ainda acrescentou recuos
- * e filetes horizontais que o desenho não tem. */
-.livro-pagina-o-que-ficou-conteudo {
-  inline-size: min(747px, 100%);
-  margin-inline-start: auto;
+.livro-pagina-secao#livro-o-que-ficou {
+  display: grid;
+  grid-template-columns: 427px minmax(0, 747px);
+  gap: 48px;
+  align-items: start;
 }
+.livro-pagina-o-que-ficou-conteudo {
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+.livro-pagina-indice {
+  position: sticky;
+  inset-block-start: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-block-start: 4px;
+}
+.livro-pagina-indice a {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-inline-size: 0;
+  color: var(--muted-foreground);
+  font-size: 16px;
+  line-height: 24px;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.livro-pagina-indice a > span {
+  inline-size: 40px;
+  block-size: 1px;
+  background: var(--border);
+  transition: inline-size 160ms ease, background 160ms ease;
+}
+.livro-pagina-indice a[aria-current="location"] { color: var(--foreground); }
+.livro-pagina-indice a[aria-current="location"] > span {
+  inline-size: 72px;
+  background: var(--foreground);
+}
+.livro-pagina-indice a:hover { color: var(--foreground); }
 /* HEADING/MD 32/40, e o número saiu do nó — não do vizinho na escala.
  *
  * Estava em 22/28. O 22 não existe em token nenhum do Figma, e minha primeira
@@ -141,8 +180,10 @@
 
 .livro-pagina-notas { margin: 40px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 40px; }
 .livro-pagina-notas > li {
-  padding-inline-start: 32px;
-  border-inline-start: 2px solid var(--traco-da-nota, var(--border-strong, var(--muted-foreground)));
+  position: relative;
+  padding-inline: 32px 64px;
+  border-inline-start: 1px solid var(--traco-da-nota, var(--border-strong, var(--muted-foreground)));
+  scroll-margin-top: 32px;
 }
 
 .livro-pagina-notas blockquote {
@@ -154,6 +195,10 @@
   font-size: 20px;
   line-height: 30px;
   text-wrap: pretty;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 8;
+  overflow: hidden;
 }
 
 /* O filete marca a fala sobre a fala; o chão marcou o que foi lido. */
@@ -165,30 +210,25 @@
   line-height: 24px;
   color: var(--muted-foreground);
   text-wrap: pretty;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
+  overflow: hidden;
 }
+
+.livro-pagina-carregar-mais {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-block-start: 32px;
+  padding-block-start: 24px;
+  border-block-start: 1px solid var(--border);
+}
+.livro-pagina-carregar-mais p { margin: 0; color: var(--muted-foreground); font-size: 14px; line-height: 22px; }
 
 .livro-pagina-lugar { margin: 10px 0 0; font-size: 14px; line-height: 22px; color: var(--muted-foreground); }
 
-/* A ficha-arquivo do arquivo: rótulo e valor em duas colunas, com filete entre linhas.
-   Grade e não tabela porque não há cabeçalho nem eixo — são pares. */
-.ficha-arquivo { margin: 20px 0 0; display: flex; flex-direction: column; }
-
-.ficha-arquivo-linha {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 2px;
-  padding-block: 14px;
-  border-block-end: 1px solid var(--border);
-}
-
-@media (min-width: 620px) {
-  .ficha-arquivo-linha { grid-template-columns: 220px minmax(0, 1fr); gap: 24px; }
-}
-
-.ficha-arquivo-linha:last-child { border-block-end: 0; }
-.ficha-arquivo dt { font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
-.ficha-arquivo dd { margin: 0; font-size: 16px; line-height: 24px; color: var(--foreground); }
-.ficha-arquivo dd .dado { font-variant-numeric: tabular-nums; }
 
 /* ---- no telefone — nó 966:29052 --------------------------------------------
  *
@@ -214,6 +254,28 @@
 /* ---- O título com o ⋮, e os selos — nó 966:29052 --------------------------- */
 .livro-pagina-titulo { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .livro-pagina-titulo h1 { flex: 1 1 auto; min-width: 0; }
+.livro-pagina-titulo-recolhido {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  overflow: hidden;
+}
+.livro-pagina-titulo h1,
+.livro-pagina-origem-nome { overflow-wrap: anywhere; }
+.livro-pagina-titulo-alternar {
+  align-self: flex-start;
+  margin-block-start: -20px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 14px;
+  line-height: 22px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
 
 .livro-pagina-mais {
   flex: 0 0 auto;
@@ -297,6 +359,10 @@
   font-size: 16px; line-height: 24px;
   color: var(--muted-foreground);
   text-wrap: pretty;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
+  overflow: hidden;
 }
 
 /* "Ver o preparo" e texto com sublinhado, e nao botao: e a terceira acao, e a
@@ -307,29 +373,104 @@
   font-size: 16px; line-height: 24px;
 }
 
-.livro-pagina-filtro { display: flex; flex-direction: column; gap: 16px; margin-block-end: 40px; }
+.livro-pagina-filtro { display: flex; flex-direction: column; gap: 40px; margin-block: 16px 40px; }
 .livro-pagina-filtro .campo { inline-size: 100%; max-inline-size: none; }
+.livro-pagina-busca { position: relative; }
+.livro-pagina-busca::before {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  inset-inline-start: 24px;
+  inset-block-start: 50%;
+  inline-size: 24px;
+  block-size: 24px;
+  color: var(--muted-foreground);
+  background: currentColor;
+  -webkit-mask: url("/icones/icone-buscar.svg") center / contain no-repeat;
+  mask: url("/icones/icone-buscar.svg") center / contain no-repeat;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.livro-pagina-busca input { padding-inline-start: 64px; }
 
-.livro-pagina-acoes-nota { display: flex; flex-wrap: wrap; gap: 12px; margin-block-start: 24px; }
-.livro-pagina-acoes-nota .botao {
-  min-block-size: 44px;
-  padding: 10px 16px;
-  font-size: 14px; line-height: 22px;
+.livro-pagina-acoes-nota { display: flex; flex-wrap: wrap; gap: 32px; margin-block-start: 24px; }
+.livro-pagina-acoes-nota > button,
+.livro-pagina-edicao-nota button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 14px;
+  line-height: 22px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.livro-pagina-apagar-nota {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  inline-size: 44px;
+  block-size: 44px;
+  padding: 10px;
+  border: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+.livro-pagina-apagar-nota .icone { inline-size: 24px; block-size: 24px; }
+.livro-pagina-apagar-nota:hover { color: var(--foreground); background: var(--muted); }
+.livro-pagina-edicao-nota { display: flex; flex-direction: column; gap: 12px; margin-block-start: 16px; }
+.livro-pagina-edicao-nota textarea {
+  inline-size: 100%; min-block-size: 112px; padding: 16px;
+  border: 1px solid var(--border); background: var(--card); color: var(--foreground);
+  font: inherit; font-size: 16px; line-height: 24px; resize: vertical;
+}
+.livro-pagina-edicao-nota > div { display: flex; align-items: center; gap: 24px; }
+.livro-pagina-edicao-nota .botao { padding: 10px 16px; text-decoration: none; }
+
+.livro-pagina-filtro .recortes.soltos { gap: 16px; }
+.livro-pagina-filtro .recortes.soltos button {
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 14px;
+  line-height: 22px;
 }
 
 /* Abaixo de 1024 a trilha some (regra dela), e a pagina volta a ser uma coluna
  * so — sem o `gap` de 48 sobrando onde nao ha mais duas colunas. */
 @media (max-width: 1023px) {
-  .livro-pagina { gap: 0; padding: 32px 16px 80px; }
+  .livro-pagina { gap: 0; padding: 64px 16px 0; }
+  .livro-pagina-secao#livro-o-que-ficou { display: block; }
+  .livro-pagina-indice { display: none; }
   .livro-pagina-o-que-ficou-conteudo { inline-size: 100%; }
 }
 
+@media (max-width: 899px) {
+  .livro-pagina-topo { grid-template-columns: minmax(240px, 0.7fr) minmax(0, 1fr); gap: 32px; }
+  .livro-pagina-capa { inline-size: 100%; }
+}
+
 @media (max-width: 767px) {
+  .livro-pagina-topo { display: flex; flex-direction: column; gap: 24px; }
+  .livro-pagina-capa, .livro-pagina-identidade { inline-size: 100%; }
   /* No telefone a ilustração decorativa não compra o direito de estreitar o
      campo de escrita. A tarefa continua com a largura inteira. */
   .livro-pagina-escrever-cabecalho { display: block; }
   .livro-pagina-escrever-ilustracao { display: none; }
-  .livro-pagina-acoes-nota .botao { flex: 1 1 auto; justify-content: center; }
+  .livro-pagina-filtro .recortes {
+    inline-size: 100%;
+    max-inline-size: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+  }
+  .livro-pagina-filtro .recortes > button { min-inline-size: max-content; }
+  .livro-pagina-filtro .recortes button { flex: none; scroll-snap-align: start; }
+  .livro-pagina-carregar-mais { align-items: stretch; flex-direction: column; }
+  .livro-pagina-carregar-mais .botao { inline-size: 100%; }
 }
 
 /* A marca de rascunho na propria nota. Ela muda o que a nota PODE FAZER — nao
@@ -362,8 +503,8 @@
   display: flex; align-items: center; justify-content: space-between; gap: 24px;
   flex-wrap: wrap;
   padding: 24px;
-  background: var(--card);
-  border: 1px solid var(--border);
+  background: var(--background-secondary, var(--muted));
+  border: 0;
 }
 .livro-pagina-aviso p {
   display: flex; align-items: center; gap: 12px;

@@ -111,6 +111,34 @@ def test_translate_blocks_multiple_chunks() -> None:
     assert engine.translate.call_count == 2
 
 
+def test_translate_blocks_batches_and_reuses_checkpoint(tmp_path: Path) -> None:
+    class BatchEngine:
+        max_input_chars = 64
+        model_name = "test"
+
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def translate(self, text: str, source: str, target: str) -> str:
+            raise AssertionError("o caminho em lote deveria ser usado")
+
+        def translate_many(self, texts: list[str], source: str, target: str) -> list[str]:
+            self.calls += 1
+            return [text.upper() for text in texts]
+
+    blocks = [_block(("texto %d. " % i) * 8, order=i) for i in range(8)]
+    checkpoint = tmp_path / "translation.json"
+    first = BatchEngine()
+    result = translate_blocks(blocks, first, "eng", "por", checkpoint_path=checkpoint)
+    assert first.calls > 0
+    assert all(block.text == block.text.upper() for block in result)
+
+    second = BatchEngine()
+    repeated = translate_blocks(blocks, second, "eng", "por", checkpoint_path=checkpoint)
+    assert second.calls == 0
+    assert [block.text for block in repeated] == [block.text for block in result]
+
+
 # ---------------------------------------------------------------------------
 # blocks_to_html
 # ---------------------------------------------------------------------------

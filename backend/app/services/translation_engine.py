@@ -176,9 +176,14 @@ def criar_motor(engine_name: str, cfg: dict) -> "TranslatorEngine":
 
     if engine_name == "nllb":
         from app.services.nllb_engine import NllbTranslatorEngine
+        from app.services.translation_model_service import NLLB_DEFAULT_MODEL_DIR
 
         return NllbTranslatorEngine(
             model_name=cfg.get("nllb_model_name", "facebook/nllb-200-distilled-600M"),
             device=cfg.get("nllb_device_preference") or None,
+            # O status confere este diretório; o motor precisa carregar o mesmo
+            # lugar. Sem isto a tela dizia "instalado" olhando o disco local e
+            # a tradução tentava buscar o nome remoto no Hugging Face.
+            model_dir=NLLB_DEFAULT_MODEL_DIR,
         )
     return ArgosTranslatorEngine()

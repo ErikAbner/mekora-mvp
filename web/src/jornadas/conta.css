@@ -128,11 +128,6 @@
 /* No escuro ele clareia junto com as outras ilustracoes — a regra do base.css e
  * por classe, e esta entra nela. */
 @media (max-width: 767px) {
-  /* A gaveta já deixa 16 px de margem. Repetir mais 16 aqui reduzia a trilha a
-   * 296 px e truncava até `eriks0403@gmail.com`; o miolo volta a ocupar a
-   * largura útil da folha, sem eliminar o respiro externo. */
-  .conta { padding-inline: 0; }
-
   /* NO TELEFONE ELA FICA — e o motivo de ter saído era uma medida do OUTRO nó.
    *
    * O comentário anterior dizia "272px de ornamento antes do conteúdo empurram a

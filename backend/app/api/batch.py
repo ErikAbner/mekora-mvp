@@ -41,7 +41,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends
 from sqlalchemy.orm import Session
 
 from app.api.porta import exigir_conta
@@ -49,6 +49,7 @@ from app.db.database import get_db
 from app.models.processing_job import ProcessingJob
 from app.schemas.jobs import (
     BatchApplyPresetRequest,
+    BatchPrepareRequest,
     BatchApplySuggestionsRequest,
     BatchExportRequest,
     BatchItemResult,
@@ -195,7 +196,7 @@ def batch_apply_preset(
     """
     from app.services.preset_service import extract_job_updates, get_preset
 
-    preset = get_preset(body.preset_id)
+    preset = get_preset(body.preset_id, pessoa.id)
     if preset is None:
         # Retorna todos como erro
         items = [
@@ -222,6 +223,209 @@ def batch_apply_preset(
             db.rollback()
             items.append(BatchItemResult(job_id=job_id, status="error", message=str(exc)))
 
+    return _make_result(items)
+
+
+def _language_code(value: str | None) -> str:
+    """Normaliza os códigos mais comuns emitidos por metadados e detectores."""
+    code = (value or "").strip().lower().replace("_", "-")
+    aliases = {
+        "en": "eng", "en-us": "eng", "en-gb": "eng", "english": "eng",
+        "pt": "por", "pt-br": "por", "pt-pt": "por", "portuguese": "por",
+        "es": "spa", "es-es": "spa", "es-mx": "spa", "spanish": "spa",
+    }
+    return aliases.get(code, code[:3])
+
+
+def _bg_prepare_configured_job(
+    job_id: int,
+    owner_id: int | None,
+    preset: dict | None = None,
+) -> None:
+    """Conclui um item usando apenas decisões já persistidas no próprio job.
+
+    ``preset`` só é necessário na primeira execução para preservar a regra que
+    decidiu se traduz ou não. Depois de uma reinicialização, idioma, motor e a
+    decisão final já estão no banco; isso permite retomar a fila sem depender
+    do navegador ou de uma tarefa em memória que deixou de existir.
+    """
+    from app.api.jobs import _bg_convert, _bg_translate
+    from app.core.config import STORAGE_OUTPUT
+    from app.db.database import SessionLocal
+    from app.services.progress_service import OperationInProgressError, begin_operation
+
+    db = SessionLocal()
+    try:
+        job = db.query(ProcessingJob).filter(
+            ProcessingJob.id == job_id,
+            ProcessingJob.dono_id == owner_id,
+        ).first()
+        if job is None or job.bloqueio or job.processing_mode == "comic":
+            return
+
+        language = _language_code(job.detected_language or job.final_language or job.source_language)
+        target = _language_code((preset or {}).get("target_language") or job.target_language)
+        if preset is not None:
+            rule = preset.get("translation_rule") or (
+                "always" if preset.get("translation_enabled") else "never"
+            )
+            should_translate = (
+                rule == "always"
+                or (rule == "english_to_portuguese" and language == "eng")
+                or (rule == "different_from_target" and bool(language) and language != target)
+            )
+        else:
+            # Retomada: ``translation_enabled`` já é a decisão tomada pela
+            # receita. ``auto`` usa o idioma detectado, e português nunca é
+            # retraduzido para português.
+            should_translate = bool(
+                job.translation_enabled and language and target and language != target
+            )
+
+        if should_translate and job.translation_status != "done":
+            job.translation_enabled = True
+            if preset is not None:
+                source = preset.get("source_language") or language
+                job.source_language = language if source == "auto" else source
+                job.target_language = preset.get("target_language") or "por"
+                job.translator_engine = preset.get("translator_engine") or "argos"
+            elif job.source_language in (None, "", "auto"):
+                job.source_language = language
+            op_id = begin_operation(job, STORAGE_OUTPUT / str(job.id), "translate")
+            job.translation_status = "in_progress"
+            job.translation_error = None
+            db.commit()
+            db.close()
+            _bg_translate(job_id, op_id)
+
+            db = SessionLocal()
+            job = db.query(ProcessingJob).filter(ProcessingJob.id == job_id).first()
+            if job is None or job.translation_status != "done":
+                if job is not None:
+                    job.status = "error"
+                    job.conversion_status = "not_started"
+                    job.error_message = job.translation_error or "A tradução não terminou."
+                    db.commit()
+                return
+        elif not should_translate:
+            job.translation_enabled = False
+            job.source_language = language
+            job.target_language = "por" if language == "por" else ""
+
+        op_id = begin_operation(job, STORAGE_OUTPUT / str(job.id), "convert")
+        job.status = "converting"
+        job.conversion_status = "in_progress"
+        job.error_message = None
+        db.commit()
+        db.close()
+        _bg_convert(job_id, op_id)
+    except OperationInProgressError:
+        db.rollback()
+    except Exception as exc:  # noqa: BLE001 — um item não interrompe o lote
+        db.rollback()
+        try:
+            job = db.query(ProcessingJob).filter(ProcessingJob.id == job_id).first()
+            if job is not None:
+                job.status = "error"
+                job.conversion_status = "failed"
+                job.error_message = f"Preparação em lote falhou: {exc}"
+                db.commit()
+        except Exception:
+            db.rollback()
+    finally:
+        db.close()
+
+
+def _bg_prepare_batch(job_ids: list[int], preset_id: str) -> None:
+    """Executa um lote durável, um arquivo por vez, inclusive sem a aba aberta."""
+    from app.db.database import SessionLocal
+    from app.services.preset_service import get_preset
+
+    identification = SessionLocal()
+    try:
+        first = identification.query(ProcessingJob).filter(ProcessingJob.id.in_(job_ids)).first()
+        owner_id = first.dono_id if first is not None else None
+    finally:
+        identification.close()
+    preset = get_preset(preset_id, owner_id) or {}
+    for job_id in job_ids:
+        _bg_prepare_configured_job(job_id, owner_id, preset)
+
+
+def resume_pending_preparations() -> None:
+    """Retoma a parte da fila que sobreviveu a uma reinicialização."""
+    from app.db.database import SessionLocal
+
+    db = SessionLocal()
+    try:
+        queued = db.query(ProcessingJob).filter(
+            ProcessingJob.conversion_status == "pending"
+        ).order_by(ProcessingJob.created_at, ProcessingJob.id).all()
+        entries = [(job.id, job.dono_id) for job in queued]
+    finally:
+        db.close()
+    for job_id, owner_id in entries:
+        _bg_prepare_configured_job(job_id, owner_id)
+
+
+@router.post("/prepare", response_model=BatchResult)
+def batch_prepare(
+    body: BatchPrepareRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    pessoa=Depends(exigir_conta),
+) -> BatchResult:
+    """Aplica um preset e prepara vários documentos até o EPUB final."""
+    from app.core.config import STORAGE_OUTPUT
+    from app.services.preset_service import extract_job_updates, get_preset
+    from app.services.progress_service import check_active_operation
+
+    preset = get_preset(body.preset_id, pessoa.id)
+    items: list[BatchItemResult] = []
+    accepted: list[int] = []
+    if preset is None:
+        return _make_result([
+            BatchItemResult(job_id=job_id, status="error", message="Preset não encontrado.")
+            for job_id in body.job_ids
+        ])
+
+    for job_id in dict.fromkeys(body.job_ids):
+        job = _meu(db, pessoa, job_id)
+        if job is None:
+            items.append(BatchItemResult(job_id=job_id, status="error", message="Job não encontrado."))
+            continue
+        if job.bloqueio:
+            items.append(BatchItemResult(job_id=job_id, status="skipped", message="O arquivo precisa de uma decisão antes de continuar."))
+            continue
+        if job.processing_mode == "comic":
+            items.append(BatchItemResult(job_id=job_id, status="skipped", message="Use o preparo de quadrinhos para este arquivo."))
+            continue
+        # Não apaga o estado de uma tradução/conversão que já está viva. Além
+        # de duplicar trabalho, redefinir os campos abaixo para ``pending``
+        # faria o acompanhamento parecer parado enquanto a operação real segue.
+        if check_active_operation(job.active_operation, STORAGE_OUTPUT / str(job.id)) == "busy":
+            items.append(BatchItemResult(job_id=job_id, status="skipped", message="Este arquivo já está sendo preparado."))
+            continue
+        if job.status not in ("analyzed", "converted", "error"):
+            items.append(BatchItemResult(job_id=job_id, status="skipped", message="A análise ainda não terminou."))
+            continue
+        for field, value in extract_job_updates(preset).items():
+            if hasattr(job, field):
+                setattr(job, field, value)
+        # Retentativa começa de um estado limpo. Sem isto, um erro antigo vence
+        # o novo ``pending`` na derivação do frontend e o acompanhamento para
+        # antes de o trabalho em lote sequer iniciar.
+        job.status = "analyzed"
+        job.translation_status = "not_started"
+        job.translation_error = None
+        job.conversion_status = "pending"
+        job.error_message = None
+        accepted.append(job_id)
+        items.append(BatchItemResult(job_id=job_id, status="success", action="queued", message="Adicionado ao preparo."))
+
+    db.commit()
+    if accepted:
+        background_tasks.add_task(_bg_prepare_batch, accepted, body.preset_id)
     return _make_result(items)
 
 

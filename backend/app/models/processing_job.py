@@ -103,6 +103,10 @@ class ProcessingJob(Base):
     # motivo vai aparecer, e `is_blocked` obrigaria uma segunda coluna para
     # dizer por quê. Nulo quer dizer que nada trava.
     bloqueio = Column(String)
+    # A senha em si nunca é guardada. Estes dois campos guardam apenas o abuso
+    # da porta: cinco erros fecham novas tentativas por quinze minutos.
+    tentativas_senha = Column(Integer, nullable=False, default=0)
+    senha_bloqueada_ate = Column(DateTime(timezone=True))
     # O EPUB com as imagens em WebP, para ler no navegador. Separado porque o
     # `epub_path` e o que vai para o Kindle, e o Kindle nao le WebP de forma
     # confiavel. Nulo quando o livro nao tem imagem que valha converter.

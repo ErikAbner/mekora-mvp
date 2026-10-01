@@ -9,35 +9,25 @@
  * Depois que o agente sair, ferramenta conhecida vale mais que ferramenta
  * enxuta — resposta para `react-router` existe em qualquer lugar.
  */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import { MesaVazia } from "./jornadas/MesaVazia.jsx";
 import { Apresentacao } from "./jornadas/Apresentacao.jsx";
 import { ContaVisao } from "./jornadas/ContaVisao.jsx";
 import { ContaSeguranca } from "./jornadas/ContaSeguranca.jsx";
-import { Ajuda } from "./jornadas/Ajuda.jsx";
-import { Atualizacoes } from "./jornadas/Atualizacoes.jsx";
 import { Sistema } from "./jornadas/Sistema.jsx";
 import { Politicas } from "./jornadas/Politicas.jsx";
-import { EstudoPagina } from "./jornadas/EstudoPagina.jsx";
 import { MesaCheia } from "./jornadas/MesaCheia.jsx";
-import { Estante } from "./jornadas/Estante.jsx";
-import { Leitura } from "./jornadas/Leitura.jsx";
 import { AindaNao } from "./jornadas/AindaNao.jsx";
 import { SoNoComputador } from "./componentes/SoNoComputador.jsx";
 import { Conta } from "./jornadas/Conta.jsx";
 import { Entrar } from "./jornadas/Entrar.jsx";
 import { CriarConta } from "./jornadas/CriarConta.jsx";
 import { Privacidade } from "./jornadas/Privacidade.jsx";
-import { Canvas } from "./jornadas/Canvas.jsx";
 import { usarCanvas } from "./estado/usarCanvas.js";
-import { Estudos } from "./jornadas/Estudos.jsx";
 import { Notas } from "./jornadas/Notas.jsx";
-import { Livro } from "./jornadas/Livro.jsx";
-import { Nota } from "./jornadas/Nota.jsx";
-import { Preparo } from "./jornadas/Preparo.jsx";
 import { usarEstudos } from "./estado/usarEstudos.js";
-import { Cabecalho } from "./componentes/Cabecalho.jsx";
+import { Cabecalho, CentroDeAtividade } from "./componentes/Cabecalho.jsx";
 import { MenuDaConta } from "./componentes/MenuDaConta.jsx";
 import { GavetaDeSecao } from "./componentes/GavetaDeSecao.jsx";
 import { GavetaDeLeitura } from "./componentes/GavetaDeLeitura.jsx";
@@ -54,8 +44,23 @@ import { gravarProgresso, lerProgresso } from "../../contrato/api.js";
 import { fracaoLida } from "../../contrato/progresso.js";
 import { usarNotas } from "./leitor/usarNotas.js";
 import { usarMarcadores } from "./leitor/usarMarcadores.js";
-import { analisar, apagarNota, apagarNotaPorId, chaveDe, importarClippings, lerTodasAsNotas } from "../../contrato/api.js";
+import { analisar, apagarNota, apagarNotaPorId, chaveDe, importarClippings, lerPaginaDeNotas, lerTodasAsNotas } from "../../contrato/api.js";
 import { EXEMPLO_FILA, EXEMPLO_ESTANTE } from "./exemplos.js";
+
+/* As jornadas grandes entram quando a rota pede. Canvas, Reader, Estudos e
+ * Preparo somavam mais de 380 kB de fonte ao primeiro carregamento, mesmo para
+ * quem só abria a apresentação. O fallback é um estado de navegação, não uma
+ * tela em branco; cada módulo continua dono do próprio CSS. */
+const Ajuda = lazy(() => import("./jornadas/Ajuda.jsx").then((m) => ({ default: m.Ajuda })));
+const Atualizacoes = lazy(() => import("./jornadas/Atualizacoes.jsx").then((m) => ({ default: m.Atualizacoes })));
+const EstudoPagina = lazy(() => import("./jornadas/EstudoPagina.jsx").then((m) => ({ default: m.EstudoPagina })));
+const Estante = lazy(() => import("./jornadas/Estante.jsx").then((m) => ({ default: m.Estante })));
+const Leitura = lazy(() => import("./jornadas/Leitura.jsx").then((m) => ({ default: m.Leitura })));
+const Canvas = lazy(() => import("./jornadas/Canvas.jsx").then((m) => ({ default: m.Canvas })));
+const Estudos = lazy(() => import("./jornadas/Estudos.jsx").then((m) => ({ default: m.Estudos })));
+const Livro = lazy(() => import("./jornadas/Livro.jsx").then((m) => ({ default: m.Livro })));
+const Nota = lazy(() => import("./jornadas/Nota.jsx").then((m) => ({ default: m.Nota })));
+const Preparo = lazy(() => import("./jornadas/Preparo.jsx").then((m) => ({ default: m.Preparo })));
 
 /* O exemplo entra SÓ quando a URL pede — `?exemplo`. Nunca no caminho normal,
  * porque tela que inventa dado esconde backend fora do ar. */
@@ -87,7 +92,7 @@ function usaExemplo() {
 }
 
 function Mesa() {
-  const { arquivos, livros, backend, receber, refazerErros, carregarEstante, destravar } = useJornada();
+  const { arquivos, livros, backend, receber, refazerErros, prepararEmLote, carregarEstante, destravar } = useJornada();
   const navegar = useNavigate();
   const lista = arquivos.length ? arquivos : usaExemplo() ? EXEMPLO_FILA : [];
   const receberNaMesa = useCallback((arquivos) => {
@@ -113,6 +118,7 @@ function Mesa() {
       aoVerEstante={() => navegar("/estante")}
       aoReceberArquivos={receberNaMesa}
       aoRefazerErros={refazerErros}
+      aoPrepararLote={prepararEmLote}
       aoDestravar={destravar}
       backend={backend}
     />
@@ -541,7 +547,10 @@ function PaginaCanvas() {
 }
 
 function PaginaEstudos() {
-  const { estudos, erro, criar, mudar, apagar, reunir, tirar, recarregar } = usarEstudos();
+  const {
+    estudos, erro, criar, mudar, apagar, reunir, tirar, recarregar,
+    buscar, carregarMais, temMais, total, notaIdsReunidas,
+  } = usarEstudos();
   const [notas, setNotas] = useState([]);
   /* A VISTA "LEITURA" DOS ESTUDOS precisa dos livros: ela é um quadro dos
      livros por estado de leitura, e nada disso sai dos estudos. */
@@ -573,6 +582,11 @@ function PaginaEstudos() {
       aoApagarNota={apagarNotaNosEstudos}
       aoReunir={reunir}
       aoTirar={tirar}
+      aoBuscar={buscar}
+      aoCarregarMais={carregarMais}
+      temMais={temMais}
+      totalEstudos={total}
+      notaIdsReunidas={notaIdsReunidas}
       /* Depois de zerar a marca de um livro, a estante precisa ser relida: a
          coluna do quadro é DERIVADA da fração, e sem reler o livro fica onde
          estava até alguém recarregar a página. */
@@ -583,7 +597,7 @@ function PaginaEstudos() {
 
 function PaginaEstudo() {
   const { id } = useParams();
-  const { estudos, erro, carregando, mudar, apagar, reunir, tirar, recarregar } = usarEstudos();
+  const { estudos, erro, carregando, mudar, apagar, reunir, tirar, recarregar } = usarEstudos(id);
   const [notas, setNotas] = useState([]);
 
   useEffect(() => {
@@ -624,30 +638,42 @@ function PaginaEstudo() {
 function PaginaNotas() {
   const [notas, setNotas] = useState([]);
   const [carregando, setCarregando] = useState(true);
+  const [proximo, setProximo] = useState(null);
+  const [total, setTotal] = useState(0);
+  const [contagens, setContagens] = useState({});
+  const consulta = useRef({ recorte: "todas", procura: "" });
 
-  const buscar = useCallback(() => {
-    lerTodasAsNotas()
-      .then(setNotas)
+  const buscar = useCallback(({ recorte = consulta.current.recorte, procura = consulta.current.procura, acumular = false } = {}) => {
+    consulta.current = { recorte, procura };
+    setCarregando(true);
+    return lerPaginaDeNotas({ limite: 60, cursor: acumular ? proximo : null, recorte, busca: procura })
+      .then((pagina) => {
+        setNotas((atuais) => acumular ? [...atuais, ...pagina.itens] : pagina.itens);
+        setProximo(pagina.proximo);
+        setTotal(pagina.total);
+        setContagens(pagina.contagens || {});
+      })
       .catch(() => setNotas([]))
       .finally(() => setCarregando(false));
-  }, []);
-
-  useEffect(() => { buscar(); }, [buscar]);
+  }, [proximo]);
 
   return (
     <Notas
       notas={notas}
       carregando={carregando}
+      total={total}
+      contagens={contagens}
+      temMais={Boolean(proximo)}
+      aoConsultar={(recorte, procura) => buscar({ recorte, procura, acumular: false })}
+      aoCarregarMais={() => buscar({ acumular: true })}
       /* A importação do Kindle vive aqui agora — o botão que estava na estante
          não existe no desenho dela. */
-      aoImportar={async (f) => { const r = await importarClippings(f); buscar(); return r; }}
+      aoImportar={importarClippings}
       aoApagar={async (n) => {
         /* Apagar de VERDADE, e não tirar de uma lista: aqui é o lugar onde a
          * nota mora. No Canvas e no estudo, "tirar" desfaz a reunião; aqui não
          * há reunião para desfazer. */
-        if (!n.job_id) return;
-        await apagarNota(n.job_id, n.id);
-        buscar();
+        await apagarNotaPorId(n.id);
       }}
     />
   );
@@ -713,6 +739,17 @@ function MedirTrocaDeTela() {
   return null;
 }
 
+/* Cada rota começa no mesmo ponto visual. Sem isto o navegador conservava a
+ * rolagem da tela anterior: o cabeçalho podia já entrar recolhido e o conteúdo
+ * parecia saltar para cima ou para baixo entre dois lugares do Mekora. */
+function RestaurarTopoNaTrocaDeTela() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [pathname]);
+  return null;
+}
+
 /* A ÁREA DA CONTA: a gaveta que abre uma vez e fica.
  *
  * O cabeçalho, o chão e a folha moram AQUI, e não em cada uma das cinco telas.
@@ -750,8 +787,11 @@ export function App() {
   return (
     <BrowserRouter>
       <MedirTrocaDeTela />
+      <RestaurarTopoNaTrocaDeTela />
       <Consentimento />
       <FolhaDeRecado temConta={Boolean(acesso.pessoa)} />
+      <CentroDeAtividade />
+      <Suspense fallback={<main className="rota-carregando" role="status">Abrindo…</main>}>
       <Routes>
         <Route path="/entrar" element={<Entrar />} />
         {/* A LP E A PRIMEIRA TELA DO PROJETO.
@@ -868,6 +908,7 @@ export function App() {
         </Route>
         <Route path="*" element={<NaoEncontrada />} />
       </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

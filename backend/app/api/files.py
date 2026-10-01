@@ -128,7 +128,17 @@ def _serve_validated(base_dir: Path, segments: list[str]) -> FileResponse:
     if not resolved.is_file():
         raise _not_found()
     media_type = _MEDIA_TYPES.get(resolved.suffix.lower(), "application/octet-stream")
-    return FileResponse(str(resolved), media_type=media_type)
+    headers = {"X-Content-Type-Options": "nosniff"}
+    if media_type == "text/html":
+        # Os relatórios são conteúdo gerado a partir de arquivo enviado. Mesmo
+        # que uma interpolação futura esqueça o escape, esta página não ganha
+        # script, formulário, navegação superior nem acesso à aplicação.
+        headers["Content-Security-Policy"] = (
+            "default-src 'none'; img-src 'self' data:; "
+            "style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; "
+            "frame-ancestors 'none'; sandbox"
+        )
+    return FileResponse(str(resolved), media_type=media_type, headers=headers)
 
 
 # ---------------------------------------------------------------------------

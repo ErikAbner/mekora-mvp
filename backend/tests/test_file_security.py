@@ -172,6 +172,20 @@ def test_allowed_translation_sidecar_and_archives_served(client, tmp_storage, en
     assert client.get(f"/storage/output/{endereco}/documento.epub").status_code == 200
 
 
+def test_html_gerado_nao_pode_executar_codigo_da_aplicacao(client, tmp_storage, endereco):
+    out = tmp_storage / "output" / "1"
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "comic_review.html").write_text("<p>revisão</p>")
+
+    resposta = client.get(f"/storage/output/{endereco}/comic_review.html")
+
+    assert resposta.status_code == 200
+    csp = resposta.headers["content-security-policy"]
+    assert "default-src 'none'" in csp
+    assert "sandbox" in csp
+    assert resposta.headers["x-content-type-options"] == "nosniff"
+
+
 def test_epub_com_pontuacao_do_titulo_e_servido(client, tmp_storage, endereco):
     """O nome real de um livro não pode transformar uma conversão válida em 404."""
     out = tmp_storage / "output" / "1"

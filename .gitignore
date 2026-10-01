@@ -41,6 +41,9 @@ __pycache__/
 *.egg-info/
 
 # Dados locais do usuário (uploads, saídas, modelos, banco)
+# Instalações antigas do NLLB chegaram a gravar uma cópia sob backend/storage/.
+# Ela também é dado local e nunca deve entrar na versão distribuída.
+backend/storage/
 storage/input/
 storage/output/
 storage/temp/

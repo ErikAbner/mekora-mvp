@@ -127,6 +127,18 @@
     ["paragrafo", "imagem", "paragrafo"],
   );
 
+  caso(
+    "imagem dentro do paragrafo respeita a ordem do texto",
+    lerCapitulo(xhtml('<p>Antes.<img src="a.png" alt="Exemplo"/>Depois.</p>'), { caminho: "cap.xhtml" }).blocos.map((b) => b.tipo === "imagem" ? "imagem" : `${b.tipo}:${b.texto}`),
+    ["paragrafo:Antes.", "imagem", "paragrafo:Depois."],
+  );
+
+  caso(
+    "imagem aninhada respeita a ordem do texto",
+    lerCapitulo(xhtml('<p>Antes.<span><img src="a.png" alt="Exemplo"/></span>Depois.</p>'), { caminho: "cap.xhtml" }).blocos.map((b) => b.tipo === "imagem" ? "imagem" : `${b.tipo}:${b.texto}`),
+    ["paragrafo:Antes.", "imagem", "paragrafo:Depois."],
+  );
+
   // `alt=""` num EPUB quer dizer "decorativa, não anuncie". Inventar uma
   // descrição faria o leitor de tela narrar enfeite.
   caso(

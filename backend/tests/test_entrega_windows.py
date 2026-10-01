@@ -25,7 +25,9 @@ def test_entrega_windows_tem_entradas_e_configuracao_isolada() -> None:
 
     configuracao = compose.read_text(encoding="utf-8")
     assert "http://localhost:${MEKORA_PORTA_LOCAL:-8080}" in configuracao
-    assert "127.0.0.1:${MEKORA_PORTA_LOCAL:-8080}" in configuracao
+    assert "${MEKORA_BIND_ADDRESS:-127.0.0.1}:${MEKORA_PORTA_LOCAL:-8080}" in configuracao
+    assert "-Tablet" in texto
+    assert "MEKORA_BIND_ADDRESS = $BindAddress" in texto
 
 
 def test_scripts_unix_mantem_lf_no_clone_do_windows() -> None:

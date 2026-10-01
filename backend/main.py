@@ -1,4 +1,5 @@
 import sys
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 # Adiciona backend/ ao sys.path para que 'from app.xxx import ...' funcione
@@ -62,10 +63,18 @@ from app.api.comic_quick import router as comic_quick_router
 # Inicializa storage dirs e cria tabelas
 init_db()
 
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    """Executa a manutenção uma vez por processo, sem a API obsoleta `on_event`."""
+    run_startup_cleanup()
+    yield
+
 app = FastAPI(
     title="Kindle Local Tool",
     version="0.1.0",
     description="Ferramenta local para converter PDFs em EPUB e enviar ao Kindle.",
+    lifespan=lifespan,
 )
 
 _raw_origins = os.getenv("ALLOWED_ORIGINS", "")
@@ -203,7 +212,7 @@ app.include_router(comic_render_router, dependencies=[Depends(exigir_acesso)])
 app.include_router(comic_inpaint_router, dependencies=[Depends(exigir_acesso)])
 app.include_router(comic_finalize_router, dependencies=[Depends(exigir_acesso)])
 app.include_router(comic_suggestions_router, dependencies=[Depends(exigir_acesso)])
-app.include_router(presets_router, dependencies=[Depends(exigir_dono)])
+app.include_router(presets_router, dependencies=[Depends(exigir_conta)])
 app.include_router(batch_router, dependencies=[Depends(exigir_acesso), Depends(exigir_conta)])
 # As DUAS portas: `exigir_acesso` cobre `/metrics/jobs/{job_id}`, e
 # `exigir_conta` cobre `/metrics/summary` e `/metrics/usage`, que não têm
@@ -218,7 +227,6 @@ app.include_router(comic_export_router, dependencies=[Depends(exigir_acesso)])
 app.include_router(comic_quick_router, dependencies=[Depends(exigir_acesso)])
 
 
-@app.on_event("startup")
 def run_startup_cleanup() -> None:
     """Remove arquivos de jobs antigos, inicializa presets e recupera jobs presos."""
     from datetime import datetime as _dt
@@ -233,31 +241,46 @@ def run_startup_cleanup() -> None:
     # abortam o startup com mensagem explícita)
     validate_limits()
 
-    # Recovery: qualquer job que ficou em in_progress quando o servidor reiniciou
-    # nunca vai completar — o background task foi morto. Marcar como failed agora
-    # para que o frontend saia do estado "Traduzindo..." e o usuário possa tentar de novo.
+    # Recovery: qualquer operação em andamento morreu junto com o processo.
+    # Recuperar só a tradução deixava ``conversion_status=in_progress`` e
+    # ``active_operation=convert:...`` vivos para sempre; a fila sequencial
+    # inteira ficava atrás desse registro impossível.
     _db = _SessionLocal()
     try:
-        _stuck_trans = _db.query(_ProcessingJob).filter(
-            _ProcessingJob.translation_status == "in_progress"
-        ).all()
-        _stuck_comic = _db.query(_ProcessingJob).filter(
-            _ProcessingJob.comic_translation_status == "in_progress"
+        # Links usados ou vencidos deixam de ser credenciais e não têm motivo
+        # para permanecer no banco. Esta limpeza existia, mas nunca era chamada.
+        from app.services.acesso_service import limpar_vencidas
+        limpar_vencidas(_db)
+        from app.core.config import STORAGE_OUTPUT as _OUTPUT
+        from app.services.progress_service import recover_orphan_operation
+
+        _stuck = _db.query(_ProcessingJob).filter(
+            (_ProcessingJob.active_operation.isnot(None))
+            | (_ProcessingJob.translation_status == "in_progress")
+            | (_ProcessingJob.conversion_status == "in_progress")
+            | (_ProcessingJob.comic_translation_status == "in_progress")
         ).all()
         _now = _dt.utcnow()
-        for _j in _stuck_trans:
-            _j.translation_status = "failed"
-            _j.translation_error = (
-                "Tradução interrompida inesperadamente (servidor reiniciou). Tente novamente."
-            )
+        for _j in _stuck:
+            recover_orphan_operation(_j, _OUTPUT / str(_j.id))
+            if _j.translation_status == "in_progress":
+                _j.translation_status = "failed"
+                _j.translation_error = (
+                    "Tradução interrompida inesperadamente (servidor reiniciou). Tente novamente."
+                )
+            if _j.comic_translation_status == "in_progress":
+                _j.comic_translation_status = "failed"
+                _j.comic_translation_error = (
+                    "Tradução interrompida inesperadamente (servidor reiniciou). Tente novamente."
+                )
+            if _j.conversion_status == "in_progress":
+                _j.status = "error"
+                _j.conversion_status = "failed"
+                _j.error_message = (
+                    "Conversão interrompida pela reinicialização do aplicativo. Tente novamente."
+                )
             _j.updated_at = _now
-        for _j in _stuck_comic:
-            _j.comic_translation_status = "failed"
-            _j.comic_translation_error = (
-                "Tradução interrompida inesperadamente (servidor reiniciou). Tente novamente."
-            )
-            _j.updated_at = _now
-        if _stuck_trans or _stuck_comic:
+        if _stuck:
             _db.commit()
     except Exception:
         pass
@@ -278,6 +301,17 @@ def run_startup_cleanup() -> None:
     from app import auditoria
     auditoria.limpar()
     ensure_system_presets()
+
+    # A fila também precisa sobreviver ao processo. ``BackgroundTasks`` é só
+    # memória; os itens ``pending`` ficam no banco e são retomados em uma única
+    # thread sequencial, na mesma ordem em que entraram.
+    import threading as _threading
+    from app.api.batch import resume_pending_preparations
+    _threading.Thread(
+        target=resume_pending_preparations,
+        name="mekora-retomar-fila",
+        daemon=True,
+    ).start()
 
 
 # ---------------------------------------------------------------------------
@@ -301,9 +335,47 @@ if _FRONTEND_DIST.exists():
             name=f"frontend-{_pasta_publica}",
         )
 
+    # Arquivos PWA ficam na raiz para que o service worker controle todas as
+    # rotas. Sem rotas explícitas o fallback SPA devolvia ``index.html`` com
+    # status 200 para ``/manifest.webmanifest`` e ``/service-worker.js`` — o
+    # navegador recebia HTML onde esperava JSON/JavaScript e a instalação nunca
+    # ficava disponível.
+    @app.get("/manifest.webmanifest", include_in_schema=False)
+    async def serve_manifest() -> FileResponse:
+        return FileResponse(
+            str(_FRONTEND_DIST / "manifest.webmanifest"),
+            media_type="application/manifest+json",
+        )
+
+    @app.get("/service-worker.js", include_in_schema=False)
+    async def serve_service_worker() -> FileResponse:
+        return FileResponse(
+            str(_FRONTEND_DIST / "service-worker.js"),
+            media_type="application/javascript",
+            headers={"Cache-Control": "no-cache"},
+        )
+
+    @app.get("/app-icon-{size}.png", include_in_schema=False)
+    async def serve_app_icon(size: int) -> FileResponse:
+        if size not in (192, 512):
+            from fastapi import HTTPException
+            raise HTTPException(status_code=404)
+        return FileResponse(str(_FRONTEND_DIST / f"app-icon-{size}.png"), media_type="image/png")
+
+    @app.get("/app-icon.svg", include_in_schema=False)
+    async def serve_app_icon_svg() -> FileResponse:
+        return FileResponse(str(_FRONTEND_DIST / "app-icon.svg"), media_type="image/svg+xml")
+
     @app.get("/{full_path:path}", include_in_schema=False)
     async def serve_spa(full_path: str) -> FileResponse:
-        return FileResponse(str(_FRONTEND_DIST / "index.html"))
+        # O HTML aponta para bundles com hash. Guardá-lo enquanto um build novo
+        # já removeu os bundles antigos produz uma janela inteiramente branca no
+        # app instalado. Assets continuam imutáveis/cacheáveis; só a entrada da
+        # aplicação precisa sempre ser revalidada.
+        return FileResponse(
+            str(_FRONTEND_DIST / "index.html"),
+            headers={"Cache-Control": "no-store, max-age=0"},
+        )
 
 
 def run() -> None:

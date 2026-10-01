@@ -976,7 +976,7 @@ const Livro = memo(LivroCrua);
  * área move a NOTA, ou o chão, e nunca o retângulo por baixo. O que pega o
  * retângulo é a barra do título — a mesma regra de uma janela.
  */
-function Secao({ secao, ordem = 0, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoEscolher, aoEscolherSozinho, aoInscrever, escolhido, pedindoNome, aoTerminarNome, noChrome = false }) {
+function Secao({ secao, quantidade = 0, ordem = 0, aoMudar, aoApagar, escala, nasceuAgora = 0, aoLevar, aoEscolher, aoEscolherSozinho, aoInscrever, escolhido, pedindoNome, aoTerminarNome, noChrome = false }) {
   contarDesenho("secao");
   const arrasto = useRef(null);
   const [desloca, setDesloca] = useState(null);
@@ -1214,16 +1214,21 @@ function Secao({ secao, ordem = 0, aoMudar, aoApagar, escala, nasceuAgora = 0, a
              
              Agora arrastar pelo nome move a seção, e o clique parado abre a
              edição. `onClickCapture` cancela o clique quando houve arrasto. */
-          <button
-            type="button"
-            className="canvas-secao-nome"
-            onClickCapture={talvezCancelarClique}
-            onClick={() => setEditando(true)}
-          >
-            {/* Grupo sem nome DIZ que não tem nome, e o rótulo é o convite para
-                dar um. Um retângulo com o título em branco parece defeito. */}
-            {secao.nome || "Dar um nome"}
-          </button>
+          <span className="canvas-secao-identidade">
+            <button
+              type="button"
+              className="canvas-secao-nome"
+              onClickCapture={talvezCancelarClique}
+              onClick={() => setEditando(true)}
+            >
+              {/* Grupo sem nome DIZ que não tem nome, e o rótulo é o convite para
+                  dar um. Um retângulo com o título em branco parece defeito. */}
+              {secao.nome || "Dar um nome"}
+            </button>
+            <span className="canvas-secao-contagem" aria-label={`${quantidade} ${quantidade === 1 ? "item" : "itens"}`}>
+              {quantidade}
+            </span>
+          </span>
         )}
         {/* "DESFAZER GRUPO" MENTIA EM DUAS FRENTES. Ele não desfaz vínculo
             nenhum: ele apaga a ÁREA, e o conteúdo fica onde está. E "grupo" é a
@@ -2432,7 +2437,14 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
   const ajustarAoConteudo = useCallback((secao) => {
     const membros = membrosDe(secao);
     if (!membros.length) return;
-    const caixas = membros.map((c) => cena.current.get(c)?.ler()).filter(Boolean);
+    /* `ondeEsta` e declarada mais abaixo, junto do tradutor central de chaves.
+     * Ler a constante na lista de dependencias antes da inicializacao derrubava
+     * o bundle de producao inteiro com um erro de zona temporal morta. O ref ja
+     * existe justamente para permitir que callbacks estaveis consultem a
+     * versao viva sem depender da ordem de declaracao. */
+    const caixas = membros
+      .map((c) => cena.current.get(c)?.ler() ?? ondeEstaRef.current?.(c))
+      .filter(Boolean);
     if (!caixas.length) return;
     const FOLGA = 40;
     const x = Math.min(...caixas.map((c) => c.x)) - FOLGA;
@@ -2701,7 +2713,12 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
       const cb = caixaDaPonta(l.para_tipo, l.para_id);
       if (!ca || !cb) continue;
       const forma = caminhoDaLigacao(ca, cb);
-      linhas.push({ id: l.id, ...forma });
+      linhas.push({
+        id: l.id,
+        de: `${l.de_tipo}:${l.de_id}`,
+        para: `${l.para_tipo}:${l.para_id}`,
+        ...forma,
+      });
       pontas.push(...forma.pontas);
     }
     if (!linhas.length) return null;
@@ -2951,6 +2968,24 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
     } catch { /* sem memória: começa do começo, e é um começo válido */ }
     return { x: 0, y: 0, escala: 1 };
   });
+  const [tamanhoDaVista, setTamanhoDaVista] = useState({ largura: 1600, altura: 900 });
+
+  useLayoutEffect(() => {
+    const elemento = mundo.current;
+    if (!elemento) return undefined;
+    const medirVista = () => setTamanhoDaVista({
+      largura: elemento.clientWidth || 1600,
+      altura: elemento.clientHeight || 900,
+    });
+    medirVista();
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", medirVista);
+      return () => window.removeEventListener("resize", medirVista);
+    }
+    const observador = new ResizeObserver(medirVista);
+    observador.observe(elemento);
+    return () => observador.disconnect();
+  }, []);
 
   cameraRef.current = camera;
 
@@ -3012,12 +3047,23 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
   const enquadrar = (chaves) => {
     const caixa = mundo.current?.getBoundingClientRect();
     if (!caixa) return;
-    const tudo = [];
-    for (const [chave, ficha] of cena.current) {
-      if (chaves && !chaves.has(chave)) continue;
-      const c = ficha.ler();
-      if (c) tudo.push(c);
-    }
+    /* A caixa vem dos dados, não só dos elementos montados. Com renderização
+       por viewport, o que está longe não existe no DOM — mas continua existindo
+       no Canvas e precisa entrar em “Enquadrar tudo”. */
+    const todasAsCaixas = [
+      ...nos.map((n) => ({
+        chave: `nota:${n.id}`,
+        x: n.x, y: n.y,
+        ...(medidas[`nota:${n.id}`] ?? { largura: n.largura || 375, altura: 220 }),
+      })),
+      ...livros.map((l) => ({
+        chave: `livro:${l.id}`,
+        x: l.x, y: l.y,
+        ...(medidas[`livro:${l.id}`] ?? { largura: l.largura || 280, altura: 420 }),
+      })),
+      ...secoes.map((g) => ({ chave: `secao:${g.id}`, x: g.x, y: g.y, largura: g.largura, altura: g.altura })),
+    ];
+    const tudo = todasAsCaixas.filter((c) => !chaves || chaves.has(c.chave));
     if (!tudo.length) return;
     const FOLGA = 80;
     const x0 = Math.min(...tudo.map((c) => c.x)) - FOLGA;
@@ -3297,6 +3343,42 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
     });
   };
 
+  /* JANELA DO PLANO — só monta os objetos que podem aparecer neste recorte.
+   * O Canvas continuava leve visualmente no zoom distante, mas os cartões
+   * completos de milhares de itens seguiam vivos no DOM. A margem de uma tela
+   * evita piscar durante o passeio e ainda reduz a árvore ao bairro em uso.
+   * Itens escolhidos permanecem montados para não perder foco ou gesto. */
+  const margemDaVista = 700 / camera.escala;
+  const janelaDoPlano = {
+    esquerda: -camera.x / camera.escala - margemDaVista,
+    topo: -camera.y / camera.escala - margemDaVista,
+    direita: (tamanhoDaVista.largura - camera.x) / camera.escala + margemDaVista,
+    base: (tamanhoDaVista.altura - camera.y) / camera.escala + margemDaVista,
+  };
+  const cruzaAJanela = (x, y, largura, altura) => (
+    x + largura >= janelaDoPlano.esquerda
+    && x <= janelaDoPlano.direita
+    && y + altura >= janelaDoPlano.topo
+    && y <= janelaDoPlano.base
+  );
+  const secoesNaVista = secoes.filter((g) => escolha.has(`secao:${g.id}`)
+    || cruzaAJanela(g.x, g.y, g.largura, g.altura));
+  const livrosNaVista = livros.filter((l) => {
+    const medida = medidas[`livro:${l.id}`] ?? { largura: l.largura || 280, altura: 420 };
+    return escolha.has(`livro:${l.id}`) || cruzaAJanela(l.x, l.y, medida.largura, medida.altura);
+  });
+  const nosNaVista = nos.filter((n) => {
+    const medida = medidas[`nota:${n.id}`] ?? { largura: n.largura || 375, altura: 220 };
+    return escolha.has(`nota:${n.id}`) || cruzaAJanela(n.x, n.y, medida.largura, medida.altura);
+  });
+  const pontasNaVista = new Set([
+    ...nosNaVista.map((n) => `nota:${n.nota_id}`),
+    ...livrosNaVista.map((l) => `livro:${l.job_id}`),
+  ]);
+  const tracosNaVista = tracos
+    ? { ...tracos, linhas: tracos.linhas.filter((l) => pontasNaVista.has(l.de) || pontasNaVista.has(l.para)) }
+    : null;
+
   return (
     /* `chao` E `com-cabecalho-solto`: no Canvas o chão pontilhado vai de borda a
        borda e o cabeçalho FLUTUA sobre ele. O `895:6938` põe as duas caixas dele
@@ -3556,7 +3638,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
               onde as duas estão. */}
           {/* OS GRUPOS FICAM NO FUNDO: eles são o chão, e as notas estão em
               cima. Vêm antes no DOM, e é isso que os põe atrás. */}
-          {secoes.map((g) => (
+          {secoesNaVista.map((g) => (
             <Secao
               /* A ORDEM DE PINTURA sai da ÁREA: quanto menor, mais alto. Uma
                  seção dentro de outra é sempre a menor das duas, e sem isto ela
@@ -3570,6 +3652,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
               escolhido={escolha.has(`secao:${g.id}`)}
               key={g.id}
               secao={g}
+              quantidade={membrosDe(g).length}
               pedindoNome={renomeando === g.id ? g.id : 0}
               aoTerminarNome={() => setRenomeando(null)}
               aoMudar={aoMudarSecao}
@@ -3598,14 +3681,14 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
               Agora a caixa é o retângulo que contém as pontas, e o `viewBox` põe
               o sistema de coordenadas do SVG em cima do sistema do plano — a
               linha usa as mesmas posições que as notas. */}
-          {tracos && (
+          {tracosNaVista?.linhas.length > 0 && (
             <svg
               className="canvas-tracos"
               aria-hidden="true"
-              style={{ left: tracos.x, top: tracos.y, width: tracos.largura, height: tracos.altura }}
-              viewBox={`${tracos.x} ${tracos.y} ${tracos.largura} ${tracos.altura}`}
+              style={{ left: tracosNaVista.x, top: tracosNaVista.y, width: tracosNaVista.largura, height: tracosNaVista.altura }}
+              viewBox={`${tracosNaVista.x} ${tracosNaVista.y} ${tracosNaVista.largura} ${tracosNaVista.altura}`}
             >
-              {tracos.linhas.map((l) => (
+              {tracosNaVista.linhas.map((l) => (
                 <g key={l.id} data-liga={l.id} className="traco-todo">
                   <path
                     ref={(el) => inscreverTraco(l.id, el)}
@@ -3666,7 +3749,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
             </svg>
           )}
 
-          {livros.map((l) => (
+          {livrosNaVista.map((l) => (
             <Livro
               key={l.id}
               livro={l}
@@ -3686,7 +3769,7 @@ export function Canvas({ nos = [], ligacoes = [], secoes = [], livros = [], acer
             />
           ))}
 
-          {nos.map((no) => (
+          {nosNaVista.map((no) => (
             <Nota
               key={no.id}
               no={no}

@@ -14,8 +14,10 @@
  * API — a tela viria em branco em produção e funcionaria em desenvolvimento.
  * `scripts/rotas.py` pegou isso antes, e é o mesmo caso que `/notas` teve.
  *
- * Construída sem o desenho: o `figma-local` exige o Dev Mode ligado, e a aba
- * estava em modo design. Está em DESVIOS.md, para o pente fino.
+ * A página segue o frame `895:8260`: o primeiro hero usa a coluna inteira e a
+ * trilha passa a dividir espaço com o conteúdo apenas a partir da faixa de
+ * livros. Isso é estrutural — pôr a trilha ao lado de tudo estreita o título e
+ * a pergunta e produz outra composição, mesmo que os mesmos elementos existam.
  */
 import { Link } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
@@ -33,17 +35,6 @@ export function EstudoPagina({ estudo, notas = [], erro, aoMudar, aoApagar, aoAp
             tem trinta notas de cinco livros; a coluna diz onde se está sem que
             seja preciso rolar de volta para descobrir. Ela só aparece quando há
             estudo — antes disso não há seção nenhuma para apontar. */}
-        {estudo && (
-          <TrilhaDaPagina
-            rotulo="Neste estudo"
-            itens={[
-              { id: "estudo-inicio", rotulo: "Início" },
-              ...(estudo.livros?.length ? [{ id: "estudo-livros", rotulo: "Livros" }] : []),
-              ...(estudo.notas?.length ? [{ id: "estudo-formou", rotulo: "O que ficou" }] : []),
-            ]}
-          />
-        )}
-
         <div className="estudo-pagina-corpo">
         <Link to="/estudos" className="estudo-pagina-volta">← Estudos</Link>
 
@@ -78,6 +69,16 @@ export function EstudoPagina({ estudo, notas = [], erro, aoMudar, aoApagar, aoAp
             aoReunir={aoReunir}
             aoTirar={aoTirar}
             semLink
+            trilha={(
+              <TrilhaDaPagina
+                rotulo="Neste estudo"
+                itens={[
+                  { id: "estudo-inicio", rotulo: "Início" },
+                  ...(estudo.livros?.length ? [{ id: "estudo-livros", rotulo: "Livros" }] : []),
+                  ...(estudo.notas?.length ? [{ id: "estudo-formou", rotulo: "O que ficou" }] : []),
+                ]}
+              />
+            )}
           />
         )}
         </div>

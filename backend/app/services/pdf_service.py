@@ -4,6 +4,8 @@ import re
 
 import fitz  # PyMuPDF
 
+from app.services.language_detection_service import detect_document_language, normalize_language_code
+
 # PDFs com média abaixo deste limiar de caracteres/página são tratados como escaneados
 SCANNED_THRESHOLD = 50
 
@@ -15,11 +17,24 @@ SCANNED_THRESHOLD = 50
 # linha curta — abaixo disso não há frase.
 LETRAS_PARA_TER_TEXTO = 20
 
+# Alguns PDFs exportados por editores/scaners carregam uma camada de texto
+# aparentemente densa, mas ilegível: caracteres de controle aparecem no meio
+# das palavras (por exemplo ``~`` e ``¬``). Se essa camada for enviada direto
+# ao EPUB, o resultado fica pior do que a página original e a busca também
+# deixa de ser confiável. Esses sinais não são acentos portugueses; são
+# marcadores de uma camada textual corrompida.
 _MARCADORES_TEXTO_CORROMPIDO = re.compile(r"[~^¬¦�]")
 
 
 def texto_parece_corrompido(texto: str) -> bool:
-    """Detecta uma camada OCR extensa, mas imprópria para virar EPUB."""
+    """Retorna se o texto extraído tem sinais fortes de corrupção.
+
+    A heurística é deliberadamente conservadora: uma ocorrência isolada pode
+    ser conteúdo legítimo, então exigimos vários marcadores e uma proporção
+    mínima em relação às letras da página. O limite também cobre digitalizações
+    antigas que trazem uma camada OCR extensa, porém cheia de ``~`` e símbolos
+    espúrios — exatamente o tipo de arquivo que não pode seguir direto ao EPUB.
+    """
     if not texto:
         return False
     marcadores = len(_MARCADORES_TEXTO_CORROMPIDO.findall(texto))
@@ -79,6 +94,8 @@ def analyze_pdf(pdf_path: str, thumbnails_dir: Path) -> dict:
     ilegiveis = 0
     sem_texto = 0
     texto_suspeito = 0
+    amostra_idioma: list[str] = []
+    tamanho_amostra = 0
     for pagina in doc:
         try:
             texto = pagina.get_text().strip()
@@ -90,12 +107,19 @@ def analyze_pdf(pdf_path: str, thumbnails_dir: Path) -> dict:
             ilegiveis += 1
             continue
         total_chars += len(texto)
+        if texto and tamanho_amostra < 50000:
+            trecho = texto[: 50000 - tamanho_amostra]
+            amostra_idioma.append(trecho)
+            tamanho_amostra += len(trecho)
         if len(texto) < LETRAS_PARA_TER_TEXTO:
             sem_texto += 1
         if texto_parece_corrompido(texto):
             texto_suspeito += 1
 
     avg_chars = total_chars / page_count if page_count > 0 else 0.0
+    # Uma camada textual corrompida também precisa passar por OCR. Sem isso
+    # ela seria classificada como "digital" só pela quantidade de caracteres
+    # e acabaria contaminando o EPUB refluído.
     qualidade_suspeita = texto_suspeito >= max(1, math.ceil(page_count * 0.2))
     is_scanned = avg_chars < SCANNED_THRESHOLD or qualidade_suspeita
 
@@ -109,10 +133,13 @@ def analyze_pdf(pdf_path: str, thumbnails_dir: Path) -> dict:
     capitulos_declarados = len(doc.get_toc() or [])
     doc.close()
 
+    idioma_declarado = normalize_language_code(metadata.get("language"))
+    idioma = idioma_declarado or detect_document_language("\n".join(amostra_idioma))
+
     return {
         "title": (metadata.get("title") or "").strip(),
         "author": (metadata.get("author") or "").strip(),
-        "language": (metadata.get("language") or "").strip(),
+        "language": idioma,
         "page_count": page_count,
         "is_scanned": is_scanned,
         "avg_chars_per_page": round(avg_chars, 2),

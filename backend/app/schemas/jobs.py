@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, field_validator
 
@@ -98,6 +98,9 @@ class JobResponse(BaseModel):
     # Capa escolhida
     selected_cover_page: Optional[int] = None
     cover_path: Optional[str] = None
+    cover_url: Optional[str] = None
+    embedded_cover_url: Optional[str] = None
+    cover_source: str = "auto"
     thumbnails: list[str] = []
 
     # Erro, se houver
@@ -292,6 +295,7 @@ class CoverUpdate(BaseModel):
     """Corpo de POST /jobs/{id}/cover."""
 
     selected_cover_page: Optional[int] = None  # índice 0–4
+    mode: Literal["auto", "embedded", "page", "generated"] = "page"
 
 
 class JobStatusResponse(BaseModel):
@@ -642,6 +646,7 @@ class Preset(BaseModel):
     comic_mode: bool = False
     manga_rtl: bool = False
     translation_enabled: bool = False
+    translation_rule: Literal["always", "different_from_target", "english_to_portuguese", "never"] = "never"
     source_language: str = ""
     target_language: str = ""
     translator_engine: str = ""            # "argos" | "nllb"
@@ -656,6 +661,7 @@ class PresetCreate(BaseModel):
     comic_mode: bool = False
     manga_rtl: bool = False
     translation_enabled: bool = False
+    translation_rule: Literal["always", "different_from_target", "english_to_portuguese", "never"] = "never"
     source_language: str = ""
     target_language: str = ""
     translator_engine: str = ""
@@ -670,6 +676,7 @@ class PresetUpdate(BaseModel):
     comic_mode: Optional[bool] = None
     manga_rtl: Optional[bool] = None
     translation_enabled: Optional[bool] = None
+    translation_rule: Optional[Literal["always", "different_from_target", "english_to_portuguese", "never"]] = None
     source_language: Optional[str] = None
     target_language: Optional[str] = None
     translator_engine: Optional[str] = None
@@ -711,6 +718,13 @@ class BatchJobsResponse(BaseModel):
 
 
 class BatchApplyPresetRequest(BaseModel):
+    job_ids: list[int]
+    preset_id: str
+
+
+class BatchPrepareRequest(BaseModel):
+    """Aplica um preset e executa tradução/conversão em segundo plano."""
+
     job_ids: list[int]
     preset_id: str
 

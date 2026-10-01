@@ -453,17 +453,18 @@ def test_a_porta_vale_para_rota_que_ainda_nao_existe(client_cru):
 
 # ── a terceira porta: ter conta não é ser dono ──────────────────────────────
 #
-# `exigir_conta` fechou `/config`, `/app-config` e `/presets` em 31/08 e o
+# `exigir_conta` fechou `/config` e `/app-config` em 31/08 e o
 # `SUBIR.md` anotou o que sobrava: "não há papel de administrador; quem tem
 # conta alcança" as três. Como a entrada é por link no e-mail, "quem tem conta"
 # é qualquer pessoa da internet trinta segundos depois de querer — e do outro
 # lado estava o `smtp_user` real, o `retention_days` de todo mundo, e o gatilho
-# da limpeza.
+# da limpeza. As receitas saíram desta família: são dados pessoais, filtrados
+# por `dono_id`, e não configuração global da instalação.
 #
 # Os testes usam `client_cru` porque o `client` comum é nomeado DONO no
 # conftest, e um cliente que se autoriza sozinho não prova porta nenhuma.
 
-INSTALACAO = ["/config", "/app-config", "/presets"]
+INSTALACAO = ["/config", "/app-config"]
 
 
 @pytest.mark.parametrize("rota", INSTALACAO)
@@ -504,10 +505,10 @@ def test_o_dono_entra(client_cru, correio, rota, monkeypatch):
     assert r.status_code == 200, f"{rota} recusou o próprio dono: {r.status_code}"
 
 
-def test_a_porta_de_dono_cobre_as_tres_familias():
+def test_a_porta_de_dono_cobre_as_familias_da_instalacao():
     """A lista não é escrita à mão duas vezes: é lida do app.
 
-    Uma rota nova em `/config`, `/app-config` ou `/presets` nasce coberta porque
+    Uma rota nova em `/config` ou `/app-config` nasce coberta porque
     a dependência está no router — e este teste falha se alguém a tirar.
     """
     from main import app
@@ -522,7 +523,7 @@ def test_a_porta_de_dono_cobre_as_tres_familias():
     # `app/core/arvore_de_rotas.py`.
     for rota in rotas_do_app(app):
         caminho = getattr(rota, "path", "")
-        if not caminho.startswith(("/config", "/app-config", "/presets")):
+        if not caminho.startswith(("/config", "/app-config")):
             continue
         if caminho == "/config/formatos":
             continue  # a exceção declarada: público antes de ter conta

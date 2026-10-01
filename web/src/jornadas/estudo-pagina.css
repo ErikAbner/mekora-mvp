@@ -1,13 +1,15 @@
 /* Um estudo sozinho. O estudo em si e pintado por `estudos.css`, que e o mesmo
  * componente da lista — aqui so muda o entorno.
  */
-/* DUAS COLUNAS: a trilha de ancoras e o estudo. A trilha some abaixo de 1024
- * (regra dela), e ai a pagina volta a ser uma coluna so. */
+/* O PRIMEIRO HERO usa os 1222px inteiros. A divisão entre trilha e conteúdo
+ * começa dentro do estudo, na faixa seguinte; ver `.estudo-detalhe-corpo`. */
 .estudo-pagina {
-  display: flex; gap: 48px; align-items: flex-start;
+  display: block;
   inline-size: 100%; max-inline-size: calc(1222px + 2 * 64px);
   margin-inline: auto;
-  padding: 128px 64px;
+  /* O frame divide a página em heroes de 64px, em vez de pôr 128px antes de
+     tudo e depois tentar recuperar o ritmo com margens diferentes. */
+  padding: 64px 64px 0;
 }
 
 .estudo-pagina-volta {
@@ -47,14 +49,16 @@
 
 
 .estudo-pagina-corpo {
-  flex: 1 1 0; min-inline-size: 0; max-inline-size: 974px;
-  display: flex; flex-direction: column; gap: 32px;
+  min-inline-size: 0; max-inline-size: 1222px;
+  margin-inline: auto;
+  display: flex; flex-direction: column; gap: 0;
 }
+.estudo-pagina-volta { margin-block-end: 32px; }
 /* A ancora nao pode encostar no topo da janela. */
 .estudo-pagina-corpo :where(#estudo-inicio, #estudo-livros, #estudo-formou) { scroll-margin-top: 32px; }
 
 @media (max-width: 1023px) {
-  .estudo-pagina { gap: 0; padding-inline: 32px; }
+  .estudo-pagina { padding-inline: 32px; }
 }
 
 @media (max-width: 767px) {

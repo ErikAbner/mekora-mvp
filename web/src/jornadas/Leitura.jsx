@@ -19,7 +19,7 @@ import { Link } from "react-router-dom";
 import { Icone } from "../componentes/Icone.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { comDeslocamentos, irPara, irParaOComeco, ondeEstouNoLivro, trechoEm } from "../leitor/onde-parei.js";
-import { GRUPOS, aplicarAparencia, gravarAparencia, lerAparencia } from "../leitor/aparencia.js";
+import { AJUSTES, GRUPOS, aplicarAparencia, gravarAparencia, lerAparencia, limitarAparencia, limitesDaColuna } from "../leitor/aparencia.js";
 import { aplicarTema, temaEspelhado } from "../estado/tema.js";
 import { lerSelecao, notasDoBloco } from "../leitor/selecao.js";
 import { EXPLICACAO, procurarNoLivro, reancorar } from "../leitor/ancora.js";
@@ -44,6 +44,35 @@ function Flutuante({ children }) {
   /* As ferramentas usam coordenadas da viewport. Mantê-las em `body` evita
    * que a rolagem da longa folha do livro seja descontada dessas coordenadas. */
   return createPortal(children, document.body);
+}
+
+function ControleDeFaixa({ ajuste, valor, minimo = ajuste.minimo, maximo = ajuste.maximo, aoMudar }) {
+  const numero = Number(valor);
+  const mostrado = ajuste.id === "entrelinha"
+    ? `${numero.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}×`
+    : `${Math.round(numero)} ${ajuste.unidade}`;
+  return (
+    <section className="aparencia-faixa">
+      <label htmlFor={`aparencia-${ajuste.id}`}>
+        <span>{ajuste.rotulo}</span>
+        <output htmlFor={`aparencia-${ajuste.id}`}>{mostrado}</output>
+      </label>
+      <input
+        id={`aparencia-${ajuste.id}`}
+        type="range"
+        min={minimo}
+        max={maximo}
+        step={ajuste.passo}
+        value={numero}
+        aria-valuetext={mostrado}
+        onChange={(e) => aoMudar(Number(e.target.value))}
+      />
+      <div className="aparencia-faixa-limites" aria-hidden="true">
+        <span>{ajuste.id === "entrelinha" ? "Compacta" : "Menor"}</span>
+        <span>{ajuste.id === "entrelinha" ? "Arejada" : "Maior"}</span>
+      </div>
+    </section>
+  );
 }
 
 function alvoDaAncora(secao, ancora) {
@@ -879,7 +908,19 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
        a que acabou de nascer era abrir um arquivo para anotar um papel. */
     if (escrever && nova) setCartao(nova);
   };
-  const [caderno, setCaderno] = useState(false);
+  /* UMA GAVETA, UM ESTADO. Cinco booleanos independentes permitiam combinações
+   * impossíveis (aparência e notas abertas ao mesmo tempo) e faziam dois cliques
+   * rápidos alternarem estados diferentes. O valor guarda qual painel está
+   * aberto; `null` é a leitura sem painel. */
+  const [painelAberto, setPainelAberto] = useState(null);
+  const caderno = painelAberto === "caderno";
+  const painel = painelAberto === "painel";
+  const indice = painelAberto === "indice";
+  const procurando = painelAberto === "procurando";
+  const dobras = painelAberto === "dobras";
+  const fecharPainel = useCallback((qual) => {
+    setPainelAberto((atual) => atual === qual ? null : atual);
+  }, []);
   const prosa = useRef(null);
   const restaurado = useRef(null);
 
@@ -963,14 +1004,12 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
 
   useEffect(() => {
     if (!aoAnotar) return;
-    document.addEventListener("pointerup", capturarSelecao);
     document.addEventListener("keyup", capturarSelecao);
     /* Rolar fecha a paleta: ela é posicionada em coordenadas de tela, e sem
      * isto ficaria pairando longe do texto que marcou. */
     const fechar = () => setPaleta(null);
     window.addEventListener("scroll", fechar, { passive: true });
     return () => {
-      document.removeEventListener("pointerup", capturarSelecao);
       document.removeEventListener("keyup", capturarSelecao);
       window.removeEventListener("scroll", fechar);
     };
@@ -984,8 +1023,17 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
         window.getSelection?.()?.removeAllRanges();
       }
     };
+    const fecharFora = (e) => {
+      if (e.target.closest?.(".paleta, mark[data-destaque]")) return;
+      setPaleta(null);
+      window.getSelection?.()?.removeAllRanges();
+    };
     document.addEventListener("keydown", fecharComTeclado);
-    return () => document.removeEventListener("keydown", fecharComTeclado);
+    document.addEventListener("pointerdown", fecharFora, true);
+    return () => {
+      document.removeEventListener("keydown", fecharComTeclado);
+      document.removeEventListener("pointerdown", fecharFora, true);
+    };
   }, [paleta]);
 
   /* RESTAURAR uma vez por capítulo, e não a cada render. Sem a trava, qualquer
@@ -1046,14 +1094,10 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
   /* A APARÊNCIA DA LEITURA. Ela é lida uma vez e aplicada como variáveis de CSS
    * na raiz — nenhum bloco precisa saber que a preferência existe. */
   const [aparencia, setAparencia] = useState(() => lerAparencia());
-  const [painel, setPainel] = useState(false);
-  const [indice, setIndice] = useState(false);
 
   const [copiado, setCopiado] = useState(null);
   /* A nota que o cartão do 941:23113 está mostrando. `null` é "não há cartão". */
   const [cartao, setCartao] = useState(null);
-  const [procurando, setProcurando] = useState(false);
-  const [dobras, setDobras] = useState(false);
   /* ONDE O MARCADOR CLICADO QUER LEVAR, quando o capítulo dele ainda não está
    * na tela. O salto é do pai — ele é quem replanta a janela —, e só depois de
    * os blocos chegarem é que dá para rolar até o deslocamento. `null` é "não há
@@ -1086,7 +1130,7 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
       }
       setDestino({ capitulo: achada.capitulo, deslocamento: achada.de });
       aoIrParaCapitulo?.(achada.capitulo);
-      setCaderno(false);
+      fecharPainel("caderno");
     } finally {
       setProcurandoNota(null);
     }
@@ -1106,13 +1150,34 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
        onde os cinco passam. Contar em cinco lugares é como o quinto fica de
        fora sem ninguém notar. */
     contarCromo(qual);
+    /* Um clique num controle é intenção de usar a interface. O cromo pode ter
+       sido atenuado pela rolagem; devolvê-lo à tinta cheia confirma o gesto e
+       impede que o painel pareça ter aberto a partir de um botão "apagado". */
+    cromoRef.current = true;
+    setCromo(true);
     if (qual === "indice") setAqui(indice ? null : ondeEstouNoLivro(prosa.current));
-    setIndice(qual === "indice" ? (v) => !v : false);
-    setCaderno(qual === "caderno" ? (v) => !v : false);
-    setPainel(qual === "painel" ? (v) => !v : false);
-    setProcurando(qual === "procurando" ? (v) => !v : false);
-    setDobras(qual === "dobras" ? (v) => !v : false);
+    setPainelAberto((atual) => atual === qual ? null : qual);
   };
+
+  /* Clique fora e Escape fecham QUALQUER painel lateral pela mesma regra. Antes
+   * só a paleta de seleção fazia isso; aparência, índice, busca, marcadores e
+   * notas exigiam acertar novamente o ícone que os abriu. */
+  useEffect(() => {
+    if (!painelAberto) return undefined;
+    const fecharFora = (e) => {
+      if (e.target.closest?.(".cromo-caixa, .aparencia, .caderno, .indice")) return;
+      setPainelAberto(null);
+    };
+    const fecharComTeclado = (e) => {
+      if (e.key === "Escape") setPainelAberto(null);
+    };
+    document.addEventListener("pointerdown", fecharFora, true);
+    document.addEventListener("keydown", fecharComTeclado);
+    return () => {
+      document.removeEventListener("pointerdown", fecharFora, true);
+      document.removeEventListener("keydown", fecharComTeclado);
+    };
+  }, [painelAberto]);
 
   /* ONDE A PESSOA ESTÁ, para a gaveta de marcadores saber se este lugar já está
    * dobrado. Lido ao ABRIR, e não a cada rolagem: um estado que muda dezenas de
@@ -1178,12 +1243,12 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
          rolar até ele é rolar até o primeiro BLOCO, porque a seção não tem
          caixa (`display: contents`). */
       irPara(secao, m.deslocamento) || irParaOComeco(secao);
-      setDobras(false);
+      fecharPainel("dobras");
       return;
     }
     setDestino({ capitulo: m.capitulo, deslocamento: m.deslocamento });
     aoIrParaCapitulo?.(m.capitulo);
-    setDobras(false);
+    fecharPainel("dobras");
   };
 
   const irAoItemDoIndice = (item) => {
@@ -1192,12 +1257,12 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
       const alvo = alvoDaAncora(secao, item.ancora);
       if (alvo) alvo.scrollIntoView({ behavior: "instant", block: "start" });
       else irParaOComeco(secao);
-      setIndice(false);
+      fecharPainel("indice");
       return;
     }
     setDestino({ capitulo: item.capitulo, deslocamento: 0, ancora: item.ancora ?? null });
     aoIrParaCapitulo?.(item.capitulo);
-    setIndice(false);
+    fecharPainel("indice");
   };
 
   /* A VIAGEM PENDENTE, quando os blocos chegam.
@@ -1220,6 +1285,11 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
     setDestino(null);
   }, [destino, blocos, capitulos]);
   useEffect(() => { aplicarAparencia(aparencia); gravarAparencia(aparencia); }, [aparencia]);
+
+  const mudarAjuste = (id, valor) => {
+    setAparencia((antes) => limitarAparencia({ ...antes, [id]: valor }));
+  };
+  const limitesColuna = limitesDaColuna(aparencia.corpo);
 
   /* O TEMA FICA NO PAINEL TAMBÉM, como o desenho põe — e continua sendo o mesmo
    * tema das Preferências da conta, lido e escrito pelo mesmo módulo. Dois
@@ -1594,7 +1664,7 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
         <BuscaNoLivro
           livro={livro}
           aoIr={aoIrParaCapitulo}
-          aoFechar={() => setProcurando(false)}
+          aoFechar={() => fecharPainel("procurando")}
         />
       )}</Flutuante>}
 
@@ -1607,7 +1677,7 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
           aoDobrar={dobrarAqui}
           aoDesdobrar={aoDesdobrar}
           aoIr={irAoMarcador}
-          aoFechar={() => setDobras(false)}
+          aoFechar={() => fecharPainel("dobras")}
         />
       )}</Flutuante>}
 
@@ -1617,7 +1687,7 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
           aqui={aqui}
           raiz={prosa}
           aoIr={irAoItemDoIndice}
-          aoFechar={() => setIndice(false)}
+          aoFechar={() => fecharPainel("indice")}
         />
       )}</Flutuante>}
 
@@ -1625,7 +1695,7 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
         <aside className="aparencia" aria-label="Aparência da leitura">
           <header>
             <h2>Aparência</h2>
-            <button type="button" aria-label="Fechar" onClick={() => setPainel(false)}>×</button>
+            <button type="button" aria-label="Fechar" onClick={() => fecharPainel("painel")}>×</button>
           </header>
           <section>
             <h3>Tema</h3>
@@ -1656,6 +1726,27 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
               ))}
             </div>
           </section>
+
+          {AJUSTES.map((ajuste) => (
+            <ControleDeFaixa
+              key={ajuste.id}
+              ajuste={ajuste}
+              valor={aparencia[ajuste.id]}
+              aoMudar={(valor) => mudarAjuste(ajuste.id, valor)}
+            />
+          ))}
+
+          <ControleDeFaixa
+            ajuste={{ id: "coluna", rotulo: "Largura da leitura", passo: 20, unidade: "px" }}
+            valor={aparencia.coluna}
+            minimo={limitesColuna.minimo}
+            maximo={limitesColuna.maximo}
+            aoMudar={(valor) => mudarAjuste("coluna", valor)}
+          />
+          <p className="aparencia-coluna-ajuda">
+            A faixa acompanha o tamanho do texto para manter linhas confortáveis,
+            sem ficar estreita ou longa demais.
+          </p>
 
           {GRUPOS.map((g) => (
             <section key={g.id}>
@@ -1713,7 +1804,7 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
           aoProcurarNoLivro={procurarACitacao}
           procurando={procurandoNota}
           semParadeiro={semParadeiro}
-          aoFechar={() => setCaderno(false)}
+          aoFechar={() => fecharPainel("caderno")}
         />
       )}</Flutuante>}
 

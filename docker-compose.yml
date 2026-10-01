@@ -24,6 +24,14 @@ services:
     # como a maioria das coisas vaza.
     expose: ["8000"]
 
+    # Limites conservadores para que uma conversao malformada nao consuma a
+    # maquina inteira. Podem ser ajustados no arquivo local de ambiente.
+    cpus: ${MEKORA_CPUS:-1}
+    mem_limit: ${MEKORA_RAM:-2g}
+    pids_limit: ${MEKORA_PIDS:-256}
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+
   web:
     build:
       context: .
@@ -34,6 +42,12 @@ services:
       # que é exatamente o que se quer para provar a pilha antes de apontar o DNS.
       MEKORA_DOMINIO: ${MEKORA_DOMINIO:-localhost}
     ports: ["80:80", "443:443"]
+    cpus: ${MEKORA_CPUS_BORDA:-1}
+    mem_limit: ${MEKORA_RAM_BORDA:-256m}
+    pids_limit: 128
+    cap_drop: ["ALL"]
+    cap_add: ["NET_BIND_SERVICE"]
+    security_opt: ["no-new-privileges:true"]
     volumes:
       - caddy_dados:/data
       - caddy_config:/config

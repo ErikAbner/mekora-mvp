@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, Cookie, BackgroundTasks, Depends, File, HTTPException, UploadFile
+
+from app.core import quadrinhos
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -37,6 +39,7 @@ from app.services.email_service import (
 )
 from app.services.input_router_service import (
     detect_input_format,
+    COMIC_EXTENSIONS,
     detect_processing_mode,
     is_accepted,
 )
@@ -58,6 +61,9 @@ def _to_job(record: ProcessingJob) -> dict:
     data["leitura_url"] = _leitura_url(record)
     data["epub_url"] = _epub_url(record)
     data["thumbnails"] = get_thumbnail_urls(record.token_publico or "", data.get("page_count") or 0, record.id)
+    data["cover_url"] = capa_service.url(record)
+    data["embedded_cover_url"] = capa_service.url_original(record)
+    data["cover_source"] = capa_service.origem_atual(record)
     _sem_buracos(data)
     return data
 
@@ -464,8 +470,6 @@ def _bg_analyze(job_id: int, operation_id: str | None = None) -> None:
         #
         # Antes de `page_count` ser gravado no registro: `_origem` cai na
         # página 0 quando não há escolha, e não precisa da contagem para isso.
-        capa_service.promover(job)
-
         # O ARQUIVO QUE ESPERA VOCÊ — "Precisa de você", do nó 895:9348.
         #
         # A análise para aqui e o trabalho fica marcado como bloqueado, em vez
@@ -507,6 +511,9 @@ def _bg_analyze(job_id: int, operation_id: str | None = None) -> None:
         job.capitulos_declarados = result.get("capitulos_declarados")
         job.ocr_status = "needed" if result["is_scanned"] else "not_needed"
         job.status = "analyzed"
+        promovida = capa_service.promover(job)
+        if promovida is not None:
+            job.cover_path = str(promovida)
 
         if result["is_scanned"]:
             from app.services.ocr_service import OCRFailedError, apply_ocr
@@ -595,28 +602,77 @@ def _bg_convert(job_id: int, operation_id: str | None = None) -> None:
         input_pdf = Path(job.translated_artifact_path or job.processed_pdf_path or job.input_path)  # type: ignore[arg-type]
         slug = job.final_filename or Path(job.original_filename).stem
         output_epub = STORAGE_OUTPUT / str(job_id) / f"{slug}.epub"
+        # O reparo precisa acontecer ANTES do Calibre. Ao converter EPUB para
+        # EPUB ele pode juntar figuras vizinhas numa tabela; depois disso a
+        # assinatura estrutural do defeito deixa de existir. A origem nunca é
+        # alterada: uma cópia de trabalho só substitui a entrada quando uma
+        # cadeia deslocada foi realmente encontrada.
+        if input_pdf.suffix.lower() == ".epub":
+            from app.services.epub_figure_repair_service import repair_displaced_figures
+            import shutil
+
+            repaired_source = STORAGE_TEMP / str(job_id) / "source-with-figures-repaired.epub"
+            repaired_source.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(input_pdf, repaired_source)
+            try:
+                source_repair = repair_displaced_figures(repaired_source)
+            except Exception:
+                # O Calibre ainda pode abrir arquivos tolerantes que o
+                # reparador XML/ZIP recusa. Um cuidado opcional não pode tomar
+                # o lugar do conversor e transformar compatibilidade em erro.
+                logger.warning("EPUB de origem não pôde ser inspecionado para reparar figuras", exc_info=True)
+                repaired_source.unlink(missing_ok=True)
+            else:
+                if source_repair.repaired_chains:
+                    input_pdf = repaired_source
+                    logger.info(
+                        "EPUB de origem: %d cadeia(s) de figuras reparada(s), %d imagens realinhadas",
+                        source_repair.repaired_chains,
+                        source_repair.shifted_images,
+                    )
+                else:
+                    repaired_source.unlink(missing_ok=True)
+        # Também cobre livros analisados antes de a capa embutida ser
+        # reconhecida. A leitura das superfícies é preguiçosa; a conversão
+        # precisa materializar a mesma escolha antes de chamar o Calibre.
+        promovida = capa_service.promover(job)
+        if promovida is not None:
+            job.cover_path = str(promovida)
+        elif job.selected_cover_page == -1:
+            job.cover_path = None
         cover = Path(job.cover_path) if job.cover_path else None
         pdf_original = input_pdf.suffix.lower() == ".pdf" and not job.translated_artifact_path
+        # PDF com uma camada textual útil deve continuar sendo TEXTO. A regra
+        # anterior transformava qualquer PDF em uma sequência de JPEGs — até
+        # livros com milhares de caracteres selecionáveis por página. Layout
+        # fixo fica reservado ao documento realmente visual; OCR aplicado ou
+        # densidade textual suficiente seguem para leitura adaptável.
         usar_refluxo_pdf = pdf_original and bool(
+            # Se a camada original foi marcada como suspeita e o OCR não
+            # conseguiu terminar, preservamos as páginas visuais em vez de
+            # refluirmos texto corrompido. Com OCR concluído, o texto novo é
+            # seguro para a leitura adaptável.
             job.ocr_used or ((job.avg_chars_per_page or 0) >= 120 and not job.is_scanned)
         )
+        usar_layout_fixo = pdf_original and not usar_refluxo_pdf
 
         if operation_id:
+            # ebook-convert é processo externo: indeterminado honesto
             report_progress(
                 op_dir, operation_id, "convert", 0, None,
-                "Criando leitura adaptável do PDF"
-                if usar_refluxo_pdf
-                else "Convertendo via Calibre (sem estimativa)",
+                (
+                    "Criando leitura adaptável do PDF"
+                    if usar_refluxo_pdf
+                    else ("Preservando páginas do PDF" if usar_layout_fixo else "Convertendo via Calibre (sem estimativa)")
+                ),
             )
 
         try:
             argumentos = dict(
-                input_path=input_pdf,
-                output_epub=output_epub,
+                input_path=input_pdf, output_epub=output_epub,
                 title=job.final_title or job.detected_title or "Sem título",
                 author=job.final_author or job.detected_author or "Desconhecido",
-                language=job.final_language or "por",
-                cover=cover,
+                language=job.final_language or "por", cover=cover,
                 deve_parar=_pediram_parada,
             )
             if usar_refluxo_pdf:
@@ -624,14 +680,38 @@ def _bg_convert(job_id: int, operation_id: str | None = None) -> None:
 
                 def _progresso_refluxo(atual: int, total: int) -> None:
                     if operation_id:
-                        report_progress(
-                            op_dir, operation_id, "convert", atual, total,
-                            f"Organizando texto da página {atual} de {total}",
-                        )
+                        report_progress(op_dir, operation_id, "convert", atual, total,
+                                        f"Organizando texto da página {atual} de {total}")
 
                 convert_pdf_to_reflow_epub(**argumentos, progresso=_progresso_refluxo)
+            elif usar_layout_fixo:
+                from app.services.pdf_fixed_epub_service import convert_pdf_to_fixed_epub
+
+                def _progresso_pdf(atual: int, total: int) -> None:
+                    if operation_id:
+                        report_progress(op_dir, operation_id, "convert", atual, total,
+                                        f"Preservando página {atual} de {total}")
+
+                convert_pdf_to_fixed_epub(**argumentos, progresso=_progresso_pdf)
             else:
                 convert_to_epub(**argumentos)
+            # Alguns exportadores produzem uma cadeia inequívoca de figuras
+            # deslocadas: sobra uma imagem sem legenda no começo e falta uma
+            # imagem na última legenda. Corrigir aqui mantém a mesma ordem no
+            # leitor, no Kindle e na versão WebP.
+            from app.services.epub_figure_repair_service import repair_displaced_figures
+
+            try:
+                figure_repair = repair_displaced_figures(output_epub)
+            except Exception:
+                logger.warning("EPUB convertido não pôde ser inspecionado para reparar figuras", exc_info=True)
+            else:
+                if figure_repair.repaired_chains:
+                    logger.info(
+                        "EPUB: %d cadeia(s) de figuras reparada(s), %d imagens realinhadas",
+                        figure_repair.repaired_chains,
+                        figure_repair.shifted_images,
+                    )
             job.epub_path = str(output_epub)
             job.epub_bytes = _bytes_de(output_epub)
             job.epub_web_path = _versao_web(output_epub)
@@ -1066,11 +1146,17 @@ async def upload_file(
     # 2. Allowlist de extensão
     if not is_accepted(safe_name):
         ext = Path(safe_name).suffix.lower()
-        raise HTTPException(
-            status_code=400,
-            detail=f"Formato '{ext or 'desconhecido'}' não suportado. "
-                   "Formatos aceitos: PDF, DOCX, ODT, RTF, TXT, HTML, EPUB, CBZ, CBR, CB7, CBC.",
-        )
+        # A LISTA DA MENSAGEM SAI DA LISTA DE VERDADE. Ela era escrita à mão e
+        # citava CBZ, CBR, CB7 e CBC; com os quadrinhos desligados, a recusa
+        # passaria a oferecer justamente o que acabou de recusar — e quem
+        # tentasse de novo receberia o mesmo erro citando o mesmo formato.
+        from app.services.input_router_service import get_accepted_extensions
+
+        aceitos = ", ".join(sorted(e.lstrip(".").upper() for e in get_accepted_extensions()))
+        detalhe = f"Formato '{ext or 'desconhecido'}' não suportado. Formatos aceitos: {aceitos}."
+        if ext in COMIC_EXTENSIONS and not quadrinhos.ligados():
+            detalhe = quadrinhos.RAZAO
+        raise HTTPException(status_code=400, detail=detalhe)
 
     fmt = detect_input_format(safe_name)
     mode = detect_processing_mode(safe_name)
@@ -1315,7 +1401,21 @@ def update_cover(
     """
     job = _get_or_404(db, job_id)
 
-    if body.selected_cover_page is not None:
+    if body.mode == "generated":
+        job.selected_cover_page = -1
+        job.cover_path = None
+        capa_service.promover(job)
+    elif body.mode == "embedded":
+        job.selected_cover_page = -2
+        promovida = capa_service.promover(job)
+        if promovida is None:
+            raise HTTPException(status_code=409, detail="Este arquivo não traz uma capa embutida utilizável.")
+        job.cover_path = str(promovida)
+    elif body.mode == "auto":
+        job.selected_cover_page = None
+        promovida = capa_service.promover(job)
+        job.cover_path = str(promovida) if promovida is not None else None
+    elif body.selected_cover_page is not None:
         if not (0 <= body.selected_cover_page <= 4):
             raise HTTPException(
                 status_code=400,
@@ -1504,6 +1604,7 @@ def destravar_com_senha(
     tentar autenticar. Não há como responder "senha errada" sem tentar.
     """
     import fitz
+    from datetime import timedelta
 
     job = _get_or_404(db, job_id)
     if job.bloqueio != "senha":
@@ -1511,9 +1612,31 @@ def destravar_com_senha(
     if not job.input_path or not Path(job.input_path).is_file():
         raise HTTPException(status_code=410, detail="O arquivo original não está mais aqui.")
 
+    agora = datetime.utcnow()
+    if job.senha_bloqueada_ate and job.senha_bloqueada_ate > agora:
+        faltam = max(1, int((job.senha_bloqueada_ate - agora).total_seconds()))
+        raise HTTPException(
+            status_code=429,
+            detail="Muitas tentativas. Espere alguns minutos antes de tentar novamente.",
+            headers={"Retry-After": str(faltam)},
+        )
+    if job.senha_bloqueada_ate:
+        job.senha_bloqueada_ate = None
+        job.tentativas_senha = 0
+
     doc = fitz.open(job.input_path)
     try:
         if not doc.authenticate(corpo.senha):
+            job.tentativas_senha = (job.tentativas_senha or 0) + 1
+            if job.tentativas_senha >= 5:
+                job.senha_bloqueada_ate = agora + timedelta(minutes=15)
+                db.commit()
+                raise HTTPException(
+                    status_code=429,
+                    detail="Muitas tentativas. Espere 15 minutos antes de tentar novamente.",
+                    headers={"Retry-After": "900"},
+                )
+            db.commit()
             # 403, e não 400: a requisição está bem formada e o servidor a
             # entendeu — o que faltou foi a credencial. E a mensagem não diz
             # nada além disso, porque não há mais nada a dizer.
@@ -1532,6 +1655,8 @@ def destravar_com_senha(
     aberto.replace(Path(job.input_path))
     job.input_bytes = _bytes_de(Path(job.input_path))
     job.bloqueio = None
+    job.tentativas_senha = 0
+    job.senha_bloqueada_ate = None
     job.status = "uploaded"
     job.updated_at = datetime.utcnow()
     db.commit()
@@ -2016,11 +2141,10 @@ def apply_preset_to_job(
     """
     from app.services.preset_service import extract_job_updates, get_preset
 
-    preset = get_preset(body.preset_id)
+    job = _get_or_404(db, job_id)
+    preset = get_preset(body.preset_id, job.dono_id)
     if preset is None:
         raise HTTPException(status_code=404, detail="Preset não encontrado.")
-
-    job = _get_or_404(db, job_id)
 
     updates = extract_job_updates(preset)
     for field, value in updates.items():

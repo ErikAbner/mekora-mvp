@@ -86,3 +86,15 @@
  * traz de errado é o sublinhado do navegador, que dentro de uma moldura de
  * botão vira duas marcações de clicável na mesma coisa. */
 a.botao { text-decoration: none; }
+
+/* No telefone, uma ação sozinha é uma faixa de decisão, não um pequeno alvo
+ * perdido à esquerda. O seletor olha para o GRUPO de ações: botões que têm
+ * companhia continuam lado a lado; o único filho ocupa a largura útil inteira. */
+@media (max-width: 767px) {
+  :where([class$="-acoes"], [class*="-acoes "])
+    > :only-child:is(.botao, button:not(.acao), a) {
+    inline-size: 100%;
+    min-block-size: 48px;
+    justify-content: center;
+  }
+}

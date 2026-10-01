@@ -4,7 +4,12 @@
 
 O **Mekora** transforma documentos em uma experiência de leitura contínua. A pessoa envia um arquivo, acompanha sua preparação, lê o resultado, registra destaques e notas e organiza o conhecimento em estudos e no Canvas.
 
-Esta é a candidata pública do **MVP 1.0**, consolidada em 15 de setembro de 2026.
+Esta é a distribuição compartilhável do Mekora, sincronizada com o produto em
+**1º de outubro de 2026**. Ela contém o mesmo código operacional da versão
+principal, mas nunca inclui o acervo, banco, credenciais, modelos baixados,
+arquivos convertidos, logs ou demais dados da instalação de desenvolvimento.
+Nesta revisão, a origem funcional corresponde ao commit `62cd0e6` do Mekora
+principal; os iniciadores próprios da distribuição para Windows são mantidos.
 
 ## O produto
 
@@ -129,9 +134,9 @@ bash scripts/verificar-release.sh
 
 ## Qualidade desta release
 
-- **936 testes de backend aprovados**, 1 ignorado e nenhuma falha;
-- **14 testes de interface e contratos aprovados**;
-- build de produção aprovado com 228 módulos transformados;
+- **991 testes de backend aprovados** e nenhuma falha;
+- **17 testes de interface e contratos aprovados**;
+- build de produção aprovado com 230 módulos transformados;
 - 18 rotas principais auditadas em desktop e 390 px;
 - nenhum overflow horizontal nas rotas auditadas;
 - nenhum segredo, banco, upload, log ou dado pessoal versionado.

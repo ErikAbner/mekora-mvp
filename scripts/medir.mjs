@@ -31,15 +31,23 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 
 function achaChrome() {
-  const cache = join(homedir(), '.cache/puppeteer/chrome');
-  if (existsSync(cache)) {
-    for (const v of readdirSync(cache)) {
-      const p = join(cache, v, 'chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing');
-      if (existsSync(p)) return p;
-      const l = join(cache, v, 'chrome-linux64/chrome');
-      if (existsSync(l)) return l;
-      const w = join(cache, v, 'chrome-win64/chrome.exe');
-      if (existsSync(w)) return w;
+  /* O headless-shell nao e um aplicativo macOS: ele nao se registra no
+     LaunchServices, nao cria icone no Dock e nao abre uma janela por acidente.
+     Em 15/09 o Chrome for Testing do cache abortou em TransformProcessType e o
+     macOS mostrou o relatorio para a pessoa. Para uma ferramenta invisivel de
+     auditoria, isso e falha de produto, mesmo que a medida nem tenha iniciado. */
+  const headless = join(homedir(), '.cache/puppeteer/chrome-headless-shell');
+  if (existsSync(headless)) {
+    for (const v of readdirSync(headless).sort().reverse()) {
+      for (const relativo of [
+        'chrome-headless-shell-mac-arm64/chrome-headless-shell',
+        'chrome-headless-shell-mac-x64/chrome-headless-shell',
+        'chrome-headless-shell-linux64/chrome-headless-shell',
+        'chrome-headless-shell-win64/chrome-headless-shell.exe',
+      ]) {
+        const p = join(headless, v, relativo);
+        if (existsSync(p)) return p;
+      }
     }
   }
   const fixos = [
@@ -54,8 +62,25 @@ function achaChrome() {
     join(process.env.LOCALAPPDATA || '', 'Microsoft/Edge/Application/msedge.exe'),
   ].filter(Boolean);
   const achado = fixos.find(existsSync);
-  if (!achado) throw new Error('nenhum Chrome encontrado — instale um ou aponte CHROME=');
-  return achado;
+  if (achado) return achado;
+
+  /* Ultimo recurso para maquinas sem headless-shell nem navegador instalado.
+     Continua util em CI, mas nunca deve vencer a opcao realmente headless. */
+  const cache = join(homedir(), '.cache/puppeteer/chrome');
+  if (existsSync(cache)) {
+    for (const v of readdirSync(cache).sort().reverse()) {
+      for (const relativo of [
+        'chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing',
+        'chrome-mac-x64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing',
+        'chrome-linux64/chrome',
+        'chrome-win64/chrome.exe',
+      ]) {
+        const p = join(cache, v, relativo);
+        if (existsSync(p)) return p;
+      }
+    }
+  }
+  throw new Error('nenhum Chrome headless encontrado — instale um ou aponte CHROME=');
 }
 
 /* --png=<arquivo> guarda a composicao junto da medida. Numero diz se a caixa
@@ -157,12 +182,20 @@ process.once("exit", encerrarChromeDeProva);
 process.once("SIGINT", () => interromper(130));
 process.once("SIGTERM", () => interromper(143));
 
-chrome = spawn(process.env.CHROME || achaChrome(), [
+const executavelChrome = process.env.CHROME || achaChrome();
+let falhaAoAbrirChrome = null;
+chrome = spawn(executavelChrome, [
   '--headless=new', `--remote-debugging-port=${porta}`,
   '--no-first-run', '--no-default-browser-check', '--hide-scrollbars',
   `--window-size=${larg},${alt}`, `--user-data-dir=/tmp/medir-${porta}-${Date.now()}`,
   '--disk-cache-size=1', '--media-cache-size=1', 'about:blank',
 ], { stdio: 'ignore' });
+chrome.once('error', (erro) => { falhaAoAbrirChrome = erro; });
+chrome.once('exit', (codigo, sinal) => {
+  if (codigo && codigo !== 0) {
+    falhaAoAbrirChrome = new Error(`navegador de medida encerrou com ${sinal || `codigo ${codigo}`}`);
+  }
+});
 
 let ws, seq = 0;
 const abertas = new Map();
@@ -175,9 +208,13 @@ const manda = (metodo, params = {}) => new Promise((ok, falha) => {
 try {
   let alvos;
   for (let i = 0; i < 60 && !alvos?.length; i++) {
+    if (falhaAoAbrirChrome) {
+      throw new Error(`${falhaAoAbrirChrome.message}: ${executavelChrome}`);
+    }
     try { alvos = await (await fetch(`http://127.0.0.1:${porta}/json/list`)).json(); } catch { /* subindo */ }
     if (!alvos?.length) await espera(200);
   }
+  if (!alvos?.length) throw new Error(`navegador de medida nao iniciou: ${executavelChrome}`);
   const aba = alvos.find(t => t.type === 'page');
   ws = new WebSocket(aba.webSocketDebuggerUrl);
   await new Promise(r => ws.addEventListener('open', r));

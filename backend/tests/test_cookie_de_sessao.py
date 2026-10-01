@@ -74,6 +74,13 @@ def sem_smtp_e_janela_limpa(monkeypatch):
 def test_com_dominio_o_cookie_sai_com_secure(client_cru, test_engine, monkeypatch) -> None:
     """O ramo que nunca havia rodado em teste nenhum."""
     monkeypatch.setenv("MEKORA_DOMINIO", "mekora.com.br")
+    # EM PRODUÇÃO A ENTRADA É POR CONVITE, e sem esta linha não existe chave
+    # nenhuma para abrir — a rota responde 204 e não escreve nada. O caso ficou
+    # vermelho exatamente assim quando o convite entrou, com "nenhuma chave foi
+    # criada", e o vermelho estava certo: era o produto novo, não o teste velho.
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "convidados", "cookie@mekora.local")
 
     r = _entrar(client_cru, test_engine)
 

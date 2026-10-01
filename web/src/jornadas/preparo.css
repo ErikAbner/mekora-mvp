@@ -94,7 +94,8 @@
   background: transparent;
   color: var(--muted-foreground);
   font: inherit;
-  line-height: 24px;
+  font-size: 20px;
+  line-height: 30px;
   cursor: pointer;
 }
 .preparo-modo button.ativo { background: var(--foreground); color: var(--background); }
@@ -471,3 +472,11 @@
   margin-block: 24px;
 }
 .preparo-pagina-capa-amostra .capa-de-reserva { inline-size: 260px; }
+.preparo-capas-cabecalho { display: flex; justify-content: space-between; gap: 24px; align-items: start; }
+.preparo-capas-cabecalho p { margin: 8px 0 0; color: var(--muted-foreground); }
+.preparo-capas-opcoes { display: flex; gap: 16px; overflow-x: auto; padding: 4px 2px 12px; }
+.preparo-capas-opcoes button { flex: 0 0 132px; display: flex; flex-direction: column; gap: 8px; padding: 8px; border: 1px solid var(--border); background: var(--background); color: var(--foreground); text-align: left; cursor: pointer; }
+.preparo-capas-opcoes button[aria-checked="true"] { border-color: var(--foreground); box-shadow: 0 0 0 1px var(--foreground); }
+.preparo-capas-opcoes button:focus-visible { outline: 2px solid var(--foreground); outline-offset: 3px; }
+.preparo-capas-opcoes img, .preparo-capas-opcoes .capa-de-reserva { inline-size: 114px; block-size: 152px; object-fit: cover; }
+@media (max-width: 639px) { .preparo-capas-cabecalho { flex-direction: column; gap: 8px; } }

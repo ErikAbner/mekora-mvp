@@ -85,6 +85,10 @@
   color: var(--foreground);
   font-weight: 500;
   overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
 }
 .arquivo-proximo { font-size: 14px; line-height: 22px; color: var(--muted-foreground); }
 .arquivo-estado {
@@ -104,6 +108,23 @@
 
 .barra { block-size: 6px; background: var(--muted); }
 .barra-feita { block-size: 100%; background: var(--foreground); }
+.arquivo-andamento { display: flex; flex-direction: column; gap: 8px; }
+.arquivo-andamento-medida {
+  display: flex; justify-content: space-between; gap: 16px; margin: 0;
+  color: var(--muted-foreground); font-size: 14px; line-height: 22px;
+}
+.barra.indeterminada { position: relative; overflow: hidden; }
+.barra.indeterminada .barra-feita {
+  inline-size: 38%;
+  animation: atividade-do-arquivo 1.35s cubic-bezier(.4, 0, .2, 1) infinite;
+}
+@keyframes atividade-do-arquivo {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(290%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .barra.indeterminada .barra-feita { inline-size: 100%; animation: none; opacity: 0.45; }
+}
 .erro .barra-feita { background: var(--destructive); }
 /* VERDE SO NO FIM, como o desenho (895:9736) mostra. A barra que enche em preto
  * diz "andando"; a que fecha em verde diz "acabou bem", e a diferenca importa
@@ -124,6 +145,15 @@
 .arquivo-rodape .arquivo-preparo { flex: none; margin: 0; }
 
 .preparo-caixa .botao { align-self: flex-start; }
+.preparo-carregar-mais {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-block-start: 24px;
+  border-block-start: 1px solid var(--border);
+}
+.preparo-carregar-mais p { margin: 0; color: var(--muted-foreground); font-size: 14px; line-height: 22px; }
 
 /* A FORMA DOS RECORTES MORA NO `.recortes.soltos`, em `estante.css` — os chips
    soltos do nó `895:9523`. Aqui ficam só as cores de estado e o total, que são
@@ -146,7 +176,7 @@
 .preparo .recortes button.recorte-fila    { border-color: var(--warning); }
 .preparo .recortes button.recorte-pronto  { border-color: var(--success); }
 .preparo .recortes button.recorte-erro    { border-color: var(--destructive); }
-/* "Enviando" fica com a borda neutra, como o `#e0e0e0` do nó: estar em curso
+/* "Em andamento" fica com a borda neutra, como o `#e0e0e0` do nó: estar em curso
    não é um estado sobre o qual haja algo a fazer. */
 
 /* O TOTAL NA OUTRA PONTA — o nó é um `justify-between`. Ele não é recorte de
@@ -214,6 +244,81 @@
   gap: 12px;
   flex-wrap: wrap;
   align-items: center;
+}
+
+/* A RECEITA DO LOTE fica antes da lista porque decide o que acontecerá com
+ * todos os itens abaixo. A superfície agrupa decisão, explicação e ação; sem
+ * ela o seletor pareceria mais um recorte da fila. */
+.preparo-lote {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(296px, 336px);
+  gap: 40px 48px;
+  padding: 40px;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+
+.preparo-lote-introducao { display: flex; flex-direction: column; gap: 12px; max-inline-size: 420px; }
+.preparo-lote-marca {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 18px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.preparo-lote h3 { margin: 0; font-size: 28px; line-height: 36px; font-weight: 540; letter-spacing: -0.25px; }
+.preparo-lote p { margin: 0; color: var(--muted-foreground); font-size: 16px; line-height: 25px; }
+.preparo-lote-controles { display: flex; flex-direction: column; gap: 12px; padding-block-start: 2px; }
+.preparo-lote-controles label,
+.preparo-lote-formulario label { color: var(--foreground); font-size: 14px; line-height: 22px; }
+.preparo-lote select,
+.preparo-lote input {
+  inline-size: 100%;
+  min-block-size: 48px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+}
+.preparo-lote-controles .botao { inline-size: 100%; justify-content: center; }
+.preparo-lote-nova { grid-column: 1 / -1; border-block-start: 1px solid var(--border); padding-block-start: 24px; }
+.preparo-lote-nova summary { cursor: pointer; color: var(--foreground); font-size: 18px; line-height: 26px; font-weight: 540; }
+.preparo-lote-nova summary::marker { font-size: 13px; }
+.preparo-lote-formulario {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: end;
+  gap: 20px 24px;
+  padding-block-start: 24px;
+}
+.preparo-lote-formulario label { display: flex; flex-direction: column; gap: 6px; }
+.preparo-lote-formulario .botao { inline-size: fit-content; min-inline-size: 190px; justify-content: center; }
+.preparo-lote-recado { grid-column: 1 / -1; color: var(--foreground) !important; }
+.preparo-lote-receita-resumo { font-size: 14px !important; line-height: 20px !important; }
+.preparo-lote-gerenciar ul { list-style: none; margin: 24px 0 0; padding: 0; display: grid; gap: 0; border-block-start: 1px solid var(--border); }
+.preparo-lote-gerenciar li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 24px; padding: 20px 0; border-block-end: 1px solid var(--border); }
+.preparo-lote-gerenciar strong { font-weight: 540; }
+.preparo-lote-receita-acoes { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; align-items: center; }
+.preparo-lote-receita-acoes button { min-block-size: 44px; padding: 9px 14px; border: 1px solid var(--border); background: var(--background); color: var(--foreground); font: inherit; font-size: 15px; line-height: 22px; cursor: pointer; }
+@media (max-width: 639px) { .preparo-lote-gerenciar li { flex-direction: column; } .preparo-lote-receita-acoes button { flex: 1 1 100%; } }
+
+@media (max-width: 900px) {
+  .preparo-lote { grid-template-columns: 1fr; padding: 28px; gap: 32px; }
+  .preparo-lote-formulario { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 767px) {
+  .preparo-lote { gap: 28px; padding: 24px 20px; }
+  .preparo-lote h3 { font-size: 24px; line-height: 32px; }
+  .preparo-lote-formulario { grid-template-columns: 1fr; }
+  .preparo-lote-formulario .botao { inline-size: 100%; justify-content: center; }
+  .preparo-lote-gerenciar li { grid-template-columns: 1fr; }
+  .preparo-lote-receita-acoes { justify-content: stretch; }
+  .preparo-lote-receita-acoes button { flex: 1 1 100%; }
 }
 
 /* Arrastar por cima da mesa cheia. O realce é DEGRAU DE SUPERFÍCIE, e não cor
@@ -380,6 +485,8 @@
     display: inline-flex;
     align-items: center;
   }
+  .preparo-carregar-mais { align-items: stretch; flex-direction: column; }
+  .preparo-carregar-mais .botao { inline-size: 100%; }
 }
 
 /* ─── "Precisa de voce" — no 895:9348 ───────────────────────────────────────
@@ -398,7 +505,8 @@
 .precisa-de-voce { display: flex; justify-content: center; padding: 0 64px 64px; }
 .precisa-de-voce-caixa {
   inline-size: 100%; max-inline-size: 888px;
-  padding: 0;
+  padding: 40px;
+  background: var(--background-secondary);
 }
 .precisa-de-voce-cabecalho {
   display: flex;
@@ -406,8 +514,8 @@
   align-items: center;
   gap: 64px;
   margin-block-end: 64px;
-  padding: 40px;
-  background: var(--background-secondary);
+  padding: 0;
+  background: transparent;
 }
 .precisa-de-voce-cabecalho h2 {
   margin: 0;
@@ -431,23 +539,39 @@
   font-size: 28px; line-height: 36px; font-weight: 540;
   color: var(--foreground);
   overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
 }
 .precisa-de-voce-motivo { margin: 0; font-size: 20px; line-height: 30px; color: var(--muted-foreground); text-wrap: pretty; }
 .precisa-de-voce-motivo strong { color: var(--foreground); font-weight: 540; }
 .precisa-de-voce-forma { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
 .precisa-de-voce-forma .campo { flex: 1 1 260px; }
 .precisa-de-voce-capa { inline-size: 100%; aspect-ratio: 420 / 594; }
+.precisa-de-voce-mais {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-block-start: 40px;
+  padding-block-start: 24px;
+  border-block-start: 1px solid var(--border);
+}
+.precisa-de-voce-mais p { margin: 0; color: var(--muted-foreground); font-size: 14px; line-height: 22px; }
 
 @media (max-width: 1023px) {
   .precisa-de-voce { padding: 0 24px 40px; }
-  .precisa-de-voce-caixa { padding: 0; }
-  .precisa-de-voce-cabecalho { gap: 40px; margin-block-end: 40px; padding: 32px 24px; }
+  .precisa-de-voce-caixa { padding: 32px 24px; }
+  .precisa-de-voce-cabecalho { gap: 40px; margin-block-end: 40px; padding: 0; }
   .precisa-de-voce-cabecalho h2 { font-size: 28px; line-height: 36px; }
   .precisa-de-voce-ilustracao { inline-size: 220px; }
   .precisa-de-voce-lista > li { grid-template-columns: minmax(0, 1fr); gap: 24px; }
   .precisa-de-voce-capa { max-inline-size: 320px; }
   .precisa-de-voce-forma { align-items: stretch; }
   .precisa-de-voce-forma .botao { inline-size: 100%; justify-content: center; }
+  .precisa-de-voce-mais { align-items: stretch; flex-direction: column; }
+  .precisa-de-voce-mais .botao { inline-size: 100%; }
 }
 
 /* O subtítulo da primeira vez — nó `895:9736`, alinhado à direita do título e

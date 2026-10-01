@@ -165,7 +165,7 @@
   text-wrap: pretty;
 }
 .ajuda-resposta-completa { display: flex; flex-direction: column; gap: 16px; margin-block-start: 24px; padding-inline-start: 24px; border-inline-start: 2px solid var(--foreground); }
-.ajuda-resposta-completa p { margin: 0; font-size: 18px; line-height: 28px; color: var(--foreground); text-wrap: pretty; }
+.ajuda-resposta-completa p { margin: 0; font-size: 18px; line-height: 26px; color: var(--foreground); text-wrap: pretty; }
 .ajuda-categoria a { color: var(--foreground); font-size: 16px; line-height: 24px; }
 
 .ajuda-resto { display: flex; flex-direction: column; gap: 16px; max-inline-size: 680px; }

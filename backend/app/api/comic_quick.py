@@ -10,6 +10,8 @@ from datetime import datetime
 from pathlib import Path
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+
+from app.core import quadrinhos
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -43,7 +45,10 @@ def _job_dict(job: ProcessingJob) -> dict:
     }
 
 
-@router.get("/jobs/{job_id}/comic-quick-pipeline/preflight")
+@router.get(
+    "/jobs/{job_id}/comic-quick-pipeline/preflight",
+    dependencies=[Depends(quadrinhos.exigir)],
+)
 def quick_pipeline_preflight(job_id: int, db: Session = Depends(get_db)) -> dict:
     """Preflight do quick pipeline — nenhuma alteração de estado."""
     from app.services.app_config_service import load_app_config
@@ -175,7 +180,7 @@ def _bg_quick_pipeline(job_id: int, operation_id: str) -> None:
         db.close()
 
 
-@router.post("/jobs/{job_id}/comic-quick-pipeline")
+@router.post("/jobs/{job_id}/comic-quick-pipeline", dependencies=[Depends(quadrinhos.exigir)])
 def start_quick_pipeline(
     job_id: int,
     background_tasks: BackgroundTasks,

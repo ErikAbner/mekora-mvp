@@ -43,6 +43,52 @@ const BASE = "";
  * simplesmente nao abre depois de fechar a aba.
  */
 const CHAVES = "mekora:chaves";
+const ATIVIDADES = "mekora:atividades";
+
+/** Trabalho iniciado nesta máquina que precisa continuar visível fora da tela
+ * que o disparou. O servidor continua sendo a fonte do estado; aqui ficam só
+ * os ids que o cabeçalho deve acompanhar e o tipo de resultado esperado. */
+export function atividadesLocais() {
+  try {
+    const itens = JSON.parse(localStorage.getItem(ATIVIDADES) || "[]");
+    if (Array.isArray(itens) && itens.length) return itens;
+    /* Migra lotes iniciados pela versão anterior da faixa global. */
+    const antigo = JSON.parse(localStorage.getItem("mekora:lote-ativo") || "null");
+    if (!Array.isArray(antigo?.ids)) return [];
+    return antigo.ids.map(Number).filter(Number.isInteger).map((id) => ({
+      id,
+      tipo: "preparo",
+      iniciadoEm: antigo.startedAt || new Date().toISOString(),
+      resultado: null,
+      terminadoEm: null,
+    }));
+  } catch { return []; }
+}
+
+export function guardarAtividadesLocais(itens, avisar = true) {
+  try {
+    localStorage.setItem(ATIVIDADES, JSON.stringify(itens));
+    localStorage.removeItem("mekora:lote-ativo");
+    if (avisar) window.dispatchEvent(new CustomEvent("mekora:atividades"));
+  } catch { /* o trabalho continua mesmo sem armazenamento local */ }
+}
+
+function registrarAtividades(jobIds, tipo) {
+  const ids = Array.from(new Set(jobIds.map(Number).filter(Number.isInteger)));
+  if (!ids.length) return;
+  const agora = new Date().toISOString();
+  const conjunto = new Set(ids);
+  /* Uma etapa nova substitui o recibo da anterior para o mesmo arquivo. Sem
+   * isto, traduzir e depois converter um livro faria o cabeçalho contar dois
+   * "arquivos" quando existe apenas um. */
+  const outros = atividadesLocais().filter((item) => !conjunto.has(item.id));
+  const novos = ids.map((id) => ({ id, tipo, iniciadoEm: agora, resultado: null, terminadoEm: null }));
+  guardarAtividadesLocais([...outros, ...novos]);
+}
+
+function registrarAtividade(jobId, tipo) {
+  registrarAtividades([jobId], tipo);
+}
 
 function chaves() {
   try { return JSON.parse(localStorage.getItem(CHAVES) || "{}"); } catch { return {}; }
@@ -142,8 +188,10 @@ export async function enviarArquivo(arquivo) {
 }
 
 /** GET /analyze/{upload_id} — jobs.py:653. Validar: páginas, se é digitalizado, o que foi detectado. */
-export function analisar(uploadId) {
-  return pede(`/analyze/${uploadId}`);
+export async function analisar(uploadId) {
+  const resposta = await pede(`/analyze/${uploadId}`);
+  registrarAtividade(uploadId, "analise");
+  return resposta;
 }
 
 /** GET /jobs/{id} — jobs.py:1349. Os dados do trabalho SEM re-executar nada.
@@ -202,22 +250,75 @@ export async function esperarAnalise(jobId, aoMudar, { intervaloMs = 800, tetoMs
 }
 
 /** POST /jobs/{id}/convert — jobs.py:891. */
-export function converter(jobId, opcoes = {}) {
-  return pede(`/jobs/${jobId}/convert`, {
+export async function converter(jobId, opcoes = {}) {
+  const resposta = await pede(`/jobs/${jobId}/convert`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(opcoes),
   });
+  registrarAtividade(jobId, "conversao");
+  return resposta;
 }
 
 /** POST /jobs/{id}/send — jobs.py:1201. Enviar ao Kindle. */
-export function enviarAoKindle(jobId) {
-  return pede(`/jobs/${jobId}/send`, { method: "POST" });
+export async function enviarAoKindle(jobId) {
+  const resposta = await pede(`/jobs/${jobId}/send`, { method: "POST" });
+  registrarAtividade(jobId, "envio");
+  return resposta;
 }
 
 /** GET /history — jobs.py:688. A estante. */
 export function historico() {
   return pede("/history");
+}
+
+/** GET /presets — receitas reutilizáveis de preparo. */
+export async function listarPresets() {
+  const resposta = await pede("/presets");
+  return resposta?.presets ?? [];
+}
+
+/** POST /presets — salva uma receita pessoal para os próximos lotes. */
+export function criarPreset(preset) {
+  return pede("/presets", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(preset),
+  });
+}
+
+export function atualizarPreset(id, preset) {
+  return pede(`/presets/${encodeURIComponent(id)}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(preset) });
+}
+
+export function apagarPreset(id) {
+  return pede(`/presets/${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+
+export function duplicarPreset(id, newName) {
+  return pede(`/presets/${encodeURIComponent(id)}/duplicate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ new_name: newName || null }) });
+}
+
+export function escolherCapa(jobId, escolha) {
+  return pede(`/jobs/${jobId}/cover`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(escolha) });
+}
+
+/** POST /batch/prepare — aplica uma receita e segue até o EPUB, no servidor.
+ * O processamento continua mesmo se a pessoa fechar esta aba. */
+export async function prepararLote(jobIds, presetId) {
+  const resposta = await pede("/batch/prepare", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ job_ids: jobIds, preset_id: presetId }),
+  });
+  const aceitos = (resposta?.item_results ?? [])
+    .filter((item) => item.status === "success")
+    .map((item) => item.job_id);
+  if (aceitos.length) {
+    registrarAtividades(aceitos, "preparo");
+    try { localStorage.removeItem("mekora:lote-ativo"); } catch { /* formato antigo */ }
+  }
+  return resposta;
 }
 
 /** GET /health — health.py:6. Serve para dizer "o backend não está no ar" em vez
@@ -398,6 +499,13 @@ export function lerTodasAsNotas() {
   return pede("/notas/todas");
 }
 
+export function lerPaginaDeNotas({ limite = 60, cursor = null, recorte = "todas", busca = "" } = {}) {
+  const params = new URLSearchParams({ limite: String(limite), recorte });
+  if (cursor) params.set("cursor", cursor);
+  if (busca.trim()) params.set("q", busca.trim());
+  return pede(`/notas/pagina?${params}`);
+}
+
 /** GET /notas/{id} — uma nota, com estudos, ligadas e o livro de onde veio. */
 export function lerNota(id) {
   return pede(`/notas/${id}`);
@@ -534,6 +642,17 @@ export function apagarMarcador(jobId, marcadorId) {
 
 export function lerEstudos() {
   return pede("/estudos/meus");
+}
+
+export function lerPaginaDeEstudos({ limite = 24, cursor = null, busca = "" } = {}) {
+  const params = new URLSearchParams({ limite: String(limite) });
+  if (cursor) params.set("cursor", cursor);
+  if (busca.trim()) params.set("q", busca.trim());
+  return pede(`/estudos/pagina?${params}`);
+}
+
+export function lerEstudo(id) {
+  return pede(`/estudos/${id}`);
 }
 
 export function criarEstudo({ nome, sobre = "" }) {
@@ -884,8 +1003,10 @@ export function atualizarMetadados(jobId, { final_title, final_author }) {
 
 /** POST /jobs/{id}/translate — dispara a traducao. Gera um SEGUNDO arquivo; o
  *  original fica intacto, e e dele que a conversao parte se ninguem pedir. */
-export function traduzir(jobId) {
-  return pede(`/jobs/${jobId}/translate`, { method: "POST" });
+export async function traduzir(jobId) {
+  const resposta = await pede(`/jobs/${jobId}/translate`, { method: "POST" });
+  registrarAtividade(jobId, "traducao");
+  return resposta;
 }
 
 /**
@@ -898,12 +1019,14 @@ export function traduzir(jobId) {
  * 403 quer dizer "essa senha nao abre", e nao "voce nao pode": a requisicao
  * esta bem formada e o servidor a entendeu — o que faltou foi a credencial.
  */
-export function destravarComSenha(jobId, senha) {
-  return pede(`/jobs/${jobId}/senha`, {
+export async function destravarComSenha(jobId, senha) {
+  const resposta = await pede(`/jobs/${jobId}/senha`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ senha }),
   });
+  registrarAtividade(jobId, "analise");
+  return resposta;
 }
 
 /** POST /jobs/{id}/duplicate — jobs.py. "Refazer a preparação": mesmo arquivo,

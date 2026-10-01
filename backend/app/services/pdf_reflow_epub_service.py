@@ -1,4 +1,11 @@
-"""Converte PDFs com camada textual em EPUB de leitura adaptável."""
+"""Converte PDFs com camada textual em EPUB de leitura adaptável.
+
+PDFs vindos de digitalizações costumam guardar duas coisas na mesma página:
+uma fotografia e uma camada de OCR invisível. Transformar todas as páginas em
+JPEG preserva a aparência, mas elimina seleção, busca, ajuste de fonte e
+acessibilidade. Aqui a camada textual vira o conteúdo principal. Páginas sem
+texto suficiente (capa, ilustração, separador) continuam como imagem.
+"""
 from __future__ import annotations
 
 import re
@@ -13,7 +20,14 @@ from app.services.convert_service import ConversionCancelled, ConversionFailedEr
 
 
 def _reading_regions(page: fitz.Page) -> list[fitz.Rect]:
-    """Ordena páginas duplas digitalizadas: esquerda inteira, depois direita."""
+    """Devolve a ordem física de leitura da página.
+
+    Digitalizações de livros frequentemente guardam duas páginas impressas em
+    uma única página PDF horizontal. O ``sort=True`` do PyMuPDF ordena por Y e
+    intercala as linhas das duas metades. Quando há texto suficiente dos dois
+    lados e pouco texto atravessando o vinco central, lemos primeiro a página
+    esquerda inteira e depois a direita inteira.
+    """
     rect = page.rect
     if rect.width <= rect.height * 1.15:
         return [rect]
@@ -100,6 +114,9 @@ def convert_pdf_to_reflow_epub(
             plain = " ".join(paragraphs)
             body: list[str] = [f'<p class="pagina">Página {index + 1}</p>']
 
+            # Menos de 120 caracteres normalmente é capa, página de créditos
+            # ou ilustração. Nesses casos a imagem É o conteúdo; nas demais, a
+            # camada de OCR é o conteúdo e precisa continuar ajustável.
             if len(plain) < 120:
                 pixmap = page.get_pixmap(matrix=fitz.Matrix(3, 3), alpha=False)
                 image_name = f"images/page-{index + 1:04d}.jpg"
@@ -110,7 +127,9 @@ def convert_pdf_to_reflow_epub(
                     content=pixmap.tobytes("jpeg", jpg_quality=92),
                 )
                 book.add_item(image)
-                body.append(f'<figure><img src="{image_name}" alt="Página visual {index + 1}"/></figure>')
+                body.append(
+                    f'<figure><img src="{image_name}" alt="Página visual {index + 1}"/></figure>'
+                )
             else:
                 for paragraph in paragraphs:
                     body.append(f"<p>{_escape(paragraph)}</p>")

@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import List, Optional
 
-from fastapi import APIRouter, Cookie, Depends, File, HTTPException, Response, UploadFile
+from fastapi import APIRouter, Cookie, Depends, File, HTTPException, Query, Response, UploadFile
 from pydantic import BaseModel, Field, field_validator
+from sqlalchemy import and_, exists, func, or_
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -165,6 +167,137 @@ def _fora(n: Nota) -> dict:
         # estudo.
         "estado": n.estado,
         "criada_em": n.criada_em,
+    }
+
+
+def _cursor_da_nota(n: Nota) -> str:
+    return f"{n.criada_em.isoformat()}|{n.id}"
+
+
+def _ler_cursor_da_nota(cursor: Optional[str]) -> tuple[datetime, int] | None:
+    if not cursor:
+        return None
+    try:
+        quando, nota_id = cursor.rsplit("|", 1)
+        return datetime.fromisoformat(quando), int(nota_id)
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="O ponto de continuação das notas é inválido.")
+
+
+def _consulta_filtrada(db: Session, pessoa_id: int, recorte: str, busca: str):
+    """Uma única definição dos recortes para contagem e página.
+
+    A página anterior baixava todas as notas e filtrava no navegador. Aqui o
+    recorte faz parte da consulta: `Mostrar mais` passa a significar pedir a
+    próxima fatia, e não revelar HTML que já estava escondido.
+    """
+    from app.models.canvas import Ligacao
+
+    q = db.query(Nota).filter(Nota.pessoa_id == pessoa_id)
+    if recorte == "livros":
+        q = q.filter(or_(Nota.fonte == "leitura", Nota.job_id.is_not(None)))
+    elif recorte == "kindle":
+        q = q.filter(Nota.fonte == "kindle")
+    elif recorte == "escritas-aqui":
+        q = q.filter(Nota.fonte == "solta")
+    elif recorte == "sem-ligacao":
+        ligada_de = exists().where(
+            Ligacao.pessoa_id == pessoa_id,
+            Ligacao.de_tipo == "nota",
+            Ligacao.de_id == Nota.id,
+        )
+        ligada_para = exists().where(
+            Ligacao.pessoa_id == pessoa_id,
+            Ligacao.para_tipo == "nota",
+            Ligacao.para_id == Nota.id,
+        )
+        q = q.filter(~ligada_de, ~ligada_para)
+    elif recorte == "revisar":
+        q = q.filter(
+            Nota.revisar_desde.is_not(None),
+            or_(Nota.atualizada_em.is_(None), Nota.atualizada_em <= Nota.revisar_desde),
+        )
+    elif recorte == "escritas":
+        q = q.filter(func.length(func.trim(Nota.comentario)) > 0)
+    elif recorte != "todas":
+        raise HTTPException(status_code=400, detail="Recorte de notas desconhecido.")
+
+    termo = busca.strip().lower()
+    if termo:
+        # `%` e `_` escritos pela pessoa são caracteres, não curingas SQL.
+        escapado = termo.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        como = f"%{escapado}%"
+        q = q.filter(or_(
+            func.lower(Nota.trecho).like(como, escape="\\"),
+            func.lower(Nota.comentario).like(como, escape="\\"),
+            func.lower(Nota.origem).like(como, escape="\\"),
+        ))
+    return q
+
+
+@router.get("/notas/pagina")
+def pagina(
+    limite: int = Query(default=60, ge=1, le=100),
+    cursor: Optional[str] = None,
+    recorte: str = "todas",
+    q: str = Query(default="", max_length=200),
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Uma página estável de notas, ordenada da mais recente para a mais antiga."""
+    pessoa = acesso_service.quem_e(db, mekora_sessao)
+    if pessoa is None:
+        return {"itens": [], "proximo": None, "total": 0, "contagens": {}}
+
+    base = _consulta_filtrada(db, pessoa.id, recorte, q)
+    total = base.order_by(None).count()
+    ponto = _ler_cursor_da_nota(cursor)
+    consulta = base
+    if ponto:
+        quando, nota_id = ponto
+        consulta = consulta.filter(or_(
+            Nota.criada_em < quando,
+            and_(Nota.criada_em == quando, Nota.id < nota_id),
+        ))
+    notas = consulta.order_by(Nota.criada_em.desc(), Nota.id.desc()).limit(limite + 1).all()
+    tem_mais = len(notas) > limite
+    notas = notas[:limite]
+
+    from app.models.canvas import Ligacao
+    ids = {n.id for n in notas}
+    quantas = {}
+    if ids:
+        for a, b in db.query(Ligacao.de_id, Ligacao.para_id).filter(
+            Ligacao.pessoa_id == pessoa.id,
+            or_(
+                and_(Ligacao.de_tipo == "nota", Ligacao.de_id.in_(ids)),
+                and_(Ligacao.para_tipo == "nota", Ligacao.para_id.in_(ids)),
+            ),
+        ):
+            if a in ids: quantas[a] = quantas.get(a, 0) + 1
+            if b in ids: quantas[b] = quantas.get(b, 0) + 1
+
+    jobs = {
+        j.id: j for j in db.query(ProcessingJob).filter(
+            ProcessingJob.id.in_({n.job_id for n in notas if n.job_id}),
+            ProcessingJob.dono_id == pessoa.id,
+        ).all()
+    }
+    itens = [{
+        **_fora(n),
+        "ligadas": quantas.get(n.id, 0),
+        "cover_url": capa_service.url(jobs[n.job_id]) if n.job_id in jobs else None,
+        "livro_titulo": (jobs[n.job_id].final_title or jobs[n.job_id].detected_title or jobs[n.job_id].original_filename) if n.job_id in jobs else None,
+        "livro_autor": (jobs[n.job_id].final_author or jobs[n.job_id].detected_author) if n.job_id in jobs else None,
+    } for n in notas]
+
+    recortes = ("todas", "livros", "kindle", "escritas-aqui", "sem-ligacao", "revisar", "escritas")
+    contagens = {nome: _consulta_filtrada(db, pessoa.id, nome, q).order_by(None).count() for nome in recortes}
+    return {
+        "itens": itens,
+        "proximo": _cursor_da_nota(notas[-1]) if tem_mais and notas else None,
+        "total": total,
+        "contagens": contagens,
     }
 
 

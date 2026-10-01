@@ -554,7 +554,7 @@ def test_send_translated_comic_uses_export_epub(client, test_engine, tmp_storage
     from app.models.processing_job import ProcessingJob
     Session = sessionmaker(bind=test_engine)
     db = Session()
-    job = db.query(ProcessingJob).get(job_id)
+    job = db.get(ProcessingJob, job_id)
     job.comic_export_status = "done"
     job.comic_export_path = str(export_epub)
     db.commit()

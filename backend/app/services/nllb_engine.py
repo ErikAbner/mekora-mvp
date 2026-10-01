@@ -143,7 +143,16 @@ class NllbTranslatorEngine:
         try:
             import torch  # type: ignore[import-untyped]
             if torch.backends.mps.is_available():
-                return "mps"
+                # ``is_available`` pode devolver True mesmo quando o runtime
+                # desta versão do macOS não aceita uma única alocação MPS. Foi
+                # o caso real desta instalação: o modelo só falhava depois de
+                # carregar 2,3 GB. Uma alocação mínima transforma essa falsa
+                # promessa em fallback honesto para CPU.
+                try:
+                    torch.empty(1, device="mps")
+                    return "mps"
+                except (RuntimeError, OSError):
+                    pass
             if torch.cuda.is_available():
                 return "cuda"
         except Exception:
@@ -261,3 +270,26 @@ class NllbTranslatorEngine:
             truncation=True,
         )
         return results[0]["translation_text"]
+
+    def translate_many(self, texts: list[str], source: str, target: str) -> list[str]:
+        """Traduz vários trechos em um lote real do modelo.
+
+        Fazer 2.700 chamadas individuais mantinha uma CPU/MPS quase vazia e
+        levava horas. O pipeline do Transformers já aceita uma lista; quatro
+        trechos por lote cabem com folga na máquina local de 16 GB e amortizam
+        tokenização e inferência sem aumentar o teto de cada entrada.
+        """
+        if not texts:
+            return []
+        src_flores = self._to_nllb(source)
+        tgt_flores = self._to_nllb(target)
+        pipe = self._load()
+        results = pipe(  # type: ignore[operator]
+            texts,
+            src_lang=src_flores,
+            tgt_lang=tgt_flores,
+            max_length=512,
+            truncation=True,
+            batch_size=min(4, len(texts)),
+        )
+        return [result["translation_text"] for result in results]

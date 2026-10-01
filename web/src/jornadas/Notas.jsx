@@ -1,10 +1,13 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { TrazerDoKindle } from "../componentes/TrazerDoKindle.jsx";
 import { CapaDeReserva } from "../componentes/CapaDeReserva.jsx";
 import { Icone } from "../componentes/Icone.jsx";
+import { Campo } from "../componentes/Campo.jsx";
+import { achatar } from "../../../contrato/texto.js";
+import { useEstreito } from "../estreito.js";
 import "./notas.css";
 
 /* Todas as notas, num lugar só.
@@ -67,12 +70,26 @@ function ondeVeio(n) {
   return n.origem || n.livro_titulo || "de um livro seu";
 }
 
-export function Notas({ notas = [], carregando, aoApagar, aoImportar }) {
+export function Notas({
+  notas = [], carregando, total = 0, contagens = {}, temMais = false,
+  aoConsultar, aoCarregarMais, aoApagar, aoImportar,
+}) {
+  const estreito = useEstreito();
+  const loteDeGrupos = estreito ? 8 : 12;
+  const loteDeNotas = estreito ? 4 : 8;
+  const loteDaLista = estreito ? 24 : 40;
   const [recorte, setRecorte] = useState("todas");
   const [porLivro, setPorLivro] = useState(true);
+  const [procura, setProcura] = useState("");
+  const [limiteGrupos, setLimiteGrupos] = useState(loteDeGrupos);
+  const [limites, setLimites] = useState({});
 
   const regra = RECORTES.find((r) => r.id === recorte) ?? RECORTES[0];
-  const mostradas = useMemo(() => notas.filter(regra.cabe), [notas, regra]);
+  const alvo = achatar(procura.trim());
+  const mostradas = useMemo(() => notas.filter((n) =>
+    regra.cabe(n)
+    && (!alvo || achatar(`${n.trecho ?? ""} ${n.comentario ?? ""} ${ondeVeio(n)}`).includes(alvo)),
+  ), [notas, regra, alvo]);
 
   /* AGRUPAR POR ORIGEM é o arranjo que a nota pede: ela pertence a um livro, e
    * ler quinze notas seguidas de livros diferentes é ler quinze assuntos
@@ -88,6 +105,22 @@ export function Notas({ notas = [], carregando, aoApagar, aoImportar }) {
     }
     return [...mapa.entries()].sort((a, b) => b[1].length - a[1].length);
   }, [mostradas, porLivro]);
+  const gruposNaPagina = grupos.slice(0, porLivro ? limiteGrupos : 1);
+
+  useEffect(() => {
+    setLimiteGrupos(loteDeGrupos);
+    setLimites({});
+  }, [recorte, porLivro, procura, loteDeGrupos]);
+
+  useEffect(() => {
+    if (!aoConsultar) return undefined;
+    const espera = window.setTimeout(() => aoConsultar(recorte, procura), procura ? 250 : 0);
+    return () => window.clearTimeout(espera);
+    /* `aoConsultar` carrega o cursor seguinte e, por isso, muda depois da
+       resposta. A consulta pertence ao recorte e ao texto — não à identidade
+       momentânea da função que os transporta. */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recorte, procura]);
 
   return (
     <div className="mesa">
@@ -104,7 +137,11 @@ export function Notas({ notas = [], carregando, aoApagar, aoImportar }) {
           <div className="notas-acoes">
             {/* A importação do Kindle mora aqui, e não na estante: o botão que
                 eu tinha posto lá não existe no 895:7315. */}
-            <TrazerDoKindle aoTrazer={aoImportar} />
+            <TrazerDoKindle aoTrazer={async (arquivo) => {
+              const resultado = await aoImportar(arquivo);
+              await aoConsultar?.(recorte, procura);
+              return resultado;
+            }} />
             <Botao
               tom="secundaria"
               aria-pressed={porLivro ? "true" : "false"}
@@ -117,7 +154,7 @@ export function Notas({ notas = [], carregando, aoApagar, aoImportar }) {
 
         <nav className="notas-recortes" aria-label="Recortes das notas">
           {RECORTES.map((r) => {
-            const quantas = notas.filter(r.cabe).length;
+            const quantas = contagens[r.id] ?? notas.filter(r.cabe).length;
             return (
               <button
                 key={r.id}
@@ -133,13 +170,30 @@ export function Notas({ notas = [], carregando, aoApagar, aoImportar }) {
           })}
         </nav>
 
+        {((contagens.todas ?? total) > 12 || procura) && (
+          <Campo
+            tipo="search"
+            rotulo="Buscar nas notas"
+            rotuloOculto
+            placeholder="Buscar em trechos, comentários e origens"
+            value={procura}
+            onChange={(e) => setProcura(e.target.value)}
+          />
+        )}
+
         {carregando && <p className="notas-vazio">Buscando…</p>}
 
-        {!carregando && !notas.length && (
+        {!carregando && !notas.length && !procura && (
           <p className="notas-vazio">
             Nenhuma nota ainda. Marque um trecho enquanto lê, traga o
             <strong> My Clippings.txt</strong> do seu Kindle pela estante, ou
             escreva uma solta no Canvas.
+          </p>
+        )}
+
+        {!carregando && !notas.length && procura && (
+          <p className="notas-vazio">
+            Nenhuma nota combina com “{procura}”. Limpe a busca para ver todas.
           </p>
         )}
 
@@ -148,7 +202,11 @@ export function Notas({ notas = [], carregando, aoApagar, aoImportar }) {
         )}
 
         <div className="notas-grupos" data-clarity-mask="true">
-          {grupos.map(([origem, doGrupo]) => (
+          {gruposNaPagina.map(([origem, doGrupo]) => {
+            const chaveDoGrupo = origem || "todas";
+            const limite = limites[chaveDoGrupo] ?? (porLivro ? loteDeNotas : loteDaLista);
+            const notasNaPagina = doGrupo.slice(0, limite);
+            return (
             <section key={origem || "todas"} className={`notas-grupo${origem ? "" : " notas-grupo-lista"}`}>
               {origem && (
                 <header className="notas-grupo-topo">
@@ -169,7 +227,7 @@ export function Notas({ notas = [], carregando, aoApagar, aoImportar }) {
                 </header>
               )}
               <ul>
-                {doGrupo.map((n) => (
+                {notasNaPagina.map((n) => (
                   <li key={n.id}>
                     {/* O CHÃO marca o conteúdo — a nota é o que a pessoa marcou.
                         O comentário dela vem depois, com filete, porque é fala
@@ -187,14 +245,50 @@ export function Notas({ notas = [], carregando, aoApagar, aoImportar }) {
                       {!porLivro && <span className="nota-origem">{ondeVeio(n)}</span>}
                       {n.job_id && <Link to={`/leitura/${n.job_id}`}>Abrir no livro</Link>}
                       {aoApagar && (
-                        <button type="button" onClick={() => aoApagar(n)}>Apagar</button>
+                        <button type="button" onClick={async () => {
+                          await aoApagar(n);
+                          await aoConsultar?.(recorte, procura);
+                        }}>Apagar</button>
                       )}
                     </div>
                   </li>
                 ))}
               </ul>
+              {notasNaPagina.length < doGrupo.length && (
+                <div className="notas-grupo-mais">
+                  <p>
+                    Mostrando <span className="dado">{notasNaPagina.length}</span> de <span className="dado">{doGrupo.length}</span> notas desta origem.
+                  </p>
+                  <Botao
+                    tom="secundaria"
+                    onClick={() => setLimites((atuais) => ({ ...atuais, [chaveDoGrupo]: limite + (porLivro ? loteDeNotas : loteDaLista) }))}
+                  >
+                    Mostrar mais notas
+                  </Botao>
+                </div>
+              )}
             </section>
-          ))}
+          ); })}
+          {porLivro && gruposNaPagina.length < grupos.length && (
+            <div className="notas-mais-origens">
+              <p>
+                Mostrando <span className="dado">{gruposNaPagina.length}</span> de <span className="dado">{grupos.length}</span> origens.
+              </p>
+              <Botao tom="secundaria" onClick={() => setLimiteGrupos((n) => n + loteDeGrupos)}>
+                Mostrar mais origens
+              </Botao>
+            </div>
+          )}
+          {temMais && (
+            <div className="notas-mais-origens">
+              <p>
+                Mostrando <span className="dado">{notas.length}</span> de <span className="dado">{total}</span> notas encontradas.
+              </p>
+              <Botao tom="secundaria" disabled={carregando} onClick={aoCarregarMais}>
+                {carregando ? "Buscando…" : "Carregar mais notas"}
+              </Botao>
+            </div>
+          )}
         </div>
       </section>
     

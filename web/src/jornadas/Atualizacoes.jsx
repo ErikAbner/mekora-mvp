@@ -154,35 +154,10 @@ const NAO_ESTA_DE_PE = [
     diz: "Aqui o texto vive dentro da imagem: é preciso achar o balão, ler, apagar e recompor. Funciona em página simples e erra em arte densa. Não está atrás de um interruptor escondido — está fora.",
   },
 
-  {
-    /* TRÊS PENDÊNCIAS SAÍRAM DAQUI, e as três pelo mesmo motivo: deixaram de
-       ser pendências.
-
-       "A leitura ainda não foi verificada no celular" era a mais antiga, e ela
-       ficou aqui depois de deixar de ser verdade: a auditoria mede
-       `/leitura/{LIVRO}` a 390 desde que o helper de sessão passou a entregar
-       um livro com EPUB, e ela passa. Um item de "não está de pé" que já está
-       de pé é o mesmo defeito que esta página existe para não ter. */
-    /* TRÊS PENDÊNCIAS SAÍRAM DAQUI, e as três pelo mesmo motivo: deixaram de
-       ser pendências.
-
-       "Por quanto tempo guardamos o arquivo original" saiu em 01/09, quando a
-       tela de privacidade passou a dizer os trinta dias. "Nome e retrato na
-       conta" saiu em 02/09, quando o Erik decidiu e a coisa foi construída — e
-       virou uma linha de "novo" lá em cima, que é onde ela passa a valer.
-
-       "A leitura ainda não foi verificada no celular" era a mais antiga, e ela
-       ficou aqui DEPOIS de deixar de ser verdade: a auditoria mede
-       `/leitura/{LIVRO}` a 390 desde que o helper de sessão passou a entregar
-       um livro com EPUB de verdade, e ela passa com 21 nós medidos.
-
-       Manter item antigo aqui seria a página de atualizações desatualizada, que
-       é o defeito mais fácil de ter numa página que existe para contar o que
-       mudou — e um "não está de pé" que já está de pé é o pior deles, porque
-       desfaz a confiança na primeira metade da página. */
-    titulo: "A tradução não está instalada nesta máquina",
-    diz: "A tela já sabe pedir e mostrar os idiomas que existem, mas o tradutor em si é um pacote à parte e ele não está aqui. Enquanto não estiver, o Preparo diz o que falta na linha do idioma, em vez de oferecer um botão que não funciona.",
-  },
+  /* A tradução textual ESTÁ instalada nesta máquina, com pares entre
+     português, inglês e espanhol. A página não mantém uma pendência histórica
+     depois que a capacidade existe: isso destruiria a função de confiança
+     desta seção. */
 ];
 
 const data = (iso) => {

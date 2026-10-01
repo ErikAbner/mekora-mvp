@@ -66,7 +66,9 @@ const alvo = join(raiz, 'web', 'src');
  * uso certo. */
 const ATRAVESSA = new Set(['Folha', 'Escolha', 'Campo', 'Soltar', 'TrilhaLinhas', 'TrazerDoKindle']);
 
-const VIVO = /\bonClick\s*=|\bonPointerDown\s*=|\bonMouseDown\s*=|\btype\s*=\s*["'{]?submit|\bdisabled\b|\bporque\b|\{\.\.\./;
+/* `Botao` expõe a prop portuguesa `tipo`; o elemento nativo usa `type`.
+ * Ambos são o gesto semântico do formulário, não um botão morto. */
+const VIVO = /\bonClick\s*=|\bonPointerDown\s*=|\bonMouseDown\s*=|\b(?:type|tipo)\s*=\s*["'{]?submit|\bdisabled\b|\bporque\b|\{\.\.\./;
 
 /* Desligado, de qualquer das duas grafias. */
 const DESLIGA = /\bdisabled\b|\bporque\s*=/;

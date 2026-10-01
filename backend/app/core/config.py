@@ -47,6 +47,23 @@ class Settings(BaseSettings):
     # pessoa e mudar o formato depois obrigaria a mexer em quem já configurou.
     dono_email: str = ""
 
+    # QUEM PODE PEDIR UM LINK DE ENTRADA.
+    #
+    # O lançamento é por convite: só endereço desta lista recebe link. Sem ela,
+    # `/entrar/pedir` manda mensagem para qualquer endereço que alguém escreva
+    # — e a mensagem sai do domínio do Mekora, para quem nunca pediu. É o
+    # achado 2 da auditoria de 03/09, que o teto por origem limitou e não
+    # fechou: vinte por hora ainda são vinte estranhos por hora.
+    #
+    # VAZIO EM PRODUÇÃO É FECHADO, e não aberto. Fora de produção é aberto,
+    # porque a máquina de quem desenvolve não tem convite nenhum e a entrada
+    # precisa funcionar. Os dois lados são alcançáveis em teste — o achado 10
+    # é justamente sobre ramo que só existe em produção e ninguém executa.
+    #
+    # O dono entra por definição: uma lista mal escrita pode trancar o dono do
+    # lado de fora da própria instalação, e aí não há como consertar de dentro.
+    convidados: str = ""
+
     model_config = SettingsConfigDict(
         env_file=str(PROJECT_ROOT / ".env"),
         extra="ignore",

@@ -14,7 +14,7 @@
  * interruptor. Pílula e círculo são os 5% que quebram a retidão, e funcionam por
  * serem raros.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
@@ -124,8 +124,11 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher }) {
   /* O funil do telefone (nó 964:24606): abre os mesmos recortes que o computador
      mostra em linha. */
   const [filtrando, setFiltrando] = useState(false);
+  const [limite, setLimite] = useState(60);
   const regra = RECORTES.find((r) => r.id === recorte) ?? RECORTES[0];
   const mostrados = livros.filter(regra.cabe);
+  const livrosNaPagina = mostrados.slice(0, limite);
+  useEffect(() => { setLimite(60); }, [recorte]);
   return (
     <div className="mesa chao">
       <Cabecalho lugar="estante" />
@@ -166,26 +169,32 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher }) {
               que ele não tem é a regra; apagar uma feature que funciona não é.
               Ver a Folha no fim deste arquivo — ela agora vive na tela de
               Notas. */}
-          <nav className="recortes" aria-label="Recortes da estante">
-            {RECORTES.map((r) => {
-              const quantos = livros.filter(r.cabe).length;
-              return (
-                <button
-                  key={r.id}
-                  type="button"
-                  aria-pressed={r.id === recorte ? "true" : "false"}
-                  onClick={() => setRecorte(r.id)}
-                  /* Um recorte sem nada dentro não é clicável: levar alguém a
-                     uma estante vazia é fazê-lo procurar o erro num lugar onde
-                     não há erro. */
-                  disabled={quantos === 0 && r.id !== "tudo"}
-                  title={quantos === 0 && r.id !== "tudo" ? `Nenhum livro em ${r.rotulo.toLowerCase()}` : null}
-                >
-                  {r.rotulo} <span className="dado">{quantos}</span>
-                </button>
-              );
-            })}
-          </nav>
+          <div className="estante-ferramentas">
+            <nav className="recortes" aria-label="Recortes da estante">
+              {RECORTES.map((r) => {
+                const quantos = livros.filter(r.cabe).length;
+                return (
+                  <button
+                    key={r.id}
+                    type="button"
+                    aria-pressed={r.id === recorte ? "true" : "false"}
+                    onClick={() => setRecorte(r.id)}
+                    /* Um recorte sem nada dentro não é clicável: levar alguém a
+                       uma estante vazia é fazê-lo procurar o erro num lugar onde
+                       não há erro. */
+                    disabled={quantos === 0 && r.id !== "tudo"}
+                    title={quantos === 0 && r.id !== "tudo" ? `Nenhum livro em ${r.rotulo.toLowerCase()}` : null}
+                  >
+                    {r.rotulo} <span className="dado">{quantos}</span>
+                  </button>
+                );
+              })}
+            </nav>
+            {/* A Estante continua sendo só o que está pronto. Este atalho deixa
+                explícito onde os arquivos recém-enviados e a preparação em
+                lote vivem, sem misturar fila e acervo na mesma grade. */}
+            <Link to="/mesa" className="estante-preparar">Preparar arquivos</Link>
+          </div>
 
           {/* A ESTANTE VAZIA PRECISA FALAR. Uma conta recém-criada chega
               exatamente aqui, e uma tela em branco não distingue "você ainda não
@@ -205,7 +214,7 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher }) {
             </div>
           ) : (
             <ul className="grade" data-clarity-mask="true">
-              {mostrados.map((l) => (
+              {livrosNaPagina.map((l) => (
                 <Livro
                   key={l.chave}
                   {...l}
@@ -214,6 +223,16 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher }) {
                 />
               ))}
             </ul>
+          )}
+          {livrosNaPagina.length < mostrados.length && (
+            <div className="estante-carregar-mais">
+              <p>
+                Mostrando <span className="dado">{livrosNaPagina.length}</span> de <span className="dado">{mostrados.length}</span> livros.
+              </p>
+              <Botao tom="secundaria" onClick={() => setLimite((n) => n + 60)}>
+                Mostrar mais livros
+              </Botao>
+            </div>
           )}
         </div>
 
@@ -318,9 +337,14 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher }) {
                     Aqui havia uma frase de enfeite entre aspas, apresentada como
                     citação do livro — em todo livro, a mesma. */}
                 {selecionado.ultima_nota ? (
-                  <blockquote className="trecho-citado" data-cor={selecionado.ultima_nota.cor}>
-                    {selecionado.ultima_nota.trecho}
-                  </blockquote>
+                  <>
+                    <blockquote className="trecho-citado" data-cor={selecionado.ultima_nota.cor}>
+                      {selecionado.ultima_nota.trecho}
+                    </blockquote>
+                    <Link className="ficha-notas-ver" to={`/estante/${selecionado.chave}#livro-o-que-ficou`}>
+                      Ver {selecionado.notas === 1 ? "a nota completa" : `as ${selecionado.notas} notas`}
+                    </Link>
+                  </>
                 ) : (
                   <p className="ficha-nota">
                     Nada marcado ainda. Selecione um trecho durante a leitura para

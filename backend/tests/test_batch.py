@@ -225,6 +225,78 @@ def test_batch_apply_preset_partial_failure(client, tmp_path: Path, tmp_storage:
     assert data["failed"] == 1
 
 
+def test_batch_prepare_queues_analyzed_job(client, tmp_path: Path, tmp_storage: Path, test_engine, monkeypatch) -> None:
+    """O preparo aplica a receita e entrega o lote ao trabalhador do servidor."""
+    from sqlalchemy.orm import sessionmaker
+    import app.api.batch as batch_api
+    from app.models.processing_job import ProcessingJob
+
+    job_id = _upload_job(client, tmp_path, "lote.pdf")
+    Session = sessionmaker(bind=test_engine)
+    db = Session()
+    job = db.query(ProcessingJob).filter(ProcessingJob.id == job_id).first()
+    job.status = "analyzed"
+    job.detected_language = "eng"
+    db.commit()
+    db.close()
+
+    chamados = []
+    monkeypatch.setattr(batch_api, "_bg_prepare_batch", lambda ids, preset: chamados.append((ids, preset)))
+    response = client.post("/batch/prepare", json={
+        "job_ids": [job_id], "preset_id": "system-doc-read-pt-nllb",
+    })
+    assert response.status_code == 200
+    assert response.json()["succeeded"] == 1
+    assert chamados == [([job_id], "system-doc-read-pt-nllb")]
+
+    db = Session()
+    job = db.query(ProcessingJob).filter(ProcessingJob.id == job_id).first()
+    assert job.conversion_status == "pending"
+    assert job.translator_engine == "nllb"
+    db.close()
+
+
+def test_batch_prepare_skips_job_still_analyzing(client, tmp_path: Path, tmp_storage: Path) -> None:
+    job_id = _upload_job(client, tmp_path, "ainda.pdf")
+    response = client.post("/batch/prepare", json={
+        "job_ids": [job_id], "preset_id": "system-doc-read-pt-nllb",
+    })
+    assert response.status_code == 200
+    assert response.json()["skipped"] == 1
+
+
+def test_batch_prepare_preserves_job_with_active_operation(
+    client, tmp_path: Path, tmp_storage: Path, test_engine, monkeypatch
+) -> None:
+    """Um lote não redefine para pendente um trabalho que já está andando."""
+    from sqlalchemy.orm import sessionmaker
+    from app.models.processing_job import ProcessingJob
+    import app.services.progress_service as progress_service
+
+    job_id = _upload_job(client, tmp_path, "ocupado.pdf")
+    Session = sessionmaker(bind=test_engine)
+    db = Session()
+    job = db.query(ProcessingJob).filter(ProcessingJob.id == job_id).first()
+    job.status = "analyzed"
+    job.conversion_status = "in_progress"
+    job.active_operation = "convert:ocupado"
+    db.commit()
+    db.close()
+
+    monkeypatch.setattr(progress_service, "check_active_operation", lambda *_: "busy")
+    response = client.post("/batch/prepare", json={
+        "job_ids": [job_id], "preset_id": "system-doc-read-pt-nllb",
+    })
+    assert response.status_code == 200
+    assert response.json()["skipped"] == 1
+
+    db = Session()
+    job = db.query(ProcessingJob).filter(ProcessingJob.id == job_id).first()
+    assert job.conversion_status == "in_progress"
+    assert job.active_operation == "convert:ocupado"
+    db.close()
+
+
 # ---------------------------------------------------------------------------
 # POST /batch/export
 # ---------------------------------------------------------------------------

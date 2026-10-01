@@ -15,62 +15,47 @@
 
 const CHAVE = "mekora:aparencia";
 
-/* Os degraus saem da escala do sistema — [14,16,18,20,22,24,28,32,…] —, e não
- * de multiplicadores: "1,2x de 20" dá 24, que existe; "1,15x" daria 23, que não.
+/* Corpo, entrelinha e coluna são FAIXAS, não três palpites separados.
  *
- * "MAIOR" USA O TAMANHO DO `h1` DA PROSA, que é 32px — o maior corpo que a
- * ferramenta já usa em texto corrido. A primeira versão parou em 24 e criava um
- * degrau intermediário só para esta tela; o Erik pediu o contrário: reusar o que
- * existe em vez de inventar mais um. */
+ * A largura confortável depende do corpo. Uma coluna de 880px com corpo 18
+ * passa de noventa caracteres por linha; uma de 560px com corpo 28 cai abaixo
+ * de quarenta. As duas cabem na tela e as duas cansam. `limitesDaColuna` mantém
+ * a escolha perto de 45–75 caracteres por linha usando o avanço medido da
+ * Zodiak (aprox. 0,52em), sem fingir que existe uma medida universal. */
+export const AJUSTES = [
+  { id: "corpo", rotulo: "Tamanho do texto", minimo: 18, maximo: 28, passo: 2, padrao: 20, unidade: "px" },
+  { id: "entrelinha", rotulo: "Espaço entre linhas", minimo: 1.45, maximo: 1.75, passo: 0.05, padrao: 1.5, unidade: "×" },
+];
+
+export function limitesDaColuna(corpo = 20) {
+  const tamanho = Math.min(28, Math.max(18, Number(corpo) || 20));
+  return {
+    minimo: Math.max(560, Math.round((tamanho * 24) / 20) * 20),
+    maximo: Math.min(880, Math.round((tamanho * 39) / 20) * 20),
+  };
+}
+
+export function limitarAparencia(escolhas = {}) {
+  const corpo = Math.min(28, Math.max(18, Number(escolhas.corpo) || 20));
+  const entrelinha = Math.min(1.75, Math.max(1.45, Number(escolhas.entrelinha) || 1.5));
+  const limites = limitesDaColuna(corpo);
+  const coluna = Math.min(limites.maximo, Math.max(limites.minimo, Number(escolhas.coluna) || 680));
+  return { ...escolhas, corpo, entrelinha, coluna };
+}
+
+/* Tipografia e destaques continuam escolhas categóricas: não há um meio-termo
+ * útil entre serifada e sem serifa, nem entre mostrar e ocultar uma marca. */
 export const GRUPOS = [
-  {
-    id: "corpo",
-    rotulo: "Tamanho",
-    padrao: "medio",
-    opcoes: [
-      { id: "menor", rotulo: "Menor", css: { "--leitura-corpo": "18px" } },
-      { id: "medio", rotulo: "Padrão", css: { "--leitura-corpo": "20px" } },
-      /* 32px é o `font-size` de `.prosa .titulo`. Amarrar os dois por variável
-         seria mais bonito e pior: o título precisa continuar MAIOR que o corpo,
-         e igualá-los apagaria a hierarquia da página inteira. O valor é o mesmo
-         de propósito, e o comentário é o vínculo. */
-      { id: "maior", rotulo: "Maior", css: { "--leitura-corpo": "32px" } },
-    ],
-  },
   {
     id: "fonte",
     rotulo: "Tipografia",
     padrao: "serifada",
     opcoes: [
-      { id: "serifada", rotulo: "Fonte serifada", css: { "--leitura-fonte": "var(--font-sans)" } },
+      { id: "serifada", rotulo: "Fonte serifada", css: { "--leitura-fonte": "var(--font-sans)", "--leitura-ajuste": "1px", "--leitura-peso": "450" } },
       /* A sem-serifa é a de sistema, e não uma segunda fonte embutida: baixar
          mais um arquivo para uma preferência de leitura é peso que nem todo
          mundo quis. */
-      { id: "sem-serifa", rotulo: "Fonte sem-serifa", css: { "--leitura-fonte": "system-ui, -apple-system, Segoe UI, Roboto, sans-serif" } },
-    ],
-  },
-  {
-    id: "entrelinha",
-    rotulo: "Entrelinha",
-    padrao: "media",
-    opcoes: [
-      { id: "justa", rotulo: "Justa", css: { "--leitura-razao": "1.4" } },
-      { id: "media", rotulo: "Padrão", css: { "--leitura-razao": "1.5" } },
-      { id: "solta", rotulo: "Solta", css: { "--leitura-razao": "1.75" } },
-    ],
-  },
-  {
-    id: "coluna",
-    rotulo: "Coluna",
-    padrao: "media",
-    /* ESTA É A QUE O ERIK PEDIU PARA SER EDITÁVEL. A medida do desenho — 680 no
-     * monitor, 358 no telefone — dá cerca de 34 caracteres por linha no
-     * telefone, abaixo da faixa confortável de 45 a 75. "Larga" recupera isso
-     * para quem quiser, sem tirar de quem prefere a medida do desenho. */
-    opcoes: [
-      { id: "estreita", rotulo: "Estreita", css: { "--leitura-coluna": "560px" } },
-      { id: "media", rotulo: "Padrão", css: { "--leitura-coluna": "680px" } },
-      { id: "larga", rotulo: "Larga", css: { "--leitura-coluna": "820px" } },
+      { id: "sem-serifa", rotulo: "Fonte sem-serifa", css: { "--leitura-fonte": "system-ui, -apple-system, Segoe UI, Roboto, sans-serif", "--leitura-ajuste": "0px", "--leitura-peso": "400" } },
     ],
   },
   {
@@ -86,7 +71,18 @@ export const GRUPOS = [
   },
 ];
 
-export const PADROES = Object.fromEntries(GRUPOS.map((g) => [g.id, g.padrao]));
+export const PADROES = {
+  ...Object.fromEntries(GRUPOS.map((g) => [g.id, g.padrao])),
+  corpo: 20,
+  entrelinha: 1.5,
+  coluna: 680,
+};
+
+const ANTIGOS = {
+  corpo: { menor: 18, medio: 20, maior: 28 },
+  entrelinha: { justa: 1.45, media: 1.5, solta: 1.75 },
+  coluna: { estreita: 560, media: 680, larga: 820 },
+};
 
 export function lerAparencia() {
   try {
@@ -98,7 +94,13 @@ export function lerAparencia() {
     for (const g of GRUPOS) {
       if (g.opcoes.some((o) => o.id === guardado[g.id])) fora[g.id] = guardado[g.id];
     }
-    return fora;
+    for (const ajuste of AJUSTES) {
+      const bruto = ANTIGOS[ajuste.id]?.[guardado[ajuste.id]] ?? guardado[ajuste.id];
+      if (Number.isFinite(Number(bruto))) fora[ajuste.id] = Number(bruto);
+    }
+    const colunaAntiga = ANTIGOS.coluna[guardado.coluna] ?? guardado.coluna;
+    if (Number.isFinite(Number(colunaAntiga))) fora.coluna = Number(colunaAntiga);
+    return limitarAparencia(fora);
   } catch {
     return { ...PADROES };
   }
@@ -111,9 +113,13 @@ export function gravarAparencia(escolhas) {
 /** Aplica as escolhas como variáveis de CSS na raiz. */
 export function aplicarAparencia(escolhas) {
   const raiz = document.documentElement;
-  raiz.dataset.leituraDestaques = escolhas.destaques ?? PADROES.destaques;
+  const seguras = limitarAparencia({ ...PADROES, ...escolhas });
+  raiz.dataset.leituraDestaques = seguras.destaques ?? PADROES.destaques;
+  raiz.style.setProperty("--leitura-corpo", `${seguras.corpo}px`);
+  raiz.style.setProperty("--leitura-razao", `${seguras.entrelinha}`);
+  raiz.style.setProperty("--leitura-coluna", `${seguras.coluna}px`);
   for (const g of GRUPOS) {
-    const o = g.opcoes.find((x) => x.id === escolhas[g.id]) ?? g.opcoes.find((x) => x.id === g.padrao);
+    const o = g.opcoes.find((x) => x.id === seguras[g.id]) ?? g.opcoes.find((x) => x.id === g.padrao);
     for (const [prop, valor] of Object.entries(o.css)) raiz.style.setProperty(prop, valor);
   }
 }

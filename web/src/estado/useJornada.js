@@ -10,7 +10,7 @@
  * discordar sobre o mesmo arquivo.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { enviarArquivo, analisar, esperarAnalise, converter, acompanhar, historico, backendNoAr, enviarAoKindle, lerPreferencias, destravarComSenha } from "../../../contrato/api.js";
+import { enviarArquivo, analisar, esperarAnalise, converter, acompanhar, historico, situacao, backendNoAr, enviarAoKindle, lerPreferencias, destravarComSenha, prepararLote } from "../../../contrato/api.js";
 import { estadoDe } from "../../../contrato/estado.js";
 
 export function useJornada() {
@@ -53,6 +53,33 @@ export function useJornada() {
    */
   useEffect(() => {
     let vivo = true;
+    let timer;
+    const restaurados = new Set();
+
+    const retomar = async () => {
+      const ids = [...restaurados];
+      if (!vivo || !ids.length) return;
+      const respostas = await Promise.all(ids.map(async (id) => {
+        try { return [id, await situacao(id)]; }
+        catch { return [id, null]; }
+      }));
+      if (!vivo) return;
+      for (const [id, estado] of respostas) {
+        if (!estado) continue;
+        setArquivos((atual) => atual.map((arquivo) => arquivo.id === id ? {
+          ...arquivo,
+          ...estado,
+          andamento: estado.progresso ?? null,
+          progresso: estado.progresso?.porcento ?? null,
+        } : arquivo));
+        if (estado.estado === "pronto" || estado.estado === "erro") {
+          restaurados.delete(id);
+          vivos.current.delete(id);
+        }
+      }
+      if (restaurados.size) timer = window.setTimeout(retomar, 1200);
+    };
+
     historico()
       .then((h) => {
         if (!vivo) return;
@@ -67,6 +94,7 @@ export function useJornada() {
             nome: bruto.final_title || bruto.original_filename,
             preparo: bruto.upload_id,
             ...estado,
+            andamento: estado.progresso ?? null,
             progresso: estado.progresso?.porcento ?? null,
           }));
         if (!emCurso.length) return;
@@ -77,9 +105,33 @@ export function useJornada() {
           const jaTem = new Set(atual.map((a) => a.id));
           return [...emCurso.filter((a) => !jaTem.has(a.id)), ...atual];
         });
+
+        /* REABRIR A MESA RETOMA O ACOMPANHAMENTO.
+         *
+         * O histórico restaura os cartões, mas é apenas uma fotografia. Sem
+         * este polling, uma conversão continuava no servidor enquanto o cartão
+         * ficava eternamente em "convertendo" depois de atualizar a janela. */
+        for (const bruto of h) {
+          const estado = estadoDe(bruto);
+          const subetapaAtiva = [
+            bruto.conversion_status,
+            bruto.send_status,
+            bruto.translation_status,
+            bruto.comic_translation_status,
+            bruto.comic_export_status,
+          ].some((valor) => valor === "pending" || valor === "in_progress");
+          if (estado.estado !== "trabalhando" && !bruto.active_operation && !subetapaAtiva) continue;
+          restaurados.add(bruto.upload_id);
+          vivos.current.add(bruto.upload_id);
+        }
+        if (restaurados.size) retomar();
       })
       .catch(() => {});
-    return () => { vivo = false; };
+    return () => {
+      vivo = false;
+      if (timer) window.clearTimeout(timer);
+      for (const id of restaurados) vivos.current.delete(id);
+    };
   }, []);
 
   /* Atualiza UM arquivo pelo id, sem reescrever a lista inteira. Reescrever
@@ -161,19 +213,46 @@ export function useJornada() {
   }, [grava, modo]);
 
   const refazerErros = useCallback(async (ids) => {
-    await Promise.all(Array.from(new Set(ids)).map(async (id) => {
-      grava(id, { estado: "trabalhando", etapa: "convertendo", motivo: null, detalhe: null, progresso: null });
+    /* RETENTATIVA EM FILA, NÃO EM PARALELO.
+     *
+     * Dois PDFs grandes relançados juntos abriam dois Calibres ao mesmo tempo.
+     * Além de disputar CPU e memória, ambos podiam atingir o limite de tempo
+     * juntos. O preparo em lote já era sequencial; a retentativa agora obedece
+     * à mesma regra e só começa o próximo quando o atual terminar. */
+    for (const id of Array.from(new Set(ids))) {
+      grava(id, { estado: "trabalhando", etapa: "convertendo", motivo: null, detalhe: null, andamento: null, progresso: null });
       try {
         await converter(id);
-        if (vivos.current.has(id)) return;
+        if (vivos.current.has(id)) continue;
         vivos.current.add(id);
-        acompanhar(id, (s) =>
-          grava(id, { ...s, progresso: s.progresso?.porcento ?? null }),
+        await acompanhar(id, (s) =>
+          grava(id, { ...s, andamento: s.progresso ?? null, progresso: s.progresso?.porcento ?? null }),
+          { intervaloMs: 1200, tetoMs: 12 * 60 * 60 * 1000 },
         ).finally(() => vivos.current.delete(id));
       } catch (e) {
         grava(id, { estado: "erro", etapa: "a conversão", motivo: e.message });
       }
-    }));
+    }
+  }, [grava]);
+
+  const prepararEmLote = useCallback(async (ids, presetId) => {
+    const unicos = Array.from(new Set(ids)).filter((id) => Number.isInteger(id));
+    const resultado = await prepararLote(unicos, presetId);
+    const aceitos = new Set(
+      (resultado?.item_results ?? [])
+        .filter((item) => item.status === "success")
+        .map((item) => item.job_id),
+    );
+    for (const id of aceitos) {
+      grava(id, { estado: "fila", etapa: "aguardando o lote", motivo: null, detalhe: "Preparação agendada." });
+      if (vivos.current.has(id)) continue;
+      vivos.current.add(id);
+      acompanhar(id, (s) => grava(id, { ...s, andamento: s.progresso ?? null, progresso: s.progresso?.porcento ?? null }), {
+        intervaloMs: 1000,
+        tetoMs: 12 * 60 * 60 * 1000,
+      }).finally(() => vivos.current.delete(id));
+    }
+    return resultado;
   }, [grava]);
 
   const carregarEstante = useCallback(async () => {
@@ -303,8 +382,8 @@ export function useJornada() {
     await destravarComSenha(id, senha);
     grava(id, { estado: "fila", etapa: "analisando", bloqueio: null, motivo: null });
     const pronto = await esperarAnalise(id);
-    grava(id, { ...pronto, progresso: pronto.progresso?.porcento ?? null, preparo: id });
+    grava(id, { ...pronto, andamento: pronto.progresso ?? null, progresso: pronto.progresso?.porcento ?? null, preparo: id });
   }, [grava]);
 
-  return { arquivos, livros, backend, receber, refazerErros, carregarEstante, enviar, destravar };
+  return { arquivos, livros, backend, receber, refazerErros, prepararEmLote, carregarEstante, enviar, destravar };
 }

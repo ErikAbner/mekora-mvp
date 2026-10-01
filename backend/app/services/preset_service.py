@@ -26,6 +26,22 @@ PRESET_PATH = STORAGE_RAIZ / "config_presets.json"
 
 _SYSTEM_PRESETS: list[dict] = [
     {
+        "id": "system-doc-read-pt-nllb",
+        "name": "Leitura em português",
+        "description": "Traduz documentos em inglês para português com NLLB e mantém documentos que já estão em português.",
+        "is_system": True,
+        "processing_mode": "document",
+        "comic_mode": False,
+        "manga_rtl": False,
+        "translation_enabled": True,
+        "translation_rule": "english_to_portuguese",
+        "source_language": "auto",
+        "target_language": "por",
+        "translator_engine": "nllb",
+        "nllb_model_name": "facebook/nllb-200-distilled-600M",
+        "nllb_device_preference": "auto",
+    },
+    {
         "id": "system-doc-pt-en-argos",
         "name": "Documento PT→EN Argos",
         "description": "Tradução de documentos Português → Inglês com Argos (offline)",
@@ -34,6 +50,7 @@ _SYSTEM_PRESETS: list[dict] = [
         "comic_mode": False,
         "manga_rtl": False,
         "translation_enabled": True,
+        "translation_rule": "always",
         "source_language": "por",
         "target_language": "eng",
         "translator_engine": "argos",
@@ -49,6 +66,7 @@ _SYSTEM_PRESETS: list[dict] = [
         "comic_mode": False,
         "manga_rtl": False,
         "translation_enabled": True,
+        "translation_rule": "always",
         "source_language": "eng",
         "target_language": "por",
         "translator_engine": "argos",
@@ -64,6 +82,7 @@ _SYSTEM_PRESETS: list[dict] = [
         "comic_mode": False,
         "manga_rtl": False,
         "translation_enabled": True,
+        "translation_rule": "always",
         "source_language": "por",
         "target_language": "eng",
         "translator_engine": "nllb",
@@ -79,6 +98,7 @@ _SYSTEM_PRESETS: list[dict] = [
         "comic_mode": True,
         "manga_rtl": True,
         "translation_enabled": False,
+        "translation_rule": "never",
         "source_language": "jpn",
         "target_language": "por",
         "translator_engine": "",
@@ -94,6 +114,7 @@ _SYSTEM_PRESETS: list[dict] = [
         "comic_mode": True,
         "manga_rtl": False,
         "translation_enabled": False,
+        "translation_rule": "never",
         "source_language": "",
         "target_language": "por",
         "translator_engine": "",
@@ -109,6 +130,7 @@ _SYSTEM_PRESETS: list[dict] = [
         "comic_mode": False,
         "manga_rtl": False,
         "translation_enabled": False,
+        "translation_rule": "never",
         "source_language": "",
         "target_language": "",
         "translator_engine": "",
@@ -150,13 +172,22 @@ def _normalize(p: dict) -> dict:
         "comic_mode": False,
         "manga_rtl": False,
         "translation_enabled": False,
+        "translation_rule": "",
         "source_language": "",
         "target_language": "",
         "translator_engine": "",
         "nllb_model_name": "",
         "nllb_device_preference": "",
     }
-    return {**defaults, **p}
+    normalized = {**defaults, **p}
+    # A receita promete exatamente inglês → português. Versões anteriores
+    # migraram esse preset para "qualquer idioma diferente", o que contradizia
+    # a descrição e ainda dependia de metadados frequentemente vazios.
+    if normalized.get("id") == "system-doc-read-pt-nllb":
+        normalized["translation_rule"] = "english_to_portuguese"
+    if not normalized["translation_rule"]:
+        normalized["translation_rule"] = "always" if normalized["translation_enabled"] else "never"
+    return normalized
 
 
 # ---------------------------------------------------------------------------
@@ -188,26 +219,26 @@ def ensure_system_presets() -> None:
 # CRUD
 # ---------------------------------------------------------------------------
 
-def list_presets() -> list[dict]:
+def list_presets(owner_id: int | None = None) -> list[dict]:
     """Retorna todos os presets, sistema primeiro, depois usuário por nome."""
     raw = _load_raw()
     system = [_normalize(p) for p in raw if p.get("is_system")]
     user = sorted(
-        [_normalize(p) for p in raw if not p.get("is_system")],
+        [_normalize(p) for p in raw if not p.get("is_system") and (owner_id is None or p.get("dono_id") == owner_id)],
         key=lambda p: p.get("name", "").lower(),
     )
     return system + user
 
 
-def get_preset(preset_id: str) -> dict | None:
+def get_preset(preset_id: str, owner_id: int | None = None) -> dict | None:
     """Retorna preset por ID ou None se não encontrado."""
     for p in _load_raw():
-        if p.get("id") == preset_id:
+        if p.get("id") == preset_id and (p.get("is_system") or owner_id is None or p.get("dono_id") == owner_id):
             return _normalize(p)
     return None
 
 
-def create_preset(data: dict) -> dict:
+def create_preset(data: dict, owner_id: int | None = None) -> dict:
     """
     Cria um novo preset de usuário.
     Campos obrigatórios: name.
@@ -219,6 +250,7 @@ def create_preset(data: dict) -> dict:
         **_normalize(data),
         "id": str(uuid.uuid4()),
         "is_system": False,
+        "dono_id": owner_id,
         "created_at": now,
         "updated_at": now,
     }
@@ -227,7 +259,7 @@ def create_preset(data: dict) -> dict:
     return entry
 
 
-def update_preset(preset_id: str, data: dict) -> dict | None:
+def update_preset(preset_id: str, data: dict, owner_id: int | None = None) -> dict | None:
     """
     Atualiza campos de um preset existente.
     Presets do sistema não podem ser editados diretamente — use duplicate primeiro.
@@ -235,7 +267,7 @@ def update_preset(preset_id: str, data: dict) -> dict | None:
     """
     raw = _load_raw()
     for i, p in enumerate(raw):
-        if p.get("id") == preset_id:
+        if p.get("id") == preset_id and (owner_id is None or p.get("dono_id") == owner_id):
             if p.get("is_system"):
                 return None  # sistema: use duplicate
             updated = {**_normalize(p), **{k: v for k, v in data.items() if k not in ("id", "is_system", "created_at")}}
@@ -246,14 +278,14 @@ def update_preset(preset_id: str, data: dict) -> dict | None:
     return None
 
 
-def delete_preset(preset_id: str) -> bool:
+def delete_preset(preset_id: str, owner_id: int | None = None) -> bool:
     """
     Remove um preset de usuário.
     Retorna False se não encontrado ou se for preset do sistema.
     """
     raw = _load_raw()
     for p in raw:
-        if p.get("id") == preset_id:
+        if p.get("id") == preset_id and (owner_id is None or p.get("dono_id") == owner_id):
             if p.get("is_system"):
                 return False
             raw = [x for x in raw if x.get("id") != preset_id]
@@ -262,12 +294,12 @@ def delete_preset(preset_id: str) -> bool:
     return False
 
 
-def duplicate_preset(preset_id: str, new_name: str | None = None) -> dict | None:
+def duplicate_preset(preset_id: str, new_name: str | None = None, owner_id: int | None = None) -> dict | None:
     """
     Duplica um preset (sistema ou usuário) criando uma cópia de usuário.
     Retorna None se o original não for encontrado.
     """
-    original = get_preset(preset_id)
+    original = get_preset(preset_id, owner_id)
     if original is None:
         return None
 
@@ -277,6 +309,7 @@ def duplicate_preset(preset_id: str, new_name: str | None = None) -> dict | None
         "id": str(uuid.uuid4()),
         "name": new_name or f"{original['name']} (cópia)",
         "is_system": False,
+        "dono_id": owner_id,
         "created_at": now,
         "updated_at": now,
     }

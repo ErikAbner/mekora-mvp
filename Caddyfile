@@ -19,7 +19,7 @@
 			header_up X-Forwarded-For {remote_host}
 		}
 	}
-	handle /aparelhos /app-config /buscar /config /eu /health /history /preferencias /presets /privacidade /recados /sair /sessoes /upload {
+	handle /aparelhos /app-config /app-icon-{size}.png /app-icon.svg /buscar /config /eu /health /history /manifest.webmanifest /preferencias /presets /privacidade /recados /sair /service-worker.js /sessoes /upload {
 		reverse_proxy backend:8000 {
 			header_up X-Forwarded-For {remote_host}
 		}
@@ -41,8 +41,14 @@
 		X-Content-Type-Options nosniff
 		X-Frame-Options DENY
 		Referrer-Policy strict-origin-when-cross-origin
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		Content-Security-Policy "default-src 'self'; connect-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 		-Server
 	}
+
+	# HTML derivado de documentos nunca executa código e não herda a autoridade
+	# da aplicação, ainda que um gerador futuro esqueça de escapar uma entrada.
+	header /storage/* Content-Security-Policy "default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; sandbox"
 
 	# ── QUANTO TEMPO O NAVEGADOR PODE GUARDAR ──
 	#

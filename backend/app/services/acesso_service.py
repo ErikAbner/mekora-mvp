@@ -56,6 +56,59 @@ def email_parece_valido(email: str) -> bool:
     return bool(FORMA_DE_EMAIL.match(normalizar(email)))
 
 
+def _em_producao() -> bool:
+    dominio = os.getenv("MEKORA_DOMINIO", "").strip()
+    return bool(dominio) and dominio != "localhost"
+
+
+def convidados() -> frozenset[str]:
+    """Quem pode pedir um link, lido da configuração a cada chamada.
+
+    LIDO NA HORA, e não no import. Constante de módulo avaliada no import é
+    intestável por construção — quando o primeiro teste importa isto, o valor já
+    está congelado, e nenhum `monkeypatch` depois disso alcança mais nada. Foi
+    exatamente o defeito do `EM_PRODUCAO` do `api/acesso.py`, corrigido em 03/09
+    pela mesma razão.
+
+    QUEM LIGA O CONVITE É `CONVIDADOS`, E SÓ ELE. Vazio quer dizer "não
+    configurado", e devolve o conjunto vazio — que `foi_convidado` lê como
+    ausência de lista, e não como lista de ninguém.
+
+    O DONO ENTRA POR DEFINIÇÃO, mas não LIGA o convite. `DONO_EMAIL` é quem
+    manda na instalação, e uma lista de convite escrita sem ele trancaria o dono
+    do lado de fora da própria máquina — não há como consertar de dentro. Somá-lo
+    aqui e ali era o mesmo erro em dois passos: com `DONO_EMAIL` preenchido e
+    `CONVIDADOS` vazio, a lista virava `{dono}` e a instalação fechava para todo
+    mundo sem ninguém ter pedido isso. Medido: quatorze casos da suíte
+    vermelhos, todos em `test_acesso.py`, todos dizendo "o link não chegou".
+    """
+    escritos = settings.convidados.strip()
+    if not escritos:
+        return frozenset()
+    return frozenset(
+        normalizar(p) for p in f"{escritos},{settings.dono_email}".split(",") if p.strip()
+    )
+
+
+def foi_convidado(email: str) -> bool:
+    """O lançamento é por convite, e a falta de lista fecha em produção.
+
+    Vazio fora de produção é ABERTO: a máquina de quem desenvolve não tem
+    convite nenhum, e a entrada precisa funcionar ali. Vazio em produção é
+    FECHADO, porque o contrário é "esqueci de configurar, então está aberto" —
+    a mesma regra que o `DONO_EMAIL` já segue.
+
+    QUEM CHAMA NÃO PODE CONTAR A DIFERENÇA. Esta função responde a uma pergunta
+    interna; a rota devolve 204 dos dois jeitos, no mesmo tempo. Uma resposta
+    que variasse aqui viraria um oráculo de quem foi convidado — e a lista de
+    convidados de um produto de leitura é, ela mesma, informação sobre pessoas.
+    """
+    lista = convidados()
+    if not lista:
+        return not _em_producao()
+    return normalizar(email) in lista
+
+
 def _pessoa(db: Session, email: str) -> Pessoa:
     email = normalizar(email)
     pessoa = db.query(Pessoa).filter(Pessoa.email == email).first()
@@ -72,7 +125,18 @@ def pedir_link(db: Session, email: str, base_url: str) -> tuple[str, str] | None
     O token é devolvido em vez de enviado aqui porque enviar e-mail é lento e
     falha, e quem chama precisa poder decidir o que fazer com isso. O valor em
     claro existe só nesta volta: o que fica no banco é o resumo.
+
+    `None` COBRE DOIS CASOS DE PROPÓSITO: quem não foi convidado e quem passou
+    do teto. Quem chama não distingue um do outro, e por isso não pode contar a
+    diferença adiante.
     """
+    if not foi_convidado(email):
+        # ANTES DE `_pessoa`, e é isso que fecha o achado 2. A linha em
+        # `pessoas` nascia no PEDIR, sem prova de que o endereço existe ou de
+        # que alguém o queria: a tabela crescia com endereços de terceiros
+        # escolhidos por um estranho. Sem convite, nada é escrito.
+        return None
+
     pessoa = _pessoa(db, email)
 
     recentes = (
@@ -93,11 +157,6 @@ def pedir_link(db: Session, email: str, base_url: str) -> tuple[str, str] | None
     )
     db.commit()
     return token, pessoa.email
-
-
-def _em_producao() -> bool:
-    dominio = os.getenv("MEKORA_DOMINIO", "").strip()
-    return bool(dominio) and dominio != "localhost"
 
 
 def enviar_link(email: str, token: str, base_url: str) -> None:

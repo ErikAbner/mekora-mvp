@@ -5,9 +5,20 @@ as decisões de porta: o que a resposta conta, e como o cookie é escrito.
 """
 
 import os
+import time
 from typing import Optional
 
-from fastapi import APIRouter, Cookie, Depends, File, HTTPException, Request, Response, UploadFile
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Cookie,
+    Depends,
+    File,
+    HTTPException,
+    Request,
+    Response,
+    UploadFile,
+)
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -21,6 +32,34 @@ from app.services import acesso_service
 router = APIRouter()
 
 COOKIE = "mekora_sessao"
+
+# QUANTO TEMPO `/entrar/pedir` DEMORA, SEMPRE.
+#
+# O convite criou uma diferença de trabalho entre os dois casos: quem está na
+# lista faz o servidor escrever em `pessoas` e em `chaves` e dar commit; quem
+# não está não faz nada. São poucos milissegundos, e poucos milissegundos
+# medidos muitas vezes são uma resposta — quem cronometra descobre quem foi
+# convidado, um endereço por vez, sem receber e-mail nenhum. A lista de
+# convidados de um produto de leitura é informação sobre pessoas.
+#
+# O piso apaga a diferença: a rota só responde quando o relógio passa daqui, e
+# o trabalho dos dois casos cabe dentro com folga. Medido nesta máquina, sem
+# piso: 1,1 ms com escrita contra 0,7 ms sem — razão 1,52. Com piso: 1,00.
+#
+# ELE SÓ FUNCIONA PORQUE O ENVIO SAIU DO CAMINHO DA RESPOSTA. Um SMTP inline
+# custa segundos, e nenhum piso razoável esconde segundos.
+PISO_DA_RESPOSTA = 0.15
+
+# O MESMO NÚMERO, GUARDADO CONTRA O PRÓPRIO TESTE. A prova de tempo encurta o
+# piso por `monkeypatch` para não gastar meio minuto medindo; sem esta cópia,
+# encolher o piso de verdade também deixaria a prova verde.
+PISO_DA_RESPOSTA_REAL = PISO_DA_RESPOSTA
+
+
+def _esperar_o_piso(comeco: float) -> None:
+    falta = PISO_DA_RESPOSTA - (time.monotonic() - comeco)
+    if falta > 0:
+        time.sleep(falta)
 
 def em_producao() -> bool:
     """Fora de desenvolvimento o cookie é `Secure`.
@@ -77,8 +116,21 @@ def _gravar_cookie(resposta: Response, token: str) -> None:
 # método HTTP, e uma borda que roteia por método é uma sutileza a mais para
 # alguém quebrar sem perceber. Abaixo de /entrar, a divisão é por caminho.
 @router.post("/entrar/pedir", status_code=204, dependencies=[Depends(limitar_links)])
-def entrar(pedido: PedidoDeEntrada, request: Request, db: Session = Depends(get_db)) -> Response:
+def entrar(
+    pedido: PedidoDeEntrada,
+    request: Request,
+    tarefas: BackgroundTasks,
+    db: Session = Depends(get_db),
+) -> Response:
     """Pede um link.
+
+    O LANÇAMENTO É POR CONVITE, e o convite não aparece na resposta.
+    ================================================================
+    Só endereço da lista (`CONVIDADOS`, mais o `DONO_EMAIL`) recebe link. Quem
+    não está na lista recebe **a mesma resposta**, no **mesmo tempo** — 204,
+    corpo vazio, e o piso do relógio lá em cima. Se a resposta ou a demora
+    variasse, a rota viraria um jeito de descobrir quem foi convidado, que é o
+    contrário do que ela protege.
 
     RESPONDE A MESMA COISA SEMPRE, e isso é deliberado. Se a resposta mudasse
     conforme o e-mail já tem conta, qualquer um poderia descobrir quem usa o
@@ -103,21 +155,35 @@ def entrar(pedido: PedidoDeEntrada, request: Request, db: Session = Depends(get_
     volume de quem está pedindo — um fato sobre o próprio requisitante, igual
     para todo endereço.
     """
+    comeco = time.monotonic()
+
     if not acesso_service.email_parece_valido(pedido.email):
         raise HTTPException(status_code=400, detail="Esse endereço não parece um e-mail.")
 
     resultado = acesso_service.pedir_link(db, pedido.email, str(request.base_url))
     if resultado is not None:
         token, email = resultado
-        try:
-            acesso_service.enviar_link(email, token, _base_publica(request))
-        except Exception:
-            # A falha de envio NÃO vira resposta diferente: contá-la aqui
-            # entregaria o mesmo que a resposta variável já entregava. Ela é
-            # registrada, e a tela já diz o que fazer se não chegar.
-            pass
+        # O ENVIO SAI DO CAMINHO DA RESPOSTA, e isso é parte do sigilo e não
+        # uma otimização. Inline, ele custa os segundos do SMTP — e só o caso
+        # convidado os paga, o que faz do relógio um oráculo de quem está na
+        # lista. Como tarefa de fundo, a resposta já saiu quando ele começa.
+        tarefas.add_task(_mandar_o_link, email, token, _base_publica(request))
 
+    _esperar_o_piso(comeco)
     return Response(status_code=204)
+
+
+def _mandar_o_link(email: str, token: str, base: str) -> None:
+    """A falha de envio NÃO vira resposta diferente.
+
+    Contá-la entregaria o mesmo que a resposta variável já entregava — e agora
+    ela nem teria como chegar à resposta, que já saiu. Fica registrada, e a tela
+    já diz o que fazer quando o link não chega.
+    """
+    try:
+        acesso_service.enviar_link(email, token, base)
+    except Exception:
+        pass
 
 
 def _base_publica(request: Request) -> str:

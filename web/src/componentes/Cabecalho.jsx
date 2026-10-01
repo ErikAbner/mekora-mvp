@@ -24,13 +24,14 @@
 const iconeDuvidas = "/icones/icone-duvidas.svg";
 const iconeConta = "/icones/icone-conta.svg";
 const iconeMenu = "/icones/icone-menu.svg";
+const iconeInstalar = "/icones/icone-baixar.svg";
 
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { Icone } from "./Icone.jsx";
 import { Busca } from "./Busca.jsx";
 import { MenuDaConta } from "./MenuDaConta.jsx";
-import { quemSouEu } from "../../../contrato/api.js";
+import { atividadesLocais, guardarAtividadesLocais, quemSouEu, situacao } from "../../../contrato/api.js";
 import { Folha } from "./Folha.jsx";
 import { gruposDeLugares } from "../menu.js";
 import { useEstreito } from "../estreito.js";
@@ -42,6 +43,186 @@ import "./cabecalho.css";
  * o menu passa a oferecer um lugar que a rota não conhece, e o clique vira tela
  * branca. */
 import { LUGARES, lugarDaRota, lembrarLugar, lugarDoRastro } from "../lugares.js";
+
+function InstalarMekora() {
+  const [pedido, setPedido] = useState(null);
+  useEffect(() => {
+    const disponivel = (event) => { event.preventDefault(); setPedido(event); };
+    const instalado = () => setPedido(null);
+    window.addEventListener("beforeinstallprompt", disponivel);
+    window.addEventListener("appinstalled", instalado);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", disponivel);
+      window.removeEventListener("appinstalled", instalado);
+    };
+  }, []);
+  if (!pedido) return null;
+  return (
+    <button
+      type="button"
+      className="acao"
+      aria-label="Instalar o Mekora neste computador"
+      title="Instalar o Mekora"
+      onClick={async () => { await pedido.prompt(); await pedido.userChoice; setPedido(null); }}
+    >
+      <Icone src={iconeInstalar} />
+    </button>
+  );
+}
+
+const FINAIS = new Set(["sucesso", "erro", "interrompido"]);
+
+function resultadoDaAtividade(item, situ) {
+  const bruto = situ?.bruto ?? {};
+  const falhou = (valor) => valor === "failed" || valor === "error" || valor === "interrupted";
+  if (item.tipo === "conversao") {
+    if (falhou(bruto.conversion_status)) return "erro";
+    if (bruto.conversion_status === "done") return "sucesso";
+    if (bruto.conversion_status === "not_started" && situ?.estado === "fila") return "interrompido";
+  }
+  if (item.tipo === "traducao") {
+    if (falhou(bruto.translation_status)) return "erro";
+    if (bruto.translation_status === "done") return "sucesso";
+  }
+  if (item.tipo === "envio") {
+    if (falhou(bruto.send_status)) return "erro";
+    if (bruto.send_status === "sent") return "sucesso";
+  }
+  if (item.tipo === "analise") {
+    if (situ?.estado === "erro") return "erro";
+    if (bruto.status && bruto.status !== "uploaded" && bruto.status !== "analyzing") return "sucesso";
+  }
+  if (item.tipo === "preparo") {
+    if (situ?.estado === "erro") return "erro";
+    if (situ?.estado === "pronto") return "sucesso";
+  }
+  return null;
+}
+
+export function CentroDeAtividade() {
+  const [itens, setItens] = useState(() => atividadesLocais());
+  const [semConexao, setSemConexao] = useState(false);
+  const [expandido, setExpandido] = useState(() => {
+    try { return localStorage.getItem("mekora:atividades-recolhido") !== "1"; }
+    catch { return true; }
+  });
+
+  useEffect(() => {
+    let vivo = true;
+    let timer;
+    const atualizar = async () => {
+      const salvos = atividadesLocais();
+      if (!salvos.length) {
+        if (vivo) { setItens([]); setSemConexao(false); }
+        return;
+      }
+      const pendentes = salvos.filter((item) => !FINAIS.has(item.resultado));
+      if (!pendentes.length) {
+        if (vivo) { setItens(salvos); setSemConexao(false); }
+        return;
+      }
+      const respostas = await Promise.all(pendentes.map(async (item) => {
+        try { return [item, await situacao(item.id)]; }
+        catch { return [item, null]; }
+      }));
+      if (!vivo) return;
+      const porChave = new Map(respostas.map(([item, situ]) => [`${item.id}:${item.tipo}`, situ]));
+      const agora = new Date().toISOString();
+      const novos = salvos.map((item) => {
+        if (FINAIS.has(item.resultado)) return item;
+        const situ = porChave.get(`${item.id}:${item.tipo}`);
+        if (!situ) return item;
+        const resultado = resultadoDaAtividade(item, situ);
+        const acompanhamento = {
+          progresso: typeof situ?.progresso?.porcento === "number" ? situ.progresso.porcento : null,
+          etapa: situ?.etapa ?? null,
+          recado: situ?.progresso?.recado ?? null,
+        };
+        return resultado
+          ? { ...item, ...acompanhamento, resultado, terminadoEm: agora }
+          : { ...item, ...acompanhamento };
+      });
+      guardarAtividadesLocais(novos, false);
+      setItens(novos);
+      setSemConexao(respostas.some(([, situ]) => !situ));
+      if (novos.some((item) => !FINAIS.has(item.resultado))) {
+        timer = window.setTimeout(atualizar, 1800);
+      }
+    };
+    const mudou = () => {
+      // Uma nova preparação merece atenção mesmo quando a pessoa havia
+      // recolhido o andamento anterior.
+      setExpandido(true);
+      try { localStorage.removeItem("mekora:atividades-recolhido"); } catch {}
+      if (timer) window.clearTimeout(timer);
+      atualizar();
+    };
+    window.addEventListener("mekora:atividades", mudou);
+    window.addEventListener("storage", mudou);
+    atualizar();
+    return () => {
+      vivo = false;
+      if (timer) window.clearTimeout(timer);
+      window.removeEventListener("mekora:atividades", mudou);
+      window.removeEventListener("storage", mudou);
+    };
+  }, []);
+
+  if (!itens.length) return null;
+
+  const ativos = itens.filter((item) => !FINAIS.has(item.resultado)).length;
+  const sucessos = itens.filter((item) => item.resultado === "sucesso").length;
+  const erros = itens.filter((item) => item.resultado === "erro").length;
+  const interrompidos = itens.filter((item) => item.resultado === "interrompido").length;
+  const terminou = ativos === 0;
+  const ativoContavel = itens.find((item) => !FINAIS.has(item.resultado) && typeof item.progresso === "number");
+  const percentual = ativoContavel?.progresso ?? null;
+  const titulo = ativos
+    ? `${ativos} ${ativos === 1 ? "arquivo em andamento" : "arquivos em andamento"}`
+    : erros
+      ? `${erros} ${erros === 1 ? "arquivo precisa" : "arquivos precisam"} de atenção`
+      : `${sucessos} ${sucessos === 1 ? "arquivo concluído" : "arquivos concluídos"}`;
+  const detalhes = [
+    sucessos ? `${sucessos} ${sucessos === 1 ? "concluído" : "concluídos"}` : null,
+    erros ? `${erros} com erro` : null,
+    interrompidos ? `${interrompidos} ${interrompidos === 1 ? "interrompido" : "interrompidos"}` : null,
+    percentual != null ? `${percentual}% no arquivo atual` : null,
+    semConexao ? "sem conexão" : null,
+  ].filter(Boolean).join(" · ");
+
+  const recolher = () => {
+    setExpandido(false);
+    try { localStorage.setItem("mekora:atividades-recolhido", "1"); } catch {}
+  };
+
+  if (!expandido) {
+    return (
+      <button type="button" className={`lote-global-recolhido${erros ? " tem-erro" : terminou ? " terminou" : ""}`}
+        onClick={() => { setExpandido(true); try { localStorage.removeItem("mekora:atividades-recolhido"); } catch {} }}
+        aria-expanded="false" aria-label={`${titulo}. Mostrar andamento`}>
+        <strong>{titulo}</strong><span>{detalhes || "Ver andamento"}</span>
+      </button>
+    );
+  }
+
+  return (
+    <div className={`lote-global${erros ? " tem-erro" : terminou ? " terminou" : ""}`} role="status" aria-live="polite">
+      <Link className="lote-global-conteudo" to="/mesa" aria-label={`${titulo}. ${detalhes}. Ver na Mesa`}>
+        <span className="lote-global-topo"><strong>{titulo}</strong></span>
+        <span
+          className={`lote-global-barra${ativos && percentual == null ? " indeterminada" : ""}`}
+          role="progressbar"
+          aria-label={percentual != null ? `${percentual}% no arquivo atual` : titulo}
+          aria-valuemin={percentual != null ? 0 : undefined}
+          aria-valuemax={percentual != null ? 100 : undefined}
+          aria-valuenow={percentual ?? undefined}
+        ><span style={percentual != null ? { inlineSize: `${percentual}%` } : undefined} /></span>
+        <span className="lote-global-detalhe">{detalhes ? `${detalhes} · ` : ""}Ver na Mesa</span>
+      </Link>
+      <button type="button" className="lote-global-fechar" onClick={recolher} aria-label="Recolher andamento">×</button>
+    </div>
+  );
+}
 
 export function Cabecalho() {
   /* A PESSOA VEM DO SERVIDOR AQUI, e não por propriedade.
@@ -80,30 +261,8 @@ export function Cabecalho() {
   const lugares = LUGARES.filter((l) => !(estreito && l.soNoComputador));
   const [menuConta, setMenuConta] = useState(false);
   const botaoConta = useRef(null);
-  const [recolhido, setRecolhido] = useState(false);
-
-  useEffect(() => {
-    let anterior = window.scrollY;
-    let quadro = 0;
-    const rolar = () => {
-      if (quadro) return;
-      quadro = requestAnimationFrame(() => {
-        const agora = window.scrollY;
-        if (agora < 48 || menuConta || menuAberto) setRecolhido(false);
-        else if (agora > anterior + 5) setRecolhido(true);
-        else if (agora < anterior - 5) setRecolhido(false);
-        anterior = agora;
-        quadro = 0;
-      });
-    };
-    window.addEventListener("scroll", rolar, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", rolar);
-      if (quadro) cancelAnimationFrame(quadro);
-    };
-  }, [menuConta, menuAberto]);
   return (
-    <header className={`cabecalho${recolhido ? " recolhido" : ""}`}>
+    <header className="cabecalho">
       <nav className="cabecalho-lugares" aria-label="Lugares do Mekora">
         {lugares.map((l) => (
           /* `Link`, E NÃO `NavLink`. O `NavLink` marca sozinho conforme a rota
@@ -136,6 +295,7 @@ export function Cabecalho() {
             16px entre si (`900:52339`). Eu tinha 16px nos dois lugares, e o
             resultado é a busca e os atalhos lidos como uma coisa só. */}
         <div className="cabecalho-atalhos">
+          <InstalarMekora />
           <NavLink to="/ajuda" className="acao" aria-label="Dúvidas">
             <Icone src={iconeDuvidas} />
           </NavLink>

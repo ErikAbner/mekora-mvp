@@ -46,6 +46,7 @@ NOMES_NO_CORPO = ("job_id", "job_ids", "upload_id", "upload_ids")
 # Estar nesta lista não é permissão: é declaração. O que segura de verdade são
 # os testes de comportamento no fim do arquivo, e a leitura do código citado.
 FILTRAM_POR_DONO = {
+    "POST /batch/prepare": "_meu(db, pessoa, job_id) — batch.py",
     "POST /batch/apply-preset": "_meu(db, pessoa, job_id) — batch.py",
     "POST /batch/apply-suggestions": "_meu(db, pessoa, job_id) — batch.py",
     "POST /batch/export": "_meu(db, pessoa, job_id) — batch.py",
@@ -118,6 +119,7 @@ def test_nenhuma_rota_de_lote_ficou_de_fora() -> None:
     de_lote = {r for r in achadas if r.split(" ", 1)[1].startswith("/batch/")}
 
     assert de_lote == {
+        "POST /batch/prepare",
         "POST /batch/apply-preset",
         "POST /batch/apply-suggestions",
         "POST /batch/export",
@@ -168,6 +170,7 @@ def trabalho_alheio(test_engine):
         # Preset REAL: a rota confere o preset antes do dono, e com um id
         # inventado ela erraria por outro motivo — verde sem provar nada.
         ("/batch/apply-preset", {"preset_id": "system-doc-no-translation"}),
+        ("/batch/prepare", {"preset_id": "system-doc-no-translation"}),
         ("/batch/export", {}),
         ("/batch/apply-suggestions", {}),
         ("/batch/retry-send", {}),

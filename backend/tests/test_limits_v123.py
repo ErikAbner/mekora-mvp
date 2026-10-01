@@ -255,8 +255,10 @@ def _reload_limits():
 
 def test_env_missing_uses_default(monkeypatch):
     monkeypatch.delenv("KLT_UPLOAD_MAX_MB", raising=False)
+    monkeypatch.delenv("KLT_CALIBRE_TIMEOUT_SECONDS", raising=False)
     L = _reload_limits()
     assert L.limits.upload_max_mb == 600  # default
+    assert L.limits.calibre_timeout_seconds == 3_600
     L.validate_limits()  # não deve levantar
 
 

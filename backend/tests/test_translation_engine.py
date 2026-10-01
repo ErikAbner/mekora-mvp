@@ -169,3 +169,12 @@ def test_to_argos_invalid_code() -> None:
     engine = ArgosTranslatorEngine()
     with pytest.raises(LanguagePairNotAvailableError):
         engine._to_argos("zzz")
+
+
+def test_nllb_factory_uses_the_same_local_model_checked_by_status() -> None:
+    """Disponibilidade e execução não podem olhar diretórios diferentes."""
+    from app.services.translation_engine import criar_motor
+    from app.services.translation_model_service import NLLB_DEFAULT_MODEL_DIR
+
+    engine = criar_motor("nllb", {"nllb_device_preference": "cpu"})
+    assert engine.model_dir == str(NLLB_DEFAULT_MODEL_DIR)

@@ -83,7 +83,13 @@ class Limits:
 
     # ---- Timeouts de subprocess (segundos) ---------------------------
     calibre_timeout_seconds: int = field(
-        default_factory=lambda: _env_int("KLT_CALIBRE_TIMEOUT_SECONDS", 600)
+        # PDFs longos passam primeiro pelo `pdftohtml` do Calibre, página por
+        # página. Dois livros reais desta instalação (168 e 372 páginas)
+        # continuavam usando CPU ao atingir o teto antigo de dez minutos e
+        # foram mortos como se estivessem travados. Uma hora continua sendo um
+        # limite finito, enquanto acomoda livros legítimos; a pessoa também
+        # pode cancelar a operação pelo preparo antes dele.
+        default_factory=lambda: _env_int("KLT_CALIBRE_TIMEOUT_SECONDS", 3_600)
     )
     kcc_timeout_seconds: int = field(
         default_factory=lambda: _env_int("KLT_KCC_TIMEOUT_SECONDS", 900)

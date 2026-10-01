@@ -1,0 +1,51 @@
+.falha-da-interface {
+  min-block-size: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 24px;
+  inline-size: min(680px, 100%);
+  margin-inline: auto;
+  padding: 64px 32px;
+  color: var(--foreground);
+}
+.falha-da-interface-marca {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 22px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.falha-da-interface h1 { margin: 0; font-size: 40px; line-height: 48px; text-wrap: balance; }
+.falha-da-interface > p:not(.falha-da-interface-marca) {
+  margin: 0;
+  max-inline-size: 56ch;
+  color: var(--muted-foreground);
+  font-size: 18px;
+  line-height: 28px;
+  text-wrap: pretty;
+}
+.falha-da-interface-acoes { display: flex; flex-wrap: wrap; gap: 16px; }
+.falha-da-interface-acoes :where(button, a) {
+  min-block-size: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 24px;
+  border: 1px solid var(--foreground);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+.falha-da-interface-acoes button { background: var(--foreground); color: var(--background); }
+.falha-da-interface-acoes a { background: transparent; color: var(--foreground); }
+.falha-da-interface-acoes :where(button, a):focus-visible { outline: 2px solid var(--foreground); outline-offset: 3px; }
+@media (max-width: 619px) {
+  .falha-da-interface { padding: 48px 16px; }
+  .falha-da-interface h1 { font-size: 32px; line-height: 40px; }
+  .falha-da-interface-acoes { inline-size: 100%; }
+  .falha-da-interface-acoes :where(button, a) { inline-size: 100%; }
+}

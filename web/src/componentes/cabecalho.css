@@ -3,6 +3,7 @@
   inset-block-start: 0;
   z-index: 40;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 32px;
@@ -26,6 +27,115 @@
   transform: translateY(calc(-100% - 20px));
   opacity: 0;
   pointer-events: none;
+}
+
+/* O andamento não pertence a uma página: tradução iniciada na Mesa continua
+ * enquanto a pessoa lê ou organiza notas. Este cartão compacto persiste sem
+ * disputar espaço com a navegação e leva de volta ao detalhe. */
+.lote-global {
+  /* Global e fora do cabeçalho: aparece também na Leitura e nas gavetas de
+   * Conta. Fica embaixo para não repetir o erro antigo de cobrir busca, ajuda e
+   * conta no canto superior direito. */
+  position: fixed;
+  z-index: 85;
+  inset-inline-start: 50%;
+  inset-inline-end: auto;
+  inset-block-end: 24px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  inline-size: min(888px, calc(100vw - 64px));
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.10);
+}
+.lote-global-recolhido {
+  position: fixed;
+  z-index: 85;
+  inset-inline-start: 50%;
+  inset-block-end: 24px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  max-inline-size: min(520px, calc(100vw - 32px));
+  padding: 13px 18px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.10);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.lote-global-recolhido strong { font-size: 15px; line-height: 20px; }
+.lote-global-recolhido span { color: var(--muted-foreground); font-family: var(--font-mono); font-size: 11px; white-space: nowrap; }
+.lote-global-recolhido.tem-erro { border-inline-start: 4px solid var(--destructive); }
+.lote-global-recolhido.terminou { border-inline-start: 4px solid var(--success); }
+.lote-global-recolhido:hover { border-color: var(--foreground); }
+.lote-global-conteudo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 20px;
+  min-inline-size: 0;
+  flex: 1;
+  padding: 18px 20px;
+  color: inherit;
+  text-decoration: none;
+}
+.lote-global-topo { display: flex; align-items: baseline; gap: 12px; white-space: nowrap; }
+.lote-global-topo strong { font-size: 18px; line-height: 26px; font-weight: 540; }
+.lote-global-topo span,
+.lote-global-detalhe { color: var(--muted-foreground); font-family: var(--font-mono); font-size: 12px; line-height: 18px; }
+.lote-global-barra { grid-column: 1 / -1; grid-row: 2; display: block; block-size: 6px; margin-block-start: 4px; background: var(--muted); overflow: hidden; }
+.lote-global-barra > span { display: block; inline-size: 100%; block-size: 100%; background: var(--foreground); }
+.lote-global-barra.indeterminada > span {
+  inline-size: 34%;
+  animation: atividade-global 1.4s cubic-bezier(.4, 0, .2, 1) infinite;
+}
+.lote-global.terminou .lote-global-barra > span { background: var(--success); }
+.lote-global.tem-erro .lote-global-barra > span { background: var(--destructive); }
+.lote-global-fechar {
+  align-self: stretch;
+  flex: none;
+  inline-size: 52px;
+  border: 0;
+  border-inline-start: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 20px;
+  cursor: pointer;
+}
+.lote-global-fechar:hover { color: var(--foreground); background: var(--muted); }
+@keyframes atividade-global {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(295%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lote-global-barra.indeterminada > span { inline-size: 100%; animation: none; opacity: 0.45; }
+}
+.lote-global:hover { border-color: var(--foreground); }
+.lote-global-conteudo:focus-visible,
+.lote-global-fechar:focus-visible,
+.lote-global-recolhido:focus-visible { outline: 2px solid var(--foreground); outline-offset: 3px; }
+
+/* O andamento é flutuante, mas o fim da página precisa continuar alcançável
+ * acima dele. A reserva não muda a coluna; só acrescenta a zona segura final. */
+#raiz:has(.lote-global) { padding-block-end: 112px; }
+
+@media (max-width: 767px) {
+  #raiz:has(.lote-global) { padding-block-end: 176px; }
+  .lote-global {
+    inset-inline-start: 50%;
+    inset-inline-end: auto;
+    inset-block-end: 88px;
+    inline-size: calc(100vw - 32px);
+  }
+  .lote-global-recolhido { inset-block-end: 88px; max-inline-size: calc(100vw - 32px); inline-size: auto; }
+  .lote-global-conteudo { padding: 16px; }
+  .lote-global-detalhe { white-space: nowrap; }
 }
 
 /* Duas caixas, não uma. Navegação e ferramenta são categorias diferentes, e
@@ -219,6 +329,16 @@ a.acao.active { background: var(--muted); color: var(--foreground); }
  * obriga a adivinhar, e 12px sairia da escala do sistema.
  */
 @media (max-width: 767px) {
+  .lote-global {
+    inset-block-end: 88px;
+    inline-size: calc(100vw - 32px);
+  }
+  .lote-global-conteudo {
+    grid-template-columns: 1fr auto;
+    gap: 8px 12px;
+  }
+  .lote-global-barra { grid-column: 1 / -1; grid-row: 2; }
+  .lote-global-detalhe { grid-column: 1 / -1; }
   .cabecalho {
     /* O dock é `position: fixed`, mas `will-change: transform` no ancestral
        cria um bloco de contenção para filhos fixos. Na prática ele prendia a

@@ -1,9 +1,9 @@
 #!/bin/bash
-# install.sh — Setup do Kindle Local Tool para macOS via Homebrew
+# install.sh — preparação do Mekora para macOS via Homebrew
 set -e
 
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
-echo "=== Kindle Local Tool — Instalação ==="
+echo "=== Mekora — Instalação local ==="
 echo "Raiz: $ROOT_DIR"
 echo ""
 
@@ -53,24 +53,26 @@ pip install -r backend/requirements.txt -q
 echo "✓ Dependências Python instaladas"
 
 # ---------------------------------------------------------------------------
-# 4. Build do frontend
+# 4. Build da interface atual
 # ---------------------------------------------------------------------------
 echo ""
-echo "[frontend] Gerando build de produção..."
-cd "$ROOT_DIR/frontend"
-
-if [ ! -d "node_modules" ]; then
-  npm install -q
+echo "[interface] Gerando o aplicativo instalável..."
+if [ ! -d "$ROOT_DIR/web/node_modules" ]; then
+  npm --prefix "$ROOT_DIR/web" ci -q
 fi
-npm run build
-cd "$ROOT_DIR"
+npm --prefix "$ROOT_DIR/web" run build
+"$ROOT_DIR/.venv/bin/python" "$ROOT_DIR/scripts/fingerprint-interface.py" "$ROOT_DIR" \
+  > "$ROOT_DIR/web/dist/.mekora-source.sha256"
 echo "✓ Frontend compilado"
 
+echo ""
+echo "[aplicativo] Instalando o iniciador local..."
+"$ROOT_DIR/scripts/instalar-app-local.sh"
+
 # ---------------------------------------------------------------------------
-# 5. Criar comando kindle-tool
+# 5. Criar comando mekora
 # ---------------------------------------------------------------------------
 echo ""
-KINDLE_CMD="$ROOT_DIR/.venv/bin/uvicorn backend.main:app --host 127.0.0.1 --port 8000"
 
 # Detectar shell do usuário
 SHELL_RC=""
@@ -82,22 +84,22 @@ fi
 
 if [ -n "$SHELL_RC" ]; then
   # Remover alias anterior se existir
-  sed -i.bak '/alias kindle-tool=/d' "$SHELL_RC" 2>/dev/null || true
-  echo "alias kindle-tool='cd $ROOT_DIR && source .venv/bin/activate && $KINDLE_CMD'" >> "$SHELL_RC"
-  echo "✓ Alias 'kindle-tool' adicionado a $SHELL_RC"
+  sed -i.bak '/alias kindle-tool=/d; /alias mekora=/d' "$SHELL_RC" 2>/dev/null || true
+  echo "alias mekora='cd $ROOT_DIR && ./Mekora.command'" >> "$SHELL_RC"
+  echo "✓ Comando 'mekora' adicionado a $SHELL_RC"
   echo ""
   echo "=== Instalação concluída ==="
   echo ""
   echo "Para usar:"
   echo "  1. Abra um novo terminal (ou execute: source $SHELL_RC)"
-  echo "  2. Configure o .env com suas credenciais SMTP"
-  echo "  3. Execute: kindle-tool"
-  echo "  4. Acesse: http://localhost:8000"
+  echo "  2. Copie .env.example para .env e configure o SMTP"
+  echo "  3. Abra 'Mekora Local' na pasta Aplicativos ou execute: mekora"
+  echo "  4. Acesse: http://127.0.0.1:8000/mesa"
 else
   echo "✓ Instalação concluída"
   echo ""
-  echo "Para iniciar manualmente:"
+  echo "Para iniciar manualmente ou instalar o aplicativo local:"
   echo "  cd $ROOT_DIR"
-  echo "  source .venv/bin/activate"
-  echo "  $KINDLE_CMD"
+  echo "  ./scripts/instalar-app-local.sh"
+  echo "  ./Mekora.command"
 fi

@@ -46,7 +46,13 @@ def list_available_pairs() -> dict:
 
 @router.get("/tools/comic-status")
 def comic_tools_status() -> dict:
-    """
+    """A bandeira vem PRIMEIRO, e o resto continua sendo relatado.
+
+    Esta rota é pré-checagem: a tela lê daqui se dá para converter quadrinho.
+    Com a conversão desligada ela precisa dizer isso — e não 503, porque quem
+    pergunta "dá?" merece "não, e por quê", não uma porta fechada. Os campos de
+    KCC e Argos continuam vindo: eles descrevem a máquina, e não a permissão.
+
     Status combinado das dependências do pipeline comic:
     - kcc: disponível, caminho
     - argos: biblioteca instalada, pares disponíveis
@@ -68,7 +74,11 @@ def comic_tools_status() -> dict:
     except Exception:
         pass
 
+    from app.core import quadrinhos
+
     return {
+        "quadrinhos_ligados": quadrinhos.ligados(),
+        "razao": None if quadrinhos.ligados() else quadrinhos.RAZAO,
         "kcc": kcc,
         "argos": {
             "library_installed": argos_library_installed,

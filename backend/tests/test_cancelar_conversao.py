@@ -108,6 +108,7 @@ def test_bg_convert_cancelado_devolve_o_job_a_analyzed(client, tmp_storage, monk
     from app.api import jobs as jobs_mod
     from app.db.database import SessionLocal
     from app.models.processing_job import ProcessingJob
+    from app.services import pdf_fixed_epub_service as fixed_mod
     from app.services.convert_service import ConversionCancelled
 
     db = SessionLocal()
@@ -130,7 +131,10 @@ def test_bg_convert_cancelado_devolve_o_job_a_analyzed(client, tmp_storage, monk
     Path(job.input_path).parent.mkdir(parents=True, exist_ok=True)
     Path(job.input_path).write_bytes(b"%PDF-1.4 original")
 
-    monkeypatch.setattr(jobs_mod, "convert_to_epub",
+    # PDFs sem tradução agora preservam a página visual. O contrato de
+    # cancelamento precisa provar o caminho realmente usado, não o Calibre que
+    # ficou como caminho de documentos refluíveis.
+    monkeypatch.setattr(fixed_mod, "convert_pdf_to_fixed_epub",
                         lambda **kw: (_ for _ in ()).throw(ConversionCancelled()))
 
     jobs_mod._bg_convert(jid, operation_id=None)
@@ -191,6 +195,7 @@ def test_bg_convert_bem_sucedido_limpa_erro_da_tentativa_anterior(client, tmp_st
     from app.api import jobs as jobs_mod
     from app.db.database import SessionLocal
     from app.models.processing_job import ProcessingJob
+    from app.services import pdf_fixed_epub_service as fixed_mod
 
     db = SessionLocal()
     job = ProcessingJob(
@@ -214,7 +219,7 @@ def test_bg_convert_bem_sucedido_limpa_erro_da_tentativa_anterior(client, tmp_st
         destino.parent.mkdir(parents=True, exist_ok=True)
         destino.write_bytes(b"PK\x03\x04epub")
 
-    monkeypatch.setattr(jobs_mod, "convert_to_epub", converter)
+    monkeypatch.setattr(fixed_mod, "convert_pdf_to_fixed_epub", converter)
     monkeypatch.setattr(jobs_mod, "_versao_web", lambda p: str(Path(p).with_suffix(".web.epub")))
 
     jobs_mod._bg_convert(jid, operation_id=None)
@@ -235,6 +240,7 @@ def test_job_cancelado_fica_na_mesa_e_nao_na_estante(client, tmp_storage, monkey
     from app.api import jobs as jobs_mod
     from app.db.database import SessionLocal
     from app.models.processing_job import ProcessingJob
+    from app.services import pdf_fixed_epub_service as fixed_mod
     from app.services.convert_service import ConversionCancelled
 
     db = SessionLocal()
@@ -247,7 +253,7 @@ def test_job_cancelado_fica_na_mesa_e_nao_na_estante(client, tmp_storage, monkey
     Path(job.input_path).parent.mkdir(parents=True, exist_ok=True)
     Path(job.input_path).write_bytes(b"%PDF-1.4")
 
-    monkeypatch.setattr(jobs_mod, "convert_to_epub",
+    monkeypatch.setattr(fixed_mod, "convert_pdf_to_fixed_epub",
                         lambda **kw: (_ for _ in ()).throw(ConversionCancelled()))
     jobs_mod._bg_convert(jid, operation_id=None)
 

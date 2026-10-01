@@ -13,6 +13,8 @@ from datetime import datetime
 from pathlib import Path
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+
+from app.core import quadrinhos
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -147,7 +149,11 @@ def _bg_comic_export(
 # POST /jobs/{job_id}/comic-export
 # ---------------------------------------------------------------------------
 
-@router.post("/jobs/{job_id}/comic-export", response_model=ComicExportResponse)
+@router.post(
+    "/jobs/{job_id}/comic-export",
+    response_model=ComicExportResponse,
+    dependencies=[Depends(quadrinhos.exigir)],
+)
 def start_comic_export(
     job_id: int,
     body: ComicExportRequest,

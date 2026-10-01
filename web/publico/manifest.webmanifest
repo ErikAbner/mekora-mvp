@@ -1,0 +1,17 @@
+{
+  "name": "Mekora",
+  "short_name": "Mekora",
+  "description": "Prepare, traduza, leia e organize seus livros localmente.",
+  "start_url": "/mesa",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f9f9f9",
+  "theme_color": "#151515",
+  "lang": "pt-BR",
+  "categories": ["books", "productivity"],
+  "icons": [
+    { "src": "/app-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/app-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/app-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

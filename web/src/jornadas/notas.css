@@ -88,6 +88,10 @@
   font-size: 18px;
   line-height: 26px;
   text-wrap: pretty;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
+  overflow: hidden;
 }
 
 /* O filete marca a fala SOBRE a fala. O chão marcou o que foi lido. */
@@ -99,6 +103,10 @@
   line-height: 24px;
   color: var(--muted-foreground);
   text-wrap: pretty;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  overflow: hidden;
 }
 .nota-sem-trecho { margin: 0; color: var(--muted-foreground); font-size: 14px; line-height: 22px; }
 
@@ -128,6 +136,27 @@
 
 /* As ações do topo das Notas: agrupar, e trazer do Kindle. */
 .notas-acoes { display: flex; gap: 16px; flex-wrap: wrap; }
+
+.notas-grupo-mais {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-block-start: 16px;
+  border-block-start: 1px solid var(--border);
+}
+.notas-grupo-mais p,
+.notas-mais-origens p { margin: 0; color: var(--muted-foreground); font-size: 14px; line-height: 22px; }
+.notas-mais-origens {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
 
 /* A TIRA DE RECORTES NO TELEFONE — uma linha que rola, e não sete empilhados.
  *
@@ -164,4 +193,8 @@
     display: inline-flex;
     align-items: center;
   }
+  .notas-grupo-mais { grid-column: 1; align-items: stretch; flex-direction: column; }
+  .notas-mais-origens { align-items: stretch; flex-direction: column; }
+  .notas-grupo-mais .botao,
+  .notas-mais-origens .botao { inline-size: 100%; }
 }

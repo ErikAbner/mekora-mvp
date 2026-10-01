@@ -21,7 +21,11 @@ def test_pdf_textual_becomes_adjustable_text_and_keeps_visual_page(tmp_path: Pat
     document.save(source)
     document.close()
 
-    convert_pdf_to_reflow_epub(source, output, "Accessible book", "Author", "eng")
+    progress: list[tuple[int, int]] = []
+    convert_pdf_to_reflow_epub(
+        source, output, "Accessible book", "Author", "eng",
+        progresso=lambda current, total: progress.append((current, total)),
+    )
 
     with ZipFile(output) as archive:
         first = archive.read("EPUB/page-0001.xhtml").decode("utf-8")
@@ -29,6 +33,8 @@ def test_pdf_textual_becomes_adjustable_text_and_keeps_visual_page(tmp_path: Pat
         assert "Selectable and adjustable text" in first
         assert "<img" not in first
         assert "<img" in second
+        assert len([name for name in archive.namelist() if name.endswith(".jpg")]) == 1
+    assert progress == [(1, 2), (2, 2)]
 
 
 def test_landscape_book_spread_reads_left_page_before_right_page(tmp_path: Path) -> None:

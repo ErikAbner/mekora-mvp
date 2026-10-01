@@ -27,10 +27,8 @@ from pathlib import Path
 
 EMAIL = os.environ.get("MEKORA_EMAIL", "erik@mekora.local")
 if os.environ.get("MEKORA_STORAGE"):
-    # Dentro do Docker o banco fica no volume persistente, sem a camada `.ver`
-    # usada pela bancada de demonstracao. Ler a mesma variavel do backend evita
-    # dois caminhos para a mesma informacao e permite o iniciador do Windows
-    # criar um link local sem depender de SMTP.
+    # No Docker, inclusive no iniciador do Windows, o banco mora diretamente
+    # no volume persistente. Fora dele, a bancada continua usando `.ver`.
     BANCO = Path(os.environ["MEKORA_STORAGE"]) / "kindle_tool.db"
 else:
     RAIZ = Path(os.environ.get("MEKORA_PROVA", ".ver"))
@@ -62,9 +60,23 @@ agora = datetime.utcnow()
 
 linha = c.execute("SELECT id FROM pessoas WHERE email = ?", (EMAIL,)).fetchone()
 if linha is None:
+    # Bancos antigos não têm `uuid` e a coluna `vista_em` nunca fez parte do
+    # modelo atual. Descobrimos o esquema para que o link local continue
+    # funcionando durante a migração de uma instalação já usada, sem alterar
+    # a estrutura do banco às escondidas.
+    colunas = {linha[1] for linha in c.execute("PRAGMA table_info(pessoas)")}
+    campos = ["email", "criada_em"]
+    valores = [EMAIL, agora]
+    if "uuid" in colunas:
+        campos.append("uuid")
+        valores.append(secrets.token_hex(16))
+    if "vista_em" in colunas:
+        campos.append("vista_em")
+        valores.append(agora)
+    marcadores = ", ".join("?" for _ in campos)
     c.execute(
-        "INSERT INTO pessoas (email, criada_em, vista_em) VALUES (?, ?, ?)",
-        (EMAIL, agora, agora),
+        f"INSERT INTO pessoas ({', '.join(campos)}) VALUES ({marcadores})",
+        valores,
     )
     pessoa = c.execute("SELECT id FROM pessoas WHERE email = ?", (EMAIL,)).fetchone()[0]
 else:

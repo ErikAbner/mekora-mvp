@@ -31,48 +31,94 @@ import "./estudos.css";
  * A tela mostrava tudo, e três estudos de vinte notas viravam uma rolagem onde
  * nenhum deles se lia. O changelog já dizia que isso tinha sido resolvido pelo
  * título virar link, e não tinha: o link foi acrescentado e as notas ficaram. */
-export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoApagarNota, aoReunir, aoTirar, semLink = false, resumido = false }) {
+export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoApagarNota, aoReunir, aoTirar, semLink = false, resumido = false, trilha = null }) {
   const [reunindo, setReunindo] = useState(false);
   /* A busca DENTRO do estudo — nó 895:8260, logo abaixo da faixa de livros. Um
      estudo que cumpriu seu papel tem trinta notas de cinco livros, e é aí que
      ele fica difícil de usar: a busca é o que o mantém utilizável depois de
      ficar grande. */
   const [procura, setProcura] = useState("");
+  const [procuraReunir, setProcuraReunir] = useState("");
+  const [limiteNotas, setLimiteNotas] = useState(40);
+  const [limiteReunir, setLimiteReunir] = useState(40);
+  const [sobreAberto, setSobreAberto] = useState(false);
   const [copiada, setCopiada] = useState(null);
+  const quantidadeDeNotas = estudo.total_notas ?? estudo.notas.length;
   const dentro = new Set(estudo.notas.map((n) => n.id));
   /* RASCUNHO NÃO APARECE PARA REUNIR. O servidor recusa — é a regra que dá
      sentido ao estado —, e oferecer aqui seria levar a pessoa a um 409. */
-  const deFora = notasDisponiveis.filter((n) => !dentro.has(n.id) && n.estado !== "rascunho");
+  /* A LISTA RESUMIDA não precisa calcular milhares de candidatas que ninguém
+     pode abrir nela. No detalhe a lista existe, mas só entra no DOM quando a
+     folha está aberta e em lotes pesquisáveis. */
+  const deFora = resumido
+    ? []
+    : notasDisponiveis.filter((n) => !dentro.has(n.id) && n.estado !== "rascunho");
   const alvo = achatar(procura.trim());
-  const notasVisiveis = estudo.notas.filter(
+  const notasEncontradas = estudo.notas.filter(
     (n) => !alvo || achatar(`${n.trecho ?? ""} ${n.comentario ?? ""} ${n.origem ?? ""}`).includes(alvo),
   );
+  const notasVisiveis = notasEncontradas.slice(0, limiteNotas);
+  const alvoReunir = achatar(procuraReunir.trim());
+  const candidatasEncontradas = reunindo
+    ? deFora.filter((n) => !alvoReunir || achatar(`${n.trecho ?? ""} ${n.comentario ?? ""} ${n.origem ?? ""}`).includes(alvoReunir))
+    : [];
+  const candidatasVisiveis = candidatasEncontradas.slice(0, limiteReunir);
+
+  useEffect(() => { setLimiteNotas(40); }, [procura, estudo.id]);
 
   return (
-    <article className={`estudo${estudo.fechado ? " fechado" : ""}`}>
+    <article
+      className={`estudo${semLink ? " estudo--pagina" : ""}${resumido ? " estudo--resumido" : ""}${estudo.fechado ? " fechado" : ""}`}
+      aria-labelledby={`estudo-titulo-${estudo.id}`}
+    >
       <header id="estudo-inicio">
         <div>
-          <h2>
-            {/* Na lista o titulo leva ao estudo sozinho; na pagina dele, o
-                `semLink` tira o link para o titulo nao apontar para onde a
-                pessoa ja esta. */}
-            {semLink ? estudo.nome : <Link to={`/estudo/${estudo.id}`}>{estudo.nome}</Link>}
-          </h2>
+          {/* No detalhe, o nome é o título da PÁGINA e portanto é `h1`. Na
+              lista ele continua `h2`, porque cada cartão é uma entrada sob o
+              título Estudos. A aparência parecida escondia uma hierarquia
+              errada para leitor de tela e para a estrutura do documento. */}
+          {semLink
+            ? <h1 id={`estudo-titulo-${estudo.id}`}>{estudo.nome}</h1>
+            : (
+              <h2 id={`estudo-titulo-${estudo.id}`}>
+                <Link to={`/estudo/${estudo.id}`}>{estudo.nome}</Link>
+              </h2>
+            )}
           {/* O CENTRO em destaque, e não como legenda. É ele que o estudo é;
               o nome é só como se chama. */}
-          {estudo.sobre && <p className="estudo-sobre">{estudo.sobre}</p>}
+          {estudo.sobre && (
+            <>
+              <p className={`estudo-sobre${semLink && estudo.sobre.length > 420 && !sobreAberto ? " estudo-sobre--recolhido" : ""}`}>
+                {estudo.sobre}
+              </p>
+              {semLink && estudo.sobre.length > 420 && (
+                <button
+                  type="button"
+                  className="estudo-sobre-alternar"
+                  aria-expanded={sobreAberto ? "true" : "false"}
+                  onClick={() => setSobreAberto((v) => !v)}
+                >
+                  {sobreAberto ? "Recolher pergunta" : "Ler pergunta inteira"}
+                </button>
+              )}
+            </>
+          )}
         </div>
         {estudo.fechado && <span className="estudo-selo">respondido</span>}
       </header>
 
       <p className="estudo-resumo">
-        <span className="dado">{estudo.notas.length}</span>{" "}
-        {estudo.notas.length === 1 ? "nota" : "notas"}
+        <span className="dado">{quantidadeDeNotas}</span>{" "}
+        {quantidadeDeNotas === 1 ? "nota" : "notas"}
         {estudo.livros.length > 0 && (
           <> · de <span className="dado">{estudo.livros.length}</span>{" "}
           {estudo.livros.length === 1 ? "livro" : "livros"}</>
         )}
       </p>
+
+      <div className={semLink ? "estudo-detalhe-corpo" : "estudo-detalhe-corpo--lista"}>
+      {semLink && trilha}
+      <div className={semLink ? "estudo-detalhe-conteudo" : "estudo-detalhe-conteudo--lista"}>
 
       {/* LIVROS — a faixa de capas do nó 966:29743.
           Ela dizia " · de Malha Urbana, Sequência Noturna" em texto cinza: para
@@ -83,10 +129,12 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoApagarNo
           entra com a caixa vazia e o nome dentro. Sumir com ele porque não há
           arquivo seria o produto negar o que a própria nota diz. */}
       {estudo.livros.length > 0 && (
-        <div className="estudo-livros" id="estudo-livros">
-          <h3>Livros</h3>
+        <section className="estudo-livros" id="estudo-livros" aria-labelledby={`estudo-livros-titulo-${estudo.id}`}>
+          {semLink
+            ? <h2 id={`estudo-livros-titulo-${estudo.id}`}>Livros</h2>
+            : <h3 id={`estudo-livros-titulo-${estudo.id}`}>Livros</h3>}
           <ul>
-            {estudo.livros.map((l) => (
+            {estudo.livros.slice(0, resumido ? 5 : estudo.livros.length).map((l) => (
               <li key={l.id ?? l.titulo}>
                 {l.id ? (
                   <Link
@@ -110,8 +158,13 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoApagarNo
                 )}
               </li>
             ))}
+            {resumido && estudo.livros.length > 5 && (
+              <li className="estudo-livros-restantes" aria-label={`Mais ${estudo.livros.length - 5} livros`}>
+                <span>+<span className="dado">{estudo.livros.length - 5}</span></span>
+              </li>
+            )}
           </ul>
-        </div>
+        </section>
       )}
 
       {/* "COMO ISSO SE FORMOU" — o título que o nó 895:8260 põe sobre as notas.
@@ -119,8 +172,10 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoApagarNo
           foi juntado em volta: sem o título, as notas parecem o estudo inteiro
           em vez da resposta que se acumulou. */}
       {!resumido && estudo.notas.length > 0 && (
-        <div className="estudo-formou" id="estudo-formou">
-          <h3>Como isso se formou</h3>
+        <section className="estudo-formou" id="estudo-formou" aria-labelledby={`estudo-formou-titulo-${estudo.id}`}>
+          {semLink
+            ? <h2 id={`estudo-formou-titulo-${estudo.id}`}>Como isso se formou</h2>
+            : <h3 id={`estudo-formou-titulo-${estudo.id}`}>Como isso se formou</h3>}
           {estudo.notas.length > 3 && (
             <Campo
               tipo="search"
@@ -136,10 +191,11 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoApagarNo
               Nenhuma nota deste estudo combina com o que você procurou.
             </p>
           )}
-        </div>
+        </section>
       )}
 
       {!resumido && estudo.notas.length > 0 && (
+        <>
         <ul className="estudo-notas" data-clarity-mask="true">
           {notasVisiveis.map((n) => (
             <li key={n.id}>
@@ -187,6 +243,12 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoApagarNo
             </li>
           ))}
         </ul>
+        {notasVisiveis.length < notasEncontradas.length && (
+          <Botao tom="secundaria" onClick={() => setLimiteNotas((n) => n + 40)}>
+            Mostrar mais <span className="dado">{Math.min(40, notasEncontradas.length - notasVisiveis.length)}</span>
+          </Botao>
+        )}
+        </>
       )}
 
       {!resumido && !estudo.notas.length && (
@@ -213,18 +275,33 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoApagarNo
         <Botao tom="secundaria" onClick={() => aoApagar(estudo.id)}>Apagar o estudo</Botao>
       </footer>
       )}
+      </div>
+      </div>
 
-      <Folha
+      {reunindo && <Folha
         aberta={reunindo}
         titulo={`Reunir em "${estudo.nome}"`}
-        aoFechar={() => setReunindo(false)}
+        aoFechar={() => { setReunindo(false); setProcuraReunir(""); setLimiteReunir(40); }}
       >
         <p>
           As notas que você tem e que ainda não estão neste estudo. A mesma nota
           pode estar em mais de um.
         </p>
+        {deFora.length > 12 && (
+          <Campo
+            tipo="search"
+            rotulo="Buscar entre as notas disponíveis"
+            rotuloOculto
+            placeholder="Buscar trecho, comentário ou origem"
+            value={procuraReunir}
+            onChange={(e) => { setProcuraReunir(e.target.value); setLimiteReunir(40); }}
+          />
+        )}
+        <p className="reunir-contagem" role="status">
+          {candidatasEncontradas.length} {candidatasEncontradas.length === 1 ? "nota encontrada" : "notas encontradas"}
+        </p>
         <ul className="reunir-lista">
-          {deFora.map((n) => (
+          {candidatasVisiveis.map((n) => (
             <li key={n.id}>
               <button
                 type="button"
@@ -242,7 +319,12 @@ export function Estudo({ estudo, notasDisponiveis, aoMudar, aoApagar, aoApagarNo
             </li>
           ))}
         </ul>
-      </Folha>
+        {candidatasVisiveis.length < candidatasEncontradas.length && (
+          <Botao tom="secundaria" onClick={() => setLimiteReunir((n) => n + 40)}>
+            Mostrar mais notas
+          </Botao>
+        )}
+      </Folha>}
     </article>
   );
 }
@@ -325,9 +407,14 @@ const RECORTES = [
   { id: "pergunta", rotulo: "Por pergunta" },
 ];
 
-export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, aoMudar, aoApagar, aoApagarNota, aoReunir, aoTirar, aoReler }) {
+export function Estudos({
+  estudos = [], notas = [], livros = [], erro, totalEstudos = estudos.length, temMais = false,
+  notaIdsReunidas = [],
+  aoBuscar, aoCarregarMais, aoCriar, aoMudar, aoApagar, aoApagarNota, aoReunir, aoTirar, aoReler,
+}) {
   const estreito = useEstreito();
   const limiteDasSoltas = estreito ? LIMITE_DAS_SOLTAS_NO_TELEFONE : LIMITE_DAS_SOLTAS;
+  const loteDeEstudos = estreito ? 12 : 24;
   const [criando, setCriando] = useState(false);
   const [nome, setNome] = useState("");
   const [sobre, setSobre] = useState("");
@@ -342,6 +429,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
      perguntas diferentes sobre o mesmo material, e por isso não são duas telas:
      "o que eu estou juntando" e "o que eu estou lendo". */
   const [vista, setVista] = useState("lista");
+  const [limiteEstudos, setLimiteEstudos] = useState(loteDeEstudos);
   /* "VOCÊ LIGOU" — nó 895:8849. Os assuntos que apareceram no acervo sem
      ninguém organizar nada. É a promessa da Apresentação ganhando tela: "o que
      você marcou em livros diferentes sobre o mesmo assunto se encontra". */
@@ -495,7 +583,9 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
    * A conta é feita AQUI e não no servidor: as duas listas já chegam inteiras
    * para desenhar os estudos, e uma rota nova só para subtrair uma da outra
    * seria uma ida à rede para uma diferença de conjuntos. */
-  const reunidas = new Set(estudos.flatMap((e) => (e.notas ?? []).map((n) => n.id)));
+  const reunidas = new Set(notaIdsReunidas.length
+    ? notaIdsReunidas
+    : estudos.flatMap((e) => e.nota_ids ?? (e.notas ?? []).map((n) => n.id)));
   /* "Fora de estudo" é de onde se PUXA para montar um estudo, e rascunho não
      entra em estudo nenhum. Listá-lo aqui seria oferecer o que será recusado. */
   const soltas = notas.filter((n) => !reunidas.has(n.id) && n.estado !== "rascunho");
@@ -520,28 +610,33 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
     </div>
   );
 
-  const alvo = achatar(procura.trim());
-
   /* O QUE CADA RECORTE CONTA. Os três olham o mesmo acervo de ângulos
    * diferentes, e o número ao lado do rótulo é o que a pessoa vai encontrar se
    * clicar — não um total genérico. */
   const contaDoRecorte = {
-    estudos: estudos.length,
+    estudos: totalEstudos,
     notas: notas.length,
     /* "Por pergunta" agrupa pelas perguntas que TÊM nota reunida: uma pergunta
      * sem nenhuma nota não é um agrupamento, é um estudo vazio, e ele já
      * aparece no recorte de Estudos. */
-    pergunta: estudos.filter((e) => (e.notas ?? []).length > 0).length,
+    pergunta: estudos.filter((e) => (e.total_notas ?? (e.notas ?? []).length) > 0).length,
   };
 
-  const visiveis = estudos
-    .filter((e) =>
-      !alvo ||
-      achatar(
-        [e.nome, e.sobre, ...(e.notas ?? []).map((n) => `${n.trecho ?? ""} ${n.comentario ?? ""}`),
-         ...(e.livros ?? []).map((l) => l.titulo)].join(" "),
-      ).includes(alvo),
-    );
+  /* O servidor já procura também dentro das notas. Repetir o filtro aqui
+     apagaria justamente um estudo encontrado por um trecho que não veio no
+     resumo paginado. */
+  const visiveis = estudos;
+  const estudosNaPagina = visiveis.slice(0, limiteEstudos);
+
+  useEffect(() => { setLimiteEstudos(loteDeEstudos); }, [procura, recorte, vista, loteDeEstudos]);
+
+  useEffect(() => {
+    if (!aoBuscar) return undefined;
+    const espera = window.setTimeout(() => aoBuscar(procura), procura ? 250 : 0);
+    return () => window.clearTimeout(espera);
+    // A função muda quando o cursor muda; a busca muda apenas com o texto.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [procura]);
 
   return (
     <div className="mesa">
@@ -579,16 +674,14 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
             </p>
           </div>
 
-          {estudos.length > 0 && (
-            <Campo
-              tipo="search"
-              rotulo="Buscar nos estudos"
-              rotuloOculto
-              placeholder="Buscar em livros, notas e contextos"
-              value={procura}
-              onChange={(e) => setProcura(e.target.value)}
-            />
-          )}
+          <Campo
+            tipo="search"
+            rotulo="Buscar nos estudos"
+            rotuloOculto
+            placeholder="Buscar em livros, notas e contextos"
+            value={procura}
+            onChange={(e) => setProcura(e.target.value)}
+          />
         </header>
 
         {erro && <p className="estudos-erro" role="alert">{erro}</p>}
@@ -636,16 +729,16 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
           </Botao>
         </div>
 
-        {!estudos.length && (
+        {!estudos.length && !procura && (
           <p className="estudos-vazio">
             Nenhum estudo ainda. Um estudo começa com uma pergunta que você quer
             responder — ou com uma afirmação que quer sustentar.
           </p>
         )}
 
-        {estudos.length > 0 && !visiveis.length && (
+        {!estudos.length && procura && (
           <p className="estudos-vazio">
-            Nenhum estudo neste recorte. Os outros continuam nos seus.
+            Nenhum estudo combina com “{procura}”. Limpe a busca para ver todos.
           </p>
         )}
 
@@ -865,7 +958,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
             dentro da fileira e passou a medir 974px numa página de 1222 — a
             "div central com 2 larguras sem necessidade" que o Erik viu. */}
         <div className="estudos-lista" id="estudos-lista" hidden={recorte !== "estudos" || vista !== "lista"}>
-          {visiveis.map((e) => (
+          {estudosNaPagina.map((e) => (
             <Estudo
               key={e.id}
               estudo={e}
@@ -878,6 +971,19 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
               resumido
             />
           ))}
+          {(estudosNaPagina.length < visiveis.length || temMais) && (
+            <div className="estudos-carregar-mais">
+              <p>
+                Mostrando <span className="dado">{estudosNaPagina.length}</span> de <span className="dado">{totalEstudos}</span> estudos.
+              </p>
+              <Botao tom="secundaria" onClick={async () => {
+                setLimiteEstudos((n) => n + loteDeEstudos);
+                if (temMais) await aoCarregarMais?.();
+              }}>
+                Mostrar mais estudos
+              </Botao>
+            </div>
+          )}
         </div>
 
         {/* A TRILHA VIVE AQUI, e não no topo da página.
@@ -924,17 +1030,22 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
             mais honesto que anunciar ausência. */}
         {ligou?.grupos?.length > 0 && (
           <section className="estudos-ligou" id="estudos-ligou">
-            <h2>Parecem do mesmo assunto</h2>
-            <p className="estudos-ligou-criterio">
-              Grupos de <span className="dado">{ligou.criterios.notas}</span> notas
-              ou mais que dividem pelo menos{" "}
-              <span className="dado">{ligou.criterios.palavras}</span> palavras de
-              assunto, em <span className="dado">{ligou.criterios.livros}</span>{" "}
-              livros ou mais. Nada foi organizado por você.
-              {ligou.olhadas >= ligou.teto && (
-                <> Das suas notas, as <span className="dado">{ligou.teto}</span> mais recentes entraram na conta.</>
-              )}
-            </p>
+            {/* O divisor pertence ao cabeçalho da região, como no frame
+                895:8492. Antes ele era a borda do primeiro resultado: quando o
+                grupo sumia ou mudava, a própria seção perdia seu fechamento. */}
+            <header className="estudos-ligou-cabecalho">
+              <h2>Parecem do mesmo assunto</h2>
+              <p className="estudos-ligou-criterio">
+                Grupos de <span className="dado">{ligou.criterios.notas}</span> notas
+                ou mais que dividem pelo menos{" "}
+                <span className="dado">{ligou.criterios.palavras}</span> palavras de
+                assunto, em <span className="dado">{ligou.criterios.livros}</span>{" "}
+                livros ou mais. Nada foi organizado por você.
+                {ligou.olhadas >= ligou.teto && (
+                  <> Das suas notas, as <span className="dado">{ligou.teto}</span> mais recentes entraram na conta.</>
+                )}
+              </p>
+            </header>
 
             <ul className="estudos-fios">
               {ligou.grupos.map((g) => {
@@ -1115,7 +1226,7 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
             no primeiro recorte. */}
         {recorte === "pergunta" && (
           <section className="estudos-por-pergunta" id="estudos-por-pergunta">
-            {estudos.filter((e) => (e.notas ?? []).length > 0).map((e) => (
+            {estudos.filter((e) => (e.total_notas ?? (e.notas ?? []).length) > 0).map((e) => (
               <article key={e.id} className="estudos-pergunta">
                 <h2>{e.sobre || e.nome}</h2>
                 <ul className="estudos-notas-cruas">
@@ -1127,9 +1238,14 @@ export function Estudos({ estudos = [], notas = [], livros = [], erro, aoCriar, 
                     </li>
                   ))}
                 </ul>
+                {(e.total_notas ?? e.notas.length) > e.notas.length && (
+                  <p className="estudos-sobre">
+                    Mostrando {e.notas.length} de <span className="dado">{e.total_notas}</span> notas. <Link to={`/estudo/${e.id}`}>Abrir o estudo inteiro</Link>.
+                  </p>
+                )}
               </article>
             ))}
-            {!estudos.some((e) => (e.notas ?? []).length > 0) && (
+            {!estudos.some((e) => (e.total_notas ?? (e.notas ?? []).length) > 0) && (
               <p className="estudos-vazio">
                 Nenhuma pergunta reuniu nota ainda. Um estudo com notas dentro aparece aqui.
               </p>

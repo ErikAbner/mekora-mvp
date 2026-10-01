@@ -8,6 +8,8 @@ O HTML resultante é um artefato intermediário salvo antes da conversão via Ca
 from __future__ import annotations
 
 import dataclasses
+import hashlib
+import json
 from pathlib import Path
 
 from app.services.document_extractor_service import TextBlock, extract_blocks
@@ -88,6 +90,7 @@ def translate_blocks(
     source: str,
     target: str,
     progress_callback=None,
+    checkpoint_path: Path | None = None,
 ) -> list[TextBlock]:
     """
     Traduz uma lista de TextBlocks mantendo a estrutura (id, type, order, metadata).
@@ -121,15 +124,62 @@ def translate_blocks(
 
     chunks = chunk_blocks(pedacos, max_chars=teto)
     translated_blocks: list[TextBlock] = []
+    joined_chunks = [_BLOCK_SEP.join(b.text for b in chunk) for chunk in chunks]
+    identity = ":".join((
+        type(engine).__name__,
+        str(getattr(engine, "model_name", "")),
+        str(getattr(engine, "model_dir", "")),
+        source,
+        target,
+    ))
+    cache: dict[str, str] = {}
+    if checkpoint_path is not None:
+        try:
+            raw = json.loads(checkpoint_path.read_text(encoding="utf-8"))
+            if raw.get("identity") == identity and isinstance(raw.get("translations"), dict):
+                cache = raw["translations"]
+        except Exception:
+            cache = {}
 
-    for chunk_idx, chunk in enumerate(chunks):
-        if progress_callback is not None:
+    def key_for(text: str) -> str:
+        return hashlib.sha256((identity + "\0" + text).encode("utf-8")).hexdigest()
+
+    def save_checkpoint() -> None:
+        if checkpoint_path is None:
+            return
+        checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = checkpoint_path.with_suffix(checkpoint_path.suffix + ".tmp")
+        temporary.write_text(
+            json.dumps({"identity": identity, "translations": cache}, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        temporary.replace(checkpoint_path)
+
+    translated_joined_chunks: list[str | None] = [cache.get(key_for(text)) for text in joined_chunks]
+    missing = [index for index, value in enumerate(translated_joined_chunks) if value is None]
+    supports_batch = callable(getattr(type(engine), "translate_many", None))
+    batch_size = 4 if supports_batch else 1
+    for start in range(0, len(missing), batch_size):
+        indices = missing[start:start + batch_size]
+        if progress_callback is not None and indices:
             progress_callback(
-                "translate", chunk_idx, len(chunks),
-                f"Traduzindo bloco {chunk_idx + 1} de {len(chunks)}",
+                "translate", indices[0], len(chunks),
+                f"Traduzindo bloco {indices[0] + 1} de {len(chunks)}",
             )
-        joined = _BLOCK_SEP.join(b.text for b in chunk)
-        translated_joined = engine.translate(joined, source, target)
+        texts = [joined_chunks[index] for index in indices]
+        if supports_batch:
+            results = engine.translate_many(texts, source, target)  # type: ignore[attr-defined]
+            if len(results) != len(texts):
+                results = [engine.translate(text, source, target) for text in texts]
+        else:
+            results = [engine.translate(text, source, target) for text in texts]
+        for index, translated in zip(indices, results):
+            translated_joined_chunks[index] = translated
+            cache[key_for(joined_chunks[index])] = translated
+        save_checkpoint()
+
+    for chunk, translated_value in zip(chunks, translated_joined_chunks):
+        translated_joined = translated_value or ""
         parts = translated_joined.split(_BLOCK_SEP.strip())
 
         # Garante que o número de partes bate com o chunk mesmo se o motor
@@ -247,6 +297,7 @@ def run_translation_pipeline(
     translated = translate_blocks(
         blocks, engine, source_language, target_language,
         progress_callback=progress_callback,
+        checkpoint_path=output_html_path.with_suffix(".translation-checkpoint.json"),
     )
     html = blocks_to_html(translated)
     output_html_path.parent.mkdir(parents=True, exist_ok=True)

@@ -24,6 +24,38 @@ if str(_backend_dir) not in sys.path:
     sys.path.insert(0, str(_backend_dir))
 
 
+@pytest.fixture(autouse=True)
+def ambiente_previsivel(monkeypatch):
+    """O `.env` da máquina não decide o resultado da suíte.
+
+    Duas configurações mudam o comportamento do produto inteiro, e as duas
+    podem existir na máquina de quem roda os testes: `CONVIDADOS`, que fecha
+    `/entrar/pedir` para quem não está na lista, e `MEKORA_DOMINIO`, que liga
+    os ramos de produção — cookie `Secure`, leitura do `X-Forwarded-For`,
+    convite obrigatório.
+
+    Sem isto a suíte passa aqui e falha na máquina do lado, o que é a pior
+    forma de teste: o vermelho não fala do código. Cada caso que PRECISA de um
+    dos dois o escreve, e o `monkeypatch` do caso vence este.
+    """
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "convidados", "")
+    monkeypatch.delenv("MEKORA_DOMINIO", raising=False)
+
+    # OS QUADRINHOS ENTRAM LIGADOS NA SUÍTE, e o produto sai desligado.
+    #
+    # A bandeira de 04/09 desliga a conversão de quadrinhos na instalação — o
+    # `kindlecomicconverter` saiu do PyPI e o `.cbr` é RAR aberto dentro do
+    # processo do servidor. Desligá-la também na suíte apagaria a prova de um
+    # pipeline inteiro: são mais de trinta arquivos de teste, e eles continuam
+    # valendo — o recurso está guardado, não demolido.
+    #
+    # O estado DESLIGADO, que é o que sobe, é provado por inteiro em
+    # `test_quadrinhos_desligados.py`, que sobrescreve isto nos dois sentidos.
+    monkeypatch.setenv("MEKORA_QUADRINHOS", "1")
+
+
 @pytest.fixture(scope="function")
 def tmp_storage(tmp_path, monkeypatch):
     """Redireciona todas as constantes de storage e CONFIG_PATH para tmp_path."""

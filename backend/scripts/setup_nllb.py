@@ -28,7 +28,10 @@ from pathlib import Path
 # ---------------------------------------------------------------------------
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
-_PROJECT_ROOT = _SCRIPT_DIR.parent
+# Este arquivo mora em ``backend/scripts``; a configuração do aplicativo usa a
+# raiz do repositório. ``_SCRIPT_DIR.parent`` apontava para ``backend`` e baixava
+# 2,3 GB num lugar que o próprio NLLB nunca consultava.
+_PROJECT_ROOT = _SCRIPT_DIR.parents[1]
 _MODEL_DIR = _PROJECT_ROOT / "storage" / "models" / "nllb"
 
 DEFAULT_MODEL = "facebook/nllb-200-distilled-600M"
@@ -54,8 +57,20 @@ def _check_deps() -> bool:
 
 
 def _is_model_ready(model_dir: Path) -> bool:
-    """True se o diretório existe e contém config.json (indicativo de modelo completo)."""
-    return model_dir.exists() and (model_dir / "config.json").exists()
+    """True somente quando configuração, tokenizador e pesos estão completos.
+
+    ``config.json`` sozinho também existe em downloads interrompidos. Esse era
+    justamente o estado que fazia o instalador dizer "pronto" para um modelo
+    que não conseguia traduzir nada.
+    """
+    if not model_dir.exists() or not (model_dir / "config.json").is_file():
+        return False
+    tokenizer_ready = any(
+        (model_dir / name).is_file()
+        for name in ("tokenizer.json", "sentencepiece.bpe.model")
+    )
+    weights_ready = any(model_dir.glob("model*.safetensors")) or any(model_dir.glob("pytorch_model*.bin"))
+    return tokenizer_ready and weights_ready
 
 
 def _download_model(model_name: str, model_dir: Path) -> bool:

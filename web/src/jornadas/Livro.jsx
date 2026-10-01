@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Cabecalho } from "../componentes/Cabecalho.jsx";
 import { Botao } from "../componentes/Botao.jsx";
 import { ConfiguracoesArquivo } from "../componentes/ConfiguracoesArquivo.jsx";
@@ -37,24 +37,9 @@ const ehSobreOLivro = (n) => !n.trecho && !ehRascunho(n);
 const ehMarcador = (n) => Boolean(n.trecho) && !n.comentario && !ehRascunho(n);
 const ehAnotacao = (n) => Boolean(n.trecho) && Boolean(n.comentario) && !ehRascunho(n);
 
-/* Cada linha só aparece quando há o que dizer. Uma ficha-arquivo com seis "—" descreve
- * a ausência de informação com a mesma ênfase da informação. */
-function Linha({ rotulo, children }) {
-  if (children === null || children === undefined || children === "") return null;
-  return (
-    <div className="ficha-arquivo-linha">
-      <dt>{rotulo}</dt>
-      <dd>{children}</dd>
-    </div>
-  );
-}
-
 export function Livro() {
   const { id } = useParams();
   const navegar = useNavigate();
-  const local = useLocation();
-  const voltarPara = local.state?.voltarPara || "/estante";
-  const voltarRotulo = local.state?.voltarRotulo || "Estante";
   const [livro, setLivro] = useState(null);
   const [notas, setNotas] = useState([]);
   const [onde, setOnde] = useState(null);
@@ -75,9 +60,16 @@ export function Livro() {
      recortes por tipo e um campo de busca. Sem eles, achar uma nota é rolar. */
   const [recorte, setRecorte] = useState("tudo");
   const [procura, setProcura] = useState("");
+  const [limiteNotas, setLimiteNotas] = useState(40);
   const [enviando, setEnviando] = useState(false);
   const [enviado, setEnviado] = useState(false);
   const [copiada, setCopiada] = useState(null);
+  const [notaEditando, setNotaEditando] = useState(null);
+  const [comentarioEditado, setComentarioEditado] = useState("");
+  const [salvandoNota, setSalvandoNota] = useState(false);
+  const [tituloAberto, setTituloAberto] = useState(false);
+  const [tituloTemCorte, setTituloTemCorte] = useState(false);
+  const tituloRef = useRef(null);
 
   useEffect(() => {
     let vivo = true;
@@ -113,6 +105,40 @@ export function Livro() {
     return () => { vivo = false; };
   }, [id, rodada]);
 
+  useEffect(() => { setLimiteNotas(40); }, [recorte, procura, id]);
+
+  const titulo = livro?.final_title || livro?.detected_title || livro?.original_filename || "";
+  const autor = livro?.final_author || livro?.detected_author || "";
+
+  /* TÍTULO EXTREMO É MEDIDO, NÃO ADIVINHADO PELO NÚMERO DE CARACTERES.
+   *
+   * Cento e vinte letras podem caber em duas linhas no computador e ocupar oito
+   * no telefone; um nome curto com uma palavra sem espaços pode fazer o inverso.
+   * A versão anterior usava `titulo.length > 180`, por isso o mesmo livro podia
+   * ganhar ou perder o controle de expansão sem relação com o espaço real.
+   *
+   * O `ResizeObserver` refaz a conta quando a coluna muda. Enquanto o título
+   * está aberto preservamos o último resultado — medir uma caixa sem o limite
+   * responderia apenas que ela cabe em si mesma. */
+  useEffect(() => {
+    const elemento = tituloRef.current;
+    if (!elemento || tituloAberto) return undefined;
+    const medirCorte = () => setTituloTemCorte(elemento.scrollHeight > elemento.clientHeight + 1);
+    medirCorte();
+    const observador = typeof ResizeObserver === "function" ? new ResizeObserver(medirCorte) : null;
+    observador?.observe(elemento);
+    window.addEventListener("resize", medirCorte);
+    return () => {
+      observador?.disconnect();
+      window.removeEventListener("resize", medirCorte);
+    };
+  }, [titulo, tituloAberto]);
+
+  useEffect(() => {
+    setTituloAberto(false);
+    setTituloTemCorte(false);
+  }, [id]);
+
   if (erro) {
     return (
       <div className="mesa">
@@ -131,9 +157,6 @@ export function Livro() {
     );
   }
 
-  const titulo = livro.final_title || livro.detected_title || livro.original_filename;
-  const autor = livro.final_author || livro.detected_author || "";
-
   /* A lista que a tela mostra: o recorte primeiro, a busca depois. As duas
      coisas são o mesmo filtro em cascata, e derivadas — não há uma segunda
      lista guardada para discordar da primeira. */
@@ -147,33 +170,15 @@ export function Livro() {
       : true,
     )
     .filter((n) => !alvo || achatar(`${n.trecho ?? ""} ${n.comentario ?? ""}`).includes(alvo));
-  const capa = (livro.thumbnails ?? [])[0];
+  const notasNaPagina = visiveis.slice(0, limiteNotas);
+  const capa = livro.cover_url || (livro.thumbnails ?? [])[0];
 
   return (
     <div className="mesa">
       <Cabecalho lugar="estante" />
 
       <main className="livro-pagina" data-clarity-mask="true">
-        {/* NÃO HÁ TRILHA NESTA FICHA. Decisão do Erik, 04/09: "pode remover essa
-            navegação, que nem era pra existir nessa tela".
-
-            Ela custava 248px da largura do topo — a coluna mais o vão —, e era
-            por causa dela que a capa não cabia nos 427 do nó `895:7684`. Sem a
-            trilha, o topo tem os 1222 inteiros que o desenho pede.
-
-            O QUE EU TINHA VISTO NO NÓ era uma coluna de linhas à esquerda do
-            bloco "O que ficou", e li como trilha. Em 06/09 eu tinha deixado em
-            aberto o que aquela coluna é; em 07/09 o Erik fechou sem precisar
-            responder: "Remover. Meu feedback 'navegação onde não deveria ter, e
-            errada' já respondia essa questão."
-
-            Ou seja: a pergunta era minha, não dele. O feedback original cobria
-            os dois casos, e eu tinha partido a decisão em duas para devolver
-            metade. Isso não se repete — antes de perguntar, ler se a resposta
-            já está no que ele escreveu. */}
         <div className="livro-pagina-corpo">
-        <Link to={voltarPara} className="livro-pagina-volta">← {voltarRotulo}</Link>
-
         <header className="livro-pagina-topo" id="livro-inicio">
           <div className="livro-pagina-capa">
             {capa ? (
@@ -191,7 +196,12 @@ export function Livro() {
                 lendo". Cinco decisões raras não merecem o mesmo peso visual da
                 ação que se faz sempre. */}
             <div className="livro-pagina-titulo">
-              <h1>{titulo}</h1>
+              <h1
+                ref={tituloRef}
+                className={!tituloAberto ? "livro-pagina-titulo-recolhido" : undefined}
+              >
+                {titulo}
+              </h1>
               <button
                 type="button"
                 className="livro-pagina-mais"
@@ -202,6 +212,16 @@ export function Livro() {
                 <span aria-hidden="true">⋮</span>
               </button>
             </div>
+            {tituloTemCorte && (
+              <button
+                type="button"
+                className="livro-pagina-titulo-alternar"
+                aria-expanded={tituloAberto ? "true" : "false"}
+                onClick={() => setTituloAberto((v) => !v)}
+              >
+                {tituloAberto ? "Recolher título" : "Mostrar título completo"}
+              </button>
+            )}
             {/* OS SELOS: o que o arquivo é, e em que pé ele está. O desenho os
                 põe logo abaixo do título. Cada um só aparece quando há o que
                 dizer — uma fileira de "—" descreve a ausência com a ênfase da
@@ -321,46 +341,37 @@ export function Livro() {
               <Link to={`/preparo/${id}`} className="livro-pagina-preparo">Ver o preparo</Link>
 
             </div>
+
+            {livro.paginas_sem_texto > 0 && !livro.is_scanned && (
+              <aside className="livro-pagina-aviso">
+                <p>
+                  <Icone src="/icones/icone-defeito.svg" />
+                  <span>
+                    <span className="dado">{livro.paginas_sem_texto}</span>{" "}
+                    {livro.paginas_sem_texto === 1
+                      ? "página ficou sem texto."
+                      : "páginas ficaram sem texto."}
+                  </span>
+                </p>
+                <Link to={`/preparo/${id}`} className="botao secundaria">Ver as páginas</Link>
+              </aside>
+            )}
           </div>
         </header>
 
-        {/* "TRÊS PÁGINAS FICARAM SEM TEXTO." — nós `895:7716` e `966:29091`.
-            
-            O desenho tem os dois: no computador é uma faixa com o aviso à
-            esquerda e o botão à direita; no telefone, os dois empilhados. É o
-            mesmo bloco, e por isso é um componente só que muda de direção.
-            
-            ELE SÓ APARECE QUANDO HÁ ALGUMA. "Nenhuma página sem texto" num
-            documento de texto é ruído em toda ficha — e não aparece em
-            digitalização, onde TODAS ficam sem texto antes do reconhecimento e o
-            número diria o óbvio com cara de defeito. A mesma guarda que o
-            Preparo já usava.
-            
-            O AVISO PRECISA DE SAÍDA. Antes este fato existia como linha da lista
-            "Este arquivo", sem ação nenhuma: a tela dizia que três páginas
-            abriram vazias e deixava a pessoa procurar o que fazer. O desenho põe
-            "Ver as páginas" ao lado, e é o Preparo — onde se confere o
-            reconhecimento página a página. */}
-        {livro.paginas_sem_texto > 0 && !livro.is_scanned && (
-          <aside className="livro-pagina-aviso">
-            <p>
-              <Icone src="/icones/icone-defeito.svg" />
-              <span>
-                <span className="dado">{livro.paginas_sem_texto}</span>{" "}
-                {livro.paginas_sem_texto === 1
-                  ? "página ficou sem texto."
-                  : "páginas ficaram sem texto."}
-              </span>
-            </p>
-            <Link to={`/preparo/${id}`} className="botao secundaria">Ver as páginas</Link>
-          </aside>
-        )}
-
         <section className="livro-pagina-secao" id="livro-o-que-ficou">
+          <nav className="livro-pagina-indice" aria-label="Nesta página">
+            <a href="#livro-inicio"><span aria-hidden="true" />Início</a>
+            <a href="#livro-o-que-ficou" aria-current="location"><span aria-hidden="true" />O que ficou</a>
+            {notas.slice(0, 3).map((n) => (
+              <a key={n.id} href={`#nota-${n.id}`} title={n.comentario || n.trecho || "Nota"}>
+                <span aria-hidden="true" />{n.comentario || n.trecho || "Nota"}
+              </a>
+            ))}
+            <a href="#livro-escrever"><span aria-hidden="true" />Escreva sobre o livro</a>
+          </nav>
           <div className="livro-pagina-o-que-ficou-conteudo">
-          <h2>
-            O que ficou <span className="dado">{notas.length}</span>
-          </h2>
+          <h2>O que ficou</h2>
           {!notas.length && (
             <p className="livro-pagina-nota">
               Nada marcado neste livro ainda. Selecione um trecho durante a
@@ -368,30 +379,17 @@ export function Livro() {
             </p>
           )}
 
-          {/* OS RECORTES E A BUSCA — nó 895:7631. Um livro lido chega a dezenas
-              de notas, e achar uma delas era rolar a lista inteira.
-
-              Os três recortes do desenho são "marcadores", "anotações" e
-              "rascunho". Os dois primeiros existem aqui e são distinguíveis pelo
-              que a nota TEM: trecho sem comentário é marcador, com comentário é
-              anotação, e sem trecho é o que foi escrito sobre o livro. Rascunho
-              não existe no modelo — não há campo de estado na nota —, e por isso
-              não está aqui: um recorte que devolve sempre zero não é filtro, é
-              promessa. */}
-          {notas.length > 1 && (
+          {/* Os três recortes seguem o frame 895:7631. Rascunhos só acrescentam
+              um quarto recorte quando realmente existem; assim a função já
+              disponível não desaparece, mas também não altera o estado comum. */}
+          {notas.length > 0 && (
             <div className="livro-pagina-filtro">
-              <nav className="recortes" aria-label="Recortes das notas">
+              <nav className="recortes soltos" aria-label="Recortes das notas">
                 {[
-                  ["tudo", "Tudo", notas.length],
-                  ["marcadores", "Marcadores", notas.filter(ehMarcador).length],
-                  ["anotacoes", "Anotações", notas.filter(ehAnotacao).length],
-                  ["sobre", "Sobre o livro", notas.filter(ehSobreOLivro).length],
-                  /* RASCUNHO — o terceiro recorte do desenho, que ficou de fora
-                     até o Erik dizer o que ele é: nota começada e não terminada,
-                     abandonada, e que por isso não vai para um estudo. Ele é
-                     EXCLUSIVO dos outros três: uma nota marcada aparece aqui e
-                     não lá, senão a soma dos recortes passaria do total. */
-                  ["rascunho", "Rascunhos", notas.filter(ehRascunho).length],
+                  ["marcadores", "marcados", notas.filter(ehMarcador).length],
+                  ["anotacoes", "anotações", notas.filter(ehAnotacao).length],
+                  ["sobre", "com nota", notas.filter(ehSobreOLivro).length],
+                  ...(notas.some(ehRascunho) ? [["rascunho", "rascunhos", notas.filter(ehRascunho).length]] : []),
                 ].map(([chave, rotulo, quantos]) => (
                   <button
                     key={chave}
@@ -399,20 +397,22 @@ export function Livro() {
                     aria-pressed={chave === recorte ? "true" : "false"}
                     disabled={quantos === 0 && chave !== recorte}
                     title={quantos === 0 && chave !== recorte ? `Nenhuma nota em ${rotulo.toLowerCase()}` : null}
-                    onClick={() => setRecorte(chave)}
+                    onClick={() => setRecorte((atual) => atual === chave ? "tudo" : chave)}
                   >
                     <span className="dado">{quantos}</span> {rotulo}
                   </button>
                 ))}
               </nav>
-              <Campo
-                tipo="search"
-                rotulo="Buscar nas notas deste livro"
-                rotuloOculto
-                placeholder="Buscar no trecho e no comentário"
-                value={procura}
-                onChange={(e) => setProcura(e.target.value)}
-              />
+              <div className="livro-pagina-busca">
+                <Campo
+                  tipo="search"
+                  rotulo="Buscar nas notas deste livro"
+                  rotuloOculto
+                  placeholder="Buscar em livros, notas e contexto"
+                  value={procura}
+                  onChange={(e) => setProcura(e.target.value)}
+                />
+              </div>
             </div>
           )}
 
@@ -423,15 +423,73 @@ export function Livro() {
           )}
 
           <ul className="livro-pagina-notas">
-            {visiveis.map((n) => (
+            {notasNaPagina.map((n) => (
               <li key={n.id} id={`nota-${n.id}`} data-cor={n.cor}>
+                <button
+                  type="button"
+                  className="livro-pagina-apagar-nota"
+                  aria-label="Apagar nota"
+                  onClick={async () => {
+                    const frase = n.trecho || n.comentario || "esta nota";
+                    if (!window.confirm(`Apagar “${frase.slice(0, 60)}”? Não dá para desfazer.`)) return;
+                    try {
+                      await apagarNota(id, n.id);
+                      setNotas((tudo) => tudo.filter((x) => x.id !== n.id));
+                    } catch (e) {
+                      setRecado(e.message);
+                    }
+                  }}
+                >
+                  <Icone src="/icones/icone-remover.svg" />
+                </button>
                 {/* NOTA SEM TRECHO NÃO VIRA CAIXA VAZIA COLORIDA. A nota escrita
                     sobre o livro não aponta para frase nenhuma, e um bloco de cor
                     sem texto dentro é uma citação de nada. */}
                 {n.trecho
                   ? <blockquote className="trecho-citado" data-cor={n.cor}>{n.trecho}</blockquote>
                   : null}
-                {n.comentario && <p className="livro-pagina-comentario">{n.comentario}</p>}
+                {notaEditando === n.id ? (
+                  <div className="livro-pagina-edicao-nota">
+                    <textarea
+                      aria-label="Texto da nota"
+                      value={comentarioEditado}
+                      onChange={(e) => setComentarioEditado(e.target.value)}
+                    />
+                    <div>
+                      <Botao
+                        tom="primaria"
+                        porque={salvandoNota ? "Guardando…" : null}
+                        onClick={async () => {
+                          setSalvandoNota(true);
+                          try {
+                            const nova = await editarNota(id, n.id, { comentario: comentarioEditado.trim() });
+                            setNotas((tudo) => tudo.map((x) => x.id === n.id ? { ...x, comentario: nova.comentario } : x));
+                            setNotaEditando(null);
+                          } catch (e) {
+                            setRecado(e.message);
+                          } finally {
+                            setSalvandoNota(false);
+                          }
+                        }}
+                      >Guardar</Botao>
+                      <button type="button" onClick={() => setNotaEditando(null)}>Cancelar</button>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const virar = ehRascunho(n) ? "" : "rascunho";
+                          try {
+                            const nova = await editarNota(id, n.id, { estado: virar });
+                            setNotas((tudo) => tudo.map((x) => x.id === n.id ? { ...x, estado: nova.estado } : x));
+                          } catch (e) {
+                            setRecado(e.message);
+                          }
+                        }}
+                      >
+                        {ehRascunho(n) ? "Finalizar rascunho" : "Marcar como rascunho"}
+                      </button>
+                    </div>
+                  </div>
+                ) : n.comentario ? <p className="livro-pagina-comentario">{n.comentario}</p> : null}
                 <p className="livro-pagina-lugar">
                   {/* CAPÍTULO, e não página: a página muda quando a fonte muda,
                       e o número que se guarda é outro. */}
@@ -455,8 +513,17 @@ export function Livro() {
                 )}
 
                 <div className="livro-pagina-acoes-nota">
-                  <Botao
-                    tom="secundaria"
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNotaEditando(n.id);
+                      setComentarioEditado(n.comentario || "");
+                    }}
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
                     onClick={async () => {
                       const onde_ =
                         n.fonte === "livro"
@@ -477,43 +544,21 @@ export function Livro() {
                     }}
                   >
                     {copiada === n.id ? "Copiado" : "Copiar com origem"}
-                  </Botao>
-                  <Botao
-                    tom="secundaria"
-                    onClick={async () => {
-                      const virar = ehRascunho(n) ? "" : "rascunho";
-                      try {
-                        const nova = await editarNota(id, n.id, { estado: virar });
-                        setNotas((tudo) => tudo.map((x) => (x.id === n.id ? { ...x, estado: nova.estado } : x)));
-                      } catch (e) {
-                        setRecado(e.message);
-                      }
-                    }}
-                  >
-                    {ehRascunho(n) ? "Não é mais rascunho" : "Marcar como rascunho"}
-                  </Botao>
-                  <Botao
-                    tom="secundaria"
-                    onClick={async () => {
-                      /* Apagar nota não tem volta, e o que se perde é o que a
-                         pessoa escreveu — a única coisa nesta tela que ela não
-                         conseguiria refazer. */
-                      const frase = n.trecho || n.comentario || "esta nota";
-                      if (!window.confirm(`Apagar “${frase.slice(0, 60)}”? Não dá para desfazer.`)) return;
-                      try {
-                        await apagarNota(id, n.id);
-                        setNotas((tudo) => tudo.filter((x) => x.id !== n.id));
-                      } catch (e) {
-                        setRecado(e.message);
-                      }
-                    }}
-                  >
-                    Apagar
-                  </Botao>
+                  </button>
                 </div>
               </li>
             ))}
           </ul>
+          {notasNaPagina.length < visiveis.length && (
+            <div className="livro-pagina-carregar-mais">
+              <p>
+                Mostrando <span className="dado">{notasNaPagina.length}</span> de <span className="dado">{visiveis.length}</span> notas.
+              </p>
+              <Botao tom="secundaria" onClick={() => setLimiteNotas((n) => n + 40)}>
+                Mostrar mais notas
+              </Botao>
+            </div>
+          )}
           </div>
         </section>
 
@@ -581,65 +626,6 @@ export function Livro() {
             </div>
         </section>
 
-        <section className="livro-pagina-secao" id="livro-arquivo">
-          <h2>Este arquivo</h2>
-          <p className="livro-pagina-nota">
-            O que o Mekora fez com o documento que você enviou.
-          </p>
-          <dl className="ficha-arquivo">
-            <Linha rotulo="Formato de origem">
-              {livro.input_format ? livro.input_format.toUpperCase() : null}
-            </Linha>
-            <Linha rotulo="Páginas">
-              {livro.page_count ? <span className="dado">{livro.page_count}</span> : null}
-            </Linha>
-            <Linha rotulo="Documento digitalizado">
-              {/* `is_scanned` é `Optional` de propósito: "não sei" é resposta
-                  legítima, e diferente de "não é". Por isso a comparação é
-                  estrita — `!livro.is_scanned` trataria as duas como iguais. */}
-              {livro.is_scanned === true
-                ? "Sim — o texto foi reconhecido por OCR"
-                : livro.is_scanned === false
-                  ? "Não — o texto já estava no arquivo"
-                  : null}
-            </Linha>
-            <Linha rotulo="Texto reconhecido">
-              {livro.ocr_used ? "Sim, por OCR" : null}
-            </Linha>
-            {/* "Páginas sem texto" SAIU DAQUI. O mesmo fato agora é a faixa de
-                aviso, lá em cima, com "Ver as páginas" ao lado — e o desenho
-                (`895:7631`) tem só a faixa, nunca as duas. Dizer o mesmo número
-                duas vezes na mesma tela é o que faz uma delas envelhecer sozinha.
-                "Páginas que não abriram", abaixo, é outro fato e continua. */}
-            <Linha rotulo="Páginas que não abriram">
-              {livro.paginas_ilegiveis > 0
-                ? <><span className="dado">{livro.paginas_ilegiveis}</span> de{" "}
-                  <span className="dado">{livro.page_count}</span> — o que não abre não entra no livro</>
-                : null}
-            </Linha>
-            <Linha rotulo="Capítulos no arquivo">
-              {livro.capitulos_declarados > 0
-                ? <><span className="dado">{livro.capitulos_declarados}</span> declarados no sumário do próprio arquivo</>
-                : null}
-            </Linha>
-            <Linha rotulo="Traduzido">
-              {livro.translation_enabled
-                ? `De ${livro.source_language || "?"} para ${livro.target_language || "?"}`
-                : null}
-            </Linha>
-            <Linha rotulo="Quadrinho">
-              {livro.comic_mode ? (livro.manga_rtl ? "Sim, lido da direita para a esquerda" : "Sim") : null}
-            </Linha>
-            <Linha rotulo="No seu Kindle">
-              {livro.kindle_sent ? "Enviado" : "Ainda não enviado"}
-            </Linha>
-            <Linha rotulo="Chegou aqui em">
-              {livro.created_at ? new Date(livro.created_at).toLocaleDateString("pt-BR", {
-                day: "numeric", month: "long", year: "numeric",
-              }) : null}
-            </Linha>
-          </dl>
-        </section>
         </div>
       </main>
 

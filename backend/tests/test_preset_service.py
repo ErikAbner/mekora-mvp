@@ -29,6 +29,7 @@ def test_ensure_system_presets_creates_presets(tmp_path: Path, monkeypatch) -> N
     raw = json.loads((tmp_path / "config_presets.json").read_text())
     system_ids = {p["id"] for p in raw if p.get("is_system")}
     assert "system-doc-pt-en-argos" in system_ids
+    assert "system-doc-read-pt-nllb" in system_ids
     assert "system-manga-pb-rtl" in system_ids
 
 
@@ -204,6 +205,16 @@ def test_extract_job_updates_returns_correct_fields(tmp_path: Path, monkeypatch)
     assert "is_system" not in updates
 
 
+def test_old_translation_preset_gets_compatible_rule(tmp_path: Path, monkeypatch) -> None:
+    """Presets salvos antes de translation_rule continuam traduzindo."""
+    import app.services.preset_service as svc
+    monkeypatch.setattr(svc, "PRESET_PATH", tmp_path / "config_presets.json")
+    svc.PRESET_PATH.write_text(json.dumps([{
+        "id": "legacy", "name": "Antigo", "translation_enabled": True,
+    }]), encoding="utf-8")
+    assert svc.get_preset("legacy")["translation_rule"] == "always"
+
+
 # ---------------------------------------------------------------------------
 # Endpoints via TestClient
 # ---------------------------------------------------------------------------
@@ -288,3 +299,12 @@ def test_api_duplicate_system_preset(client, tmp_storage: Path) -> None:
     assert data["is_system"] is False
     assert data["name"] == "Meu Mangá RTL"
     assert data["manga_rtl"] is True
+
+
+def test_receitas_pessoais_nao_vazam_entre_contas(tmp_storage: Path) -> None:
+    from app.services import preset_service as svc
+
+    criada = svc.create_preset({"name": "Só minha"}, owner_id=41)
+    assert svc.get_preset(criada["id"], owner_id=41) is not None
+    assert svc.get_preset(criada["id"], owner_id=42) is None
+    assert criada["id"] not in {p["id"] for p in svc.list_presets(owner_id=42)}

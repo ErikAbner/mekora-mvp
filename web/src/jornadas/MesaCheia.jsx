@@ -20,6 +20,7 @@ import { Botao } from "../componentes/Botao.jsx";
 import { Campo } from "../componentes/Campo.jsx";
 import { CapaDeReserva } from "../componentes/CapaDeReserva.jsx";
 import { erroParaPessoa } from "../mensagem-de-erro.js";
+import { apagarPreset, atualizarPreset, criarPreset, duplicarPreset, listarPresets } from "../../../contrato/api.js";
 import "./mesa-cheia.css";
 /* A PROMESSA E A ÁREA DE SOLTAR SÃO AS MESMAS DAS DUAS TELAS, e o CSS delas mora
  * no arquivo da mesa vazia. Importar aqui é o que torna a dependência explícita:
@@ -54,14 +55,13 @@ const MOVIMENTO_DA_FAIXA = {
   passoDoTeclado: 312,
 };
 
-/* OS RÓTULOS SÃO OS DO DESENHO — nó 895:9736: Enviando, Na fila, Pronto, Com
- * erro. O de `trabalhando` dizia "Em preparo", que é também o nome da SEÇÃO, e
- * a tela se contradizia: "Em preparo" no topo e "0 Em preparo" logo abaixo.
+/* O RÓTULO DO GRUPO PRECISA COBRIR MAIS DE UMA ETAPA.
  *
- * Eu tinha resolvido trocando o nome da seção para "A mesa" — o que consertou a
- * contradição e afastou a tela do desenho. O desenho não tem esse problema:
- * lá a seção é "Em preparo" e o estado é "Enviando". */
-/* A ORDEM É A DO NÓ 895:9348 — Enviando, Na fila, Pronto, Com erro —, e não a
+ * O desenho chamava todo trabalho ativo de "Enviando", mas a fila real também
+ * analisa, traduz e converte. Na prática isto produzia a contradição visível
+ * "Agora: convertendo" ao lado de "Enviando". O grupo usa "Em andamento" e o
+ * cartão nomeia a etapa exata; assim resumo e detalhe não disputam a verdade. */
+/* A ORDEM É A DO NÓ 895:9348 — em andamento, na fila, pronto, com erro —, e não a
  * ordem em que o contrato lista os estados. Ela segue o caminho do arquivo pela
  * tela: primeiro o que está acontecendo agora, depois o que espera, depois os
  * dois fins. `Object.keys` de um literal preserva a ordem de escrita, então é
@@ -72,7 +72,7 @@ const ESTADOS = {
      esperando senha no meio de trinta é o que a pessoa precisa ver antes de
      tudo. */
   precisa: { rotulo: "Precisa de você", classe: "precisa" },
-  trabalhando: { rotulo: "Enviando", classe: "enviando" },
+  trabalhando: { rotulo: "Em andamento", classe: "enviando" },
   fila: { rotulo: "Na fila", classe: "fila" },
   pronto: { rotulo: "Pronto", classe: "pronto" },
   erro: { rotulo: "Com erro", classe: "erro" },
@@ -107,7 +107,55 @@ const BLOQUEIOS = {
   },
 };
 
-function Arquivo({ nome, estado, feito, total, progresso, detalhe, etapa, motivo, digitalizado, preparo }) {
+const ROTULOS_DE_ETAPA = {
+  analisando: "Analisando",
+  convertendo: "Convertendo",
+  traduzindo: "Traduzindo",
+  exportando: "Exportando",
+  "enviando ao Kindle": "Enviando ao Kindle",
+};
+
+function tempoDecorrido(comeco, agora) {
+  const inicio = Date.parse(comeco || "");
+  if (!Number.isFinite(inicio)) return null;
+  const segundos = Math.max(0, Math.floor((agora - inicio) / 1000));
+  const minutos = Math.floor(segundos / 60);
+  const resto = String(segundos % 60).padStart(2, "0");
+  return `${String(minutos).padStart(2, "0")}:${resto}`;
+}
+
+function ProgressoDoArquivo({ nome, progresso, andamento }) {
+  const [agora, setAgora] = useState(Date.now());
+  const contavel = typeof progresso === "number";
+
+  useEffect(() => {
+    if (contavel || !andamento?.comeco) return undefined;
+    const timer = window.setInterval(() => setAgora(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [andamento?.comeco, contavel]);
+
+  const tempo = tempoDecorrido(andamento?.comeco, agora);
+  return (
+    <div className="arquivo-andamento">
+      <div
+        className={`barra${contavel ? "" : " indeterminada"}`}
+        role="progressbar"
+        aria-valuenow={contavel ? progresso : undefined}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={contavel ? `${nome}: ${progresso}%` : `${nome}: conversão em andamento, sem estimativa`}
+      >
+        <div className="barra-feita" style={contavel ? { inlineSize: `${progresso}%` } : undefined} />
+      </div>
+      <p className="arquivo-andamento-medida">
+        <span>{contavel ? `${progresso}% concluído` : andamento?.recado || "Atividade detectada · sem estimativa"}</span>
+        {tempo && <span><span className="dado">{tempo}</span> decorridos</span>}
+      </p>
+    </div>
+  );
+}
+
+function Arquivo({ nome, estado, feito, total, progresso, andamento, detalhe, etapa, motivo, digitalizado, preparo }) {
   const e = ESTADOS[estado];
   /* O motivo vem do backend e É mostrado. O contrato o preserva justamente para
    * isto — uma linha que diz "Com erro" e cala o porquê faz o usuário abrir um
@@ -134,20 +182,13 @@ function Arquivo({ nome, estado, feito, total, progresso, detalhe, etapa, motivo
             aqui em texto desde sempre. O que faltava era o anúncio quando ela
             MUDA, e isso vive no resumo acima: anunciar cada linha faria um lote
             de dez arquivos falar dez vezes por transição. */}
-          <span className="arquivo-estado">{e.rotulo}</span>
+          <span className="arquivo-estado">
+            {estado === "trabalhando" ? ROTULOS_DE_ETAPA[etapa] || "Em andamento" : e.rotulo}
+          </span>
         </div>
 
-      {progresso != null && (
-        <div
-          className="barra"
-          role="progressbar"
-          aria-valuenow={progresso}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-label={`${nome}: ${progresso}%`}
-        >
-          <div className="barra-feita" style={{ inlineSize: `${progresso}%` }} />
-        </div>
+      {estado === "trabalhando" && (
+        <ProgressoDoArquivo nome={nome} progresso={progresso} andamento={andamento} />
       )}
 
       {/* O ARQUIVO ANALISADO ESPERA POR UMA DECISÃO, e a tela oferece o lugar
@@ -174,7 +215,6 @@ function Arquivo({ nome, estado, feito, total, progresso, detalhe, etapa, motivo
               </span>
             )}
             {digitalizado && <span className="detalhe-texto">Documento digitalizado.</span>}
-            {progresso != null && <span className="dado">{progresso}%</span>}
           </p>
 
           {preparo && (
@@ -221,6 +261,11 @@ function PrecisaDeVoce({ arquivos, livrosSemCapa, aoDestravar }) {
   const [senhas, setSenhas] = useState({});
   const [tentando, setTentando] = useState(null);
   const [erros, setErros] = useState({});
+  const [limite, setLimite] = useState(6);
+  const espacoParaArquivos = Math.max(0, limite - livrosSemCapa.length);
+  const arquivosVisiveis = arquivos.slice(0, espacoParaArquivos);
+  const total = livrosSemCapa.length + arquivos.length;
+  const visiveis = livrosSemCapa.length + arquivosVisiveis.length;
 
   if (!arquivos.length && !livrosSemCapa.length) return null;
 
@@ -251,7 +296,7 @@ function PrecisaDeVoce({ arquivos, livrosSemCapa, aoDestravar }) {
               />
             </li>
           ))}
-          {arquivos.map((a) => {
+          {arquivosVisiveis.map((a) => {
             const qual = BLOQUEIOS[a.bloqueio] ?? {
               titulo: "Este arquivo parou",
               diz: "O servidor não disse o motivo com um nome que eu conheça.",
@@ -317,6 +362,16 @@ function PrecisaDeVoce({ arquivos, livrosSemCapa, aoDestravar }) {
             );
           })}
         </ul>
+        {visiveis < total && (
+          <div className="precisa-de-voce-mais">
+            <p>
+              Mostrando <span className="dado">{visiveis}</span> de <span className="dado">{total}</span> pendências.
+            </p>
+            <Botao tom="secundaria" onClick={() => setLimite((n) => n + 6)}>
+              Mostrar mais pendências
+            </Botao>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -468,9 +523,26 @@ function Faixa({ titulo, quando, livros, verTudo }) {
   );
 }
 
-export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberArquivos, aoRefazerErros, aoDestravar, backend }) {
+export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberArquivos, aoRefazerErros, aoPrepararLote, aoDestravar, backend }) {
   const [recorte, setRecorte] = useState("tudo");
+  const [limiteArquivos, setLimiteArquivos] = useState(20);
   const [refazendo, setRefazendo] = useState(false);
+  const [presets, setPresets] = useState([]);
+  const [presetId, setPresetId] = useState("system-doc-read-pt-nllb");
+  const [loteEstado, setLoteEstado] = useState("parado");
+  const [loteRecado, setLoteRecado] = useState("");
+  const [novaReceita, setNovaReceita] = useState({
+    name: "", description: "", translation_rule: "different_from_target", translator_engine: "nllb",
+    source_language: "auto", target_language: "por",
+  });
+  const [editandoReceita, setEditandoReceita] = useState(null);
+  useEffect(() => {
+    let vivo = true;
+    listarPresets()
+      .then((lista) => { if (vivo) setPresets(lista.filter((p) => p.processing_mode === "document")); })
+      .catch(() => { if (vivo) setLoteRecado("Não consegui carregar as receitas agora."); });
+    return () => { vivo = false; };
+  }, []);
   /* PRIMEIRA VEZ É TER ARQUIVO E NENHUM LIVRO PRONTO — ver a nota na seção
      `promessa`.
      O `livros` NÃO serve como está: ele é o histórico inteiro e inclui o que
@@ -485,6 +557,11 @@ export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberA
      em filtro. */
   const naFila = arquivos.filter((a) => a.estado !== "precisa");
   const visiveis = recorte === "tudo" ? naFila : naFila.filter((a) => a.estado === recorte);
+  const arquivosNaPagina = visiveis.slice(0, limiteArquivos);
+  const candidatosAoLote = arquivos.filter((a) =>
+    Number.isInteger(a.id) && a.estado !== "pronto" && a.estado !== "precisa" && a.etapa !== "analisando",
+  );
+  useEffect(() => { setLimiteArquivos(20); }, [recorte]);
 
   /* O CARTÃO "CONTINUE" — nó 895:9981, o primeiro bloco depois da área de
      soltar. É UM livro: o que a pessoa estava lendo. A escolha sai de
@@ -636,7 +713,7 @@ export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberA
                 então muda exatamente quando algo muda de estado — e é uma frase
                 curta, contra a lista inteira relida a cada transição.
 
-                Sem isto, um arquivo ia de "Enviando" a "Pronto" ou a "Com erro"
+                Sem isto, um arquivo ia de "Em andamento" a "Pronto" ou a "Com erro"
                 em silêncio total para quem usa leitor de tela, numa tela cujo
                 propósito inteiro é mostrar progresso.
 
@@ -682,7 +759,7 @@ export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberA
                 title={quantos === 0 && id !== recorte ? `Nenhum arquivo em ${String(rotulo).toLowerCase()}` : null}
                 onClick={() => setRecorte(id)}
               >
-                {/* O NÚMERO ANTES DO RÓTULO — "1 Enviando", "0 Na fila", como o
+                {/* O NÚMERO ANTES DO RÓTULO — "1 Em andamento", "0 Na fila", como o
                     nó 895:9348 escreve. Estava ao contrário. A ordem importa
                     numa fileira de quatro: o olho corre a coluna dos números,
                     e com eles no fim ele precisa ler o rótulo de cada um para
@@ -692,11 +769,132 @@ export function MesaCheia({ arquivos = [], livros = [], aoVerEstante, aoReceberA
             ))}
           </nav>
 
+          {aoPrepararLote && candidatosAoLote.length > 0 && (
+            <section className="preparo-lote" aria-labelledby="preparo-lote-titulo">
+              <div className="preparo-lote-introducao">
+                <p className="preparo-lote-marca">Vários arquivos</p>
+                <h3 id="preparo-lote-titulo">Preparar todos com uma receita</h3>
+                <p>
+                  A receita “Leitura em português” traduz o que estiver em inglês, mantém o que já estiver em português e converte tudo para EPUB.
+                </p>
+              </div>
+              <div className="preparo-lote-controles">
+                <label htmlFor="receita-do-lote">Receita</label>
+                <select id="receita-do-lote" value={presetId} onChange={(e) => setPresetId(e.target.value)}>
+                  {presets.map((preset) => <option key={preset.id} value={preset.id}>{preset.name}</option>)}
+                </select>
+                {presets.find((p) => p.id === presetId) && (
+                  <p className="preparo-lote-receita-resumo">{presets.find((p) => p.id === presetId).description || "Receita pessoal sem descrição."}</p>
+                )}
+                <Botao
+                  tom="primaria"
+                  disabled={loteEstado === "enviando" || !presetId}
+                  porque={loteEstado === "enviando" ? "Organizando a fila…" : null}
+                  onClick={async () => {
+                    setLoteEstado("enviando");
+                    setLoteRecado("");
+                    try {
+                      const resultado = await aoPrepararLote(candidatosAoLote.map((a) => a.id), presetId);
+                      const n = resultado?.succeeded ?? 0;
+                      setLoteRecado(`${n} ${n === 1 ? "arquivo entrou" : "arquivos entraram"} no preparo.`);
+                      setLoteEstado("feito");
+                    } catch (erro) {
+                      setLoteRecado(erroParaPessoa(erro?.message));
+                      setLoteEstado("erro");
+                    }
+                  }}
+                >
+                  {loteEstado === "enviando" ? "Organizando…" : `Preparar ${candidatosAoLote.length} ${candidatosAoLote.length === 1 ? "arquivo" : "arquivos"}`}
+                </Botao>
+              </div>
+
+              <details className="preparo-lote-nova" open={Boolean(editandoReceita) || undefined}>
+                <summary>{editandoReceita ? "Editar receita" : "Criar uma receita pessoal"}</summary>
+                <div className="preparo-lote-formulario">
+                  <label>Nome<input value={novaReceita.name} onChange={(e) => setNovaReceita((r) => ({ ...r, name: e.target.value }))} /></label>
+                  <label>Descrição<input value={novaReceita.description} onChange={(e) => setNovaReceita((r) => ({ ...r, description: e.target.value }))} placeholder="Quando esta receita é útil" /></label>
+                  <label>Quando traduzir
+                    <select value={novaReceita.translation_rule} onChange={(e) => setNovaReceita((r) => ({ ...r, translation_rule: e.target.value }))}>
+                      <option value="english_to_portuguese">Traduzir inglês para português; manter português</option>
+                      <option value="different_from_target">Traduzir quando for diferente do idioma final</option>
+                      <option value="always">Traduzir sempre</option>
+                      <option value="never">Não traduzir</option>
+                    </select>
+                  </label>
+                  {novaReceita.translation_rule === "always" && (
+                    <label>De<select value={novaReceita.source_language} onChange={(e) => setNovaReceita((r) => ({ ...r, source_language: e.target.value }))}>
+                        <option value="eng">Inglês</option><option value="por">Português</option><option value="spa">Espanhol</option><option value="fra">Francês</option><option value="deu">Alemão</option><option value="ita">Italiano</option><option value="nld">Holandês</option><option value="jpn">Japonês</option><option value="kor">Coreano</option><option value="zho">Chinês</option><option value="ara">Árabe</option><option value="rus">Russo</option>
+                    </select></label>
+                  )}
+                  {novaReceita.translation_rule !== "never" && (
+                    <label>Para<select value={novaReceita.target_language} onChange={(e) => setNovaReceita((r) => ({ ...r, target_language: e.target.value }))}>
+                        <option value="por">Português</option><option value="eng">Inglês</option><option value="spa">Espanhol</option><option value="fra">Francês</option><option value="deu">Alemão</option><option value="ita">Italiano</option><option value="nld">Holandês</option><option value="jpn">Japonês</option><option value="kor">Coreano</option><option value="zho">Chinês</option><option value="ara">Árabe</option><option value="rus">Russo</option>
+                    </select></label>
+                  )}
+                  {novaReceita.translation_rule !== "never" && (
+                    <label>Motor<select value={novaReceita.translator_engine} onChange={(e) => setNovaReceita((r) => ({ ...r, translator_engine: e.target.value }))}>
+                      <option value="nllb">NLLB — melhor qualidade</option><option value="argos">Argos — mais leve</option>
+                    </select></label>
+                  )}
+                  <Botao
+                    tom="secundaria"
+                    porque={!novaReceita.name.trim() ? "Dê um nome à receita" : null}
+                    onClick={async () => {
+                      try {
+                        const dados = {
+                          ...novaReceita,
+                          processing_mode: "document", comic_mode: false, manga_rtl: false,
+                          translation_enabled: novaReceita.translation_rule !== "never",
+                          source_language: ["different_from_target", "english_to_portuguese"].includes(novaReceita.translation_rule) ? "auto" : novaReceita.source_language,
+                        };
+                        const salva = editandoReceita ? await atualizarPreset(editandoReceita, dados) : await criarPreset(dados);
+                        setPresets((lista) => editandoReceita ? lista.map((p) => p.id === salva.id ? salva : p) : [...lista, salva]);
+                        setPresetId(salva.id);
+                        setEditandoReceita(null);
+                        setNovaReceita({ name: "", description: "", translation_rule: "different_from_target", translator_engine: "nllb", source_language: "auto", target_language: "por" });
+                        setLoteRecado("Receita salva e selecionada.");
+                      } catch (erro) {
+                        setLoteRecado(erroParaPessoa(erro?.message));
+                      }
+                    }}
+                  >{editandoReceita ? "Guardar alterações" : "Salvar receita"}</Botao>
+                </div>
+              </details>
+              <details className="preparo-lote-nova preparo-lote-gerenciar">
+                <summary>Ver e gerenciar receitas</summary>
+                <ul>
+                  {presets.map((preset) => <li key={preset.id}>
+                    <div><strong>{preset.name}</strong><p>{preset.description || "Sem descrição."}</p></div>
+                    <div className="preparo-lote-receita-acoes">
+                      <button type="button" onClick={() => setPresetId(preset.id)}>Selecionar</button>
+                      {preset.is_system ? <button type="button" onClick={async () => { const copia = await duplicarPreset(preset.id); setPresets((l) => [...l, copia]); setPresetId(copia.id); }}>Duplicar para editar</button> : <>
+                        <button type="button" onClick={() => { setEditandoReceita(preset.id); setNovaReceita({ name: preset.name, description: preset.description || "", translation_rule: preset.translation_rule, translator_engine: preset.translator_engine || "nllb", source_language: preset.source_language || "auto", target_language: preset.target_language || "por" }); }}>Editar</button>
+                        <button type="button" onClick={async () => { if (!window.confirm(`Apagar a receita “${preset.name}”?`)) return; await apagarPreset(preset.id); setPresets((l) => l.filter((p) => p.id !== preset.id)); if (presetId === preset.id) setPresetId("system-doc-read-pt-nllb"); }}>Apagar</button>
+                      </>}
+                    </div>
+                  </li>)}
+                </ul>
+              </details>
+              {loteRecado && <p className="preparo-lote-recado" role="status" aria-live="polite">{loteRecado}</p>}
+            </section>
+          )}
+
           <ul className="lista">
-            {visiveis.map((a) => (
+            {arquivosNaPagina.map((a) => (
               <Arquivo key={a.id ?? a.nome} {...a} />
             ))}
           </ul>
+
+          {arquivosNaPagina.length < visiveis.length && (
+            <div className="preparo-carregar-mais">
+              <p>
+                Mostrando <span className="dado">{arquivosNaPagina.length}</span> de <span className="dado">{visiveis.length}</span> arquivos neste recorte.
+              </p>
+              <Botao tom="secundaria" onClick={() => setLimiteArquivos((n) => n + 20)}>
+                Mostrar mais arquivos
+              </Botao>
+            </div>
+          )}
 
           {!visiveis.length && (
             <p className="arquivo-detalhe">

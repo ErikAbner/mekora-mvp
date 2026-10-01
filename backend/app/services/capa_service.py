@@ -41,17 +41,58 @@ mesmo raciocínio, aplicado à capa, é este arquivo.
 
 from __future__ import annotations
 
+import io
 import shutil
+import zipfile
 from pathlib import Path
+from xml.etree import ElementTree
+
+from PIL import Image
 
 from app.core.config import STORAGE_COVERS, STORAGE_TEMP
 
 NOME = "capa.png"
+ORIGINAL = "original.png"
 
 
 def arquivo(job_id: int) -> Path:
     """Onde a capa promovida mora. Por id, como o resto do storage."""
     return STORAGE_COVERS / str(job_id) / NOME
+
+
+def original(job_id: int) -> Path:
+    return STORAGE_COVERS / str(job_id) / ORIGINAL
+
+
+def _capa_embutida(job) -> Path | None:
+    """Extrai a capa declarada pelo EPUB, sem confundir a primeira página com ela."""
+    destino = original(job.id)
+    if destino.exists():
+        return destino
+    entrada = Path(getattr(job, "input_path", "") or "")
+    if entrada.suffix.lower() != ".epub" or not entrada.exists():
+        return None
+    try:
+        with zipfile.ZipFile(entrada) as zf:
+            container = ElementTree.fromstring(zf.read("META-INF/container.xml"))
+            raiz = next(e.attrib["full-path"] for e in container.iter() if e.tag.endswith("rootfile"))
+            opf = ElementTree.fromstring(zf.read(raiz))
+            itens = {e.attrib.get("id"): e for e in opf.iter() if e.tag.endswith("item")}
+            item = next((e for e in itens.values() if "cover-image" in e.attrib.get("properties", "").split()), None)
+            if item is None:
+                capa_id = next((e.attrib.get("content") for e in opf.iter() if e.tag.endswith("meta") and e.attrib.get("name") == "cover"), None)
+                item = itens.get(capa_id)
+            if item is None:
+                return None
+            caminho = str((Path(raiz).parent / item.attrib["href"]).as_posix())
+            dados = zf.read(caminho)
+        with Image.open(io.BytesIO(dados)) as imagem:
+            imagem.load()
+            destino.parent.mkdir(parents=True, exist_ok=True)
+            imagem.convert("RGB").save(destino, "PNG", optimize=True)
+        return destino
+    except (OSError, KeyError, StopIteration, ValueError, zipfile.BadZipFile, ElementTree.ParseError):
+        return None
 
 
 def _origem(job) -> Path | None:
@@ -61,15 +102,23 @@ def _origem(job) -> Path | None:
     consultado primeiro porque é o que a conversão manda para o Calibre — se ele
     aponta para um arquivo vivo, é essa a capa que o livro já tem.
     """
+    escolha = getattr(job, "selected_cover_page", None)
+    # -1 é a escolha explícita de não usar imagem; -2 é a capa do EPUB.
+    if escolha == -1:
+        return None
+    if escolha in (None, -2):
+        embutida = _capa_embutida(job)
+        if embutida is not None:
+            return embutida
     if getattr(job, "cover_path", None):
         p = Path(job.cover_path)
-        if p.exists():
+        if p.exists() and p != arquivo(job.id):
             return p
-    pagina = job.selected_cover_page
+    pagina = escolha
     if pagina is None:
-        if not (job.page_count or 0):
-            return None
         pagina = 0
+    if pagina < 0:
+        return None
     p = STORAGE_TEMP / str(job.id) / f"page_{pagina}.png"
     return p if p.exists() else None
 
@@ -87,6 +136,8 @@ def promover(job) -> Path | None:
     """
     origem = _origem(job)
     if origem is None:
+        if getattr(job, "selected_cover_page", None) == -1:
+            arquivo(job.id).unlink(missing_ok=True)
         return None
     destino = arquivo(job.id)
     try:
@@ -107,6 +158,21 @@ def url(job) -> str | None:
     """
     if not job.token_publico:
         return None
-    if not arquivo(job.id).exists():
+    if not arquivo(job.id).exists() and promover(job) is None:
         return None
     return f"/storage/covers/{job.token_publico}/{NOME}"
+
+
+def url_original(job) -> str | None:
+    if not job.token_publico or _capa_embutida(job) is None:
+        return None
+    return f"/storage/covers/{job.token_publico}/{ORIGINAL}"
+
+
+def origem_atual(job) -> str:
+    escolha = getattr(job, "selected_cover_page", None)
+    if escolha == -1:
+        return "generated"
+    if escolha == -2 or (escolha is None and _capa_embutida(job) is not None):
+        return "embedded"
+    return "page" if escolha is not None else "auto"
