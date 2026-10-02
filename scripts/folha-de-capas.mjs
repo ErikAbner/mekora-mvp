@@ -47,7 +47,10 @@ const cartoes = TITULOS.map((titulo, i) => {
   const estilo = arte ? ` style="--arte: ${arte.replace(/"/g, "&quot;")}"` : "";
   return `<figure><span class="capa-de-reserva" data-capa="${variante}"${estilo}>` +
     `<span class="cr-arte" aria-hidden="true"></span>` +
-    `<span class="cr-alto"><span class="cr-titulo">${titulo}</span></span>` +
+    `<span class="cr-alto" aria-hidden="true"><span class="cr-titulo">${titulo}</span>` +
+    `<span class="cr-credito">Ana Duarte</span></span>` +
+    `<span class="cr-rodape" aria-hidden="true"><span class="cr-rodape-autor">Ana Duarte</span>` +
+    `<span class="cr-formato">EPUB</span><span class="cr-data">06 07 26</span></span>` +
     `</span><figcaption>${variante}</figcaption></figure>`;
 }).join("\n");
 

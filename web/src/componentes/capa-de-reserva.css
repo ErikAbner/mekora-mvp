@@ -19,6 +19,7 @@
 
 .capa-de-reserva {
   display: grid;
+  position: relative;
   inline-size: 100%;
   block-size: 100%;
   aspect-ratio: 420 / 594;
@@ -43,23 +44,13 @@
 }
 
 .cr-titulo {
-  font-family: var(--fonte-titulo, "Zodiak Variable", Georgia, serif);
-  font-weight: 900;
-  /* O CORPO DO TÍTULO É DEGRAU, e não proporção pura.
-   *
-   * O desenho fixa 32px numa capa de 420 — uma PROPORÇÃO. A escala tipográfica
-   * fixa degraus discretos (14, 16, 18, 20, 22, 24…). Proporção pura quase
-   * nunca cai em degrau: medido, a capa de 252px do computador punha o título
-   * em 19px, e o portão acusou `corpo_fora_da_escala`, degrau mais perto 18.
-   *
-   * Aqui o desenho e o sistema se contradizem, e o sistema vence: 19px não é um
-   * corpo, é um acidente de divisão. 20 é o degrau vizinho e o mais próximo dos
-   * 19,2 que a proporção pedia. No telefone a capa mede ~159 e a proporção
-   * pediria 12; o degrau é 14.
-   *
-   * `--corpo-titulo` continua existindo para as variantes que precisem dele. */
-  font-size: 20px;
-  line-height: 1.375;
+  /* As referências exportadas em `capas/capa-*.jpg` usam uma grotesca pesada.
+     Zodiak é a voz editorial da interface, mas é serifada e mudava por completo
+     a linguagem destas capas. A capa usa a família neutra do gabarito. */
+  font-family: Arial, Helvetica, system-ui, sans-serif;
+  font-weight: 800;
+  font-size: clamp(14px, var(--corpo-titulo), 32px);
+  line-height: 1.08;
   /* O desenho põe `nowrap` porque lá o título é escolhido e curto. Aqui é NOME
      DE ARQUIVO. Com `nowrap` ele vazaria pela lateral — a mesma classe que o
      R-46 fechou embaixo do cartão. Quebra, e para. */
@@ -74,7 +65,10 @@
   padding-block-end: 0.2em;
 }
 
-.cr-credito {   /* estilo `Capa/Credito` — Zodiak Regular 10, entrelinha 100% */
+.cr-credito {   /* estilo `Capa/Credito` — grotesca 10, entrelinha 100% */
+  font-family: Arial, Helvetica, system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
   font-size: var(--corpo-nota);
   line-height: 1;
   white-space: nowrap;
@@ -87,11 +81,23 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--pad);
+  font-family: Arial, Helvetica, system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
   font-size: var(--corpo-nota);
   line-height: 1;
 }
 
-.cr-data { font-style: italic; }   /* `Capa/Data` — Zodiak Italic 10 */
+.cr-rodape-autor,
+.cr-formato,
+.cr-data {
+  min-inline-size: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cr-data { font-style: italic; }   /* `Capa/Data` — itálica 10 */
 .cr-arte { display: block; background-repeat: no-repeat; }
 
 /* ── 1 · título em cima, meio-tom embaixo, rodapé em faixa preta ──────────
@@ -122,6 +128,7 @@
   background: var(--capa-tinta);
   color: var(--capa-papel);
 }
+.capa-de-reserva[data-capa="1"] .cr-rodape-autor { display: none; }
 .capa-de-reserva[data-capa="1"] .cr-formato {
   font-family: var(--fonte-mono, "IBM Plex Mono", ui-monospace, monospace);
 }
@@ -150,6 +157,7 @@
   padding: 3.81cqw var(--pad);
   font-style: italic;
 }
+.capa-de-reserva[data-capa="2"] .cr-rodape-autor { display: none; }
 
 /* ── 3 e 4 · DUAS COLUNAS, arte à esquerda ───────────────────────────────
  * Nós `1016:31014` e `1016:31027`. A mesma família: a arte ocupa a coluna da
@@ -210,6 +218,18 @@
   max-block-size: 100%;
   white-space: nowrap; text-overflow: ellipsis;
 }
+.capa-de-reserva[data-capa="3"] .cr-credito {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  margin-inline-start: 5.71cqw;
+}
+.capa-de-reserva[data-capa="3"] .cr-rodape {
+  position: absolute;
+  inset-block-start: var(--pad);
+  inset-inline-end: var(--pad);
+  inline-size: calc(50% - 2 * var(--pad));
+}
+.capa-de-reserva[data-capa="3"] .cr-rodape-autor { display: none; }
 /* Os três ladrilhos da 3: as faixas de papel entre eles saem de gradiente sobre
    a mesma trama, para não pedir três nós ao DOM. */
 .capa-de-reserva[data-capa="3"] .cr-arte { position: relative; }
@@ -225,6 +245,14 @@
    420; aqui o corpo é degrau, pela mesma razão da regra base. */
 .capa-de-reserva[data-capa="4"] .cr-alto { justify-content: flex-start; }
 .capa-de-reserva[data-capa="4"] .cr-titulo { font-weight: 800; line-height: 1.1; }
+.capa-de-reserva[data-capa="4"] .cr-credito { margin-block-start: 7.62cqw; }
+.capa-de-reserva[data-capa="4"] .cr-rodape {
+  position: absolute;
+  inset-inline-end: var(--pad);
+  inset-block-end: var(--pad);
+  inline-size: calc(50% - 2 * var(--pad));
+}
+.capa-de-reserva[data-capa="4"] .cr-rodape-autor { display: none; }
 
 /* ── 12 · centrada, bloco preto, quatro campos ───────────────────────────
    Nó `1016:31006`. Proporção 356/403; o crédito vem em 24px com 2px de vão
@@ -244,7 +272,9 @@
    o desenho mostra em vez de fotografá-lo. A captura do nó é a autoridade sobre
    como a capa se parece; a propriedade de blend é como o arquivo chegou lá. */
 .capa-de-reserva[data-capa="12"] {
-  grid-template-rows: auto 1fr auto;
+  /* Percentuais porque unidades de contêiner declaradas na própria raiz leem
+     o contêiner ancestral, não a capa. 79/403/112 é a divisão do quadro. */
+  grid-template-rows: 13.3% 67.85% 18.85%;
   grid-template-areas: "alto" "arte" "rodape";
   justify-items: center;
 }
@@ -253,9 +283,11 @@
 }
 .capa-de-reserva[data-capa="12"] .cr-titulo { text-align: center; }
 .capa-de-reserva[data-capa="12"] .cr-credito {
+  position: absolute;
+  inset-inline: var(--pad);
+  inset-block-end: 13.5cqw;
   display: block; text-align: center;
   font-weight: 540; font-size: 5.71cqw; letter-spacing: 0.48cqw;
-  margin-block-start: 7.62cqw;
 }
 .capa-de-reserva[data-capa="12"] .cr-arte {
   grid-area: arte; align-self: end;
@@ -268,6 +300,7 @@
   padding: 3.81cqw var(--pad);
   font-style: italic;
 }
+.capa-de-reserva[data-capa="12"] .cr-rodape { display: none; }
 
 /* ── TÍTULO DEITADO — variantes 3, 7, 10 e 14 ────────────────────────────
  * `-webkit-box` com escrita vertical colapsa o corpo: medido na 3, 32px viravam
@@ -317,8 +350,18 @@
 }
 .capa-de-reserva[data-capa="5"] .cr-alto {
   grid-area: alto;
-  padding: 4.29cqw var(--pad) var(--pad);   /* pt-18 do nó `1016:30872` */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--pad);
+  padding: 4.29cqw var(--pad) 10.48cqw;   /* pt-18 + rodapé do nó */
 }
+.capa-de-reserva[data-capa="5"] .cr-rodape {
+  position: absolute;
+  inset-inline: var(--pad);
+  inset-block-end: var(--pad);
+}
+.capa-de-reserva[data-capa="5"] .cr-rodape-autor { display: none; }
 
 /* ── 6 · título em cima, trama, filete ───────────────────────────────────
    Nó `1016:31019`. Cabeçalho de 107px, arte de 348px e um filete 32 abaixo
@@ -342,6 +385,12 @@
   border-block-end: 1px solid var(--capa-tinta);
   background: var(--capa-trama) var(--arte) center / cover no-repeat content-box;
 }
+.capa-de-reserva[data-capa="6"] .cr-rodape {
+  position: absolute;
+  inset-inline: var(--pad);
+  inset-block-end: var(--pad);
+}
+.capa-de-reserva[data-capa="6"] .cr-rodape-autor { display: none; }
 
 /* ── 7 · faixa de papel à esquerda, arte de ponta a ponta à direita ──────
    Nó `1016:31022`. Prima da 3 e da 10 — as três põem o título deitado —, e o
@@ -364,6 +413,20 @@
   margin-block: 5.71cqw;
   background: var(--capa-trama) var(--arte) center / cover no-repeat;
 }
+.capa-de-reserva[data-capa="7"] .cr-credito {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  margin-inline-start: 3.81cqw;
+}
+.capa-de-reserva[data-capa="7"] .cr-rodape {
+  position: absolute;
+  inset-block-start: var(--pad);
+  inset-inline-start: 2.86cqw;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  block-size: 31cqw;
+}
+.capa-de-reserva[data-capa="7"] .cr-rodape-autor { display: none; }
 
 /* ── 8 · título em cima, arte grande, rodapé de papel ────────────────────
    Nó `1016:31015`. O desenho põe, ao lado do título, um parágrafo em versalete
@@ -372,8 +435,8 @@
    o produto não tem esse campo. Inventá-lo seria escrever conteúdo no lugar de
    ler o desenho. O arranjo — título alto, arte alta, rodapé fundo — fica. */
 .capa-de-reserva[data-capa="8"] {
-  grid-template-rows: auto minmax(0, 1fr);
-  grid-template-areas: "alto" "arte";
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas: "alto" "arte" "rodape";
 }
 .capa-de-reserva[data-capa="8"] .cr-alto {
   grid-area: alto;
@@ -382,16 +445,21 @@
 }
 .capa-de-reserva[data-capa="8"] .cr-arte {
   grid-area: arte;
-  margin: 3.81cqw var(--pad) 16.7cqw;
+  margin: 3.81cqw var(--pad);
   background: var(--capa-trama) var(--arte) center / cover no-repeat;
+}
+.capa-de-reserva[data-capa="8"] .cr-credito { display: none; }
+.capa-de-reserva[data-capa="8"] .cr-rodape {
+  grid-area: rodape;
+  padding: 0 var(--pad) var(--pad);
 }
 
 /* ── 9 · arte centrada e pequena, muito papel em volta ───────────────────
    Nó `1016:31021`. A mais silenciosa da família: a arte mede 232 de largura numa
    capa de 420 — 55% — e flutua no meio, com o papel respondendo por tudo. */
 .capa-de-reserva[data-capa="9"] {
-  grid-template-rows: auto minmax(0, 1fr);
-  grid-template-areas: "alto" "arte";
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas: "alto" "arte" "rodape";
   justify-items: center;
 }
 .capa-de-reserva[data-capa="9"] .cr-alto {
@@ -405,6 +473,12 @@
   aspect-ratio: 232 / 258;
   background: var(--capa-trama) var(--arte) center / cover no-repeat;
 }
+.capa-de-reserva[data-capa="9"] .cr-rodape {
+  grid-area: rodape;
+  inline-size: 100%;
+  padding: 0 var(--pad) var(--pad);
+}
+.capa-de-reserva[data-capa="9"] .cr-rodape-autor { display: none; }
 
 /* ── 10 · arte sangrada no topo, título deitado no pé ────────────────────
    Nó `1016:31024`. A única da família em que a arte SANGRA — sem recheio, de
@@ -424,6 +498,16 @@
   display: flex; align-items: stretch; justify-content: flex-start;
   padding: 3.81cqw var(--pad);
 }
+.capa-de-reserva[data-capa="10"] .cr-credito { display: none; }
+.capa-de-reserva[data-capa="10"] .cr-rodape {
+  position: absolute;
+  inset-inline-start: 44%;
+  inset-inline-end: var(--pad);
+  inset-block-end: var(--pad);
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 1.9cqw;
+}
 
 /* ── 11 · título rente à direita, logo acima da arte ─────────────────────
    Nó `1016:31013`. O título desce até 43% da altura e alinha à DIREITA — é a
@@ -431,8 +515,8 @@
    catalogação ("Documentação / Registro de campo / Expedição 02"); pela mesma
    razão da 8, elas não entram. */
 .capa-de-reserva[data-capa="11"] {
-  grid-template-rows: minmax(0, 1fr) auto;
-  grid-template-areas: "alto" "arte";
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  grid-template-areas: "alto" "arte" "rodape";
 }
 .capa-de-reserva[data-capa="11"] .cr-alto {
   grid-area: alto;
@@ -444,9 +528,15 @@
 }
 .capa-de-reserva[data-capa="11"] .cr-arte {
   grid-area: arte;
-  margin: 0 var(--pad) 13.5cqw;
+  margin: 0 var(--pad) 3.81cqw;
   aspect-ratio: 356 / 252;
   background: var(--capa-trama) var(--arte) center / cover no-repeat;
+}
+.capa-de-reserva[data-capa="11"] .cr-credito { display: none; }
+.capa-de-reserva[data-capa="11"] .cr-rodape {
+  grid-area: rodape;
+  inline-size: 100%;
+  padding: 0 var(--pad) var(--pad);
 }
 
 /* ── 13 · quase só papel, com um ponto preto no pé ───────────────────────
@@ -469,6 +559,14 @@
   border-radius: 50%;
   background: var(--capa-tinta);
 }
+.capa-de-reserva[data-capa="13"] .cr-credito { margin-block-start: 3.81cqw; }
+.capa-de-reserva[data-capa="13"] .cr-rodape {
+  position: absolute;
+  inset-inline-end: var(--pad);
+  inset-block-end: var(--pad);
+}
+.capa-de-reserva[data-capa="13"] .cr-rodape-autor,
+.capa-de-reserva[data-capa="13"] .cr-formato { display: none; }
 
 /* ── 14 · capa partida: papel à esquerda, painel preto à direita ─────────
    Nó `1016:31012`. A única que INVERTE a tinta — o título sai em papel sobre
@@ -494,6 +592,15 @@
 /* Em escrita vertical, `text-align` age no eixo VERTICAL — é ele que centra o
    título na altura do painel. */
 .capa-de-reserva[data-capa="14"] .cr-titulo { text-align: center; }
+.capa-de-reserva[data-capa="14"] .cr-credito { display: none; }
+.capa-de-reserva[data-capa="14"] .cr-rodape {
+  position: absolute;
+  top: 30%;
+  left: 7.62cqw;
+  height: 45%;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
 
 /* ── A CAPA EM MINIATURA NÃO MOSTRA LETRA MIÚDA ──────────────────────────
  *
