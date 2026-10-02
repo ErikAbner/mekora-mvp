@@ -58,9 +58,9 @@
   transform: translateX(-50%);
   display: flex;
   align-items: baseline;
-  gap: 18px;
-  max-inline-size: min(520px, calc(100vw - 32px));
-  padding: 13px 18px;
+  gap: 10px;
+  max-inline-size: min(260px, calc(100vw - 32px));
+  padding: 10px 14px;
   border: 1px solid var(--border);
   background: var(--card);
   color: var(--foreground);
@@ -69,7 +69,18 @@
   text-align: start;
   cursor: pointer;
 }
-.lote-global-recolhido strong { font-size: 15px; line-height: 20px; }
+.lote-global-recolhido strong {
+  display: grid;
+  place-items: center;
+  min-inline-size: 24px;
+  block-size: 24px;
+  border-radius: 999px;
+  background: var(--foreground);
+  color: var(--background);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1;
+}
 .lote-global-recolhido span { color: var(--muted-foreground); font-family: var(--font-mono); font-size: 11px; white-space: nowrap; }
 .lote-global-recolhido.tem-erro { border-inline-start: 4px solid var(--destructive); }
 .lote-global-recolhido.terminou { border-inline-start: 4px solid var(--success); }

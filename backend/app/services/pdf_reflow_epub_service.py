@@ -98,6 +98,13 @@ def _prefer_fallback_word(ocr_word: str, fallback_word: str, language: str) -> s
     _, fallback_core, _ = _word_core(fallback_word)
     if not ocr_core or not fallback_core or ocr_core == fallback_core:
         return ocr_word
+    # Camadas antigas frequentemente colam uma sigla à palavra anterior
+    # (``governoJK``). A caixa combinada cobre as duas palavras do OCR visual;
+    # sem esta guarda, ``JK`` era substituído por ``governo`` e o leitor via
+    # "governo governo". Palavra curta só aceita alternativa de tamanho
+    # compatível.
+    if min(len(ocr_core), len(fallback_core)) <= 3 and abs(len(ocr_core) - len(fallback_core)) > 1:
+        return ocr_word
     if (
         ocr_core.isupper()
         and fallback_core.isupper()
@@ -196,29 +203,81 @@ def _visual_ocr_words(page: fitz.Page, region: fitz.Rect, language: str) -> list
     import pytesseract
     from pytesseract import Output
 
-    scale = 300 / 72
-    pixmap = page.get_pixmap(matrix=fitz.Matrix(scale, scale), clip=region, alpha=False)
-    image = Image.frombytes("RGB", (pixmap.width, pixmap.height), pixmap.samples).convert("L")
-    image = ImageOps.autocontrast(image, cutoff=1).filter(ImageFilter.SHARPEN)
     lang = "por" if (language or "").lower().startswith("por") else language or "por"
-    data = pytesseract.image_to_data(image, lang=lang, config="--psm 4", output_type=Output.DICT)
-    words: list[tuple] = []
-    for index, value in enumerate(data["text"]):
-        value = value.strip()
-        if not value or float(data["conf"][index]) < 0:
-            continue
-        x = region.x0 + data["left"][index] / scale
-        y = region.y0 + data["top"][index] / scale
-        width = data["width"][index] / scale
-        height = data["height"][index] / scale
-        # O formato segue page.get_text("words"): bbox, texto, bloco, linha,
-        # palavra. O parágrafo também entra na chave para manter os espaços
-        # editoriais que o Tesseract encontrou.
-        block = int(data["block_num"][index]) * 1000 + int(data["par_num"][index])
-        line = int(data["line_num"][index])
-        word_number = int(data["word_num"][index])
-        words.append((x, y, x + width, y + height, value, block, line, word_number))
-    return words
+
+    def recognize(dpi: int, psm: int) -> list[tuple]:
+        scale = dpi / 72
+        pixmap = page.get_pixmap(matrix=fitz.Matrix(scale, scale), clip=region, alpha=False)
+        image = Image.frombytes("RGB", (pixmap.width, pixmap.height), pixmap.samples).convert("L")
+        # O filtro mediano remove vazamento da impressão do verso sem realçar o
+        # papel, ao contrário do SHARPEN usado na primeira versão.
+        image = ImageOps.autocontrast(image, cutoff=2).filter(ImageFilter.MedianFilter(3))
+        data = pytesseract.image_to_data(
+            image, lang=lang, config=f"--psm {psm}", output_type=Output.DICT,
+        )
+        found: list[tuple] = []
+        for index, value in enumerate(data["text"]):
+            value = value.strip()
+            if not value or float(data["conf"][index]) < 0:
+                continue
+            x = region.x0 + data["left"][index] / scale
+            y = region.y0 + data["top"][index] / scale
+            width = data["width"][index] / scale
+            height = data["height"][index] / scale
+            block = int(data["block_num"][index]) * 1000 + int(data["par_num"][index])
+            line = int(data["line_num"][index])
+            word_number = int(data["word_num"][index])
+            found.append((
+                x, y, x + width, y + height, value, block, line, word_number,
+                float(data["conf"][index]),
+            ))
+        return found
+
+    # PSM 4 em 400 dpi preserva melhor os parágrafos e cabeçalhos. Uma segunda
+    # leitura PSM 6 em 600 dpi enxerga melhor palavras cobertas por sublinhados
+    # e marcas; ela só substitui uma palavra da estrutura primária quando o
+    # léxico oferece evidência forte. Assim ganhamos fidelidade sem transformar
+    # margens e ruído em parágrafos.
+    words = recognize(400, 4)
+    detailed = recognize(600, 6)
+    fused: list[tuple] = []
+    for word in words:
+        value = str(word[4])
+        matches = [
+            (_overlap_ratio(word, candidate), candidate)
+            for candidate in detailed
+            if _overlap_ratio(word, candidate) >= .45
+        ]
+        if matches:
+            center = (word[0] + word[2]) / 2
+            # Sublinhados podem fazer a caixa do Tesseract engolir a palavra
+            # vizinha. Quando duas caixas cobrem a palavra inteira (empate de
+            # sobreposição), o centro horizontal mantém cada alternativa com
+            # a sua palavra e evita duplicações.
+            candidate = min(
+                matches,
+                key=lambda item: abs(center - (item[1][0] + item[1][2]) / 2),
+            )[1]
+            alternative = str(candidate[4])
+            preferred = _prefer_fallback_word(value, alternative, language)
+            if preferred == value and candidate[8] >= word[8] + 10:
+                _, current_core, _ = _word_core(value)
+                prefix, alternative_core, suffix = _word_core(alternative)
+                lang_code = "pt" if (language or "").lower().startswith("por") else (language or "pt")[:2]
+                # O segundo passe só ganha por confiança quando também forma
+                # uma palavra plausível. Isso repara ``concmador`` →
+                # ``conciliador`` e ``ufàmsra`` → ``ufanista`` sem usar uma
+                # tabela específica do livro.
+                if (
+                    current_core and alternative_core
+                    and zipf_frequency(alternative_core.lower(), lang_code) >= 1.8
+                    and zipf_frequency(alternative_core.lower(), lang_code)
+                        >= zipf_frequency(current_core.lower(), lang_code) + .8
+                ):
+                    preferred = f"{prefix}{alternative_core}{suffix}"
+            value = preferred
+        fused.append((*word[:4], value, *word[5:]))
+    return fused
 
 
 def _paragraphs(
@@ -282,6 +341,7 @@ def _semantic_blocks_for_page(
     page: fitz.Page,
     page_index: int,
     fallback_page: fitz.Page | None,
+    secondary_fallback_page: fitz.Page | None,
     language: str,
     visual_ocr: bool,
 ) -> list[SemanticBlock]:
@@ -292,27 +352,40 @@ def _semantic_blocks_for_page(
             if visual_ocr
             else page.get_text("words", sort=True, clip=region)
         )
-        fallback_words = (
-            fallback_page.get_text("words", sort=True, clip=region)
-            if fallback_page is not None
-            else []
-        )
-        style_spans = _fallback_style_spans(fallback_page, region) if fallback_page else []
+        fallback_word_sets: list[list[tuple]] = []
+        for alternative in (fallback_page, secondary_fallback_page):
+            if alternative is not None:
+                fallback_word_sets.append(alternative.get_text("words", sort=True, clip=region))
+        style_source = secondary_fallback_page or fallback_page
+        style_spans = _fallback_style_spans(style_source, region) if style_source else []
         grouped: dict[int, dict[int, list[tuple[str, tuple, int, float]]]] = {}
         for word in words:
             value = str(word[4]).replace("\u00ad", "").replace("\x00", "")
             flags = 0
             font_size = max(1.0, float(word[3] - word[1]))
             match = None
-            if fallback_words:
-                candidates = [
-                    (_overlap_ratio(word, candidate), candidate)
-                    for candidate in fallback_words
-                    if _overlap_ratio(word, candidate) >= .45
-                ]
-                if candidates:
-                    match = max(candidates, key=lambda item: item[0])[1]
-                    value = _prefer_fallback_word(value, str(match[4]), language)
+            if fallback_word_sets:
+                # Uma candidata por camada. Misturar todas em uma única lista
+                # fazia uma palavra larga tocar duas vizinhas e ser "reparada"
+                # pela vizinha errada (``espírito`` podia virar ``já``).
+                for fallback_words in fallback_word_sets:
+                    candidates = [
+                        (_overlap_ratio(word, candidate), candidate)
+                        for candidate in fallback_words
+                        if _overlap_ratio(word, candidate) >= .45
+                    ]
+                    if not candidates:
+                        continue
+                    word_center = (word[0] + word[2]) / 2
+                    candidate = min(
+                        candidates,
+                        key=lambda item: abs(
+                            word_center - (item[1][0] + item[1][2]) / 2
+                        ),
+                    )[1]
+                    if match is None:
+                        match = candidate
+                    value = _prefer_fallback_word(value, str(candidate[4]), language)
             value = _conservative_spelling(value, language)
             style_target = match or word
             styles = [
@@ -433,10 +506,19 @@ def convert_pdf_to_reflow_epub(
                 if fallback_document is not None and index < fallback_document.page_count
                 else None
             )
+            # Quando o OCRmyPDF foi aplicado, ``document`` contém a camada de
+            # texto reparada e ``fallback_document`` é o PDF original. Para a
+            # leitura visual devemos reconhecer os pixels ORIGINAIS: a etapa de
+            # OCR pode recomprimir/normalizar a imagem e o segundo OCR acabava
+            # ampliando os seus artefatos. A camada do OCRmyPDF continua sendo
+            # a fonte alternativa palavra a palavra.
+            visual_page = fallback_page if visual_ocr and fallback_page is not None else page
+            text_fallback = page if visual_page is not page else fallback_page
             page_blocks = _semantic_blocks_for_page(
-                page,
+                visual_page,
                 page_index=index,
-                fallback_page=fallback_page,
+                fallback_page=text_fallback,
+                secondary_fallback_page=(visual_page if visual_ocr else None),
                 language=language,
                 visual_ocr=visual_ocr,
             )

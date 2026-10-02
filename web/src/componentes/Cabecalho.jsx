@@ -190,9 +190,25 @@ export function CentroDeAtividade() {
     semConexao ? "sem conexão" : null,
   ].filter(Boolean).join(" · ");
 
-  const recolher = () => {
-    setExpandido(false);
-    try { localStorage.setItem("mekora:atividades-recolhido", "1"); } catch {}
+  const fecharAndamento = () => {
+    /* Fechar um recibo terminado precisa FECHAR de verdade. A implementação
+     * anterior apenas trocava a faixa grande por outro cartão flutuante; ao
+     * navegar ele continuava ocupando a leitura e parecia ter voltado. Durante
+     * um trabalho em curso preservamos um indicador mínimo, porque é a única
+     * forma de o resultado continuar acessível fora da Mesa. */
+    const restantes = itens.filter((item) => !FINAIS.has(item.resultado));
+    if (restantes.length !== itens.length) {
+      guardarAtividadesLocais(restantes, false);
+      setItens(restantes);
+    }
+    if (restantes.length) {
+      setExpandido(false);
+      try { localStorage.setItem("mekora:atividades-recolhido", "1"); } catch {}
+    } else {
+      try {
+        localStorage.removeItem("mekora:atividades-recolhido");
+      } catch {}
+    }
   };
 
   if (!expandido) {
@@ -200,7 +216,8 @@ export function CentroDeAtividade() {
       <button type="button" className={`lote-global-recolhido${erros ? " tem-erro" : terminou ? " terminou" : ""}`}
         onClick={() => { setExpandido(true); try { localStorage.removeItem("mekora:atividades-recolhido"); } catch {} }}
         aria-expanded="false" aria-label={`${titulo}. Mostrar andamento`}>
-        <strong>{titulo}</strong><span>{detalhes || "Ver andamento"}</span>
+        <strong>{ativos || itens.length}</strong>
+        <span>{ativos ? (percentual != null ? `${percentual}% · Ver andamento` : "Em preparo · Ver andamento") : "Ver resultado"}</span>
       </button>
     );
   }
@@ -219,7 +236,13 @@ export function CentroDeAtividade() {
         ><span style={percentual != null ? { inlineSize: `${percentual}%` } : undefined} /></span>
         <span className="lote-global-detalhe">{detalhes ? `${detalhes} · ` : ""}Ver na Mesa</span>
       </Link>
-      <button type="button" className="lote-global-fechar" onClick={recolher} aria-label="Recolher andamento">×</button>
+      <button
+        type="button"
+        className="lote-global-fechar"
+        onClick={fecharAndamento}
+        aria-label={terminou ? "Dispensar este aviso" : "Recolher andamento"}
+        title={terminou ? "Dispensar" : "Recolher"}
+      >×</button>
     </div>
   );
 }
