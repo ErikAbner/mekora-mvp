@@ -95,9 +95,16 @@ def _prefer_fallback_word(ocr_word: str, fallback_word: str, language: str) -> s
     desempate forte; tokens raros, nomes, números e citações permanecem no OCR.
     """
     prefix, ocr_core, suffix = _word_core(ocr_word)
-    _, fallback_core, _ = _word_core(fallback_word)
-    if not ocr_core or not fallback_core or ocr_core == fallback_core:
+    fallback_prefix, fallback_core, fallback_suffix = _word_core(fallback_word)
+    def decorated(core: str) -> str:
+        # Se a leitura escolhida perdeu apenas a pontuação que delimita a
+        # palavra/frase, a camada alternativa pode devolvê-la. Pontuação que já
+        # existe na leitura principal continua soberana.
+        return f"{prefix or fallback_prefix}{core}{suffix or fallback_suffix}"
+    if not ocr_core or not fallback_core:
         return ocr_word
+    if ocr_core == fallback_core:
+        return decorated(ocr_core)
     # Camadas antigas frequentemente colam uma sigla à palavra anterior
     # (``governoJK``). A caixa combinada cobre as duas palavras do OCR visual;
     # sem esta guarda, ``JK`` era substituído por ``governo`` e o leitor via
@@ -111,10 +118,10 @@ def _prefer_fallback_word(ocr_word: str, fallback_word: str, language: str) -> s
         and len(fallback_core) == len(ocr_core) + 1
         and ocr_core in fallback_core
     ):
-        return f"{prefix}{fallback_core}{suffix}"
+        return decorated(fallback_core)
     if not all(char.isalpha() or char in "-'’" for char in ocr_core + fallback_core):
         if _obvious_corruption(ocr_core) and not _obvious_corruption(fallback_core):
-            return f"{prefix}{fallback_core}{suffix}"
+            return decorated(fallback_core)
         return ocr_word
 
     lang = "pt" if (language or "").lower().startswith("por") else (language or "pt")[:2]
@@ -124,7 +131,7 @@ def _prefer_fallback_word(ocr_word: str, fallback_word: str, language: str) -> s
     if strong_improvement or (
         _obvious_corruption(ocr_core) and not _obvious_corruption(fallback_core)
     ):
-        return f"{prefix}{fallback_core}{suffix}"
+        return decorated(fallback_core)
     return ocr_word
 
 
@@ -273,6 +280,24 @@ def _visual_ocr_words(page: fitz.Page, region: fitz.Rect, language: str) -> list
                     and zipf_frequency(alternative_core.lower(), lang_code) >= 1.8
                     and zipf_frequency(alternative_core.lower(), lang_code)
                         >= zipf_frequency(current_core.lower(), lang_code) + .8
+                ):
+                    preferred = f"{prefix}{alternative_core}{suffix}"
+            if preferred == value:
+                _, current_core, _ = _word_core(value)
+                prefix, alternative_core, suffix = _word_core(alternative)
+                # Duas leituras independentes concordam quase por inteiro,
+                # mas a palavra é rara demais para o dicionário de frequência
+                # (``capitulacionista`` é um caso real). Para palavras comuns
+                # minúsculas e longas, a variante de alta resolução pode
+                # vencer por proximidade mesmo sem frequência conhecida. Nomes
+                # próprios ficam fora desta regra.
+                if (
+                    len(current_core) >= 7
+                    and current_core.islower()
+                    and alternative_core.islower()
+                    and candidate[8] >= word[8] - 3
+                    and _edit_distance(current_core, alternative_core)
+                        <= max(2, len(alternative_core) // 3)
                 ):
                     preferred = f"{prefix}{alternative_core}{suffix}"
             value = preferred

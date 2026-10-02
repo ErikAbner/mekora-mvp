@@ -62,6 +62,7 @@ def test_landscape_book_spread_reads_left_page_before_right_page(tmp_path: Path)
 
 def test_text_fusion_uses_only_a_clearly_better_portuguese_word() -> None:
     assert _prefer_fallback_word("cufona", "euforia", "por") == "euforia"
+    assert _prefer_fallback_word("euforia", "euforia.", "por") == "euforia."
     assert _prefer_fallback_word("intcgraf", "integrar", "por") == "integrar"
     # A camada antiga pode colar a sigla à palavra anterior. A caixa grande
     # toca as duas palavras visuais, mas não pode duplicar "governo".
