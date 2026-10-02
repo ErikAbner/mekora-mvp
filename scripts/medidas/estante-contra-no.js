@@ -29,7 +29,7 @@
 
   /* Abre a ficha de um livro que tenha o que mostrar. */
   const comNota = [...document.querySelectorAll(".livro")].find((l) => {
-    const m = l.querySelector(".marcador, [class*=marcador]");
+    const m = l.querySelector(".livro-notas");
     return m && parseInt(m.textContent, 10) > 0;
   });
   (comNota || document.querySelector(".livro"))?.querySelector("a, button, img")?.click();
@@ -60,7 +60,7 @@
                       const r = c.getBoundingClientRect(); return r.height ? +(r.width / r.height).toFixed(3) : null; })(),
       titulo: tipo(cartao.querySelector("h3")),
       autor: tipo(cartao.querySelector("p")),
-      temMarcador: !!cartao.querySelector("[class*=marcador]"),
+      temMarcador: !!cartao.querySelector(".livro-notas"),
     } : null,
     ficha: ficha ? {
       caixa: cx(ficha),

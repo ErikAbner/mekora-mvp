@@ -74,19 +74,6 @@ function Livro({ chave, titulo, autor, formato, estado, notas, capa, aoEscolher,
         <span className="visualmente-oculto">{titulo}{autor ? `, de ${autor}` : ""}</span>
       </button>
       <div className="capa-caixa">
-        {/* O MARCADOR VEM ANTES DA CAPA, e é isso que o põe ATRÁS dela.
-            O nó 895:7386 é um irmão do 895:7389 com `mb: -13px` — o livro é
-            pintado por cima, e do marcador só sobra a ponta acima da capa.
-            A versão anterior o punha absoluto com `z-index: 1`, na frente: a
-            etiqueta pousava sobre a capa em vez de sair de dentro do livro. */}
-        {notas > 0 && (
-          <span
-            className="marcador"
-            style={{ maskImage: `url(${marcador})`, WebkitMaskImage: `url(${marcador})` }}
-          >
-            <span className="marcador-numero dado">{notas}</span>
-          </span>
-        )}
         {/* Livro sem capa não vira buraco: a caixa fica, com o título dentro.
             Uma grade com lacunas parece defeito de carregamento. */}
         {capa ? (
@@ -103,7 +90,19 @@ function Livro({ chave, titulo, autor, formato, estado, notas, capa, aoEscolher,
             Mesmo lugar, mesma tipografia, sem selo novo nem cor nova: a linha
             já existia e estava vazia nesse cartão. E responde à pergunta que a
             pessoa tem ANTES de clicar — "posso ler isto agora?" */}
-        <p>{estado && estado !== "pronto" ? "Em preparo" : autor}</p>
+        <div className="livro-meta">
+          <p>{estado && estado !== "pronto" ? "Em preparo" : autor}</p>
+          {notas > 0 && (
+            <span className="livro-notas" aria-label={`${notas} ${notas === 1 ? "nota" : "notas"}`}>
+              <span
+                className="livro-notas-icone"
+                aria-hidden="true"
+                style={{ maskImage: `url(${marcador})`, WebkitMaskImage: `url(${marcador})` }}
+              />
+              <span className="dado" aria-hidden="true">{notas}</span>
+            </span>
+          )}
+        </div>
       </div>
     </li>
   );

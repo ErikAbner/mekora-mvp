@@ -73,11 +73,9 @@
 
 .livro { display: flex; flex-direction: column; gap: 24px; }
 
-/* `align-items: flex-end` alinha o marcador a direita, como o `items-end` do
- * no 895:7385. */
-/* A CAIXA DA CAPA MEDE A CAPA, e mais nada. O marcador e absoluto dentro dela —
- * ver a razao na regra dele. */
-.capa-caixa { position: relative; display: flex; flex-direction: column; align-items: flex-end; }
+/* A caixa mede somente a capa. Metadados, inclusive a quantidade de notas,
+ * ficam abaixo: nenhuma informação funcional deve cobrir a arte do livro. */
+.capa-caixa { position: relative; display: flex; flex-direction: column; }
 
 /* A CAPA NAO TEM BORDA EM REPOUSO.
  *
@@ -110,38 +108,6 @@
    * se está tentando mostrar. Sem receber clique, a capa continua pintada por
    * cima e o alvo continua embaixo; só o acerto do ponteiro atravessa. */
   pointer-events: none;
-}
-
-/* O marcador de notas e forma, nao icone: a mascara vai no PROPRIO marcador, com
- * o fundo escuro nele e o numero dentro.
- *
- * A primeira versao punha a forma como IRMA do numero, absoluta atras. Ficava
- * certa na tela e ERRADA na arvore: o fundo do numero passava a ser a pagina, e
- * o portao acusou 1,05 de contraste — #f3f3f3 sobre #f9f9f9.
- *
- * Nao era falso alarme para calar. O portao avisa de si mesmo que nao resolve
- * sobreposicao, entao o que ele devolve serve para RECUSAR; e recusar aqui
- * estava certo, porque uma arvore que so fica certa quando pintada e uma arvore
- * que leitor de tela, seletor de CSS e instrumento nenhum consegue ler. Com a
- * mascara no proprio elemento, o fundo do numero E o balao — na tela e na
- * arvore. */
-.marcador {
-  /* Dentro do canto da capa. A fita negativa vazava alguns pixels para fora do
-   * cartão e, na primeira linha, invadia a zona dos filtros. O número continua
-   * associado à capa sem alterar a altura da grade. */
-  position: absolute;
-  inset-block-start: 12px;
-  inset-inline-end: 12px;
-  z-index: 2;
-  inline-size: 34px; block-size: 46px;
-  display: flex; justify-content: center; padding-block-start: 10px;
-  background: var(--foreground);
-  mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat;
-  mask-size: contain; -webkit-mask-size: contain;
-}
-.marcador-numero {
-  color: var(--primary-foreground);
-  font-size: 16px; line-height: 24px;   /* como o no 895:7388 */
 }
 
 .livro-texto { display: flex; flex-direction: column; gap: 16px; padding: 12px; margin: -12px; }
@@ -204,6 +170,44 @@
   margin: 0;
   font-size: 20px; line-height: 30px;   /* Body/Medium */
   color: var(--muted-foreground);
+}
+
+/* A quantidade de notas é metadado do livro, não um adesivo sobre a capa.
+ * A grade deixa o autor ocupar o espaço disponível e reserva só o necessário
+ * para o marcador; assim 7, 120 ou 12.000 notas não deformam nem escondem a
+ * imagem. O nome acessível fica no conjunto e o desenho é apenas decorativo. */
+.livro-meta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 8px;
+  min-inline-size: 0;
+}
+.livro-meta > p {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+.livro-notas {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-block-size: 30px;
+  color: var(--muted-foreground);
+  font-size: 16px;
+  line-height: 24px;
+  white-space: nowrap;
+}
+.livro-notas-icone {
+  flex: none;
+  inline-size: 14px;
+  block-size: 19px;
+  background: currentColor;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+  mask-size: contain;
+  -webkit-mask-size: contain;
 }
 
 .ficha { display: flex; flex-direction: column; gap: 40px; position: sticky; inset-block-start: 24px; }

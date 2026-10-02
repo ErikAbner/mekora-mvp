@@ -1628,42 +1628,29 @@ const PROVAS = {
     },
   },
   'r03': {
-    erik: 'o marcador vaza da capa e invade o filtro',
-    veneno: `document.querySelectorAll('.marcador').forEach(m => { m.style.zIndex = '5'; m.style.position = 'absolute'; });
-             document.querySelectorAll('.capa').forEach(c => c.style.zIndex = '0');`,
+    erik: 'a quantidade de notas invade a capa do livro',
+    veneno: `document.querySelectorAll('.livro-notas').forEach(m => {
+               m.style.position = 'absolute'; m.style.insetBlockStart = '12px'; m.style.insetInlineEnd = '12px'; m.style.zIndex = '5';
+             });`,
     async correr(veneno) {
       const d = medir('/estante', `
-        /* O CARTAO E O PRIMEIRO COM MARCADOR, e nao o primeiro da grade.
-           Isto era document.querySelector('.livro'), e o marcador so existe em
-           livro COM nota: no dia em que a bancada ganhou um trabalho sem nota
-           na frente da fila, o m veio nulo e a prova estourou com
-           "Cannot read properties of null" — que chega aqui como "nao consegui
-           medir", isto e, como falta de servidor. A prova media a sobreposicao
-           de um cartao que nao tem sobreposicao para medir. */
-        const l = [...document.querySelectorAll('.livro')].find(e => e.querySelector('.marcador'));
+        /* Mede um cartão COM nota. A contagem é metadado abaixo da imagem e
+           deve continuar visível sem usar a capa como fundo. */
+        const l = [...document.querySelectorAll('.livro')].find(e => e.querySelector('.livro-notas'));
         if (!l) return { semMarcador: true };
-        const c = l.querySelector('.capa'), m = l.querySelector('.marcador');
+        const c = l.querySelector('.capa'), m = l.querySelector('.livro-notas');
         const rc = c.getBoundingClientRect(), rm = m.getBoundingClientRect();
-        const filtros = document.querySelector('.recortes');
-        /* QUEM ESTA NA FRENTE E CONTA DE PINTURA, e nao de ponteiro.
-           Isto era um elementFromPoint no ponto onde os dois se cruzam, e a
-           resposta mudou quando a capa ganhou pointer-events: none para
-           devolver o clique ao .livro-alvo (R-02): sem receber ponteiro, ela
-           sumiu do teste de acerto e a prova acusou regressao numa sobreposicao
-           que nao mudou um pixel. Instrumento que mede a coisa errada acusa o
-           item errado.
-           A ordem de pintura entre irmaos posicionados no mesmo contexto de
-           empilhamento e o z-index, e a ordem do DOM desempata. */
-        const zi = (e) => { const v = getComputedStyle(e).zIndex; return v === 'auto' ? 0 : Number(v); };
-        const zc = zi(c), zm = zi(m);
-        const depoisNoDom = !!(m.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING);
-        const na_frente = zc > zm ? 'capa' : zc < zm ? 'marcador' : (depoisNoDom ? 'capa' : 'marcador');
-        return { na_frente, z_marca: String(zm), z_capa: String(zc),
-                 cruzam: rm.bottom > rc.top && rm.top < rc.bottom,
-                 invade_filtros: filtros ? rm.top < filtros.getBoundingClientRect().bottom : false };`, veneno);
-      if (d.semMarcador) return 'nenhum livro da estante tem marcador de notas — sem ele nao ha a sobreposicao que este item mede';
-      if (d.invade_filtros) return `o marcador alcanca a barra de recortes`;
-      if (!String(d.na_frente || '').includes('marcador')) return `o marcador ficou escondido pela capa (z marca ${d.z_marca}, z capa ${d.z_capa})`;
+        const cruza = !(rm.right <= rc.left || rm.left >= rc.right || rm.bottom <= rc.top || rm.top >= rc.bottom);
+        return {
+          cruza,
+          dentroDaCapa: !!m.closest('.capa-caixa'),
+          rotulo: m.getAttribute('aria-label'),
+          visivel: rm.width > 0 && rm.height > 0,
+        };`, veneno);
+      if (d.semMarcador) return 'nenhum livro da estante tem contagem de notas — a prova precisa de um livro anotado';
+      if (!d.visivel) return 'a contagem de notas existe, mas nao esta visivel';
+      if (!/\d+\s+notas?/i.test(d.rotulo || '')) return 'a contagem de notas perdeu o nome acessivel';
+      if (d.dentroDaCapa || d.cruza) return 'a contagem de notas voltou a ocupar a capa';
       return null;
     },
   },
