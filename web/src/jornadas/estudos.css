@@ -330,6 +330,47 @@
 .estudos-recortes button:focus-visible { outline: 1px solid var(--foreground); outline-offset: -2px; }
 
 .estudos-soltas { margin-block-start: 48px; padding-block-start: 32px; border-block-start: 1px solid var(--border); }
+
+/* GRUPOS DO CANVAS PRESERVAM A INTENÇÃO sem fingir que já são Estudos.
+ * A seção ganha uma moldura única e os itens ficam dentro dela; isto evita o
+ * erro da tela anterior, que repetia dois cartões cinza independentes e apagava
+ * o fato de terem sido reunidos deliberadamente. */
+.estudos-canvas { display: flex; flex-direction: column; gap: 32px; }
+.estudos-canvas-cabecalho {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-block-end: 24px;
+  border-block-end: 1px solid var(--border);
+}
+.estudos-canvas-cabecalho h2 { margin: 0; font-size: 32px; line-height: 40px; font-weight: 540; }
+.estudos-canvas-cabecalho p { margin: 0; max-inline-size: 68ch; color: var(--muted-foreground); font-size: 16px; line-height: 24px; text-wrap: pretty; }
+.estudos-canvas-grupos { display: flex; flex-direction: column; gap: 32px; }
+.estudos-canvas-grupo { padding: 32px; border: 1px solid var(--border); background: var(--background-secondary); }
+.estudos-canvas-grupo > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.estudos-canvas-origem { margin: 0 0 8px; color: var(--muted-foreground); font-size: 14px; line-height: 22px; }
+.estudos-canvas-grupo h3 { margin: 0; font-size: 24px; line-height: 32px; font-weight: 500; text-wrap: pretty; }
+.estudos-canvas-grupo > header > .dado { color: var(--muted-foreground); font-size: 14px; line-height: 22px; white-space: nowrap; }
+.estudos-canvas-livros,
+.estudos-canvas-notas { margin: 24px 0 0; padding: 0; list-style: none; }
+.estudos-canvas-livros { display: flex; flex-wrap: wrap; gap: 16px; }
+.estudos-canvas-livros a { display: flex; align-items: center; gap: 12px; max-inline-size: 320px; color: inherit; text-decoration: none; }
+.estudos-canvas-livros img,
+.estudos-canvas-capa-vazia { flex: none; inline-size: 44px; aspect-ratio: 420 / 594; border: 1px solid var(--border); background: var(--card); object-fit: cover; }
+.estudos-canvas-livros a > span:last-child { display: flex; flex-direction: column; min-inline-size: 0; }
+.estudos-canvas-livros strong { font-size: 16px; line-height: 24px; font-weight: 500; overflow-wrap: anywhere; }
+.estudos-canvas-livros small { color: var(--muted-foreground); font-size: 14px; line-height: 22px; }
+.estudos-canvas-notas { display: flex; flex-direction: column; gap: 20px; }
+.estudos-canvas-notas > li { padding-block-start: 20px; border-block-start: 1px solid var(--border); }
+.estudos-canvas-notas blockquote { margin: 0; padding: 6px 0 6px 16px; font-size: 16px; line-height: 24px; }
+.estudos-canvas-acoes { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; margin-block-start: 32px; }
+.estudos-canvas-abrir { color: var(--foreground); font-size: 16px; line-height: 24px; text-underline-offset: 3px; }
+
+@media (max-width: 767px) {
+  .estudos-canvas-grupo { padding: 24px 20px; }
+  .estudos-canvas-grupo > header { flex-direction: column; gap: 8px; }
+  .estudos-canvas-acoes .botao { inline-size: 100%; }
+}
 /* O CABECALHO DA SECAO TAMBEM VEM DO NO. No `895:9089` o titulo termina em 22 e
  * o texto de apoio comeca em 78 (vao de 56); o apoio termina em 127 e a lista
  * comeca em 167 (vao de 40). Estava 8 e 24: titulo, apoio e lista a mesma

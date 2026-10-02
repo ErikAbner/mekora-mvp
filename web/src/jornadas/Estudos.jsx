@@ -408,7 +408,7 @@ const RECORTES = [
 ];
 
 export function Estudos({
-  estudos = [], notas = [], livros = [], erro, totalEstudos = estudos.length, temMais = false,
+  estudos = [], notas = [], livros = [], gruposCanvas = [], erro, totalEstudos = estudos.length, temMais = false,
   notaIdsReunidas = [],
   aoBuscar, aoCarregarMais, aoCriar, aoMudar, aoApagar, aoApagarNota, aoReunir, aoTirar, aoReler,
 }) {
@@ -590,12 +590,24 @@ export function Estudos({
      entra em estudo nenhum. Listá-lo aqui seria oferecer o que será recusado. */
   const soltas = notas.filter((n) => !reunidas.has(n.id) && n.estado !== "rascunho");
 
+  /* O agrupamento feito à mão no Canvas continua sendo reconhecível aqui.
+   * A seção não vira Estudo sozinha: posição espacial e pergunta de estudo são
+   * intenções diferentes. Mas desmontar a seção em cartões independentes
+   * apagava uma decisão real da pessoa, exatamente como a captura mostrou. */
+  const soltasPorId = new Map(soltas.map((nota) => [nota.id, nota]));
+  const gruposCanvasVisiveis = gruposCanvas.map((grupo) => ({
+    ...grupo,
+    notas: (grupo.notaIds ?? []).map((id) => soltasPorId.get(id)).filter(Boolean),
+  })).filter((grupo) => grupo.notas.length || (grupo.livros ?? []).length);
+  const idsNosGruposCanvas = new Set(gruposCanvasVisiveis.flatMap((grupo) => grupo.notas.map((nota) => nota.id)));
+  const soltasSemGrupo = soltas.filter((nota) => !idsNosGruposCanvas.has(nota.id));
+
   /* AS ANOTAÇÕES ESCRITAS E NÃO LEVADAS — o cartão cinza do desenho, "4
      anotações escritas e ainda não levadas". É um subconjunto do "Fora de
      estudo": as que têm COMENTÁRIO, ou seja, aquelas em que a pessoa parou para
      escrever alguma coisa e mesmo assim não as levou para lugar nenhum. Marcar
      um trecho é barato; escrever sobre ele não é. */
-  const escritasESoltas = soltas.filter((n) => n.comentario);
+  const escritasESoltas = soltasSemGrupo.filter((n) => n.comentario);
 
   const acoesDaNota = (n, mostrarOrigem = false) => (
     <div className="estudo-nota-acoes">
@@ -1004,11 +1016,93 @@ export function Estudos({
           rotulo="Nesta parte"
           itens={[
             ...(ligou?.grupos?.length ? [{ id: "estudos-ligou", rotulo: "Parecem do mesmo assunto" }] : []),
-            ...(soltas.length ? [{ id: "estudos-soltas", rotulo: "Fora de estudo" }] : []),
+            ...(gruposCanvasVisiveis.length ? [{ id: "estudos-canvas", rotulo: "Grupos do Canvas" }] : []),
+            ...(soltasSemGrupo.length ? [{ id: "estudos-soltas", rotulo: "Fora de estudo" }] : []),
           ]}
         />
 
         <div className="estudos-de-baixo">
+
+        {gruposCanvasVisiveis.length > 0 && (
+          <section className="estudos-canvas" id="estudos-canvas">
+            <header className="estudos-canvas-cabecalho">
+              <h2>Grupos do Canvas</h2>
+              <p>
+                Você aproximou estes itens no Canvas. Eles continuam juntos
+                aqui, mas ainda não são um estudo até você transformar o grupo.
+              </p>
+            </header>
+            <div className="estudos-canvas-grupos">
+              {gruposCanvasVisiveis.map((grupo) => {
+                const chave = `canvas:${grupo.id}`;
+                const total = grupo.notas.length + (grupo.livros ?? []).length;
+                return (
+                  <article className="estudos-canvas-grupo" key={grupo.id}>
+                    <header>
+                      <div>
+                        <p className="estudos-canvas-origem">Seção do Canvas</p>
+                        <h3>{grupo.nome || "Seção sem nome"}</h3>
+                      </div>
+                      <span className="dado">{total} {total === 1 ? "item" : "itens"}</span>
+                    </header>
+
+                    {(grupo.livros ?? []).length > 0 && (
+                      <ul className="estudos-canvas-livros" aria-label="Livros desta seção">
+                        {grupo.livros.map((livro) => (
+                          <li key={livro.id}>
+                            <Link to={`/estante/${livro.job_id}`}>
+                              {livro.capa
+                                ? <img src={livro.capa} alt="" aria-hidden="true" loading="lazy" />
+                                : <span className="estudos-canvas-capa-vazia" aria-hidden="true" />}
+                              <span>
+                                <strong>{livro.titulo}</strong>
+                                {livro.autor && <small>{livro.autor}</small>}
+                              </span>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    {grupo.notas.length > 0 && (
+                      <ul className="estudos-canvas-notas">
+                        {grupo.notas.map((nota) => (
+                          <li key={nota.id}>
+                            {nota.trecho && <blockquote className="trecho-citado" data-cor={nota.cor}>{nota.trecho}</blockquote>}
+                            {nota.comentario && <p className="estudos-solta-comentario">{nota.comentario}</p>}
+                            {acoesDaNota(nota, true)}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    <div className="estudos-canvas-acoes">
+                      <Botao
+                        tom="secundaria"
+                        porque={!grupo.notas.length
+                          ? "Um estudo precisa de pelo menos uma nota"
+                          : montando === chave ? "Montando o estudo…" : null}
+                        onClick={async () => {
+                          setMontando(chave);
+                          try {
+                            const novo = await criarEstudo({ nome: grupo.nome || "Grupo do Canvas", sobre: "" });
+                            for (const nota of grupo.notas) await reunirNoEstudo(novo.id, nota.id);
+                            navegar(`/estudo/${novo.id}`);
+                          } catch {
+                            setMontando(null);
+                          }
+                        }}
+                      >
+                        {montando === chave ? "Montando…" : `Criar estudo com ${grupo.notas.length === 1 ? "esta nota" : `estas ${grupo.notas.length} notas`}`}
+                      </Botao>
+                      <Link className="estudos-canvas-abrir" to="/canvas">Abrir no Canvas</Link>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {/* O NOME DIZ QUEM AGRUPOU, e até 03/09 ele dizia o contrário.
             
@@ -1256,17 +1350,17 @@ export function Estudos({
         {/* FORA DE ESTUDO — o que sobrou solto, e de onde um estudo se monta.
             O nó 966:31095 tem esta seção, e sem ela a tela mostra o que já foi
             reunido e esconde o material. */}
-        {soltas.length > 0 && (
+        {soltasSemGrupo.length > 0 && (
           <section className="estudos-soltas" id="estudos-soltas">
             <h2>
-              Fora de estudo <span className="dado">{soltas.length}</span>
+              Fora de estudo <span className="dado">{soltasSemGrupo.length}</span>
             </h2>
             <p className="estudos-sobre">
               Notas que você marcou e ainda não levou para lugar nenhum. Um
               estudo começa aqui.
             </p>
             <ul>
-              {soltas.slice(0, limiteDasSoltas).map((n) => (
+              {soltasSemGrupo.slice(0, limiteDasSoltas).map((n) => (
                 <li key={n.id}>
                   {n.trecho && (
                     <blockquote className="trecho-citado" data-cor={n.cor}>{n.trecho}</blockquote>
@@ -1284,11 +1378,11 @@ export function Estudos({
                 </li>
               ))}
             </ul>
-            {soltas.length > limiteDasSoltas && (
+            {soltasSemGrupo.length > limiteDasSoltas && (
               /* O TETO É DITO, e não escondido. Uma lista cortada em silêncio
                  faz a pessoa achar que só há vinte notas soltas. */
               <p className="estudos-sobre">
-                Mostrando {limiteDasSoltas} de <span className="dado">{soltas.length}</span>.
+                Mostrando {limiteDasSoltas} de <span className="dado">{soltasSemGrupo.length}</span> notas fora dos grupos do Canvas.
                 As outras estão em <Link to="/notas">Notas</Link>.
               </p>
             )}

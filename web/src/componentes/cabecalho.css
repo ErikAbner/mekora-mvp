@@ -8,17 +8,15 @@
   justify-content: space-between;
   gap: 32px;
   padding: 16px 32px;
-  /* A BARRA NÃO TEM FUNDO: as duas caixas dentro dela é que têm.
+  /* O CABEÇALHO STICKY PRECISA DE UM FUNDO PRÓPRIO.
    *
-   * No `895:10599` o cabeçalho são dois cartões FLUTUANDO sobre o chão
-   * pontilhado — os pontos passam por trás e entre eles. Aqui a barra inteira
-   * estava pintada de `surface/base`, e o efeito era o chão sumir na faixa de
-   * cima: o Erik viu como "o topo da gaveta tá sem contraste ou distinção do
-   * bg".
-   *
-   * Nas telas sem chão isto não muda nada — o que aparece atrás é a mesma cor
-   * que a barra pintava. */
-  background: transparent;
+   * Transparente, ele deixava títulos e controles rolarem por trás das caixas:
+   * na página do livro, “Livros / O que ficou” atravessava visualmente a
+   * navegação. Não era só ruído — duas hierarquias ocupavam o mesmo lugar.
+   * O Canvas continua sendo a exceção explícita mais abaixo: lá o cabeçalho é
+   * absoluto sobre o plano e recebe fundo transparente na regra da tela. */
+  background: var(--piso);
+  border-block-end: 1px solid var(--separator);
   transition: transform 220ms var(--saida), opacity 160ms var(--saida);
   will-change: transform;
 }

@@ -40,7 +40,7 @@ import { LUGARES } from "./lugares.js";
 import { useJornada } from "./estado/useJornada.js";
 import { usePessoa } from "./estado/usePessoa.js";
 import { abrirLivro, blocosDoCapitulo } from "./leitor/abrir.js";
-import { gravarProgresso, lerProgresso } from "../../contrato/api.js";
+import { gravarProgresso, lerCanvas, lerProgresso } from "../../contrato/api.js";
 import { fracaoLida } from "../../contrato/progresso.js";
 import { usarNotas } from "./leitor/usarNotas.js";
 import { usarMarcadores } from "./leitor/usarMarcadores.js";
@@ -552,6 +552,7 @@ function PaginaEstudos() {
     buscar, carregarMais, temMais, total, notaIdsReunidas,
   } = usarEstudos();
   const [notas, setNotas] = useState([]);
+  const [gruposCanvas, setGruposCanvas] = useState([]);
   /* A VISTA "LEITURA" DOS ESTUDOS precisa dos livros: ela é um quadro dos
      livros por estado de leitura, e nada disso sai dos estudos. */
   const { livros, carregarEstante } = useJornada();
@@ -559,6 +560,26 @@ function PaginaEstudos() {
   useEffect(() => {
     let vivo = true;
     lerTodasAsNotas().then((n) => vivo && setNotas(n)).catch(() => {});
+    return () => { vivo = false; };
+  }, [estudos.length]);
+
+  /* UMA SEÇÃO DO CANVAS NÃO É UM ESTUDO, mas também não pode perder a forma
+   * quando chega aqui. A superfície já devolve vínculos explícitos (`grupo_id`)
+   * para notas e livros; esta tela apenas reúne a resposta por seção. Assim o
+   * agrupamento deliberado continua visível sem ser promovido automaticamente
+   * a uma pergunta que a pessoa nunca escreveu. */
+  useEffect(() => {
+    let vivo = true;
+    lerCanvas().then((canvas) => {
+      if (!vivo) return;
+      const nos = canvas.nos ?? [];
+      const livrosDoCanvas = canvas.livros ?? [];
+      setGruposCanvas((canvas.grupos ?? []).map((grupo) => ({
+        ...grupo,
+        notaIds: nos.filter((no) => no.grupo_id === grupo.id).map((no) => no.nota_id),
+        livros: livrosDoCanvas.filter((livro) => livro.grupo_id === grupo.id),
+      })).filter((grupo) => grupo.notaIds.length || grupo.livros.length));
+    }).catch(() => vivo && setGruposCanvas([]));
     return () => { vivo = false; };
   }, [estudos.length]);
 
@@ -574,6 +595,7 @@ function PaginaEstudos() {
     <Estudos
       estudos={estudos}
       notas={notas}
+      gruposCanvas={gruposCanvas}
       livros={livros}
       erro={erro}
       aoCriar={criar}

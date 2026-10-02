@@ -5,10 +5,10 @@
 O **Mekora** transforma documentos em uma experiência de leitura contínua. A pessoa envia um arquivo, acompanha sua preparação, lê o resultado, registra destaques e notas e organiza o conhecimento em estudos e no Canvas.
 
 Esta é a distribuição compartilhável do Mekora, sincronizada com o produto em
-**1º de outubro de 2026**. Ela contém o mesmo código operacional da versão
+**2 de outubro de 2026**. Ela contém o mesmo código operacional da versão
 principal, mas nunca inclui o acervo, banco, credenciais, modelos baixados,
 arquivos convertidos, logs ou demais dados da instalação de desenvolvimento.
-Nesta revisão, a origem funcional corresponde ao commit `9b065a0` do Mekora
+Nesta revisão, a origem funcional corresponde ao commit `4fe1490` do Mekora
 principal; os iniciadores próprios da distribuição para Windows são mantidos.
 
 ## O produto

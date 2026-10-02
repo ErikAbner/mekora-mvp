@@ -900,6 +900,8 @@
      cima, enquanto o cabeçalho compartilhado usa 16px: o plano começava com um
      degrau vazio que só existia aqui. A lateral continua em 32px no desktop. */
   padding: 16px 32px;
+  background: transparent;
+  border-block-end: 0;
   pointer-events: none;
 }
 /* A barra não recebe o ponteiro — ela é uma faixa transparente sobre o plano, e
