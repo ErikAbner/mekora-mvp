@@ -8,15 +8,12 @@
   justify-content: space-between;
   gap: 32px;
   padding: 16px 32px;
-  /* O CABEÇALHO STICKY PRECISA DE UM FUNDO PRÓPRIO.
-   *
-   * Transparente, ele deixava títulos e controles rolarem por trás das caixas:
-   * na página do livro, “Livros / O que ficou” atravessava visualmente a
-   * navegação. Não era só ruído — duas hierarquias ocupavam o mesmo lugar.
-   * O Canvas continua sendo a exceção explícita mais abaixo: lá o cabeçalho é
-   * absoluto sobre o plano e recebe fundo transparente na regra da tela. */
-  background: var(--piso);
-  border-block-end: 1px solid var(--separator);
+  /* O cabeçalho continua no fluxo e reserva sua altura, mas não cria uma
+     segunda faixa sobre a página. As duas caixas de navegação mantêm suas
+     próprias superfícies; o espaço entre elas deixa o conteúdo aparecer sem
+     fundo branco nem filete atravessando toda a largura. */
+  background: transparent;
+  border: 0;
   transition: transform 220ms var(--saida), opacity 160ms var(--saida);
   will-change: transform;
 }
