@@ -1,7 +1,7 @@
 # Mekora — o sistema de design
 
 **Estado:** vigente
-**Última revisão:** 2026-08-21
+**Última revisão:** 2026-10-13
 
 > **Este documento descreve o estado vigente.** Histórico, alternativas rejeitadas e evolução
 > normativa pertencem às DECs e à reconciliação, e **não são repetidos aqui** — com **uma exceção
@@ -10,13 +10,19 @@
 
 ## Por que este documento é diferente dos outros dois
 
-**O Mekora não tem fonte de design formal.** Não há arquivo de design, não há design system em
-repositório separado. O que existe é o **Protótipo de Produto do Mekora** — referência funcional e de
-interação vigente `DEC-0033 §2` — que é, ao mesmo tempo, protótipo, exploração e implementação.
+**O Mekora passou a ter uma fonte visual formal no mesmo arquivo do produto.** A página
+`DS — Mekora` (`1649:21`) contém fundamentos, componentes e padrões; esta documentação
+explica as decisões e o código continua sendo a autoridade do comportamento. O quadro
+`Wireframing - Alta ✅` (`895:6937`) é a referência de composição das telas vigentes.
 
-Um artefato que mistura três papéis não pode ser a autoridade que os distingue `DEC-0033 §4`. **É
-por isso que este documento existe, e é o que ele faz:** separar, dentro do protótipo, o que é regra
-visual vigente do que ainda é exploração.
+Nenhuma das três fontes substitui as outras: Figma governa composição e variantes, este
+documento governa a razão das regras, e os contratos/testes do repositório governam o que
+a aplicação realmente faz. O vínculo verificável entre elas está em
+`docs/FIGMA-CODE-CONTRACT.md`.
+
+Um artefato que mistura três papéis não pode ser a autoridade que os distingue `DEC-0033 §4`.
+**É por isso que a página de DS e este documento existem:** separam o que é regra visual
+vigente do que ainda é exploração e registram onde cada regra é implementada.
 
 **Este documento não é um retrato do protótipo.** Retrato de artefato vivo nasce desatualizado
 `DEC-0033` consequência 2.

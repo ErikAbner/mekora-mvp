@@ -10,6 +10,16 @@ acrescente a linha.
 
 Arquivo: `uuhto6FREG14H3DME0XCI7` — *Kindle local tool - Project*.
 
+Página de telas vigente: `895:6937` — *Wireframing - Alta ✅*.
+
+Página do sistema de design: `1649:21` — *DS — Mekora*.
+
+O conjunto `1654:2176` — *Telas alinhadas ao código · 2026-10-13* — reúne
+as rotas que existiam no produto e ainda não tinham uma composição própria no
+arquivo. Cada quadro novo contém uma faixa chamada **Contrato com o código**, com
+a rota, o arquivo React de origem e a data da reconciliação. Essa faixa é
+documentação do quadro e não faz parte da interface entregue.
+
 ## Como abrir uma que não está aqui
 
 A ferramenta lê a **seleção atual** do Figma quando não recebe id. Selecione o
@@ -37,6 +47,13 @@ quadro e peça — o nome e o id vêm juntos.
 | `966:31504` | M · Preparo — o que encontrei | `/preparo/:id` | **comparada · corrigida** |
 | `967:31833` | M · Preparo — em andamento | `/preparo/:id` | **comparada · construída** (medida com conversão real) |
 | `973:32414` | M · Leitura · aparência | painel da leitura | **é o `941:23110`, já construído** |
+| `1655:2176` | M · Entrar · vigente | `/entrar` | **alinhada ao código · 2026-10-13** |
+| `1655:2200` | M · Notas · vigente | `/notas` | **alinhada ao código · 2026-10-13** |
+| `1655:2232` | M · Conta — segurança · vigente | `/conta/seguranca` | **substitui visualmente a versão com senha** |
+| `1655:2261` | M · Política de privacidade · vigente | `/politica-de-privacidade` | **alinhada ao código · 2026-10-13** |
+| `1655:2285` | M · Termos de uso · vigente | `/termos-de-uso` | **alinhada ao código · 2026-10-13** |
+| `1655:2309` | M · Não encontrada · vigente | demais rotas | **alinhada ao código · 2026-10-13** |
+| `1655:2330` | M · Canvas — somente computador · vigente | `/canvas` | **estado deliberado do telefone** |
 
 ## O que a comparação achou
 
@@ -216,6 +233,13 @@ telas você criou muito errado". A comparação está em curso.
 | `895:7856` | D · Preparo — o que encontrei | `/preparo/:id` | **comparada · corrigida** |
 | `895:8029` | D · Preparo — em andamento | `/preparo/:id` | **comparada · construída** |
 | `895:8164` | D · Preparo — pronto | `/preparo/:id` | **comparada · corrigida** |
+| `1654:2177` | D · Entrar · vigente | `/entrar` | **alinhada ao código · 2026-10-13** |
+| `1654:2203` | D · Notas · vigente | `/notas` | **alinhada ao código · 2026-10-13** |
+| `1654:2243` | D · Conta — segurança · vigente | `/conta/seguranca` | **substitui visualmente a versão com senha** |
+| `1654:2283` | D · Política de privacidade · vigente | `/politica-de-privacidade` | **alinhada ao código · 2026-10-13** |
+| `1654:2310` | D · Termos de uso · vigente | `/termos-de-uso` | **alinhada ao código · 2026-10-13** |
+| `1654:2337` | D · Não encontrada · vigente | demais rotas | **alinhada ao código · 2026-10-13** |
+| `1654:2363` | D · Conta — dispositivos Kindle · vigente | `/conta/kindle` | **alinhada ao código · 2026-10-13** |
 
 E um trecho solto, que o Erik mandou quando eu disse que não conseguia ler:
 
