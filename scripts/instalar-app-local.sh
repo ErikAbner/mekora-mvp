@@ -8,6 +8,7 @@ CONTEUDO="$APP/Contents"
 EXECUTAVEL="$CONTEUDO/MacOS/Mekora Local"
 RECURSOS="$CONTEUDO/Resources"
 ICONE_CHROME="$HOME/Applications/Chrome Apps.localized/Mekora.app/Contents/Resources/app.icns"
+FONTE_APP="$RAIZ/scripts/MekoraLocal.swift"
 
 mkdir -p "$CONTEUDO/MacOS" "$RECURSOS"
 
@@ -29,9 +30,14 @@ cat > "$CONTEUDO/Info.plist" <<'PLIST'
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleShortVersionString</key>
-  <string>1.0</string>
+  <string>1.1</string>
   <key>CFBundleVersion</key>
-  <string>1</string>
+  <string>2</string>
+  <key>NSAppTransportSecurity</key>
+  <dict>
+    <key>NSAllowsLocalNetworking</key>
+    <true/>
+  </dict>
   <key>CFBundleURLTypes</key>
   <array>
     <dict>
@@ -47,12 +53,14 @@ cat > "$CONTEUDO/Info.plist" <<'PLIST'
 </plist>
 PLIST
 
-RAIZ_ESCAPADA="${RAIZ//\"/\\\"}"
-cat > "$EXECUTAVEL" <<SCRIPT
-#!/bin/bash
-open -a Terminal "$RAIZ_ESCAPADA/Mekora.command"
-SCRIPT
-chmod +x "$EXECUTAVEL"
+printf '%s\n' "$RAIZ" > "$RECURSOS/repository-root.txt"
+
+if ! command -v xcrun >/dev/null 2>&1 || ! xcrun --find swiftc >/dev/null 2>&1; then
+  printf 'Não foi possível criar a janela local: as ferramentas de desenvolvimento do macOS não estão instaladas.\n' >&2
+  exit 1
+fi
+
+xcrun swiftc "$FONTE_APP" -framework Cocoa -framework WebKit -o "$EXECUTAVEL"
 
 if [ -f "$ICONE_CHROME" ]; then
   cp "$ICONE_CHROME" "$RECURSOS/app.icns"
@@ -75,6 +83,10 @@ fi
 LSREGISTER="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
 if [ -x "$LSREGISTER" ]; then
   "$LSREGISTER" -f "$APP" >/dev/null 2>&1 || true
+fi
+
+if command -v codesign >/dev/null 2>&1; then
+  codesign --force --deep --sign - "$APP" >/dev/null 2>&1 || true
 fi
 
 printf '✓ Aplicativo local instalado em %s\n' "$APP"

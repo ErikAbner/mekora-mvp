@@ -25,7 +25,7 @@ import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
-EMAIL = os.environ.get("MEKORA_EMAIL", "erik@mekora.local")
+EMAIL_PEDIDO = os.environ.get("MEKORA_EMAIL", "erik@mekora.local")
 if os.environ.get("MEKORA_STORAGE"):
     # No Docker, inclusive no iniciador do Windows, o banco mora diretamente
     # no volume persistente. Fora dele, a bancada continua usando `.ver`.
@@ -45,6 +45,55 @@ if not BANCO.exists():
 
 c = sqlite3.connect(BANCO)
 c.execute("PRAGMA foreign_keys = ON")
+
+
+def _tabela_tem_coluna(tabela: str, coluna: str) -> bool:
+    tabelas = {
+        linha[0]
+        for linha in c.execute("SELECT name FROM sqlite_master WHERE type = 'table'")
+    }
+    if tabela not in tabelas:
+        return False
+    return coluna in {linha[1] for linha in c.execute(f"PRAGMA table_info({tabela})")}
+
+
+def _email_do_acervo() -> str | None:
+    """Encontra a conta dona desta instalação sem inventar uma nova."""
+    candidatos: set[int] = set()
+    if _tabela_tem_coluna("processing_jobs", "dono_id"):
+        candidatos = {
+            linha[0]
+            for linha in c.execute(
+                "SELECT DISTINCT dono_id FROM processing_jobs WHERE dono_id IS NOT NULL"
+            )
+        }
+    if not candidatos:
+        for tabela in ("notas", "estudos", "canvas_secoes"):
+            if _tabela_tem_coluna(tabela, "pessoa_id"):
+                candidatos.update(
+                    linha[0]
+                    for linha in c.execute(
+                        f"SELECT DISTINCT pessoa_id FROM {tabela} WHERE pessoa_id IS NOT NULL"
+                    )
+                )
+    if len(candidatos) != 1:
+        return None
+    linha = c.execute(
+        "SELECT email FROM pessoas WHERE id = ?", (next(iter(candidatos)),)
+    ).fetchone()
+    return linha[0] if linha else None
+
+
+if EMAIL_PEDIDO == "auto":
+    EMAIL = _email_do_acervo()
+    if not EMAIL:
+        print(
+            "não há uma única conta dona do acervo; defina MEKORA_EMAIL",
+            file=sys.stderr,
+        )
+        raise SystemExit(3)
+else:
+    EMAIL = EMAIL_PEDIDO
 
 # SEM FUSO NA STRING, e isto derrubava a entrada com 500.
 #
