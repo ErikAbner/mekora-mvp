@@ -2,6 +2,21 @@
  * de colapso sem depender das classes de uma tela especifica. */
 (async () => {
   const inicio = performance.now();
+
+  /* A primeira rota da rodada também é a primeira consulta pesada ao banco.
+   * Esperar apenas um DOM "estável" aprovava ou reprovava o esqueleto antes
+   * de a API devolver a Estante. As demais larguras passavam porque o banco já
+   * estava aquecido. Aqui a prova espera o sinal que veio medir, com teto: uma
+   * API realmente travada continua terminando com zero livros e reprova. */
+  if (location.pathname === "/estante") {
+    for (let i = 0; i < 120; i++) {
+      const livros = document.querySelectorAll(".estante-grade .grade > .livro").length;
+      const vazioReal = document.querySelector(".estante-vazia");
+      if (livros > 0 || vazioReal) break;
+      await new Promise((resolve) => setTimeout(resolve, 125));
+    }
+  }
+
   let estaveis = 0;
   let anterior = -1;
   for (let i = 0; i < 80 && estaveis < 4; i++) {
