@@ -407,6 +407,24 @@
   font-size: 18px; line-height: 26px;
   text-wrap: pretty;
 }
+.preparo-fim-qualidade {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 20px 24px;
+  border: 1px solid var(--warning);
+  background: var(--card);
+  color: var(--foreground);
+}
+.preparo-fim-qualidade h2,
+.preparo-fim-qualidade p,
+.preparo-fim-qualidade ul { margin: 0; }
+.preparo-fim-qualidade h2 { font-size: 20px; line-height: 30px; font-weight: 540; }
+.preparo-fim-qualidade ul { padding-inline-start: 20px; }
+.preparo-fim-qualidade li,
+.preparo-fim-qualidade p { font-size: 16px; line-height: 24px; }
+.preparo-fim-qualidade p { color: var(--muted-foreground); text-wrap: pretty; }
 /* O "Baixar EPUB" e uma ancora com cara de botao: precisa do que so o <button>
  * trazia. */
 .preparo-fim-acoes .botao { text-decoration: none; }

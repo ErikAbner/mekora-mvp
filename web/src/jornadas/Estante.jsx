@@ -31,6 +31,18 @@ const RECORTES = [
   { id: "quadrinho", rotulo: "Quadrinhos", cabe: (l) => !!l.quadrinho },
 ];
 
+/* O primeiro lote acompanha a área que realmente existe para a grade.
+ *
+ * Sessenta capas eram aceitáveis no computador, mas no telefone viravam quase
+ * vinte mil pixels de documento antes de a pessoa pedir por mais. Isso também
+ * fazia o navegador compor imagens que estavam muitas telas abaixo. Mantemos a
+ * mesma paginação explícita, apenas com uma entrada proporcional à viewport. */
+export function loteInicialDaEstante(largura = globalThis.window?.innerWidth ?? 1440) {
+  if (largura <= 639) return 20;
+  if (largura <= 1023) return 36;
+  return 60;
+}
+
 /* Onde a leitura está, em palavras que o produto pode sustentar.
  *
  * A PORCENTAGEM PASSOU A EXISTIR. Este comentário dizia "não devolve
@@ -123,11 +135,12 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher }) {
   /* O funil do telefone (nó 964:24606): abre os mesmos recortes que o computador
      mostra em linha. */
   const [filtrando, setFiltrando] = useState(false);
-  const [limite, setLimite] = useState(60);
+  const lote = loteInicialDaEstante();
+  const [limite, setLimite] = useState(lote);
   const regra = RECORTES.find((r) => r.id === recorte) ?? RECORTES[0];
   const mostrados = livros.filter(regra.cabe);
   const livrosNaPagina = mostrados.slice(0, limite);
-  useEffect(() => { setLimite(60); }, [recorte]);
+  useEffect(() => { setLimite(lote); }, [recorte, lote]);
   return (
     <div className="mesa chao">
       <Cabecalho lugar="estante" />
@@ -228,7 +241,7 @@ export function Estante({ livros = [], selecionado, aoAbrir, aoEscolher }) {
               <p>
                 Mostrando <span className="dado">{livrosNaPagina.length}</span> de <span className="dado">{mostrados.length}</span> livros.
               </p>
-              <Botao tom="secundaria" onClick={() => setLimite((n) => n + 60)}>
+              <Botao tom="secundaria" onClick={() => setLimite((n) => n + lote)}>
                 Mostrar mais livros
               </Botao>
             </div>

@@ -50,6 +50,22 @@
   text-wrap: pretty;
 }
 
+.visao-identidade-acervo {
+  margin: 0;
+  padding: 16px 20px;
+  background: var(--background-secondary);
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+.visao-identidade-acervo strong {
+  color: var(--foreground);
+  font-weight: 540;
+  overflow-wrap: anywhere;
+}
+
 /* O RESUMO E O QUE SO ESTA TELA RESPONDE: quanto a conta guarda de cada coisa.
  * Cada numero leva ao lugar onde aquilo vive — e aqui o link nao repete a
  * trilha, porque a estante e as notas nao estao nela. */

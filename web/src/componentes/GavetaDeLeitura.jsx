@@ -18,7 +18,15 @@ export function GavetaDeLeitura({ titulo, voltarPara, children }) {
     <main className="leitura-cena chao">
       <Drawer.Root
         open
-        onOpenChange={(aberta) => { if (!aberta) navegar(voltarPara); }}
+        onOpenChange={(aberta) => {
+          if (aberta) return;
+          /* Escape respeita a pilha de superfícies. Quando uma ferramenta
+           * interna está aberta, o próprio leitor fecha essa ferramenta; a
+           * gaveta principal permanece. Sem esta guarda, um único Escape
+           * fechava aparência/busca e saía do livro ao mesmo tempo. */
+          if (document.querySelector(".aparencia, .caderno, .indice, .paleta, .cartao-nota-fundo[open]")) return;
+          navegar(voltarPara);
+        }}
         direction="bottom"
         modal={false}
         shouldScaleBackground={false}

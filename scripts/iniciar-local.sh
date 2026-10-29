@@ -19,9 +19,20 @@ ok() { printf '  \033[32m✓\033[0m %s\n' "$1"; }
 aviso() { printf '  \033[33m!\033[0m %s\n' "$1"; }
 falha() {
   printf '\n  \033[31mNão foi possível iniciar:\033[0m %s\n\n' "$1" >&2
-  printf '  Esta janela ficará aberta para você conseguir ler o erro.\n' >&2
-  read -r -p '  Pressione Enter para fechar. ' _ || true
+  if [ -t 0 ]; then
+    printf '  Esta janela ficará aberta para você conseguir ler o erro.\n' >&2
+    read -r -p '  Pressione Enter para fechar. ' _ || true
+  elif command -v osascript >/dev/null 2>&1; then
+    osascript -e 'display alert "O Mekora não conseguiu iniciar" message "Abra ~/Library/Logs/Mekora/local.log para ver o motivo." as critical' >/dev/null 2>&1 || true
+  fi
   exit 1
+}
+
+abrir_produto() {
+  # A execução pelo Terminal continua abrindo a página no navegador. O app
+  # instalado define MEKORA_NAO_ABRIR=1 e mostra esta mesma rota numa janela
+  # WebKit própria; assim os dois caminhos nunca disputam a abertura.
+  open "$PAGINA"
 }
 
 titulo "Mekora local"
@@ -47,18 +58,47 @@ fi
 command -v python3 >/dev/null 2>&1 || falha "Python 3 não está instalado."
 command -v npm >/dev/null 2>&1 || falha "Node.js/npm não está instalado."
 
-# Dependências só são instaladas quando faltam. Iniciar o produto no dia a dia
-# não deve depender da rede nem modificar o ambiente sem necessidade.
+# Dependências só são instaladas quando faltam OU quando a lista mudou. Conferir
+# apenas a existência da pasta deixava o app indefinidamente numa versão antiga:
+# o Git trazia um package-lock/requirements novo, mas o build continuava usando
+# o node_modules e o .venv da primeira instalação.
+assinatura_de() {
+  python3 -c 'import hashlib, pathlib, sys; print(hashlib.sha256(pathlib.Path(sys.argv[1]).read_bytes()).hexdigest())' "$1"
+}
+
 if [ ! -x "$RAIZ/.venv/bin/python" ]; then
   titulo "Primeira preparação"
   python3 -m venv "$RAIZ/.venv" || falha "não consegui criar o ambiente Python."
-  "$RAIZ/.venv/bin/pip" install -r "$RAIZ/backend/requirements.txt" || \
-    falha "não consegui instalar as dependências Python."
 fi
 
-if [ ! -d "$RAIZ/web/node_modules" ]; then
-  titulo "Primeira preparação da interface"
-  npm --prefix "$RAIZ/web" install || falha "não consegui instalar a interface."
+REQ_STAMP="$RAIZ/.venv/.mekora-requirements.sha256"
+REQ_ATUAL="$(assinatura_de "$RAIZ/backend/requirements.txt")"
+REQ_INSTALADO=""
+if [ -f "$REQ_STAMP" ]; then REQ_INSTALADO="$(tr -d '[:space:]' < "$REQ_STAMP")"; fi
+if [ "$REQ_ATUAL" != "$REQ_INSTALADO" ]; then
+  titulo "Atualizando o motor local"
+  "$RAIZ/.venv/bin/pip" install -r "$RAIZ/backend/requirements.txt" || \
+    falha "não consegui instalar as dependências Python."
+  printf '%s\n' "$REQ_ATUAL" > "$REQ_STAMP"
+fi
+
+# O Argos antigo trazia Stanza como dependência obrigatória. Atualizar para a
+# versão com MiniSBD não apaga pacotes que deixaram de ser dependência, então o
+# Stanza vulnerável permanecia no disco apesar de não ser mais usado nem estar
+# no requirements. Removê-lo é seguro e torna o ambiente real igual à lista.
+if "$RAIZ/.venv/bin/pip" show stanza >/dev/null 2>&1; then
+  "$RAIZ/.venv/bin/pip" uninstall -y stanza >/dev/null || \
+    falha "não consegui remover a dependência antiga Stanza."
+fi
+
+NODE_STAMP="$RAIZ/web/node_modules/.mekora-package-lock.sha256"
+NODE_ATUAL="$(assinatura_de "$RAIZ/web/package-lock.json")"
+NODE_INSTALADO=""
+if [ -f "$NODE_STAMP" ]; then NODE_INSTALADO="$(tr -d '[:space:]' < "$NODE_STAMP")"; fi
+if [ ! -d "$RAIZ/web/node_modules" ] || [ "$NODE_ATUAL" != "$NODE_INSTALADO" ]; then
+  titulo "Atualizando a interface local"
+  npm --prefix "$RAIZ/web" ci || falha "não consegui instalar a interface."
+  printf '%s\n' "$NODE_ATUAL" > "$NODE_STAMP"
 fi
 
 # A assinatura é por CONTEÚDO, e não por data de modificação. Git pode trazer
@@ -86,7 +126,7 @@ fi
 # service worker avisa a janela instalada e ela própria recarrega.
 if [ "$ACESSO_TABLET" != "1" ] && curl -fsS --max-time 1 "$ENDERECO_LOCAL/health" >/dev/null 2>&1; then
   ok "O Mekora já estava aberto e está com a interface atual."
-  if [ "${MEKORA_NAO_ABRIR:-0}" != "1" ]; then open "$PAGINA"; fi
+  if [ "${MEKORA_NAO_ABRIR:-0}" != "1" ]; then abrir_produto; fi
   exit 0
 fi
 
@@ -114,6 +154,7 @@ if [ "${MEKORA_VERIFICAR_SMTP:-1}" = "1" ]; then
 fi
 
 export ARGOS_PACKAGES_DIR="${ARGOS_PACKAGES_DIR:-$RAIZ/storage/models/argos-packages}"
+export ARGOS_CHUNK_TYPE="${ARGOS_CHUNK_TYPE:-MINISBD}"
 
 titulo "Abrindo"
 if [ "$ACESSO_TABLET" = "1" ]; then
@@ -126,7 +167,11 @@ if [ "$ACESSO_TABLET" = "1" ]; then
     sleep 0.25
   done
   if [ "$PRONTO" != "1" ]; then falha "o servidor demorou para responder."; fi
-  TOKEN="$(MEKORA_PROVA="$RAIZ" MEKORA_EMAIL="${MEKORA_EMAIL:-mekora@local}" "$RAIZ/.venv/bin/python" "$RAIZ/scripts/chave-local.py")" || \
+  # O tablet precisa entrar na MESMA identidade que já possui o acervo. Usar
+  # uma conta fixa aqui fazia uma instalação usada parecer vazia, embora os
+  # livros continuassem intactos no banco. `auto` só escolhe quando há uma
+  # única dona comprovada; com ambiguidade, para e pede uma escolha explícita.
+  TOKEN="$(MEKORA_PROVA="$RAIZ" MEKORA_EMAIL="${MEKORA_EMAIL:-auto}" "$RAIZ/.venv/bin/python" "$RAIZ/scripts/chave-local.py")" || \
     falha "não consegui criar o link local para o tablet."
   PAGINA="${ENDERECO_REDE}/entrar/${TOKEN}"
   printf '  Abra este endereço no tablet conectado à mesma rede:\n  %s\n' "$PAGINA"
@@ -140,7 +185,7 @@ else
     (
       for _ in $(seq 1 60); do
         if curl -fsS --max-time 1 "$ENDERECO_LOCAL/health" >/dev/null 2>&1; then
-          open "$PAGINA"
+          abrir_produto
           exit 0
         fi
         sleep 0.25

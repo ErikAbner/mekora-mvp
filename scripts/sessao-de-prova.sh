@@ -35,7 +35,7 @@ PY_="$PWD/.venv/bin/python"
 
 [ -f "$BANCO" ] || { echo "sem banco de prova em $BANCO — suba o scripts/prova.sh antes" >&2; exit 1; }
 
-EMAIL="medida-$(date +%s)-$RANDOM@teste.local"
+EMAIL="${MEKORA_EMAIL:-medida-$(date +%s)-$RANDOM@teste.local}"
 
 # A ORDEM IMPORTA, e o semeador diz por quê: ele recusa uma conta que ainda não
 # existe. Então a pessoa e a sessão nascem primeiro, e o acervo vem depois — sem

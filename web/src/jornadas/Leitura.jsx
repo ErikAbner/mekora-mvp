@@ -1021,6 +1021,10 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
     if (!paleta) return undefined;
     const fecharComTeclado = (e) => {
       if (e.key === "Escape") {
+        /* A leitura inteira também é uma gaveta. Sem interromper este Escape,
+         * a paleta fechava e o mesmo gesto chegava à Vaul, que saía do livro. */
+        e.preventDefault();
+        e.stopImmediatePropagation();
         setPaleta(null);
         window.getSelection?.()?.removeAllRanges();
       }
@@ -1030,10 +1034,10 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
       setPaleta(null);
       window.getSelection?.()?.removeAllRanges();
     };
-    document.addEventListener("keydown", fecharComTeclado);
+    document.addEventListener("keydown", fecharComTeclado, true);
     document.addEventListener("pointerdown", fecharFora, true);
     return () => {
-      document.removeEventListener("keydown", fecharComTeclado);
+      document.removeEventListener("keydown", fecharComTeclado, true);
       document.removeEventListener("pointerdown", fecharFora, true);
     };
   }, [paleta]);
@@ -1171,13 +1175,20 @@ export function Leitura({ livro, aviso, voltarPara = "/estante", capitulos: jane
       setPainelAberto(null);
     };
     const fecharComTeclado = (e) => {
-      if (e.key === "Escape") setPainelAberto(null);
+      if (e.key === "Escape") {
+        /* Fecha a ferramenta, não o livro. A Vaul escuta o mesmo Escape para
+         * recolher a gaveta de leitura; consumir o gesto aqui preserva a
+         * hierarquia: primeiro o painel interno, depois a leitura. */
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        setPainelAberto(null);
+      }
     };
     document.addEventListener("pointerdown", fecharFora, true);
-    document.addEventListener("keydown", fecharComTeclado);
+    document.addEventListener("keydown", fecharComTeclado, true);
     return () => {
       document.removeEventListener("pointerdown", fecharFora, true);
-      document.removeEventListener("keydown", fecharComTeclado);
+      document.removeEventListener("keydown", fecharComTeclado, true);
     };
   }, [painelAberto]);
 

@@ -83,3 +83,10 @@ def test_auto_nao_escolhe_em_silencio_entre_duas_contas(tmp_path):
         assert c.execute("SELECT count(*) FROM chaves").fetchone() == (0,)
     finally:
         c.close()
+
+
+def test_iniciador_de_tablet_nao_inventa_conta_vazia():
+    iniciador = (RAIZ / "scripts/iniciar-local.sh").read_text()
+
+    assert 'MEKORA_EMAIL="${MEKORA_EMAIL:-auto}"' in iniciador
+    assert 'MEKORA_EMAIL="${MEKORA_EMAIL:-mekora@local}"' not in iniciador

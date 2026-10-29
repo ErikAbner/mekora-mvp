@@ -211,6 +211,28 @@ function achados(job) {
   return fora;
 }
 
+/* Só chama de aviso o que a análise mediu. Não existe “confiança 87%” porque
+ * nenhuma ferramenta do pipeline produz esse número. O relatório final pode,
+ * porém, impedir o sucesso silencioso quando páginas não abriram, ficaram sem
+ * texto ou o OCR falhou. */
+function avisosDeQualidade(job) {
+  const avisos = [];
+  if (job?.paginas_ilegiveis > 0) {
+    avisos.push(
+      `${job.paginas_ilegiveis} ${job.paginas_ilegiveis === 1 ? "página não abriu e não entrou" : "páginas não abriram e não entraram"} no livro.`,
+    );
+  }
+  if (job?.paginas_sem_texto > 0 && (!job.is_scanned || job.ocr_status === "failed")) {
+    avisos.push(
+      `${job.paginas_sem_texto} ${job.paginas_sem_texto === 1 ? "página ficou" : "páginas ficaram"} sem texto pesquisável.`,
+    );
+  }
+  if (job?.ocr_status === "failed") {
+    avisos.push("O reconhecimento de texto não terminou; compare os trechos difíceis com o arquivo original.");
+  }
+  return avisos;
+}
+
 /* O que vai acontecer. Cada linha é uma ação com consequência dita — o que
  * muda no aparelho, e não o nome técnico do passo. */
 function planos(job) {
@@ -692,6 +714,7 @@ export function Preparo() {
       j?.endereco && arquivoPronto
         ? `/storage/output/${j.endereco}/${arquivoPronto}`
         : null;
+    const avisos = avisosDeQualidade(j);
     return (
       <MolduraPreparo>
           {/* O TOPO CONTINUA AQUI — nó `895:8164`, e o comentário do `Topo` já
@@ -706,7 +729,9 @@ export function Preparo() {
           <Topo job={j} titulo={titulo} modo={modo} aoMudarModo={mudarModo} />
 
           <section className="preparo-fim">
-            <p className="preparo-fim-marca">Pronto</p>
+            <p className="preparo-fim-marca">
+              {avisos.length ? "Pronto, com pontos para conferir" : "Pronto"}
+            </p>
             <h1>{titulo} está na estante.</h1>
 
             {/* O ARQUIVO GERADO, PELO NOME E PELO TAMANHO — "Diário 02.epub ·
@@ -728,6 +753,14 @@ export function Preparo() {
               O arquivo virou EPUB e entrou no seu acervo. O que você marcar
               lendo fica junto do livro, no trecho onde marcou.
             </p>
+
+            {avisos.length > 0 && (
+              <div className="preparo-fim-qualidade" role="status">
+                <h2>Antes de começar a leitura</h2>
+                <ul>{avisos.map((aviso) => <li key={aviso}>{aviso}</li>)}</ul>
+                <p>O EPUB continua disponível; o relatório mostra o que foi medido, sem inventar uma nota de confiança.</p>
+              </div>
+            )}
 
             {enviado && (
               <p className="preparo-fim-aviso" role="status">

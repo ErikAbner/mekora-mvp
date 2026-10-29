@@ -265,7 +265,8 @@
 .livro-pagina-titulo-alternar {
   align-self: flex-start;
   margin-block-start: -20px;
-  padding: 0;
+  min-block-size: 24px;
+  padding: 1px 0;
   border: 0;
   background: transparent;
   color: var(--foreground);
@@ -275,6 +276,8 @@
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
 }
 
 .livro-pagina-mais {
@@ -396,7 +399,8 @@
 .livro-pagina-acoes-nota { display: flex; flex-wrap: wrap; gap: 32px; margin-block-start: 24px; }
 .livro-pagina-acoes-nota > button,
 .livro-pagina-edicao-nota button {
-  padding: 0;
+  min-block-size: 24px;
+  padding: 1px 0;
   border: 0;
   background: transparent;
   color: var(--foreground);
@@ -406,6 +410,8 @@
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
 }
 .livro-pagina-apagar-nota {
   position: absolute;

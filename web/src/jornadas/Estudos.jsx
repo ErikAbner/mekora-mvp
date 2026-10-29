@@ -430,6 +430,7 @@ export function Estudos({
      "o que eu estou juntando" e "o que eu estou lendo". */
   const [vista, setVista] = useState("lista");
   const [limiteEstudos, setLimiteEstudos] = useState(loteDeEstudos);
+  const [limiteGruposCanvas, setLimiteGruposCanvas] = useState(4);
   /* "VOCÊ LIGOU" — nó 895:8849. Os assuntos que apareceram no acervo sem
      ninguém organizar nada. É a promessa da Apresentação ganhando tela: "o que
      você marcou em livros diferentes sobre o mesmo assunto se encontra". */
@@ -1033,11 +1034,17 @@ export function Estudos({
               </p>
             </header>
             <div className="estudos-canvas-grupos">
-              {gruposCanvasVisiveis.map((grupo) => {
+              {gruposCanvasVisiveis.slice(0, limiteGruposCanvas).map((grupo) => {
                 const chave = `canvas:${grupo.id}`;
                 const total = grupo.notas.length + (grupo.livros ?? []).length;
                 return (
-                  <article className="estudos-canvas-grupo" key={grupo.id}>
+                  <article
+                    className="estudos-canvas-grupo"
+                    key={grupo.id}
+                    data-canvas-grupo={grupo.id}
+                    data-total-notas={grupo.notas.length}
+                    data-total-livros={(grupo.livros ?? []).length}
+                  >
                     <header>
                       <div>
                         <p className="estudos-canvas-origem">Seção do Canvas</p>
@@ -1048,7 +1055,7 @@ export function Estudos({
 
                     {(grupo.livros ?? []).length > 0 && (
                       <ul className="estudos-canvas-livros" aria-label="Livros desta seção">
-                        {grupo.livros.map((livro) => (
+                        {grupo.livros.slice(0, 4).map((livro) => (
                           <li key={livro.id}>
                             <Link to={`/estante/${livro.job_id}`}>
                               {livro.capa
@@ -1061,18 +1068,28 @@ export function Estudos({
                             </Link>
                           </li>
                         ))}
+                        {grupo.livros.length > 4 && (
+                          <li className="estudos-canvas-restantes">
+                            +<span className="dado">{grupo.livros.length - 4}</span> livros
+                          </li>
+                        )}
                       </ul>
                     )}
 
                     {grupo.notas.length > 0 && (
                       <ul className="estudos-canvas-notas">
-                        {grupo.notas.map((nota) => (
-                          <li key={nota.id}>
+                        {grupo.notas.slice(0, 3).map((nota) => (
+                          <li key={nota.id} data-canvas-nota={nota.id}>
                             {nota.trecho && <blockquote className="trecho-citado" data-cor={nota.cor}>{nota.trecho}</blockquote>}
                             {nota.comentario && <p className="estudos-solta-comentario">{nota.comentario}</p>}
                             {acoesDaNota(nota, true)}
                           </li>
                         ))}
+                        {grupo.notas.length > 3 && (
+                          <li className="estudos-canvas-restantes">
+                            +<span className="dado">{grupo.notas.length - 3}</span> notas nesta seção
+                          </li>
+                        )}
                       </ul>
                     )}
 
@@ -1101,6 +1118,17 @@ export function Estudos({
                 );
               })}
             </div>
+            {gruposCanvasVisiveis.length > limiteGruposCanvas && (
+              <div className="estudos-canvas-mais">
+                <p>
+                  Mostrando <span className="dado">{limiteGruposCanvas}</span> de{" "}
+                  <span className="dado">{gruposCanvasVisiveis.length}</span> grupos.
+                </p>
+                <Botao tom="secundaria" onClick={() => setLimiteGruposCanvas((n) => n + 4)}>
+                  Mostrar mais grupos
+                </Botao>
+              </div>
+            )}
           </section>
         )}
 
@@ -1361,7 +1389,7 @@ export function Estudos({
             </p>
             <ul>
               {soltasSemGrupo.slice(0, limiteDasSoltas).map((n) => (
-                <li key={n.id}>
+                <li key={n.id} data-solta-nota={n.id}>
                   {n.trecho && (
                     <blockquote className="trecho-citado" data-cor={n.cor}>{n.trecho}</blockquote>
                   )}

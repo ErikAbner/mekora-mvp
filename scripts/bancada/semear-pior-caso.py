@@ -235,7 +235,14 @@ def main() -> None:
         )
         grupos.append(cur.lastrowid)
 
-    canvas_notas = nota_ids[: args.canvas]
+    # O Canvas usa material ainda fora de Estudos. Se a massa reutiliza apenas
+    # as primeiras notas, o estudo-monstro já as reuniu e a tela de Estudos não
+    # consegue provar que uma seção do Canvas continua agrupada ali.
+    notas_em_estudo = {
+        linha[0] for linha in db.execute("SELECT DISTINCT nota_id FROM estudo_notas")
+    }
+    candidatas_canvas = [nota for nota in nota_ids if nota not in notas_em_estudo]
+    canvas_notas = candidatas_canvas[: args.canvas]
     for i, nota in enumerate(canvas_notas):
         coluna, linha = i % 20, i // 20
         grupo = grupos[(linha // 4 * 8 + coluna // 3) % len(grupos)] if i % 5 else None
@@ -246,6 +253,20 @@ def main() -> None:
             (
                 pessoa_id, nota, coluna * 430 - 600, linha * 310 - 300,
                 520 if i % 17 == 0 else 375, grupo, agora_menos(i),
+            ),
+        )
+
+    # Livros também são membros de seção de primeira classe. Dois por grupo
+    # tornam visível a composição mista sem transformar a massa num grafo
+    # artificialmente completo.
+    for i, livro in enumerate(livro_ids[: min(64, len(livro_ids))]):
+        db.execute(
+            """INSERT OR IGNORE INTO canvas_livros
+               (pessoa_id, job_id, x, y, largura, grupo_id, criado_em, movido_em)
+               VALUES (?,?,?,?,?,?,?,?)""",
+            (
+                pessoa_id, livro, (i % 16) * 520 - 500, (i // 16) * 460 - 200,
+                280, grupos[i % len(grupos)], agora_menos(i), agora_menos(i),
             ),
         )
 
@@ -270,7 +291,7 @@ def main() -> None:
         "trabalhos_com_problema": args.erros,
         "notas": args.notas,
         "estudos": args.estudos,
-        "objetos_no_canvas": len(canvas_notas),
+        "objetos_no_canvas": len(canvas_notas) + min(64, len(livro_ids)),
         "grupos_no_canvas": len(grupos),
     }
     print("bancada extrema criada:")

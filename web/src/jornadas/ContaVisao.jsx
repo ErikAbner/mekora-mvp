@@ -76,7 +76,9 @@ export function ContaVisao({ pessoa, aoSair, aoMudarPerfil }) {
         const mapa = {};
         for (const it of p?.itens ?? []) mapa[it.nome] = it.quantos;
         setContagens(mapa);
-        if (!e) setErro("Não foi possível ler os dados da sua conta agora.");
+        if (!e) setErro(
+          "A conexão local não respondeu. Seus dados não foram alterados; recarregue a página para tentar de novo.",
+        );
       });
     return () => { vivo = false; };
   }, []);
@@ -148,6 +150,11 @@ export function ContaVisao({ pessoa, aoSair, aoMudarPerfil }) {
             O nome e o retrato são seus e são opcionais — entrar nunca pede
             nenhum dos dois. Telefone não existe, e senha também não: você entra
             por link.
+          </p>
+          <p className="visao-identidade-acervo" data-acervo-identidade>
+            Este acervo pertence a <strong>{eu?.email ?? pessoa?.email ?? "esta conta"}</strong>.
+            Se outra janela aparecer vazia, confira a conta antes de trazer os
+            livros novamente: trocar de identidade não apaga esta Estante.
           </p>
         </section>
 

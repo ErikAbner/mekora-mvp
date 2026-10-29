@@ -54,7 +54,9 @@ export function ContaSeguranca({ pessoa, aoSair }) {
   const carregar = useCallback(() => {
     return lerSessoes()
       .then((r) => setSessoes(r?.sessoes ?? []))
-      .catch(() => setErro("Não foi possível ler os navegadores agora."));
+      .catch(() => setErro(
+        "A conexão não respondeu. Nenhuma sessão foi encerrada; recarregue a página para tentar de novo.",
+      ));
   }, []);
 
   useEffect(() => { carregar(); }, [carregar]);
