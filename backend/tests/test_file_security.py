@@ -206,6 +206,37 @@ def test_allowed_thumbnail_served(client, tmp_storage, endereco):
     assert r.headers["content-type"] == "image/png"
 
 
+def test_exact_quality_page_is_rendered_without_serving_original(
+    client, tmp_storage, endereco, test_engine,
+):
+    """O relatório pode abrir a folha citada, mas continua sem expor o PDF."""
+    import fitz
+    from sqlalchemy.orm import Session
+
+    from app.models.processing_job import ProcessingJob
+
+    entrada = tmp_storage / "input" / "1_original.pdf"
+    entrada.parent.mkdir(parents=True, exist_ok=True)
+    doc = fitz.open()
+    for numero in (1, 2):
+        pagina = doc.new_page()
+        pagina.insert_text((72, 80), f"Pagina {numero} para conferencia")
+    doc.save(str(entrada))
+    doc.close()
+    with Session(test_engine) as db:
+        job = db.query(ProcessingJob).filter(ProcessingJob.token_publico == endereco).one()
+        job.input_path = str(entrada)
+        db.commit()
+
+    r = client.get(f"/storage/pages/{endereco}/2.png")
+    assert r.status_code == 200
+    assert r.headers["content-type"] == "image/png"
+    assert r.content.startswith(b"\x89PNG")
+    assert r.headers["cache-control"] == "private, no-store"
+    assert client.get(f"/storage/pages/{endereco}/3.png").status_code == 404
+    assert client.get("/storage/input/1_original.pdf").status_code == 404
+
+
 def test_temp_only_thumbnails_served(client, tmp_storage):
     """No temp, SOMENTE page_0..4.png — nada de OCR intermediário etc."""
     t = tmp_storage / "temp" / "1"

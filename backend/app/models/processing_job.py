@@ -1,7 +1,7 @@
 import secrets
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy import JSON, Boolean, Column, DateTime, Float, ForeignKey, Integer, String
 
 from app.db.database import Base
 
@@ -88,6 +88,9 @@ class ProcessingJob(Base):
     # cala no segundo caso em vez de afirmar que está tudo bem.
     paginas_ilegiveis = Column(Integer)
     paginas_sem_texto = Column(Integer)
+    # Lista somente as páginas com evidência problemática. Permite abrir e
+    # reprocessar uma folha sem guardar uma segunda cópia do texto no banco.
+    quality_manifest = Column(JSON)
     # Os capítulos que o ARQUIVO declara, no sumário próprio dele. Zero quer
     # dizer que ele não traz sumário — o que também é resposta.
     capitulos_declarados = Column(Integer)

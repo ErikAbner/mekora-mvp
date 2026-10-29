@@ -297,3 +297,44 @@ def test_convert_allowed_after_ocr_success(client, sample_pdf, monkeypatch, test
     r = client.post(f"/jobs/{upload_id}/convert")
     assert r.status_code == 200
     assert r.json()["conversion_status"] == "in_progress"
+
+
+def test_reprocessar_pagina_exige_manifesto_e_dispara_so_a_folha(
+    client, sample_pdf, monkeypatch, test_engine,
+):
+    import app.api.jobs as jobs_mod
+    from sqlalchemy.orm import sessionmaker
+    from app.models.processing_job import ProcessingJob
+
+    chamadas = []
+    monkeypatch.setattr(
+        jobs_mod,
+        "_bg_reprocess_quality_page",
+        lambda job_id, pagina, operation_id: chamadas.append((job_id, pagina, operation_id)),
+    )
+    with open(sample_pdf, "rb") as f:
+        upload_id = client.post(
+            "/upload", files={"file": ("scan.pdf", f, "application/pdf")},
+        ).json()["upload_id"]
+
+    Session = sessionmaker(bind=test_engine)
+    with Session() as db:
+        job = db.query(ProcessingJob).filter(ProcessingJob.id == upload_id).one()
+        job.status = "analyzed"
+        job.quality_manifest = {
+            "schema_version": 1,
+            "origem": "original",
+            "total_paginas": 2,
+            "paginas": [{"pagina": 2, "problemas": ["sem_texto"], "caracteres": 0}],
+            "resumo": {"nao_abriram": 0, "sem_texto": 1, "texto_suspeito": 0},
+        }
+        db.commit()
+
+    inexistente = client.post(f"/jobs/{upload_id}/quality/pages/1/reprocess")
+    assert inexistente.status_code == 409
+
+    resposta = client.post(f"/jobs/{upload_id}/quality/pages/2/reprocess")
+    assert resposta.status_code == 200
+    assert resposta.json()["status"] == "analyzing"
+    assert resposta.json()["ocr_status"] == "in_progress"
+    assert chamadas and chamadas[0][0:2] == (upload_id, 2)

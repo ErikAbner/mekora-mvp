@@ -14,6 +14,28 @@ BACKUPS_PADRAO="$HOME/Library/Application Support/Mekora/Backups"
 
 cd "$RAIZ"
 
+# Aplicativos abertos pelo Dock não herdam o PATH do shell do usuário. Inclua
+# os locais usuais do Homebrew e dos gerenciadores de Node antes de procurar
+# as ferramentas, sem depender de um arquivo de configuração interativo.
+adicionar_ao_path() {
+  [ -d "$1" ] || return 0
+  case ":$PATH:" in
+    *":$1:"*) ;;
+    *) PATH="$1:$PATH" ;;
+  esac
+}
+
+adicionar_ao_path "/opt/homebrew/bin"
+adicionar_ao_path "/usr/local/bin"
+adicionar_ao_path "$HOME/.local/bin"
+for DIRETORIO_NODE in \
+  "$HOME"/.local/share/fnm/node-versions/*/installation/bin \
+  "$HOME"/.nvm/versions/node/*/bin \
+  "$HOME"/.asdf/installs/nodejs/*/bin; do
+  [ -d "$DIRETORIO_NODE" ] && adicionar_ao_path "$DIRETORIO_NODE"
+done
+export PATH
+
 titulo() { printf '\n\033[1m%s\033[0m\n\n' "$1"; }
 ok() { printf '  \033[32m✓\033[0m %s\n' "$1"; }
 aviso() { printf '  \033[33m!\033[0m %s\n' "$1"; }
@@ -56,7 +78,6 @@ else
 fi
 
 command -v python3 >/dev/null 2>&1 || falha "Python 3 não está instalado."
-command -v npm >/dev/null 2>&1 || falha "Node.js/npm não está instalado."
 
 # Dependências só são instaladas quando faltam OU quando a lista mudou. Conferir
 # apenas a existência da pasta deixava o app indefinidamente numa versão antiga:
@@ -96,6 +117,7 @@ NODE_ATUAL="$(assinatura_de "$RAIZ/web/package-lock.json")"
 NODE_INSTALADO=""
 if [ -f "$NODE_STAMP" ]; then NODE_INSTALADO="$(tr -d '[:space:]' < "$NODE_STAMP")"; fi
 if [ ! -d "$RAIZ/web/node_modules" ] || [ "$NODE_ATUAL" != "$NODE_INSTALADO" ]; then
+  command -v npm >/dev/null 2>&1 || falha "Node.js/npm não está instalado."
   titulo "Atualizando a interface local"
   npm --prefix "$RAIZ/web" ci || falha "não consegui instalar a interface."
   printf '%s\n' "$NODE_ATUAL" > "$NODE_STAMP"
@@ -113,6 +135,7 @@ if [ -f "$MARCA_BUILD" ]; then ASSINATURA_BUILD="$(tr -d '[:space:]' < "$MARCA_B
 PRECISA_BUILD=0
 if [ ! -f "$BUILD" ] || [ "$ASSINATURA_ATUAL" != "$ASSINATURA_BUILD" ]; then PRECISA_BUILD=1; fi
 if [ "$PRECISA_BUILD" = "1" ]; then
+  command -v npm >/dev/null 2>&1 || falha "Node.js/npm não está instalado."
   titulo "Atualizando a interface"
   npm --prefix "$RAIZ/web" run build || falha "a interface não pôde ser compilada."
   printf '%s\n' "$ASSINATURA_ATUAL" > "$MARCA_BUILD"

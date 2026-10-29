@@ -187,6 +187,50 @@
 .preparo-pagina-lista h3 { margin: 0 0 24px; font-size: 24px; line-height: 32px; font-weight: 500; color: var(--foreground); }
 .preparo-pagina-lista p { margin: 0; font-size: 16px; line-height: 24px; color: var(--muted-foreground); text-wrap: pretty; }
 
+.preparo-paginas-qualidade {
+  margin-block-start: 24px;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+.preparo-paginas-qualidade summary {
+  cursor: pointer;
+  padding: 18px 20px;
+  font-size: 18px;
+  line-height: 26px;
+  font-weight: 500;
+}
+.preparo-paginas-qualidade > p {
+  margin: 0;
+  padding: 0 20px 16px;
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 22px;
+}
+.preparo-paginas-qualidade ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-block-start: 1px solid var(--border);
+}
+.preparo-paginas-qualidade li {
+  min-block-size: 64px;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  border-block-end: 1px solid var(--border);
+  font-size: 15px;
+  line-height: 22px;
+}
+.preparo-paginas-qualidade li:last-child { border-block-end: 0; }
+.preparo-paginas-qualidade .botao { flex: 0 0 auto; text-decoration: none; }
+.preparo-paginas-acoes { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.preparo-paginas-qualidade.compacto {
+  margin-block-start: 0;
+  border-color: color-mix(in srgb, var(--warning) 55%, var(--border));
+}
+
 .preparo-pagina-ajuste { display: flex; flex-direction: column; gap: 16px; }
 .preparo-pagina-ajuste .campo { inline-size: 100%; }
 .preparo-ajustes-primeiro {
@@ -437,6 +481,8 @@
  * inteira no topo — é o que se reconhece de um arquivo antes de ler o nome.
  */
 @media (max-width: 619px) {
+  .preparo-paginas-qualidade li { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .preparo-paginas-acoes { justify-content: flex-start; }
   /* A PROPORÇÃO DO PREPARO É 270/407, e não a da Estante.
    *
    * Estava em `420 / 594`, que é a proporção do conjunto de capas e a que a

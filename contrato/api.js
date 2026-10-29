@@ -204,6 +204,11 @@ export function trabalho(jobId) {
   return pede(`/jobs/${jobId}`);
 }
 
+/** Refaz o OCR somente da página identificada pelo relatório de qualidade. */
+export function reprocessarPagina(jobId, pagina) {
+  return pede(`/jobs/${jobId}/quality/pages/${pagina}/reprocess`, { method: "POST" });
+}
+
 /** GET /jobs/{id}/status — jobs.py:827. A resposta leve, feita para polling. */
 export async function situacao(jobId) {
   const bruto = await pede(`/jobs/${jobId}/status`);

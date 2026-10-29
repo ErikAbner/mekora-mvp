@@ -7,7 +7,7 @@ import { Campo } from "../componentes/Campo.jsx";
 import {
   acompanhar, analisar, atualizarMetadados, cancelarOperacao, converter, enviarAoKindle, escolherIdiomas,
   esperarAnalise, motoresDeTraducao, paresDeTraducao, quantoCostumaLevar, situacao,
-  trabalho, traduzir, escolherCapa,
+  trabalho, traduzir, escolherCapa, reprocessarPagina,
 } from "../../../contrato/api.js";
 import { nomeDoIdioma } from "../../../contrato/idiomas.js";
 import { comoSeDiz } from "../../../contrato/duracao.js";
@@ -231,6 +231,54 @@ function avisosDeQualidade(job) {
     avisos.push("O reconhecimento de texto não terminou; compare os trechos difíceis com o arquivo original.");
   }
   return avisos;
+}
+
+const ROTULO_PROBLEMA_PAGINA = {
+  nao_abriu: "não abriu",
+  sem_texto: "sem texto pesquisável",
+  texto_suspeito: "texto extraído parece corrompido",
+};
+
+function PaginasParaConferir({ job, compacto = false, aoReprocessar, reprocessando }) {
+  const paginas = job?.quality_manifest?.paginas;
+  if (!Array.isArray(paginas) || paginas.length === 0) return null;
+  const origem = job.quality_manifest.origem === "ocr"
+    ? "depois do reconhecimento"
+    : "no arquivo original";
+
+  return (
+    <details className={`preparo-paginas-qualidade${compacto ? " compacto" : ""}`} open={!compacto && paginas.length <= 6}>
+      <summary>
+        {paginas.length === 1 ? "1 página para conferir" : `${paginas.length} páginas para conferir`}
+      </summary>
+      <p>Lista medida {origem}. Abra a folha exata para comparar com a leitura.</p>
+      <ul>
+        {paginas.map((item) => {
+          const numero = Number(item.pagina);
+          const motivos = (item.problemas ?? [])
+            .map((problema) => ROTULO_PROBLEMA_PAGINA[problema] ?? problema)
+            .join("; ");
+          const url = job.endereco && Number.isInteger(numero)
+            ? `/storage/pages/${job.endereco}/${numero}.png`
+            : null;
+          const podeReprocessar = !(item.problemas ?? []).includes("nao_abriu") && aoReprocessar;
+          return (
+            <li key={`${numero}-${motivos}`}>
+              <span><strong>Página {numero}</strong>{motivos ? ` — ${motivos}` : ""}</span>
+              <span className="preparo-paginas-acoes">
+                {url && <a className="botao secundaria" href={url} target="_blank" rel="noreferrer">Abrir página</a>}
+                {podeReprocessar && (
+                  <button className="botao secundaria" type="button" disabled={Boolean(reprocessando)} onClick={() => aoReprocessar(numero)}>
+                    {reprocessando === numero ? "Refazendo…" : "Refazer esta página"}
+                  </button>
+                )}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </details>
+  );
 }
 
 /* O que vai acontecer. Cada linha é uma ação com consequência dita — o que
@@ -537,6 +585,7 @@ export function Preparo() {
      a tela cala, como sempre calou. */
   const [tempos, setTempos] = useState(null);
   const [salvandoCapa, setSalvandoCapa] = useState(false);
+  const [reprocessandoPagina, setReprocessandoPagina] = useState(null);
 
   const buscar = useCallback(async () => {
     try {
@@ -644,6 +693,26 @@ export function Preparo() {
   }, [id]);
 
   useEffect(() => { buscar(); }, [buscar]);
+
+  const refazerPagina = async (pagina) => {
+    setReprocessandoPagina(pagina);
+    setErro(null);
+    try {
+      await reprocessarPagina(id, pagina);
+      await esperarAnalise(id, setAndamento);
+      const atualizado = await trabalho(id);
+      setConvertido(null);
+      setFeito(false);
+      setJob(atualizado);
+      setTitulo(atualizado.final_title || atualizado.detected_title || atualizado.original_filename || "");
+      setAutor(atualizado.final_author || atualizado.detected_author || "");
+    } catch (e) {
+      setErro(e);
+    } finally {
+      setAndamento(null);
+      setReprocessandoPagina(null);
+    }
+  };
 
   useEffect(() => {
     let vivo = true;
@@ -758,6 +827,7 @@ export function Preparo() {
               <div className="preparo-fim-qualidade" role="status">
                 <h2>Antes de começar a leitura</h2>
                 <ul>{avisos.map((aviso) => <li key={aviso}>{aviso}</li>)}</ul>
+                <PaginasParaConferir job={j} compacto aoReprocessar={refazerPagina} reprocessando={reprocessandoPagina} />
                 <p>O EPUB continua disponível; o relatório mostra o que foi medido, sem inventar uma nota de confiança.</p>
               </div>
             )}
@@ -1169,6 +1239,7 @@ export function Preparo() {
               </li>
             ))}
           </ul>
+          <PaginasParaConferir job={job} aoReprocessar={refazerPagina} reprocessando={reprocessandoPagina} />
         </section>
 
         <section className="preparo-pagina-secao">

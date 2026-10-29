@@ -30,9 +30,9 @@ cat > "$CONTEUDO/Info.plist" <<'PLIST'
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleShortVersionString</key>
-  <string>1.1</string>
+  <string>1.2</string>
   <key>CFBundleVersion</key>
-  <string>2</string>
+  <string>3</string>
   <key>NSAppTransportSecurity</key>
   <dict>
     <key>NSAllowsLocalNetworking</key>
@@ -60,6 +60,8 @@ if ! command -v xcrun >/dev/null 2>&1 || ! xcrun --find swiftc >/dev/null 2>&1; 
   exit 1
 fi
 
+# A janela é WebKit nativo: clicar no app nunca entrega a rota para o Chrome,
+# portanto não abre abas duplicadas nem depende de uma PWA antiga instalada.
 xcrun swiftc "$FONTE_APP" -framework Cocoa -framework WebKit -o "$EXECUTAVEL"
 
 if [ -f "$ICONE_CHROME" ]; then

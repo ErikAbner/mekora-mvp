@@ -44,7 +44,7 @@ from app.services.input_router_service import (
     is_accepted,
 )
 from app.services import capa_service
-from app.services.pdf_service import analyze_pdf, get_thumbnail_urls
+from app.services.pdf_service import analyze_pdf, get_thumbnail_urls, quality_manifest_for_pdf
 
 router = APIRouter(tags=["jobs"])
 
@@ -508,6 +508,7 @@ def _bg_analyze(job_id: int, operation_id: str | None = None) -> None:
         job.avg_chars_per_page = result["avg_chars_per_page"]
         job.paginas_ilegiveis = result.get("paginas_ilegiveis")
         job.paginas_sem_texto = result.get("paginas_sem_texto")
+        job.quality_manifest = result.get("quality_manifest")
         job.capitulos_declarados = result.get("capitulos_declarados")
         job.ocr_status = "needed" if result["is_scanned"] else "not_needed"
         job.status = "analyzed"
@@ -534,6 +535,14 @@ def _bg_analyze(job_id: int, operation_id: str | None = None) -> None:
                 job.processed_pdf_path = str(ocr_out)
                 job.ocr_used = True
                 job.ocr_status = "done"
+                # O resultado que importa é o PDF DEPOIS do OCR. Sem esta
+                # segunda inspeção, o relatório continuaria acusando todas as
+                # páginas que legitimamente não tinham texto antes dele.
+                depois_ocr = quality_manifest_for_pdf(str(ocr_out), origem="ocr")
+                job.quality_manifest = depois_ocr
+                resumo = depois_ocr.get("resumo") or {}
+                job.paginas_ilegiveis = resumo.get("nao_abriram")
+                job.paginas_sem_texto = resumo.get("sem_texto")
             except OCRFailedError as exc:
                 job.ocr_used = False
                 job.ocr_status = "failed"
@@ -571,6 +580,81 @@ def _bg_analyze(job_id: int, operation_id: str | None = None) -> None:
                     db.commit()
         except Exception:
             pass
+        db.close()
+
+
+def _bg_reprocess_quality_page(
+    job_id: int,
+    page_number: int,
+    operation_id: str,
+) -> None:
+    """Refaz o OCR de uma folha sem reconhecer o documento inteiro de novo."""
+    from app.db.database import SessionLocal
+    from app.services.app_config_service import load_app_config
+    from app.services.ocr_service import OCRFailedError, apply_ocr, choose_ocr_languages
+    from app.services.progress_service import end_operation, report_progress
+
+    db = SessionLocal()
+    op_dir = STORAGE_OUTPUT / str(job_id)
+    op_status = "completed"
+    job = None
+    try:
+        job = db.query(ProcessingJob).filter(ProcessingJob.id == job_id).first()
+        if not job:
+            return
+        origem = Path(job.processed_pdf_path or job.input_path or "")
+        if origem.suffix.lower() != ".pdf" or not origem.exists():
+            raise OCRFailedError("O PDF usado nesta preparação não está mais disponível.")
+
+        report_progress(
+            op_dir, operation_id, "ocr", 0, 1,
+            f"Reconhecendo novamente a página {page_number}",
+        )
+        cfg = load_app_config()
+        idiomas = choose_ocr_languages(
+            job.final_language or job.detected_language,
+            cfg["ocr_languages"],
+        )
+        destino = STORAGE_TEMP / str(job_id) / f"quality-{operation_id}.pdf"
+        apply_ocr(origem, destino, languages=idiomas, pages=[page_number])
+        report_progress(
+            op_dir, operation_id, "ocr", 1, 1,
+            f"Página {page_number} reconhecida; conferindo o resultado",
+        )
+
+        manifesto = quality_manifest_for_pdf(str(destino), origem="ocr")
+        job.processed_pdf_path = str(destino)
+        job.ocr_used = True
+        job.ocr_status = "done"
+        job.quality_manifest = manifesto
+        resumo = manifesto.get("resumo") or {}
+        job.paginas_ilegiveis = resumo.get("nao_abriram")
+        job.paginas_sem_texto = resumo.get("sem_texto")
+        # O EPUB anterior não representa mais o PDF revisado. Os bytes ficam no
+        # disco até a próxima conversão/limpeza, mas deixam de ser oferecidos.
+        job.epub_path = None
+        job.epub_web_path = None
+        job.epub_bytes = None
+        job.conversion_status = "not_started"
+        job.status = "analyzed"
+        job.error_message = None
+        job.updated_at = datetime.utcnow()
+        db.commit()
+    except Exception as exc:
+        op_status = "failed"
+        if job:
+            job.status = "analyzed"
+            job.ocr_status = "failed"
+            job.error_message = f"Não foi possível refazer a página {page_number}: {exc}"
+            job.updated_at = datetime.utcnow()
+            db.commit()
+    finally:
+        if job:
+            try:
+                end_operation(job, op_dir, operation_id, op_status)
+                db.commit()
+            except Exception:
+                pass
         db.close()
 
 
@@ -1282,6 +1366,42 @@ async def analyze_upload(
     db.refresh(job)
 
     background_tasks.add_task(_bg_analyze, upload_id, op_id)
+    return _to_job(job)
+
+
+@router.post("/jobs/{job_id}/quality/pages/{page_number}/reprocess", response_model=JobResponse)
+def reprocess_quality_page(
+    job_id: int,
+    page_number: int,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+) -> dict:
+    """Refaz o reconhecimento somente da página citada pelo manifesto."""
+    job = _get_or_404(db, job_id)
+    manifesto = job.quality_manifest or {}
+    problemas = {
+        int(item.get("pagina")): set(item.get("problemas") or [])
+        for item in (manifesto.get("paginas") or [])
+        if str(item.get("pagina", "")).isdigit()
+    }
+    if page_number not in problemas:
+        raise HTTPException(status_code=409, detail="Esta página não está marcada para conferência.")
+    if "nao_abriu" in problemas[page_number]:
+        raise HTTPException(
+            status_code=409,
+            detail="A página não abriu; refazer o OCR não corrige um arquivo interrompido.",
+        )
+    if not job.input_path or Path(job.input_path).suffix.lower() != ".pdf":
+        raise HTTPException(status_code=409, detail="O reconhecimento por página só está disponível para PDF.")
+
+    op_id = _begin_job_operation(job, "quality_page")
+    job.status = "analyzing"
+    job.ocr_status = "in_progress"
+    job.error_message = None
+    job.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(job)
+    background_tasks.add_task(_bg_reprocess_quality_page, job_id, page_number, op_id)
     return _to_job(job)
 
 

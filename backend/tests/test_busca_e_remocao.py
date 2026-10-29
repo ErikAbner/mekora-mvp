@@ -182,6 +182,28 @@ def test_status_sobrevive_a_coluna_nula(client_cru, db, correio):
     assert r.json()["conversion_status"] == ""
 
 
+def test_detalhe_do_trabalho_entrega_manifesto_de_qualidade(client_cru, db, correio):
+    """A identidade das páginas precisa atravessar banco, schema e API. Sem
+    este teste o serviço pode calcular corretamente e a tela ainda receber só
+    o total agregado — exatamente o buraco que o manifesto veio fechar."""
+    eu = entrar(client_cru, db, correio, "erik@exemplo.com")
+    j = livro(db, eu, "Com uma folha para conferir")
+    j.quality_manifest = {
+        "schema_version": 1,
+        "origem": "ocr",
+        "total_paginas": 9,
+        "paginas": [
+            {"pagina": 7, "problemas": ["texto_suspeito"], "caracteres": 441},
+        ],
+        "resumo": {"nao_abriram": 0, "sem_texto": 0, "texto_suspeito": 1},
+    }
+    db.commit()
+
+    r = client_cru.get(f"/jobs/{j.id}")
+    assert r.status_code == 200
+    assert r.json()["quality_manifest"]["paginas"][0]["pagina"] == 7
+
+
 # ── os grupos do Canvas — nó 895:6938 ───────────────────────────────────────
 
 def test_grupo_nasce_com_o_tamanho_pedido_e_aparece_na_superficie(client_cru, db, correio):
@@ -498,6 +520,22 @@ def test_analise_conta_paginas_sem_texto_e_capitulos(tmp_path):
     assert r["page_count"] == 5
     assert r["paginas_sem_texto"] == 2
     assert r["paginas_ilegiveis"] == 0
+    manifesto = r["quality_manifest"]
+    assert manifesto["schema_version"] == 1
+    assert manifesto["origem"] == "original"
+    assert manifesto["total_paginas"] == 5
+    assert manifesto["resumo"] == {
+        "nao_abriram": 0,
+        "sem_texto": 2,
+        "texto_suspeito": 0,
+    }
+    # O manifesto guarda identidade e causa, não uma segunda cópia do texto.
+    assert manifesto["paginas"] == [
+        {"pagina": 2, "problemas": ["sem_texto"], "caracteres": 0},
+        {"pagina": 4, "problemas": ["sem_texto"], "caracteres": 0},
+    ]
+    assert "amostra_idioma" not in manifesto
+    assert "total_caracteres" not in manifesto
     # O ARQUIVO DECLARA TRÊS CAPÍTULOS no sumário dele, e agora dá para dizer o
     # número — antes a linha existia sem ele.
     assert r["capitulos_declarados"] == 3
@@ -539,7 +577,31 @@ def test_pdf_com_senha_nao_conta_nada(tmp_path):
     r = analyze_pdf(str(_pdf_com_senha(tmp_path / "t.pdf")), tmp_path / "mini")
     assert r["paginas_sem_texto"] is None
     assert r["paginas_ilegiveis"] is None
+    assert r["quality_manifest"] is None
     assert r["capitulos_declarados"] is None
+
+
+def test_manifesto_pode_ser_recalculado_depois_do_ocr(tmp_path):
+    """A origem muda para deixar claro se a evidência veio do arquivo enviado
+    ou do PDF reconhecido. A rechecagem não precisa gerar miniaturas de novo."""
+    import fitz
+
+    from app.services.pdf_service import quality_manifest_for_pdf
+
+    d = fitz.open()
+    d.new_page()
+    p = d.new_page()
+    p.insert_text((72, 80), "Texto suficiente para esta página continuar pesquisável.")
+    caminho = tmp_path / "depois-ocr.pdf"
+    d.save(str(caminho))
+    d.close()
+
+    manifesto = quality_manifest_for_pdf(str(caminho), origem="ocr")
+    assert manifesto["origem"] == "ocr"
+    assert manifesto["total_paginas"] == 2
+    assert manifesto["paginas"] == [
+        {"pagina": 1, "problemas": ["sem_texto"], "caracteres": 0},
+    ]
 
 
 # ---------------------------------------------------------------------------

@@ -20,7 +20,7 @@ from typing import Optional
 from pathlib import Path
 
 from fastapi import APIRouter, Cookie, Depends, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -249,6 +249,57 @@ def serve_cover(
         raise _not_found()
     job_id = _autorizar(ref, mekora_sessao, db)
     return _serve_validated(STORAGE_COVERS / str(job_id), [filename])
+
+
+@router.get("/storage/pages/{ref}/{page_number}.png")
+def serve_document_page(
+    ref: str,
+    page_number: int,
+    mekora_sessao: Optional[str] = Cookie(default=None),
+    db: Session = Depends(get_db),
+) -> Response:
+    """Renderiza uma página exata citada pelo relatório de qualidade.
+
+    Não expõe o PDF original, não grava uma cópia pública e passa pela mesma
+    autorização dos demais artefatos. A imagem é limitada a 1.400 px no maior
+    lado para uma página enorme não virar uma resposta enorme.
+    """
+    import fitz
+
+    job_id = _autorizar(ref, mekora_sessao, db)
+    trabalho = db.query(ProcessingJob).filter(ProcessingJob.id == job_id).first()
+    if trabalho is None:
+        raise _not_found()
+    origem = trabalho.processed_pdf_path or trabalho.input_path
+    if not origem or Path(origem).suffix.lower() != ".pdf":
+        raise _not_found()
+    try:
+        doc = fitz.open(origem)
+    except Exception:
+        raise _not_found()
+    try:
+        if doc.needs_pass or page_number < 1 or page_number > doc.page_count:
+            raise _not_found()
+        pagina = doc.load_page(page_number - 1)
+        maior_lado = max(float(pagina.rect.width), float(pagina.rect.height), 1.0)
+        escala = min(1.5, 1400.0 / maior_lado)
+        pix = pagina.get_pixmap(matrix=fitz.Matrix(escala, escala), alpha=False)
+        conteudo = pix.tobytes("png")
+    except HTTPException:
+        raise
+    except Exception:
+        raise _not_found()
+    finally:
+        doc.close()
+    return Response(
+        content=conteudo,
+        media_type="image/png",
+        headers={
+            "Cache-Control": "private, no-store",
+            "Content-Disposition": f'inline; filename="pagina-{page_number}.png"',
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
 
 
 @router.get("/storage/{rest:path}")

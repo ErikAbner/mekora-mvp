@@ -53,6 +53,7 @@ def apply_ocr(
     input_pdf: Path,
     output_pdf: Path,
     languages: Optional[list[str]] = None,
+    pages: Optional[list[int]] = None,
 ) -> bool:
     """
     Aplica OCR em *input_pdf* e salva o resultado em *output_pdf*.
@@ -63,6 +64,8 @@ def apply_ocr(
         languages:  Lista de códigos de idioma Tesseract.
                     Padrão: ["por", "eng", "spa"].
                     Serão concatenados com "+" para o ocrmypdf (ex: "por+eng+spa").
+        pages:       Páginas específicas, em numeração humana (começa em 1).
+                    Quando omitido, reconhece o documento inteiro.
 
     Returns:
         True se o OCR foi concluído sem erros.
@@ -95,6 +98,7 @@ def apply_ocr(
             # estável e melhora letras pequenas e acentos antes do Tesseract.
             oversample=300,
             force_ocr=True,
+            pages=",".join(str(page) for page in pages) if pages else None,
             progress_bar=False,
         )
         return True

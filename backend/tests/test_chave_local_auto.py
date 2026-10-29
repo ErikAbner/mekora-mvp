@@ -90,3 +90,25 @@ def test_iniciador_de_tablet_nao_inventa_conta_vazia():
 
     assert 'MEKORA_EMAIL="${MEKORA_EMAIL:-auto}"' in iniciador
     assert 'MEKORA_EMAIL="${MEKORA_EMAIL:-mekora@local}"' not in iniciador
+
+
+def test_iniciador_do_dock_encontra_node_sem_path_interativo():
+    iniciador = (RAIZ / "scripts/iniciar-local.sh").read_text()
+
+    assert 'adicionar_ao_path "/opt/homebrew/bin"' in iniciador
+    assert 'adicionar_ao_path "/usr/local/bin"' in iniciador
+    assert "$HOME\"/.local/share/fnm/node-versions/*/installation/bin" in iniciador
+
+    # npm só é obrigatório nos dois ramos que realmente instalam/compilam a
+    # interface. Um pacote já pronto deve abrir mesmo sem o shell do Terminal.
+    assert iniciador.count(
+        'command -v npm >/dev/null 2>&1 || falha "Node.js/npm não está instalado."'
+    ) == 2
+
+
+def test_janela_nativa_preserva_faixa_arrastavel_e_posicao():
+    fonte = (RAIZ / "scripts/MekoraLocal.swift").read_text()
+
+    assert ".fullSizeContentView" not in fonte
+    assert 'window.setFrameAutosaveName("MekoraLocalMainWindow")' in fonte
+    assert 'window.setFrameUsingName("MekoraLocalMainWindow")' in fonte

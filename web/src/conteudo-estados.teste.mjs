@@ -45,5 +45,8 @@ test("a conversão concluída não esconde perdas que foram medidas", () => {
   assert.match(fonte, /Pronto, com pontos para conferir/);
   assert.match(fonte, /página não abriu e não entrou/);
   assert.match(fonte, /sem texto pesquisável/);
+  assert.match(fonte, /quality_manifest/);
+  assert.match(fonte, /Abrir página/);
+  assert.match(fonte, /\/storage\/pages\//);
   assert.match(fonte, /sem inventar uma nota de confiança/);
 });

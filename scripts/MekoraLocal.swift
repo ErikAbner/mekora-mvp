@@ -43,7 +43,7 @@ final class MekoraAppDelegate: NSObject, NSApplicationDelegate, WKNavigationDele
 
         window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 1280, height: 820),
-            styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
+            styleMask: [.titled, .closable, .miniaturizable, .resizable],
             backing: .buffered,
             defer: false
         )
@@ -52,7 +52,11 @@ final class MekoraAppDelegate: NSObject, NSApplicationDelegate, WKNavigationDele
         window.titleVisibility = .hidden
         window.minSize = NSSize(width: 820, height: 600)
         window.contentView = webView
-        window.center()
+        window.isMovable = true
+        window.setFrameAutosaveName("MekoraLocalMainWindow")
+        if !window.setFrameUsingName("MekoraLocalMainWindow") {
+            window.center()
+        }
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }

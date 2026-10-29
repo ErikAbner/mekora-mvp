@@ -42,6 +42,83 @@ def texto_parece_corrompido(texto: str) -> bool:
     return marcadores >= 10 and marcadores / max(1, letras) >= 0.0035
 
 
+def _inspecionar_paginas(doc: fitz.Document, *, origem: str) -> dict:
+    """Produz o manifesto mínimo que permite voltar à página problemática.
+
+    Guarda somente número, sinais observados e quantidade de caracteres — não
+    duplica o texto do livro no banco. As causas são fatos que este estágio
+    realmente mede; não há pontuação de confiança inventada.
+    """
+    total_chars = 0
+    texto_suspeito = 0
+    amostra_idioma: list[str] = []
+    tamanho_amostra = 0
+    paginas: list[dict] = []
+
+    for indice in range(doc.page_count):
+        problemas: list[str] = []
+        caracteres: int | None = None
+        try:
+            texto = doc.load_page(indice).get_text().strip()
+            caracteres = len(texto)
+        except Exception:
+            problemas.append("nao_abriu")
+            texto = ""
+
+        if "nao_abriu" not in problemas:
+            total_chars += len(texto)
+            if texto and tamanho_amostra < 50000:
+                trecho = texto[: 50000 - tamanho_amostra]
+                amostra_idioma.append(trecho)
+                tamanho_amostra += len(trecho)
+            if len(texto) < LETRAS_PARA_TER_TEXTO:
+                problemas.append("sem_texto")
+            if texto_parece_corrompido(texto):
+                problemas.append("texto_suspeito")
+                texto_suspeito += 1
+
+        if problemas:
+            paginas.append({
+                "pagina": indice + 1,
+                "problemas": problemas,
+                "caracteres": caracteres,
+            })
+
+    return {
+        "schema_version": 1,
+        "origem": origem,
+        "total_paginas": doc.page_count,
+        "paginas": paginas,
+        "resumo": {
+            "nao_abriram": sum("nao_abriu" in p["problemas"] for p in paginas),
+            "sem_texto": sum("sem_texto" in p["problemas"] for p in paginas),
+            "texto_suspeito": texto_suspeito,
+        },
+        "total_caracteres": total_chars,
+        "amostra_idioma": "\n".join(amostra_idioma),
+    }
+
+
+def quality_manifest_for_pdf(pdf_path: str, *, origem: str = "original") -> dict:
+    """Inspeciona um PDF sem gerar miniaturas nem alterar o arquivo."""
+    doc = fitz.open(pdf_path)
+    try:
+        if doc.needs_pass:
+            return {
+                "schema_version": 1,
+                "origem": origem,
+                "total_paginas": None,
+                "paginas": [],
+                "resumo": None,
+            }
+        manifesto = _inspecionar_paginas(doc, origem=origem)
+        manifesto.pop("amostra_idioma", None)
+        manifesto.pop("total_caracteres", None)
+        return manifesto
+    finally:
+        doc.close()
+
+
 def analyze_pdf(pdf_path: str, thumbnails_dir: Path) -> dict:
     """
     Analisa o PDF e retorna metadados, resultado de detecção de escaneamento
@@ -75,6 +152,7 @@ def analyze_pdf(pdf_path: str, thumbnails_dir: Path) -> dict:
             # Nada foi contado: sem a senha não dá para abrir página nenhuma.
             "paginas_ilegiveis": None,
             "paginas_sem_texto": None,
+            "quality_manifest": None,
             "capitulos_declarados": None,
         }
 
@@ -90,31 +168,12 @@ def analyze_pdf(pdf_path: str, thumbnails_dir: Path) -> dict:
     # "três páginas ficaram sem texto" (nó 895:7631).
     #
     # Contar aqui não custa uma leitura a mais: custa dois inteiros.
-    total_chars = 0
-    ilegiveis = 0
-    sem_texto = 0
-    texto_suspeito = 0
-    amostra_idioma: list[str] = []
-    tamanho_amostra = 0
-    for pagina in doc:
-        try:
-            texto = pagina.get_text().strip()
-        except Exception:
-            # PÁGINA QUE NÃO ABRE É UMA COISA, e página vazia é outra. Um PDF
-            # truncado no meio do download tem páginas que levantam ao serem
-            # lidas; uma digitalização tem páginas que abrem e não têm letra
-            # nenhuma. Somar as duas num número só esconderia qual é o problema.
-            ilegiveis += 1
-            continue
-        total_chars += len(texto)
-        if texto and tamanho_amostra < 50000:
-            trecho = texto[: 50000 - tamanho_amostra]
-            amostra_idioma.append(trecho)
-            tamanho_amostra += len(trecho)
-        if len(texto) < LETRAS_PARA_TER_TEXTO:
-            sem_texto += 1
-        if texto_parece_corrompido(texto):
-            texto_suspeito += 1
+    manifesto = _inspecionar_paginas(doc, origem="original")
+    total_chars = manifesto.pop("total_caracteres")
+    amostra_idioma = manifesto.pop("amostra_idioma")
+    ilegiveis = manifesto["resumo"]["nao_abriram"]
+    sem_texto = manifesto["resumo"]["sem_texto"]
+    texto_suspeito = manifesto["resumo"]["texto_suspeito"]
 
     avg_chars = total_chars / page_count if page_count > 0 else 0.0
     # Uma camada textual corrompida também precisa passar por OCR. Sem isso
@@ -134,7 +193,7 @@ def analyze_pdf(pdf_path: str, thumbnails_dir: Path) -> dict:
     doc.close()
 
     idioma_declarado = normalize_language_code(metadata.get("language"))
-    idioma = idioma_declarado or detect_document_language("\n".join(amostra_idioma))
+    idioma = idioma_declarado or detect_document_language(amostra_idioma)
 
     return {
         "title": (metadata.get("title") or "").strip(),
@@ -147,6 +206,7 @@ def analyze_pdf(pdf_path: str, thumbnails_dir: Path) -> dict:
         "paginas_ilegiveis": ilegiveis,
         "paginas_sem_texto": sem_texto,
         "paginas_texto_suspeito": texto_suspeito,
+        "quality_manifest": manifesto,
         # OS CAPÍTULOS QUE O ARQUIVO DECLARA, e não os que alguém adivinhou.
         #
         # "A partir dos 14 títulos de capítulo que encontrei" (nó 895:7856)

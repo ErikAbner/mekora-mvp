@@ -28,6 +28,7 @@ class JobResponse(BaseModel):
     # zero — a tela cala em vez de afirmar que está tudo bem.
     paginas_ilegiveis: Optional[int] = None
     paginas_sem_texto: Optional[int] = None
+    quality_manifest: Optional[dict] = None
     capitulos_declarados: Optional[int] = None
     # Por onde os arquivos deste trabalho são alcançados. Vem do backend porque
     # é ele que sabe — e porque o número ao lado não serve mais para isso.
